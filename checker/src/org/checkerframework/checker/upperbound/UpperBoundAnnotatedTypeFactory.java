@@ -57,24 +57,6 @@ public class UpperBoundAnnotatedTypeFactory
     public final AnnotationMirror UNKNOWN;
 
     /**
-     * Provides a way to query the Constant Value Checker, which computes the values of expressions
-     * known at compile time (constant prop + folding).
-     */
-    private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
-
-    /**
-     * Provides a way to query the Min Len (minimum length) Checker, which computes the lengths of
-     * arrays.
-     */
-    private final MinLenAnnotatedTypeFactory minLenAnnotatedTypeFactory;
-
-    /**
-     * Provides a way to query the SameLen (same length) Checker, which determines the relationships
-     * among the lengths of arrays.
-     */
-    private final SameLenAnnotatedTypeFactory sameLenAnnotatedTypeFactory;
-
-    /**
      * Important functions as executable elements. Stored in instance fields to avoid recomputation.
      */
     private final ExecutableElement fcnMin =
@@ -89,12 +71,33 @@ public class UpperBoundAnnotatedTypeFactory
         super(checker);
         UNKNOWN = AnnotationUtils.fromClass(elements, UpperBoundUnknown.class);
 
-        valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
-        minLenAnnotatedTypeFactory = getTypeFactoryOfSubchecker(MinLenChecker.class);
-        sameLenAnnotatedTypeFactory = getTypeFactoryOfSubchecker(SameLenChecker.class);
         addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation(new String[0]));
         addAliasedAnnotation(IndexOrHigh.class, createLTEqLengthOfAnnotation(new String[0]));
         this.postInit();
+    }
+
+    /**
+     * Provides a way to query the Constant Value Checker, which computes the values of expressions
+     * known at compile time (constant prop + folding).
+     */
+    private ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(ValueChecker.class);
+    }
+
+    /**
+     * Provides a way to query the Min Len (minimum length) Checker, which computes the lengths of
+     * arrays.
+     */
+    private MinLenAnnotatedTypeFactory getMinLenAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(MinLenChecker.class);
+    }
+
+    /**
+     * Provides a way to query the SameLen (same length) Checker, which determines the relationships
+     * among the lengths of arrays.
+     */
+    private SameLenAnnotatedTypeFactory getSameLenAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(SameLenChecker.class);
     }
 
     @Override
@@ -147,7 +150,7 @@ public class UpperBoundAnnotatedTypeFactory
      * not, returns null.
      */
     public Integer minLenFromExpressionTree(ExpressionTree tree) {
-        AnnotatedTypeMirror minLenType = minLenAnnotatedTypeFactory.getAnnotatedType(tree);
+        AnnotatedTypeMirror minLenType = getMinLenAnnotatedTypeFactory().getAnnotatedType(tree);
         AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
         if (anm == null) {
             return null;
@@ -161,7 +164,7 @@ public class UpperBoundAnnotatedTypeFactory
      * given expression tree.
      */
     public AnnotatedTypeMirror sameLenTypeFromExpressionTree(ExpressionTree tree) {
-        AnnotatedTypeMirror sameLenType = sameLenAnnotatedTypeFactory.getAnnotatedType(tree);
+        AnnotatedTypeMirror sameLenType = getMinLenAnnotatedTypeFactory().getAnnotatedType(tree);
         return sameLenType;
     }
 
@@ -197,7 +200,7 @@ public class UpperBoundAnnotatedTypeFactory
          *  checker annotated it with its equivalent of our unknown
          *  annotation.
          */
-        AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
+        AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
         List<Long> possibleValues = possibleValuesFromValueType(valueType);
         if (possibleValues == null || possibleValues.size() == 0) {
             return null;
@@ -619,7 +622,8 @@ public class UpperBoundAnnotatedTypeFactory
         private void addAnnotationForDivide(
                 ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
             // Check if the right side's value is known at compile time.
-            AnnotatedTypeMirror valueTypeRight = valueAnnotatedTypeFactory.getAnnotatedType(right);
+            AnnotatedTypeMirror valueTypeRight =
+                    getValueAnnotatedTypeFactory().getAnnotatedType(right);
             Integer maybeValRight = maybeValFromValueType(valueTypeRight);
             if (maybeValRight != null) {
                 AnnotatedTypeMirror leftType = getAnnotatedType(left);
@@ -701,7 +705,7 @@ public class UpperBoundAnnotatedTypeFactory
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             // Check if the right side's value is known at compile time.
             AnnotatedTypeMirror valueTypeRight =
-                    valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+                    getValueAnnotatedTypeFactory().getAnnotatedType(rightExpr);
             Integer maybeValRight = maybeValFromValueType(valueTypeRight);
             if (maybeValRight != null) {
                 addAnnotationForLiteralPlus(maybeValRight, leftType, type);
@@ -711,7 +715,7 @@ public class UpperBoundAnnotatedTypeFactory
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
             // Check if the left side's value is known at compile time.
             AnnotatedTypeMirror valueTypeLeft =
-                    valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+                    getValueAnnotatedTypeFactory().getAnnotatedType(rightExpr);
             Integer maybeValLeft = maybeValFromValueType(valueTypeLeft);
             if (maybeValLeft != null) {
                 addAnnotationForLiteralPlus(maybeValLeft, rightType, type);
@@ -775,7 +779,7 @@ public class UpperBoundAnnotatedTypeFactory
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             // Check if the right side's value is known at compile time.
             AnnotatedTypeMirror valueTypeRight =
-                    valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+                    getValueAnnotatedTypeFactory().getAnnotatedType(rightExpr);
             Integer maybeValRight = maybeValFromValueType(valueTypeRight);
             if (maybeValRight != null) {
                 addAnnotationForLiteralPlus(-1 * maybeValRight, leftType, type);

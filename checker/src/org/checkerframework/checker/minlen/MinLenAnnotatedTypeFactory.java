@@ -1,6 +1,9 @@
 package org.checkerframework.checker.minlen;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.minlen.qual.MinLen;
 import org.checkerframework.checker.minlen.qual.MinLenBottom;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -22,7 +26,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
@@ -34,6 +37,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -43,22 +47,22 @@ import org.checkerframework.javacutil.TreeUtils;
 public class MinLenAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<CFValue, MinLenStore, MinLenTransfer, MinLenAnalysis> {
 
-    /**
-     * Provides a way to query the Constant Value Checker, which computes the values of expressions
-     * known at compile time (constant prop + folding).
-     */
-    private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
-
     /** {@code @MinLen(0)}, which is the top qualifier. */
     final AnnotationMirror MIN_LEN_0;
 
     final AnnotationMirror MIN_LEN_BOTTOM;
+    final List<ExecutableElement> listRemoveMethods;
+    final List<ExecutableElement> listClearMethods;
 
     public MinLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLen.class);
         builder.setValue("value", 0);
+        listRemoveMethods = TreeUtils.getMethodList("java.util.List", "remove", 1, processingEnv);
+        listClearMethods = TreeUtils.getMethodList("java.util.List", "clear", 0, processingEnv);
+        listClearMethods.add(TreeUtils.getMethod("java.util.List", "removeAll", 1, processingEnv));
+        listClearMethods.add(TreeUtils.getMethod("java.util.List", "retainAll", 1, processingEnv));
+
         MIN_LEN_0 = builder.build();
         MIN_LEN_BOTTOM = AnnotationUtils.fromClass(elements, MinLenBottom.class);
         this.postInit();
@@ -69,10 +73,17 @@ public class MinLenAnnotatedTypeFactory
         AnnotationMirror minLen0 = MIN_LEN_0;
         defaults.addCheckedCodeDefault(minLen0, TypeUseLocation.OTHERWISE);
     }
+    /**
+     * Provides a way to query the Constant Value Checker, which computes the values of expressions
+     * known at compile time (constant prop + folding).
+     */
+    public ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(ValueChecker.class);
+    }
 
     /** Returns the value type associated with the given ExpressionTree. */
     public AnnotatedTypeMirror valueTypeFromTree(Tree tree) {
-        return valueAnnotatedTypeFactory.getAnnotatedType(tree);
+        return getValueAnnotatedTypeFactory().getAnnotatedType(tree);
     }
 
     /**
@@ -102,6 +113,24 @@ public class MinLenAnnotatedTypeFactory
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new MinLenQualifierHierarchy(factory);
+    }
+
+    public boolean isListRemove(ExecutableElement method) {
+        for (ExecutableElement removeMethod : listRemoveMethods) {
+            if (ElementUtils.isMethod(method, removeMethod, processingEnv)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isListClear(ExecutableElement method) {
+        for (ExecutableElement removeMethod : listClearMethods) {
+            if (ElementUtils.isMethod(method, removeMethod, processingEnv)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -242,8 +271,8 @@ public class MinLenAnnotatedTypeFactory
     public void addComputedTypeAnnotations(Element element, AnnotatedTypeMirror type) {
         super.addComputedTypeAnnotations(element, type);
         if (element != null) {
-            resetVisitorState(valueAnnotatedTypeFactory);
-            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(element);
+            AnnotatedTypeMirror valueType =
+                    getValueAnnotatedTypeFactory().getAnnotatedType(element);
             addArrayLenAnnotation(valueType, type);
             addStringValAnnotation(valueType, type);
         }
@@ -255,21 +284,10 @@ public class MinLenAnnotatedTypeFactory
         // TODO: Martin: Why did I use this here? Because this is the check that happens in AnnotatedTypeFactory#getAnnotatedType
         // and causes the program to fail if it fails. I'm unsure of why; I should ask Suzanne when she gets back 1/2/17
         if (tree != null && TreeUtils.isExpressionTree(tree)) {
-            resetVisitorState(valueAnnotatedTypeFactory);
-            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
+            AnnotatedTypeMirror valueType = valueTypeFromTree(tree);
             addArrayLenAnnotation(valueType, type);
             addStringValAnnotation(valueType, type);
         }
-    }
-
-    private void resetVisitorState(ValueAnnotatedTypeFactory factory) {
-        VisitorState otherVisitorState = factory.getVisitorState();
-
-        // TODO: the assignment context includes ATM for MinLen.
-        // otherVisitorState.setAssignmentContext(visitorState.getAssignmentContext());
-        otherVisitorState.setPath(visitorState.getPath());
-        otherVisitorState.setClassTree(visitorState.getClassTree());
-        otherVisitorState.setMethodTree(visitorState.getMethodTree());
     }
 
     @Override
@@ -296,10 +314,26 @@ public class MinLenAnnotatedTypeFactory
 
             return super.visitLiteral(tree, type);
         }
-    }
 
-    public ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
-        return valueAnnotatedTypeFactory;
+        @Override
+        public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
+            if (node.getDimensions().size() > 0) {
+                // If the dimension of the new array is the length of another array, then the
+                // MinLen of the new array is the min len of the other array.  (Dimensions that
+                // are a constant value have a known ArrayLen which is converted to a MinLen in
+                // addComputedTypeAnnotations.)
+                ExpressionTree dimExp = node.getDimensions().get(0);
+                if (TreeUtils.isArrayLengthAccess(dimExp)) {
+                    AnnotationMirror minLenAnno =
+                            getAnnotationMirror(
+                                    ((MemberSelectTree) dimExp).getExpression(), MinLen.class);
+                    if (minLenAnno != null) {
+                        type.addAnnotation(minLenAnno);
+                    }
+                }
+            }
+            return null;
+        }
     }
 
     protected static int getMinLenValue(AnnotationMirror annotation) {

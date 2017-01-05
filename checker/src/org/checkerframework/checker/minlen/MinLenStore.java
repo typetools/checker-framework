@@ -1,12 +1,12 @@
 package org.checkerframework.checker.minlen;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.minlen.qual.MinLen;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -27,68 +27,44 @@ public class MinLenStore extends CFAbstractStore<CFValue, MinLenStore> {
         super(analysis, sequentialSemantics);
     }
 
-    // If something is removed from a list it reduces the minlen of anything that could be an alias of the list by 1.
-    // if a list is cleared, anything that could be an alias of the list goes to MinLen(0).
     @Override
     public void updateForMethodCall(
             MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, CFValue val) {
-        Receiver caller = FlowExpressions.internalReprOf(atypeFactory, n.getTarget().getReceiver());
-        String methodName = n.getTarget().getMethod().toString();
-        boolean remove = methodName.startsWith("remove(");
-        boolean clear = methodName.startsWith("clear(");
-        Map<Receiver, CFValue> replace = new HashMap<Receiver, CFValue>();
-        if (clear) {
-            for (FlowExpressions.LocalVariable rec : localVariableValues.keySet()) {
-                if (caller.containsModifiableAliasOf(this, rec)) {
-                    applyTransfer(rec, replace, true, atypeFactory);
-                }
-            }
-            for (FieldAccess rec : fieldValues.keySet()) {
-                if (caller.containsModifiableAliasOf(this, rec)) {
-                    applyTransfer(rec, replace, true, atypeFactory);
-                }
-            }
-        }
-        if (remove) {
-            for (FlowExpressions.LocalVariable rec : localVariableValues.keySet()) {
-                if (caller.containsModifiableAliasOf(this, rec)) {
-                    applyTransfer(rec, replace, false, atypeFactory);
-                }
-            }
-            for (FieldAccess rec : fieldValues.keySet()) {
-                if (caller.containsModifiableAliasOf(this, rec)) {
-                    applyTransfer(rec, replace, false, atypeFactory);
-                }
-            }
-        }
-        for (Receiver rec : replace.keySet()) {
-            replaceValue(rec, replace.get(rec));
-        }
-
         super.updateForMethodCall(n, atypeFactory, val);
-    }
-
-    private void applyTransfer(
-            Receiver rec,
-            Map<Receiver, CFValue> replace,
-            boolean isClear,
-            AnnotatedTypeFactory atypeFactory) {
         MinLenAnnotatedTypeFactory factory = (MinLenAnnotatedTypeFactory) atypeFactory;
-        CFValue value = this.getValue(rec);
-        Set<AnnotationMirror> atm = value.getAnnotations();
-        if (AnnotationUtils.containsSameByClass(atm, MinLen.class)) {
-            if (isClear) {
-                CFValue val =
-                        analysis.createSingleAnnotationValue(factory.MIN_LEN_0, rec.getType());
-                replace.put(rec, val);
-            } else {
-                int length =
-                        MinLenAnnotatedTypeFactory.getMinLenValue(
-                                AnnotationUtils.getAnnotationByClass(atm, MinLen.class));
-                CFValue val =
-                        analysis.createSingleAnnotationValue(
-                                factory.createMinLen(Math.max(length - 1, 0)), rec.getType());
-                replace.put(rec, val);
+
+        // Calling certain methods on a list object side-effects the list.  If the list is a local
+        // variable or a final or effectively final field, then dataflow does not update the store
+        // to reflect these side-effects.  This method correctly updates refined types for those
+        // variables including there aliases.;
+        boolean remove = factory.isListRemove(n.getTarget().getMethod());
+        boolean clear = factory.isListClear(n.getTarget().getMethod());
+        if (!(remove || clear)) {
+            return;
+        }
+
+        Receiver caller = FlowExpressions.internalReprOf(atypeFactory, n.getTarget().getReceiver());
+        List<Entry<? extends Receiver, CFValue>> localAndFields = new ArrayList<>();
+        localAndFields.addAll(localVariableValues.entrySet());
+        localAndFields.addAll(fieldValues.entrySet());
+
+        for (Map.Entry<? extends Receiver, CFValue> entry : localAndFields) {
+            Receiver rec = entry.getKey();
+            CFValue value = entry.getValue();
+            if (caller.containsModifiableAliasOf(this, rec)
+                    && AnnotationUtils.containsSameByClass(value.getAnnotations(), MinLen.class)) {
+                AnnotationMirror newMinLen;
+                if (clear) {
+                    newMinLen = factory.MIN_LEN_0;
+                } else { // if (remove)
+                    AnnotationMirror minLen =
+                            AnnotationUtils.getAnnotationByClass(
+                                    value.getAnnotations(), MinLen.class);
+                    int length = MinLenAnnotatedTypeFactory.getMinLenValue(minLen);
+                    newMinLen = factory.createMinLen(Math.max(length - 1, 0));
+                }
+                CFValue newValue = analysis.createSingleAnnotationValue(newMinLen, rec.getType());
+                replaceValue(rec, newValue);
             }
         }
     }
