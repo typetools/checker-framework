@@ -23,7 +23,6 @@ public class CheckerFrameworkPanel extends JPanel {
     private EditableProperties editableProperty;
     private static Set<Entry<String, String>> checkerStrings;
     private final FileObject projectProperties;
-    private Set <String> selectedCheckers;
     private final JLabel title;
     private final JCheckBox[] checkerList;
     private final String checkerPath;

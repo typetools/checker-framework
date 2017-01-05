@@ -1,5 +1,5 @@
 Steps to build and release the NetBeans Checker Framework plugin:
-1. Copy Checker Framework artifacts to the netbeans/CheckerFrameworkPlugin/release directory
+1. Copy Checker Framework artifacts to the netbeans/CheckerFrameworkPlugin/release directory (just checker.jar and checker-qual.jar should be enough)
 2. Open the CheckerFrameworkPlugin project in NetBeans
 3. Right click on the project in NetBeans and select "Create NBM"
 4. Copy the .nbm file created in step 3 from netbeans/CheckerFrameworkPlugin/build to netbeans/CheckerFrameworkPluginUpdateSite
@@ -12,3 +12,7 @@ The directory netbeans/CheckerFrameworkPluginUpdateSite needs to be hosted on a 
 In order to install the NetBeans plugin, in NetBeans, click on "Tools>Plugins" and select the "Settings" tab.
 Then, click "Add" to add a new Update Center with "Name" as "Checker Framework" and "URL" as "http://<URL where catalog.xml and .nbm are hosted>/catalog.xml".
 Go to the "Available Plugins" tab, and search and select "Checker Framework Plugin" and click "Install".
+
+In order to use the plugin, right click on a Java project in NetBeans, and click "Properties".
+Select the desired checkers to run, and then press "Ok" to apply the changes and close the Properties window.
+The checkers should be run and the results should appear in the IDE editor, if Netbeans is set to compile on save.
