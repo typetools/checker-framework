@@ -370,7 +370,6 @@ public class UpperBoundAnnotatedTypeFactory
                     || (AnnotationUtils.areSameByClass(a1, LTEqLengthOf.class)
                             && AnnotationUtils.areSameByClass(a2, LTLengthOf.class))) {
                 // In this case, the result should be LTEL of the intersection of the names.
-                // Fixes issue 20.
                 String[] names = getIntersectingNames(a1, a2);
 
                 return createLTEqLengthOfAnnotation(names);
