@@ -76,7 +76,9 @@ import org.checkerframework.javacutil.Pair;
 public class LockAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<CFValue, LockStore, LockTransfer, LockAnalysis> {
 
+    /** Expression annotation error message for when the expression is not effectively final. */
     public static final String NOT_EFFECTIVELY_FINAL = "lock expression is not effectively final";
+
     /** Annotation constants */
     protected final AnnotationMirror LOCKHELD,
             LOCKPOSSIBLYHELD,
@@ -115,6 +117,8 @@ public class LockAnnotatedTypeFactory
         return new ExpressionAnnotationHelper(this, GuardedBy.class) {
             @Override
             protected void reportErrors(Tree errorTree, List<ExpressionAnnotationError> errors) {
+                // If the error message is NOT_EFFECTIVELY_FINAL, then report lock.expression.not
+                // .final instead of an expression.unparsable.type.invalid error.
                 List<ExpressionAnnotationError> superErrors = new ArrayList<>();
                 for (ExpressionAnnotationError error : errors) {
                     if (error.error.equals(NOT_EFFECTIVELY_FINAL)) {
@@ -137,6 +141,8 @@ public class LockAnnotatedTypeFactory
                 if (ExpressionAnnotationError.isExpressionError(expression)) {
                     return expression;
                 }
+
+                // Adds logic to parse <self> expression, which only the Lock Checker uses.
                 if (LockVisitor.selfReceiverPattern.matcher(expression).matches()) {
                     return expression;
                 }
@@ -149,6 +155,8 @@ public class LockAnnotatedTypeFactory
                         return new ExpressionAnnotationError(expression, " ").toString();
                     }
                     if (!isExpressionEffectivelyFinal(result)) {
+                        // If the expression isn't effectively final, then return the
+                        // NOT_EFFECTIVELY_FINAL error string.
                         return new ExpressionAnnotationError(expression, NOT_EFFECTIVELY_FINAL)
                                 .toString();
                     }
@@ -160,20 +168,30 @@ public class LockAnnotatedTypeFactory
         };
     }
 
+    /**
+     * Returns whether or not the expression is effectively final.
+     *
+     * <p>This method returns true in the following cases when expr is:
+     *
+     * <p>1. a field access and the field is final and the field access expression is effectively
+     * final as specified by this method.
+     *
+     * <p>2. an effectively final local variable.
+     *
+     * <p>3. a deterministic method call whose arguments and receiver expression are effectively
+     * final as specified by this method.
+     *
+     * <p>4. a this reference or a class literal
+     *
+     * @param expr expression
+     * @return whether or not the expression is effectively final
+     */
     boolean isExpressionEffectivelyFinal(Receiver expr) {
         if (expr instanceof FieldAccess) {
             FieldAccess fieldAccess = (FieldAccess) expr;
             Receiver recv = fieldAccess.getReceiver();
-
-            // Do NOT call fieldAccess.isUnmodifiableByOtherCode if the receiver is a method call, since it also checks if the receiver
-            // is unmodifiable and does so incorrectly in that case. The present
-            // method will determine whether or not a method call receiver is effectively final
-            // (see the "if (expr instanceof MethodCall)" block below).
-            if (!(fieldAccess.isUnmodifiableByOtherCode()
-                    || (fieldAccess.isFinal() && recv instanceof MethodCall))) {
-                return false;
-            }
-            return isExpressionEffectivelyFinal(recv);
+            // Don't call fieldAccess
+            return fieldAccess.isFinal() && isExpressionEffectivelyFinal(recv);
         } else if (expr instanceof LocalVariable) {
             return ElementUtils.isEffectivelyFinal(((LocalVariable) expr).getElement());
         } else if (expr instanceof MethodCall) {
@@ -183,10 +201,8 @@ public class LockAnnotatedTypeFactory
                     return false;
                 }
             }
-            if (!PurityUtils.isDeterministic(this, methodCall.getElement())) {
-                return false;
-            }
-            return isExpressionEffectivelyFinal(methodCall.getReceiver());
+            return PurityUtils.isDeterministic(this, methodCall.getElement())
+                    && isExpressionEffectivelyFinal(methodCall.getReceiver());
         } else if (expr instanceof ThisReference || expr instanceof ClassName) {
             // this is always final. "ClassName" is actually a class literal,(String.class), it's
             // final too.
