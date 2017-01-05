@@ -396,8 +396,8 @@ public class UpperBoundAnnotatedTypeFactory
 
         /**
          * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
-         * annotations are the same. In this case, rhs is a subtype of lhs iff lhs contains at least
-         * every element of rhs.
+         * annotations are the same. In this case, rhs is a subtype of lhs iff rhs contains at least
+         * every element of lhs.
          *
          * @return true if rhs is a subtype of lhs, false otherwise
          */
@@ -419,7 +419,7 @@ public class UpperBoundAnnotatedTypeFactory
                 return rhsValues.containsAll(lhsValues);
             } else if (isSubtypeRelaxed(rhs, lhs)) {
                 /* Different types that are subtypes of each other ->
-                 * rhs is a subtype of lhs iff lhs.value contains rhs.value.
+                 * rhs is a subtype of lhs iff rhs.value contains lhs.value.
                  */
                 List<Object> lhsValues = getElementValueArray(lhs, "value", Object.class, true);
                 List<Object> rhsValues = getElementValueArray(rhs, "value", Object.class, true);
