@@ -139,10 +139,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
             // change the type.
             if (vals.length == 1 && vals[0].equals(caller.toString())) {
                 AnnotationMirror newAnno = factory.createLTLengthOfAnnotation(caller.toString());
-                CFValue val =
-                        analysis.createSingleAnnotationValue(
-                                factory.getQualifierHierarchy().greatestLowerBound(newAnno, anno),
-                                rec.getType());
+                CFValue val = analysis.createSingleAnnotationValue(newAnno, rec.getType());
                 replace.put(rec, val);
             }
         } else if (AnnotationUtils.containsSameByClass(atm, LTLengthOf.class)) {
@@ -154,10 +151,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
             // change the type.
             if (vals.length == 1 && vals[0].equals(caller.toString())) {
                 AnnotationMirror newAnno = factory.createLTOMLengthOfAnnotation(caller.toString());
-                CFValue val =
-                        analysis.createSingleAnnotationValue(
-                                factory.getQualifierHierarchy().greatestLowerBound(newAnno, anno),
-                                rec.getType());
+                CFValue val = analysis.createSingleAnnotationValue(newAnno, rec.getType());
                 replace.put(rec, val);
             }
         }
