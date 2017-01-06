@@ -41,7 +41,6 @@ public class UpperBoundTransfer
         AnnotationMirror UNKNOWN = atypeFactory.UNKNOWN;
         TransferResult<CFValue, UpperBoundStore> result = super.visitAssignment(node, in);
 
-        // This handles when a new array is created.
         if (node.getExpression() instanceof ArrayCreationNode) {
             ArrayCreationNode acNode = (ArrayCreationNode) node.getExpression();
             UpperBoundStore store = result.getRegularStore();
