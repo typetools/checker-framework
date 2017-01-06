@@ -29,7 +29,10 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         super(analysis, sequentialSemantics);
     }
 
-    // If something is removed from a list it reduces the minlen of anything that could be an alias of the list by 1.
+    // If something is removed from a list it changes the type of things that know something about
+    // that list - LTOM becomes LTL, LTL becomes LTEL, etc.
+    // If something is added to a list, the opposite happens iff the type only names one list; if the type
+    // names more than one list, conservatively the type is left unmodified.
     // If a list is cleared, anything that could be an alias of this list goes to UpperBoundUnknown.
     @Override
     public void updateForMethodCall(
@@ -40,7 +43,12 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         boolean remove = factory.isListRemove(miNode.getTarget().getMethod());
         boolean clear = factory.isListClear(miNode.getTarget().getMethod());
         boolean add = factory.isListAdd(miNode.getTarget().getMethod());
+
+        // It is necessary to have this data structure so that hash maps aren't updated
+        // while they're being iterated over. If you removed it and had apply* replace the
+        // values directly, you would get a ConcurrentModificationException.
         Map<Receiver, CFValue> replace = new HashMap<Receiver, CFValue>();
+
         if (clear) {
             for (FlowExpressions.LocalVariable rec : localVariableValues.keySet()) {
                 applyClear(rec, replace, atypeFactory);
@@ -65,6 +73,8 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                 applyAdd(rec, replace, atypeFactory, caller);
             }
         }
+
+        // Necessary to avoid modifying a hash map while iterating.
         for (Receiver rec : replace.keySet()) {
             replaceValue(rec, replace.get(rec));
         }
