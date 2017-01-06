@@ -43,18 +43,18 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         Map<Receiver, CFValue> replace = new HashMap<Receiver, CFValue>();
         if (clear) {
             for (FlowExpressions.LocalVariable rec : localVariableValues.keySet()) {
-                applyTransfer(rec, replace, true, atypeFactory, caller);
+                applyClear(rec, replace, atypeFactory);
             }
             for (FieldAccess rec : fieldValues.keySet()) {
-                applyTransfer(rec, replace, true, atypeFactory, caller);
+                applyClear(rec, replace, atypeFactory);
             }
         }
         if (remove) {
             for (FlowExpressions.LocalVariable rec : localVariableValues.keySet()) {
-                applyTransfer(rec, replace, false, atypeFactory, caller);
+                applyRemove(rec, replace, atypeFactory);
             }
             for (FieldAccess rec : fieldValues.keySet()) {
-                applyTransfer(rec, replace, false, atypeFactory, caller);
+                applyRemove(rec, replace, atypeFactory);
             }
         }
         if (add) {
@@ -72,20 +72,22 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         super.updateForMethodCall(miNode, atypeFactory, cfValue);
     }
 
-    private void applyTransfer(
-            Receiver rec,
-            Map<Receiver, CFValue> replace,
-            boolean isClear,
-            AnnotatedTypeFactory atypeFactory,
-            Receiver caller) {
+    private void applyClear(
+            Receiver rec, Map<Receiver, CFValue> replace, AnnotatedTypeFactory atypeFactory) {
+
+        UpperBoundAnnotatedTypeFactory factory = (UpperBoundAnnotatedTypeFactory) atypeFactory;
+        CFValue val = analysis.createSingleAnnotationValue(factory.UNKNOWN, rec.getType());
+        replace.put(rec, val);
+    }
+
+    private void applyRemove(
+            Receiver rec, Map<Receiver, CFValue> replace, AnnotatedTypeFactory atypeFactory) {
 
         UpperBoundAnnotatedTypeFactory factory = (UpperBoundAnnotatedTypeFactory) atypeFactory;
         CFValue value = this.getValue(rec);
         Set<AnnotationMirror> atm = value.getAnnotations();
-        if (isClear) {
-            CFValue val = analysis.createSingleAnnotationValue(factory.UNKNOWN, rec.getType());
-            replace.put(rec, val);
-        } else if (AnnotationUtils.containsSameByClass(atm, LTOMLengthOf.class)) {
+
+        if (AnnotationUtils.containsSameByClass(atm, LTOMLengthOf.class)) {
             AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(atm, LTOMLengthOf.class);
             AnnotationMirror newAnno =
                     factory.createLTLengthOfAnnotation(UpperBoundUtils.getValue(anno));
