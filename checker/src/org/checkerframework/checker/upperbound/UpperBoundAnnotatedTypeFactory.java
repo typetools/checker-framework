@@ -516,10 +516,7 @@ public class UpperBoundAnnotatedTypeFactory
                 String arrName =
                         FlowExpressions.internalReprOf(this.atypeFactory, tree.getExpression())
                                 .toString();
-                type.replaceAnnotation(
-                        qualHierarchy.greatestLowerBound(
-                                createLTEqLengthOfAnnotation(arrName),
-                                type.getAnnotationInHierarchy(UNKNOWN)));
+                type.replaceAnnotation(createLTEqLengthOfAnnotation(arrName));
             }
             return super.visitMemberSelect(tree, type);
         }
