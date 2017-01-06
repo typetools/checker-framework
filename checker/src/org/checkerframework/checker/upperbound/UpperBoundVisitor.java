@@ -32,8 +32,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         this.IndexFirstArgListMethods.add(
                 TreeUtils.getMethod(
                         "java.util.List", "set", 2, checker.getProcessingEnvironment()));
-        //// can't handle until TreeUtils.getMethod has a way to precisly handle method overloading
-        //// this.IndexFirstArgListMethods.add(TreeUtils.getMethod("java.util.List", "remove", 1, checker.getProcessingEnvironment()));
+        // can't handle until TreeUtils.getMethod has a way to precisely handle method overloading
+        // this.IndexFirstArgListMethods.add(TreeUtils.getMethod("java.util.List", "remove", 1, checker.getProcessingEnvironment()));
         this.IndexFirstArgListMethods.add(
                 TreeUtils.getMethod(
                         "java.util.List", "listIterator", 1, checker.getProcessingEnvironment()));
@@ -73,8 +73,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         // Is indexType LTL/LTOM of a set containing arrName?
         if ((indexType.hasAnnotation(LTLengthOf.class)
                         || indexType.hasAnnotation(LTOMLengthOf.class))
-                && (UpperBoundUtils.hasValue(indexType, arrName, sameLenType)
-                        || UpperBoundUtils.hasValue(indexType, arrTree.toString(), sameLenType))) {
+                && (UpperBoundUtils.hasValue(indexType, arrName, sameLenType))) {
             // If so, this is safe - get out of here.
             return super.visitArrayAccess(tree, type);
         } else if (valMax != null && minLen != -1 && valMax < minLen) {
@@ -94,9 +93,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             ExpressionTree lstTree = tree.getMethodSelect();
             String lstName = FlowExpressions.internalReprOf(this.atypeFactory, lstTree).toString();
             AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
-            String[] parts = lstTree.toString().split("\\.");
-            // the last part of the methodName is the method (get, remove, etc) so get second to last part
-            String localName = parts[parts.length - 2];
+
             // Need to be able to check these as part of the conditional below.
             // Find max because it's important to determine whether the index is
             // less than the minimum length of the array. If it could be any
@@ -109,8 +106,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             // Is indexType LTL of a set containing arrName?
             if ((indexType.hasAnnotation(LTLengthOf.class)
                             || indexType.hasAnnotation(LTOMLengthOf.class))
-                    && (UpperBoundUtils.hasValue(indexType, localName, sameLenType)
-                            || (UpperBoundUtils.hasValue(indexType, lstName, sameLenType)))) {
+                    && (UpperBoundUtils.hasValue(indexType, lstName, sameLenType))) {
                 // If so, this is safe - get out of here.
                 return super.visitMethodInvocation(tree, type);
             } else if (valMax != null && minLen != -1 && valMax < minLen) {
