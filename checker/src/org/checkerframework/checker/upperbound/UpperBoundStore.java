@@ -133,27 +133,33 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         if (AnnotationUtils.containsSameByClass(atm, LTEqLengthOf.class)) {
             AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(atm, LTEqLengthOf.class);
             String[] vals = UpperBoundUtils.getValue(anno);
-            if (vals.length != 1 || !vals[0].equals(caller.toString())) {
-                return;
+
+            // Makes sure that the only array named in the type is exactly the one
+            // in the caller. If that's not the case, then it's not correct to
+            // change the type.
+            if (vals.length == 1 && vals[0].equals(caller.toString())) {
+                AnnotationMirror newAnno = factory.createLTLengthOfAnnotation(caller.toString());
+                CFValue val =
+                        analysis.createSingleAnnotationValue(
+                                factory.getQualifierHierarchy().greatestLowerBound(newAnno, anno),
+                                rec.getType());
+                replace.put(rec, val);
             }
-            AnnotationMirror newAnno = factory.createLTLengthOfAnnotation(caller.toString());
-            CFValue val =
-                    analysis.createSingleAnnotationValue(
-                            factory.getQualifierHierarchy().greatestLowerBound(newAnno, anno),
-                            rec.getType());
-            replace.put(rec, val);
         } else if (AnnotationUtils.containsSameByClass(atm, LTLengthOf.class)) {
             AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(atm, LTLengthOf.class);
             String[] vals = UpperBoundUtils.getValue(anno);
-            if (vals.length != 1 || !vals[0].equals(caller.toString())) {
-                return;
+
+            // Makes sure that the only array named in the type is exactly the one
+            // in the caller. If that's not the case, then it's not correct to
+            // change the type.
+            if (vals.length == 1 && vals[0].equals(caller.toString())) {
+                AnnotationMirror newAnno = factory.createLTOMLengthOfAnnotation(caller.toString());
+                CFValue val =
+                        analysis.createSingleAnnotationValue(
+                                factory.getQualifierHierarchy().greatestLowerBound(newAnno, anno),
+                                rec.getType());
+                replace.put(rec, val);
             }
-            AnnotationMirror newAnno = factory.createLTOMLengthOfAnnotation(caller.toString());
-            CFValue val =
-                    analysis.createSingleAnnotationValue(
-                            factory.getQualifierHierarchy().greatestLowerBound(newAnno, anno),
-                            rec.getType());
-            replace.put(rec, val);
         }
     }
 
