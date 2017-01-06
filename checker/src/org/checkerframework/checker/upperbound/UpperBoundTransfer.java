@@ -11,7 +11,6 @@ import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.*;
@@ -41,20 +40,6 @@ public class UpperBoundTransfer
             AssignmentNode node, TransferInput<CFValue, UpperBoundStore> in) {
         AnnotationMirror UNKNOWN = atypeFactory.UNKNOWN;
         TransferResult<CFValue, UpperBoundStore> result = super.visitAssignment(node, in);
-
-        // When an existing array is assigned into, the store needs to be cleared -
-        // that is, every instance of LTL and LTEL needs to be removed, since arrays
-        // might be aliased, and when an array is modified to be a different length,
-        // that could cause any of our information about arrays to be wrong.
-        if (node.getTarget().getType().getKind() == TypeKind.ARRAY) {
-            // This means that the existing store needs to be invalidated.
-            // As far as I can tell the easiest way to do this is to just
-            // create a new TransferResult.
-            TransferResult<CFValue, UpperBoundStore> newResult =
-                    new RegularTransferResult<CFValue, UpperBoundStore>(
-                            result.getResultValue(), new UpperBoundStore(analysis, true));
-            result = newResult;
-        }
 
         // This handles when a new array is created.
         if (node.getExpression() instanceof ArrayCreationNode) {
@@ -126,7 +111,7 @@ public class UpperBoundTransfer
         }
     }
 
-    // So I actually just ended up copying these from Lower Bound Transfer too.
+    // These are copied from Lower Bound Transfer.
     // The only parts that are actually different are the definitions of
     // refineGT and refineGTE, and the handling of equals and not equals. The
     // code for the visitGreaterThan, visitLessThan, etc., are all identical to
