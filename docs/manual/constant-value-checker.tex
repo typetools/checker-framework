@@ -122,7 +122,7 @@ public void bar() {
 \begin{sloppypar}
 A \<@StaticallyExecutable> method must
 be \refqualclass{dataflow/qual}{Pure} (side-effect-free and
-deterministic).
+deterministic, see Section~\ref{type-refinement-purity}).
 Additionally, a \<@StaticallyExecutable> method and any method it calls must be on
 the classpath for the compiler, because they are reflectively called at
 compile-time to perform the constant value analysis. Any standard
