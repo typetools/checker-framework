@@ -62,6 +62,10 @@ bound and an upper bound.  Its meaning is that at run time, the expression
 evaluates to a value between the bounds (inclusive).  For example, an
 expression of type \<@IntRange(from=0, to=255)> evaluates to
 0, 1, 2, \ldots, 254, or 255.
+An \refqualclass{common/value/qual}{IntVal} and
+\refqualclass{common/value/qual}{IntRange} annotation that represent the
+same set of values are semantically identical and interchangeable:  they
+have exactly the same meaning, and using either one has the same effect.
 
 Figure~\ref{fig-value-hierarchy} shows the
 subtyping relationship among the type annotations.
