@@ -224,7 +224,7 @@ class Basics {
     }
 
     void tooManyValuesInt() {
-        //:: warning: (too.many.values.given)
+        //:: warning: (too.many.values.given.int)
         @IntVal({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 100}) int a = 8;
 
         @UnknownVal int b = a; // This should always succeed
@@ -233,7 +233,7 @@ class Basics {
 
         a = c; // This should succeed if a is treated as @IntRange(from=1, to=100)
 
-        //:: warning: (too.many.values.given)
+        //:: warning: (too.many.values.given.int)
         @IntVal({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12})
         //:: error: (assignment.type.incompatible)
         int d = a; // d is @IntRange(from=1, to=12), a is @IntVal({20});

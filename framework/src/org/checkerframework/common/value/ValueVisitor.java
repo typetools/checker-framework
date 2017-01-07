@@ -127,7 +127,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                     if (numArgs > ValueAnnotatedTypeFactory.MAX_VALUES) {
                         checker.report(
                                 Result.warning(
-                                        "too.many.values.given",
+                                        ((element.toString().equals(IntVal.class.getName()))
+                                                ? "too.many.values.given.int"
+                                                : "too.many.values.given"),
                                         ValueAnnotatedTypeFactory.MAX_VALUES),
                                 node);
                         return null;
