@@ -58,6 +58,11 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     public Void visitArrayAccess(ArrayAccessTree tree, Void type) {
         ExpressionTree indexTree = tree.getIndex();
         ExpressionTree arrTree = tree.getExpression();
+        visitAccess(indexTree, arrTree, true);
+        return super.visitArrayAccess(tree, type);
+    }
+
+    private void visitAccess(ExpressionTree indexTree, ExpressionTree arrTree, boolean fArray) {
         String arrName = FlowExpressions.internalReprOf(this.atypeFactory, arrTree).toString();
         AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
 
@@ -75,14 +80,19 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                         || indexType.hasAnnotation(LTOMLengthOf.class))
                 && (UpperBoundUtils.hasValue(indexType, arrName, sameLenType))) {
             // If so, this is safe - get out of here.
-            return super.visitArrayAccess(tree, type);
+            return;
         } else if (valMax != null && minLen != -1 && valMax < minLen) {
-            return super.visitArrayAccess(tree, type);
+            return;
         } else {
             // Unsafe, since neither the Upper bound or MinLen checks succeeded.
             checker.report(
-                    Result.warning(UPPER_BOUND, indexType.toString(), arrName, arrName), indexTree);
-            return super.visitArrayAccess(tree, type);
+                    Result.warning(
+                            fArray ? UPPER_BOUND : UPPER_BOUND_LIST,
+                            indexType.toString(),
+                            arrName,
+                            arrName),
+                    indexTree);
+            return;
         }
     }
 
@@ -91,33 +101,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         if (isFirstArgListMethod(tree)) {
             ExpressionTree indexTree = tree.getArguments().get(0);
             ExpressionTree lstTree = tree.getMethodSelect();
-            String lstName = FlowExpressions.internalReprOf(this.atypeFactory, lstTree).toString();
-            AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
-
-            // Need to be able to check these as part of the conditional below.
-            // Find max because it's important to determine whether the index is
-            // less than the minimum length of the array. If it could be any
-            // of several values, only the max is of interest.
-            Integer valMax = atypeFactory.valMaxFromExpressionTree(indexTree);
-            int minLen = atypeFactory.minLenFromExpressionTree(lstTree);
-
-            AnnotatedTypeMirror sameLenType = atypeFactory.sameLenTypeFromExpressionTree(lstTree);
-
-            // Is indexType LTL of a set containing arrName?
-            if ((indexType.hasAnnotation(LTLengthOf.class)
-                            || indexType.hasAnnotation(LTOMLengthOf.class))
-                    && (UpperBoundUtils.hasValue(indexType, lstName, sameLenType))) {
-                // If so, this is safe - get out of here.
-                return super.visitMethodInvocation(tree, type);
-            } else if (valMax != null && minLen != -1 && valMax < minLen) {
-                return super.visitMethodInvocation(tree, type);
-            } else {
-                // Unsafe, since neither the Upper bound or MinLen checks succeeded.
-                checker.report(
-                        Result.warning(UPPER_BOUND_LIST, indexType.toString(), lstName, lstName),
-                        indexTree);
-                return super.visitMethodInvocation(tree, type);
-            }
+            visitAccess(indexTree, lstTree, false);
         }
         return super.visitMethodInvocation(tree, type);
     }
