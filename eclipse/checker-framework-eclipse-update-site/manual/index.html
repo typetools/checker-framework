@@ -8,7 +8,7 @@
     <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
 
     <link href="css/main.css" rel="stylesheet"/>
-    <link rel="icon" type="image/png" href="http://types.cs.washington.edu/checker-framework/favicon-checkerframework.png" />
+    <link rel="icon" type="image/png" href="http://checker-framework.com/favicon-checkerframework.png" />
 
 </head>
 
@@ -20,8 +20,8 @@
         <div class="contained">
             <ul class="nav">
                 <li class="heading">Checker Framework:</li>
-                <li><a href="http://checkerframework.org/">Main Site</a></li>
-                <li><a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">Manual</a></li>
+                <li><a href="http://checker-framework.com/">Main Site</a></li>
+                <li><a href="http://checker-framework.com/manual/">Manual</a></li>
                 <li><a href="https://groups.google.com/forum/?fromgroups#!forum/checker-framework-discuss">Discussion List</a></li>
                 <li><a href="https://github.com/typetools/checker-framework/issues">Issue Tracker</a></li>
                 <li><a href="https://github.com/typetools/checker-framework">Source Code</a></li>
@@ -31,7 +31,7 @@
     </div>
 </div>
 
-<img src="http://types.cs.washington.edu/checker-framework/current/CFLogo.png" alt="Checker Framework logo" />
+<img src="http://checker-framework.com/CFLogo.png" alt="Checker Framework logo" />
 
 <div class="page-header short" style="border-bottom: 1px solid #EEE; border-top: none;">
     <h1>Checker Framework Eclipse Plugin: <small>Pluggable type-checking for Java</small></h1>
@@ -44,11 +44,11 @@
 
     <div class="section">
         <p>
-            The <a href="http://checkerframework.org/">Checker Framework</a> is a pluggable type-checking
+            The <a href="http://checker-framework.com/">Checker Framework</a> is a pluggable type-checking
             system for Java:  It warns you, at compile time, about errors in your programs, beyond those that Java's built-in
             type-checker does.
             This document tells you how to get started using the
-            <strong><a href="http://checkerframework.org/">Checker Framework</a>
+            <strong><a href="http://checker-framework.com/">Checker Framework</a>
             in Eclipse</strong>.
         </p>
     </div>
@@ -72,7 +72,7 @@
                 <li>Enter the following:
                     <table class="table table-condensed" style="width: 500px; margin-bottom: 5px;">
                         <tr><td><strong>Name:</strong>     </td><td>Checker Framework</td></tr>
-                        <tr><td><strong>Location:</strong> </td><td>http://types.cs.washington.edu/checker-framework/eclipse</td></tr>
+                        <tr><td><strong>Location:</strong> </td><td>http://checker-framework.com/eclipse</td></tr>
                     </table>
                     Click <b>OK</b>.
                 </li>
@@ -88,11 +88,11 @@
 
         <div class="alert alert-info">
         <strong>Note:</strong> You may want to add <strong>
-            <a href="http://types.cs.washington.edu/checker-framework/checker-plugin/update-site/lib/checker-qual.jar">
+            <a href="http://checker-framework.com/checker-plugin/update-site/lib/checker-qual.jar">
                 checker-qual.jar
             </a></strong> to your classpath for each Eclipse project you wish to check.
             It provides the annotations used by the
-            <a href="http://checkerframework.org/">Checker Framework</a> for
+            <a href="http://checker-framework.com/">Checker Framework</a> for
             its built-in type checkers.  <br/> To add the checker-qual.jar to your Eclipse project, download the
             jar from the above link.  Then right click the project you wish to check and select
             Properties -> Java Build Path -> Libraries -> Add External Jars.  Select checker-qual.jar from
@@ -110,7 +110,7 @@
         <h4>Running a Built-In Checker</h4>
         <p>
             Here is how to run one or more
-            <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#introduction">built-in type checkers</a>
+            <a href="http://checker-framework.com/manual/#introduction">built-in type checkers</a>
             from the Checker Framework:
         </p>
         <div class="well">
@@ -142,7 +142,7 @@
             (Checker Framework &#8209;> Clear Checker Markers).
         </p>
 
-        <div class="alert alert-error"><strong>Warning!</strong> When using the <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#subtyping-checker">Subtyping Checker</a>,
+        <div class="alert alert-error"><strong>Warning!</strong> When using the <a href="http://checker-framework.com/manual/#subtyping-checker">Subtyping Checker</a>,
             you must provide the -Aquals argument or an error will be reported.  Follow the instructions in the
             <a href="#additional_compiler_params">Additional Compiler Params</a> section to
             add the -Aquals argument.
@@ -153,7 +153,7 @@
         <h4 id="running-a-custom-checker">Running a Custom Checker</h4>
         <p>
             The Checker Framework
-            also allows you to <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#writing-a-checker">write a custom checker</a> that enforces rules of your own.
+            also allows you to <a href="http://checker-framework.com/manual/#writing-a-checker">write a custom checker</a> that enforces rules of your own.
             <br/>
             To run a custom checker that you have written, do the following:
         </p>
@@ -247,12 +247,12 @@
                 <p>
                     <strong>Processor/build options</strong><br/>
                     The Checker Framework
-                    supports <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#checker-options">command-line options</a> to its compiler (usually prefaced by -A).  One
+                    supports <a href="http://checker-framework.com/manual/#checker-options">command-line options</a> to its compiler (usually prefaced by -A).  One
                     way to use these options is enabling the various options under the label "Processor/build options".
                     If you are using the
                     Checker Framework
                     on a project for which other developers are not, you may be specifically interested in its
-                    <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#legacy-code">backward compatibility features</a>, such as annotations in comments and
+                    <a href="http://checker-framework.com/manual/#legacy-code">backward compatibility features</a>, such as annotations in comments and
                     implicit import statement.  If you check the box next to the text "Use implicit imports for annotation classes"
                     then, for built-in checkers, all of the appropriate annotations will be imported implicitly.
                 </p>
@@ -276,7 +276,7 @@
             text-field will first be split on white space and then added (without further manipulation) to
             the command line that runs the Checker Framework compiler.  Please make sure any options added here
             are well-formed <strong>javac options</strong> or
-            <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#checker-options">Checker Framework
+            <a href="http://checker-framework.com/manual/#checker-options">Checker Framework
             options</a>.  If they are malformed you can check the "Errors" window for any error messages or
             exceptions thrown by the compiler/plugin.
         </div>
@@ -291,9 +291,9 @@
         <p>
             To get support for either the Checker Framework or this plugin please
             first consult the
-            <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">Checker Framework Manual</a>,
+            <a href="http://checker-framework.com/manual/">Checker Framework Manual</a>,
             specifically the chapter
-            <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#troubleshooting">
+            <a href="http://checker-framework.com/manual/#troubleshooting">
                 "Troubleshooting and getting help"
             </a>.
             If you find a bug, please report it at

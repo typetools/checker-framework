@@ -362,7 +362,7 @@ public class AnnotatedTypeCopier
      * @param original a reference to a type to copy
      * @param originalToCopy a mapping of previously encountered references to the copies made for
      *     those references
-     * @param <T> The type of original copy, this is a shortcut to avoid having to insert casts all
+     * @param <T> the type of original copy, this is a shortcut to avoid having to insert casts all
      *     over the visitor
      * @return a copy of original
      */

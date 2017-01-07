@@ -1,5 +1,4 @@
 package java.util;
-import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.checker.lock.qual.*;
 
 public final class PropertyPermission extends java.security.BasicPermission {

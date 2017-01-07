@@ -40,7 +40,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 // import sun.reflect.CallerSensitive;
 import sun.reflect.Reflection;
 
-import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.lock.qual.*;
 
 /**

@@ -532,9 +532,9 @@ public abstract class InitializationAnnotatedTypeFactory<
      * Determine the type of a field access (implicit or explicit) based on the receiver type and
      * the declared annotations for the field.
      *
-     * @param type Type of the field access expression
-     * @param declaredFieldAnnotations Annotations on the element.
-     * @param receiverType Inferred annotations of the receiver
+     * @param type type of the field access expression
+     * @param declaredFieldAnnotations annotations on the element
+     * @param receiverType inferred annotations of the receiver
      */
     private void computeFieldAccessType(
             AnnotatedTypeMirror type,

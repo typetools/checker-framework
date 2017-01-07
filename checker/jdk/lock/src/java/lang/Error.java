@@ -26,7 +26,6 @@
 package java.lang;
 
 import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * An {@code Error} is a subclass of {@code Throwable}

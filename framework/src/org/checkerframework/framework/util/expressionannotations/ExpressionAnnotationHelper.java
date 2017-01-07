@@ -110,7 +110,7 @@ public class ExpressionAnnotationHelper {
      *
      * @param classDecl class or interface declaration whose type variables should be viewpoint
      *     adapted
-     * @param bounds annotated types of the bounds of the type variables.
+     * @param bounds annotated types of the bounds of the type variables
      * @param pathToUse tree path to the use of the class or interface
      */
     public void viewpointAdaptTypeVariableBounds(
@@ -554,7 +554,7 @@ public class ExpressionAnnotationHelper {
         }
     }
 
-    boolean isExpressionAnno(AnnotationMirror am) {
+    private boolean isExpressionAnno(AnnotationMirror am) {
         for (Class<? extends Annotation> clazz : expressionAnnos) {
             if (AnnotationUtils.areSameByClass(am, clazz)) {
                 return true;

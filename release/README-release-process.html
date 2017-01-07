@@ -89,22 +89,30 @@ The process takes around 3 hours (including manual steps) when all goes accordin
 
 <h2 id="release_process">Release process</h2>
 
-    <h3 id="checklist">Checklist of steps a release person must follow</h3>
+<h3 id="checklist">Checklist of steps a release person must follow</h3>
 
     <ol>
+      <li>Once ever:
+        <ul>
+          <li>Follow the steps in the <a href="#pre_release_checklist">Pre-release Checklist</a>
+           in the Release Process document. Some of these steps can take days to complete as they
+            involve obtaining permissions.</li>
+        </ul>
+      </li>
        <li>First day of the development milestone:
          <ul>
-           <li>If you have not done so before, follow the steps in the <a href="#pre_release_checklist">Pre-release Checklist</a>
-           in the Release Process document. These steps are important not just for the work performed on release day but
-           also for other work perfomed throughout the release. Some of these steps can take days to complete as they
-           involve obtaining permissions to access projects on various web sites.</li>
-           <li>Plan the feature freeze, code freeze and release dates for the following two months, and send an e-mail to the
-             checker-framework-dev, annotation-tools-dev and jsr308-langtools-dev mailing lists with these dates.
-             Also please make sure to add these dates to the "Checker Framework Developers" Google Calendar.
-             We should aim to release on the first business day of the month. Whenever possible, avoid releasing
+           <li>Plan the feature freeze, code freeze and release dates for the following two months.  The release date should be the first business day of the month.  (Avoid releasing
              near the end of a month instead of the beginning of the next month, as that makes it easier for users
-             to keep track of the cadence of our releases (e.g. having a June 1st and a June 30th release makes
-             it harder to tell that the June 30th release is meant for distribution in the month of July).</li>
+             to keep track of the cadence of our releases.  For example, having a June 1st and a June 30th release makes
+             it harder to tell that the June 30th release is meant for distribution in the month of July.)
+           </li>
+           <li>
+           Send an e-mail to the
+             checker-framework-dev, annotation-tools-dev and jsr308-langtools-dev mailing lists with these dates.
+           <!--
+             Also please make sure to add these dates to the "Checker Framework Developers" Google Calendar.
+           -->
+             </li>
          </ul>
        </li>
        <li>One week before Feature Freeze:
@@ -142,6 +150,7 @@ The process takes around 3 hours (including manual steps) when all goes accordin
 
     </ol>
 
+<!--
     <h3 id="notes-for-release-person">Recommendations/notes for the release person</h3>
     <ul>
       <li>As the release person, consider pushing your bug fixes at least two days prior to the code freeze deadline &mdash; this is because you
@@ -154,6 +163,7 @@ The process takes around 3 hours (including manual steps) when all goes accordin
       If during the bug fixing period anyone fixes a bug that is worth mentioning as more
       than a number, the changelog can be amended accordingly and Mike can be warned about it.</li>
     </ul>
+-->
 
     <h3 id="phases">Milestone Phases</h3>
     <!-- I'm not sure how to get the exact effect achieved by this HTML 4 code: -->
@@ -272,7 +282,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <strong>In a user-specific temporary directory, clone/update the Checker Framework repository (it contains the release scripts).</strong><br/>
       <code>mkdir -p /scratch/$USER/jsr308-release<br/></code>
       <code>cd /scratch/$USER/jsr308-release<br/></code>
-      <code>git -C checker-framework pull --quiet || git clone --quiet https://github.com/typetools/checker-framework.git<br/></code>
+      <code>(cd checker-framework && git pull --quiet) || git clone --quiet https://github.com/typetools/checker-framework.git<br/></code>
       <code>cd checker-framework/release<br/></code>
   </li>
   <li><strong>Review the changelogs and documentation</strong><br/>
@@ -284,7 +294,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <strong>Note:</strong> This step can be performed in advance of the release day. It is recommended
       that this be done the work morning after Feature Freeze.
   </li>
-  <li><strong>Run release_build</strong><br/>
+  <li><strong>Run release_build</strong> to create the release artifacts and place them in the development website<br/>
       <code>python release_build.py all --auto</code><br/><br/>
       For verbose debugging output, use the <code>--debug</code> option.<br/><br/>
       <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
@@ -295,7 +305,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       be asked more questions during the build.
   </li>
   <li>
-      <strong>Run release_push</strong><br/>
+      <strong>Run release_push</strong> to move release artifacts from the development website to the live site and to Maven Central <br/>
       <code>python release_push.py release</code><br/><br/>
       For minimal prompting, use the <code>--auto</code> option.<br/><br/>
       <div class="alert alert-danger">
@@ -351,9 +361,9 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <td>2.</td>
       <td><strong>Import the Checker Framework signing key for PGP</strong><br/>
         SSH into Buffalo and run the following command:<br/>
-        <code>gpg --allow-secret-key-import --import /projects/swlab1/checker-framework/release-private.key<br/><br/></code>
+        <code>gpg --allow-secret-key-import --import /projects/swlab1/checker-framework/hosting-info/release-private.key<br/><br/></code>
         Note:  The password for this key is located in the file<br/>
-        <code>/projects/swlab1/checker-framework/release-private.password<br/></code>
+        <code>/projects/swlab1/checker-framework/hosting-info/release-private.password<br/></code>
         and is used by the release_push script to sign Maven artifacts.<br/>
       </td>
     <tr>
@@ -375,7 +385,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <td>4.</td>
       <td><strong>Add your account information to settings.xml in your home directory.</strong><br/>
         Create a <code>~/.m2/settings.xml</code> file with the contents specified in
-        <code>/projects/swlab1/checker-framework/release-settings.txt</code>
+        <code>/projects/swlab1/checker-framework/hosting-info/release-settings.txt</code>
         using the information you just created for your Sonatypes Account on Buffalo or other
         network host.  Since the file contains your password, make it non-readable:  <code>chmod og-rw ~/.m2/settings.xml</code>
       </td>
@@ -519,7 +529,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         <td colspan="2">&lt;project&gt;/current</td>
         <td>A symlink to the location of the latest release of the given project.  Each project subdirectory contains a releases directory.
           These directories contain the current/past releases.  The manual/website of the Checker Framework is written with references to
-          the file:<br/><a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html</a>
+          the file:<br/><a href="http://checker-framework.com/manual/">http://checker-framework.com/manual/</a>
         </td>
       </tr>
       <tr>
@@ -623,7 +633,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <li>Only (and all) changes that affect users go into the changelog.
         If a change is breaking, no matter how small, mention it.</li>
       <li>List all issues (in issue trackers) resolved since the previous release, for
-          the Checker Framework (<a href="http://types.cs.washington.edu/checker-framework/current/changelog.txt">previous release</a>,
+          the Checker Framework (<a href="http://checker-framework.com/changelog.txt">previous release</a>,
           <a href="https://github.com/typetools/checker-framework/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>,
           <a href="https://github.com/typetools/checker-framework/blob/master/changelog.txt">current changelog</a>),
           Annotation File Utilities (<a href="http://types.cs.washington.edu/annotation-file-utilities/changelog.html">previous release</a>,
@@ -731,7 +741,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     <h3 id="fi_jdk-api_fixup">Open JDK/JSR308 Javadoc</h3> <!-- omit from toc -->
     Generating the Javadocs for the entire JDK is not simple.  We have previously generated these but have
     not updated them in a while.  They can be found here:<br/>
-    <a href="http://types.cs.washington.edu/checker-framework/jdk-api/">http://types.cs.washington.edu/checker-framework/jdk-api/</a><br/>
+    <a href="http://checker-framework.com/jdk-api/">http://checker-framework.com/jdk-api/</a><br/>
     When we generate javadoc for the Type Annotations Compiler and Checker Framework we link against these docs.
     But because they were generated in a faulty manner in the first place, there are many broken links related to
     package summaries of the jdk-api docs.  It is highly unlikely that users will ever run into these links, since

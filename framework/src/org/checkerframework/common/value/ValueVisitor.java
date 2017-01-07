@@ -26,7 +26,7 @@ import org.checkerframework.framework.source.Result;
 
 /**
  * @author plvines
- *     <p>Visitor for the Constant Value type-system.
+ *     <p>Visitor for the Constant Value type-system
  */
 public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 

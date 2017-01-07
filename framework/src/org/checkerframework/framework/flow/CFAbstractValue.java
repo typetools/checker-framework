@@ -129,7 +129,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * Returns a set of annotations. If {@link #canBeMissingAnnotations()} returns true, then the
      * set of annotations may not have an annotation for every hierarchy.
      *
-     * @return Returns a set of annotations
+     * @return returns a set of annotations
      */
     @Pure
     public Set<AnnotationMirror> getAnnotations() {

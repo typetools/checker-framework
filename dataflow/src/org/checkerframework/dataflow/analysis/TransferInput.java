@@ -16,7 +16,7 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  * 'then', and the other to 'else'.
  *
  * @author Stefan Heule
- * @param <S> The {@link Store} used to keep track of intermediate results.
+ * @param <S> the {@link Store} used to keep track of intermediate results
  */
 public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 
@@ -140,7 +140,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 
     /**
      * @return the regular result store produced if no exception is thrown by the {@link Node}
-     *     corresponding to this transfer function result.
+     *     corresponding to this transfer function result
      */
     public S getRegularStore() {
         if (store == null) {

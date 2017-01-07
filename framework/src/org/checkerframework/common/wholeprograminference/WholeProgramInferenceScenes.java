@@ -109,9 +109,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *
      * <p>
      *
-     * @param objectCreationNode the new Object() node.
+     * @param objectCreationNode the new Object() node
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the constructor's parameters' types.
+     *     used to update the constructor's parameters' types
      */
     @Override
     public void updateInferredConstructorParameterTypes(
@@ -153,11 +153,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *
      * <p>
      *
-     * @param methodTree the tree of the method that contains the parameter.
-     * @param methodElt the element of the method.
-     * @param overriddenMethod the AnnotatedExecutableType of the overridden method.
+     * @param methodTree the tree of the method that contains the parameter
+     * @param methodElt the element of the method
+     * @param overriddenMethod the AnnotatedExecutableType of the overridden method
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the parameter type.
+     *     used to update the parameter type
      */
     @Override
     public void updateInferredMethodParameterTypes(
@@ -200,11 +200,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *
      * <p>
      *
-     * @param methodInvNode the node representing a method invocation.
-     * @param receiverTree the Tree of the class that contains the method being invoked.
-     * @param methodElt the element of the method being invoked.
+     * @param methodInvNode the node representing a method invocation
+     * @param receiverTree the Tree of the class that contains the method being invoked
+     * @param methodElt the element of the method being invoked
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the method parameters' types.
+     *     used to update the method parameters' types
      */
     @Override
     public void updateInferredMethodParameterTypes(
@@ -289,12 +289,12 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *
      * <p>
      *
-     * @param lhs the node representing the parameter.
-     * @param rhs the node being assigned to the parameter.
-     * @param classTree the tree of the class that contains the parameter.
-     * @param methodTree the tree of the method that contains the parameter.
+     * @param lhs the node representing the parameter
+     * @param rhs the node being assigned to the parameter
+     * @param classTree the tree of the class that contains the parameter
+     * @param methodTree the tree of the method that contains the parameter
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the parameter type.
+     *     used to update the parameter type
      */
     @Override
     public void updateInferredParameterType(
@@ -355,11 +355,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *
      * <p>
      *
-     * @param methodTree the tree of the method that contains the receiver.
-     * @param methodElt the element of the method.
-     * @param overriddenMethod the overridden method.
+     * @param methodTree the tree of the method that contains the receiver
+     * @param methodElt the element of the method
+     * @param overriddenMethod the overridden method
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the receiver type.
+     *     used to update the receiver type
      */
     @Override
     public void updateInferredMethodReceiverType(
@@ -396,11 +396,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *
      * <p>
      *
-     * @param lhs the field whose type will be refined.
-     * @param rhs the expression being assigned to the field.
-     * @param classTree the ClassTree for the enclosing class of the assignment.
+     * @param lhs the field whose type will be refined
+     * @param rhs the expression being assigned to the field
+     * @param classTree the ClassTree for the enclosing class of the assignment
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the field's type.
+     *     used to update the field's type
      */
     @Override
     public void updateInferredFieldType(
@@ -449,11 +449,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *
      * <p>
      *
-     * @param retNode the node that contains the expression returned.
-     * @param classSymbol the symbol of the class that contains the method.
-     * @param methodTree the tree of the method whose return type may be updated.
+     * @param retNode the node that contains the expression returned
+     * @param classSymbol the symbol of the class that contains the method
+     * @param methodTree the tree of the method whose return type may be updated
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the method's return type.
+     *     used to update the method's return type
      */
     @Override
     public void updateInferredMethodReturnType(

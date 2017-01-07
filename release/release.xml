@@ -104,12 +104,13 @@
         <fail unless="afu.release.date"    message="afu.release.date property is not set!"/>
         <fail unless="afu.version"    message="afu.version not set"/>
 
-        <property name="checker.manual"      value="${checker}/manual"                       />
-        <property name="checker.examples"    value="${checker}/examples"                     />
+        <property name="cf.docs"             value="${checker}/../docs"                       />
+        <property name="checker.manual"      value="${cf.docs}/manual"                       />
+        <property name="cf.docs.examples"    value="${cf.docs}/examples"                     />
         <property name="checker.eclipse"     value="${checker}/../eclipse"                   />
-        <property name="checker.tutorial"    value="${checker}/../tutorial"                  />
+        <property name="checker.tutorial"    value="${cf.docs}/tutorial"                  />
         <property name="checker.release"     value="${checker}/../release"                   />
-        <property name="checkerWebPage"      value="${checker.manual}/checker-framework-webpage.html" />
+        <property name="checkerWebPage"      value="${cf.docs}/checker-framework-webpage.html" />
         <property name="checkerQuickStartPage" value="${checker.manual}/checker-framework-quick-start.html" />
         <property name="maven.plugin"         value="${checker}/../maven-plugin"             />
         <property name="checker.binary.poms"  value="${maven.plugin}/poms"                   />
@@ -275,12 +276,12 @@
                 with="${release.ver}"/>
 
         <!-- examples -->
-        <update file="${checker.examples}/MavenExample/pom.xml"
+        <update file="${cf.docs.examples}/MavenExample/pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
         <!-- build.gradle in GradleJava8Example is a soft link to GradleJava7Example/build.gradle -->
-        <replaceregexp file="${checker.examples}/GradleExamples/GradleJava7Example/build.gradle" byline="true"
+        <replaceregexp file="${cf.docs.examples}/GradleExamples/GradleJava7Example/build.gradle" byline="true"
                        match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
                        replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
 
@@ -348,13 +349,13 @@
                         includes="checker/bin/javac" filemode="755"/>
 
             <zipfileset dir="${checkerframework}"
-                        includes="checker/manual/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/checker/manual/CFLogo.png"/>
+                        includes="docs/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/docs/manual/CFLogo.png"/>
 
             <zipfileset dir="${checkerframework}"
-                        includes="checker/manual/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/tutorial/CFLogo.png"/>
+                        includes="docs/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/docs/tutorial/CFLogo.png"/>
 
             <zipfileset dir="${checkerframework}"
-                        includes="checker/manual/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/tutorial/webpages/CFLogo.png"/>
+                        includes="docs/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/docs/tutorial/webpages/CFLogo.png"/>
         </zip>
 
     </target>
@@ -365,10 +366,10 @@
 
         <zip destfile="${dest.dir}/$tutorial.zip">
             <zipfileset dir="${checkerframework}" prefix="tutorial"
-                        includes="tutorial/**"
-                        excludes="tutorial/test/** tutorial/src/** tutorial/Makefile tutorial/README"/>
-            <zipfileset dir="${checkerframework}" includes="checker/manual/logo/Logo/CFLogo.png" fullpath="tutorial/CFLogo.png"/>
-            <zipfileset dir="${checkerframework}" includes="checker/manual/logo/Logo/CFLogo.png" fullpath="tutorial/webpages/CFLogo.png"/>
+                        includes="docs/tutorial/**"
+                        excludes="docs/tutorial/test/** docs/tutorial/src/** docs/tutorial/Makefile docs/tutorial/README"/>
+            <zipfileset dir="${checkerframework}" includes="docs/logo/Logo/CFLogo.png" fullpath="docs/tutorial/CFLogo.png"/>
+            <zipfileset dir="${checkerframework}" includes="docs/logo/Logo/CFLogo.png" fullpath="docs/tutorial/webpages/CFLogo.png"/>
         </zip>
     </target>
 
@@ -379,7 +380,7 @@
         <fail unless="version"     message="version is not set!" />
 
         <zip destfile="${dest.dir}/${file.name}">
-            <zipfileset dir="${checker}/examples/MavenExample" filemode="755" prefix="maven-examples-${version}"/>
+            <zipfileset dir="${cf.docs.examples}/MavenExample" filemode="755" prefix="maven-examples-${version}"/>
         </zip>
     </target>
 
@@ -431,7 +432,7 @@
 
     </target>
 
-    <!-- TODO: Doc the params -->
+    <!-- TODO: Document the params -->
     <target name="checker-framework-website-docs" description="Copies the relevant Checker Framework files to the given directory">
         <!-- This assumes all files have been built; it just does the copying -->
 
@@ -445,9 +446,10 @@
         <fail unless="checker.webpage"   message="checker.webpage property is not set!" />
 
         <!-- //TODO: PERHAPS CHECK THAT THESE FILES EXIST -->
-        <property name="checker.manual"   value="${checker}/manual" />
+        <property name="checker.manual"   value="${cf.docs}/manual" />
+        <property name="checker.logo"     value="${cf.docs}/logo" />
         <property name="dataflow.manual"  value="${checker}/../dataflow/manual" />
-        <property name="checker.tutorial" value="${checker}/../tutorial" />
+        <property name="checker.tutorial" value="${cf.docs}/tutorial" />
         <property name="web.root"         value="${dest.dir}/../.." />
 
         <copy file="${checker.manual}/${checker.webpage}" tofile="${dest.dir}/${checker.webpage}" />
@@ -464,15 +466,15 @@
             </fileset>
         </copy>
 
-        <copy file="${checker.manual}/logo/Logo/CFLogo.png" tofile="${web.root}/current/CFLogo.png" />
-        <copy file="${checker.manual}/logo/Logo/CFLogo.png" tofile="${checker.manual}/CFLogo.png" />
+        <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${web.root}/current/CFLogo.png" />
+        <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${checker.manual}/CFLogo.png" />
 
-        <copy file="${checker.manual}/logo/Checkmark/CFCheckmark_favicon.png" tofile="${dest.dir}/favicon-checkerframework.png" />
-        <copy file="${checker.manual}/logo/Checkmark/CFCheckmark_favicon.png" tofile="${web.root}/favicon-checkerframework.png" />
+        <copy file="${checker.logo}/Checkmark/CFCheckmark_favicon.png" tofile="${dest.dir}/favicon-checkerframework.png" />
+        <copy file="${checker.logo}/Checkmark/CFCheckmark_favicon.png" tofile="${web.root}/favicon-checkerframework.png" />
 
-        <copy file="${checker.manual}/logo/Logo/CFLogo.png" tofile="${dest.dir}/tutorial/CFLogo.png" />
-        <copy file="${checker.manual}/logo/Logo/CFLogo.png" tofile="${dest.dir}/tutorial/webpages/CFLogo.png" />
-        <copy todir="${dest.dir}/tutorial" >
+        <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${dest.dir}/docs/tutorial/CFLogo.png" />
+        <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${dest.dir}/docs/tutorial/webpages/CFLogo.png" />
+        <copy todir="${dest.dir}/docs/tutorial" >
             <fileset dir="${checker.tutorial}" includes="**"/>
         </copy>
 
@@ -494,10 +496,11 @@
         <fail unless="checker"    message="checker property is not set!" />
         <fail unless="version"    message="version is not set!" />
 
-        <property name="checker.examples"         value="${checker}/examples"             />
+        <property name="cf.docs"             value="${checker}/../docs"  />
+        <property name="cf.docs.examples"    value="${cf.docs}/examples" />
 
         <copy todir="${dest.dir}/MavenExample" flatten="false">
-            <fileset dir="${checker.examples}/MavenExample">
+            <fileset dir="${cf.docs.examples}/MavenExample">
                 <include name="**" />
             </fileset>
         </copy>
