@@ -9,13 +9,10 @@ There are two ways to run the Constant Value Checker.
 \begin{itemize}
 \item
 Typically, it is automatically run by another type checker.
-When using the Constant Value Checker as part of another checker, the
-\code{statically-executable.astub} file in the Constant Value Checker directory must
-be passed as a stub file for the checker.
 \item
 Alternately, you can run just the Constant Value Checker, by
 supplying the following command-line options to javac:
-\code{-processor org.checkerframework.common.value.ValueChecker -Astubs=statically-executable.astub}
+\code{-processor org.checkerframework.common.value.ValueChecker}
 \end{itemize}
 
 \section{Annotations\label{constant-value-checker-annotations}}
@@ -47,8 +44,7 @@ example, an expression of type
 \<\refqualclass{common/value/qual}{StringVal}("a", "b")> evaluates to
 one of the values \<"a">, \<"b">, or \<null>.
 The set is limited to 10 entries; if a variable
-could be more than 10 different values, the Constant Value
-Checker gives up and its type becomes
+could be more than 10 different values, its type becomes
 \refqualclass{common/value/qual}{UnknownVal} instead.
 
 % \refqualclass{checker/value/qual}{BottomVal}, meaning that the expression
