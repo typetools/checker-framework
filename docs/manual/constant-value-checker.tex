@@ -60,8 +60,8 @@ Checker gives up and its type becomes
 \refqualclass{common/value/qual}{IntRange} takes two arguments --- a lower
 bound and an upper bound.  Its meaning is that at run time, the expression
 evaluates to a value between the bounds (inclusive).  For example, an
-expression of type \<@IntRange(from=0, to=255)> evaluates to a value
-between 0 and 255, inclusive.
+expression of type \<@IntRange(from=0, to=255)> evaluates to
+0, 1, 2, \ldots, 254, or 255.
 
 Figure~\ref{fig-value-hierarchy} shows the
 subtyping relationship among the type annotations.
@@ -72,7 +72,7 @@ subtype of a \<@DoubleVal> annotation with the same values.
 
 \begin{figure}
 \includeimage{value-subtyping}{5.7cm}
-\caption{The type qualifier hierarchy of the Constant Value Checker
+\caption{At the top, the type qualifier hierarchy of the Constant Value Checker
 annotations. Qualifiers in gray are used
 internally by the type system but should never be written by a
 programmer.  At the bottom are examples of additional subtyping
@@ -103,7 +103,7 @@ If your code is already annotated with a different constant value or range
 annotation, the Checker Framework can type-check your code.
 It treats annotations from other tools
 exactly as if you had written the corresponding annotation from the
-Interning Checker, as described in Figure~\ref{fig-constant-value-refactoring}.
+Constant Value Checker, as described in Figure~\ref{fig-constant-value-refactoring}.
 
 
 % These lists should be kept in sync with ValueAnnotatedTypeFactory.java .
