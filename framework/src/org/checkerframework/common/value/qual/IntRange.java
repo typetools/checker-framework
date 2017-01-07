@@ -7,8 +7,9 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * An annotation indicating that the annotated target should be a byte, short, char, int, or long in
- * the given range.
+ * An annotation indicating that the annotated target should be an integral value (byte, short,
+ * char, int, or long) in the given range. The bounds are inclusive; for example,
+ * {@code @IntRange(from=5, to=8)} represents the 4 values 5, 6, 7, and 8.
  *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
@@ -16,8 +17,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 public @interface IntRange {
-    /** Smallest value, inclusive */
+    /** Smallest value in the range, inclusive */
     long from() default Long.MIN_VALUE;
-    /** Largest value, inclusive */
+    /** Largest value in the range, inclusive */
     long to() default Long.MAX_VALUE;
 }
