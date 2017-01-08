@@ -67,7 +67,7 @@
     <distributionManagement>
         <repository>
             <id>checker-releases</id>
-            <url>http://types.cs.washington.edu/m2-repo</url>
+            <url>http://checker-framework.com/m2-repo</url>
         </repository>
     </distributionManagement>
 </project>
