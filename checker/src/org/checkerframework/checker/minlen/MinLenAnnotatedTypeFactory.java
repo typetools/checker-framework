@@ -25,15 +25,12 @@ import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
-import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -210,26 +207,6 @@ public class MinLenAnnotatedTypeFactory
                 return rhsVal >= lhsVal;
             }
             return false;
-        }
-    }
-
-    @Override
-    protected TypeAnnotator createTypeAnnotator() {
-        return new ListTypeAnnotator(new MinLenTypeAnnotator(this), super.createTypeAnnotator());
-    }
-
-    protected class MinLenTypeAnnotator extends TypeAnnotator {
-
-        public MinLenTypeAnnotator(MinLenAnnotatedTypeFactory atf) {
-            super(atf);
-        }
-
-        @Override
-        public Void visitArray(AnnotatedArrayType type, Void aVoid) {
-            if (!type.hasAnnotation(MinLen.class)) {
-                type.replaceAnnotation(MIN_LEN_0);
-            }
-            return super.visitArray(type, aVoid);
         }
     }
 
