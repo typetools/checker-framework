@@ -34,7 +34,7 @@ public class UpperBoundTransfer
 
     // Refine the type of expressions used as an array dimension to be
     // less than length of the array to which the new array is
-    // assigned.
+    // assigned.  For example int[] array = new int[expr]; the type of expr is @
     @Override
     public TransferResult<CFValue, UpperBoundStore> visitAssignment(
             AssignmentNode node, TransferInput<CFValue, UpperBoundStore> in) {
@@ -49,18 +49,19 @@ public class UpperBoundTransfer
                 return result;
             }
             Node dim = acNode.getDimension(0);
-            Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), dim);
-            String name = node.getTarget().toString();
-            String[] names = {name};
+            Receiver dimRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), dim);
+
+            Receiver arrayRec =
+                    FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getTarget());
 
             Set<AnnotationMirror> oldType = in.getValueOfSubNode(dim).getAnnotations();
 
             AnnotationMirror newType =
                     qualifierHierarchy.greatestLowerBound(
                             qualifierHierarchy.findAnnotationInHierarchy(oldType, UNKNOWN),
-                            atypeFactory.createLTLengthOfAnnotation(names));
+                            atypeFactory.createLTEqLengthOfAnnotation(arrayRec.toString()));
 
-            store.insertValue(rec, newType);
+            store.insertValue(dimRec, newType);
         }
         return result;
     }
