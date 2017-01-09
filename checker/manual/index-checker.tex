@@ -16,10 +16,15 @@ index: either it can be too low or it can be too high. The Index
 Checker will warn about both types of dangerous accesses, and will
 issue different warnings for the two.
 
-Typically, programmers do not need to write annotations to use the
+Typically, programmers need to write only a few annotations to use the
 Index Checker. The Index Checker will infer properties of indexes from
-the code around them.  For example, it will infer that \<x> is positive
-within the then block of an \code{if (x > 0)} statement.
+the code around them. For example, it will infer that \<x> is positive
+within the then block of an \code{if (x > 0)} statement. However, the
+Index Checker does not infer method pre-conditions or post-conditions,
+which the programmer needs to write as annotations. For instance,
+if an integer that is passed into a method is guaranteed to be a safe
+index for the array ''myArray'', the programmer might need to
+write an @IndexFor(''myArray'') annotation.
 
 
 \section{Running the Index Checker\label{index-running}}
@@ -30,12 +35,27 @@ To run the Index Checker, run the command
   javac -processor index \emph{MyJavaFile}.java
 \end{alltt}
 
-Internally, the Index Checker is composed of three checkers: the Lower
+The Index Checker is a composition of several other checkers: the Lower
 Bound Checker (section~\ref{index-lowerbound}), which checks whether potential accesses may be too low;
 the Upper Bound Checker (section~\ref{index-upperbound}), which checks whether potential accesses
-may be too high; and the MinLen Checker (section~\ref{index-minlen}), which estimates the minimum
-length of each sequence.
+may be too high; the MinLen Checker (section~\ref{index-minlen}), which estimates the minimum
+length of each sequence; and the SameLen Checker (section~\ref{index-samelen}), which finds arrays of equal length. All of the qualifiers of these subcheckers are considered ''index'' annotation (and warnings from any of them can be suppressed with @SuppressWarnings(''index''). In addition, the Index Checker maintains some qualifiers of its own, each of which is the combination of at least two qualifiers from different index subcheckers.
 
+The Index annotations are:
+\begin{description}
+\item[\refqualclass{checker/index/qual}{IndexFor}{String[] names}]
+  The value is a valid index for the named arrays. This type is the combination
+  of the Lower Bound Checker's
+  \refqualclass{checker/lowerbound/qual}{NonNegative} and the Upper Bound
+  Checker's \refqualclass{checker/upperbound/qual}{LTLengthOf}{String[] names}.
+ \item[\refqualclass{checker/index/qual}{IndexOrHigh}{String[] names}]
+   The value is either a valid index for each named array, or equal to the
+   length of one or more of the named arrays, and a valid index for the
+   others. This type is the combination of the Lower Bound Checker's
+  \refqualclass{checker/lowerbound/qual}{NonNegative} and the Upper Bound
+  Checker's
+  \refqualclass{checker/upperbound/qual}{LTEqLengthOf}{String[] names}.
+\end{description}
 
 \section{The Lower Bound Checker\label{index-lowerbound}}
 
