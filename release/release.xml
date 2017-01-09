@@ -379,6 +379,9 @@
         <fail unless="file.name"   message="file.name property is not set!" />
         <fail unless="version"     message="version is not set!" />
 
+        <property name="cf.docs"             value="${checker}/../docs"  />
+        <property name="cf.docs.examples"    value="${cf.docs}/examples" />
+
         <zip destfile="${dest.dir}/${file.name}">
             <zipfileset dir="${cf.docs.examples}/MavenExample" filemode="755" prefix="maven-examples-${version}"/>
         </zip>
