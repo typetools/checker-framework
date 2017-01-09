@@ -59,18 +59,17 @@ public class MinLenAnnotatedTypeFactory
         super(checker);
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLen.class);
         builder.setValue("value", 0);
+        MIN_LEN_0 = builder.build();
+        MIN_LEN_BOTTOM = AnnotationUtils.fromClass(elements, MinLenBottom.class);
 
         imf = new IndexMethodIdentifier(processingEnv);
 
-        MIN_LEN_0 = builder.build();
-        MIN_LEN_BOTTOM = AnnotationUtils.fromClass(elements, MinLenBottom.class);
         this.postInit();
     }
 
     @Override
     protected void addCheckedCodeDefaults(QualifierDefaults defaults) {
-        AnnotationMirror minLen0 = MIN_LEN_0;
-        defaults.addCheckedCodeDefault(minLen0, TypeUseLocation.OTHERWISE);
+        defaults.addCheckedCodeDefault(MIN_LEN_0, TypeUseLocation.OTHERWISE);
     }
     /**
      * Provides a way to query the Constant Value Checker, which computes the values of expressions
@@ -95,9 +94,9 @@ public class MinLenAnnotatedTypeFactory
     }
 
     /**
-     * Finds the minimum value in a value type. If there is no information (such as when the list is
-     * empty or null), returns null. Otherwise, returns the smallest element in the list of possible
-     * values.
+     * Finds the minimum value in a Value Checker type. If there is no information (such as when the
+     * list of possible values is empty or null), returns null. Otherwise, returns the smallest
+     * value in the list of possible values.
      */
     public Integer getMinLenFromValueType(AnnotatedTypeMirror valueType) {
         List<Long> possibleValues = possibleValuesFromValueType(valueType);
@@ -109,7 +108,7 @@ public class MinLenAnnotatedTypeFactory
         return min;
     }
 
-    /** Get the list of possible values from a value checker type. May return null. */
+    /** Get the list of possible values from a Value Checker type. May return null. */
     private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
         AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
         if (anm == null) {
