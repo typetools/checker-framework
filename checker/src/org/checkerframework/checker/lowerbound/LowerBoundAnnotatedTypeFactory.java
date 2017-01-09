@@ -104,7 +104,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Either returns the exact value of the given tree according to the constant value checker, or
+     * Either returns the exact value of the given tree according to the Constant Value Checker, or
      * null if the exact value is not known. This method should only be used by clients who need
      * exactly one value - such as the binary operator rules - and not by those that need to know
      * whether a valueType belongs to an LBC qualifier. Clients needing a qualifier should use
