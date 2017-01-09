@@ -164,8 +164,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         if (notEqualTo) {
             // Process != first.
 
-            IndexRefinementInfo rfi =
-                    new IndexRefinementInfo(result, analysis, secondNode, firstNode);
+            IndexRefinementInfo<CFStore> rfi =
+                    new IndexRefinementInfo<>(result, analysis, secondNode, firstNode);
 
             handleRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.thenStore);
             handleRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.thenStore);
@@ -176,8 +176,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         } else {
             // Process ==.
 
-            IndexRefinementInfo rfi =
-                    new IndexRefinementInfo(result, analysis, secondNode, firstNode);
+            IndexRefinementInfo<CFStore> rfi =
+                    new IndexRefinementInfo<>(result, analysis, secondNode, firstNode);
 
             handleRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.elseStore);
             handleRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.elseStore);

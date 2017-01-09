@@ -4,16 +4,25 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.index.IndexRefinementInfo;
 import org.checkerframework.checker.upperbound.qual.LTEqLengthOf;
 import org.checkerframework.checker.upperbound.qual.LTLengthOf;
 import org.checkerframework.checker.upperbound.qual.LTOMLengthOf;
-import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.*;
+import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.EqualToNode;
+import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
+import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
+import org.checkerframework.dataflow.cfg.node.LessThanNode;
+import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.NotEqualNode;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -66,51 +75,6 @@ public class UpperBoundTransfer
         return result;
     }
 
-    /**
-     * This struct contains all of the information that the refinement functions need. It's called
-     * by each node function (i.e. greater than node, less than node, etc.) and then the results are
-     * passed to the refinement function in whatever order is appropriate for that node. Its
-     * constructor contains all of its logic. Much of the code is duplicated or at least very
-     * similar to the code in MinLenRefinementInfo and IndexRefinementInfo, but the same code can't
-     * be reused because both the MLC and the UBC use their own stores.
-     */
-    private class UpperBoundRefinementInfo {
-        public Node left, right;
-        public Set<AnnotationMirror> leftType, rightType;
-        public UpperBoundStore thenStore, elseStore;
-        public ConditionalTransferResult<CFValue, UpperBoundStore> newResult;
-
-        public UpperBoundRefinementInfo(
-                TransferResult<CFValue, UpperBoundStore> result,
-                TransferInput<CFValue, UpperBoundStore> in,
-                BinaryOperationNode node) {
-            right = node.getRightOperand();
-            left = node.getLeftOperand();
-
-            CFValue rightValue = in.getValueOfSubNode(right);
-
-            if (rightValue != null) {
-                rightType = rightValue.getAnnotations();
-            } else {
-                rightType = null;
-            }
-
-            CFValue leftValue = in.getValueOfSubNode(left);
-
-            if (leftValue != null) {
-                leftType = leftValue.getAnnotations();
-            } else {
-                leftType = null;
-            }
-
-            thenStore = result.getThenStore();
-            elseStore = result.getElseStore();
-
-            newResult =
-                    new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
-        }
-    }
-
     // These are copied from Lower Bound Transfer.
     // The only parts that are actually different are the definitions of
     // refineGT and refineGTE, and the handling of equals and not equals. The
@@ -121,7 +85,8 @@ public class UpperBoundTransfer
     public TransferResult<CFValue, UpperBoundStore> visitGreaterThan(
             GreaterThanNode node, TransferInput<CFValue, UpperBoundStore> in) {
         TransferResult<CFValue, UpperBoundStore> result = super.visitGreaterThan(node, in);
-        UpperBoundRefinementInfo rfi = new UpperBoundRefinementInfo(result, in, node);
+        IndexRefinementInfo<UpperBoundStore> rfi =
+                new IndexRefinementInfo<>(result, analysis, node);
 
         // Refine the then branch.
         refineGT(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
@@ -137,7 +102,8 @@ public class UpperBoundTransfer
             GreaterThanOrEqualNode node, TransferInput<CFValue, UpperBoundStore> in) {
         TransferResult<CFValue, UpperBoundStore> result = super.visitGreaterThanOrEqual(node, in);
 
-        UpperBoundRefinementInfo rfi = new UpperBoundRefinementInfo(result, in, node);
+        IndexRefinementInfo<UpperBoundStore> rfi =
+                new IndexRefinementInfo<>(result, analysis, node);
 
         // Refine the then branch.
         refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
@@ -153,7 +119,8 @@ public class UpperBoundTransfer
             LessThanOrEqualNode node, TransferInput<CFValue, UpperBoundStore> in) {
         TransferResult<CFValue, UpperBoundStore> result = super.visitLessThanOrEqual(node, in);
 
-        UpperBoundRefinementInfo rfi = new UpperBoundRefinementInfo(result, in, node);
+        IndexRefinementInfo<UpperBoundStore> rfi =
+                new IndexRefinementInfo<>(result, analysis, node);
 
         // Refine the then branch. A <= is just a flipped >=.
         refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
@@ -168,7 +135,8 @@ public class UpperBoundTransfer
             LessThanNode node, TransferInput<CFValue, UpperBoundStore> in) {
         TransferResult<CFValue, UpperBoundStore> result = super.visitLessThan(node, in);
 
-        UpperBoundRefinementInfo rfi = new UpperBoundRefinementInfo(result, in, node);
+        IndexRefinementInfo<UpperBoundStore> rfi =
+                new IndexRefinementInfo<>(result, analysis, node);
 
         // Refine the then branch. A < is just a flipped >.
         refineGT(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
@@ -183,7 +151,8 @@ public class UpperBoundTransfer
             EqualToNode node, TransferInput<CFValue, UpperBoundStore> in) {
         TransferResult<CFValue, UpperBoundStore> result = super.visitEqualTo(node, in);
 
-        UpperBoundRefinementInfo rfi = new UpperBoundRefinementInfo(result, in, node);
+        IndexRefinementInfo<UpperBoundStore> rfi =
+                new IndexRefinementInfo<>(result, analysis, node);
 
         //  In an ==, only refine the then
         //  branch (i.e. when they are, actually, equal).
@@ -200,7 +169,8 @@ public class UpperBoundTransfer
             NotEqualNode node, TransferInput<CFValue, UpperBoundStore> in) {
         TransferResult<CFValue, UpperBoundStore> result = super.visitNotEqual(node, in);
 
-        UpperBoundRefinementInfo rfi = new UpperBoundRefinementInfo(result, in, node);
+        IndexRefinementInfo<UpperBoundStore> rfi =
+                new IndexRefinementInfo<>(result, analysis, node);
 
         // != is equivalent to == and implemented the same way, but only the
         // else branch is refined.

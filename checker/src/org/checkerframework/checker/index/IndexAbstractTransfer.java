@@ -24,9 +24,7 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
             GreaterThanNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitGreaterThan(node, in);
 
-        IndexRefinementInfo rfi =
-                new IndexRefinementInfo(
-                        result, analysis, node.getRightOperand(), node.getLeftOperand());
+        IndexRefinementInfo<CFStore> rfi = new IndexRefinementInfo<>(result, analysis, node);
 
         // Refine the then branch.
         refineGT(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
@@ -42,9 +40,7 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
             GreaterThanOrEqualNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitGreaterThanOrEqual(node, in);
 
-        IndexRefinementInfo rfi =
-                new IndexRefinementInfo(
-                        result, analysis, node.getRightOperand(), node.getLeftOperand());
+        IndexRefinementInfo<CFStore> rfi = new IndexRefinementInfo<>(result, analysis, node);
 
         // Refine the then branch.
         refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
@@ -60,9 +56,7 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
             LessThanOrEqualNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitLessThanOrEqual(node, in);
 
-        IndexRefinementInfo rfi =
-                new IndexRefinementInfo(
-                        result, analysis, node.getRightOperand(), node.getLeftOperand());
+        IndexRefinementInfo<CFStore> rfi = new IndexRefinementInfo<>(result, analysis, node);
 
         // Refine the then branch. A <= is just a flipped >=.
         refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
@@ -77,9 +71,7 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
             LessThanNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitLessThan(node, in);
 
-        IndexRefinementInfo rfi =
-                new IndexRefinementInfo(
-                        result, analysis, node.getRightOperand(), node.getLeftOperand());
+        IndexRefinementInfo<CFStore> rfi = new IndexRefinementInfo<>(result, analysis, node);
 
         // Refine the then branch. A < is just a flipped >.
         refineGT(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
