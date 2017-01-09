@@ -1,7 +1,7 @@
 package org.checkerframework.checker.index.qual;
 
 /**
- * This annotation is used by the index checker to indicate an integer that is either: safe to use
+ * This annotation is used by the Index Checker to indicate an integer that is either: safe to use
  * to access each of the variables named in its 'value' field, or exactly equal to the length of one
  * or more of those variables, and safe to use as an index for the rest. Writing @IndexOrHigh("arr")
  * is equivalent to writing {@link
