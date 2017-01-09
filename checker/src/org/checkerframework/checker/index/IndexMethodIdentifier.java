@@ -31,49 +31,23 @@ public class IndexMethodIdentifier {
         listClearMethods.add(TreeUtils.getMethod("java.util.List", "removeAll", 1, processingEnv));
         listClearMethods.add(TreeUtils.getMethod("java.util.List", "retainAll", 1, processingEnv));
         listAddMethods = TreeUtils.getMethodList("java.util.List", "add", 1, processingEnv);
+
         mathMinMethods = TreeUtils.getMethodList("java.lang.Math", "min", 2, processingEnv);
         mathMaxMethods = TreeUtils.getMethodList("java.lang.Math", "max", 2, processingEnv);
     }
 
     public boolean isMathMin(Tree methodTree, ProcessingEnvironment processingEnv) {
-        for (ExecutableElement minMethod : mathMinMethods) {
-            if (TreeUtils.isMethodInvocation(methodTree, minMethod, processingEnv)) {
-                return true;
-            }
-        }
-        return false;
+        return isInvocationOfOne(methodTree, processingEnv, mathMinMethods);
     }
 
     public boolean isMathMax(Tree methodTree, ProcessingEnvironment processingEnv) {
-        for (ExecutableElement maxMethod : mathMaxMethods) {
-            if (TreeUtils.isMethodInvocation(methodTree, maxMethod, processingEnv)) {
-                return true;
-            }
-        }
-        return false;
+        return isInvocationOfOne(methodTree, processingEnv, mathMaxMethods);
     }
 
-    public boolean isListRemove(ExecutableElement method, ProcessingEnvironment processingEnv) {
-        for (ExecutableElement removeMethod : listRemoveMethods) {
-            if (ElementUtils.isMethod(method, removeMethod, processingEnv)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean isListClear(ExecutableElement method, ProcessingEnvironment processingEnv) {
-        for (ExecutableElement removeMethod : listClearMethods) {
-            if (ElementUtils.isMethod(method, removeMethod, processingEnv)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean isListAdd(ExecutableElement method, ProcessingEnvironment processingEnv) {
-        for (ExecutableElement addMethod : listAddMethods) {
-            if (ElementUtils.isMethod(method, addMethod, processingEnv)) {
+    private static boolean isInvocationOfOne(
+            Tree methodTree, ProcessingEnvironment processingEnv, List<ExecutableElement> methods) {
+        for (ExecutableElement minMethod : methods) {
+            if (TreeUtils.isMethodInvocation(methodTree, minMethod, processingEnv)) {
                 return true;
             }
         }
@@ -86,5 +60,29 @@ public class IndexMethodIdentifier {
 
     public boolean isRandomNextDouble(Tree tree, ProcessingEnvironment processingEnv) {
         return TreeUtils.isMethodInvocation(tree, fcnNextDouble, processingEnv);
+    }
+
+    public boolean isListRemove(ExecutableElement method, ProcessingEnvironment processingEnv) {
+        return isOneOfMethods(method, processingEnv, listRemoveMethods);
+    }
+
+    public boolean isListClear(ExecutableElement method, ProcessingEnvironment processingEnv) {
+        return isOneOfMethods(method, processingEnv, listClearMethods);
+    }
+
+    public boolean isListAdd(ExecutableElement method, ProcessingEnvironment processingEnv) {
+        return isOneOfMethods(method, processingEnv, listAddMethods);
+    }
+
+    private static boolean isOneOfMethods(
+            ExecutableElement method,
+            ProcessingEnvironment processingEnv,
+            List<ExecutableElement> listRemoveMethods) {
+        for (ExecutableElement removeMethod : listRemoveMethods) {
+            if (ElementUtils.isMethod(method, removeMethod, processingEnv)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
