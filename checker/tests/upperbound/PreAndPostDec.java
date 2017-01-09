@@ -6,7 +6,7 @@ public class PreAndPostDec {
     void pre1(int[] args) {
         int ii = 0;
         while ((ii < args.length)) {
-            //:: warning: (array.access.unsafe.high)
+            //:: error: (array.access.unsafe.high)
             int m = args[++ii];
         }
     }
@@ -15,7 +15,7 @@ public class PreAndPostDec {
         int ii = 0;
         while ((ii < args.length)) {
             ii++;
-            //:: warning: (array.access.unsafe.high)
+            //:: error: (array.access.unsafe.high)
             int m = args[ii];
         }
     }

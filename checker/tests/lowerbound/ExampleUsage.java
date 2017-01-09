@@ -27,7 +27,7 @@ public class ExampleUsage {
         int[] arr = new int[5];
         int k;
         for (int i = -1; i < 5; i++) {
-            //:: warning: (array.access.unsafe.low)
+            //:: error: (array.access.unsafe.low)
             k = arr[i];
         }
     }

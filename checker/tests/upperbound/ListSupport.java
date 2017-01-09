@@ -50,7 +50,7 @@ class ListSupport {
 
         list.clear();
 
-        //:: warning: (list.access.unsafe.high)
+        //:: error: (list.access.unsafe.high)
         list.get(lessThanLength);
 
         //:: error: (assignment.type.incompatible)

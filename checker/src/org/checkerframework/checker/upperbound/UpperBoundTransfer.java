@@ -34,7 +34,7 @@ public class UpperBoundTransfer
 
     // Refine the type of expressions used as an array dimension to be
     // less than length of the array to which the new array is
-    // assigned.  For example int[] array = new int[expr]; the type of expr is @
+    // assigned.  For example int[] array = new int[expr]; the type of expr is @LTEqLength("array")
     @Override
     public TransferResult<CFValue, UpperBoundStore> visitAssignment(
             AssignmentNode node, TransferInput<CFValue, UpperBoundStore> in) {

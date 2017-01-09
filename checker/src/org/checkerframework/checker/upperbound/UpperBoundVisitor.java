@@ -86,7 +86,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         } else {
             // Unsafe, since neither the Upper bound or MinLen checks succeeded.
             checker.report(
-                    Result.warning(
+                    Result.failure(
                             fArray ? UPPER_BOUND : UPPER_BOUND_LIST,
                             indexType.toString(),
                             arrName,

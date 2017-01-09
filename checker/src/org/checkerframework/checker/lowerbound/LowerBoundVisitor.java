@@ -38,7 +38,7 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
         AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(index);
         if (!(indexType.hasAnnotation(NonNegative.class)
                 || indexType.hasAnnotation(Positive.class))) {
-            checker.report(Result.warning(LOWER_BOUND, indexType.toString(), arrName), index);
+            checker.report(Result.failure(LOWER_BOUND, indexType.toString(), arrName), index);
         }
 
         return super.visitArrayAccess(tree, type);
@@ -51,7 +51,7 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
                 AnnotatedTypeMirror dimType = atypeFactory.getAnnotatedType(dim);
                 if (!(dimType.hasAnnotation(NonNegative.class)
                         || dimType.hasAnnotation(Positive.class))) {
-                    checker.report(Result.warning(NEGATIVE_ARRAY, dimType.toString()), dim);
+                    checker.report(Result.failure(NEGATIVE_ARRAY, dimType.toString()), dim);
                 }
             }
         }

@@ -17,7 +17,7 @@ class EnumValues {
         Direction b = arr[1];
         Direction c = arr[2];
         Direction d = arr[3];
-        //:: warning: (array.access.unsafe.high)
+        //:: error: (array.access.unsafe.high)
         Direction e = arr[4];
     }
 }
