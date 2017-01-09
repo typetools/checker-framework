@@ -43,14 +43,14 @@ import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * The MinLen checker is responsible for annotating arrays with their minimum lengths. It is meant
- * to be run by the upper bound checker.
+ * to be run by the Upper and Lower Bound Checkers.
  */
 public class MinLenAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<CFValue, MinLenStore, MinLenTransfer, MinLenAnalysis> {
 
     /** {@code @MinLen(0)}, which is the top qualifier. */
     final AnnotationMirror MIN_LEN_0;
-
+    /** {@code @MinLenBottom} */
     final AnnotationMirror MIN_LEN_BOTTOM;
 
     private final IndexMethodIdentifier imf;
