@@ -12,9 +12,10 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.*;
-import org.checkerframework.framework.flow.CFAnalysis;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -89,7 +90,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  *
  * </pre>
  */
-public class LowerBoundTransfer extends IndexAbstractTransfer {
+public class LowerBoundTransfer extends IndexAbstractTransfer<CFStore, LowerBoundTransfer> {
 
     /** The canonical {@link GTENegativeOne} annotation. */
     public final AnnotationMirror GTEN1;
@@ -103,9 +104,10 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     // The ATF (Annotated Type Factory).
     private LowerBoundAnnotatedTypeFactory aTypeFactory;
 
-    public LowerBoundTransfer(CFAnalysis analysis) {
+    public LowerBoundTransfer(CFAbstractAnalysis<CFValue, CFStore, LowerBoundTransfer> analysis) {
         super(analysis);
-        aTypeFactory = (LowerBoundAnnotatedTypeFactory) analysis.getTypeFactory();
+        aTypeFactory =
+                (LowerBoundAnnotatedTypeFactory) (AnnotatedTypeFactory) analysis.getTypeFactory();
         // Initialize qualifiers.
         GTEN1 = aTypeFactory.GTEN1;
         NN = aTypeFactory.NN;

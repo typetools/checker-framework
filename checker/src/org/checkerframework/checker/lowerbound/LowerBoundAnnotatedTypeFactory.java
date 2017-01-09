@@ -26,13 +26,16 @@ import org.checkerframework.checker.lowerbound.qual.Positive;
 import org.checkerframework.checker.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.minlen.MinLenChecker;
 import org.checkerframework.checker.minlen.qual.MinLen;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
@@ -60,7 +63,10 @@ import org.checkerframework.javacutil.TreeUtils;
  * can, use that; if not, use more specific rules based on expression type. These rules are
  * documented on the functions implementing them.
  */
-public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class LowerBoundAnnotatedTypeFactory
+        extends GenericAnnotatedTypeFactory<
+                CFValue, CFStore, LowerBoundTransfer,
+                CFAbstractAnalysis<CFValue, CFStore, LowerBoundTransfer>> {
 
     /** The canonical @{@link GTENegativeOne} annotation. */
     public final AnnotationMirror GTEN1 = AnnotationUtils.fromClass(elements, GTENegativeOne.class);
@@ -82,6 +88,12 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         imf = new IndexMethodIdentifier(processingEnv);
 
         this.postInit();
+    }
+
+    @Override
+    public LowerBoundTransfer createFlowTransferFunction(
+            CFAbstractAnalysis<CFValue, CFStore, LowerBoundTransfer> analysis) {
+        return new LowerBoundTransfer(analysis);
     }
 
     @Override
