@@ -5,7 +5,7 @@
     <packaging>maven-plugin</packaging>
 
     <name>Checker Framework Maven Plugin</name>
-    <url>http://checkerframework.org</url>
+    <url>http://checker-framework.com</url>
     <description>
         The Checker Framework Maven Plugin allows you to easily run the
         Checker Framework in your Maven build.  Directions can be found

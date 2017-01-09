@@ -5,7 +5,7 @@
     <packaging>jar</packaging>
 
     <name>Javacutil</name>
-    <url>http://checkerframework.org</url>
+    <url>http://checker-framework.com</url>
     <description>
         Javacutil is a collection of utility classes for the javac compiler.
     </description>

@@ -1147,7 +1147,7 @@ but it expired from the cloudbees Jenkins server in early June 2016.
 So, use our own archived version.
       -->
       <get
-        src="http://types.cs.washington.edu/jtreg-4.2.0-for-jdk7.tar.gz"
+        src="http://checker-framework.com/jtreg-4.2.0-for-jdk7.tar.gz"
         dest="${jtreg.home}/.." />
       <untar src="${jtreg.home}/../jtreg-4.2.0-for-jdk7.tar.gz"
         dest="${jtreg.home}/../"

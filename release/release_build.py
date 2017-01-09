@@ -232,7 +232,7 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK)
 
     # make the Checker Framework Manual
-    checker_manual_dir = os.path.join(checker_dir, "manual")
+    checker_manual_dir = os.path.join(checker_dir, "docs", "manual")
     execute("make manual.pdf manual.html", True, False, checker_manual_dir)
 
     if not manual_only:
@@ -474,7 +474,7 @@ def main(argv):
 
     # The projects are built in the following order: JSR308-Langtools, Annotation File Utilities,
     # and Checker Framework. Furthermore, their manuals and websites are also built and placed in
-    # their relevant locations at http://types.cs.washington.edu/dev/ This is the most time consuming
+    # their relevant locations at http://checker-framework.com/dev/ This is the most time consuming
     # piece of the release. There are no prompts from this step forward; you might want to get a cup
     # of coffee and do something else until it is done.
 
@@ -509,7 +509,7 @@ def main(argv):
     commit_to_interm_projects(jsr308_version, afu_version, projects_to_release)
 
     # Adds read/write/execute group permissions to all of the new dev website directories
-    # under http://types.cs.washington.edu/dev/ These directories need group read/execute
+    # under http://checker-framework.com/dev/ These directories need group read/execute
     # permissions in order for them to be served.
 
     print_step("\n\nBuild Step 9: Add group permissions to repos.")

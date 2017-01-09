@@ -313,7 +313,7 @@ def main(argv):
     print "AFU:                       current-version=%s    new-version=%s" % (current_afu_version, new_afu_version)
 
     # Runs the link the checker on all websites at:
-    # http://types.cs.washington.edu/dev/
+    # http://checker-framework.com/dev/
     # The output of the link checker is written to files in the /scratch/$USER/jsr308-release directory
     # whose locations will be output at the command prompt if the link checker reported errors.
 
@@ -344,7 +344,7 @@ def main(argv):
             maven_sanity_check("maven-dev", MAVEN_DEV_REPO, new_checker_version)
 
         print_step("3c: Build the Eclipse plugin and test.")
-        print "Please download: http://types.cs.washington.edu/dev/checker-framework/current/checker-framework-%s.zip" % new_checker_version
+        print "Please download: http://checker-framework.com/dev/checker-framework/current/checker-framework-%s.zip" % new_checker_version
         print("Use the jars in the dist directory along with the instructions at " +
               "checker-framework/eclipse/README-developers.html to build the Eclipse plugin.\n" +
               "Please install this version in the latest version of Eclipse and follow the tutorial at:\n" +
@@ -422,7 +422,7 @@ def main(argv):
             # Ensure that the jsr308-langtools javac works with the system-wide java launcher
             if not os.path.isdir(SANITY_TEST_JSR308_LANGTOOLS_DIR):
                 execute("mkdir -p " + SANITY_TEST_JSR308_LANGTOOLS_DIR)
-            execute("wget http://types.cs.washington.edu/jsr308/current/jsr308-langtools-" + new_checker_version + ".zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
+            execute("wget http://checker-framework.com/jsr308/current/jsr308-langtools-" + new_checker_version + ".zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
             execute("unzip -uq jsr308-langtools-" + new_checker_version +".zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
             execute("env -i bash --noprofile jsr308-langtools-" + new_checker_version + "/dist/bin/javac -version", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
     else:
@@ -440,7 +440,7 @@ def main(argv):
         print  "Test mode: Skipping deployment of the Eclipse Plugin to the live site."
 
     # Runs the link the checker on all websites at:
-    # http://types.cs.washington.edu/
+    # http://checker-framework.com/
     # The output of the link checker is written to files in the /scratch/$USER/jsr308-release directory whose locations
     # will be output at the command prompt. Review the link checker output.
 
@@ -526,7 +526,7 @@ def main(argv):
                "* Download the following files to your local machine." +
                "\n" +
                "http://checker-framework.com/checker-framework-" + new_checker_version + ".zip\n" +
-               "http://types.cs.washington.edu/annotation-file-utilities/current/annotation-tools-" + new_afu_version + ".zip\n" +
+               "http://checker-framework.com/annotation-file-utilities/current/annotation-tools-" + new_afu_version + ".zip\n" +
                "\n" +
                "To post the Checker Framework release on GitHub:\n" +
                "\n" +
@@ -540,7 +540,7 @@ def main(argv):
                "\n" +
                "* Go to https://github.com/typetools/annotation-tools/releases/new?tag=" + new_afu_version + "\n" +
                "* For the release title, enter: Annotation File Utilities " + new_afu_version + "\n" +
-               "* For the description, insert the latest Annotation File Utilities changelog entry (available at http://types.cs.washington.edu/annotation-file-utilities/changelog.html). Please include the first line with the release version and date. For bullet points, use the * Markdown character.\n" +
+               "* For the description, insert the latest Annotation File Utilities changelog entry (available at http://checker-framework.com/annotation-file-utilities/changelog.html). Please include the first line with the release version and date. For bullet points, use the * Markdown character.\n" +
                "* Find the link below \"Attach binaries by dropping them here or selecting them.\" Click on \"selecting them\" and upload annotation-tools-" + new_afu_version + ".zip from your machine.\n" +
                "* Click on the green \"Publish release\" button.\n")
 

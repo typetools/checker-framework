@@ -5,7 +5,7 @@
     <packaging>jar</packaging>
 
     <name>Type Annotations Compiler</name>
-    <url>http://types.cs.washington.edu/jsr308/</url>
+    <url>http://checker-framework.com/jsr308/</url>
     <description>
         The Type Annotations Compiler is a fully backwards compatible customization
         of the Open JDK javac compiler with additional support for type annotations.
