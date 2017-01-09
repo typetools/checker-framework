@@ -210,7 +210,8 @@ public class MinLenAnnotatedTypeFactory
         }
     }
 
-    private void addArrayLenAnnotation(AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
+    private void addMinLenAnnotationFromArrayLen(
+            AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
         if (valueType.hasAnnotation(ArrayLen.class)) {
             AnnotationMirror anm = valueType.getAnnotation(ArrayLen.class);
             Integer val = Collections.min(ValueAnnotatedTypeFactory.getArrayLength(anm));
@@ -218,15 +219,16 @@ public class MinLenAnnotatedTypeFactory
         }
     }
 
-    private void addStringValAnnotation(AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
+    private void addMinLenAnnotationFromStringVal(
+            AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
         if (valueType.hasAnnotation(StringVal.class)) {
             AnnotationMirror anm = valueType.getAnnotation(StringVal.class);
             String[] values =
                     AnnotationUtils.getElementValueArray(anm, "value", String.class, true)
                             .toArray(new String[0]);
             ArrayList<Integer> lengths = new ArrayList<>();
-            for (int i = 0; i < values.length; i++) {
-                lengths.add(values[i].length());
+            for (String value : values) {
+                lengths.add(value.length());
             }
             int val = Collections.min(lengths);
             type.replaceAnnotation(createMinLen(val));
@@ -239,8 +241,8 @@ public class MinLenAnnotatedTypeFactory
         if (element != null) {
             AnnotatedTypeMirror valueType =
                     getValueAnnotatedTypeFactory().getAnnotatedType(element);
-            addArrayLenAnnotation(valueType, type);
-            addStringValAnnotation(valueType, type);
+            addMinLenAnnotationFromArrayLen(valueType, type);
+            addMinLenAnnotationFromStringVal(valueType, type);
         }
     }
 
@@ -251,8 +253,8 @@ public class MinLenAnnotatedTypeFactory
         // and causes the program to fail if it fails. I'm unsure of why; I should ask Suzanne when she gets back 1/2/17
         if (tree != null && TreeUtils.isExpressionTree(tree)) {
             AnnotatedTypeMirror valueType = valueTypeFromTree(tree);
-            addArrayLenAnnotation(valueType, type);
-            addStringValAnnotation(valueType, type);
+            addMinLenAnnotationFromArrayLen(valueType, type);
+            addMinLenAnnotationFromStringVal(valueType, type);
         }
     }
 
