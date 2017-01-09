@@ -43,18 +43,18 @@ length of each sequence; and the SameLen Checker (section~\ref{index-samelen}), 
 
 The Index annotations are:
 \begin{description}
-\item[\refqualclass{checker/index/qual}{IndexFor}{String[] names}]
+\item[\refqualclasswithparams{checker/index/qual}{IndexFor}{String[] names}]
   The value is a valid index for the named arrays. This type is the combination
   of the Lower Bound Checker's
   \refqualclass{checker/lowerbound/qual}{NonNegative} and the Upper Bound
-  Checker's \refqualclass{checker/upperbound/qual}{LTLengthOf}{String[] names}.
- \item[\refqualclass{checker/index/qual}{IndexOrHigh}{String[] names}]
+  Checker's \refqualclasswithparams{checker/upperbound/qual}{LTLengthOf}{String[] names}.
+ \item[\refqualclasswithparams{checker/index/qual}{IndexOrHigh}{String[] names}]
    The value is either a valid index for each named array, or equal to the
    length of one or more of the named arrays, and a valid index for the
    others. This type is the combination of the Lower Bound Checker's
   \refqualclass{checker/lowerbound/qual}{NonNegative} and the Upper Bound
   Checker's
-  \refqualclass{checker/upperbound/qual}{LTEqLengthOf}{String[] names}.
+  \refqualclasswithparams{checker/upperbound/qual}{LTEqLengthOf}{String[] names}.
 \end{description}
 
 \section{The Lower Bound Checker\label{index-lowerbound}}
@@ -82,18 +82,11 @@ Lower Bound Checker's type system uses the following qualifiers.
   \label{fig-lowerbound-types}
 \end{figure}
 
-%% True, but implementation details don't seem relevant to someone reading the manual.
-% Internally, the Lower Bound Checker uses both the Constant Value Checker and the MinLen
-% Checker. The Constant Value Checker is used to reason about constants, and to assign
-% them the appropriate Lower Bound types. The MinLen Checker is used to give correct types
-% to calls to \code{arr.length}, where \code{arr} is any array. The Lower Bound checker
-% implements a large number of transfer rules. Because there are so many, they are
-% not documented here; the code implementing them contains JavaDoc comments that describe
-% the rules it implements.
-
 Typically, a programmer only needs to write these annotations on
 fields and method signatures, because the Lower Bound Checker infers
 qualifiers within method bodies.
+In general, the Lower Bound Checker attempts to infer as much information
+as possible from the source code.
 Detailed documentation about the inferences performed can be found
 in the Javadoc comments in its source code.
 
@@ -103,9 +96,6 @@ in the Javadoc comments in its source code.
 The Upper Bound Checker warns about accesses to sequences with indexes that might be
 too high.
 The Upper Bound Checker's type system uses the following qualifiers.
-Typically, a programmer only needs to write these annotations on
-fields and method signatures, because the Upper Bound Checker infers
-qualifiers within method bodies.
 
 \begin{description}
 \item[\refqualclasswithparams{checker/upperbound/qual}{LTLengthOf}{String[] names}]
@@ -120,6 +110,21 @@ qualifiers within method bodies.
   It may not be used as an index for a sequence, because it might be too high.
   \code{@LTEqLengthOf({"a", "b"})} is a subtype of both
   \code{@LTEqLengthOf("a")} and \code{@LTEqLengthOf("b")}.
+\item[\refqualclasswithparams{checker/upperbound/qual}{LTOMLengthOf}{String[] names}]
+  An expression with this type
+  has value less than one less than the length of each sequence listed in \<names>. This type exists to allow the checker to infer the safety of loops of
+  the form:
+\begin{Verbatim}
+  for (int i = 0; i < array.length - 1; ++i) {
+    arr[i] = arr[i+1];
+  }
+\end{Verbatim}
+It may always used as an index for a sequence listed in \<names>, but
+should rarely (if ever) be written by the programmer; usually
+\refqualclasswithparams{checker/upperbound/qual}{LTLengthOf}{String[] names}
+should be written instead.
+  \code{@LTOMLengthOf({"a", "b"})} is a subtype of both
+  \code{@LTOMLengthOf("a")} and \code{@LTOMLengthOf("b")}.
 \item[\refqualclass{checker/upperbound/qual}{UpperBoundUnknown}]
   There is no information about the value of an expression with this type.
   It may not be used as an index for a sequence, because it might be too high.
@@ -144,6 +149,9 @@ qualifiers within method bodies.
 % \refqualclasswithparams{checker/upperbound/qual}{LTLengthOf}{String[] names}] or
 % \refqualclasswithparams{checker/upperbound/qual}{LTEqLengthOf}{String[] names}].
 
+Typically, a programmer only needs to write these annotations on
+fields and method signatures, because the Upper Bound Checker infers
+qualifiers within method bodies.
 
 \section{The MinLen Checker\label{index-minlen}}
 
@@ -195,4 +203,39 @@ The MinLen Checker uses the following type hierarchy:
   \includeimage{minlen}{7cm}
   \caption{The type hierarchy used by the MinLen Checker.}
   \label{fig-minlen-types}
+\end{figure}
+
+\section{The SameLen Checker\label{index-samelen}}
+
+The SameLen Checker determines whether sequences have the same length.
+
+The main reason for the SameLen Checker is to handle cases where two
+arrays are known to be the same length, and one is accessed using a
+valid index for the other.
+
+The SameLen Checker uses the following type hierarchy:
+
+\begin{description}
+  \item[\refqualclass{checker/samelen/qual}{SameLenUnknown}]
+  This is the top type for the SameLen type system.
+  Programmers should never need to write it, since it
+  is automatically inferred for any expression that does
+  not have a more specific type.
+\item[\refqualclasswithparams{checker/samelen/qual}{SameLen}{String[] names}]
+  An expression with this type represents a sequence that has the
+  same length as the other sequences named in \<names>. In general,
+  \code{@SameLen} types that have non-intersecting lists of names
+  are \textit{not} subtypes of each other. However, if at least one
+  sequence is named by both types, the types are actually the same,
+  because all the named sequences must have the same length.
+\item[\refqualclass{checker/samelen/qual}{SameLenBottom}]
+  This is the bottom type for the SameLen type system.
+  Programmers should rarely need to write it.
+  \code{null} has this type.
+  \end{description}
+
+\begin{figure}
+  \includeimage{samelen}{7cm}
+  \caption{The type hierarchy used by the SameLen Checker.}
+  \label{fig-samelen-types}
 \end{figure}
