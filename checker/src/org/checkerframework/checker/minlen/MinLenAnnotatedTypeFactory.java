@@ -1,7 +1,6 @@
 package org.checkerframework.checker.minlen;
 
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
@@ -270,17 +269,6 @@ public class MinLenAnnotatedTypeFactory
 
         public MinLenTreeAnnotator(MinLenAnnotatedTypeFactory factory) {
             super(factory);
-        }
-
-        @Override
-        public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-
-            if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
-                String lit = (String) (tree.getValue());
-                type.replaceAnnotation(createMinLen(lit.length()));
-            }
-
-            return super.visitLiteral(tree, type);
         }
 
         @Override
