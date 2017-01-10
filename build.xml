@@ -123,6 +123,25 @@
       </ant>
   </target>
 
+  <!-- Like dist-release, but skips CF tests which take a long time to run. -->
+  <target name="dist-release-notest">
+      <ant dir="checker">
+          <target name="dist-release-notest"/>
+      </ant>
+      <ant dir="javacutil">
+          <target name="sources-jar"/>
+      </ant>
+      <ant dir="javacutil">
+        <target name="javadoc-jar" />
+      </ant>
+      <ant dir="dataflow">
+          <target name="sources-jar"/>
+      </ant>
+      <ant dir="dataflow">
+          <target name="javadoc-jar" />
+      </ant>
+  </target>
+
   <target name="html-validate"
           description="Validate that HTML files are well-formed; only works with JDK 8">
     <exec executable="html5validator">
