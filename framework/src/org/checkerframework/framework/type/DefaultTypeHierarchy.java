@@ -413,7 +413,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             }
 
             boolean aboveSuperBound = checkAndSubtype(outsideWc.getSuperBound(), inside, visited);
-            boolean belowExtendsBound = checkAndSubtype(inside, outsideWcUB, visited);
+            AnnotatedTypeMirror castedInside = castedAsSuper(inside, outsideWcUB);
+            boolean belowExtendsBound = checkAndSubtype(castedInside, outsideWcUB, visited);
             return belowExtendsBound && aboveSuperBound;
 
         } else { //TODO: IF WE NEED TO COMPARE A WILDCARD TO A CAPTURE OF A WILDCARD WE FAIL IN ARE_EQUAL -> DO CAPTURE CONVERSION
