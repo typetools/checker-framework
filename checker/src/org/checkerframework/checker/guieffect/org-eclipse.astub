@@ -188,7 +188,7 @@ public abstract class FieldEditor {
 @SafeType public class JFaceResources {
     // This method is explicitly documented as UI-only
     @UIEffect public static ResourceManager getResources();
-    // This method is NOT doc'ed as ui-only, but the above does something safe and then calls this... might just be a nullness issue, though (Display.getCurrent())
+    // This method is NOT documented as ui-only, but the above does something safe and then calls this... might just be a nullness issue, though (Display.getCurrent())
     @UIEffect public static ResourceManager getResources(Display toQuery);
 }
 @SafeType public class StringConverter {}

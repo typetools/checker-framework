@@ -307,7 +307,7 @@
     </command>
     <command
       categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$signednessAction"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$SignednessAction"
       id="checkers.eclipse.runsignednesschecker"
       name="Run Signedness Checker">
     </command>

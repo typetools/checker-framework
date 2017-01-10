@@ -1,0 +1,158 @@
+\htmlhr
+\chapter{Third-party checkers\label{third-party-checkers}\label{external-checkers}}
+
+The Checker Framework has been used to build other checkers that are not
+distributed together with the framework.  This chapter mentions just a few
+of them.  They are listed in chronological order; older ones appear first
+and newer ones appear last.
+
+They are externally-maintained, so if you have problems or questions, you
+should contact their maintainers rather than the Checker Framework
+maintainers.
+
+If you want a reference to your checker included in this chapter,
+send us a link and a short description.
+
+
+% Note to maintainers:
+% Sections are added to this chapter in chronological order.
+
+
+\input{typestate-checker}
+
+
+\section{Units and dimensions checker\label{units-and-dimensions-checker}}
+
+A checker for units and dimensions is available at
+\url{http://www.lexspoon.org/expannots/}.
+
+Unlike the Units Checker that is distributed with the Checker Framework
+(see Section~\ref{units-checker}), this checker includes dynamic checks and
+permits annotation arguments that are Java expressions.  This added
+flexibility, however, requires that you use a special version both of the
+Checker Framework and of the javac compiler.
+
+
+\section{Thread locality checker\label{loci-thread-locality-checker}}
+
+Loci~\cite{WrigstadPMZV2009}, a checker for thread locality, is available at
+\url{http://www.it.uu.se/research/upmarc/loci/}.
+Developer resources are available at the project page
+\url{http://java.net/projects/loci/}.
+
+% A paper was publishd in ECOOP 2009, release 0.1 was made in March 2011,
+% but as of October 2013 the manual is still listed as "forthcoming".
+
+
+% In a mail from Amanj Mahmud <amanjpro@gmail.com> on 28.03.2011:
+
+% The plugin name:
+% ``Loci: A Pluggable Type Checker for Expressing Thread Locality in
+% Java''
+
+% Project homepage: http://www.it.uu.se/research/upmarc/loci
+
+% Project's developer's page: http://java.net/projects/loci
+
+
+\section{Safety-Critical Java checker\label{safety-critical-java-checker}}
+
+A checker for Safety-Critical Java (SCJ, JSR 302)~\cite{TangPJ2010} is available at
+\url{http://sss.cs.purdue.edu/projects/oscj/checker/checker.html}.
+Developer resources are available at the project page
+\url{https://code.google.com/archive/p/scj-jsr302/}.
+
+
+% In a mail from Aleš Plšek <aplsek@gmail.com> on 29.03.2011:
+
+% Name: SCJ Checker
+% WWW: http://sss.cs.purdue.edu/projects/oscj/checker/checker.html
+% Source-Code Repository: http://code.google.com/p/scj-jsr302/
+
+% Description: The SCJ Checker implements verification of a set of
+% annotations defined by the Safety-Critical Java standard (JSR-302).
+% The checker mainly focuses on proving memory safety of Java programs
+% that use a region-based memory management.
+
+% Publications: Static checking of safety critical Java annotations:
+% http://portal.acm.org/citation.cfm?doid=1850771.1850792
+
+
+\section{Generic Universe Types checker\label{gut-checker}}
+
+A checker for Generic Universe Types~\cite{DietlEM2011}, a lightweight ownership type
+system, is available from
+\url{https://ece.uwaterloo.ca/~wdietl/ownership/}.
+
+
+\section{EnerJ checker\label{enerj-checker}}
+
+A checker for EnerJ~\cite{SampsonDFGCG2011}, an extension to Java that exposes hardware faults
+in a safe, principled manner to save energy with only
+slight sacrifices to the quality of service, is available from
+\url{http://sampa.cs.washington.edu/research/approximation/enerj.html}.
+
+
+\section{CheckLT taint checker\label{checklt-checker}}
+
+CheckLT uses taint tracking to detect illegal information flows, such as
+unsanitized data that could result in a SQL injection attack.
+CheckLT is available from \url{http://checklt.github.io/}.
+
+
+\section{SPARTA information flow type-checker for Android\label{sparta-checker}}
+
+SPARTA is a security toolset aimed at preventing malware from appearing in
+an app store.  SPARTA provides an information-flow type-checker that is
+customized to Android but can also be applied to other domains.
+The SPARTA toolset is available from
+\url{http://checker-framework.com/sparta/}.
+The paper
+\href{http://homes.cs.washington.edu/~mernst/pubs/infoflow-ccs2014.pdf}{``Collaborative
+    verification of information flow for a high-assurance app store''}
+  appeared in CCS 2014.
+
+
+\section{Immutability checkers:  IGJ, OIGJ, and Javari\label{igj-checker}\label{javari-checker}}
+
+Javari~\cite{TschantzE2005}, IGJ~\cite{ZibinPAAKE2007}, and
+OIGJ~\cite{ZibinPLAE2010} are type systems that enforce immutability
+constraints.  Type-checkers for all three type systems were distributed
+with the Checker Framework through release 1.9.13 (dated 1 April 2016).
+If you wish to use them, install
+\href{http://checker-framework.com/releases/1.9.13/}{Checker
+  Framework version 1.9.13}.
+
+They were removed from the main distribution on June 1, 2016 because the
+implementations were not being maintained as the Checker Framework evolved.
+The type systems are valuable, and some people found the type-checkers
+useful.  However,
+% the type-checkers should be rewritten from scratch and
+we wanted
+to focus on distributing checkers that are currently being maintained.
+
+
+\section{Read Checker for CERT FIO08-J\label{read-checker}}
+
+CERT
+rule \href{https://www.securecoding.cert.org/confluence/display/java/FIO08-J.+Distinguish+between+characters+or+bytes+read+from+a+stream+and+-1}{FIO08-J}
+describes a rule for the correct handling of characters/bytes read
+from a stream.
+
+The Read Checker enforces this rule.
+It is available from
+\url{https://github.com/opprop/ReadChecker}.
+
+
+\section{SQL checker that supports multiple dialects\label{sql-schecker}}
+
+\href{http://www.jooq.org/}{jOOQ} is a database API that lets you build
+typesafe SQL queries.  jOOQ version 3.0.9 and later ships with a SQL
+checker that provides even more safety:  it ensures ensure that you don't
+use SQL features that are not not supported by your database
+implementation.  You can learn about the SQL checker at
+\url{https://blog.jooq.org/2016/05/09/jsr-308-and-the-checker-framework-add-even-more-typesafety-to-jooq-3-9}.
+
+
+% LocalWords:  SCJ EnerJ CheckLT unsanitized JavaUI CCS IGJ OIGJ FIO08
+%%  LocalWords:  jOOQ typesafe

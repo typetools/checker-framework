@@ -1,7 +1,7 @@
 This jar is a stand-in for either source/javadoc for the
 jsr308-langtools compiler.
 For more information please visit:
-http://types.cs.washington.edu/jsr308/
+http://checker-framework.com/jsr308/
 
 For source code visit:
 https://bitbucket.org/typetools/jsr308-langtools

@@ -12,11 +12,14 @@ Copyright (c) 2015 University of Washington. All rights reserved.
 
 from release_vars  import *
 from release_utils import *
+from distutils.dir_util import copy_tree
 
 # Turned on by the --debug command-line option.
 debug = False
 ant_debug = ""
 
+# Currently only affects the Checker Framework tests, which run the longest
+notest = False
 
 def print_usage():
     """Print usage information."""
@@ -24,6 +27,7 @@ def print_usage():
     print_projects(1, 4)
     print "\n  --auto  accepts or chooses the default for all prompts"
     print "\n  --debug  turns on debugging mode which produces verbose output"
+    print "\n  --notest  disables tests to speed up scripts; for debugging only"
     print "\n  --review-manual  review the documentation changes only; don't perform a full build"
 
 def clone_or_update_repos(auto):
@@ -119,16 +123,26 @@ def create_dirs_for_dev_website_release_versions(jsr308_version, afu_version):
 
     return (jsr308_interm_dir, afu_interm_dir, checker_framework_interm_dir)
 
-def update_project_dev_website_symlink(project_name, release_version):
-    """Update the \"current\" symlink in the dev web site for the given project
-    to point to the given release of the project on the dev web site."""
+### def update_project_dev_website_symlink(project_name, release_version):
+###     """Update the \"current\" symlink in the dev web site for the given project
+###     to point to the given release of the project on the dev web site."""
+###     project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
+###     link_path = os.path.join(project_dev_site, "current")
+###
+###     dev_website_relative_dir = os.path.join(RELEASES_SUBDIR, release_version)
+###
+###     print "Writing symlink: " + link_path + "\nto point to relative directory: " + dev_website_relative_dir
+###     force_symlink(dev_website_relative_dir, link_path)
+
+def update_project_dev_website(project_name, release_version):
+    """Update the dev web site for the given project
+    according to the given release of the project on the dev web site."""
     project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
-    link_path = os.path.join(project_dev_site, "current")
+    dev_website_relative_dir = os.path.join(project_dev_site, RELEASES_SUBDIR, release_version)
 
-    dev_website_relative_dir = os.path.join(RELEASES_SUBDIR, release_version)
+    print "Copying from : " + dev_website_relative_dir + "\nto: " + project_dev_site
+    copy_tree(dev_website_relative_dir, project_dev_site)
 
-    print "Writing symlink: " + link_path + "\nto point to relative directory: " + dev_website_relative_dir
-    force_symlink(dev_website_relative_dir, link_path)
 
 def build_jsr308_langtools_release(version, afu_version, afu_release_date, jsr308_interm_dir):
     """Build the jsr308-langtools project's artifacts and place them in the
@@ -165,7 +179,7 @@ def build_jsr308_langtools_release(version, afu_version, afu_release_date, jsr30
     ant_cmd = "ant %s -f release.xml %s langtools-website-docs " % (ant_debug, ant_props)
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-    update_project_dev_website_symlink("jsr308", version)
+    update_project_dev_website("jsr308", version)
 
     return
 
@@ -189,7 +203,7 @@ def build_annotation_tools_release(version, afu_interm_dir):
     ant_cmd = "ant %s -buildfile %s -e web-no-checks -Dafu.version=%s -Ddeploy-dir=%s" % (ant_debug, build, version, afu_interm_dir)
     execute(ant_cmd)
 
-    update_project_dev_website_symlink("annotation-file-utilities", version)
+    update_project_dev_website("annotation-file-utilities", version)
 
 def build_and_locally_deploy_maven(version):
     protocol_length = len("file://")
@@ -228,11 +242,14 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
         execute("./checkPluginUtil.sh", True, False, CHECKER_FRAMEWORK_RELEASE)
 
         # build the checker framework binaries and documents, run checker framework tests
-        ant_cmd = "ant %s -Dhalt.on.test.failure=true dist-release" % (ant_debug)
+        if notest:
+            ant_cmd = "ant %s -Dhalt.on.test.failure=true dist-release-notest" % (ant_debug)
+        else:
+            ant_cmd = "ant %s -Dhalt.on.test.failure=true dist-release" % (ant_debug)
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK)
 
     # make the Checker Framework Manual
-    checker_manual_dir = os.path.join(checker_dir, "manual")
+    checker_manual_dir = os.path.join(checker_dir, "docs", "manual")
     execute("make manual.pdf manual.html", True, False, checker_manual_dir)
 
     if not manual_only:
@@ -242,7 +259,7 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
         execute("make", True, False, dataflow_manual_dir)
 
         # make the checker framework tutorial
-        checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
+        checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "tutorial")
         execute("make", True, False, checker_tutorial_dir)
 
         cfZipName = "checker-framework-%s.zip" % version
@@ -269,12 +286,12 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
         # clean no longer necessary files left over from building the checker framework tutorial
-        checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
+        checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "tutorial")
         execute("make clean", True, False, checker_tutorial_dir)
 
         build_and_locally_deploy_maven(version)
 
-        update_project_dev_website_symlink("checker-framework", version)
+        update_project_dev_website("checker-framework", version)
 
     return
 
@@ -316,6 +333,8 @@ def main(argv):
     debug = read_command_line_option(argv, "--debug")
     if debug:
         ant_debug = "-debug"
+    global notest
+    notest = read_command_line_option(argv, "--notest")
 
     # Indicates whether to review documentation changes only and not perform a build.
     review_documentation = read_command_line_option(argv, "--review-manual")
@@ -474,7 +493,7 @@ def main(argv):
 
     # The projects are built in the following order: JSR308-Langtools, Annotation File Utilities,
     # and Checker Framework. Furthermore, their manuals and websites are also built and placed in
-    # their relevant locations at http://types.cs.washington.edu/dev/ This is the most time consuming
+    # their relevant locations at http://checker-framework.com/dev/ This is the most time consuming
     # piece of the release. There are no prompts from this step forward; you might want to get a cup
     # of coffee and do something else until it is done.
 
@@ -509,7 +528,7 @@ def main(argv):
     commit_to_interm_projects(jsr308_version, afu_version, projects_to_release)
 
     # Adds read/write/execute group permissions to all of the new dev website directories
-    # under http://types.cs.washington.edu/dev/ These directories need group read/execute
+    # under http://checker-framework.com/dev/ These directories need group read/execute
     # permissions in order for them to be served.
 
     print_step("\n\nBuild Step 9: Add group permissions to repos.")

@@ -26,9 +26,8 @@ public @interface EnsuresLockHeld {
     /**
      * The Java expressions whose values are held after the method terminates successfully.
      *
-     * @see <a
-     *     href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax
-     *     of Java expressions</a>
+     * @see <a href="http://checker-framework.com/manual/#java-expressions-as-arguments">Syntax of
+     *     Java expressions</a>
      */
     String[] value();
 }

@@ -35,7 +35,7 @@ def javac_sanity_check(checker_framework_website, release_version):
     print  "Attempting to download %s to %s" % (new_checkers_release_zip, javac_sanity_zip)
     download_binary(new_checkers_release_zip, javac_sanity_zip, MAX_DOWNLOAD_SIZE)
 
-    nullness_example_url = "https://raw.githubusercontent.com/typetools/checker-framework/master/checker/examples/NullnessExampleWithWarnings.java"
+    nullness_example_url = "https://raw.githubusercontent.com/typetools/checker-framework/master/docs/examples/NullnessExampleWithWarnings.java"
     nullness_example = os.path.join(javac_sanity_dir, "NullnessExampleWithWarnings.java")
 
     if os.path.isfile(nullness_example):
@@ -65,7 +65,7 @@ def javac_sanity_check(checker_framework_website, release_version):
     ])
 
     # this is a smoke test for the built-in checker shorthand feature
-    # http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#shorthand-for-checkers
+    # http://checker-framework.com/manual/#shorthand-for-checkers
     nullness_shorthand_output = os.path.join(deploy_dir, "output_shorthand.log")
     cmd = sanity_javac + " -processor NullnessChecker " + nullness_example + " -Anomsgtext"
     execute_write_to_file(cmd, nullness_shorthand_output, False)

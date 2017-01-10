@@ -56,16 +56,16 @@ def copy_releases_to_live_site(checker_version, afu_version):
     copy_release_dir(CHECKER_INTERM_RELEASES_DIR, CHECKER_LIVE_RELEASES_DIR, checker_version)
     copy_release_dir(AFU_INTERM_RELEASES_DIR, AFU_LIVE_RELEASES_DIR, afu_version)
 
-def update_release_symlinks(checker_version, afu_version):
-    """Update the \"current\" subdirectories of the jsr308-langtools, the AFU
-    and the Checker Framework live sites to point to the new releases of each
-    project."""
-    afu_relative_latest_release_dir = os.path.join(RELEASES_SUBDIR, afu_version)
-    checker_and_jsr308_relative_latest_release_dir = os.path.join(RELEASES_SUBDIR, checker_version)
-
-    force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(JSR308_LIVE_SITE, CURRENT_SUBDIR))
-    force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(CHECKER_LIVE_SITE, CURRENT_SUBDIR))
-    force_symlink(afu_relative_latest_release_dir, os.path.join(AFU_LIVE_SITE, CURRENT_SUBDIR))
+### def update_release_symlinks(checker_version, afu_version):
+###     """Update the \"current\" subdirectories of the jsr308-langtools, the AFU
+###     and the Checker Framework live sites to point to the new releases of each
+###     project."""
+###     afu_relative_latest_release_dir = os.path.join(RELEASES_SUBDIR, afu_version)
+###     checker_and_jsr308_relative_latest_release_dir = os.path.join(RELEASES_SUBDIR, checker_version)
+###
+###     force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(JSR308_LIVE_SITE, CURRENT_SUBDIR))
+###     force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(CHECKER_LIVE_SITE, CURRENT_SUBDIR))
+###     force_symlink(afu_relative_latest_release_dir, os.path.join(AFU_LIVE_SITE, CURRENT_SUBDIR))
 
 def ensure_group_access_to_releases():
     """Gives group access to all files and directories in the \"releases\"
@@ -184,7 +184,7 @@ def check_all_links(jsr308_website, afu_website, checker_website, suffix, test_m
     afuCheck = run_link_checker(afu_website, TMP_DIR + "/afu." + suffix + ".check")
     additional_param = ""
     if checker_version_of_broken_link_to_suppress != "":
-        additional_param = "--suppress-broken 404:http://types.cs.washington.edu/checker-framework/current/checker-framework-" + checker_version_of_broken_link_to_suppress + ".zip"
+        additional_param = "--suppress-broken 404:http://checker-framework.com/checker-framework-" + checker_version_of_broken_link_to_suppress + ".zip"
     checkerCheck = run_link_checker(checker_website, TMP_DIR + "/checker-framework." + suffix + ".check", additional_param)
 
     is_jsr308Check_empty = is_file_empty(jsr308Check)
@@ -313,7 +313,7 @@ def main(argv):
     print "AFU:                       current-version=%s    new-version=%s" % (current_afu_version, new_afu_version)
 
     # Runs the link the checker on all websites at:
-    # http://types.cs.washington.edu/dev/
+    # http://checker-framework.com/dev/
     # The output of the link checker is written to files in the /scratch/$USER/jsr308-release directory
     # whose locations will be output at the command prompt if the link checker reported errors.
 
@@ -344,11 +344,11 @@ def main(argv):
             maven_sanity_check("maven-dev", MAVEN_DEV_REPO, new_checker_version)
 
         print_step("3c: Build the Eclipse plugin and test.")
-        print "Please download: http://types.cs.washington.edu/dev/checker-framework/current/checker-framework-%s.zip" % new_checker_version
+        print "Please download: http://checker-framework.com/dev/checker-framework/checker-framework-%s.zip" % new_checker_version
         print("Use the jars in the dist directory along with the instructions at " +
               "checker-framework/eclipse/README-developers.html to build the Eclipse plugin.\n" +
               "Please install this version in the latest version of Eclipse and follow the tutorial at:\n" +
-              "http://types.cs.washington.edu/dev/checker-framework/tutorial/")
+              "http://checker_framework.org/dev/tutorial/")
         continue_or_exit("If the tutorial doesn't work, please abort the release and contact the appropriate developer.")
 
     # The Central repository is a repository of build artifacts for build programs like Maven and Ivy.
@@ -405,7 +405,7 @@ def main(argv):
             copy_releases_to_live_site(new_checker_version, new_afu_version)
             copy_htaccess()
             ensure_group_access_to_releases()
-            update_release_symlinks(new_checker_version, new_afu_version)
+            ### update_release_symlinks(new_checker_version, new_afu_version)
     else:
         print  "Test mode: Skipping copy to live site!"
 
@@ -422,7 +422,7 @@ def main(argv):
             # Ensure that the jsr308-langtools javac works with the system-wide java launcher
             if not os.path.isdir(SANITY_TEST_JSR308_LANGTOOLS_DIR):
                 execute("mkdir -p " + SANITY_TEST_JSR308_LANGTOOLS_DIR)
-            execute("wget http://types.cs.washington.edu/jsr308/current/jsr308-langtools-" + new_checker_version + ".zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
+            execute("wget http://checker-framework.com/jsr308/jsr308-langtools-" + new_checker_version + ".zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
             execute("unzip -uq jsr308-langtools-" + new_checker_version +".zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
             execute("env -i bash --noprofile jsr308-langtools-" + new_checker_version + "/dist/bin/javac -version", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
     else:
@@ -440,7 +440,7 @@ def main(argv):
         print  "Test mode: Skipping deployment of the Eclipse Plugin to the live site."
 
     # Runs the link the checker on all websites at:
-    # http://types.cs.washington.edu/
+    # http://checker-framework.com/
     # The output of the link checker is written to files in the /scratch/$USER/jsr308-release directory whose locations
     # will be output at the command prompt. Review the link checker output.
 
@@ -525,14 +525,14 @@ def main(argv):
         msg = ("\n" +
                "* Download the following files to your local machine." +
                "\n" +
-               "http://types.cs.washington.edu/checker-framework/current/checker-framework-" + new_checker_version + ".zip\n" +
-               "http://types.cs.washington.edu/annotation-file-utilities/current/annotation-tools-" + new_afu_version + ".zip\n" +
+               "http://checker-framework.com/checker-framework-" + new_checker_version + ".zip\n" +
+               "http://checker-framework.com/annotation-file-utilities/annotation-tools-" + new_afu_version + ".zip\n" +
                "\n" +
                "To post the Checker Framework release on GitHub:\n" +
                "\n" +
                "* Go to https://github.com/typetools/checker-framework/releases/new?tag=checker-framework-" + new_checker_version + "\n" +
                "* For the release title, enter: Checker Framework " + new_checker_version + "\n" +
-               "* For the description, insert the latest Checker Framework changelog entry (available at http://types.cs.washington.edu/checker-framework/current/changelog.txt). Please include the first line with the release version and date.\n" +
+               "* For the description, insert the latest Checker Framework changelog entry (available at http://checker-framework.com/changelog.txt). Please include the first line with the release version and date.\n" +
                "* Find the link below \"Attach binaries by dropping them here or selecting them.\" Click on \"selecting them\" and upload checker-framework-" + new_checker_version + ".zip from your machine.\n" +
                "* Click on the green \"Publish release\" button.\n" +
                "\n" +
@@ -540,7 +540,7 @@ def main(argv):
                "\n" +
                "* Go to https://github.com/typetools/annotation-tools/releases/new?tag=" + new_afu_version + "\n" +
                "* For the release title, enter: Annotation File Utilities " + new_afu_version + "\n" +
-               "* For the description, insert the latest Annotation File Utilities changelog entry (available at http://types.cs.washington.edu/annotation-file-utilities/changelog.html). Please include the first line with the release version and date. For bullet points, use the * Markdown character.\n" +
+               "* For the description, insert the latest Annotation File Utilities changelog entry (available at http://checker-framework.com/annotation-file-utilities/changelog.html). Please include the first line with the release version and date. For bullet points, use the * Markdown character.\n" +
                "* Find the link below \"Attach binaries by dropping them here or selecting them.\" Click on \"selecting them\" and upload annotation-tools-" + new_afu_version + ".zip from your machine.\n" +
                "* Click on the green \"Publish release\" button.\n")
 
