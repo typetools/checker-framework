@@ -1,10 +1,8 @@
 package java.util;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
-public class StringTokenizer implements Enumeration<@NonNull Object> {
-  public StringTokenizer(String a1, @Nullable String a2, boolean a3) { throw new RuntimeException("skeleton method"); }
-  public StringTokenizer(String a1, @Nullable String a2) { throw new RuntimeException("skeleton method"); }
+public class StringTokenizer implements Enumeration<Object> {
+  public StringTokenizer(String a1, String a2, boolean a3) { throw new RuntimeException("skeleton method"); }
+  public StringTokenizer(String a1, String a2) { throw new RuntimeException("skeleton method"); }
   public StringTokenizer(String a1) { throw new RuntimeException("skeleton method"); }
   public boolean hasMoreTokens() { throw new RuntimeException("skeleton method"); }
   public String nextToken() { throw new RuntimeException("skeleton method"); }

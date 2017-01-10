@@ -115,7 +115,7 @@ public class FlowExpressionParseUtil {
      * Parse a string and return its representation as a {@link Receiver}, or throw an {@link
      * FlowExpressionParseException}.
      *
-     * @param expression flow expression to parse.
+     * @param expression flow expression to parse
      * @param context information about any receiver and arguments
      * @param localScope path to local scope to use
      * @param useLocalScope whether {@code localScope} should be used to resolve identifiers
@@ -654,7 +654,7 @@ public class FlowExpressionParseUtil {
      * @return {@code null} if the expression string did not start with a package name; otherwise a
      *     {@code Pair} containing the {@code PackageSymbol} for the matched package, and the
      *     remaining substring of the expression (always non-null) after the package name
-     * @throws FlowExpressionParseException if the entire expression string matches a package name.
+     * @throws FlowExpressionParseException if the entire expression string matches a package name
      */
     private static Pair<PackageSymbol, String> matchPackageNameWithinExpression(
             String expression, Resolver resolver, TreePath path)
@@ -932,9 +932,9 @@ public class FlowExpressionParseUtil {
          * Creates a {@link FlowExpressionContext} for the method declared in {@code
          * methodDeclaration}.
          *
-         * @param methodDeclaration Used translate parameter numbers in a flow expression to formal
-         *     parameters of the method.
-         * @param enclosingTree Used to look up fields and as type of "this" in flow expressions
+         * @param methodDeclaration used translate parameter numbers in a flow expression to formal
+         *     parameters of the method
+         * @param enclosingTree used to look up fields and as type of "this" in flow expressions
          * @param checkerContext use to build FlowExpressions.Receiver
          * @return context created of {@code methodDeclaration}
          */
@@ -948,9 +948,9 @@ public class FlowExpressionParseUtil {
          * Creates a {@link FlowExpressionContext} for the method declared in {@code
          * methodDeclaration}.
          *
-         * @param methodDeclaration Used translate parameter numbers in a flow expression to formal
-         *     parameters of the method.
-         * @param enclosingType Used to look up fields and as type of "this" in flow expressions
+         * @param methodDeclaration used translate parameter numbers in a flow expression to formal
+         *     parameters of the method
+         * @param enclosingType used to look up fields and as type of "this" in flow expressions
          * @param checkerContext use to build FlowExpressions.Receiver
          * @return context created of {@code methodDeclaration}
          */
@@ -1006,9 +1006,9 @@ public class FlowExpressionParseUtil {
          * Creates a {@link FlowExpressionContext} for the method declared in {@code
          * methodDeclaration}.
          *
-         * @param methodDeclaration Used translate parameter numbers in a flow expression to formal
-         *     parameters of the method.
-         * @param currentPath To find the enclosing class, which is used to look up fields and as
+         * @param methodDeclaration used translate parameter numbers in a flow expression to formal
+         *     parameters of the method
+         * @param currentPath to find the enclosing class, which is used to look up fields and as
          *     type of "this" in flow expressions
          * @param checkerContext use to build FlowExpressions.Receiver
          * @return context created of {@code methodDeclaration}

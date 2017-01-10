@@ -3,9 +3,9 @@ checker/bin/README
 checker/bin/javac
 checker/checker/bin-devel/javac
 checker/dist/*.asc
-tutorial/tests/**
-tutorial/eclipse-projects/**
-tutorial/src/**
-tutorial/test/**
-tutorial/Makefile
-tutorial/README
+docs/tutorial/tests/**
+docs/tutorial/eclipse-projects/**
+docs/tutorial/src/**
+docs/tutorial/test/**
+docs/tutorial/Makefile
+docs/tutorial/README

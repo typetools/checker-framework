@@ -103,7 +103,7 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(
                 org.checkerframework.checker.nullness.qual.LazyNonNull.class, MONOTONIC_NONNULL);
 
-        // If you update the following, also update ../../../manual/nullness-checker.tex .
+        // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex .
         // Aliases for @Nonnull:
         addAliasedAnnotation(com.sun.istack.internal.NotNull.class, NONNULL);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.NonNull.class, NONNULL);
@@ -117,7 +117,6 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(org.jmlspecs.annotation.NonNull.class, NONNULL);
         addAliasedAnnotation(android.annotation.NonNull.class, NONNULL);
         addAliasedAnnotation(android.support.annotation.NonNull.class, NONNULL);
-
         // Aliases for @Nullable:
         addAliasedAnnotation(com.sun.istack.internal.Nullable.class, NULLABLE);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.CheckForNull.class, NULLABLE);

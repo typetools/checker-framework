@@ -9,12 +9,12 @@
 
     <!-- Note: It's important that this is the first <version/> element to appear in this document (by line)
          Because there is a simple logic in the release script to replace the version number of pom files -->
-    <version><!-- checker-framework-version -->2.1.6<!-- /checker-framework-version --></version>
+    <version><!-- checker-framework-version -->2.1.7<!-- /checker-framework-version --></version>
 
     <distributionManagement>
         <repository>
             <id>checker-releases</id>
-            <url>http://types.cs.washington.edu/dev/m2-repo</url>
+            <url>http://checker-framework.com/dev/m2-repo</url>
         </repository>
     </distributionManagement>
 </project>

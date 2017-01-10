@@ -76,8 +76,7 @@ public class ManualTaglet implements Taglet {
             text = parts[1];
         }
         return String.format(
-                "<A HREF=\"http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html%s\">%s</A>",
-                anchor, text);
+                "<A HREF=\"http://checker-framework.com/manual/%s\">%s</A>", anchor, text);
     }
 
     /**

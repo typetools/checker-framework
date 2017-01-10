@@ -590,7 +590,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Check that the expression's type is annotated with {@code annotation} at the regular exit
      * store.
      *
-     * @param methodTree Declaration of the method
+     * @param methodTree declaration of the method
      * @param annotation expression's type must have this annotation
      * @param expression the expression that the postcondition concerns
      */
@@ -913,7 +913,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * in {@link CFAbstractStore}. Returns null if the Node kind is not handled.
      *
      * @param node the Node to generate the flow expression context for
-     * @return the resulting flow expression context, or null if the Node kind is not handled.
+     * @return the resulting flow expression context, or null if the Node kind is not handled
      */
     private FlowExpressionContext getFlowExpressionContextFromNode(Node node) {
         FlowExpressionContext flowExprContext = null;

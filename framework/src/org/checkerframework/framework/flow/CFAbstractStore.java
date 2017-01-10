@@ -519,7 +519,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Update the information in the store by considering a field assignment with target {@code n},
      * where the right hand side has the abstract value {@code val}.
      *
-     * @param val The abstract value of the value assigned to {@code n} (or {@code null} if the
+     * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
      *     abstract value is not known).
      */
     protected void updateForFieldAccessAssignment(FieldAccess fieldAccess, /*@Nullable*/ V val) {
@@ -556,7 +556,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Set the abstract value of a local variable in the store. Overwrites any value that might have
      * been available previously.
      *
-     * @param val The abstract value of the value assigned to {@code n} (or {@code null} if the
+     * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
      *     abstract value is not known).
      */
     protected void updateForLocalVariableAssignment(LocalVariable receiver, /*@Nullable*/ V val) {
@@ -585,7 +585,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *       fieldAccess} might alias any expression in the receiver <em>a</em> or index <em>i</em>.
      * </ol>
      *
-     * @param val The abstract value of the value assigned to {@code n} (or {@code null} if the
+     * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
      *     abstract value is not known).
      */
     protected void removeConflicting(FlowExpressions.FieldAccess fieldAccess, /*@Nullable*/ V val) {
@@ -648,7 +648,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *   <li value="3">Remove any information about method calls.
      * </ol>
      *
-     * @param val The abstract value of the value assigned to {@code n} (or {@code null} if the
+     * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
      *     abstract value is not known).
      */
     protected void removeConflicting(FlowExpressions.ArrayAccess arrayAccess, /*@Nullable*/ V val) {

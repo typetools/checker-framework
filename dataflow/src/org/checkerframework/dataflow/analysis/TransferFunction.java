@@ -28,7 +28,7 @@ import org.checkerframework.dataflow.cfg.node.NodeVisitor;
  * caller to that function.
  *
  * @author Stefan Heule
- * @param <S> The {@link Store} used to keep track of intermediate results.
+ * @param <S> the {@link Store} used to keep track of intermediate results
  */
 public interface TransferFunction<A extends AbstractValue<A>, S extends Store<S>>
         extends NodeVisitor<TransferResult<A, S>, TransferInput<A, S>> {

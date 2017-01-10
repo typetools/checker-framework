@@ -91,7 +91,7 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
 
   # Documentation
   ant javadoc-private
-  make -C checker/manual all
+  make -C docs/manual all
 
   # jsr308-langtools documentation (it's kept at Bitbucket rather than GitHub)
   # Not just "make" because the invocations of "hevea -exec xxcharset.exe" fail.
