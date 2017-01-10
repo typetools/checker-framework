@@ -4,8 +4,8 @@ import org.checkerframework.checker.fenum.FenumChecker;
 import org.checkerframework.checker.formatter.FormatterChecker;
 import org.checkerframework.checker.guieffect.GuiEffectChecker;
 import org.checkerframework.checker.i18n.I18nChecker;
-import org.checkerframework.checker.index.IndexChecker;
 import org.checkerframework.checker.i18nformatter.I18nFormatterChecker;
+import org.checkerframework.checker.index.IndexChecker;
 import org.checkerframework.checker.interning.InterningChecker;
 import org.checkerframework.checker.linear.LinearChecker;
 import org.checkerframework.checker.lock.LockChecker;
@@ -43,10 +43,8 @@ public class CheckerActions {
         }
     }
 
-    public static class IndexAction extends RunCheckerAction
-    {
-        public IndexAction()
-        {
+    public static class IndexAction extends RunCheckerAction {
+        public IndexAction() {
             super(IndexChecker.class.getCanonicalName());
         }
     }

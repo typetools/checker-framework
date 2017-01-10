@@ -5,8 +5,8 @@ import org.checkerframework.checker.fenum.FenumChecker;
 import org.checkerframework.checker.formatter.FormatterChecker;
 import org.checkerframework.checker.guieffect.GuiEffectChecker;
 import org.checkerframework.checker.i18n.I18nChecker;
-import org.checkerframework.checker.index.IndexChecker;
 import org.checkerframework.checker.i18nformatter.I18nFormatterChecker;
+import org.checkerframework.checker.index.IndexChecker;
 import org.checkerframework.checker.interning.InterningChecker;
 import org.checkerframework.checker.linear.LinearChecker;
 import org.checkerframework.checker.lock.LockChecker;
@@ -62,7 +62,7 @@ public class CheckerInfo {
                             new CheckerInfo("Interning Checker", InterningChecker.class),
                             new CheckerInfo("Lock Checker", LockChecker.class),
                             new CheckerInfo("Fenum Checker", FenumChecker.class),
-                new CheckerInfo("Index Checker",     IndexChecker.class),
+                            new CheckerInfo("Index Checker", IndexChecker.class),
                             new CheckerInfo("Tainting Checker", TaintingChecker.class),
                             new CheckerInfo("Regex Checker", RegexChecker.class),
                             new CheckerInfo("Format String Checker", FormatterChecker.class),
