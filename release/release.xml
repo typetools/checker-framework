@@ -449,6 +449,7 @@
         <fail unless="checker.webpage"   message="checker.webpage property is not set!" />
 
         <!-- //TODO: PERHAPS CHECK THAT THESE FILES EXIST -->
+        <property name="cf.docs"          value="${checker}/../docs" />
         <property name="checker.manual"   value="${cf.docs}/manual" />
         <property name="checker.logo"     value="${cf.docs}/logo" />
         <property name="dataflow.manual"  value="${checker}/../dataflow/manual" />

@@ -110,7 +110,7 @@
         <delete failonerror="false">
             <fileset dir="${tests.build}" includes="**/*.class"/>
             <fileset dir="jdk" includes="**/*.class"/>
-            <fileset dir="${cf.docs}/examples" includes="**/*.class"/>
+            <fileset dir="${docs.loc}/examples" includes="**/*.class"/>
         </delete>
 
         <delete dir="${dist}"/>
