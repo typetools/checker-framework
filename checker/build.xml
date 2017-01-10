@@ -1503,6 +1503,11 @@ So, use our own archived version.
             description="Everything necessary to prepare this project for distribution: binary distribution, testing, and documentation.">
     </target>
 
+    <!-- Like dist-release, but don't run the tests which take a very long time.  Use only during testing. -->
+    <target name="dist-release-notest" depends="clean, dist-all, javadoc.jar, sources.jar"
+            description="Everything necessary to prepare this project for distribution: binary distribution, [no testing], and documentation.">
+    </target>
+
     <target name="dist-all"
             depends="-prep-dist,jar,all.jdks.jar,dist-nobuildjdk"
             description="Build checker.jar, checker-qual.jar, and all jdkX.jar(s).  This comprises all jars needed to run the framework.">

@@ -18,6 +18,8 @@ from distutils.dir_util import copy_tree
 debug = False
 ant_debug = ""
 
+# Currently only affects the Checker Framework tests, which run the longest
+notest = False
 
 def print_usage():
     """Print usage information."""
@@ -25,6 +27,7 @@ def print_usage():
     print_projects(1, 4)
     print "\n  --auto  accepts or chooses the default for all prompts"
     print "\n  --debug  turns on debugging mode which produces verbose output"
+    print "\n  --notest  disables tests to speed up scripts; for debugging only"
     print "\n  --review-manual  review the documentation changes only; don't perform a full build"
 
 def clone_or_update_repos(auto):
@@ -239,7 +242,10 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
         execute("./checkPluginUtil.sh", True, False, CHECKER_FRAMEWORK_RELEASE)
 
         # build the checker framework binaries and documents, run checker framework tests
-        ant_cmd = "ant %s -Dhalt.on.test.failure=true dist-release" % (ant_debug)
+        if notest:
+            ant_cmd = "ant %s -Dhalt.on.test.failure=true dist-release-notest" % (ant_debug)
+        else:
+            ant_cmd = "ant %s -Dhalt.on.test.failure=true dist-release" % (ant_debug)
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK)
 
     # make the Checker Framework Manual
@@ -327,6 +333,8 @@ def main(argv):
     debug = read_command_line_option(argv, "--debug")
     if debug:
         ant_debug = "-debug"
+    global notest
+    notest = read_command_line_option(argv, "--notest")
 
     # Indicates whether to review documentation changes only and not perform a build.
     review_documentation = read_command_line_option(argv, "--review-manual")
