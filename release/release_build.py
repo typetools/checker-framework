@@ -134,8 +134,8 @@ def create_dirs_for_dev_website_release_versions(jsr308_version, afu_version):
 def update_project_dev_website(project_name, release_version):
     """Update the dev web site for the given project
     according to the given release of the project on the dev web site."""
-    dev_website_relative_dir = os.path.join(RELEASES_SUBDIR, release_version)
     project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
+    dev_website_relative_dir = os.path.join(project_dev_site, RELEASES_SUBDIR, release_version)
 
     print "Copying from : " + dev_website_relative_dir + "\nto: " + project_dev_site
     copy_tree(dev_website_relative_dir, project_dev_site)
