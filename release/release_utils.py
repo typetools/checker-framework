@@ -33,7 +33,8 @@ def match_arg(arg):
     return matched_project
 
 def read_projects(argv, error_call_back):
-    """Determine which of the jsr308-langtools, AFU and Checker Framework
+    """Returns a map from project-name to boolean.
+    Determine which of the jsr308-langtools, AFU and Checker Framework
     projects to build based on the command-line arguments to release_build.
     \"all\" indicates that all 3 projects are to be built. If the arguments
     are incorrect, the error_call_back function is called and  the script
@@ -296,7 +297,7 @@ def test_increment_version():
 def current_distribution_by_website(site):
     """
     Reads the checker framework version from the checker framework website and
-    returns the version of the current release
+    returns the version of the current release.
     """
     print 'Looking up checker-framework-version from %s\n' % site
     ver_re = re.compile(r"<!-- checker-framework-zip-version -->checker-framework-(.*)\.zip")
@@ -307,7 +308,7 @@ def current_distribution_by_website(site):
 def current_distribution(checker_framework_dir):
     """
     Reads the checker framework version from build-common.properties
-    returns the version of the current release
+    returns the version of the current release.
     """
     ver_re = re.compile(r"""build.version = (\d+\.\d+\.\d+(?:\.\d+){0,1})""")
     build_props_location = os.path.join(checker_framework_dir, "build-common.properties")
@@ -745,16 +746,16 @@ def prompt_to_delete(path):
         if result == "Yes" or result == "yes":
             delete_path(path)
 
-def force_symlink(target_of_link, path_to_symlink):
-    """Forces the creation of a symlink to the given path at the given target
-    location. That is, if a file or symlink exists at the target location, it
-    is deleted and the symlink is then created."""
-    try:
-        os.symlink(target_of_link, path_to_symlink)
-    except OSError, e:
-        if e.errno == errno.EEXIST:
-            os.remove(path_to_symlink)
-            os.symlink(target_of_link, path_to_symlink)
+### def force_symlink(target_of_link, path_to_symlink):
+###     """Forces the creation of a symlink to the given path at the given target
+###     location. That is, if a file or symlink exists at the target location, it
+###     is deleted and the symlink is then created."""
+###     try:
+###         os.symlink(target_of_link, path_to_symlink)
+###     except OSError, e:
+###         if e.errno == errno.EEXIST:
+###             os.remove(path_to_symlink)
+###             os.symlink(target_of_link, path_to_symlink)
 
 def are_in_file(file_path, strs_to_find):
     """Returns true if every string in the given strs_to_find array is found in

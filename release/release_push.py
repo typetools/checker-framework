@@ -56,16 +56,16 @@ def copy_releases_to_live_site(checker_version, afu_version):
     copy_release_dir(CHECKER_INTERM_RELEASES_DIR, CHECKER_LIVE_RELEASES_DIR, checker_version)
     copy_release_dir(AFU_INTERM_RELEASES_DIR, AFU_LIVE_RELEASES_DIR, afu_version)
 
-def update_release_symlinks(checker_version, afu_version):
-    """Update the \"current\" subdirectories of the jsr308-langtools, the AFU
-    and the Checker Framework live sites to point to the new releases of each
-    project."""
-    afu_relative_latest_release_dir = os.path.join(RELEASES_SUBDIR, afu_version)
-    checker_and_jsr308_relative_latest_release_dir = os.path.join(RELEASES_SUBDIR, checker_version)
-
-    force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(JSR308_LIVE_SITE, CURRENT_SUBDIR))
-    force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(CHECKER_LIVE_SITE, CURRENT_SUBDIR))
-    force_symlink(afu_relative_latest_release_dir, os.path.join(AFU_LIVE_SITE, CURRENT_SUBDIR))
+### def update_release_symlinks(checker_version, afu_version):
+###     """Update the \"current\" subdirectories of the jsr308-langtools, the AFU
+###     and the Checker Framework live sites to point to the new releases of each
+###     project."""
+###     afu_relative_latest_release_dir = os.path.join(RELEASES_SUBDIR, afu_version)
+###     checker_and_jsr308_relative_latest_release_dir = os.path.join(RELEASES_SUBDIR, checker_version)
+###
+###     force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(JSR308_LIVE_SITE, CURRENT_SUBDIR))
+###     force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(CHECKER_LIVE_SITE, CURRENT_SUBDIR))
+###     force_symlink(afu_relative_latest_release_dir, os.path.join(AFU_LIVE_SITE, CURRENT_SUBDIR))
 
 def ensure_group_access_to_releases():
     """Gives group access to all files and directories in the \"releases\"
@@ -344,7 +344,7 @@ def main(argv):
             maven_sanity_check("maven-dev", MAVEN_DEV_REPO, new_checker_version)
 
         print_step("3c: Build the Eclipse plugin and test.")
-        print "Please download: http://checker-framework.com/dev/checker-framework/current/checker-framework-%s.zip" % new_checker_version
+        print "Please download: http://checker-framework.com/dev/checker-framework/checker-framework-%s.zip" % new_checker_version
         print("Use the jars in the dist directory along with the instructions at " +
               "checker-framework/eclipse/README-developers.html to build the Eclipse plugin.\n" +
               "Please install this version in the latest version of Eclipse and follow the tutorial at:\n" +
@@ -405,7 +405,7 @@ def main(argv):
             copy_releases_to_live_site(new_checker_version, new_afu_version)
             copy_htaccess()
             ensure_group_access_to_releases()
-            update_release_symlinks(new_checker_version, new_afu_version)
+            ### update_release_symlinks(new_checker_version, new_afu_version)
     else:
         print  "Test mode: Skipping copy to live site!"
 
@@ -422,7 +422,7 @@ def main(argv):
             # Ensure that the jsr308-langtools javac works with the system-wide java launcher
             if not os.path.isdir(SANITY_TEST_JSR308_LANGTOOLS_DIR):
                 execute("mkdir -p " + SANITY_TEST_JSR308_LANGTOOLS_DIR)
-            execute("wget http://checker-framework.com/jsr308/current/jsr308-langtools-" + new_checker_version + ".zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
+            execute("wget http://checker-framework.com/jsr308/jsr308-langtools-" + new_checker_version + ".zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
             execute("unzip -uq jsr308-langtools-" + new_checker_version +".zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
             execute("env -i bash --noprofile jsr308-langtools-" + new_checker_version + "/dist/bin/javac -version", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
     else:
@@ -526,7 +526,7 @@ def main(argv):
                "* Download the following files to your local machine." +
                "\n" +
                "http://checker-framework.com/checker-framework-" + new_checker_version + ".zip\n" +
-               "http://checker-framework.com/annotation-file-utilities/current/annotation-tools-" + new_afu_version + ".zip\n" +
+               "http://checker-framework.com/annotation-file-utilities/annotation-tools-" + new_afu_version + ".zip\n" +
                "\n" +
                "To post the Checker Framework release on GitHub:\n" +
                "\n" +

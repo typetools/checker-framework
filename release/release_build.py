@@ -12,6 +12,7 @@ Copyright (c) 2015 University of Washington. All rights reserved.
 
 from release_vars  import *
 from release_utils import *
+from distutils.dir_util import copy_tree
 
 # Turned on by the --debug command-line option.
 debug = False
@@ -119,16 +120,26 @@ def create_dirs_for_dev_website_release_versions(jsr308_version, afu_version):
 
     return (jsr308_interm_dir, afu_interm_dir, checker_framework_interm_dir)
 
-def update_project_dev_website_symlink(project_name, release_version):
-    """Update the \"current\" symlink in the dev web site for the given project
-    to point to the given release of the project on the dev web site."""
-    project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
-    link_path = os.path.join(project_dev_site, "current")
+### def update_project_dev_website_symlink(project_name, release_version):
+###     """Update the \"current\" symlink in the dev web site for the given project
+###     to point to the given release of the project on the dev web site."""
+###     project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
+###     link_path = os.path.join(project_dev_site, "current")
+###
+###     dev_website_relative_dir = os.path.join(RELEASES_SUBDIR, release_version)
+###
+###     print "Writing symlink: " + link_path + "\nto point to relative directory: " + dev_website_relative_dir
+###     force_symlink(dev_website_relative_dir, link_path)
 
+def update_project_dev_website(project_name, release_version):
+    """Update the dev web site for the given project
+    according to the given release of the project on the dev web site."""
     dev_website_relative_dir = os.path.join(RELEASES_SUBDIR, release_version)
+    project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
 
-    print "Writing symlink: " + link_path + "\nto point to relative directory: " + dev_website_relative_dir
-    force_symlink(dev_website_relative_dir, link_path)
+    print "Copying from : " + dev_website_relative_dir + "\nto: " + project_dev_site
+    copy_tree(dev_website_relative_dir, project_dev_site)
+
 
 def build_jsr308_langtools_release(version, afu_version, afu_release_date, jsr308_interm_dir):
     """Build the jsr308-langtools project's artifacts and place them in the
@@ -165,7 +176,7 @@ def build_jsr308_langtools_release(version, afu_version, afu_release_date, jsr30
     ant_cmd = "ant %s -f release.xml %s langtools-website-docs " % (ant_debug, ant_props)
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-    update_project_dev_website_symlink("jsr308", version)
+    update_project_dev_website("jsr308", version)
 
     return
 
@@ -189,7 +200,7 @@ def build_annotation_tools_release(version, afu_interm_dir):
     ant_cmd = "ant %s -buildfile %s -e web-no-checks -Dafu.version=%s -Ddeploy-dir=%s" % (ant_debug, build, version, afu_interm_dir)
     execute(ant_cmd)
 
-    update_project_dev_website_symlink("annotation-file-utilities", version)
+    update_project_dev_website("annotation-file-utilities", version)
 
 def build_and_locally_deploy_maven(version):
     protocol_length = len("file://")
@@ -274,7 +285,7 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
 
         build_and_locally_deploy_maven(version)
 
-        update_project_dev_website_symlink("checker-framework", version)
+        update_project_dev_website("checker-framework", version)
 
     return
 
