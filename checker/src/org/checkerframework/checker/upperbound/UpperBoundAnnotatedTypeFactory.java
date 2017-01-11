@@ -232,6 +232,26 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /**
+     * Creates an annotation of the name given with the set of values given.
+     *
+     * @return annotation given by name with names=values, or UNKNOWN
+     */
+    protected AnnotationMirror createAnnotation(Class<?> anno, String... names) {
+        if (names == null) {
+            names = new String[0];
+        }
+        if (LTLengthOf.class.equals(anno)) {
+            return createLTLengthOfAnnotation(names);
+        } else if (LTEqLengthOf.class.equals(anno)) {
+            return createLTEqLengthOfAnnotation(names);
+        } else if (LTOMLengthOf.class.equals(anno)) {
+            return createLTOMLengthOfAnnotation(names);
+        } else {
+            return UNKNOWN;
+        }
+    }
+
     AnnotationMirror createLTOMLengthOfAnnotation(String... names) {
         AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), LTOMLengthOf.class);
         if (names == null) {
