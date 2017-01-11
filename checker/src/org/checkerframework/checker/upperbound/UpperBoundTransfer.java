@@ -20,19 +20,23 @@ import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
+import org.checkerframework.framework.flow.CFAnalysis;
+import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 
-public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, UpperBoundTransfer> {
+public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     private UpperBoundAnnotatedTypeFactory atypeFactory;
 
     private QualifierHierarchy qualifierHierarchy;
 
-    public UpperBoundTransfer(UpperBoundAnalysis analysis) {
+    public UpperBoundTransfer(CFAnalysis analysis) {
         super(analysis);
-        atypeFactory = (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
+        atypeFactory =
+                (UpperBoundAnnotatedTypeFactory) (AnnotatedTypeFactory) analysis.getTypeFactory();
         qualifierHierarchy = atypeFactory.getQualifierHierarchy();
     }
 
@@ -40,14 +44,14 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
     // less than length of the array to which the new array is
     // assigned.  For example int[] array = new int[expr]; the type of expr is @LTEqLength("array")
     @Override
-    public TransferResult<CFValue, UpperBoundStore> visitAssignment(
-            AssignmentNode node, TransferInput<CFValue, UpperBoundStore> in) {
+    public TransferResult<CFValue, CFStore> visitAssignment(
+            AssignmentNode node, TransferInput<CFValue, CFStore> in) {
         AnnotationMirror UNKNOWN = atypeFactory.UNKNOWN;
-        TransferResult<CFValue, UpperBoundStore> result = super.visitAssignment(node, in);
+        TransferResult<CFValue, CFStore> result = super.visitAssignment(node, in);
 
         if (node.getExpression() instanceof ArrayCreationNode) {
             ArrayCreationNode acNode = (ArrayCreationNode) node.getExpression();
-            UpperBoundStore store = result.getRegularStore();
+            CFStore store = result.getRegularStore();
             List<Node> nodeList = acNode.getDimensions();
             if (nodeList.size() < 1) {
                 return result;
@@ -71,12 +75,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
     }
 
     @Override
-    public TransferResult<CFValue, UpperBoundStore> visitEqualTo(
-            EqualToNode node, TransferInput<CFValue, UpperBoundStore> in) {
-        TransferResult<CFValue, UpperBoundStore> result = super.visitEqualTo(node, in);
+    public TransferResult<CFValue, CFStore> visitEqualTo(
+            EqualToNode node, TransferInput<CFValue, CFStore> in) {
+        TransferResult<CFValue, CFStore> result = super.visitEqualTo(node, in);
 
-        IndexRefinementInfo<UpperBoundStore> rfi =
-                new IndexRefinementInfo<>(result, analysis, node);
+        IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
 
         //  In an ==, only refine the then
         //  branch (i.e. when they are, actually, equal).
@@ -89,12 +92,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
     }
 
     @Override
-    public TransferResult<CFValue, UpperBoundStore> visitNotEqual(
-            NotEqualNode node, TransferInput<CFValue, UpperBoundStore> in) {
-        TransferResult<CFValue, UpperBoundStore> result = super.visitNotEqual(node, in);
+    public TransferResult<CFValue, CFStore> visitNotEqual(
+            NotEqualNode node, TransferInput<CFValue, CFStore> in) {
+        TransferResult<CFValue, CFStore> result = super.visitNotEqual(node, in);
 
-        IndexRefinementInfo<UpperBoundStore> rfi =
-                new IndexRefinementInfo<>(result, analysis, node);
+        IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
 
         // != is equivalent to == and implemented the same way, but only the
         // else branch is refined.
@@ -116,7 +118,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
             Set<AnnotationMirror> leftType,
             Node right,
             Set<AnnotationMirror> rightType,
-            UpperBoundStore store) {
+            CFStore store) {
         AnnotationMirror UNKNOWN = atypeFactory.UNKNOWN;
 
         // First, check if the left type is one of the ones that tells us something.
@@ -164,7 +166,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
             Set<AnnotationMirror> leftType,
             Node right,
             Set<AnnotationMirror> rightType,
-            UpperBoundStore store) {
+            CFStore store) {
         AnnotationMirror UNKNOWN = atypeFactory.UNKNOWN;
         if (AnnotationUtils.containsSameByClass(leftType, LTLengthOf.class)) {
             // Create an LTL for the right type.
@@ -218,7 +220,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
             Set<AnnotationMirror> leftType,
             Node right,
             Set<AnnotationMirror> rightType,
-            UpperBoundStore store) {
+            CFStore store) {
         AnnotationMirror UNKNOWN = atypeFactory.UNKNOWN;
 
         AnnotationMirror rightUpperboundType =
@@ -250,7 +252,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
     }
 
     private void specialCaseForLTEL(
-            Set<AnnotationMirror> leftType, Node left, Node right, UpperBoundStore store) {
+            Set<AnnotationMirror> leftType, Node left, Node right, CFStore store) {
         if (AnnotationUtils.containsSameByClass(leftType, LTEqLengthOf.class)) {
             if (isArrayLengthFieldAccess(right)) {
                 FieldAccess fieldAccess =
@@ -277,7 +279,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
     }
 
     private void specialCaseForLTL(
-            Set<AnnotationMirror> leftType, Node left, Node right, UpperBoundStore store) {
+            Set<AnnotationMirror> leftType, Node left, Node right, CFStore store) {
         if (AnnotationUtils.containsSameByClass(leftType, LTLengthOf.class)) {
             if (isArrayLengthFieldAccess(right)) {
                 FieldAccess fieldAccess =
@@ -307,7 +309,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
             Set<AnnotationMirror> leftType,
             Node right,
             Set<AnnotationMirror> rightType,
-            UpperBoundStore store) {
+            CFStore store) {
         specialCaseForLTEL(leftType, left, right, store);
         specialCaseForLTEL(rightType, right, left, store);
         specialCaseForLTL(leftType, left, right, store);

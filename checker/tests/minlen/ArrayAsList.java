@@ -2,6 +2,8 @@ import java.util.Arrays;
 import java.util.List;
 import org.checkerframework.checker.minlen.qual.*;
 
+// @skip-test until we bring list support back
+
 public class ArrayAsList {
 
     public static void toList(Integer @MinLen(10) [] arg) {

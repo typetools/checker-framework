@@ -1,6 +1,8 @@
 import java.util.*;
 import org.checkerframework.checker.lowerbound.qual.*;
 
+// @skip-test until we bring list support back
+
 class ListSupport {
 
     void testGet() {

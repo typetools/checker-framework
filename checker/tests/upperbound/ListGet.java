@@ -2,6 +2,8 @@ import java.util.*;
 import org.checkerframework.checker.index.qual.*;
 import org.checkerframework.checker.upperbound.qual.*;
 
+// @skip-test until we bring list support back
+
 class ListGet {
 
     List<Integer> listField;

@@ -12,7 +12,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.*;
-import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -90,7 +90,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  *
  * </pre>
  */
-public class LowerBoundTransfer extends IndexAbstractTransfer<CFStore, LowerBoundTransfer> {
+public class LowerBoundTransfer extends IndexAbstractTransfer {
 
     /** The canonical {@link GTENegativeOne} annotation. */
     public final AnnotationMirror GTEN1;
@@ -104,7 +104,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer<CFStore, LowerBoun
     // The ATF (Annotated Type Factory).
     private LowerBoundAnnotatedTypeFactory aTypeFactory;
 
-    public LowerBoundTransfer(CFAbstractAnalysis<CFValue, CFStore, LowerBoundTransfer> analysis) {
+    public LowerBoundTransfer(CFAnalysis analysis) {
         super(analysis);
         aTypeFactory =
                 (LowerBoundAnnotatedTypeFactory) (AnnotatedTypeFactory) analysis.getTypeFactory();
@@ -166,8 +166,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer<CFStore, LowerBoun
         if (notEqualTo) {
             // Process != first.
 
-            IndexRefinementInfo<CFStore> rfi =
-                    new IndexRefinementInfo<>(result, analysis, secondNode, firstNode);
+            IndexRefinementInfo rfi =
+                    new IndexRefinementInfo(result, analysis, secondNode, firstNode);
 
             handleRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.thenStore);
             handleRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.thenStore);
@@ -178,8 +178,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer<CFStore, LowerBoun
         } else {
             // Process ==.
 
-            IndexRefinementInfo<CFStore> rfi =
-                    new IndexRefinementInfo<>(result, analysis, secondNode, firstNode);
+            IndexRefinementInfo rfi =
+                    new IndexRefinementInfo(result, analysis, secondNode, firstNode);
 
             handleRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.elseStore);
             handleRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.elseStore);

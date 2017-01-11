@@ -2,6 +2,7 @@ import java.util.*;
 import org.checkerframework.checker.index.qual.*;
 import org.checkerframework.checker.upperbound.qual.*;
 
+// @skip-test until we bring list support back
 //@skip-test can't handle until TreeUtils.getMethod has a way to precisly handle method overloading
 
 class ListRemove {
