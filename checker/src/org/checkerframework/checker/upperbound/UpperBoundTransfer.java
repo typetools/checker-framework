@@ -109,35 +109,24 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             Set<AnnotationMirror> rightType,
             CFStore store) {
         AnnotationMirror UNKNOWN = atypeFactory.UNKNOWN;
-
-        // First, check if the left type is one of the ones that tells us something.
+        Class<?> nextHigherClass;
         if (AnnotationUtils.containsSameByClass(leftType, LTEqLengthOf.class)) {
-            // Create an LTL for the right type.
-
-            Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-            String[] names =
-                    UpperBoundUtils.getValue(
-                            qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
-
-            combineFacts(
-                    store,
-                    rightRec,
-                    qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                    atypeFactory.createLTLengthOfAnnotation(names));
+            nextHigherClass = LTLengthOf.class;
         } else if (AnnotationUtils.containsSameByClass(leftType, LTLengthOf.class)) {
-            // Create an LTOM for the right type.
-
-            Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-            String[] names =
-                    UpperBoundUtils.getValue(
-                            qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
-
-            combineFacts(
-                    store,
-                    rightRec,
-                    qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                    atypeFactory.createLTOMLengthOfAnnotation(names));
+            nextHigherClass = LTOMLengthOf.class;
+        } else {
+            return;
         }
+        Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
+        String[] names =
+                UpperBoundUtils.getValue(
+                        qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
+
+        combineFacts(
+                store,
+                rightRec,
+                qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
+                atypeFactory.createAnnotation(nextHigherClass, names));
     }
 
     /**
