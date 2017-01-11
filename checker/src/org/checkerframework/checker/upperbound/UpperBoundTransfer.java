@@ -16,10 +16,8 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
-import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.NotEqualNode;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -71,37 +69,24 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
     }
 
     @Override
-    public TransferResult<CFValue, UpperBoundStore> visitEqualTo(
-            EqualToNode node, TransferInput<CFValue, UpperBoundStore> in) {
-        TransferResult<CFValue, UpperBoundStore> result = super.visitEqualTo(node, in);
-
+    protected TransferResult<CFValue, UpperBoundStore> strengthenAnnotationOfEqualTo(
+            TransferResult<CFValue, UpperBoundStore> res,
+            Node firstNode,
+            Node secondNode,
+            CFValue firstValue,
+            CFValue secondValue,
+            boolean notEqualTo) {
+        TransferResult<CFValue, UpperBoundStore> result =
+                super.strengthenAnnotationOfEqualTo(
+                        res, firstNode, secondNode, firstValue, secondValue, notEqualTo);
         IndexRefinementInfo<UpperBoundStore> rfi =
-                new IndexRefinementInfo<>(result, analysis, node);
+                new IndexRefinementInfo<>(result, analysis, firstNode, secondNode);
 
-        //  In an ==, only refine the then
-        //  branch (i.e. when they are, actually, equal).
-        refineEq(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
+        UpperBoundStore equalsStore = notEqualTo ? rfi.elseStore : rfi.thenStore;
+        UpperBoundStore notEqualStore = notEqualTo ? rfi.thenStore : rfi.elseStore;
 
-        // With a few exceptions...
-        refineNeq(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
-
-        return rfi.newResult;
-    }
-
-    @Override
-    public TransferResult<CFValue, UpperBoundStore> visitNotEqual(
-            NotEqualNode node, TransferInput<CFValue, UpperBoundStore> in) {
-        TransferResult<CFValue, UpperBoundStore> result = super.visitNotEqual(node, in);
-
-        IndexRefinementInfo<UpperBoundStore> rfi =
-                new IndexRefinementInfo<>(result, analysis, node);
-
-        // != is equivalent to == and implemented the same way, but only the
-        // else branch is refined.
-        refineEq(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
-
-        // With a few exceptions...
-        refineNeq(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
+        refineEq(rfi.left, rfi.leftType, rfi.right, rfi.rightType, equalsStore);
+        refineNeq(rfi.left, rfi.leftType, rfi.right, rfi.rightType, notEqualStore);
 
         return rfi.newResult;
     }

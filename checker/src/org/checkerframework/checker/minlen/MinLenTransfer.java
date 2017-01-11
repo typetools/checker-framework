@@ -21,11 +21,9 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
-import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.NotEqualNode;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -159,74 +157,34 @@ public class MinLenTransfer extends IndexAbstractTransfer<MinLenStore, MinLenTra
     }
 
     @Override
-    public TransferResult<CFValue, MinLenStore> visitEqualTo(
-            EqualToNode node, TransferInput<CFValue, MinLenStore> in) {
-        TransferResult<CFValue, MinLenStore> result = super.visitEqualTo(node, in);
+    protected TransferResult<CFValue, MinLenStore> strengthenAnnotationOfEqualTo(
+            TransferResult<CFValue, MinLenStore> res,
+            Node firstNode,
+            Node secondNode,
+            CFValue firstValue,
+            CFValue secondValue,
+            boolean notEqualTo) {
+        TransferResult<CFValue, MinLenStore> result =
+                super.strengthenAnnotationOfEqualTo(
+                        res, firstNode, secondNode, firstValue, secondValue, notEqualTo);
+        IndexRefinementInfo<MinLenStore> rfi =
+                new IndexRefinementInfo<>(result, analysis, firstNode, secondNode);
 
-        IndexRefinementInfo<MinLenStore> rfi = new IndexRefinementInfo<>(result, analysis, node);
+        MinLenStore equalsStore = notEqualTo ? rfi.elseStore : rfi.thenStore;
+        MinLenStore notEqualsStore = notEqualTo ? rfi.thenStore : rfi.elseStore;
 
-        refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
-        refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
+        refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, equalsStore);
+        refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, equalsStore);
 
-        refineEq(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
-
-        // The else branch should only be refined if a length is being compared
-        // to zero. The following code block implements this special case.
+        // Types in the not equal branch should only be refined if a length is being compared
+        // to zero.
         // This special case occurs because zero is a hard bound on the bottom
         // of the array (i.e. no array can be smaller than zero), so in this
         // case the MinLen of the array is one.
-        refineNotEqual(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
-        refineNotEqual(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
+        refineNotEqual(rfi.right, rfi.rightType, rfi.left, rfi.leftType, notEqualsStore);
+        refineNotEqual(rfi.left, rfi.leftType, rfi.right, rfi.rightType, notEqualsStore);
 
         return rfi.newResult;
-    }
-
-    @Override
-    public TransferResult<CFValue, MinLenStore> visitNotEqual(
-            NotEqualNode node, TransferInput<CFValue, MinLenStore> in) {
-        TransferResult<CFValue, MinLenStore> result = super.visitNotEqual(node, in);
-
-        IndexRefinementInfo<MinLenStore> rfi = new IndexRefinementInfo<>(result, analysis, node);
-
-        refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
-        refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
-
-        refineEq(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
-
-        // The then branch should only be refined if a length is being compared
-        // to zero. The following code block implements this special case.
-        // This special case occurs because zero is a hard bound on the bottom
-        // of the array (i.e. no array can be smaller than zero), so in this
-        // case the MinLen of the array is one.
-        refineNotEqual(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
-        refineNotEqual(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
-
-        return rfi.newResult;
-    }
-
-    private void refineEq(
-            Node left,
-            Set<AnnotationMirror> leftTypeSet,
-            Node right,
-            Set<AnnotationMirror> rightTypeSet,
-            MinLenStore store) {
-
-        AnnotationMirror rightType =
-                qualifierHierarchy.findAnnotationInHierarchy(rightTypeSet, atypeFactory.MIN_LEN_0);
-        AnnotationMirror leftType =
-                qualifierHierarchy.findAnnotationInHierarchy(leftTypeSet, atypeFactory.MIN_LEN_0);
-
-        if (leftType == null || rightType == null) {
-            return;
-        }
-
-        AnnotationMirror newType = qualifierHierarchy.greatestLowerBound(leftType, rightType);
-
-        Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-        Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
-
-        store.insertValue(rightRec, newType);
-        store.insertValue(leftRec, newType);
     }
 
     private Receiver getReceiverForFiNodeOrNull(Node node) {
@@ -294,6 +252,7 @@ public class MinLenTransfer extends IndexAbstractTransfer<MinLenStore, MinLenTra
         }
     }
 
+    @Override
     protected void refineGT(
             Node left,
             Set<AnnotationMirror> leftType,
@@ -308,6 +267,7 @@ public class MinLenTransfer extends IndexAbstractTransfer<MinLenStore, MinLenTra
         }
     }
 
+    @Override
     protected void refineGTE(
             Node left,
             Set<AnnotationMirror> leftType,

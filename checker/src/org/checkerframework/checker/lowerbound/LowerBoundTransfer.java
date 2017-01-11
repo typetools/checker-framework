@@ -11,7 +11,7 @@ import org.checkerframework.checker.lowerbound.qual.Positive;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.*;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
@@ -116,13 +116,13 @@ public class LowerBoundTransfer extends IndexAbstractTransfer<CFStore, LowerBoun
     }
 
     /**
-     * Refines GTEN1 to NN if it's compared directly to -1, and NN to Pos if it's compared to 0.
+     * Refines GTEN1 to NN if it is not equal to -1, and NN to Pos if it is not equal to 0.
      *
      * @param mLiteral a potential literal
      * @param otherNode the node on the other side of the ==/!=
      * @param otherType the type of the other side of the ==/!=
      */
-    private void handleRelevantLiteralForEquals(
+    private void notEqualToValue(
             Node mLiteral, Node otherNode, Set<AnnotationMirror> otherType, CFStore store) {
 
         Long integerLiteralOrNull = aTypeFactory.getExactValueOrNullFromTree(mLiteral.getTree());
@@ -153,41 +153,23 @@ public class LowerBoundTransfer extends IndexAbstractTransfer<CFStore, LowerBoun
             CFValue firstValue,
             CFValue secondValue,
             boolean notEqualTo) {
+        result =
+                super.strengthenAnnotationOfEqualTo(
+                        result, firstNode, secondNode, firstValue, secondValue, notEqualTo);
 
-        //  In an ==, refinements occur in the then branch (i.e. when they are,
-        // actually, equal). In that case, they are refined to the more
-        // precise of the two types, which is accomplished by refining each as if it were
-        // greater than or equal to the other. There is also special processing to look
+        IndexRefinementInfo<CFStore> rfi =
+                new IndexRefinementInfo<>(result, analysis, secondNode, firstNode);
+
+        // There is also special processing to look
         // for literals on one side of the equals and a GTEN1 or NN on the other, so that
-        // those types can be promoted in the else branch if compared against the appropriate
-        // single literal. != is equivalent to == and implemented the same way, but the refinements occur in
-        // the other branch (i.e. when they are !equal).
+        // those types can be promoted in the branch where their values are not equal to certain
+        // literals.
 
-        if (notEqualTo) {
-            // Process != first.
+        CFStore notEqualsStore = notEqualTo ? rfi.thenStore : rfi.elseStore;
+        notEqualToValue(rfi.left, rfi.right, rfi.rightType, notEqualsStore);
+        notEqualToValue(rfi.right, rfi.left, rfi.leftType, notEqualsStore);
 
-            IndexRefinementInfo<CFStore> rfi =
-                    new IndexRefinementInfo<>(result, analysis, secondNode, firstNode);
-
-            handleRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.thenStore);
-            handleRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.thenStore);
-
-            refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
-            refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
-            return rfi.newResult;
-        } else {
-            // Process ==.
-
-            IndexRefinementInfo<CFStore> rfi =
-                    new IndexRefinementInfo<>(result, analysis, secondNode, firstNode);
-
-            handleRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.elseStore);
-            handleRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.elseStore);
-
-            refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
-            refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
-            return rfi.newResult;
-        }
+        return rfi.newResult;
     }
 
     /**
