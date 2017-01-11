@@ -194,7 +194,27 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                 && fieldAccess.getReceiver().getType().getKind() == TypeKind.ARRAY;
     }
 
-    private void specialCaseForLTLandLTEL(
+    private void refineNeq(
+            Node left,
+            Set<AnnotationMirror> leftType,
+            Node right,
+            Set<AnnotationMirror> rightType,
+            CFStore store) {
+        refineNotEqualLtlandLteql(leftType, left, right, store);
+        refineNotEqualLtlandLteql(rightType, right, left, store);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * @LTEqLengthOf("array") int i;
+     * if (i != array.length) {
+     *     // refine the type of i to @LTLengthOf("array")
+     * }
+     * </pre>
+     */
+    private void refineNotEqualLtlandLteql(
             Set<AnnotationMirror> leftType, Node left, Node right, CFStore store) {
         Class<?> nextHigherClass;
         if (AnnotationUtils.containsSameByClass(leftType, LTEqLengthOf.class)) {
@@ -226,15 +246,5 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                         atypeFactory.createAnnotation(nextHigherClass, arrayName));
             }
         }
-    }
-
-    private void refineNeq(
-            Node left,
-            Set<AnnotationMirror> leftType,
-            Node right,
-            Set<AnnotationMirror> rightType,
-            CFStore store) {
-        specialCaseForLTLandLTEL(leftType, left, right, store);
-        specialCaseForLTLandLTEL(rightType, right, left, store);
     }
 }
