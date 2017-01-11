@@ -36,6 +36,15 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         qualifierHierarchy = atypeFactory.getQualifierHierarchy();
     }
 
+    private void combineFacts(
+            CFStore store, Receiver receiver, AnnotationMirror oldAM, AnnotationMirror newAM) {
+        AnnotationMirror combinedAM = atypeFactory.combineFacts(oldAM, newAM);
+        // The old value is cleared from the store because it might be lower than
+        // combinedAM.
+        store.clearValue(receiver);
+        store.insertValue(receiver, combinedAM);
+    }
+
     // Refine the type of expressions used as an array dimension to be
     // less than length of the array to which the new array is
     // assigned.  For example int[] array = new int[expr]; the type of expr is @LTEqLength("array")
@@ -59,13 +68,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                     FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getTarget());
 
             Set<AnnotationMirror> oldType = in.getValueOfSubNode(dim).getAnnotations();
-
-            AnnotationMirror newType =
-                    qualifierHierarchy.greatestLowerBound(
-                            qualifierHierarchy.findAnnotationInHierarchy(oldType, UNKNOWN),
-                            atypeFactory.createLTEqLengthOfAnnotation(arrayRec.toString()));
-
-            store.insertValue(dimRec, newType);
+            AnnotationMirror oldAM = qualifierHierarchy.findAnnotationInHierarchy(oldType, UNKNOWN);
+            AnnotationMirror newAM = atypeFactory.createLTEqLengthOfAnnotation(arrayRec.toString());
+            combineFacts(store, dimRec, oldAM, newAM);
         }
         return result;
     }
@@ -114,12 +119,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                     UpperBoundUtils.getValue(
                             qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
 
-            AnnotationMirror newType =
-                    qualifierHierarchy.greatestLowerBound(
-                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                            atypeFactory.createLTLengthOfAnnotation(names));
-
-            store.insertValue(rightRec, newType);
+            combineFacts(
+                    store,
+                    rightRec,
+                    qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
+                    atypeFactory.createLTLengthOfAnnotation(names));
             return;
         }
         if (AnnotationUtils.containsSameByClass(leftType, LTLengthOf.class)) {
@@ -130,12 +134,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                     UpperBoundUtils.getValue(
                             qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
 
-            AnnotationMirror newType =
-                    qualifierHierarchy.greatestLowerBound(
-                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                            atypeFactory.createLTOMLengthOfAnnotation(names));
-
-            store.insertValue(rightRec, newType);
+            combineFacts(
+                    store,
+                    rightRec,
+                    qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
+                    atypeFactory.createLTOMLengthOfAnnotation(names));
             return;
         }
     }
@@ -159,12 +162,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                     UpperBoundUtils.getValue(
                             qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
 
-            AnnotationMirror newType =
-                    qualifierHierarchy.greatestLowerBound(
-                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                            atypeFactory.createLTLengthOfAnnotation(names));
-
-            store.insertValue(rightRec, newType);
+            combineFacts(
+                    store,
+                    rightRec,
+                    qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
+                    atypeFactory.createLTLengthOfAnnotation(names));
             return;
         } else if (AnnotationUtils.containsSameByClass(leftType, LTEqLengthOf.class)) {
             // Create an LTL for the right type.
@@ -174,12 +176,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                     UpperBoundUtils.getValue(
                             qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
 
-            AnnotationMirror newType =
-                    qualifierHierarchy.greatestLowerBound(
-                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                            atypeFactory.createLTEqLengthOfAnnotation(names));
-
-            store.insertValue(rightRec, newType);
+            combineFacts(
+                    store,
+                    rightRec,
+                    qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
+                    atypeFactory.createLTEqLengthOfAnnotation(names));
             return;
         } else if (AnnotationUtils.containsSameByClass(leftType, LTOMLengthOf.class)) {
             // Create an LTOM for the right type.
@@ -189,12 +190,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                     UpperBoundUtils.getValue(
                             qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
 
-            AnnotationMirror newType =
-                    qualifierHierarchy.greatestLowerBound(
-                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                            atypeFactory.createLTOMLengthOfAnnotation(names));
-
-            store.insertValue(rightRec, newType);
+            combineFacts(
+                    store,
+                    rightRec,
+                    qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
+                    atypeFactory.createLTOMLengthOfAnnotation(names));
             return;
         }
     }
@@ -207,23 +207,17 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             CFStore store) {
         AnnotationMirror UNKNOWN = atypeFactory.UNKNOWN;
 
-        AnnotationMirror rightUpperboundType =
-                qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN);
-        AnnotationMirror leftUpperboundType =
-                qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN);
+        AnnotationMirror rightAM = qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN);
+        AnnotationMirror leftAM = qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN);
 
-        if (rightUpperboundType == null || leftUpperboundType == null) {
+        if (rightAM == null || leftAM == null) {
             return;
         }
 
-        AnnotationMirror newType =
-                qualifierHierarchy.greatestLowerBound(rightUpperboundType, leftUpperboundType);
-
         Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
         Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
-
-        store.insertValue(rightRec, newType);
-        store.insertValue(leftRec, newType);
+        combineFacts(store, rightRec, rightAM, leftAM);
+        combineFacts(store, leftRec, rightAM, leftAM);
     }
 
     private boolean isArrayLengthFieldAccess(Node node) {
