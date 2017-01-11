@@ -1,5 +1,7 @@
-import java.util.*;
-import org.checkerframework.checker.minlen.qual.*;
+import java.util.ArrayList;
+import org.checkerframework.checker.minlen.qual.MinLen;
+
+// @skip-test until we bring list support back
 
 class ListSupport {
 

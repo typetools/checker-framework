@@ -4,27 +4,31 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.*;
-import org.checkerframework.framework.flow.CFAbstractAnalysis;
-import org.checkerframework.framework.flow.CFAbstractStore;
-import org.checkerframework.framework.flow.CFAbstractTransfer;
+import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
+import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
+import org.checkerframework.dataflow.cfg.node.LessThanNode;
+import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.framework.flow.CFAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 
-public abstract class IndexAbstractTransfer<
-                IndexStore extends CFAbstractStore<CFValue, IndexStore>,
-                MySelf extends IndexAbstractTransfer<IndexStore, MySelf>>
-        extends CFAbstractTransfer<CFValue, IndexStore, MySelf> {
+public abstract class IndexAbstractTransfer extends CFTransfer {
 
-    protected IndexAbstractTransfer(CFAbstractAnalysis<CFValue, IndexStore, MySelf> analysis) {
+    protected CFAnalysis analysis;
+
+    protected IndexAbstractTransfer(CFAnalysis analysis) {
         super(analysis);
+        this.analysis = analysis;
     }
 
     @Override
-    public TransferResult<CFValue, IndexStore> visitGreaterThan(
-            GreaterThanNode node, TransferInput<CFValue, IndexStore> in) {
-        TransferResult<CFValue, IndexStore> result = super.visitGreaterThan(node, in);
+    public TransferResult<CFValue, CFStore> visitGreaterThan(
+            GreaterThanNode node, TransferInput<CFValue, CFStore> in) {
+        TransferResult<CFValue, CFStore> result = super.visitGreaterThan(node, in);
 
-        IndexRefinementInfo<IndexStore> rfi = new IndexRefinementInfo<>(result, analysis, node);
+        IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
 
         // Refine the then branch.
         refineGT(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
@@ -36,11 +40,11 @@ public abstract class IndexAbstractTransfer<
     }
 
     @Override
-    public TransferResult<CFValue, IndexStore> visitGreaterThanOrEqual(
-            GreaterThanOrEqualNode node, TransferInput<CFValue, IndexStore> in) {
-        TransferResult<CFValue, IndexStore> result = super.visitGreaterThanOrEqual(node, in);
+    public TransferResult<CFValue, CFStore> visitGreaterThanOrEqual(
+            GreaterThanOrEqualNode node, TransferInput<CFValue, CFStore> in) {
+        TransferResult<CFValue, CFStore> result = super.visitGreaterThanOrEqual(node, in);
 
-        IndexRefinementInfo<IndexStore> rfi = new IndexRefinementInfo<>(result, analysis, node);
+        IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
 
         // Refine the then branch.
         refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
@@ -52,11 +56,11 @@ public abstract class IndexAbstractTransfer<
     }
 
     @Override
-    public TransferResult<CFValue, IndexStore> visitLessThanOrEqual(
-            LessThanOrEqualNode node, TransferInput<CFValue, IndexStore> in) {
-        TransferResult<CFValue, IndexStore> result = super.visitLessThanOrEqual(node, in);
+    public TransferResult<CFValue, CFStore> visitLessThanOrEqual(
+            LessThanOrEqualNode node, TransferInput<CFValue, CFStore> in) {
+        TransferResult<CFValue, CFStore> result = super.visitLessThanOrEqual(node, in);
 
-        IndexRefinementInfo<IndexStore> rfi = new IndexRefinementInfo<>(result, analysis, node);
+        IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
 
         // Refine the then branch. A <= is just a flipped >=.
         refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
@@ -67,11 +71,11 @@ public abstract class IndexAbstractTransfer<
     }
 
     @Override
-    public TransferResult<CFValue, IndexStore> visitLessThan(
-            LessThanNode node, TransferInput<CFValue, IndexStore> in) {
-        TransferResult<CFValue, IndexStore> result = super.visitLessThan(node, in);
+    public TransferResult<CFValue, CFStore> visitLessThan(
+            LessThanNode node, TransferInput<CFValue, CFStore> in) {
+        TransferResult<CFValue, CFStore> result = super.visitLessThan(node, in);
 
-        IndexRefinementInfo<IndexStore> rfi = new IndexRefinementInfo<>(result, analysis, node);
+        IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
 
         // Refine the then branch. A < is just a flipped >.
         refineGT(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
@@ -86,12 +90,12 @@ public abstract class IndexAbstractTransfer<
             Set<AnnotationMirror> leftType,
             Node right,
             Set<AnnotationMirror> rightType,
-            IndexStore store);
+            CFStore store);
 
     protected abstract void refineGTE(
             Node left,
             Set<AnnotationMirror> leftType,
             Node right,
             Set<AnnotationMirror> rightType,
-            IndexStore store);
+            CFStore store);
 }

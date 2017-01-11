@@ -1,6 +1,8 @@
 import java.util.Arrays;
 import java.util.List;
-import org.checkerframework.checker.minlen.qual.*;
+import org.checkerframework.checker.minlen.qual.MinLen;
+
+// @skip-test until we bring list support back
 
 public class ArrayAsList {
 

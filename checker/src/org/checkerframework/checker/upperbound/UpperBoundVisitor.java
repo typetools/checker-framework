@@ -2,10 +2,6 @@ package org.checkerframework.checker.upperbound;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
-import java.util.ArrayList;
-import java.util.List;
-import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.upperbound.qual.LTLengthOf;
 import org.checkerframework.checker.upperbound.qual.LTOMLengthOf;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -13,36 +9,14 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.javacutil.TreeUtils;
 
 /** Warns about array accesses that could be too high. */
 public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFactory> {
 
-    protected final List<ExecutableElement> IndexFirstArgListMethods;
-
     private static final String UPPER_BOUND = "array.access.unsafe.high";
-    private static final String UPPER_BOUND_LIST = "list.access.unsafe.high";
 
     public UpperBoundVisitor(BaseTypeChecker checker) {
         super(checker);
-        this.IndexFirstArgListMethods = new ArrayList<ExecutableElement>();
-        this.IndexFirstArgListMethods.add(
-                TreeUtils.getMethod(
-                        "java.util.List", "get", 1, checker.getProcessingEnvironment()));
-        this.IndexFirstArgListMethods.add(
-                TreeUtils.getMethod(
-                        "java.util.List", "set", 2, checker.getProcessingEnvironment()));
-        // can't handle until TreeUtils.getMethod has a way to precisely handle method overloading
-        // this.IndexFirstArgListMethods.add(TreeUtils.getMethod("java.util.List", "remove", 1, checker.getProcessingEnvironment()));
-        this.IndexFirstArgListMethods.add(
-                TreeUtils.getMethod(
-                        "java.util.List", "listIterator", 1, checker.getProcessingEnvironment()));
-        this.IndexFirstArgListMethods.add(
-                TreeUtils.getMethod(
-                        "java.util.List", "addAll", 2, checker.getProcessingEnvironment()));
-        this.IndexFirstArgListMethods.add(
-                TreeUtils.getMethod(
-                        "java.util.List", "add", 2, checker.getProcessingEnvironment()));
     }
 
     /**
@@ -58,11 +32,11 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     public Void visitArrayAccess(ArrayAccessTree tree, Void type) {
         ExpressionTree indexTree = tree.getIndex();
         ExpressionTree arrTree = tree.getExpression();
-        visitAccess(indexTree, arrTree, true);
+        visitAccess(indexTree, arrTree);
         return super.visitArrayAccess(tree, type);
     }
 
-    private void visitAccess(ExpressionTree indexTree, ExpressionTree arrTree, boolean fArray) {
+    private void visitAccess(ExpressionTree indexTree, ExpressionTree arrTree) {
         String arrName = FlowExpressions.internalReprOf(this.atypeFactory, arrTree).toString();
         AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
 
@@ -86,32 +60,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         } else {
             // Unsafe, since neither the Upper bound or MinLen checks succeeded.
             checker.report(
-                    Result.failure(
-                            fArray ? UPPER_BOUND : UPPER_BOUND_LIST,
-                            indexType.toString(),
-                            arrName,
-                            arrName),
-                    indexTree);
+                    Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName), indexTree);
             return;
         }
-    }
-
-    @Override
-    public Void visitMethodInvocation(MethodInvocationTree tree, Void type) {
-        if (isFirstArgListMethod(tree)) {
-            ExpressionTree indexTree = tree.getArguments().get(0);
-            ExpressionTree lstTree = tree.getMethodSelect();
-            visitAccess(indexTree, lstTree, false);
-        }
-        return super.visitMethodInvocation(tree, type);
-    }
-
-    private boolean isFirstArgListMethod(MethodInvocationTree tree) {
-        for (ExecutableElement e : this.IndexFirstArgListMethods) {
-            if (TreeUtils.isMethodInvocation(tree, e, this.checker.getProcessingEnvironment())) {
-                return true;
-            }
-        }
-        return false;
     }
 }

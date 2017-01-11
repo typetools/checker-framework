@@ -1,5 +1,4 @@
-import java.util.*;
-import org.checkerframework.checker.minlen.qual.*;
+// @skip-test until we bring list support back
 
 class ListAddInfiniteLoop {
 

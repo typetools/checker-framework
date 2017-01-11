@@ -4,8 +4,8 @@ import org.checkerframework.checker.lowerbound.LowerBoundChecker;
 import org.checkerframework.framework.source.SuppressWarningsKeys;
 
 /**
- * A type checker for preventing out-of-bounds accesses on arrays and lists. Contains two
- * subcheckers that do all of the actual work: the Lower Bound Checker and the Upper Bound Checker.
+ * A type checker for preventing out-of-bounds accesses on arrays. Contains two subcheckers that do
+ * all of the actual work: the Lower Bound Checker and the Upper Bound Checker.
  *
  * @checker_framework.manual #index-checker Index Checker
  */

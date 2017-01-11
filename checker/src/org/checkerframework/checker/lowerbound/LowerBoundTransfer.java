@@ -12,10 +12,9 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -90,7 +89,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  *
  * </pre>
  */
-public class LowerBoundTransfer extends IndexAbstractTransfer<CFStore, LowerBoundTransfer> {
+public class LowerBoundTransfer extends IndexAbstractTransfer {
 
     /** The canonical {@link GTENegativeOne} annotation. */
     public final AnnotationMirror GTEN1;
@@ -104,10 +103,9 @@ public class LowerBoundTransfer extends IndexAbstractTransfer<CFStore, LowerBoun
     // The ATF (Annotated Type Factory).
     private LowerBoundAnnotatedTypeFactory aTypeFactory;
 
-    public LowerBoundTransfer(CFAbstractAnalysis<CFValue, CFStore, LowerBoundTransfer> analysis) {
+    public LowerBoundTransfer(CFAnalysis analysis) {
         super(analysis);
-        aTypeFactory =
-                (LowerBoundAnnotatedTypeFactory) (AnnotatedTypeFactory) analysis.getTypeFactory();
+        aTypeFactory = (LowerBoundAnnotatedTypeFactory) analysis.getTypeFactory();
         // Initialize qualifiers.
         GTEN1 = aTypeFactory.GTEN1;
         NN = aTypeFactory.NN;
@@ -157,14 +155,12 @@ public class LowerBoundTransfer extends IndexAbstractTransfer<CFStore, LowerBoun
                 super.strengthenAnnotationOfEqualTo(
                         result, firstNode, secondNode, firstValue, secondValue, notEqualTo);
 
-        IndexRefinementInfo<CFStore> rfi =
-                new IndexRefinementInfo<>(result, analysis, secondNode, firstNode);
+        IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, secondNode, firstNode);
 
         // There is also special processing to look
         // for literals on one side of the equals and a GTEN1 or NN on the other, so that
         // those types can be promoted in the branch where their values are not equal to certain
         // literals.
-
         CFStore notEqualsStore = notEqualTo ? rfi.thenStore : rfi.elseStore;
         notEqualToValue(rfi.left, rfi.right, rfi.rightType, notEqualsStore);
         notEqualToValue(rfi.right, rfi.left, rfi.leftType, notEqualsStore);

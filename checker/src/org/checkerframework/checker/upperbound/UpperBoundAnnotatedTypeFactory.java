@@ -2,14 +2,18 @@ package org.checkerframework.checker.upperbound;
 
 import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.qual.IndexFor;
@@ -24,15 +28,14 @@ import org.checkerframework.checker.upperbound.qual.LTLengthOf;
 import org.checkerframework.checker.upperbound.qual.LTOMLengthOf;
 import org.checkerframework.checker.upperbound.qual.UpperBoundBottom;
 import org.checkerframework.checker.upperbound.qual.UpperBoundUnknown;
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -50,9 +53,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * the minLen checker and comparing the min lengths of arrays to the known values of variables as
  * supplied by the value checker.
  */
-public class UpperBoundAnnotatedTypeFactory
-        extends GenericAnnotatedTypeFactory<
-                CFValue, UpperBoundStore, UpperBoundTransfer, UpperBoundAnalysis> {
+public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Easy shorthand for UpperBoundUnknown.class, basically. */
     public final AnnotationMirror UNKNOWN;
@@ -209,18 +210,6 @@ public class UpperBoundAnnotatedTypeFactory
 
     public boolean isMathMin(Tree methodTree) {
         return imf.isMathMin(methodTree, processingEnv);
-    }
-
-    public boolean isListRemove(ExecutableElement method) {
-        return imf.isListRemove(method, processingEnv);
-    }
-
-    public boolean isListClear(ExecutableElement method) {
-        return imf.isListClear(method, processingEnv);
-    }
-
-    public boolean isListAdd(ExecutableElement method) {
-        return imf.isListAdd(method, processingEnv);
     }
 
     /**

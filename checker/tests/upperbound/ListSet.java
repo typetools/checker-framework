@@ -1,6 +1,8 @@
-import java.util.*;
-import org.checkerframework.checker.index.qual.*;
-import org.checkerframework.checker.upperbound.qual.*;
+import org.checkerframework.checker.index.qual.IndexFor;
+import org.checkerframework.checker.upperbound.qual.LTEqLengthOf;
+import org.checkerframework.checker.upperbound.qual.LTLengthOf;
+
+// @skip-test until we bring list support back
 
 class ListSet {
 

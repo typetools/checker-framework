@@ -10,21 +10,19 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.lowerbound.qual.NonNegative;
 import org.checkerframework.checker.minlen.qual.MinLen;
 import org.checkerframework.checker.minlen.qual.MinLenBottom;
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -41,8 +39,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * The MinLen checker is responsible for annotating arrays with their minimum lengths. It is meant
  * to be run by the Upper and Lower Bound Checkers.
  */
-public class MinLenAnnotatedTypeFactory
-        extends GenericAnnotatedTypeFactory<CFValue, MinLenStore, MinLenTransfer, MinLenAnalysis> {
+public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** {@code @MinLen(0)}, which is the top qualifier. */
     final AnnotationMirror MIN_LEN_0;
@@ -78,15 +75,6 @@ public class MinLenAnnotatedTypeFactory
     /** Returns the value type associated with the given ExpressionTree. */
     public AnnotatedTypeMirror valueTypeFromTree(Tree tree) {
         return getValueAnnotatedTypeFactory().getAnnotatedType(tree);
-    }
-
-    /** Wrapper methods for IMF. */
-    public boolean isListRemove(ExecutableElement method) {
-        return imf.isListRemove(method, processingEnv);
-    }
-
-    public boolean isListClear(ExecutableElement method) {
-        return imf.isListClear(method, processingEnv);
     }
 
     /**

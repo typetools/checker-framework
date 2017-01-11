@@ -1,5 +1,9 @@
-import java.util.*;
-import org.checkerframework.checker.lowerbound.qual.*;
+import java.util.ArrayList;
+import org.checkerframework.checker.lowerbound.qual.GTENegativeOne;
+import org.checkerframework.checker.lowerbound.qual.NonNegative;
+import org.checkerframework.checker.lowerbound.qual.Positive;
+
+// @skip-test until we bring list support back
 
 class ListSupport {
 

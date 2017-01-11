@@ -1,6 +1,8 @@
-import java.util.*;
-import org.checkerframework.checker.index.qual.*;
-import org.checkerframework.checker.upperbound.qual.*;
+import org.checkerframework.checker.upperbound.qual.LTEqLengthOf;
+import org.checkerframework.checker.upperbound.qual.LTLengthOf;
+import org.checkerframework.checker.upperbound.qual.UpperBoundBottom;
+
+// @skip-test until we bring list support back
 
 class ListSupport {
 
