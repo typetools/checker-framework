@@ -182,7 +182,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private Integer maybeValFromValueType(AnnotatedTypeMirror valueType) {
         List<Long> possibleValues = possibleValuesFromValueType(valueType);
         if (possibleValues != null && possibleValues.size() == 1) {
-            return new Integer(possibleValues.get(0).intValue());
+            return possibleValues.get(0).intValue();
         } else {
             return null;
         }
@@ -535,15 +535,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 String[] names =
                         UpperBoundUtils.getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
                 typeDst.replaceAnnotation(createLTLengthOfAnnotation(names));
-                return;
             } else if (typeSrc.hasAnnotation(LTLengthOf.class)) {
                 String[] names =
                         UpperBoundUtils.getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
                 typeDst.replaceAnnotation(createLTEqLengthOfAnnotation(names));
-                return;
             } else if (typeSrc.hasAnnotation(LTEqLengthOf.class)) {
                 typeDst.replaceAnnotation(UNKNOWN);
-                return;
             }
         }
 
@@ -553,12 +550,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 String[] names =
                         UpperBoundUtils.getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
                 typeDst.replaceAnnotation(createLTOMLengthOfAnnotation(names));
-                return;
             } else if (typeSrc.hasAnnotation(LTEqLengthOf.class)) {
                 String[] names =
                         UpperBoundUtils.getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
                 typeDst.replaceAnnotation(createLTLengthOfAnnotation(names));
-                return;
             }
         }
 
@@ -610,7 +605,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (maybeValRight != null) {
                 AnnotatedTypeMirror leftType = getAnnotatedType(left);
                 addAnnotationForLiteralDivide(maybeValRight, leftType, type);
-                return;
             }
         }
 
@@ -620,7 +614,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || nonLiteralType.hasAnnotation(LTOMLengthOf.class)) {
                 if (val >= 1) {
                     type.replaceAnnotation(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
-                    return;
                 }
             } else if (nonLiteralType.hasAnnotation(LTEqLengthOf.class)) {
                 // FIXME: Is this unsafe? What if the length is zero?
@@ -629,10 +622,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             UpperBoundUtils.getValue(
                                     nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
                     type.replaceAnnotation(createLTLengthOfAnnotation(names));
-                    return;
                 } else if (val == 1) {
                     type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
-                    return;
                 }
             }
         }
