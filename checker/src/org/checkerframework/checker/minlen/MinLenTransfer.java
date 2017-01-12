@@ -2,7 +2,6 @@ package org.checkerframework.checker.minlen;
 
 import com.sun.source.tree.Tree;
 import java.util.Collections;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
@@ -73,16 +72,16 @@ public class MinLenTransfer extends IndexAbstractTransfer {
         CFStore equalsStore = notEqualTo ? rfi.elseStore : rfi.thenStore;
         CFStore notEqualsStore = notEqualTo ? rfi.thenStore : rfi.elseStore;
 
-        refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, equalsStore);
-        refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, equalsStore);
+        refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, equalsStore);
+        refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, equalsStore);
 
         // Types in the not equal branch should only be refined if a length is being compared
         // to zero.
         // This special case occurs because zero is a hard bound on the bottom
         // of the array (i.e. no array can be smaller than zero), so in this
         // case the MinLen of the array is one.
-        refineNotEqual(rfi.right, rfi.rightType, rfi.left, rfi.leftType, notEqualsStore);
-        refineNotEqual(rfi.left, rfi.leftType, rfi.right, rfi.rightType, notEqualsStore);
+        refineNotEqual(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, notEqualsStore);
+        refineNotEqual(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, notEqualsStore);
 
         return rfi.newResult;
     }
@@ -98,10 +97,10 @@ public class MinLenTransfer extends IndexAbstractTransfer {
     }
 
     private Integer getNewMinLenForRefinement(
-            Node fiNode, Node nonFiNode, Set<AnnotationMirror> leftType) {
+            Node fiNode, Node nonFiNode, AnnotationMirror leftAnno) {
         FieldAccessNode fi = null;
         Tree tree = null;
-        Set<AnnotationMirror> type = null;
+        AnnotationMirror type = null;
         // Only the length matters. This will miss an expression which
         // include an array length (like "a.length + 1"), but that's okay
         // for now.
@@ -109,7 +108,7 @@ public class MinLenTransfer extends IndexAbstractTransfer {
         if (fiNode instanceof FieldAccessNode) {
             fi = (FieldAccessNode) fiNode;
             tree = nonFiNode.getTree();
-            type = leftType;
+            type = leftAnno;
         } else {
             return null;
         }
@@ -138,13 +137,13 @@ public class MinLenTransfer extends IndexAbstractTransfer {
 
     private void refineNotEqual(
             Node left,
-            Set<AnnotationMirror> leftType,
+            AnnotationMirror leftAnno,
             Node right,
-            Set<AnnotationMirror> rightType,
+            AnnotationMirror rightAnno,
             CFStore store) {
 
         Receiver rec = getReceiverForFiNodeOrNull(left);
-        Integer newMinLen = getNewMinLenForRefinement(left, right, leftType);
+        Integer newMinLen = getNewMinLenForRefinement(left, right, leftAnno);
 
         if (newMinLen != null && newMinLen == 0 && rec != null) {
             store.insertValue(rec, atypeFactory.createMinLen(1));
@@ -154,13 +153,13 @@ public class MinLenTransfer extends IndexAbstractTransfer {
     @Override
     protected void refineGT(
             Node left,
-            Set<AnnotationMirror> leftType,
+            AnnotationMirror leftAnno,
             Node right,
-            Set<AnnotationMirror> rightType,
+            AnnotationMirror rightAnno,
             CFStore store) {
 
         Receiver rec = getReceiverForFiNodeOrNull(left);
-        Integer newMinLen = getNewMinLenForRefinement(left, right, leftType);
+        Integer newMinLen = getNewMinLenForRefinement(left, right, leftAnno);
         if (rec != null && newMinLen != null) {
             store.insertValue(rec, atypeFactory.createMinLen(newMinLen + 1));
         }
@@ -169,12 +168,12 @@ public class MinLenTransfer extends IndexAbstractTransfer {
     @Override
     protected void refineGTE(
             Node left,
-            Set<AnnotationMirror> leftType,
+            AnnotationMirror leftAnno,
             Node right,
-            Set<AnnotationMirror> rightType,
+            AnnotationMirror rightAnno,
             CFStore store) {
         Receiver rec = getReceiverForFiNodeOrNull(left);
-        Integer newMinLen = getNewMinLenForRefinement(left, right, leftType);
+        Integer newMinLen = getNewMinLenForRefinement(left, right, leftAnno);
         if (rec != null && newMinLen != null) {
             store.insertValue(rec, atypeFactory.createMinLen(newMinLen));
         }

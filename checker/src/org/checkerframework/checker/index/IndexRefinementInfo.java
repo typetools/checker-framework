@@ -1,6 +1,5 @@
 package org.checkerframework.checker.index;
 
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -19,7 +18,7 @@ import org.checkerframework.framework.flow.CFValue;
 public class IndexRefinementInfo {
 
     public Node left, right;
-    public Set<AnnotationMirror> leftType, rightType;
+    public AnnotationMirror leftAnno, rightAnno;
     public CFStore thenStore, elseStore;
     public ConditionalTransferResult<CFValue, CFStore> newResult;
 
@@ -29,14 +28,14 @@ public class IndexRefinementInfo {
         left = l;
 
         if (analysis.getValue(right) == null || analysis.getValue(left) == null) {
-            leftType = null;
-            rightType = null;
+            leftAnno = null;
+            rightAnno = null;
             newResult =
                     new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
         } else {
 
-            rightType = analysis.getValue(right).getAnnotations();
-            leftType = analysis.getValue(left).getAnnotations();
+            rightAnno = analysis.getValue(right).getAnnotations().iterator().next();
+            leftAnno = analysis.getValue(left).getAnnotations().iterator().next();
 
             thenStore = result.getThenStore();
             elseStore = result.getElseStore();

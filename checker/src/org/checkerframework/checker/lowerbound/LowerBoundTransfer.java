@@ -1,6 +1,5 @@
 package org.checkerframework.checker.lowerbound;
 
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
@@ -121,7 +120,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
      * @param otherType the type of the other side of the ==/!=
      */
     private void notEqualToValue(
-            Node mLiteral, Node otherNode, Set<AnnotationMirror> otherType, CFStore store) {
+            Node mLiteral, Node otherNode, AnnotationMirror otherAnno, CFStore store) {
 
         Long integerLiteralOrNull = aTypeFactory.getExactValueOrNullFromTree(mLiteral.getTree());
 
@@ -130,12 +129,12 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         }
 
         if (integerLiteralOrNull == 0) {
-            if (AnnotationUtils.containsSameByClass(otherType, NonNegative.class)) {
+            if (AnnotationUtils.areSameByClass(otherAnno, NonNegative.class)) {
                 Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
                 store.insertValue(rec, POS);
             }
         } else if (integerLiteralOrNull == -1) {
-            if (AnnotationUtils.containsSameByClass(otherType, GTENegativeOne.class)) {
+            if (AnnotationUtils.areSameByClass(otherAnno, GTENegativeOne.class)) {
                 Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
                 store.insertValue(rec, NN);
             }
@@ -162,8 +161,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         // those types can be promoted in the branch where their values are not equal to certain
         // literals.
         CFStore notEqualsStore = notEqualTo ? rfi.thenStore : rfi.elseStore;
-        notEqualToValue(rfi.left, rfi.right, rfi.rightType, notEqualsStore);
-        notEqualToValue(rfi.right, rfi.left, rfi.leftType, notEqualsStore);
+        notEqualToValue(rfi.left, rfi.right, rfi.rightAnno, notEqualsStore);
+        notEqualToValue(rfi.right, rfi.left, rfi.leftAnno, notEqualsStore);
 
         return rfi.newResult;
     }
@@ -177,26 +176,26 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     @Override
     protected void refineGT(
             Node left,
-            Set<AnnotationMirror> leftType,
+            AnnotationMirror leftAnno,
             Node right,
-            Set<AnnotationMirror> rightType,
+            AnnotationMirror rightAnno,
             CFStore store) {
 
-        if (rightType == null || leftType == null) {
+        if (rightAnno == null || leftAnno == null) {
             return;
         }
 
         Receiver leftRec = FlowExpressions.internalReprOf(aTypeFactory, left);
 
-        if (AnnotationUtils.containsSame(rightType, GTEN1)) {
+        if (AnnotationUtils.areSame(rightAnno, GTEN1)) {
             store.insertValue(leftRec, NN);
             return;
         }
-        if (AnnotationUtils.containsSame(rightType, NN)) {
+        if (AnnotationUtils.areSame(rightAnno, NN)) {
             store.insertValue(leftRec, POS);
             return;
         }
-        if (AnnotationUtils.containsSame(rightType, POS)) {
+        if (AnnotationUtils.areSame(rightAnno, POS)) {
             store.insertValue(leftRec, POS);
             return;
         }
@@ -210,27 +209,20 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     @Override
     protected void refineGTE(
             Node left,
-            Set<AnnotationMirror> leftType,
+            AnnotationMirror leftAnno,
             Node right,
-            Set<AnnotationMirror> rightType,
+            AnnotationMirror rightAnno,
             CFStore store) {
 
-        if (rightType == null || leftType == null) {
+        if (rightAnno == null || leftAnno == null) {
             return;
         }
 
         Receiver leftRec = FlowExpressions.internalReprOf(aTypeFactory, left);
 
-        AnnotationMirror rightLBType =
-                aTypeFactory.getQualifierHierarchy().findAnnotationInHierarchy(rightType, UNKNOWN);
-        AnnotationMirror leftLBType =
-                aTypeFactory.getQualifierHierarchy().findAnnotationInHierarchy(rightType, UNKNOWN);
-
         AnnotationMirror newLBType =
-                aTypeFactory.getQualifierHierarchy().greatestLowerBound(rightLBType, leftLBType);
+                aTypeFactory.getQualifierHierarchy().greatestLowerBound(rightAnno, leftAnno);
 
-        if (rightLBType != null && leftLBType != null && newLBType != null) {
-            store.insertValue(leftRec, newLBType);
-        }
+        store.insertValue(leftRec, newLBType);
     }
 }
