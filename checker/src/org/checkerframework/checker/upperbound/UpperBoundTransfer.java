@@ -87,6 +87,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                 super.strengthenAnnotationOfEqualTo(
                         res, firstNode, secondNode, firstValue, secondValue, notEqualTo);
         IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, firstNode, secondNode);
+        if (rfi.left == null || rfi.right == null) {
+            return result;
+        }
 
         CFStore equalsStore = notEqualTo ? rfi.elseStore : rfi.thenStore;
         CFStore notEqualStore = notEqualTo ? rfi.thenStore : rfi.elseStore;

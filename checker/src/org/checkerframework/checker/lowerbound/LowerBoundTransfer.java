@@ -155,6 +155,9 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
                         result, firstNode, secondNode, firstValue, secondValue, notEqualTo);
 
         IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, secondNode, firstNode);
+        if (rfi.left == null || rfi.right == null) {
+            return result;
+        }
 
         // There is also special processing to look
         // for literals on one side of the equals and a GTEN1 or NN on the other, so that

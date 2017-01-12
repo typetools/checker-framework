@@ -21,7 +21,12 @@ import org.checkerframework.javacutil.ErrorReporter;
 public class IndexRefinementInfo {
 
     public Node left, right;
+    /**
+     * Annotation for left and right expressions. Might be null if dataflow doesn't have a value for
+     * the expression. *
+     */
     public AnnotationMirror leftAnno, rightAnno;
+
     public CFStore thenStore, elseStore;
     public ConditionalTransferResult<CFValue, CFStore> newResult;
 
