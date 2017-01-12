@@ -14,7 +14,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
@@ -45,7 +44,6 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationHelper;
 import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationTreeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -118,9 +116,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         // UpperBoundTreeAnnotator changes the type of array.length to @LTEL
                         // ("array"). If the ExpressionAnnotationTreeAnnotator tries to viewpoint
                         // adapt it based on the declaration of length; it will fail.
-                        if (tree.getIdentifier().contentEquals("length")
-                                && InternalUtils.typeOf(tree.getExpression()).getKind()
-                                        == TypeKind.ARRAY) {
+                        if (TreeUtils.isArrayLengthAccess(tree)) {
                             return null;
                         }
                         return super.visitMemberSelect(tree, type);
@@ -524,8 +520,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
-            if (tree.getIdentifier().contentEquals("length")
-                    && InternalUtils.typeOf(tree.getExpression()).getKind() == TypeKind.ARRAY) {
+            if (TreeUtils.isArrayLengthAccess(tree)) {
                 String arrName =
                         FlowExpressions.internalReprOf(this.atypeFactory, tree.getExpression())
                                 .toString();
@@ -725,33 +720,26 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         private boolean checkForMathRandomSpecialCase(
                 ExpressionTree randTree, ExpressionTree arrLenTree, AnnotatedTypeMirror type) {
-            if (arrLenTree.getKind() == Tree.Kind.MEMBER_SELECT) {
+            if (randTree.getKind() == Tree.Kind.METHOD_INVOCATION
+                    && TreeUtils.isArrayLengthAccess(arrLenTree)) {
                 MemberSelectTree mstree = (MemberSelectTree) arrLenTree;
-                if (mstree.getIdentifier().contentEquals("length")
-                        && InternalUtils.typeOf(mstree.getExpression()).getKind()
-                                == TypeKind.ARRAY) {
-                    // ArrLenTree must represent an array length.
+                MethodInvocationTree mitree = (MethodInvocationTree) randTree;
 
-                    if (randTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+                if (imf.isMathRandom(mitree, processingEnv)) {
+                    // Okay, so this is Math.random() * array.length, which must be NonNegative
+                    type.addAnnotation(
+                            createLTLengthOfAnnotation(mstree.getExpression().toString()));
+                    return true;
+                }
 
-                        MethodInvocationTree mitree = (MethodInvocationTree) randTree;
-
-                        if (imf.isMathRandom(mitree, processingEnv)) {
-                            // Okay, so this is Math.random() * array.length, which must be NonNegative
-                            type.addAnnotation(
-                                    createLTLengthOfAnnotation(mstree.getExpression().toString()));
-                            return true;
-                        }
-
-                        if (imf.isRandomNextDouble(mitree, processingEnv)) {
-                            // Okay, so this is Random.nextDouble() * array.length, which must be NonNegative
-                            type.addAnnotation(
-                                    createLTLengthOfAnnotation(mstree.getExpression().toString()));
-                            return true;
-                        }
-                    }
+                if (imf.isRandomNextDouble(mitree, processingEnv)) {
+                    // Okay, so this is Random.nextDouble() * array.length, which must be NonNegative
+                    type.addAnnotation(
+                            createLTLengthOfAnnotation(mstree.getExpression().toString()));
+                    return true;
                 }
             }
+
             return false;
         }
 

@@ -15,7 +15,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
@@ -38,7 +37,6 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -120,6 +118,34 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /** Returns the type in the lower bound hierarchy a Value Checker type corresponds to. */
+    private AnnotationMirror getLowerBoundAnnotationFromValueType(AnnotatedTypeMirror valueType) {
+        // In the code, AnnotationMirror is abbr. as anm.
+        List<Long> possibleValues = possibleValuesFromValueType(valueType);
+        // possibleValues is null if the Value Checker does not have any estimate.
+        if (possibleValues == null || possibleValues.size() == 0) {
+            return UNKNOWN;
+        }
+        // The annotation of the whole list is the min of the list.
+        long lvalMin = Collections.min(possibleValues);
+        // Turn it into an integer.
+        int valMin = (int) Math.max(Math.min(Integer.MAX_VALUE, lvalMin), Integer.MIN_VALUE);
+        return anmFromVal(valMin);
+    }
+
+    /** Determine the annotation that should be associated with a literal. */
+    private AnnotationMirror anmFromVal(int val) {
+        if (val >= 1) {
+            return POS;
+        } else if (val >= 0) {
+            return NN;
+        } else if (val >= -1) {
+            return GTEN1;
+        } else {
+            return UNKNOWN;
+        }
+    }
+
     /** Get the list of possible values from a Value Checker type. May return null. */
     private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
         AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
@@ -186,19 +212,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        /** Determine the annotation that should be associated with a literal. */
-        private AnnotationMirror anmFromVal(int val) {
-            if (val >= 1) {
-                return POS;
-            } else if (val >= 0) {
-                return NN;
-            } else if (val >= -1) {
-                return GTEN1;
-            } else {
-                return UNKNOWN;
-            }
-        }
-
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
             if (tree.getKind() == Tree.Kind.NULL_LITERAL) {
@@ -253,29 +266,12 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitMethodInvocation(tree, type);
         }
 
-        /** Returns the type in the lower bound hierarchy a Value Checker type corresponds to. */
-        private AnnotationMirror getLowerBoundAnnotationFromValueType(
-                AnnotatedTypeMirror valueType) {
-            // In the code, AnnotationMirror is abbr. as anm.
-            List<Long> possibleValues = possibleValuesFromValueType(valueType);
-            // possibleValues is null if the Value Checker does not have any estimate.
-            if (possibleValues == null || possibleValues.size() == 0) {
-                return UNKNOWN;
-            }
-            // The annotation of the whole list is the min of the list.
-            long lvalMin = Collections.min(possibleValues);
-            // Turn it into an integer.
-            int valMin = (int) Math.max(Math.min(Integer.MAX_VALUE, lvalMin), Integer.MIN_VALUE);
-            return anmFromVal(valMin);
-        }
-
         /**
          * Looks up the minlen of a member select tree. Returns null if the tree doesn't represent
          * an array's length field.
          */
         private Integer getMinLenFromMemberSelectTree(MemberSelectTree tree) {
-            if (tree.getIdentifier().contentEquals("length")
-                    && InternalUtils.typeOf(tree.getExpression()).getKind() == TypeKind.ARRAY) {
+            if (TreeUtils.isArrayLengthAccess(tree)) {
                 AnnotatedTypeMirror minLenType =
                         getMinLenAnnotatedTypeFactory().getAnnotatedType(tree.getExpression());
                 AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
@@ -521,29 +517,20 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         private boolean checkForMathRandomSpecialCase(
                 ExpressionTree randTree, ExpressionTree arrLenTree, AnnotatedTypeMirror type) {
-            if (arrLenTree.getKind() == Kind.MEMBER_SELECT) {
-                MemberSelectTree msTree = (MemberSelectTree) arrLenTree;
-                if (msTree.getIdentifier().contentEquals("length")
-                        && InternalUtils.typeOf(msTree.getExpression()).getKind()
-                                == TypeKind.ARRAY) {
-                    // For sure, arrLenTree represents an array length.
+            if (randTree.getKind() == Kind.METHOD_INVOCATION
+                    && TreeUtils.isArrayLengthAccess(arrLenTree)) {
+                MethodInvocationTree miTree = (MethodInvocationTree) randTree;
 
-                    if (randTree.getKind() == Kind.METHOD_INVOCATION) {
+                if (imf.isMathRandom(miTree, processingEnv)) {
+                    // This is Math.random() * array.length, which must be NonNegative
+                    type.addAnnotation(NN);
+                    return true;
+                }
 
-                        MethodInvocationTree miTree = (MethodInvocationTree) randTree;
-
-                        if (imf.isMathRandom(miTree, processingEnv)) {
-                            // This is Math.random() * array.length, which must be NonNegative
-                            type.addAnnotation(NN);
-                            return true;
-                        }
-
-                        if (imf.isRandomNextDouble(miTree, processingEnv)) {
-                            // This is Random.nextDouble() * array.length, which must be NonNegative
-                            type.addAnnotation(NN);
-                            return true;
-                        }
-                    }
+                if (imf.isRandomNextDouble(miTree, processingEnv)) {
+                    // This is Random.nextDouble() * array.length, which must be NonNegative
+                    type.addAnnotation(NN);
+                    return true;
                 }
             }
             return false;

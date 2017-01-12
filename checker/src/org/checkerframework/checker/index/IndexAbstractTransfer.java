@@ -1,8 +1,10 @@
 package org.checkerframework.checker.index;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
@@ -28,7 +30,9 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> result = super.visitGreaterThan(node, in);
 
         IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
-
+        if (rfi.leftAnno == null || rfi.rightAnno == null) {
+            return result;
+        }
         // Refine the then branch.
         refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore);
 
@@ -44,6 +48,9 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> result = super.visitGreaterThanOrEqual(node, in);
 
         IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
+        if (rfi.leftAnno == null || rfi.rightAnno == null) {
+            return result;
+        }
 
         // Refine the then branch.
         refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore);
@@ -60,6 +67,9 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> result = super.visitLessThanOrEqual(node, in);
 
         IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
+        if (rfi.leftAnno == null || rfi.rightAnno == null) {
+            return result;
+        }
 
         // Refine the then branch. A <= is just a flipped >=.
         refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.thenStore);
@@ -75,6 +85,9 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> result = super.visitLessThan(node, in);
 
         IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
+        if (rfi.leftAnno == null || rfi.rightAnno == null) {
+            return result;
+        }
 
         // Refine the then branch. A < is just a flipped >.
         refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.thenStore);
@@ -97,4 +110,13 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
             Node right,
             AnnotationMirror rightAnno,
             CFStore store);
+
+    protected boolean isArrayLengthFieldAccess(Node node) {
+        if (!(node instanceof FieldAccessNode)) {
+            return false;
+        }
+        FieldAccessNode fieldAccess = (FieldAccessNode) node;
+        return fieldAccess.getFieldName().equals("length")
+                && fieldAccess.getReceiver().getType().getKind() == TypeKind.ARRAY;
+    }
 }

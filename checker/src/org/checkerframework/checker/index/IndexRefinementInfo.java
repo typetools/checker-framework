@@ -21,7 +21,12 @@ import org.checkerframework.javacutil.ErrorReporter;
 public class IndexRefinementInfo {
 
     public Node left, right;
+    /**
+     * Annotation for left and right expressions. Might be null if dataflow doesn't have a value for
+     * the expression. *
+     */
     public AnnotationMirror leftAnno, rightAnno;
+
     public CFStore thenStore, elseStore;
     public ConditionalTransferResult<CFValue, CFStore> newResult;
 
@@ -67,8 +72,7 @@ public class IndexRefinementInfo {
         if (tops.size() != 1) {
             ErrorReporter.errorAbort(
                     IndexRefinementInfo.class
-                            + ": Found multiple tops, but "
-                            + "expected one. \nFound: %s",
+                            + ": Found multiple tops, but expected one. \nFound: %s",
                     tops.toString());
             return null; // dead code
         }
