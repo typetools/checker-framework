@@ -36,6 +36,15 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         qualifierHierarchy = atypeFactory.getQualifierHierarchy();
     }
 
+    private void combineFacts(
+            CFStore store, Receiver receiver, AnnotationMirror oldAM, AnnotationMirror newAM) {
+        AnnotationMirror combinedAM = atypeFactory.combineFacts(oldAM, newAM);
+        // The old value is cleared from the store because it might be lower than
+        // combinedAM.
+        store.clearValue(receiver);
+        store.insertValue(receiver, combinedAM);
+    }
+
     // Refine the type of expressions used as an array dimension to be
     // less than length of the array to which the new array is
     // assigned.  For example int[] array = new int[expr]; the type of expr is @LTEqLength("array")
@@ -59,13 +68,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                     FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getTarget());
 
             Set<AnnotationMirror> oldType = in.getValueOfSubNode(dim).getAnnotations();
-
-            AnnotationMirror newType =
-                    qualifierHierarchy.greatestLowerBound(
-                            qualifierHierarchy.findAnnotationInHierarchy(oldType, UNKNOWN),
-                            atypeFactory.createLTEqLengthOfAnnotation(arrayRec.toString()));
-
-            store.insertValue(dimRec, newType);
+            AnnotationMirror oldAM = qualifierHierarchy.findAnnotationInHierarchy(oldType, UNKNOWN);
+            AnnotationMirror newAM = atypeFactory.createLTEqLengthOfAnnotation(arrayRec.toString());
+            combineFacts(store, dimRec, oldAM, newAM);
         }
         return result;
     }
@@ -86,8 +91,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         CFStore equalsStore = notEqualTo ? rfi.elseStore : rfi.thenStore;
         CFStore notEqualStore = notEqualTo ? rfi.thenStore : rfi.elseStore;
 
-        refineEq(rfi.left, rfi.leftType, rfi.right, rfi.rightType, equalsStore);
-        refineNeq(rfi.left, rfi.leftType, rfi.right, rfi.rightType, notEqualStore);
+        refineEq(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, equalsStore);
+        refineNeq(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, notEqualStore);
 
         return rfi.newResult;
     }
@@ -99,45 +104,23 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      */
     protected void refineGT(
             Node left,
-            Set<AnnotationMirror> leftType,
+            AnnotationMirror leftAnno,
             Node right,
-            Set<AnnotationMirror> rightType,
+            AnnotationMirror rightAnno,
             CFStore store) {
-        AnnotationMirror UNKNOWN = atypeFactory.UNKNOWN;
-
-        // First, check if the left type is one of the ones that tells us something.
-        if (AnnotationUtils.containsSameByClass(leftType, LTEqLengthOf.class)) {
-            // Create an LTL for the right type.
-
-            Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-            String[] names =
-                    UpperBoundUtils.getValue(
-                            qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
-
-            AnnotationMirror newType =
-                    qualifierHierarchy.greatestLowerBound(
-                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                            atypeFactory.createLTLengthOfAnnotation(names));
-
-            store.insertValue(rightRec, newType);
+        Class<?> nextHigherClass;
+        if (AnnotationUtils.areSameByClass(leftAnno, LTEqLengthOf.class)) {
+            nextHigherClass = LTLengthOf.class;
+        } else if (AnnotationUtils.areSameByClass(leftAnno, LTLengthOf.class)) {
+            nextHigherClass = LTOMLengthOf.class;
+        } else {
             return;
         }
-        if (AnnotationUtils.containsSameByClass(leftType, LTLengthOf.class)) {
-            // Create an LTOM for the right type.
+        Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
+        String[] names = UpperBoundUtils.getValue(leftAnno);
 
-            Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-            String[] names =
-                    UpperBoundUtils.getValue(
-                            qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
-
-            AnnotationMirror newType =
-                    qualifierHierarchy.greatestLowerBound(
-                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                            atypeFactory.createLTOMLengthOfAnnotation(names));
-
-            store.insertValue(rightRec, newType);
-            return;
-        }
+        combineFacts(
+                store, rightRec, rightAnno, atypeFactory.createAnnotation(nextHigherClass, names));
     }
 
     /**
@@ -147,83 +130,32 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      */
     protected void refineGTE(
             Node left,
-            Set<AnnotationMirror> leftType,
+            AnnotationMirror leftAnno,
             Node right,
-            Set<AnnotationMirror> rightType,
+            AnnotationMirror rightAnno,
             CFStore store) {
-        AnnotationMirror UNKNOWN = atypeFactory.UNKNOWN;
-        if (AnnotationUtils.containsSameByClass(leftType, LTLengthOf.class)) {
-            // Create an LTL for the right type.
+        if (AnnotationUtils.areSameByClass(leftAnno, LTLengthOf.class)
+                || AnnotationUtils.areSameByClass(leftAnno, LTEqLengthOf.class)
+                || AnnotationUtils.areSameByClass(leftAnno, LTOMLengthOf.class)) {
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-            String[] names =
-                    UpperBoundUtils.getValue(
-                            qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
-
-            AnnotationMirror newType =
-                    qualifierHierarchy.greatestLowerBound(
-                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                            atypeFactory.createLTLengthOfAnnotation(names));
-
-            store.insertValue(rightRec, newType);
-            return;
-        } else if (AnnotationUtils.containsSameByClass(leftType, LTEqLengthOf.class)) {
-            // Create an LTL for the right type.
-
-            Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-            String[] names =
-                    UpperBoundUtils.getValue(
-                            qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
-
-            AnnotationMirror newType =
-                    qualifierHierarchy.greatestLowerBound(
-                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                            atypeFactory.createLTEqLengthOfAnnotation(names));
-
-            store.insertValue(rightRec, newType);
-            return;
-        } else if (AnnotationUtils.containsSameByClass(leftType, LTOMLengthOf.class)) {
-            // Create an LTOM for the right type.
-
-            Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-            String[] names =
-                    UpperBoundUtils.getValue(
-                            qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
-
-            AnnotationMirror newType =
-                    qualifierHierarchy.greatestLowerBound(
-                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                            atypeFactory.createLTOMLengthOfAnnotation(names));
-
-            store.insertValue(rightRec, newType);
-            return;
+            combineFacts(store, rightRec, rightAnno, leftAnno);
         }
     }
 
     private void refineEq(
             Node left,
-            Set<AnnotationMirror> leftType,
+            AnnotationMirror leftAnno,
             Node right,
-            Set<AnnotationMirror> rightType,
+            AnnotationMirror rightAnno,
             CFStore store) {
-        AnnotationMirror UNKNOWN = atypeFactory.UNKNOWN;
-
-        AnnotationMirror rightUpperboundType =
-                qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN);
-        AnnotationMirror leftUpperboundType =
-                qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN);
-
-        if (rightUpperboundType == null || leftUpperboundType == null) {
+        if (rightAnno == null || leftAnno == null) {
             return;
         }
 
-        AnnotationMirror newType =
-                qualifierHierarchy.greatestLowerBound(rightUpperboundType, leftUpperboundType);
-
         Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
         Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
-
-        store.insertValue(rightRec, newType);
-        store.insertValue(leftRec, newType);
+        combineFacts(store, rightRec, rightAnno, leftAnno);
+        combineFacts(store, leftRec, rightAnno, leftAnno);
     }
 
     private boolean isArrayLengthFieldAccess(Node node) {
@@ -235,68 +167,54 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                 && fieldAccess.getReceiver().getType().getKind() == TypeKind.ARRAY;
     }
 
-    private void specialCaseForLTEL(
-            Set<AnnotationMirror> leftType, Node left, Node right, CFStore store) {
-        if (AnnotationUtils.containsSameByClass(leftType, LTEqLengthOf.class)) {
-            if (isArrayLengthFieldAccess(right)) {
-                FieldAccess fieldAccess =
-                        FlowExpressions.internalReprOfFieldAccess(
-                                atypeFactory, (FieldAccessNode) right);
-                String arrayName = fieldAccess.getReceiver().toString();
-
-                String[] names =
-                        UpperBoundUtils.getValue(
-                                AnnotationUtils.getAnnotationByClass(leftType, LTEqLengthOf.class));
-                if (names.length != 1) {
-                    // if there is more than one array, then no refinement takes place, because precise
-                    // information is only available  about one array.
-                    return;
-                }
-
-                if (names[0].equals(arrayName)) {
-                    store.insertValue(
-                            FlowExpressions.internalReprOf(analysis.getTypeFactory(), left),
-                            atypeFactory.createLTLengthOfAnnotation(arrayName));
-                }
-            }
-        }
-    }
-
-    private void specialCaseForLTL(
-            Set<AnnotationMirror> leftType, Node left, Node right, CFStore store) {
-        if (AnnotationUtils.containsSameByClass(leftType, LTLengthOf.class)) {
-            if (isArrayLengthFieldAccess(right)) {
-                FieldAccess fieldAccess =
-                        FlowExpressions.internalReprOfFieldAccess(
-                                atypeFactory, (FieldAccessNode) right);
-                String arrayName = fieldAccess.getReceiver().toString();
-
-                String[] names =
-                        UpperBoundUtils.getValue(
-                                AnnotationUtils.getAnnotationByClass(leftType, LTLengthOf.class));
-                if (names.length != 1) {
-                    // if there is more than one array, then no refinement takes place, because precise
-                    // information is only available  about one array.
-                    return;
-                }
-                if (names[0].equals(arrayName)) {
-                    store.insertValue(
-                            FlowExpressions.internalReprOf(analysis.getTypeFactory(), left),
-                            atypeFactory.createLTOMLengthOfAnnotation(arrayName));
-                }
-            }
-        }
-    }
-
     private void refineNeq(
             Node left,
-            Set<AnnotationMirror> leftType,
+            AnnotationMirror leftAnno,
             Node right,
-            Set<AnnotationMirror> rightType,
+            AnnotationMirror rightAnno,
             CFStore store) {
-        specialCaseForLTEL(leftType, left, right, store);
-        specialCaseForLTEL(rightType, right, left, store);
-        specialCaseForLTL(leftType, left, right, store);
-        specialCaseForLTL(rightType, right, left, store);
+        refineNotEqualLtlandLteql(leftAnno, left, right, store);
+        refineNotEqualLtlandLteql(rightAnno, right, left, store);
+    }
+
+    /**
+     *
+     *
+     * <pre><code>
+     * @LTEqLengthOf("array") int i;
+     * if (i != array.length) {
+     *     // refine the type of i to @LTLengthOf("array")
+     * }
+     * </code></pre>
+     */
+    private void refineNotEqualLtlandLteql(
+            AnnotationMirror leftAnno, Node left, Node right, CFStore store) {
+        Class<?> nextHigherClass;
+        if (AnnotationUtils.areSameByClass(leftAnno, LTEqLengthOf.class)) {
+            nextHigherClass = LTLengthOf.class;
+        } else if (AnnotationUtils.areSameByClass(leftAnno, LTLengthOf.class)) {
+            nextHigherClass = LTOMLengthOf.class;
+        } else {
+            return;
+        }
+        if (isArrayLengthFieldAccess(right)) {
+            FieldAccess fieldAccess =
+                    FlowExpressions.internalReprOfFieldAccess(
+                            atypeFactory, (FieldAccessNode) right);
+            String arrayName = fieldAccess.getReceiver().toString();
+
+            String[] names = UpperBoundUtils.getValue(leftAnno);
+            if (names.length != 1) {
+                // if there is more than one array, then no refinement takes place, because precise
+                // information is only available  about one array.
+                return;
+            }
+
+            if (names[0].equals(arrayName)) {
+                store.insertValue(
+                        FlowExpressions.internalReprOf(analysis.getTypeFactory(), left),
+                        atypeFactory.createAnnotation(nextHigherClass, arrayName));
+            }
+        }
     }
 }

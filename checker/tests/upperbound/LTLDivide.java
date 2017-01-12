@@ -2,7 +2,8 @@ import org.checkerframework.checker.upperbound.qual.*;
 
 class LTLDivide {
     int[] test(int[] array) {
-        @LTLengthOf("array") int len = array.length / 2;
+        //        @LTLengthOf("array") int len = array.length / 2;
+        int len = array.length / 2;
         int[] arr = new int[len];
         for (int a = 0; a < len; a++) {
             arr[a] = array[a];

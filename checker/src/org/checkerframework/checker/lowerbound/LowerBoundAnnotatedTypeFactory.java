@@ -727,7 +727,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             // Everything else is unknown.
             type.addAnnotation(UNKNOWN);
-            return;
         }
     }
 
@@ -743,7 +742,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
         type.addAnnotation(UNKNOWN);
-        return;
     }
 
     /**

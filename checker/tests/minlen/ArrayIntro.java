@@ -1,3 +1,5 @@
+import org.checkerframework.checker.minlen.qual.*;
+
 class ArrayIntro {
     // Note that I had to put all these annotations in comments to prevent
     // the autoformatter from screwing with them.

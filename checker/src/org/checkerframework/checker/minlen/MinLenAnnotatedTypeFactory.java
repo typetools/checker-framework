@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.lowerbound.qual.NonNegative;
 import org.checkerframework.checker.minlen.qual.MinLen;
 import org.checkerframework.checker.minlen.qual.MinLenBottom;
@@ -46,17 +45,12 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** {@code @MinLenBottom} */
     final AnnotationMirror MIN_LEN_BOTTOM;
 
-    private final IndexMethodIdentifier imf;
-
     public MinLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLen.class);
         builder.setValue("value", 0);
         MIN_LEN_0 = builder.build();
         MIN_LEN_BOTTOM = AnnotationUtils.fromClass(elements, MinLenBottom.class);
-
-        imf = new IndexMethodIdentifier(processingEnv);
-
         this.postInit();
     }
 

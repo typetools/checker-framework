@@ -1,6 +1,5 @@
 package org.checkerframework.checker.index;
 
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -31,10 +30,10 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
         IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
 
         // Refine the then branch.
-        refineGT(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
+        refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore);
 
         // Refine the else branch, which is the inverse of the then branch.
-        refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
+        refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore);
 
         return rfi.newResult;
     }
@@ -47,10 +46,10 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
         IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
 
         // Refine the then branch.
-        refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
+        refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore);
 
         // Refine the else branch.
-        refineGT(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
+        refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore);
 
         return rfi.newResult;
     }
@@ -63,10 +62,10 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
         IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
 
         // Refine the then branch. A <= is just a flipped >=.
-        refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
+        refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.thenStore);
 
         // Refine the else branch.
-        refineGT(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
+        refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore);
         return rfi.newResult;
     }
 
@@ -78,24 +77,24 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
         IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
 
         // Refine the then branch. A < is just a flipped >.
-        refineGT(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
+        refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.thenStore);
 
         // Refine the else branch.
-        refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
+        refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore);
         return rfi.newResult;
     }
 
     protected abstract void refineGT(
             Node left,
-            Set<AnnotationMirror> leftType,
+            AnnotationMirror leftAnno,
             Node right,
-            Set<AnnotationMirror> rightType,
+            AnnotationMirror rightAnno,
             CFStore store);
 
     protected abstract void refineGTE(
             Node left,
-            Set<AnnotationMirror> leftType,
+            AnnotationMirror leftAnno,
             Node right,
-            Set<AnnotationMirror> rightType,
+            AnnotationMirror rightAnno,
             CFStore store);
 }

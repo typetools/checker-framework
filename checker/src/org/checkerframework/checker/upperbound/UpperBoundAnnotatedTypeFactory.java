@@ -182,7 +182,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private Integer maybeValFromValueType(AnnotatedTypeMirror valueType) {
         List<Long> possibleValues = possibleValuesFromValueType(valueType);
         if (possibleValues != null && possibleValues.size() == 1) {
-            return new Integer(possibleValues.get(0).intValue());
+            return possibleValues.get(0).intValue();
         } else {
             return null;
         }
@@ -226,6 +226,26 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         } else if (AnnotationUtils.areSameByClass(anno, LTEqLengthOf.class)) {
             return createLTEqLengthOfAnnotation(names);
         } else if (AnnotationUtils.areSameByClass(anno, LTOMLengthOf.class)) {
+            return createLTOMLengthOfAnnotation(names);
+        } else {
+            return UNKNOWN;
+        }
+    }
+
+    /**
+     * Creates an annotation of the name given with the set of values given.
+     *
+     * @return annotation given by name with names=values, or UNKNOWN
+     */
+    protected AnnotationMirror createAnnotation(Class<?> anno, String... names) {
+        if (names == null) {
+            names = new String[0];
+        }
+        if (LTLengthOf.class.equals(anno)) {
+            return createLTLengthOfAnnotation(names);
+        } else if (LTEqLengthOf.class.equals(anno)) {
+            return createLTEqLengthOfAnnotation(names);
+        } else if (LTOMLengthOf.class.equals(anno)) {
             return createLTOMLengthOfAnnotation(names);
         } else {
             return UNKNOWN;
@@ -535,15 +555,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 String[] names =
                         UpperBoundUtils.getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
                 typeDst.replaceAnnotation(createLTLengthOfAnnotation(names));
-                return;
             } else if (typeSrc.hasAnnotation(LTLengthOf.class)) {
                 String[] names =
                         UpperBoundUtils.getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
                 typeDst.replaceAnnotation(createLTEqLengthOfAnnotation(names));
-                return;
             } else if (typeSrc.hasAnnotation(LTEqLengthOf.class)) {
                 typeDst.replaceAnnotation(UNKNOWN);
-                return;
             }
         }
 
@@ -553,12 +570,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 String[] names =
                         UpperBoundUtils.getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
                 typeDst.replaceAnnotation(createLTOMLengthOfAnnotation(names));
-                return;
             } else if (typeSrc.hasAnnotation(LTEqLengthOf.class)) {
                 String[] names =
                         UpperBoundUtils.getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
                 typeDst.replaceAnnotation(createLTLengthOfAnnotation(names));
-                return;
             }
         }
 
@@ -610,7 +625,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (maybeValRight != null) {
                 AnnotatedTypeMirror leftType = getAnnotatedType(left);
                 addAnnotationForLiteralDivide(maybeValRight, leftType, type);
-                return;
             }
         }
 
@@ -620,7 +634,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || nonLiteralType.hasAnnotation(LTOMLengthOf.class)) {
                 if (val >= 1) {
                     type.replaceAnnotation(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
-                    return;
                 }
             } else if (nonLiteralType.hasAnnotation(LTEqLengthOf.class)) {
                 // FIXME: Is this unsafe? What if the length is zero?
@@ -629,10 +642,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             UpperBoundUtils.getValue(
                                     nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
                     type.replaceAnnotation(createLTLengthOfAnnotation(names));
-                    return;
                 } else if (val == 1) {
                     type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
-                    return;
                 }
             }
         }
@@ -769,6 +780,52 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             type.addAnnotation(UNKNOWN);
             return;
+        }
+    }
+
+    /**
+     * Combines the facts in a1 with those in a2.
+     *
+     * <p>Same algorithm as greatestLowerBound except if neither annotation is {@link
+     * UpperBoundUnknown} nor {@link UpperBoundBottom} and the arrays in the annotation are not the
+     * same, then the returned annotation is the higher of the two and the union of the arrays. For
+     * example, given {@code @LTLengthOf({"a1", "a2"})} and {@code @LTEqLengthOf ({"b1", "b2"})}
+     * this method returns {@code @LTEqLengthOf({"a1", "a2","b1", "b2"})}}.
+     *
+     * @param a1 AnnotationMirror
+     * @param a2 AnnotationMirror
+     * @return Combines the facts in a1 with those in a2.
+     */
+    public AnnotationMirror combineFacts(AnnotationMirror a1, AnnotationMirror a2) {
+        if (qualHierarchy.isSubtype(a1, a2)) {
+            return a1;
+        } else if (qualHierarchy.isSubtype(a2, a1)) {
+            return a2;
+        } else if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
+            String[] names = getCombinedNames(a1, a2);
+
+            if (AnnotationUtils.areSameByClass(a1, LTLengthOf.class)) {
+                return createLTLengthOfAnnotation(names);
+            } else if (AnnotationUtils.areSameByClass(a1, LTEqLengthOf.class)) {
+                return createLTEqLengthOfAnnotation(names);
+            } else if (AnnotationUtils.areSameByClass(a1, LTOMLengthOf.class)) {
+                return createLTOMLengthOfAnnotation(names);
+            } else {
+                return UNKNOWN; // Should never get here, but function has to be complete.
+            }
+        } else {
+            // a1 and a2 are not annotations of the same class.
+            // Also, one isn't a subtype of the other, so the arrays in each annotation is
+            // different. So, use the combined names, but the annotation has to be the higher of
+            // the two.
+            String[] names = getCombinedNames(a1, a2);
+            if (AnnotationUtils.areSameByClass(a2, LTEqLengthOf.class)
+                    || AnnotationUtils.areSameByClass(a1, LTEqLengthOf.class)) {
+                // If either annotation is LTEqL, then
+                return createLTEqLengthOfAnnotation(names);
+            } else {
+                return createLTLengthOfAnnotation(names);
+            }
         }
     }
 }

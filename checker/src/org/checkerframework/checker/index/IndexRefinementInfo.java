@@ -9,6 +9,8 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.ErrorReporter;
 
 /**
  * This struct contains all of the information that the refinement functions need. It's called by
@@ -19,7 +21,7 @@ import org.checkerframework.framework.flow.CFValue;
 public class IndexRefinementInfo {
 
     public Node left, right;
-    public Set<AnnotationMirror> leftType, rightType;
+    public AnnotationMirror leftAnno, rightAnno;
     public CFStore thenStore, elseStore;
     public ConditionalTransferResult<CFValue, CFStore> newResult;
 
@@ -29,14 +31,14 @@ public class IndexRefinementInfo {
         left = l;
 
         if (analysis.getValue(right) == null || analysis.getValue(left) == null) {
-            leftType = null;
-            rightType = null;
+            leftAnno = null;
+            rightAnno = null;
             newResult =
                     new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
         } else {
-
-            rightType = analysis.getValue(right).getAnnotations();
-            leftType = analysis.getValue(left).getAnnotations();
+            QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
+            rightAnno = getAnno(analysis.getValue(right).getAnnotations(), hierarchy);
+            leftAnno = getAnno(analysis.getValue(left).getAnnotations(), hierarchy);
 
             thenStore = result.getThenStore();
             elseStore = result.getElseStore();
@@ -51,5 +53,25 @@ public class IndexRefinementInfo {
             CFAnalysis analysis,
             BinaryOperationNode node) {
         this(result, analysis, node.getRightOperand(), node.getLeftOperand());
+    }
+
+    private static AnnotationMirror getAnno(
+            Set<AnnotationMirror> set, QualifierHierarchy hierarchy) {
+        if (set.size() == 1) {
+            return set.iterator().next();
+        }
+        if (set.size() == 0) {
+            return null;
+        }
+        Set<? extends AnnotationMirror> tops = hierarchy.getTopAnnotations();
+        if (tops.size() != 1) {
+            ErrorReporter.errorAbort(
+                    IndexRefinementInfo.class
+                            + ": Found multiple tops, but "
+                            + "expected one. \nFound: %s",
+                    tops.toString());
+            return null; // dead code
+        }
+        return hierarchy.findAnnotationInSameHierarchy(set, tops.iterator().next());
     }
 }
