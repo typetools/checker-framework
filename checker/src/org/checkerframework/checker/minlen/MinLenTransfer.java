@@ -17,23 +17,15 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.QualifierHierarchy;
 
 public class MinLenTransfer extends IndexAbstractTransfer {
 
-    protected CFAnalysis analysis;
     protected MinLenAnnotatedTypeFactory atypeFactory;
-
-    private QualifierHierarchy qualifierHierarchy;
 
     public MinLenTransfer(CFAnalysis analysis) {
         super(analysis);
-        this.analysis = analysis;
-        atypeFactory =
-                (MinLenAnnotatedTypeFactory) (AnnotatedTypeFactory) analysis.getTypeFactory();
-        qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+        atypeFactory = (MinLenAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 
     @Override
