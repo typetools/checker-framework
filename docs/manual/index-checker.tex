@@ -1,20 +1,31 @@
 %\htmlhr
 \chapter{Index Checker for array bounds\label{index-checker}}
 
-The Index Checker warns about unsafe array accesses.  It protects
-against Java's
-\sunjavadoc{java/lang/ArrayIndexOutOfBoundsException.html}{ArrayIndexOutOfBoundsException}. A
-class checked by the
-Index Checker  will not throw an ArrayIndexOutOfBoundException unless the
-index has overflowed or underflowed. The Index Checker maintains information
-for each sequence-like data structure and will report unsafe accesses to each.
-It is designed primarily for arrays and Lists.
+The Index Checker warns about any potentially out-of-bounds accesses to sequence-like
+data structures, such as arrays, lists, and strings. A sequence-like data structure
+has a defined length and is accessed with an index that starts with zero. The Index Checker maintains
+information about both sequence-like data structures and potential indices.
 
-The Index Checker maintains an estimate of the range of values for each
-index expression.  There are two ways an expression can fail to be safe for use as an
-index: either it can be too low or it can be too high. The Index
-Checker will warn about both types of dangerous accesses, and will
-issue different warnings for the two.
+The Index Checker warns about several possible errors:
+
+\begin{enumerate}
+\item Accessing a sequence-like data structure with an index that
+  might be negative. The Index Checker will warn that the expression
+  used as the index might be too low.
+\item Accessing a sequence-like data structure with an index
+  that might be larger than the data structure's length. The Index
+  Checker will warn that the expression used as the index might be
+  too high.
+\item Intializing an array with a possibly negative length. The Index
+  Checker will warn that the length expression might be too low.
+\item Assigning a possibly out-of-bounds value into a declared
+  index type. The Index Checker allows programmers to annotate
+  that particular variables are safe to use as accesses. If an
+  assignment (or passed parameter, or return value) might violate
+  the assertion made by the annotation, the Index Checker will
+  issue a type error.
+
+  \end{enumerate}
 
 Typically, programmers need to write only a few annotations to use the
 Index Checker. The Index Checker will infer properties of indexes from
@@ -26,20 +37,19 @@ if an integer that is passed into a method is guaranteed to be a safe
 index for the array ''myArray'', the programmer might need to
 write an @IndexFor(''myArray'') annotation.
 
-
-\section{Running the Index Checker\label{index-running}}
-
-To run the Index Checker, run the command
-
-\begin{alltt}
-  javac -processor index \emph{MyJavaFile}.java
-\end{alltt}
-
-The Index Checker is a composition of several other checkers: the Lower
-Bound Checker (section~\ref{index-lowerbound}), which checks whether potential accesses may be too low;
-the Upper Bound Checker (section~\ref{index-upperbound}), which checks whether potential accesses
-may be too high; the MinLen Checker (section~\ref{index-minlen}), which estimates the minimum
-length of each sequence; and the SameLen Checker (section~\ref{index-samelen}), which finds arrays of equal length. All of the qualifiers of these subcheckers are considered ''index'' annotation (and warnings from any of them can be suppressed with @SuppressWarnings(''index''). In addition, the Index Checker maintains some qualifiers of its own, each of which is the combination of at least two qualifiers from different index subcheckers.
+The Index Checker is a composition of several checkers: the Lower
+Bound Checker (section~\ref{index-lowerbound}), which checks whether
+potential accesses may be too low; the Upper Bound Checker
+(section~\ref{index-upperbound}), which checks whether potential
+accesses may be too high; the MinLen Checker
+(section~\ref{index-minlen}), which estimates the minimum length of
+each sequence; and the SameLen Checker (section~\ref{index-samelen}),
+which finds arrays of equal length. All of the qualifiers of these
+subcheckers are considered ''index'' annotation (and warnings from any
+of them can be suppressed with @SuppressWarnings(''index''). In
+addition, the Index Checker maintains some qualifiers of its own, each
+of which is the combination of at least two qualifiers from different
+index subcheckers.
 
 The Index annotations are:
 \begin{description}
@@ -49,7 +59,7 @@ The Index annotations are:
   \refqualclass{checker/lowerbound/qual}{NonNegative} and the Upper Bound
   Checker's \refqualclasswithparams{checker/upperbound/qual}{LTLengthOf}{String[] names}.
  \item[\refqualclasswithparams{checker/index/qual}{IndexOrHigh}{String[] names}]
-   The value is either a valid index for each named array, or equal to the
+   The value is either a valid index for each named array; or equal to the
    length of one or more of the named arrays, and a valid index for the
    others. This type is the combination of the Lower Bound Checker's
   \refqualclass{checker/lowerbound/qual}{NonNegative} and the Upper Bound
@@ -57,11 +67,24 @@ The Index annotations are:
   \refqualclasswithparams{checker/upperbound/qual}{LTEqLengthOf}{String[] names}.
 \end{description}
 
+\section{Running the Index Checker\label{index-running}}
+
+To run the Index Checker, run the command
+
+\begin{alltt}
+  javac -processor index \emph{MyJavaFile}.java
+\end{alltt}
+
 \section{The Lower Bound Checker\label{index-lowerbound}}
 
 The Lower Bound Checker warns about indices that might be
-too low to access a zero-indexed sequence. The
-Lower Bound Checker's type system uses the following qualifiers.
+too low to access a zero-indexed sequence. It issues an error when
+a sequence-like data structure is indexed by an integer that is not
+\refqualclass{checker/lowerbound/qual}{Positive} or \refqualclass{checker/lowerbound/qual}{NonNegative},
+or when an array is created with a length expression that is not
+\refqualclass{checker/lowerbound/qual}{Positive} or \refqualclass{checker/lowerbound/qual}{NonNegative}.
+The
+Lower Bound Checker's type system uses the following qualifiers:
 
 \begin{description}
 \item[\refqualclass{checker/lowerbound/qual}{Positive}]
@@ -94,8 +117,11 @@ in the Javadoc comments in its source code.
 \section{The Upper Bound Checker\label{index-upperbound}}
 
 The Upper Bound Checker warns about accesses to sequences with indexes that might be
-too high.
-The Upper Bound Checker's type system uses the following qualifiers.
+too high. To do this, it maintains information about which potential indices are safe
+for which sequence-like data structures. It issues an error when a sequence \code{arr}
+is indexed by an integer that is not of type \code{@LTLengthOf({''arr''})}
+or \code{@LTOMLengthOf({''arr''})}.
+The Upper Bound Checker's type system uses the following qualifiers:
 
 \begin{description}
 \item[\refqualclasswithparams{checker/upperbound/qual}{LTLengthOf}{String[] names}]
@@ -140,14 +166,6 @@ should be written instead.
   \caption{The type hierarchy used by the Upper Bound Checker.}
   \label{fig-upperbound-types}
 \end{figure}
-
-% Like the Lower Bound checker, the Upper Bound checker relies on both the Constant
-% Value Checker and the MinLen checker. It uses the Constant Value Checker to determine
-% precisely the value of particular indexes, and uses the MinLen checker both in the way
-% described above (for constant indexes) and to determine when potential indexes should
-% be assigned
-% \refqualclasswithparams{checker/upperbound/qual}{LTLengthOf}{String[] names}] or
-% \refqualclasswithparams{checker/upperbound/qual}{LTEqLengthOf}{String[] names}].
 
 Typically, a programmer only needs to write these annotations on
 fields and method signatures, because the Upper Bound Checker infers
