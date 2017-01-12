@@ -32,10 +32,6 @@ public class UpperBoundUtils {
     public static boolean hasValue(
             AnnotatedTypeMirror ubType, String name, AnnotationMirror slAnno) {
 
-        if (slAnno == null) {
-            return false;
-        }
-
         String[] rgst;
         if (ubType.hasAnnotation(LTLengthOf.class)) {
             rgst = getValue(ubType.getAnnotation(LTLengthOf.class));
@@ -49,7 +45,7 @@ public class UpperBoundUtils {
         names.add(name);
 
         // Produce the full list of relevant names by checking the SameLen type.
-        if (AnnotationUtils.areSameByClass(slAnno, SameLen.class)) {
+        if (slAnno != null && AnnotationUtils.areSameByClass(slAnno, SameLen.class)) {
             if (AnnotationUtils.hasElementValue(slAnno, "value")) {
                 List<String> slNames =
                         AnnotationUtils.getElementValueArray(slAnno, "value", String.class, true);
