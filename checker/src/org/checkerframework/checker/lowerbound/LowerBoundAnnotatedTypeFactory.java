@@ -120,6 +120,34 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /** Returns the type in the lower bound hierarchy a Value Checker type corresponds to. */
+    private AnnotationMirror getLowerBoundAnnotationFromValueType(AnnotatedTypeMirror valueType) {
+        // In the code, AnnotationMirror is abbr. as anm.
+        List<Long> possibleValues = possibleValuesFromValueType(valueType);
+        // possibleValues is null if the Value Checker does not have any estimate.
+        if (possibleValues == null || possibleValues.size() == 0) {
+            return UNKNOWN;
+        }
+        // The annotation of the whole list is the min of the list.
+        long lvalMin = Collections.min(possibleValues);
+        // Turn it into an integer.
+        int valMin = (int) Math.max(Math.min(Integer.MAX_VALUE, lvalMin), Integer.MIN_VALUE);
+        return anmFromVal(valMin);
+    }
+
+    /** Determine the annotation that should be associated with a literal. */
+    private AnnotationMirror anmFromVal(int val) {
+        if (val >= 1) {
+            return POS;
+        } else if (val >= 0) {
+            return NN;
+        } else if (val >= -1) {
+            return GTEN1;
+        } else {
+            return UNKNOWN;
+        }
+    }
+
     /** Get the list of possible values from a Value Checker type. May return null. */
     private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
         AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
@@ -186,19 +214,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        /** Determine the annotation that should be associated with a literal. */
-        private AnnotationMirror anmFromVal(int val) {
-            if (val >= 1) {
-                return POS;
-            } else if (val >= 0) {
-                return NN;
-            } else if (val >= -1) {
-                return GTEN1;
-            } else {
-                return UNKNOWN;
-            }
-        }
-
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
             if (tree.getKind() == Tree.Kind.NULL_LITERAL) {
@@ -251,22 +266,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                 getAnnotatedType(right).getAnnotationInHierarchy(POS)));
             }
             return super.visitMethodInvocation(tree, type);
-        }
-
-        /** Returns the type in the lower bound hierarchy a Value Checker type corresponds to. */
-        private AnnotationMirror getLowerBoundAnnotationFromValueType(
-                AnnotatedTypeMirror valueType) {
-            // In the code, AnnotationMirror is abbr. as anm.
-            List<Long> possibleValues = possibleValuesFromValueType(valueType);
-            // possibleValues is null if the Value Checker does not have any estimate.
-            if (possibleValues == null || possibleValues.size() == 0) {
-                return UNKNOWN;
-            }
-            // The annotation of the whole list is the min of the list.
-            long lvalMin = Collections.min(possibleValues);
-            // Turn it into an integer.
-            int valMin = (int) Math.max(Math.min(Integer.MAX_VALUE, lvalMin), Integer.MIN_VALUE);
-            return anmFromVal(valMin);
         }
 
         /**
