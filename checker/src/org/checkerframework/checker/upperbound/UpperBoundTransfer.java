@@ -87,7 +87,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                 super.strengthenAnnotationOfEqualTo(
                         res, firstNode, secondNode, firstValue, secondValue, notEqualTo);
         IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, firstNode, secondNode);
-        if (rfi.left == null || rfi.right == null) {
+        if (rfi.leftAnno == null || rfi.rightAnno == null) {
             return result;
         }
 

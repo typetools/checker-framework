@@ -28,7 +28,7 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> result = super.visitGreaterThan(node, in);
 
         IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
-        if (rfi.left == null || rfi.right == null) {
+        if (rfi.leftAnno == null || rfi.rightAnno == null) {
             return result;
         }
         // Refine the then branch.
@@ -46,7 +46,7 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> result = super.visitGreaterThanOrEqual(node, in);
 
         IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
-        if (rfi.left == null || rfi.right == null) {
+        if (rfi.leftAnno == null || rfi.rightAnno == null) {
             return result;
         }
 
@@ -65,7 +65,7 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> result = super.visitLessThanOrEqual(node, in);
 
         IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
-        if (rfi.left == null || rfi.right == null) {
+        if (rfi.leftAnno == null || rfi.rightAnno == null) {
             return result;
         }
 
@@ -83,7 +83,7 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> result = super.visitLessThan(node, in);
 
         IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, node);
-        if (rfi.left == null || rfi.right == null) {
+        if (rfi.leftAnno == null || rfi.rightAnno == null) {
             return result;
         }
 
