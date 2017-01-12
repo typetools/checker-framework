@@ -249,7 +249,7 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK)
 
     # make the Checker Framework Manual
-    checker_manual_dir = os.path.join(checker_dir, "docs", "manual")
+    checker_manual_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "manual")
     execute("make manual.pdf manual.html", True, False, checker_manual_dir)
 
     if not manual_only:
