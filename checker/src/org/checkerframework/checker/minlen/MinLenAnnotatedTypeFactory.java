@@ -281,12 +281,6 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return AnnotationUtils.getElementValue(annotation, "value", Integer.class, true);
     }
 
-    public Integer getMinLenValue(Tree tree) {
-        AnnotatedTypeMirror atm = getAnnotatedType(tree);
-        AnnotationMirror anm = atm.getAnnotation(MinLen.class);
-        return getMinLenValue(anm);
-    }
-
     public AnnotationMirror createMinLen(@NonNegative int val) {
         if (val == 0) {
             return MIN_LEN_0;
