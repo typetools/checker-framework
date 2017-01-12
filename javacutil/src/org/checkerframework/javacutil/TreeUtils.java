@@ -23,6 +23,7 @@ import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -40,6 +41,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 
 /** A utility class made for helping to analyze a given {@code Tree}. */
@@ -972,6 +974,24 @@ public final class TreeUtils {
         ClassTree classTree = enclosingClass(path);
         if (classTree != null) {
             return classTree.getModifiers().getFlags().contains((Modifier.STATIC));
+        }
+        return false;
+    }
+
+    /**
+     * Returns whether or not tree is an access of array length.
+     *
+     * @param tree tree to check
+     * @return Returns whether or not tree is an access of array length.
+     */
+    public static boolean isArrayLengthAccess(Tree tree) {
+        if (tree.getKind() == Kind.MEMBER_SELECT
+                && isFieldAccess(tree)
+                && getFieldName(tree).equals("length")) {
+            ExpressionTree expressionTree = ((MemberSelectTree) tree).getExpression();
+            if (InternalUtils.typeOf(expressionTree).getKind() == TypeKind.ARRAY) {
+                return true;
+            }
         }
         return false;
     }
