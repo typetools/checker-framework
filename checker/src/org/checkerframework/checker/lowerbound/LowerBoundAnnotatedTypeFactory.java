@@ -15,7 +15,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
@@ -38,7 +37,6 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -273,8 +271,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * an array's length field.
          */
         private Integer getMinLenFromMemberSelectTree(MemberSelectTree tree) {
-            if (tree.getIdentifier().contentEquals("length")
-                    && InternalUtils.typeOf(tree.getExpression()).getKind() == TypeKind.ARRAY) {
+            if (TreeUtils.isArrayLengthAccess(tree)) {
                 AnnotatedTypeMirror minLenType =
                         getMinLenAnnotatedTypeFactory().getAnnotatedType(tree.getExpression());
                 AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
@@ -520,29 +517,20 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         private boolean checkForMathRandomSpecialCase(
                 ExpressionTree randTree, ExpressionTree arrLenTree, AnnotatedTypeMirror type) {
-            if (arrLenTree.getKind() == Kind.MEMBER_SELECT) {
-                MemberSelectTree msTree = (MemberSelectTree) arrLenTree;
-                if (msTree.getIdentifier().contentEquals("length")
-                        && InternalUtils.typeOf(msTree.getExpression()).getKind()
-                                == TypeKind.ARRAY) {
-                    // For sure, arrLenTree represents an array length.
+            if (randTree.getKind() == Kind.METHOD_INVOCATION
+                    && TreeUtils.isArrayLengthAccess(arrLenTree)) {
+                MethodInvocationTree miTree = (MethodInvocationTree) randTree;
 
-                    if (randTree.getKind() == Kind.METHOD_INVOCATION) {
+                if (imf.isMathRandom(miTree, processingEnv)) {
+                    // This is Math.random() * array.length, which must be NonNegative
+                    type.addAnnotation(NN);
+                    return true;
+                }
 
-                        MethodInvocationTree miTree = (MethodInvocationTree) randTree;
-
-                        if (imf.isMathRandom(miTree, processingEnv)) {
-                            // This is Math.random() * array.length, which must be NonNegative
-                            type.addAnnotation(NN);
-                            return true;
-                        }
-
-                        if (imf.isRandomNextDouble(miTree, processingEnv)) {
-                            // This is Random.nextDouble() * array.length, which must be NonNegative
-                            type.addAnnotation(NN);
-                            return true;
-                        }
-                    }
+                if (imf.isRandomNextDouble(miTree, processingEnv)) {
+                    // This is Random.nextDouble() * array.length, which must be NonNegative
+                    type.addAnnotation(NN);
+                    return true;
                 }
             }
             return false;

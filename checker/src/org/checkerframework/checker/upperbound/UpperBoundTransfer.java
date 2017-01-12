@@ -3,7 +3,6 @@ package org.checkerframework.checker.upperbound;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
 import org.checkerframework.checker.upperbound.qual.LTEqLengthOf;
@@ -159,15 +158,6 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
         combineFacts(store, rightRec, rightAnno, leftAnno);
         combineFacts(store, leftRec, rightAnno, leftAnno);
-    }
-
-    private boolean isArrayLengthFieldAccess(Node node) {
-        if (!(node instanceof FieldAccessNode)) {
-            return false;
-        }
-        FieldAccessNode fieldAccess = (FieldAccessNode) node;
-        return fieldAccess.getFieldName().equals("length")
-                && fieldAccess.getReceiver().getType().getKind() == TypeKind.ARRAY;
     }
 
     private void refineNeq(

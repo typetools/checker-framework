@@ -3,7 +3,6 @@ package org.checkerframework.checker.minlen;
 import com.sun.source.tree.Tree;
 import java.util.Collections;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -119,8 +118,7 @@ public class MinLenTransfer extends IndexAbstractTransfer {
         if (fi == null || tree == null || type == null) {
             return null;
         }
-        if (fi.getFieldName().equals("length")
-                && fi.getReceiver().getType().getKind() == TypeKind.ARRAY) {
+        if (isArrayLengthFieldAccess(fiNode)) {
             // At this point, MinLen needs to invoke the constant value checker
             // to find out if it knows anything about what the length is being
             // compared to.
