@@ -180,12 +180,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     /**
      *
      *
-     * <pre>
+     * <pre><code>
      * @LTEqLengthOf("array") int i;
      * if (i != array.length) {
      *     // refine the type of i to @LTLengthOf("array")
      * }
-     * </pre>
+     * </code></pre>
      */
     private void refineNotEqualLtlandLteql(
             AnnotationMirror leftAnno, Node left, Node right, CFStore store) {
