@@ -96,6 +96,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return getTypeFactoryOfSubchecker(SameLenChecker.class);
     }
 
+    public AnnotationMirror getSameLenUnknown() {
+        return getSameLenAnnotatedTypeFactory().createSameLenUnknown();
+    }
+
     @Override
     protected ExpressionAnnotationHelper createExpressionAnnotationHelper() {
         List<Class<? extends Annotation>> annos = new ArrayList<>();

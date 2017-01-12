@@ -9,8 +9,6 @@ import org.checkerframework.checker.samelen.qual.SameLenBottom;
 import org.checkerframework.checker.samelen.qual.SameLenUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
-import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -28,18 +26,12 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    public static AnnotationMirror UNKNOWN;
-
-    /**
-     * Provides a way to query the Constant Value Checker, which computes the values of expressions
-     * known at compile time (constant prop + folding).
-     */
-    private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
+    private AnnotationMirror UNKNOWN, BOTTOM;
 
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
         UNKNOWN = AnnotationUtils.fromClass(elements, SameLenUnknown.class);
+        BOTTOM = AnnotationUtils.fromClass(elements, SameLenBottom.class);
         this.postInit();
     }
 
@@ -49,14 +41,14 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Checks whether the two string arrays contain at least one string that's the same. Not a smart
+     * Checks whether the two string lists contain at least one string that's the same. Not a smart
      * algorithm; meant to be run over small sets of data.
      *
-     * @param a1 the first string array
-     * @param a2 the second string array
+     * @param a1 the first string list
+     * @param a2 the second string list
      * @return true if there is the intersection is non-empty; false otherwise
      */
-    private boolean overlap(String[] a1, String[] a2) {
+    private boolean overlap(List<String> a1, List<String> a2) {
         for (String a : a1) {
             for (String b : a2) {
                 if (a.equals(b)) {
@@ -71,31 +63,15 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * This function finds the union of the values of two annotations. Both annotations must have a
      * value field; otherwise the function will fail.
      *
-     * @param a1 an annotation with a value field
-     * @param a2 an annotation with a value field
      * @return the set union of the two value fields
      */
-    private AnnotationMirror getCombinedSameLen(String[] a1, String[] a2) {
-
-        List<String> a1Names = new ArrayList<>();
-        List<String> a2Names = new ArrayList<>();
-
-        for (String s : a1) {
-            a1Names.add(s);
-        }
-        for (String s : a2) {
-            a2Names.add(s);
-        }
+    private AnnotationMirror getCombinedSameLen(List<String> a1Names, List<String> a2Names) {
 
         HashSet<String> newValues = new HashSet<String>(a1Names.size() + a2Names.size());
 
         newValues.addAll(a1Names);
         newValues.addAll(a2Names);
-        Object[] values = newValues.toArray();
-        String[] names = new String[values.length];
-        for (int i = 0; i < names.length; i++) {
-            names[i] = values[i].toString();
-        }
+        String[] names = newValues.toArray(new String[0]);
         return createSameLen(names);
     }
 
@@ -111,25 +87,21 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public AnnotationMirror createCombinedSameLen(
             String a, String b, AnnotationMirror sl1, AnnotationMirror sl2) {
-        String[] a1 = {a, b};
+
+        // The names of the arrays.
+        ArrayList<String> arrayNames = new ArrayList<>();
+        arrayNames.add(a);
+        arrayNames.add(b);
+
         ArrayList<String> slStrings = new ArrayList<>();
         if (AnnotationUtils.areSameByClass(sl1, SameLen.class)) {
-            for (String s : SameLenUtils.getValue(sl1)) {
-                slStrings.add(s);
-            }
+            slStrings.addAll(SameLenUtils.getValue(sl1));
         }
         if (AnnotationUtils.areSameByClass(sl2, SameLen.class)) {
-            for (String s : SameLenUtils.getValue(sl2)) {
-                slStrings.add(s);
-            }
+            slStrings.addAll(SameLenUtils.getValue(sl2));
         }
 
-        String[] names = new String[slStrings.size()];
-        for (int i = 0; i < slStrings.size(); i++) {
-            names[i] = slStrings.get(i);
-        }
-
-        return getCombinedSameLen(a1, names);
+        return getCombinedSameLen(arrayNames, slStrings);
     }
 
     /**
@@ -156,8 +128,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (AnnotationUtils.hasElementValue(a1, "value")
                     && AnnotationUtils.hasElementValue(a2, "value")) {
-                String[] a1Val = SameLenUtils.getValue(a1);
-                String[] a2Val = SameLenUtils.getValue(a2);
+                List<String> a1Val = SameLenUtils.getValue(a1);
+                List<String> a2Val = SameLenUtils.getValue(a2);
 
                 if (overlap(a1Val, a2Val)) {
                     return getCombinedSameLen(a1Val, a2Val);
@@ -181,8 +153,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (AnnotationUtils.hasElementValue(a1, "value")
                     && AnnotationUtils.hasElementValue(a2, "value")) {
-                String[] a1Val = SameLenUtils.getValue(a1);
-                String[] a2Val = SameLenUtils.getValue(a2);
+                List<String> a1Val = SameLenUtils.getValue(a1);
+                List<String> a2Val = SameLenUtils.getValue(a2);
 
                 if (overlap(a1Val, a2Val)) {
                     return getCombinedSameLen(a1Val, a2Val);
@@ -220,8 +192,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             if (AnnotationUtils.hasElementValue(rhs, "value")
                     && AnnotationUtils.hasElementValue(lhs, "value")) {
-                String[] a1Val = SameLenUtils.getValue(rhs);
-                String[] a2Val = SameLenUtils.getValue(lhs);
+                List<String> a1Val = SameLenUtils.getValue(rhs);
+                List<String> a2Val = SameLenUtils.getValue(lhs);
 
                 if (overlap(a1Val, a2Val)) {
                     return true;
@@ -245,24 +217,17 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    public AnnotationMirror createSameLen(String val) {
-        String[] vals = {val};
-        return createSameLen(vals);
-    }
-
-    public AnnotationMirror createSameLen(String[] val) {
+    public AnnotationMirror createSameLen(String... val) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
         builder.setValue("value", val);
         return builder.build();
     }
 
     public AnnotationMirror createSameLenBottom() {
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLenBottom.class);
-        return builder.build();
+        return BOTTOM;
     }
 
     public AnnotationMirror createSameLenUnknown() {
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLenUnknown.class);
-        return builder.build();
+        return UNKNOWN;
     }
 }

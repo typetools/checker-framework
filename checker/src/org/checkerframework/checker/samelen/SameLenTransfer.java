@@ -13,8 +13,8 @@ import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 
 /**
- * The transfer function for the SameLen checker. Contains two interesting cases: * If an array is
- * created using another array's length for its length, then the arrays have the same length. * If
+ * The transfer function for the SameLen checker. Contains two interesting cases: 1. If an array is
+ * created using another array's length for its length, then the arrays have the same length. 2. If
  * the lengths of two arrays are explicitly checked to be equal, they have the same length.
  */
 public class SameLenTransfer extends CFTransfer {
@@ -23,7 +23,7 @@ public class SameLenTransfer extends CFTransfer {
     private SameLenAnnotatedTypeFactory aTypeFactory;
 
     /** Easy shorthand for SameLenUnknown.class, basically. */
-    public static AnnotationMirror UNKNOWN;
+    private AnnotationMirror UNKNOWN;
 
     private CFAnalysis analysis;
 
@@ -31,7 +31,7 @@ public class SameLenTransfer extends CFTransfer {
         super(analysis);
         this.analysis = analysis;
         aTypeFactory = (SameLenAnnotatedTypeFactory) analysis.getTypeFactory();
-        UNKNOWN = SameLenAnnotatedTypeFactory.UNKNOWN;
+        UNKNOWN = aTypeFactory.createSameLenUnknown();
     }
 
     @Override
@@ -45,24 +45,24 @@ public class SameLenTransfer extends CFTransfer {
             ArrayCreationNode acNode = (ArrayCreationNode) node.getExpression();
             if (acNode.getDimensions().size() == 1 && isArrayLengthAccess(acNode.getDimension(0))) {
                 // This array that's being created is the same size as the other one.
+                FieldAccessNode arrayLengthNode = (FieldAccessNode) acNode.getDimension(0);
+                Node arrayLengthNodeReceiver = arrayLengthNode.getReceiver();
+                AnnotationMirror arrayLengthAnnotation =
+                        aTypeFactory
+                                .getAnnotatedType(arrayLengthNodeReceiver.getTree())
+                                .getAnnotationInHierarchy(UNKNOWN);
                 AnnotationMirror combinedSameLen =
                         aTypeFactory.createCombinedSameLen(
-                                ((FieldAccessNode) acNode.getDimension(0)).getReceiver().toString(),
+                                arrayLengthNodeReceiver.toString(),
                                 node.getTarget().toString(),
-                                aTypeFactory
-                                        .getAnnotatedType(
-                                                ((FieldAccessNode) acNode.getDimension(0))
-                                                        .getReceiver()
-                                                        .getTree())
-                                        .getAnnotationInHierarchy(UNKNOWN),
-                                aTypeFactory.createSameLenUnknown());
+                                arrayLengthAnnotation,
+                                UNKNOWN);
 
                 Receiver targetRec =
                         FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getTarget());
                 Receiver otherRec =
                         FlowExpressions.internalReprOf(
-                                analysis.getTypeFactory(),
-                                ((FieldAccessNode) acNode.getDimension(0)).getReceiver());
+                                analysis.getTypeFactory(), arrayLengthNodeReceiver);
 
                 result.getRegularStore().clearValue(targetRec);
                 result.getRegularStore().insertValue(targetRec, combinedSameLen);
@@ -84,26 +84,32 @@ public class SameLenTransfer extends CFTransfer {
      * both a and b to have SameLen of each other in the store.
      */
     private void refineEq(Node left, Node right, CFStore store) {
-        if (isArrayLengthAccess(left)) { // FIXME add list support here
+        if (isArrayLengthAccess(left)) {
             if (isArrayLengthAccess(right)) {
+
+                Node leftReceiverNode = ((FieldAccessNode) left).getReceiver();
+                Node rightReceiverNode = ((FieldAccessNode) right).getReceiver();
+
                 Receiver leftRec =
-                        FlowExpressions.internalReprOf(
-                                analysis.getTypeFactory(), ((FieldAccessNode) left).getReceiver());
+                        FlowExpressions.internalReprOf(analysis.getTypeFactory(), leftReceiverNode);
                 Receiver rightRec =
                         FlowExpressions.internalReprOf(
-                                analysis.getTypeFactory(), ((FieldAccessNode) right).getReceiver());
+                                analysis.getTypeFactory(), rightReceiverNode);
+
+                AnnotationMirror rightReceiverAnno =
+                        aTypeFactory
+                                .getAnnotatedType(rightReceiverNode.getTree())
+                                .getAnnotationInHierarchy(UNKNOWN);
+                AnnotationMirror leftReceiverAnno =
+                        aTypeFactory
+                                .getAnnotatedType(leftReceiverNode.getTree())
+                                .getAnnotationInHierarchy(UNKNOWN);
                 AnnotationMirror combinedSameLen =
                         aTypeFactory.createCombinedSameLen(
-                                ((FieldAccessNode) right).getReceiver().toString(),
-                                ((FieldAccessNode) left).getReceiver().toString(),
-                                aTypeFactory
-                                        .getAnnotatedType(
-                                                ((FieldAccessNode) right).getReceiver().getTree())
-                                        .getAnnotationInHierarchy(UNKNOWN),
-                                aTypeFactory
-                                        .getAnnotatedType(
-                                                ((FieldAccessNode) left).getReceiver().getTree())
-                                        .getAnnotationInHierarchy(UNKNOWN));
+                                rightReceiverNode.toString(),
+                                leftReceiverNode.toString(),
+                                rightReceiverAnno,
+                                leftReceiverAnno);
                 store.clearValue(leftRec);
                 store.clearValue(rightRec);
                 store.insertValue(leftRec, combinedSameLen);

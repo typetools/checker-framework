@@ -2,6 +2,7 @@ package org.checkerframework.checker.upperbound;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
+import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.upperbound.qual.LTLengthOf;
 import org.checkerframework.checker.upperbound.qual.LTOMLengthOf;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -41,6 +42,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
 
         AnnotatedTypeMirror sameLenType = atypeFactory.sameLenTypeFromExpressionTree(arrTree);
+        AnnotationMirror sameLenAnno =
+                sameLenType.getAnnotationInHierarchy(atypeFactory.getSameLenUnknown());
 
         // Need to be able to check these as part of the conditional below.
         // Find max because it's important to determine whether the index is
@@ -52,7 +55,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         // Is indexType LTL/LTOM of a set containing arrName?
         if ((indexType.hasAnnotation(LTLengthOf.class)
                         || indexType.hasAnnotation(LTOMLengthOf.class))
-                && (UpperBoundUtils.hasValue(indexType, arrName, sameLenType))) {
+                && (UpperBoundUtils.hasValue(indexType, arrName, sameLenAnno))) {
             // If so, this is safe - get out of here.
             return;
         } else if (valMax != null && minLen != -1 && valMax < minLen) {
