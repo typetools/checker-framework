@@ -34,11 +34,9 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -141,6 +139,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             // the type of a class literal is the type of the "class" element.
             return f.getAnnotatedType(elt);
         }
+        String kind = elt.getKind().toString();
         switch (elt.getKind()) {
             case METHOD:
             case PACKAGE: // "java.lang" in new java.lang.Short("2")
@@ -158,18 +157,11 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             return f.getEnclosingType(
                     (TypeElement) InternalUtils.symbol(node.getExpression()), node);
         } else {
-            // We need the original t with the implicit annotations
+            // node must be a field access, so get the type of the expression, and then call
+            // asMemberOf.
             AnnotatedTypeMirror t = f.getAnnotatedType(node.getExpression());
-            if (t instanceof AnnotatedDeclaredType
-                    || t instanceof AnnotatedArrayType
-                    || t instanceof AnnotatedTypeVariable) {
-                return AnnotatedTypes.asMemberOf(f.types, f, t, elt).asUse();
-            }
+            return AnnotatedTypes.asMemberOf(f.types, f, t, elt).asUse();
         }
-        ErrorReporter.errorAbort(
-                "TypeFromExpressionVisitor.visitMemberSelect unexpected element or type: "
-                        + node.toString());
-        return null; // dead code
     }
 
     @Override
