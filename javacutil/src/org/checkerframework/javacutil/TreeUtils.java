@@ -991,7 +991,9 @@ public final class TreeUtils {
      * @return Returns whether or not tree is an access of array length.
      */
     public static boolean isArrayLengthAccess(Tree tree) {
-        if (tree.getKind() == Kind.MEMBER_SELECT && getFieldName(tree).equals("length")) {
+        if (tree.getKind() == Kind.MEMBER_SELECT
+                && isFieldAccess(tree)
+                && getFieldName(tree).equals("length")) {
             ExpressionTree expressionTree = ((MemberSelectTree) tree).getExpression();
             if (InternalUtils.typeOf(expressionTree).getKind() == TypeKind.ARRAY) {
                 return true;
