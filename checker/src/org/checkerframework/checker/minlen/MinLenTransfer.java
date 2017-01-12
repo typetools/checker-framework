@@ -98,40 +98,25 @@ public class MinLenTransfer extends IndexAbstractTransfer {
         return null;
     }
 
-    private Integer getNewMinLenForRefinement(
-            Node fiNode, Node nonFiNode, AnnotationMirror leftAnno) {
-        FieldAccessNode fi = null;
-        Tree tree = null;
-        AnnotationMirror type = null;
+    private Integer getNewMinLenForRefinement(Node fiNode, Node nonFiNode) {
         // Only the length matters. This will miss an expression which
         // include an array length (like "a.length + 1"), but that's okay
         // for now.
-
-        if (fiNode instanceof FieldAccessNode) {
-            fi = (FieldAccessNode) fiNode;
-            tree = nonFiNode.getTree();
-            type = leftAnno;
-        } else {
-            return null;
-        }
-
-        if (fi == null || tree == null || type == null) {
-            return null;
-        }
         if (isArrayLengthFieldAccess(fiNode)) {
             // At this point, MinLen needs to invoke the constant value checker
             // to find out if it knows anything about what the length is being
             // compared to.
-
+            Tree tree = nonFiNode.getTree();
+            if (tree == null) {
+                return null;
+            }
             AnnotatedTypeMirror valueType = atypeFactory.valueTypeFromTree(tree);
 
             if (valueType == null) {
                 return null;
             }
 
-            Integer newMinLen = atypeFactory.getMinLenFromValueType(valueType);
-
-            return newMinLen;
+            return atypeFactory.getMinLenFromValueType(valueType);
         }
         return null;
     }
@@ -144,7 +129,7 @@ public class MinLenTransfer extends IndexAbstractTransfer {
             CFStore store) {
 
         Receiver rec = getReceiverForFiNodeOrNull(left);
-        Integer newMinLen = getNewMinLenForRefinement(left, right, leftAnno);
+        Integer newMinLen = getNewMinLenForRefinement(left, right);
 
         if (newMinLen != null && newMinLen == 0 && rec != null) {
             store.insertValue(rec, atypeFactory.createMinLen(1));
@@ -160,7 +145,7 @@ public class MinLenTransfer extends IndexAbstractTransfer {
             CFStore store) {
 
         Receiver rec = getReceiverForFiNodeOrNull(left);
-        Integer newMinLen = getNewMinLenForRefinement(left, right, leftAnno);
+        Integer newMinLen = getNewMinLenForRefinement(left, right);
         if (rec != null && newMinLen != null) {
             store.insertValue(rec, atypeFactory.createMinLen(newMinLen + 1));
         }
@@ -174,7 +159,7 @@ public class MinLenTransfer extends IndexAbstractTransfer {
             AnnotationMirror rightAnno,
             CFStore store) {
         Receiver rec = getReceiverForFiNodeOrNull(left);
-        Integer newMinLen = getNewMinLenForRefinement(left, right, leftAnno);
+        Integer newMinLen = getNewMinLenForRefinement(left, right);
         if (rec != null && newMinLen != null) {
             store.insertValue(rec, atypeFactory.createMinLen(newMinLen));
         }
