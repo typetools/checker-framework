@@ -68,7 +68,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * @return the set union of the two value fields
      */
-    private AnnotationMirror getCombinedSameLen(List<String> a1Names, List<String> a2Names) {
+    public AnnotationMirror getCombinedSameLen(List<String> a1Names, List<String> a2Names) {
 
         HashSet<String> newValues = new HashSet<String>(a1Names.size() + a2Names.size());
 
