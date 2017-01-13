@@ -174,9 +174,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      *
      *
      * <pre><code>
-     * @LTEqLengthOf("array") int i;
+     * {@literal @}LTEqLengthOf("array") int i;
      * if (i != array.length) {
-     *     // refine the type of i to @LTLengthOf("array")
+     *     // refine the type of i to {@literal @}LTLengthOf("array")
      * }
      * </code></pre>
      */

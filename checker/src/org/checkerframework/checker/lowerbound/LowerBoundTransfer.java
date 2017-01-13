@@ -117,7 +117,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
      *
      * @param mLiteral a potential literal
      * @param otherNode the node on the other side of the ==/!=
-     * @param otherType the type of the other side of the ==/!=
+     * @param otherAnno the annotation of the other side of the ==/!=
      */
     private void notEqualToValue(
             Node mLiteral, Node otherNode, AnnotationMirror otherAnno, CFStore store) {
