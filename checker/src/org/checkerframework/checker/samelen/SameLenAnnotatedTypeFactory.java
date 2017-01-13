@@ -13,6 +13,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -30,6 +31,11 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         UNKNOWN = AnnotationUtils.fromClass(elements, SameLenUnknown.class);
         BOTTOM = AnnotationUtils.fromClass(elements, SameLenBottom.class);
         this.postInit();
+    }
+
+    @Override
+    protected ExpressionAnnotationHelper createExpressionAnnotationHelper() {
+        return new ExpressionAnnotationHelper(this, SameLen.class);
     }
 
     @Override
