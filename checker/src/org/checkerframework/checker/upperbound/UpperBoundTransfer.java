@@ -119,7 +119,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             return;
         }
         Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-        String[] names = UpperBoundUtils.getValue(leftAnno);
+        String[] names = UpperBoundAnnotatedTypeFactory.getValue(leftAnno);
 
         combineFacts(
                 store, rightRec, rightAnno, atypeFactory.createAnnotation(nextHigherClass, names));
@@ -196,7 +196,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                             atypeFactory, (FieldAccessNode) right);
             String arrayName = fieldAccess.getReceiver().toString();
 
-            String[] names = UpperBoundUtils.getValue(leftAnno);
+            String[] names = UpperBoundAnnotatedTypeFactory.getValue(leftAnno);
             if (names.length != 1) {
                 // if there is more than one array, then no refinement takes place, because precise
                 // information is only available  about one array.

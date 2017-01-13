@@ -6,7 +6,10 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
+import java.util.HashSet;
+import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.samelen.qual.SameLen;
 import org.checkerframework.checker.upperbound.qual.LTEqLengthOf;
 import org.checkerframework.checker.upperbound.qual.LTLengthOf;
 import org.checkerframework.checker.upperbound.qual.LTOMLengthOf;
@@ -47,31 +50,66 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         String arrName = FlowExpressions.internalReprOf(this.atypeFactory, arrTree).toString();
         AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
 
-        AnnotatedTypeMirror sameLenType = atypeFactory.sameLenTypeFromExpressionTree(arrTree);
-        AnnotationMirror sameLenAnno =
-                sameLenType.getAnnotationInHierarchy(atypeFactory.getSameLenUnknown());
-
-        // Need to be able to check these as part of the conditional below.
-        // Find max because it's important to determine whether the index is
-        // less than the minimum length of the array. If it could be any
-        // of several values, only the max is of interest.
-        Integer valMax = atypeFactory.valMaxFromExpressionTree(indexTree);
-        int minLen = atypeFactory.minLenFromExpressionTree(arrTree);
-
+        AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromExpressionTree(arrTree);
         // Is indexType LTL/LTOM of a set containing arrName?
-        if ((indexType.hasAnnotation(LTLengthOf.class)
-                        || indexType.hasAnnotation(LTOMLengthOf.class))
-                && (UpperBoundUtils.hasValue(indexType, arrName, sameLenAnno))) {
+        if (indexTypeContainsArray(arrName, indexType, sameLenAnno)) {
             // If so, this is safe - get out of here.
             return;
-        } else if (valMax != null && minLen != -1 && valMax < minLen) {
-            return;
-        } else {
-            // Unsafe, since neither the Upper bound or MinLen checks succeeded.
-            checker.report(
-                    Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName), indexTree);
+        }
+
+        // Find max because it's important to determine whether the index is less than the
+        // minimum length of the array. If it could be any of several values, only the max is of
+        // interest.
+        Integer valMax = atypeFactory.valMaxFromExpressionTree(indexTree);
+        int minLen = atypeFactory.minLenFromExpressionTree(arrTree);
+        if (valMax != null && minLen != -1 && valMax < minLen) {
             return;
         }
+
+        // Unsafe, since neither the Upper bound or MinLen checks succeeded.
+        checker.report(
+                Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName), indexTree);
+    }
+
+    /**
+     * Determines if the given string is a member of the LTL or LTOM annotation attached to ubType.
+     * Requires a SameLen annotation as well, so that it can compare the set of SameLen annotations
+     * attached to the array/list to the passed string.
+     */
+    private boolean indexTypeContainsArray(
+            String array, AnnotatedTypeMirror ubType, AnnotationMirror sameLenAnno) {
+
+        String[] arrayNamesFromUBAnno;
+        if (ubType.hasAnnotation(LTLengthOf.class)) {
+            arrayNamesFromUBAnno =
+                    UpperBoundAnnotatedTypeFactory.getValue(ubType.getAnnotation(LTLengthOf.class));
+        } else if (ubType.hasAnnotation(LTOMLengthOf.class)) {
+            arrayNamesFromUBAnno =
+                    UpperBoundAnnotatedTypeFactory.getValue(
+                            ubType.getAnnotation(LTOMLengthOf.class));
+        } else {
+            return false;
+        }
+
+        HashSet<String> arrays = new HashSet<>();
+        arrays.add(array);
+
+        // Produce the full list of relevant names by checking the SameLen type.
+        if (sameLenAnno != null && AnnotationUtils.areSameByClass(sameLenAnno, SameLen.class)) {
+            if (AnnotationUtils.hasElementValue(sameLenAnno, "value")) {
+                List<String> slNames =
+                        AnnotationUtils.getElementValueArray(
+                                sameLenAnno, "value", String.class, true);
+                arrays.addAll(slNames);
+            }
+        }
+
+        for (String st : arrayNamesFromUBAnno) {
+            if (arrays.contains(st)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -95,7 +133,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         AnnotationMirror upperBoundAnno = varType.getAnnotationInHierarchy(atypeFactory.UNKNOWN);
 
         boolean minLenMatches = true;
-        String[] arrayNames = UpperBoundUtils.getValue(upperBoundAnno);
+        String[] arrayNames = UpperBoundAnnotatedTypeFactory.getValue(upperBoundAnno);
         if (arrayNames == null) {
             super.commonAssignmentCheck(varType, valueExp, errorKey);
             return;

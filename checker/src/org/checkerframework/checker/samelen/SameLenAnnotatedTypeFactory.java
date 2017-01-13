@@ -10,13 +10,10 @@ import org.checkerframework.checker.samelen.qual.SameLenUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -26,13 +23,19 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    private AnnotationMirror UNKNOWN, BOTTOM;
+    AnnotationMirror UNKNOWN;
+    private AnnotationMirror BOTTOM;
 
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         UNKNOWN = AnnotationUtils.fromClass(elements, SameLenUnknown.class);
         BOTTOM = AnnotationUtils.fromClass(elements, SameLenBottom.class);
         this.postInit();
+    }
+
+    @Override
+    protected ExpressionAnnotationHelper createExpressionAnnotationHelper() {
+        return new ExpressionAnnotationHelper(this, SameLen.class);
     }
 
     @Override
@@ -44,13 +47,13 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Checks whether the two string lists contain at least one string that's the same. Not a smart
      * algorithm; meant to be run over small sets of data.
      *
-     * @param a1 the first string list
-     * @param a2 the second string list
+     * @param listA the first string list
+     * @param listB the second string list
      * @return true if there is the intersection is non-empty; false otherwise
      */
-    private boolean overlap(List<String> a1, List<String> a2) {
-        for (String a : a1) {
-            for (String b : a2) {
+    private boolean overlap(List<String> listA, List<String> listB) {
+        for (String a : listA) {
+            for (String b : listB) {
                 if (a.equals(b)) {
                     return true;
                 }
@@ -65,7 +68,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * @return the set union of the two value fields
      */
-    private AnnotationMirror getCombinedSameLen(List<String> a1Names, List<String> a2Names) {
+    public AnnotationMirror getCombinedSameLen(List<String> a1Names, List<String> a2Names) {
 
         HashSet<String> newValues = new HashSet<String>(a1Names.size() + a2Names.size());
 
@@ -121,7 +124,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
-            return createSameLenUnknown();
+            return UNKNOWN;
         }
 
         @Override
@@ -134,7 +137,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (overlap(a1Val, a2Val)) {
                     return getCombinedSameLen(a1Val, a2Val);
                 } else {
-                    return createSameLenBottom();
+                    return BOTTOM;
                 }
 
             } else {
@@ -144,7 +147,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else if (AnnotationUtils.areSameByClass(a2, SameLenUnknown.class)) {
                     return a1;
                 } else {
-                    return createSameLenBottom();
+                    return BOTTOM;
                 }
             }
         }
@@ -159,7 +162,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (overlap(a1Val, a2Val)) {
                     return getCombinedSameLen(a1Val, a2Val);
                 } else {
-                    return createSameLenUnknown();
+                    return UNKNOWN;
                 }
 
             } else {
@@ -169,19 +172,11 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else if (AnnotationUtils.areSameByClass(a2, SameLenBottom.class)) {
                     return a1;
                 } else {
-                    return createSameLenUnknown();
+                    return UNKNOWN;
                 }
             }
         }
 
-        /**
-         * Computes subtyping. First checks if one is bottom or the other top (since top is a
-         * subtype of nothing, but everything is a subtype of it, and bottom is a subtype of
-         * everything, but nothing is a subtype of it. Then, checks if the types are the same. If
-         * they are, return true. Otherwise, they're distinct, so return false.
-         *
-         * @return true if rhs is a subtype of lhs, false otherwise
-         */
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
             if (AnnotationUtils.areSameByClass(rhs, SameLenBottom.class)) {
@@ -203,31 +198,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    @Override
-    public TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
-                new SameLenTreeAnnotator(this),
-                new PropagationTreeAnnotator(this),
-                new ImplicitsTreeAnnotator(this));
-    }
-
-    protected class SameLenTreeAnnotator extends TreeAnnotator {
-        public SameLenTreeAnnotator(SameLenAnnotatedTypeFactory factory) {
-            super(factory);
-        }
-    }
-
     public AnnotationMirror createSameLen(String... val) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
         builder.setValue("value", val);
         return builder.build();
-    }
-
-    public AnnotationMirror createSameLenBottom() {
-        return BOTTOM;
-    }
-
-    public AnnotationMirror createSameLenUnknown() {
-        return UNKNOWN;
     }
 }
