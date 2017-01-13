@@ -71,6 +71,17 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
+     * Used to get the list of array names that an annotation applies to. Can return null if the
+     * list would be empty.
+     */
+    public static String[] getValue(AnnotationMirror anno) {
+        if (!AnnotationUtils.hasElementValue(anno, "value")) {
+            return null;
+        }
+        return getElementValueArray(anno, "value", String.class, true).toArray(new String[0]);
+    }
+
+    /**
      * Provides a way to query the Constant Value Checker, which computes the values of expressions
      * known at compile time (constant prop + folding).
      */
@@ -92,10 +103,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private SameLenAnnotatedTypeFactory getSameLenAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(SameLenChecker.class);
-    }
-
-    public AnnotationMirror getSameLenUnknown() {
-        return getSameLenAnnotatedTypeFactory().createSameLenUnknown();
     }
 
     @Override
@@ -159,9 +166,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Queries the SameLen Checker to return the type that the SameLen Checker associates with the
      * given expression tree.
      */
-    public AnnotatedTypeMirror sameLenTypeFromExpressionTree(ExpressionTree tree) {
+    public AnnotationMirror sameLenAnnotationFromExpressionTree(ExpressionTree tree) {
         AnnotatedTypeMirror sameLenType = getMinLenAnnotatedTypeFactory().getAnnotatedType(tree);
-        return sameLenType;
+        return sameLenType.getAnnotationInHierarchy(UNKNOWN);
     }
 
     /** Get the list of possible values from a value checker type. May return null. */
@@ -551,12 +558,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         private void handleIncrement(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
             if (typeSrc.hasAnnotation(LTOMLengthOf.class)) {
-                String[] names =
-                        UpperBoundUtils.getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
+                String[] names = getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
                 typeDst.replaceAnnotation(createLTLengthOfAnnotation(names));
             } else if (typeSrc.hasAnnotation(LTLengthOf.class)) {
-                String[] names =
-                        UpperBoundUtils.getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
+                String[] names = getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
                 typeDst.replaceAnnotation(createLTEqLengthOfAnnotation(names));
             } else if (typeSrc.hasAnnotation(LTEqLengthOf.class)) {
                 typeDst.replaceAnnotation(UNKNOWN);
@@ -566,12 +571,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private void handleDecrement(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
             if (typeSrc.hasAnnotation(LTLengthOf.class)
                     || typeSrc.hasAnnotation(LTOMLengthOf.class)) {
-                String[] names =
-                        UpperBoundUtils.getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
+                String[] names = getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
                 typeDst.replaceAnnotation(createLTOMLengthOfAnnotation(names));
             } else if (typeSrc.hasAnnotation(LTEqLengthOf.class)) {
-                String[] names =
-                        UpperBoundUtils.getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
+                String[] names = getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
                 typeDst.replaceAnnotation(createLTLengthOfAnnotation(names));
             }
         }
@@ -637,9 +640,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (nonLiteralType.hasAnnotation(LTEqLengthOf.class)) {
                 // FIXME: Is this unsafe? What if the length is zero?
                 if (val >= 2) {
-                    String[] names =
-                            UpperBoundUtils.getValue(
-                                    nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    String[] names = getValue(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
                     type.replaceAnnotation(createLTLengthOfAnnotation(names));
                 } else if (val == 1) {
                     type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
@@ -666,9 +667,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         || nonLiteralType.hasAnnotation(LTOMLengthOf.class)
                         || nonLiteralType.hasAnnotation(LTEqLengthOf.class)) {
 
-                    String[] names =
-                            UpperBoundUtils.getValue(
-                                    nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    String[] names = getValue(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
                     type.replaceAnnotation(createLTOMLengthOfAnnotation(names));
                     return;
                 }
