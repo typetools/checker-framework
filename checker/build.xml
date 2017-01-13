@@ -826,6 +826,18 @@
         <antcall target="-run-tests">
             <param name="param" value="tests.IndexTest"/>
         </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.LowerBoundTest"/>
+        </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.UpperBoundTest"/>
+        </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.MinLenTest"/>
+        </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.SameLenTest"/>
+        </antcall>
     </target>
 
     <target name="lowerbound-tests" depends="jar,build-tests"
