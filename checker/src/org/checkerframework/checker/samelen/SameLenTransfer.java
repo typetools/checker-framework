@@ -6,7 +6,10 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.*;
+import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -47,22 +50,24 @@ public class SameLenTransfer extends CFTransfer {
                 // This array that's being created is the same size as the other one.
                 FieldAccessNode arrayLengthNode = (FieldAccessNode) acNode.getDimension(0);
                 Node arrayLengthNodeReceiver = arrayLengthNode.getReceiver();
-                AnnotationMirror arrayLengthAnnotation =
-                        aTypeFactory
-                                .getAnnotatedType(arrayLengthNodeReceiver.getTree())
-                                .getAnnotationInHierarchy(UNKNOWN);
-                AnnotationMirror combinedSameLen =
-                        aTypeFactory.createCombinedSameLen(
-                                arrayLengthNodeReceiver.toString(),
-                                node.getTarget().toString(),
-                                arrayLengthAnnotation,
-                                UNKNOWN);
 
                 Receiver targetRec =
                         FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getTarget());
                 Receiver otherRec =
                         FlowExpressions.internalReprOf(
                                 analysis.getTypeFactory(), arrayLengthNodeReceiver);
+
+                AnnotationMirror arrayLengthAnnotation =
+                        aTypeFactory
+                                .getAnnotatedType(arrayLengthNodeReceiver.getTree())
+                                .getAnnotationInHierarchy(UNKNOWN);
+
+                AnnotationMirror combinedSameLen =
+                        aTypeFactory.createCombinedSameLen(
+                                otherRec.toString(),
+                                targetRec.toString(),
+                                arrayLengthAnnotation,
+                                UNKNOWN);
 
                 result.getRegularStore().clearValue(targetRec);
                 result.getRegularStore().insertValue(targetRec, combinedSameLen);
@@ -106,8 +111,8 @@ public class SameLenTransfer extends CFTransfer {
                                 .getAnnotationInHierarchy(UNKNOWN);
                 AnnotationMirror combinedSameLen =
                         aTypeFactory.createCombinedSameLen(
-                                rightReceiverNode.toString(),
-                                leftReceiverNode.toString(),
+                                rightRec.toString(),
+                                leftRec.toString(),
                                 rightReceiverAnno,
                                 leftReceiverAnno);
                 store.clearValue(leftRec);
