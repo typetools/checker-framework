@@ -4,10 +4,10 @@ This document is intended for people who want to use a custom version of
 the Checker Framework together with Maven, or who wish to work on the Maven
 plugin itself.  If you just wish to use the Checker Framework Maven plugin
 then you should follow the directions in the Checker Framework manual (see
-http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#maven-plugin).
+http://checker-framework.com/manual/#maven-plugin).
 
 Ordinarily, the Maven plugin loads artifacts such as the Checker Framework
-from the repository http://types.cs.washington.edu/m2-repo .  You may wish
+from the repository http://checker-framework.com/m2-repo .  You may wish
 to load your own version of the artifacts.
  * If you have your own modified version of the Checker Framework (say, it
    adds a new type-checker or fixes a bug), then follow the instructions for
@@ -38,7 +38,7 @@ The artifact names are:
 The version number is specified by the checkerFrameworkVersion element in your
 pom.xml or, if the checkerFrameworkVersion element is missing, is the version of
 your Maven plugin.  See
-http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#maven.
+http://checker-framework.com/manual/#maven.
 
 
 

@@ -45,16 +45,16 @@ def append_to_PATH(paths):
 MAX_DOWNLOAD_SIZE = 2000000000
 
 # The location the test site is built in
-HTTP_PATH_TO_DEV_SITE = "http://types.cs.washington.edu/dev"
+HTTP_PATH_TO_DEV_SITE = "http://checker-framework.com/dev"
 FILE_PATH_TO_DEV_SITE = "/cse/www2/types/dev/"
 DEV_HTACCESS = os.path.join(FILE_PATH_TO_DEV_SITE, ".htaccess")
 
 # The location the test site is pushed to when it is ready
-HTTP_PATH_TO_LIVE_SITE = "http://types.cs.washington.edu"
+HTTP_PATH_TO_LIVE_SITE = "http://checker-framework.com"
 FILE_PATH_TO_LIVE_SITE = "/cse/www2/types"
 LIVE_HTACCESS = os.path.join(FILE_PATH_TO_LIVE_SITE, ".htaccess")
 
-PGP_PASSPHRASE_FILE = "/projects/swlab1/checker-framework/release-private.password"
+PGP_PASSPHRASE_FILE = "/projects/swlab1/checker-framework/hosting-info/release-private.password"
 SONATYPE_OSS_URL = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 SONATYPE_STAGING_REPO_ID = "sonatype-nexus-staging"
 SONATYPE_CLOSING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
@@ -119,7 +119,7 @@ CHECKER_QUAL = os.path.join(CHECKER_BIN_DIR, 'checker-qual.jar')
 CHECKER_QUAL_SOURCE = os.path.join(CHECKER_BIN_DIR, 'checker-qual-source.jar')
 CHECKER_COMPAT_QUAL = os.path.join(CHECKER_BIN_DIR, 'checker-compat-qual.jar')
 CHECKER_COMPAT_QUAL_SOURCE = os.path.join(CHECKER_BIN_DIR, 'checker-compat-qual-source.jar')
-CHECKER_MANUAL = os.path.join(CHECKER_FRAMEWORK, "checker", "manual")
+CHECKER_MANUAL = os.path.join(CHECKER_FRAMEWORK, "docs", "manual")
 
 JAVAC_BINARY = os.path.join(CHECKER_BIN_DIR, 'javac.jar')
 JDK7_BINARY = os.path.join(CHECKER_BIN_DIR, 'jdk7.jar')

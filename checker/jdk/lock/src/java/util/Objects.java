@@ -29,7 +29,6 @@ package java.util;
 // import java.util.function.Supplier;
 
 import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.dataflow.qual.*;
 
 /**
  * This class consists of {@code static} utility methods for operating

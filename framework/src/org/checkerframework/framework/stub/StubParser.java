@@ -431,7 +431,7 @@ public class StubParser {
         typeParameters.clear();
     }
 
-    /** @return List of AnnotatedTypeVariable of the type's type parameter declarations */
+    /** @return list of AnnotatedTypeVariable of the type's type parameter declarations */
     private List<AnnotatedTypeVariable> parseType(
             ClassOrInterfaceDeclaration decl,
             TypeElement elt,

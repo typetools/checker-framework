@@ -324,7 +324,7 @@ public class ElementAnnotationUtil {
 
     /**
      * See the Type Annotation Specification on bounds
-     * (http://types.cs.washington.edu/jsr308/specification/java-annotation-design.html)
+     * (http://checker-framework.com/jsr308/specification/java-annotation-design.html)
      *
      * <p>TypeAnnotationPositions have bound indices when they represent an upper bound on a
      * TypeVariable. The index 0 ALWAYS refers to the superclass type. If that supertype is implied

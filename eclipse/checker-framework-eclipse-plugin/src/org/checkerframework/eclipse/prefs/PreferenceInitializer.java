@@ -1,9 +1,8 @@
 package org.checkerframework.eclipse.prefs;
 
+import org.checkerframework.eclipse.CheckerPlugin;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
-
-import org.checkerframework.eclipse.CheckerPlugin;
 
 public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
@@ -29,5 +28,4 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         prefs.setDefault(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASSES, "");
         prefs.setDefault(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASS_AUTOBUILD, false);
     }
-
 }

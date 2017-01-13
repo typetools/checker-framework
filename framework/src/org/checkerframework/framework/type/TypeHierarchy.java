@@ -69,8 +69,8 @@ public interface TypeHierarchy {
      * @param subtype possible subtype
      * @param supertype possible supertype
      * @param top the qualifier at the top of the hierarchy for which the subtype check should be
-     *     preformed.
-     * @return Returns true if {@code subtype} is a subtype of {@code supertype} in the qualifier
+     *     preformed
+     * @return returns true if {@code subtype} is a subtype of {@code supertype} in the qualifier
      *     hierarchy whose top is {@code top}
      */
     boolean isSubtype(

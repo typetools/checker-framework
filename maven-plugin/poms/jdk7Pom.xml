@@ -9,12 +9,12 @@
 
     <!-- The comments in the version number are used to do a text substitution. Don't remove them.
          See checker-framework/bin/poms/updateVersion.sh -->
-    <version><!-- checker-framework-version -->2.1.6<!-- /checker-framework-version --></version>
+    <version><!-- checker-framework-version -->2.1.7<!-- /checker-framework-version --></version>
 
     <distributionManagement>
         <repository>
             <id>checker-releases</id>
-            <url>http://types.cs.washington.edu/dev/m2-repo</url>
+            <url>http://checker-framework.com/dev/m2-repo</url>
         </repository>
     </distributionManagement>
 

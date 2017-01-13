@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="generator" content=
+  "HTML Tidy for Linux (vers 25 March 2009), see www.w3.org">
+
+  <title>Checker Framework Tutorial</title>
+  <link href="webpages/bootstrap/css/bootstrap.css" rel="stylesheet" type=
+  "text/css">
+  <script type="text/javascript" src=
+  "webpages/bootstrap/js/bootstrap.min.js">
+</script>
+  <link href="webpages/css/main.css" rel="stylesheet" type="text/css">
+  <link rel="icon" type="image/png" href=
+  "http://checker-framework.com/favicon-checkerframework.png">
+</head>
+
+<body>
+  <div class="top_liner"></div>
+
+  <div class="navbar navbar-inverse navbar-fixed-top" style=
+  "border-bottom: 1px solid #66d;">
+    <div class="navbar-inner">
+      <div class="contained">
+        <ul class="nav">
+          <li class="heading">Checker Framework:</li>
+
+          <li><a href="http://checker-framework.com/">Main Site</a></li>
+
+          <li><a href=
+          "http://checker-framework.com/manual/">
+          Manual</a></li>
+
+          <li><a href=
+          "https://groups.google.com/forum/?fromgroups#!forum/checker-framework-discuss">
+          Discussion List</a></li>
+
+          <li><a href=
+          "https://github.com/typetools/checker-framework/issues">Issue
+          Tracker</a></li>
+
+          <li><a href=
+          "https://github.com/typetools/checker-framework">Source
+          Code</a></li>
+
+          <li><a href=
+          "http://checker-framework.com/eclipse/">Eclipse
+          Plugin</a></li>
+
+          <li class="active"><a href=
+          "http://checker-framework.com/tutorial/">Tutorial</a></li>
+        </ul>
+      </div>
+    </div>
+  </div><img src="http://checker-framework.com/CFLogo.png" alt="Checker Framework logo">
+
+  <div class="page-header short" style=
+  "border-bottom: 1px solid #EEE; border-top: none;">
+    <h1>Checker Framework Tutorial</h1>
+  </div>
+
+  <div id="introduction">
+    <div class="page-header short" style="border-top: none;">
+      <h2>Introduction</h2>
+    </div>
+
+    <div class="section">
+      <p>The Checker Framework enhances Java's type system to make it more
+      powerful and useful. This lets software developers detect and
+      prevent errors in their Java programs. The Checker Framework
+      includes compiler plug-ins ("checkers") that find bugs or verify
+      their absence. It also permits software developers to write their
+      own compiler plug-ins.</p>
+
+      <p>In this tutorial, you will learn to use the Checker Framework to
+      prevent null pointer exceptions, to prevent SQL injection attacks,
+      and to improve code quality. In this tutorial, you can use the Checker
+      Framework either via its Eclipse plugin or from the command line. Both
+      tutorials use the same examples. The Checker
+      Framework can also be used with other <a href=
+      "http://checker-framework.com/manual/#external-tools">tools</a>
+      such as Maven or InteliJ IDEA, and you could follow
+      the command-line version of the tutorial using one of those tools.</p>
+    </div>
+  </div>
+
+  <div id="eclipsetutorial">
+    <div class="page-header short">
+      <h2>Using the Checker Framework Eclipse plugin</h2>
+    </div>
+
+    <div class="section">
+      <ol>
+        <li><a href=
+        "http://checker-framework.com/eclipse/">Install
+        the Eclipse Plugin</a> and then return to this page.</li>
+
+        <li><a href="eclipse-projects.zip">Download</a> and unzip the
+        Eclipse projects for the tutorial.</li>
+
+        <li><a href="webpages/get-started-eclipse.html">Getting
+        Started</a>, a simple example use of the Nullness Checker</li>
+
+        <li><a href="webpages/user-input-eclipse.html">Validating User
+        Input</a>, an example using the Regex Checker</li>
+
+        <li><a href="webpages/security-error-eclipse.html">Finding a
+        Security Error</a>, a complex example using the Tainting
+        Checker</li>
+
+        <li><a href="webpages/encryption-checker-eclipse.html">Writing an
+        Encryption Checker</a>, an example of writing your own type
+        checker</li>
+      </ol>
+    </div>
+  </div>
+
+  <div id="commandlinetutorial">
+    <div class="page-header short">
+      <h2>Using the Checker Framework from the command line</h2>
+    </div>
+
+    <div class="section">
+      <ol>
+        <li><a href=
+        "http://checker-framework.com/manual/#installation">
+        Install the Checker Framework</a> and then return to this page.<br/>
+        As described in the installation instructions,
+        <a href="http://checker-framework.com/manual/#javac-installation">set
+        the alias
+        <code>javacheck</code></a> to the Checker Framework compiler.</li>
+
+        <li><a href="sourcefiles.zip">Download</a> and unzip the source
+        files for the tutorial, and <code>cd</code> to the <code>src</code>
+        directory.</li>
+
+        <li><a href="webpages/get-started-cmd.html">Getting Started</a>, a
+        simple example use of the Nullness Checker</li>
+
+        <li><a href="webpages/user-input-cmd.html">Validating User
+        Input</a>, an example using the Regex Checker</li>
+
+        <li><a href="webpages/security-error-cmd.html">Finding a Security
+        Error</a>, a complex example using the Tainting Checker</li>
+
+        <li><a href="webpages/encryption-checker-cmd.html">Writing an
+        Encryption Checker</a>, an example of writing your own type
+        checker</li>
+      </ol>
+    </div>
+  </div>
+
+  <div id="resources">
+    <div class="page-header short">
+      <h2>Resources</h2>
+    </div>
+
+    <div class="section">
+      <ul>
+        <li><a href=
+        "http://checker-framework.com/manual/">
+        The Checker Framework Manual</a></li>
+
+        <li><a href="http://checker-framework.com/">The Checker Framework
+        homepage</a></li>
+
+        <li>Feel free to <b>contact</b> us! Email <a href=
+        "mailto:checker-framework-dev@googlegroups.com">checker-framework-dev@googlegroups.com</a></li>
+
+        <li>A <a href="https://github.com/glts/safer-spring-petclinic/wiki">Nullness Checker tutorial</a>, by David B&uuml;rgin</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="bottom_liner"></div>
+  <!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath
+ -->
+  <!--  LocalWords:  NullnessChecker plugin's hg
+ -->
+</body>
+</html>

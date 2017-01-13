@@ -38,7 +38,6 @@ checker/jdk/jdk*.jar
 checker/jdk/**/*.class
 *.pyc
 checker/build-temp
-checker/examples/**/*.class
 checker/bin-devel/.run-google-java-format
 
 # manual files
@@ -67,12 +66,13 @@ manual003.gif
 manual003.png
 manual004.gif
 manual004.png
-checker/manual/figures/*.eps
-checker/manual/figures/*.pdf
-checker/manual/figures/*.png
-checker/manual/figures/signature-types-with-canonicalname.dia
-checker/manual/*.png
-checker/manual/*.svg
+docs/manual/figures/*.eps
+docs/manual/figures/*.pdf
+docs/manual/figures/*.png
+docs/manual/figures/signature-types-with-canonicalname.dia
+docs/manual/*.png
+docs/manual/*.svg
+docs/examples/**/*.class
 
 # dataflow manual
 dataflow/manual/dataflow.aux
@@ -107,12 +107,12 @@ checker/jtreg/multipleexecutions/Main.class
 
 framework/tests/whole-program-inference/annotated/
 
-tutorial/eclipse-projects.zip
-tutorial/eclipse-projects/README.txt
-tutorial/eclipse-projects/personalblog-demo/bin/net/eyde/personalblog/service/PersonalBlogService.class
-tutorial/eclipse-projects/personalblog-demo/bin/net/eyde/personalblog/struts/action/ReadAction.class
-tutorial/sourcefiles.zip
-tutorial/src
+docs/tutorial/eclipse-projects.zip
+docs/tutorial/eclipse-projects/README.txt
+docs/tutorial/eclipse-projects/personalblog-demo/bin/net/eyde/personalblog/service/PersonalBlogService.class
+docs/tutorial/eclipse-projects/personalblog-demo/bin/net/eyde/personalblog/struts/action/ReadAction.class
+docs/tutorial/sourcefiles.zip
+docs/tutorial/src
 
 # release tmps
 tmp

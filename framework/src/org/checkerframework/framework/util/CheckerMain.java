@@ -532,7 +532,7 @@ public class CheckerMain {
      * Find the jar file or directory containing the .class file from which cls was loaded
      *
      * @param cls the class whose .class file we wish to locate; if null, CheckerMain.class.
-     * @param errIfFromDirectory If false, throw an exception if the file was loaded from a
+     * @param errIfFromDirectory if false, throw an exception if the file was loaded from a
      *     directory
      */
     public static String findPathTo(Class<?> cls, boolean errIfFromDirectory)

@@ -123,13 +123,32 @@
       </ant>
   </target>
 
+  <!-- Like dist-release, but skips CF tests which take a long time to run. -->
+  <target name="dist-release-notest">
+      <ant dir="checker">
+          <target name="dist-release-notest"/>
+      </ant>
+      <ant dir="javacutil">
+          <target name="sources-jar"/>
+      </ant>
+      <ant dir="javacutil">
+        <target name="javadoc-jar" />
+      </ant>
+      <ant dir="dataflow">
+          <target name="sources-jar"/>
+      </ant>
+      <ant dir="dataflow">
+          <target name="javadoc-jar" />
+      </ant>
+  </target>
+
   <target name="html-validate"
           description="Validate that HTML files are well-formed; only works with JDK 8">
     <exec executable="html5validator">
       <arg value="--ignore"/>
       <arg value="/api/"/>
       <arg value="/build/"/>
-      <arg value="/checker/manual/manual.html"/>
+      <arg value="/docs/manual/manual.html"/>
       <arg value="/checker/jdk/nullness/src/java/lang/ref/package.html"/>
     </exec>
   </target>
@@ -137,7 +156,7 @@
 
   <fileset id="formatted.java.files" dir="."
            includes="**/*.java"
-           excludes="**/checker/jdk/,**/stubparser/,**/eclipse/,**/nullness-javac-errors/,**/annotated/"/>
+           excludes="checker/jdk/,stubparser/,checker/tests/nullness-javac-errors/,framework/tests/whole-program-inference/annotated/"/>
 
   <import file="./build-styleguide.xml"/>
 
@@ -159,7 +178,7 @@
     <ant dir="stubparser">
       <target name="tags"/>
     </ant>
-    <exec executable="make" dir="checker/manual" failonerror="true">
+    <exec executable="make" dir="docs/manual" failonerror="true">
       <arg value="tags"/>
     </exec>
     <exec executable="etags" failonerror="true">
@@ -174,7 +193,7 @@
       <arg value="-i"/>
       <arg value="stubparser/TAGS"/>
       <arg value="-i"/>
-      <arg value="checker/manual/TAGS"/>
+      <arg value="docs/manual/TAGS"/>
     </exec>
   </target>
 
