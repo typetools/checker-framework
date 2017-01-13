@@ -1,7 +1,5 @@
 package org.checkerframework.netbeans;
 
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
@@ -67,7 +65,7 @@ public class CheckerFrameworkPanel extends JPanel {
                             .entrySet();
         } catch (IOException e) {
             System.out.println("Failed to load checker strings properties file.");
-            checkerStrings = new HashSet (); //create an empty hash set
+            checkerStrings = new HashSet(); //create an empty hash set
         }
 
         checkerList = new JCheckBox[checkerStrings.size()];
@@ -112,23 +110,26 @@ public class CheckerFrameworkPanel extends JPanel {
             ProjectManager.mutex()
                     .writeAccess(
                             new WriteCheckerFrameworkPropertiesAction(
-                                    projectProperties, checkerPath, checkerQualPath, updateSelections()));
+                                    projectProperties,
+                                    checkerPath,
+                                    checkerQualPath,
+                                    updateSelections()));
         } catch (MutexException mux) {
             throw (IOException) mux.getException();
         }
     }
-    
-    public JCheckBox[] getCheckBoxes (){
+
+    public JCheckBox[] getCheckBoxes() {
         return checkerList;
     }
-    
-    private String updateSelections(){
+
+    private String updateSelections() {
         StringBuilder sel = new StringBuilder();
         String selectedChecker = "";
-        for (JCheckBox checkBox : checkerList){
-            if (checkBox.isSelected()){
+        for (JCheckBox checkBox : checkerList) {
+            if (checkBox.isSelected()) {
                 for (Entry<String, String> entry : checkerStrings) {
-                    if (entry.getValue().equals(checkBox.getText())){
+                    if (entry.getValue().equals(checkBox.getText())) {
                         selectedChecker = entry.getKey();
                     }
                 }
