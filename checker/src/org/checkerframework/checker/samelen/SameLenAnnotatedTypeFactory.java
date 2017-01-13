@@ -26,7 +26,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    private AnnotationMirror UNKNOWN, BOTTOM;
+    AnnotationMirror UNKNOWN;
+    private AnnotationMirror BOTTOM;
 
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -121,7 +122,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
-            return createSameLenUnknown();
+            return UNKNOWN;
         }
 
         @Override
@@ -134,7 +135,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (overlap(a1Val, a2Val)) {
                     return getCombinedSameLen(a1Val, a2Val);
                 } else {
-                    return createSameLenBottom();
+                    return BOTTOM;
                 }
 
             } else {
@@ -144,7 +145,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else if (AnnotationUtils.areSameByClass(a2, SameLenUnknown.class)) {
                     return a1;
                 } else {
-                    return createSameLenBottom();
+                    return BOTTOM;
                 }
             }
         }
@@ -159,7 +160,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (overlap(a1Val, a2Val)) {
                     return getCombinedSameLen(a1Val, a2Val);
                 } else {
-                    return createSameLenUnknown();
+                    return UNKNOWN;
                 }
 
             } else {
@@ -169,7 +170,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else if (AnnotationUtils.areSameByClass(a2, SameLenBottom.class)) {
                     return a1;
                 } else {
-                    return createSameLenUnknown();
+                    return UNKNOWN;
                 }
             }
         }
@@ -221,13 +222,5 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
         builder.setValue("value", val);
         return builder.build();
-    }
-
-    public AnnotationMirror createSameLenBottom() {
-        return BOTTOM;
-    }
-
-    public AnnotationMirror createSameLenUnknown() {
-        return UNKNOWN;
     }
 }

@@ -31,7 +31,7 @@ public class SameLenTransfer extends CFTransfer {
         super(analysis);
         this.analysis = analysis;
         aTypeFactory = (SameLenAnnotatedTypeFactory) analysis.getTypeFactory();
-        UNKNOWN = aTypeFactory.createSameLenUnknown();
+        UNKNOWN = aTypeFactory.UNKNOWN;
     }
 
     @Override
