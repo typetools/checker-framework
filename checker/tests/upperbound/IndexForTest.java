@@ -17,7 +17,6 @@ public class IndexForTest {
     }
 
     void callTest1(int x) {
-        //::  error: (argument.type.incompatible)
         test1(0);
         //::  error: (argument.type.incompatible)
         test1(1);
@@ -44,7 +43,6 @@ public class IndexForTest {
     }
 
     void callTest2(int x) {
-        //::  error: (argument.type.incompatible)
         test2(0);
         //::  error: (argument.type.incompatible)
         test2(1);

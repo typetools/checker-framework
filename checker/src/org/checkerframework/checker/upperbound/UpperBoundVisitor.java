@@ -3,6 +3,7 @@ package org.checkerframework.checker.upperbound;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.upperbound.qual.LTEqLengthOf;
 import org.checkerframework.checker.upperbound.qual.LTLengthOf;
 import org.checkerframework.checker.upperbound.qual.LTOMLengthOf;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -10,6 +11,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /** Warns about array accesses that could be too high. */
 public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFactory> {
@@ -65,6 +67,55 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             checker.report(
                     Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName), indexTree);
             return;
+        }
+    }
+
+    @Override
+    protected void commonAssignmentCheck(
+            AnnotatedTypeMirror varType, ExpressionTree valueExp, String errorKey) {
+
+        // Slightly relaxes the usual assignment rules by allowing assignments where the right
+        // hand side is a value known at compile time and the type of the left hand side is
+        // annotated with LT*LengthOf("a").  If the min length of a is in the correct
+        // relationship with the value on the right hand side, then the assignment is legal.
+        Integer rhsValue = atypeFactory.valMaxFromExpressionTree(valueExp);
+        if (rhsValue == null) {
+            super.commonAssignmentCheck(varType, valueExp, errorKey);
+            return;
+        } else if (rhsValue == 0) {
+            // 0 is an index of all arrays
+            return;
+        }
+        AnnotationMirror upperBoundAnno = varType.getAnnotationInHierarchy(atypeFactory.UNKNOWN);
+
+        boolean minLenMatches = true;
+        String[] arrayNames = UpperBoundUtils.getValue(upperBoundAnno);
+        if (arrayNames == null) {
+            super.commonAssignmentCheck(varType, valueExp, errorKey);
+            return;
+        }
+        for (String arrayName : arrayNames) {
+            int minLen =
+                    atypeFactory
+                            .getMinLenAnnotatedTypeFactory()
+                            .getMinLenFromString(arrayName, valueExp, getCurrentPath());
+
+            if (AnnotationUtils.areSameByClass(upperBoundAnno, LTLengthOf.class)) {
+                if (!(minLen > rhsValue)) {
+                    minLenMatches = false;
+                }
+            } else if (AnnotationUtils.areSameByClass(upperBoundAnno, LTEqLengthOf.class)) {
+                if (!(minLen >= rhsValue)) {
+                    minLenMatches = false;
+                }
+            } else if (AnnotationUtils.areSameByClass(upperBoundAnno, LTOMLengthOf.class)) {
+                if (!(minLen - 1 > rhsValue)) {
+                    minLenMatches = false;
+                }
+            }
+        }
+        if (!minLenMatches) {
+            super.commonAssignmentCheck(varType, valueExp, errorKey);
         }
     }
 }

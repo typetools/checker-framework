@@ -74,7 +74,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Provides a way to query the Constant Value Checker, which computes the values of expressions
      * known at compile time (constant prop + folding).
      */
-    private ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
+    ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(ValueChecker.class);
     }
 
@@ -82,7 +82,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Provides a way to query the Min Len (minimum length) Checker, which computes the lengths of
      * arrays.
      */
-    private MinLenAnnotatedTypeFactory getMinLenAnnotatedTypeFactory() {
+    MinLenAnnotatedTypeFactory getMinLenAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(MinLenChecker.class);
     }
 
