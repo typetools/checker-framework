@@ -47,8 +47,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Checks whether the two string lists contain at least one string that's the same. Not a smart
      * algorithm; meant to be run over small sets of data.
      *
-     * @param a1 the first string list
-     * @param a2 the second string list
+     * @param listA the first string list
+     * @param listB the second string list
      * @return true if there is the intersection is non-empty; false otherwise
      */
     private boolean overlap(List<String> listA, List<String> listB) {
