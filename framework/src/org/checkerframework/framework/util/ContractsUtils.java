@@ -45,7 +45,12 @@ public class ContractsUtils {
         return instance;
     }
 
+    /**
+     * A contract represents an annotation on an expression, along with the kind: precondition,
+     * postcondition, or conditional postcondition.
+     */
     public abstract static class Contract {
+
         public enum Kind {
             PRECONDITION("precondition"),
             POSTCONDTION("postcondition"),
@@ -56,6 +61,7 @@ public class ContractsUtils {
                 this.errorKey = errorKey;
             }
         }
+
         /**
          * The expression for which the condition must hold, such as {@code "foo"} in
          * {@code @RequiresNonNull("foo")}.

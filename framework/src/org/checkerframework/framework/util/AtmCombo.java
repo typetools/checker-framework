@@ -247,8 +247,8 @@ public enum AtmCombo {
      * @param type2 second argument to the called visit method
      * @param initialParam the parameter passed to the called visit method
      * @param visitor the visitor that is visiting the given types
-     * @param <RETURN_TYPE> The return type of the visitor's visit methods
-     * @param <PARAM> The parameter type of the visitor's visit methods
+     * @param <RETURN_TYPE> the return type of the visitor's visit methods
+     * @param <PARAM> the parameter type of the visitor's visit methods
      * @return the return value of the visit method called
      */
     public static <RETURN_TYPE, PARAM> RETURN_TYPE accept(

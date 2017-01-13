@@ -1,7 +1,6 @@
 package com.sun.javadoc;
 
 import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.dataflow.qual.Pure;
 
 public interface Doc extends java.lang.Comparable<java.lang.Object> {
   public abstract java.lang.String commentText();

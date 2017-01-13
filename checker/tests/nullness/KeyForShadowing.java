@@ -28,22 +28,24 @@ class KeyForShadowing {
         //:: error: (argument.type.incompatible)
         getMap2(m0, m1, k).toString();
 
+        //:: error: (argument.type.incompatible)
         getMap1(m0, m1, k).toString();
         getMap4(m0, m1, k).toString();
     }
 
-    //:: warning: (method.declaration.expression.parameter.name)
     public static @NonNull Integer getMap1(
             Map<String, Integer> m1, // m1,m0 flipped
             Map<String, Integer> m0,
+            //:: error: (expression.unparsable.type.invalid)
             @KeyFor("m0") String k) {
+        //:: error: (return.type.incompatible)
         return m0.get(k);
     }
 
-    //:: warning: (method.declaration.expression.parameter.name)
     public static @NonNull Integer getMap2(
             Map<String, Integer> m1, // m1,m0 flipped
             Map<String, Integer> m0,
+            //:: error: (expression.unparsable.type.invalid)
             @KeyFor("m1") String k) {
         // This method body is incorrect.
         // We expect this error because we are indicating that

@@ -33,7 +33,8 @@ def match_arg(arg):
     return matched_project
 
 def read_projects(argv, error_call_back):
-    """Determine which of the jsr308-langtools, AFU and Checker Framework
+    """Returns a map from project-name to boolean.
+    Determine which of the jsr308-langtools, AFU and Checker Framework
     projects to build based on the command-line arguments to release_build.
     \"all\" indicates that all 3 projects are to be built. If the arguments
     are incorrect, the error_call_back function is called and  the script
@@ -296,7 +297,7 @@ def test_increment_version():
 def current_distribution_by_website(site):
     """
     Reads the checker framework version from the checker framework website and
-    returns the version of the current release
+    returns the version of the current release.
     """
     print 'Looking up checker-framework-version from %s\n' % site
     ver_re = re.compile(r"<!-- checker-framework-zip-version -->checker-framework-(.*)\.zip")
@@ -307,7 +308,7 @@ def current_distribution_by_website(site):
 def current_distribution(checker_framework_dir):
     """
     Reads the checker framework version from build-common.properties
-    returns the version of the current release
+    returns the version of the current release.
     """
     ver_re = re.compile(r"""build.version = (\d+\.\d+\.\d+(?:\.\d+){0,1})""")
     build_props_location = os.path.join(checker_framework_dir, "build-common.properties")
@@ -398,7 +399,7 @@ def push_changes_prompt_if_fail(repo_root):
     user answers opts to not try again."""
     while True:
         if is_git(repo_root):
-            cmd = 'git -C %s push --tags' % repo_root
+            cmd = '(cd %s && git push --tags)' % repo_root
             result = os.system(cmd)
             if result == 0:
                 break
@@ -407,7 +408,7 @@ def push_changes_prompt_if_fail(repo_root):
                 if not prompt_yn("Try again (responding 'n' will skip this push command but will not exit the script) ?"):
                     break
         if is_git(repo_root):
-            cmd = 'git -C %s push origin master' % repo_root
+            cmd = '(cd %s && git push origin master)' % repo_root
         else:
             cmd = 'hg -R %s push' % repo_root
         result = os.system(cmd)
@@ -422,8 +423,8 @@ def push_changes(repo_root):
     """Pushes changes, including tags, that were committed to the repository at
     the given filesystem path."""
     if is_git(repo_root):
-        execute('git -C %s push --tags' % repo_root)
-        execute('git -C %s push origin master' % repo_root)
+        execute('git push --tags', working_dir=repo_root)
+        execute('git push origin master', working_dir=repo_root)
     else:
         execute('hg -R %s push' % repo_root)
 
@@ -432,9 +433,9 @@ def update_repo(path, bareflag):
     parameter indicates whether the updated repo must be a bare git repo."""
     if is_git(path):
         if bareflag:
-            execute('git -C %s fetch origin master:master' % path)
+            execute('git fetch origin master:master', working_dir=path)
         else:
-            execute('git -C %s pull' % path)
+            execute('git pull', working_dir=path)
     else:
         execute('hg -R %s pull -u' % path)
 
@@ -442,8 +443,8 @@ def commit_tag_and_push(version, path, tag_prefix):
     """Commit the changes made for this release, add a tag for this release, and
     push these changes."""
     if is_git(path):
-        execute('git -C %s commit -a -m "new release %s"' % (path, version))
-        execute('git -C %s tag %s%s' % (path, tag_prefix, version))
+        execute('git commit -a -m "new release %s"' % (version), working_dir=path)
+        execute('git tag %s%s)' % (tag_prefix, version), working_dir=path)
     else:
         execute('hg -R %s commit -m "new release %s"' % (path, version))
         execute('hg -R %s tag %s%s' % (path, tag_prefix, version))
@@ -505,14 +506,14 @@ def is_repo_cleaned_and_updated(repo):
     if is_git(repo):
         # The idiom "not execute(..., capture_output=True)" evaluates to True when the captured output is empty.
         if git_bare_repo_exists_at_path(repo):
-            execute("git -C %s fetch origin" % (repo))
-            is_updated = not execute("git -C %s diff master..FETCH_HEAD" % (repo), capture_output=True)
+            execute("git fetch origin", working_dir=repo)
+            is_updated = not execute("git diff master..FETCH_HEAD", working_dir=repo, capture_output=True)
             return is_updated
         else:
             # Could add "--untracked-files=no" to this command
-            is_clean = not execute("git -C %s status --porcelain" % (repo), capture_output=True)
-            execute("git -C %s fetch origin" % (repo))
-            is_updated = not execute("git -C %s diff origin/master..master" % (repo), capture_output=True)
+            is_clean = not execute("git status --porcelain", working_dir=repo, capture_output=True)
+            execute("git fetch origin", working_dir=repo)
+            is_updated = not execute("git diff origin/master..master", working_dir=repo, capture_output=True)
             return is_clean and is_updated
     else:
         summary = execute('hg -R %s summary --remote' % (repo), capture_output=True)
@@ -566,7 +567,7 @@ def get_commit_for_tag(revision, repo_file_path, tag_prefixes):
         raise Exception("get_commit_for_tag is only defined for git repositories")
 
     # assume the first is the most recent
-    tags = execute("git -C " + repo_file_path + " rev-list " + tag_prefixes[0] + revision, True, True)
+    tags = execute("git rev-list " + tag_prefixes[0] + revision, True, True, working_dir=repo_file_path)
     lines = tags.splitlines()
 
     commit = lines[0]
@@ -614,12 +615,12 @@ def write_diff_to_file(old_version, repository, tag_prefixes, dir_path, outfile)
     was pushed are retrieved."""
     if is_git(repository):
         old_tag = get_commit_for_tag(old_version, repository, tag_prefixes)
-        cmd = "git -C %s diff -w %s.. %s" % (repository, old_tag, dir_path)
+        cmd = "git diff -w %s.. %s" % (old_tag, dir_path)
     else:
         old_tag = get_hash_for_tag(old_version, repository, tag_prefixes)
         tip_tag = get_tip_hash(repository)
-        cmd = "hg -R %s diff -w -r%s:%s %s" % (repository, old_tag, tip_tag, dir_path)
-    execute_write_to_file(cmd, outfile)
+        cmd = "hg diff -w -r%s:%s %s" % (old_tag, tip_tag, dir_path)
+    execute_write_to_file(cmd, outfile, working_dir=repository)
 
 def propose_documentation_change_review(dir_title, old_version, repository_path, tag_prefixes,
                           dir_path, diff_output_file):
@@ -745,16 +746,16 @@ def prompt_to_delete(path):
         if result == "Yes" or result == "yes":
             delete_path(path)
 
-def force_symlink(target_of_link, path_to_symlink):
-    """Forces the creation of a symlink to the given path at the given target
-    location. That is, if a file or symlink exists at the target location, it
-    is deleted and the symlink is then created."""
-    try:
-        os.symlink(target_of_link, path_to_symlink)
-    except OSError, e:
-        if e.errno == errno.EEXIST:
-            os.remove(path_to_symlink)
-            os.symlink(target_of_link, path_to_symlink)
+### def force_symlink(target_of_link, path_to_symlink):
+###     """Forces the creation of a symlink to the given path at the given target
+###     location. That is, if a file or symlink exists at the target location, it
+###     is deleted and the symlink is then created."""
+###     try:
+###         os.symlink(target_of_link, path_to_symlink)
+###     except OSError, e:
+###         if e.errno == errno.EEXIST:
+###             os.remove(path_to_symlink)
+###             os.symlink(target_of_link, path_to_symlink)
 
 def are_in_file(file_path, strs_to_find):
     """Returns true if every string in the given strs_to_find array is found in

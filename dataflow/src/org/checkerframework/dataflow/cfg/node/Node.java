@@ -83,7 +83,7 @@ public abstract class Node {
      * Returns a {@link TypeMirror} representing the type of a {@link Node} A {@link Node} will
      * always have a type even when it has no {@link Tree}.
      *
-     * @return a {@link TypeMirror} representing the type of this {@link Node}.
+     * @return a {@link TypeMirror} representing the type of this {@link Node}
      */
     public TypeMirror getType() {
         return type;
@@ -92,10 +92,10 @@ public abstract class Node {
     /**
      * Accept method of the visitor pattern
      *
-     * @param <R> Result type of the operation
-     * @param <P> Parameter type
-     * @param visitor The visitor to be applied to this node
-     * @param p The parameter for this operation.
+     * @param <R> result type of the operation
+     * @param <P> parameter type
+     * @param visitor the visitor to be applied to this node
+     * @param p the parameter for this operation
      */
     public abstract <R, P> R accept(NodeVisitor<R, P> visitor, P p);
 
@@ -129,7 +129,7 @@ public abstract class Node {
 
     /**
      * @return a collection containing all of the operand {@link Node}s of this {@link Node}, as
-     *     well as (transitively) the operands of its operands.
+     *     well as (transitively) the operands of its operands
      */
     public Collection<Node> getTransitiveOperands() {
         LinkedList<Node> operands = new LinkedList<>(getOperands());

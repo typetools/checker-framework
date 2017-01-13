@@ -87,7 +87,7 @@ import org.checkerframework.javacutil.TreeUtils;
     // 1. Add a brief blurb here about the use case
     //    and a pointer to one prominent use of the option.
     // 2. Update the Checker Framework manual:
-    //     * checker/manual/introduction.tex contains a list of all options,
+    //     * docs/manual/introduction.tex contains a list of all options,
     //       which should be in the same order as this source code file.
     //     * a specific section should contain a detailed discussion.
 
@@ -1166,7 +1166,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @param kind the kind of message to print
      * @param msg the message text
-     * @param args optional arguments to substitute in the message.
+     * @param args optional arguments to substitute in the message
      * @see SourceChecker#message(Diagnostic.Kind, Object, String, Object...)
      */
     public void message(Diagnostic.Kind kind, String msg, Object... args) {

@@ -23,6 +23,7 @@ import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -36,9 +37,11 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 
 /** A utility class made for helping to analyze a given {@code Tree}. */
@@ -943,5 +946,53 @@ public final class TreeUtils {
                         .toString();
         return ownerName.equals("java.lang.Object")
                 && declarationElement.getSimpleName().toString().equals("getClass");
+    }
+
+    /**
+     * Returns whether or not the leaf of the tree path is in a static scope.
+     *
+     * @param path TreePath whose leaf may or may not be in static scope
+     * @return returns whether or not the leaf of the tree path is in a static scope
+     */
+    public static boolean isTreeInStaticScope(TreePath path) {
+        MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
+
+        if (enclosingMethod != null) {
+            return enclosingMethod.getModifiers().getFlags().contains(Modifier.STATIC);
+        }
+        // no enclosing method, check for static or initializer block
+        BlockTree block = enclosingTopLevelBlock(path);
+        if (block != null) {
+            return block.isStatic();
+        }
+
+        // check if its in a variable initializer
+        Tree t = enclosingVariable(path);
+        if (t != null) {
+            return ((VariableTree) t).getModifiers().getFlags().contains((Modifier.STATIC));
+        }
+        ClassTree classTree = enclosingClass(path);
+        if (classTree != null) {
+            return classTree.getModifiers().getFlags().contains((Modifier.STATIC));
+        }
+        return false;
+    }
+
+    /**
+     * Returns whether or not tree is an access of array length.
+     *
+     * @param tree tree to check
+     * @return Returns whether or not tree is an access of array length.
+     */
+    public static boolean isArrayLengthAccess(Tree tree) {
+        if (tree.getKind() == Kind.MEMBER_SELECT
+                && isFieldAccess(tree)
+                && getFieldName(tree).equals("length")) {
+            ExpressionTree expressionTree = ((MemberSelectTree) tree).getExpression();
+            if (InternalUtils.typeOf(expressionTree).getKind() == TypeKind.ARRAY) {
+                return true;
+            }
+        }
+        return false;
     }
 }

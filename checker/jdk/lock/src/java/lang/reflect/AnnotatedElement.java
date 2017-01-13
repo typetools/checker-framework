@@ -1,7 +1,6 @@
 package java.lang.reflect;
 
 import java.lang.annotation.Annotation;
-import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.checker.lock.qual.*;
 
 public interface AnnotatedElement {

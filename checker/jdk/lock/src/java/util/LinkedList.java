@@ -1,10 +1,6 @@
 package java.util;
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
 
-import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.checker.nullness.qual.PolyNull;
 
 // This class permits null elements
 public class LinkedList<E extends Object> extends AbstractSequentialList<E> implements List<E>, Deque<E>, Cloneable, java.io.Serializable {

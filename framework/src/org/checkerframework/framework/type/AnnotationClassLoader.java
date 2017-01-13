@@ -611,7 +611,7 @@ public class AnnotationClassLoader {
      *     root directory
      * @param fileExtension a file extension suffix that a file must have to be considered an
      *     annotation file, normally either {@link #CLASS_SUFFIX} or {@link #JAVA_SUFFIX} is passed
-     *     in as its value.
+     *     in as its value
      * @return a set of strings where each string is the fully qualified class name of an annotation
      *     in the root directory or its sub-directories
      */
@@ -726,7 +726,7 @@ public class AnnotationClassLoader {
      *
      * @param fullyQualifiedAnnoNames a set of strings where each string is a single annotation
      *     class's fully qualified name
-     * @return a set of loaded annotation classes.
+     * @return a set of loaded annotation classes
      * @see #loadAnnotationClass(String)
      */
     private final Set<Class<? extends Annotation>> loadAnnotationClasses(
