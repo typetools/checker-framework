@@ -1,5 +1,9 @@
 package org.checkerframework.checker.upperbound;
 
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+*/
+
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
 import javax.lang.model.element.AnnotationMirror;
@@ -72,7 +76,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
     @Override
     protected void commonAssignmentCheck(
-            AnnotatedTypeMirror varType, ExpressionTree valueExp, String errorKey) {
+            AnnotatedTypeMirror varType,
+            ExpressionTree valueExp,
+            /*@CompilerMessageKey*/ String errorKey) {
 
         // Slightly relaxes the usual assignment rules by allowing assignments where the right
         // hand side is a value known at compile time and the type of the left hand side is
