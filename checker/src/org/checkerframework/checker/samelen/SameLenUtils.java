@@ -2,7 +2,6 @@ package org.checkerframework.checker.samelen;
 
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.upperbound.qual.*;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 public class SameLenUtils {
