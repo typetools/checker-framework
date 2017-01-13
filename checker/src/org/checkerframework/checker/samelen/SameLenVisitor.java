@@ -1,4 +1,7 @@
 package org.checkerframework.checker.samelen;
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+*/
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
@@ -26,7 +29,7 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            String errorKey) {
+            /*@CompilerMessageKey*/ String errorKey) {
         if (valueType.getKind() == TypeKind.ARRAY && TreeUtils.isExpressionTree(valueTree)) {
             AnnotationMirror am = valueType.getAnnotation(SameLen.class);
             List<String> arraysInAnno =
