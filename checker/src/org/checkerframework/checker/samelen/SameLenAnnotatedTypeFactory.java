@@ -10,10 +10,6 @@ import org.checkerframework.checker.samelen.qual.SameLenUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -49,9 +45,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param a2 the second string list
      * @return true if there is the intersection is non-empty; false otherwise
      */
-    private boolean overlap(List<String> a1, List<String> a2) {
-        for (String a : a1) {
-            for (String b : a2) {
+    private boolean overlap(List<String> listA, List<String> listB) {
+        for (String a : listA) {
+            for (String b : listB) {
                 if (a.equals(b)) {
                     return true;
                 }
@@ -175,14 +171,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        /**
-         * Computes subtyping. First checks if one is bottom or the other top (since top is a
-         * subtype of nothing, but everything is a subtype of it, and bottom is a subtype of
-         * everything, but nothing is a subtype of it. Then, checks if the types are the same. If
-         * they are, return true. Otherwise, they're distinct, so return false.
-         *
-         * @return true if rhs is a subtype of lhs, false otherwise
-         */
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
             if (AnnotationUtils.areSameByClass(rhs, SameLenBottom.class)) {
@@ -201,20 +189,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
             return false;
-        }
-    }
-
-    @Override
-    public TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
-                new SameLenTreeAnnotator(this),
-                new PropagationTreeAnnotator(this),
-                new ImplicitsTreeAnnotator(this));
-    }
-
-    protected class SameLenTreeAnnotator extends TreeAnnotator {
-        public SameLenTreeAnnotator(SameLenAnnotatedTypeFactory factory) {
-            super(factory);
         }
     }
 
