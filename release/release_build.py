@@ -140,7 +140,10 @@ def create_dirs_for_dev_website_release_versions(jsr308_and_cf_version, afu_vers
 def update_project_dev_website(project_name, release_version):
     """Update the dev web site for the given project
     according to the given release of the project on the dev web site."""
-    project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
+    if project_name == "checker-framework":
+        project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
+    else:
+        project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
     dev_website_relative_dir = os.path.join(project_dev_site, "releases", release_version)
 
     print "Copying from : " + dev_website_relative_dir + "\nto: " + project_dev_site
