@@ -178,7 +178,7 @@ def prompt_yes_no(msg, default=False):
     if default:
         default_str = "yes"
 
-    result = prompt_w_suggestion(msg, default_str, "^(Yes|yes|No|no)$")
+    result = prompt_w_default(msg, default_str, "^(Yes|yes|No|no)$")
 
     if result == "yes" or result == "Yes":
         return True
@@ -194,19 +194,20 @@ def prompt_yn(msg):
 
     return y_or_n == 'y'
 
-def prompt_until_yes():
-    "Prompts the user continually until they enter yes"
+def prompt_to_continue():
+    "Prompts the user to continue, until they enter yes."
     while not prompt_yes_no("Continue?"):
         pass
 
-def prompt_w_suggestion(msg, suggestion, valid_regex=None):
-    "Only accepts answers that match valid_regex."
+def prompt_w_default(msg, default, valid_regex=None):
+    "Only accepts answers that match valid_regex.
+    If default is none, requires an answer."
     answer = None
     while answer is None:
-        answer = raw_input(msg + " (%s): " % suggestion)
+        answer = raw_input(msg + " (%s): " % default)
 
         if answer is None or answer == "":
-            answer = suggestion
+            answer = default
         else:
             answer = answer.strip()
 
@@ -216,7 +217,7 @@ def prompt_w_suggestion(msg, suggestion, valid_regex=None):
                     answer = None
                     print "Invalid answer.  Validating regex: " + valid_regex
             else:
-                answer = suggestion
+                answer = default
 
     return answer
 
@@ -641,7 +642,7 @@ def propose_documentation_change_review(dir_title, old_version, repository_path,
         # those updates.
         print  "Please review " + dir_title + " and make any edits you deem necessary in your local clone of the repository."
         print  "Diff file: " + diff_output_file
-        prompt_until_yes()
+        prompt_to_continue()
 
 #=========================================================================================
 # File Utils
@@ -742,7 +743,7 @@ def prompt_to_delete(path):
     """Ask the user if the specified file/directory should be deleted, and if
     they answer yes, delete it."""
     if os.path.exists(path):
-        result = prompt_w_suggestion("Delete the following file/directory:\n %s [Yes|No]" % path, "yes", "^(Yes|yes|No|no)$")
+        result = prompt_w_default("Delete the following file/directory:\n %s [Yes|No]" % path, "yes", "^(Yes|yes|No|no)$")
         if result == "Yes" or result == "yes":
             delete_path(path)
 

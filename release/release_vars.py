@@ -65,11 +65,8 @@ SONATYPE_DROPPING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-
 # Another alternative is: USER = os.getenv('USER')
 USER = pwd.getpwuid(os.geteuid())[0]
 
-# Per-user root directory for the files created by the release process
-USER_SCRATCH_DIR = "/scratch/" + USER
-
 # Per-user directory for the temporary files created by the release process
-TMP_DIR = USER_SCRATCH_DIR + "/jsr308-release"
+TMP_DIR = "/scratch/" + USER + "/jsr308-release"
 
 # Location this and other release scripts are contained in
 SCRIPTS_DIR = TMP_DIR + "/checker-framework/release"
@@ -195,21 +192,18 @@ LIVE_TO_INTERM_REPOS = (
     (LIVE_ANNO_REPO, INTERM_ANNO_REPO)
 )
 
-RELEASES_SUBDIR = "releases"
-CURRENT_SUBDIR = "current"
-
-JSR308_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "jsr308", RELEASES_SUBDIR)
-AFU_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "annotation-file-utilities", RELEASES_SUBDIR)
-CHECKER_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "checker-framework", RELEASES_SUBDIR)
+JSR308_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "jsr308", "releases")
+AFU_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "annotation-file-utilities", "releases")
+CHECKER_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "checker-framework", "releases")
 
 JSR308_LIVE_SITE = os.path.join(FILE_PATH_TO_LIVE_SITE, "jsr308")
-JSR308_LIVE_RELEASES_DIR = os.path.join(JSR308_LIVE_SITE, RELEASES_SUBDIR)
+JSR308_LIVE_RELEASES_DIR = os.path.join(JSR308_LIVE_SITE, "releases")
 
 AFU_LIVE_SITE = os.path.join(FILE_PATH_TO_LIVE_SITE, "annotation-file-utilities")
-AFU_LIVE_RELEASES_DIR = os.path.join(AFU_LIVE_SITE, RELEASES_SUBDIR)
+AFU_LIVE_RELEASES_DIR = os.path.join(AFU_LIVE_SITE, "releases")
 
 CHECKER_LIVE_SITE = os.path.join(FILE_PATH_TO_LIVE_SITE, "checker-framework")
-CHECKER_LIVE_RELEASES_DIR = os.path.join(CHECKER_LIVE_SITE, RELEASES_SUBDIR)
+CHECKER_LIVE_RELEASES_DIR = os.path.join(CHECKER_LIVE_SITE, "releases")
 LIVE_CF_LOGO = os.path.join(CHECKER_LIVE_SITE, "CFLogo.png")
 
 CURRENT_DATE = datetime.date.today()
