@@ -67,12 +67,6 @@ The following repositories will be cloned or updated from their origins:
     clone_from_scratch_or_update(LIVE_PLUME_LIB, PLUME_LIB, clone_from_scratch, False)
     clone_from_scratch_or_update(LIVE_PLUME_BIB, PLUME_BIB, clone_from_scratch, False)
 
-def copy_cf_logo(cf_release_dir):
-    """Copy CFLogo.png from the live web site to the given directory."""
-    dev_releases_png = os.path.join(cf_release_dir, "CFLogo.png")
-    cmd = "rsync --times %s %s" % (LIVE_CF_LOGO, dev_releases_png)
-    execute(cmd)
-
 def get_afu_date(building_afu):
     """If the AFU is being built, return the current date, otherwise return the
     date of the last AFU release as indicated in the AFU home page."""
@@ -140,7 +134,10 @@ def create_dirs_for_dev_website_release_versions(jsr308_and_cf_version, afu_vers
 def update_project_dev_website(project_name, release_version):
     """Update the dev web site for the given project
     according to the given release of the project on the dev web site."""
-    project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
+    if project_name == "checker-framework":
+        project_dev_site = FILE_PATH_TO_DEV_SITE
+    else:
+        project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
     dev_website_relative_dir = os.path.join(project_dev_site, "releases", release_version)
 
     print "Copying from : " + dev_website_relative_dir + "\nto: " + project_dev_site
@@ -514,12 +511,11 @@ def main(argv):
         build_checker_framework_release(jsr308_version, afu_version, afu_date, checker_framework_interm_dir)
 
 
-    print_step("Build Step 7: Overwrite .htaccess.") # AUTO
+    print_step("Build Step 7: Overwrite .htaccess and CFLogo.png .") # AUTO
 
     # Not "cp -p" because that does not work across filesystems whereas rsync does
     execute("rsync --times %s %s" % (RELEASE_HTACCESS, DEV_HTACCESS))
-
-    copy_cf_logo(checker_framework_interm_dir)
+    execute("rsync --times %s %s" % (CFLOGO, cf_release_dir))
 
     # Each project has a set of files that are updated for release. Usually these updates include new
     # release date and version information. All changed files are committed and pushed to the intermediate

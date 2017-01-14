@@ -106,6 +106,7 @@ CHECKER_FRAMEWORK = os.path.join(BUILD_DIR, 'checker-framework')
 CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, 'release')
 CHECKER_BIN_DIR = os.path.join(CHECKER_FRAMEWORK, 'checker', 'dist')
 RELEASE_HTACCESS = os.path.join(CHECKER_FRAMEWORK_RELEASE, "types.htaccess")
+CFLOGO = os.path.join(CHECKER_FRAMEWORK, 'docs', 'logo', 'Logo', 'CFLogo.png')
 CHECKER_TAG_PREFIXES = ["checker-framework-", "checkers-", "new release "]
 
 CHECKER_BINARY = os.path.join(CHECKER_BIN_DIR, 'checker.jar')
