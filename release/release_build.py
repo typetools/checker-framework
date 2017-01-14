@@ -94,12 +94,12 @@ def get_new_version(project_name, curr_version, auto):
     if auto:
         new_version = suggested_version
     else:
-        new_version = prompt_w_suggestion("Enter new version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$")
+        new_version = prompt_w_default("Enter new version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$")
 
     print "New version: " + new_version
 
     if curr_version == new_version:
-        curr_version = prompt_w_suggestion("Enter current version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$")
+        curr_version = prompt_w_default("Enter current version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$")
         print "Current version: " + curr_version
 
     return (curr_version, new_version)
@@ -116,13 +116,13 @@ def create_dev_website_release_version_dir(project_name, version):
     execute("mkdir -p %s" % interm_dir, True, False)
     return interm_dir
 
-def create_dirs_for_dev_website_release_versions(jsr308_version, afu_version):
-    """Create directories for the given versions of the JSR308, CF and AFU
+def create_dirs_for_dev_website_release_versions(jsr308_and_cf_version, afu_version):
+    """Create directories for the given versions of the JSR308, CF, and AFU
     projects under the releases directory of the dev web site."""
     # these directories correspond to the /cse/www2/types/dev/<project_name>/releases/<version> dirs
-    jsr308_interm_dir = create_dev_website_release_version_dir("jsr308", jsr308_version)
+    jsr308_interm_dir = create_dev_website_release_version_dir("jsr308", jsr308_and_cf_version)
     afu_interm_dir = create_dev_website_release_version_dir("annotation-file-utilities", afu_version)
-    checker_framework_interm_dir = create_dev_website_release_version_dir(None, jsr308_version)
+    checker_framework_interm_dir = create_dev_website_release_version_dir(None, jsr308_and_cf_version)
 
     return (jsr308_interm_dir, afu_interm_dir, checker_framework_interm_dir)
 
@@ -132,7 +132,7 @@ def create_dirs_for_dev_website_release_versions(jsr308_version, afu_version):
 ###     project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
 ###     link_path = os.path.join(project_dev_site, "current")
 ###
-###     dev_website_relative_dir = os.path.join(RELEASES_SUBDIR, release_version)
+###     dev_website_relative_dir = os.path.join("releases", release_version)
 ###
 ###     print "Writing symlink: " + link_path + "\nto point to relative directory: " + dev_website_relative_dir
 ###     force_symlink(dev_website_relative_dir, link_path)
@@ -141,7 +141,7 @@ def update_project_dev_website(project_name, release_version):
     """Update the dev web site for the given project
     according to the given release of the project on the dev web site."""
     project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
-    dev_website_relative_dir = os.path.join(project_dev_site, RELEASES_SUBDIR, release_version)
+    dev_website_relative_dir = os.path.join(project_dev_site, "releases", release_version)
 
     print "Copying from : " + dev_website_relative_dir + "\nto: " + project_dev_site
     copy_tree(dev_website_relative_dir, project_dev_site)
@@ -407,7 +407,7 @@ def main(argv):
         print("It is *strongly discouraged* to not update the release version numbers for the Checker Framework " +
               "and jsr308-langtools even if no changes were made to these in a month. This would break so much " +
               "in the release scripts that they would become unusable.\n")
-        prompt_until_yes()
+        prompt_to_continue()
 
     old_afu_version = get_afu_version_from_html(AFU_MANUAL)
     (old_afu_version, afu_version) = get_new_version("Annotation File Utilities", old_afu_version, auto)
@@ -422,7 +422,7 @@ def main(argv):
               "and \"Aug.*29\" and fix them to match the previous release date.\n" +
               "Keep in mind that in this case, the release scripts will fail in certain places and you must manually " +
               "follow a few remaining release steps.\n")
-        prompt_until_yes()
+        prompt_to_continue()
 
     if review_documentation:
         print_step("Build Step 4: Review changelogs.") # SEMIAUTO
@@ -435,7 +435,7 @@ def main(argv):
         print("To ensure the jsr308-langtools, AFU and Checker Framework changelogs are correct and complete, " +
               "please follow the Content Guidelines found in README-release-process.html#content_guidelines\n")
 
-        prompt_until_yes()
+        prompt_to_continue()
 
         # This step will write out all of the changes that happened to the individual projects' documentation
         # to temporary files. Please review these changes for errors.
@@ -489,16 +489,15 @@ def main(argv):
 
     print_step("Build Step 5: Create directories for the current release on the dev site.") # AUTO
 
-    version_dirs = create_dirs_for_dev_website_release_versions(jsr308_version, afu_version)
-    jsr308_interm_dir = version_dirs[0]
-    afu_interm_dir = version_dirs[1]
-    checker_framework_interm_dir = version_dirs[2]
+    (jsr308_interm_dir, afu_interm_dir, checker_framework_interm_dir) = \
+        create_dirs_for_dev_website_release_versions(jsr308_version, afu_version)
 
-    # The projects are built in the following order: JSR308-Langtools, Annotation File Utilities,
-    # and Checker Framework. Furthermore, their manuals and websites are also built and placed in
-    # their relevant locations at http://checker-framework.com/dev/ This is the most time consuming
-    # piece of the release. There are no prompts from this step forward; you might want to get a cup
-    # of coffee and do something else until it is done.
+    # The projects are built in the following order: JSR308-Langtools,
+    # Annotation File Utilities, and Checker Framework. Furthermore, their
+    # manuals and websites are also built and placed in their relevant locations
+    # at http://checker-framework.com/dev/ .  This is the most time-consuming
+    # piece of the release. There are no prompts from this step forward; you
+    # might want to get a cup of coffee and do something else until it is done.
 
     print_step("Build Step 6: Build projects and websites.") # AUTO
     print projects_to_release
