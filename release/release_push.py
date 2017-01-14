@@ -50,7 +50,8 @@ def promote_release(path_to_releases, release_version):
     /cse/www2/types/checker-framework/*"""
     from_dir = os.path.join(path_to_releases, release_version)
     to_dir = os.path.join(path_to_releases, "..")
-    cmd = "rsync -a %s %s" % (from_dir, to_dir)
+    # Trailing slash is crucial.
+    cmd = "rsync -a %s/ %s" % (from_dir, to_dir)
     execute(cmd)
 
 def copy_htaccess():
