@@ -200,8 +200,8 @@ def prompt_to_continue():
         pass
 
 def prompt_w_default(msg, default, valid_regex=None):
-    "Only accepts answers that match valid_regex.
-    If default is none, requires an answer."
+    """Only accepts answers that match valid_regex.
+    If default is None, requires an answer."""
     answer = None
     while answer is None:
         answer = raw_input(msg + " (%s): " % default)
