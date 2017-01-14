@@ -48,9 +48,9 @@ def promote_release(path_to_releases, release_version):
     """Copy a release directory to the top level. For example,
     /cse/www2/types/checker-framework/releases/2.0.0/* ->
     /cse/www2/types/checker-framework/*"""
-    from = os.path.join(path_to_releases, release_version)
-    to = os.path.join(path_to_releases, "..")
-    cmd = "rsync -a %s %s" % (from, to)
+    from_dir = os.path.join(path_to_releases, release_version)
+    to_dir = os.path.join(path_to_releases, "..")
+    cmd = "rsync -a %s %s" % (from_dir, to_dir)
     execute(cmd)
 
 def copy_htaccess():
