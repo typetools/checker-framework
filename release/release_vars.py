@@ -99,8 +99,8 @@ OPENJDK_RELEASE_SITE = 'http://jdk8.java.net/download.html'
 
 EMAIL_TO = 'jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegroups.com'
 
-# Location of the project directories in which we will build the actual projects
-# When we build these projects are pushed to the INTERM repositories
+# Location of the project directories in which we will build the actual projects.
+# When we build these projects are pushed to the INTERM repositories.
 BUILD_DIR = TMP_DIR + "/build/"
 CHECKER_FRAMEWORK = os.path.join(BUILD_DIR, 'checker-framework')
 CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, 'release')
