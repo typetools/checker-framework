@@ -296,8 +296,10 @@ def main(argv):
     dev_afu_website = os.path.join(HTTP_PATH_TO_DEV_SITE, "annotation-file-utilities")
     live_afu_website = os.path.join(HTTP_PATH_TO_LIVE_SITE, "annotation-file-utilities")
 
-    dev_checker_website = os.path.join(HTTP_PATH_TO_DEV_SITE, "checker-framework")
-    live_checker_website = os.path.join(HTTP_PATH_TO_LIVE_SITE, "checker-framework")
+    # dev_checker_website = os.path.join(HTTP_PATH_TO_DEV_SITE, "checker-framework")
+    dev_checker_website = HTTP_PATH_TO_DEV_SITE
+    # live_checker_website = os.path.join(HTTP_PATH_TO_LIVE_SITE, "checker-framework")
+    live_checker_website = HTTP_PATH_TO_LIVE_SITE
     current_checker_version = current_distribution_by_website(live_checker_website)
     new_checker_version = current_distribution(CHECKER_FRAMEWORK)
     check_release_version(current_checker_version, new_checker_version)

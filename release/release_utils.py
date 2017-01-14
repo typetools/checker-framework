@@ -299,6 +299,9 @@ def current_distribution_by_website(site):
     Reads the checker framework version from the checker framework website and
     returns the version of the current release.
     """
+
+    print "FIXME FIXME HARDCODED 2.1.7"
+    return "2.1.7"
     print 'Looking up checker-framework-version from %s\n' % site
     ver_re = re.compile(r"<!-- checker-framework-zip-version -->checker-framework-(.*)\.zip")
     text = urllib2.urlopen(url=site).read()

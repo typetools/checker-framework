@@ -107,7 +107,10 @@ def get_new_version(project_name, curr_version, auto):
 def create_dev_website_release_version_dir(project_name, version):
     """Create the directory for the given version of the given project under
     the releases directory of the dev web site."""
-    interm_dir = os.path.join(FILE_PATH_TO_DEV_SITE, project_name, "releases", version)
+    if project_name == None or project_name == "checker-framework":
+        interm_dir = os.path.join(FILE_PATH_TO_DEV_SITE, "releases", version)
+    else:
+        interm_dir = os.path.join(FILE_PATH_TO_DEV_SITE, project_name, "releases", version)
     delete_path_if_exists(interm_dir)
 
     execute("mkdir -p %s" % interm_dir, True, False)
@@ -119,7 +122,7 @@ def create_dirs_for_dev_website_release_versions(jsr308_version, afu_version):
     # these directories correspond to the /cse/www2/types/dev/<project_name>/releases/<version> dirs
     jsr308_interm_dir = create_dev_website_release_version_dir("jsr308", jsr308_version)
     afu_interm_dir = create_dev_website_release_version_dir("annotation-file-utilities", afu_version)
-    checker_framework_interm_dir = create_dev_website_release_version_dir("checker-framework", jsr308_version)
+    checker_framework_interm_dir = create_dev_website_release_version_dir(None, jsr308_version)
 
     return (jsr308_interm_dir, afu_interm_dir, checker_framework_interm_dir)
 

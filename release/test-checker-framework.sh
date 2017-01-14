@@ -7,6 +7,8 @@
 
 # This script is used by the release_push script in the "Run javac sanity tests on the live release" step
 
+set -x
+
 if [ $# -eq 0 ]; then
     echo "Usage: test-checker-framework.sh <current version of Checker Framework on live web site>"
     exit 6
