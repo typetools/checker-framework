@@ -451,7 +451,7 @@ def commit_tag_and_push(version, path, tag_prefix):
     push these changes."""
     if is_git(path):
         execute('git commit -a -m "new release %s"' % (version), working_dir=path)
-        execute('git tag %s%s)' % (tag_prefix, version), working_dir=path)
+        execute('git tag %s%s' % (tag_prefix, version), working_dir=path)
     else:
         execute('hg -R %s commit -m "new release %s"' % (path, version))
         execute('hg -R %s tag %s%s' % (path, tag_prefix, version))

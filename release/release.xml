@@ -478,7 +478,7 @@
         <copy file="${checker.logo}/Checkmark/CFCheckmark_favicon.png" tofile="${dest.dir.manual}/favicon-checkerframework.png" />
         <copy file="${checker.logo}/Checkmark/CFCheckmark_favicon.png" tofile="${web.root}/favicon-checkerframework.png" />
 
-        <copy todir="${dest.dir}/docs/tutorial" >
+        <copy todir="${dest.dir}/tutorial" >
             <fileset dir="${checker.tutorial}" includes="**"/>
         </copy>
 

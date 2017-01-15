@@ -474,15 +474,16 @@ def main(argv):
 
         return
 
-    print_step("Build Step 4: Copy entire live site to dev site (~22 minutes).") # SEMIAUTO
+    ## I don't think this should be necessary in general.  It's just to put files in place no link checking will work, and it takes a loooong time to run.
+    # print_step("Build Step 4: Copy entire live site to dev site (~22 minutes).") # SEMIAUTO
 
-    if auto or prompt_yes_no("Proceed with copy of live site to dev site?", True):
-        # ************************************************************************************************
-        # WARNING: BE EXTREMELY CAREFUL WHEN MODIFYING THIS COMMAND.  The --delete option is destructive
-        # and its work cannot be undone.  If, for example, this command were modified to accidentally make
-        # /cse/www2/types/ the target directory, the entire types directory could be wiped out.
-        execute("rsync --omit-dir-times --recursive --links --delete --quiet --exclude=dev --exclude=sparta/release/versions /cse/www2/types/ /cse/www2/types/dev")
-        # ************************************************************************************************
+    # if auto or prompt_yes_no("Proceed with copy of live site to dev site?", True):
+    #     # ************************************************************************************************
+    #     # WARNING: BE EXTREMELY CAREFUL WHEN MODIFYING THIS COMMAND.  The --delete option is destructive
+    #     # and its work cannot be undone.  If, for example, this command were modified to accidentally make
+    #     # /cse/www2/types/ the target directory, the entire types directory could be wiped out.
+    #     execute("rsync --omit-dir-times --recursive --links --delete --quiet --exclude=dev --exclude=sparta/release/versions /cse/www2/types/ /cse/www2/types/dev")
+    #     # ************************************************************************************************
 
     print_step("Build Step 5: Create directories for the current release on the dev site.") # AUTO
 
@@ -515,7 +516,7 @@ def main(argv):
 
     # Not "cp -p" because that does not work across filesystems whereas rsync does
     execute("rsync --times %s %s" % (RELEASE_HTACCESS, DEV_HTACCESS))
-    execute("rsync --times %s %s" % (CFLOGO, cf_release_dir))
+    execute("rsync --times %s %s" % (CFLOGO, checker_framework_interm_dir))
 
     # Each project has a set of files that are updated for release. Usually these updates include new
     # release date and version information. All changed files are committed and pushed to the intermediate
