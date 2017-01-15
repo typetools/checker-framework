@@ -1,0 +1,281 @@
+%\htmlhr
+\chapter{Index Checker for array bounds\label{index-checker}}
+
+The Index Checker warns about potentially out-of-bounds accesses to sequence
+data structures, such as arrays, lists, and strings.
+(Note:  Support for lists is not yet implemented.)
+
+The Index Checker prevents \<IndexOutOfBoundsException>s that result from
+an index expression that might be negative or might be equal to or larger
+than the sequence's length.
+It also prevents \<NegativeArraySizeException>s that result from a negative
+array dimension in an array creation expression.
+
+The programmer can write annotations that indicate which expressions are
+indices for which arrays.  The Index Checker will enforce that any
+run-time operation preserves these properties, and will take advantage of
+these properties when verifying indexing operations.
+%
+Typically, a programmer writes few annotations, because the Index Checker
+infers properties of indexes from
+the code around them. For example, it will infer that \<x> is positive
+within the \<then> block of an \code{if (x > 0)} statement.
+The programmer does need to write field types and method pre-conditions or post-conditions. For instance,
+if a method's formal parameter is used as an index for
+\<myArray>, the programmer might need to
+write an \refqualclasswithparams{checker/index/qual}{IndexFor}{myArray}
+annotation on the formal parameter's types.
+
+To run the Index Checker, run the command
+
+\begin{alltt}
+  javac -processor index \emph{MyJavaFile}.java
+\end{alltt}
+
+
+\section{Index Checker structure and annotations\label{index-annotations}}
+
+Internally, the Index Checker computes several types of information about
+program variables, recording each one in a different type system.  The
+Index Checker does type-checking of all these type systems at once; the
+type systems cooperate to permit precise verification of sequence indexing
+operations.  This manual discusses each type system in a different
+section:
+\begin{itemize}
+\item
+  the lower bound on an integer, such as whether it is known to be positive
+  (Section~\ref{index-lowerbound})
+\item
+  the upper bound an an integer, such as whether it is less than the length
+  of a given array (Section~\ref{index-upperbound})
+\item
+  the minimum length of a sequence, such ``\<myArray> contains at least 3
+  elements'' (Section~\ref{index-minlen})
+\item
+  whether two sequences have the same length (Section~\ref{index-samelen})
+\end{itemize}
+
+In addition to the indexing annotations described in those sections, there
+are some annotations that give multiple types of information:
+
+\begin{description}
+\item[\refqualclasswithparams{checker/index/qual}{IndexFor}{String[] names}]
+  The value is a valid index for the named arrays.  For example, a variable
+  declared as \<@IndexFor("someArray") int i> has type
+  \<@IndexFor("someArray") int> and its run-time value is guaranteed to be
+  non-negative and less than the length of \<someArray>.  You could also
+  express this as
+  \<\refqualclass{checker/lowerbound/qual}{NonNegative}
+  \refqualclasswithparams{checker/upperbound/qual}{LTLengthOf}{"someArray"}
+  int i>,
+  but \<@IndexFor("someArray") int i> is more concise.
+
+ \item[\refqualclasswithparams{checker/index/qual}{IndexOrHigh}{String[] names}]
+   The value is non-negative and is less than or equal to the length of
+   each named array.  This type combines
+  \refqualclass{checker/lowerbound/qual}{NonNegative} and
+  \refqualclass{checker/upperbound/qual}{LTEqLengthOf}.
+\end{description}
+
+\section{Lower bounds\label{index-lowerbound}}
+
+The Index Checker issues an error when
+a sequence is indexed by an integer that might be negative.
+It uses a type system (Figure~\ref{fig-index-int-types}) with the following
+qualifiers:
+
+\begin{description}
+\item[\refqualclass{checker/lowerbound/qual}{Positive}]
+  The value is 1 or greater, so it is not too low to be used as an index.
+\item[\refqualclass{checker/lowerbound/qual}{NonNegative}]
+  The value is 0 or greater, so it is not too low to be used as an index.
+\item[\refqualclass{checker/lowerbound/qual}{GTENegativeOne}]
+  The value is -1 or greater.
+  It may not be used as an index for a sequence, because it might be too low.
+  (``\<GTE>'' stands for ``Greater Than or Equal to''.)
+\item[\refqualclass{checker/lowerbound/qual}{LowerBoundUnknown}]
+  There is no information about the value.
+  It may not be used as an index for a sequence, because it might be too low.
+\end{description}
+
+\begin{figure}
+\begin{center}
+  \hfill
+  \includeimagenocentering{lowerbound}{5cm}
+  ~~~~\hfill~~~~
+  \includeimagenocentering{upperbound}{7cm}
+  \hfill
+\end{center}
+  \caption{The two type hierarchies for integer types used by the Index
+    Checker.  On the left is a type system for lower bounds.  On the right
+    is a type system for upper bounds.  Qualifiers written in gray should
+    never be written in source code; they are used internally by the type
+    system.}
+  \label{fig-index-int-types}
+\end{figure}
+
+
+\section{Upper bounds\label{index-upperbound}}
+
+The Index Checker issues an error when a sequence index might be
+too high. To do this, it maintains information about which expressions are
+safe indices for which sequences.
+It uses a type system (Figure~\ref{fig-index-int-types}) with the following
+qualifiers:
+
+It issues an error when a sequence \code{arr}
+is indexed by an integer that is not of type \code{@LTLengthOf({''arr''})}
+or \code{@LTOMLengthOf({''arr''})}.
+
+\begin{description}
+
+\item[\refqualclasswithparams{checker/upperbound/qual}{LTLengthOf}{String[] names}]
+  An expression with this type
+  has value less than the length of each sequence listed in \<names>.
+  The expression may be used as an index into any of those sequences.
+  For example, an expression of type \code{@LTLengthOf("a") int} can be
+  used as an index to \<a>.
+  The type \code{@LTLengthOf({"a", "b"})} is a subtype of both
+  \code{@LTLengthOf("a")} and \code{@LTLengthOf("b")}.
+  (``\<LT>'' stands for ``Less Than''.)
+
+\item[\refqualclasswithparams{checker/upperbound/qual}{LTEqLengthOf}{String[] names}]
+  An expression with this type
+  has value less than or equal to the length of each sequence listed in \<names>.
+  It may not be used as an index for these sequences, because it might be too high.
+  \code{@LTEqLengthOf({"a", "b"})} is a subtype of both
+  \code{@LTEqLengthOf("a")} and \code{@LTEqLengthOf("b")}.
+  (``\<LTEq>'' stands for ``Less Than or Equal to''.)
+
+\item[\refqualclasswithparams{checker/upperbound/qual}{LTOMLengthOf}{String[] names}]
+  An expression with this type
+  has value less than one less than the length of each sequence listed in \<names>. This type exists to allow the checker to infer the safety of loops of
+  the form:
+\begin{Verbatim}
+  for (int i = 0; i < array.length - 1; ++i) {
+    arr[i] = arr[i+1];
+  }
+\end{Verbatim}
+It may always used as an index for a sequence listed in \<names>, but
+should rarely (if ever) be written by the programmer; usually
+\refqualclasswithparams{checker/upperbound/qual}{LTLengthOf}{String[] names}
+should be written instead.
+  \code{@LTOMLengthOf({"a", "b"})} is a subtype of both
+  \code{@LTOMLengthOf("a")} and \code{@LTOMLengthOf("b")}.
+  (``\<LTOM>'' stands for ``Less Than One Minus''.)
+
+\item[\refqualclass{checker/upperbound/qual}{UpperBoundUnknown}]
+  There is no information about the value of an expression with this type.
+  It may not be used as an index for a sequence, because it might be too high.
+  This type is the top type, and should never need to be written by the
+  programmer.
+
+\item[\refqualclass{checker/upperbound/qual}{UpperBoundBottom}]
+  This is the bottom type for the upper bound type system. It should
+  never need to be written by the programmer.
+
+\end{description}
+
+
+\section{Array minimum lengths\label{index-minlen}}
+
+The Index Checker estimates, for each sequence expression, how long its value
+might be at run time.  The Index Checker computes a minimum length that
+the sequence is guaranteed to have.  This enables the Index Checker to
+verify indices that are compile-time constants.  For example, this code:
+
+\begin{Verbatim}
+  String getThirdElement(String[] arr) {
+    return arr[2];
+  }
+\end{Verbatim}
+
+\noindent
+is legal if \<arr> has at least three elements, which can be indicated
+in this way:
+
+\begin{Verbatim}
+  String getThirdElement(String @MinLen(3) [] arr) {
+    return arr[2];
+  }
+\end{Verbatim}
+
+When the index is not a compile-time constant, as in \<arr[i]>, then the
+Index Checker depends not on a \<@MinLen> annotation but on \<i> being
+annotated as
+\refqualclasswithparams{checker/upperbound/qual}{LTLengthOf}{"arr"}.
+
+Array minimum lengths use the following type qualifiers
+(Figure~\ref{fig-index-array-types}):
+
+\begin{description}
+\item[\refqualclasswithparams{checker/minlen/qual}{MinLen}{int value}]
+  The value of an expression of this type is a sequence with at least
+  \code{value} elements.  The default annotation is
+  \code{@MinLen(0)}, and it may be applied to non-sequences.
+  \code{@MinLen($x$)} is a subtype of \code{@MinLen($x-1$)}.
+\item[\refqualclass{checker/minlen/qual}{MinLenBottom}]
+  This is the bottom type for the MinLen type system.
+  Programmers should rarely need to write it.
+  \code{null} has this type.
+  \end{description}
+
+\begin{figure}
+\begin{center}
+  \hfill
+  \includeimagenocentering{minlen}{7cm}
+  ~~~~\hfill~~~~
+  \includeimagenocentering{samelen}{3.5cm}
+  \hfill
+\end{center}
+  \caption{The two type hierarchies for array types used by the Index
+    Checker.  On the left is a type system for minimum array lengths.  On
+    the right is a type system for arrays of equal length.  Qualifiers
+    written in gray should never be written in source code; they are used
+    internally by the type system.}
+  \label{fig-index-array-types}
+\end{figure}
+
+\section{Arrays of the same length\label{index-samelen}}
+
+The Index Checker determines whether two or more sequences have the same length.
+This enables it to verify that all the indexing operations are safe in code
+like the following:
+
+\begin{Verbatim}
+  boolean lessThan(double[] arr1, double @SameLen("arr1") [] arr2) {
+    for (int i=0; i<arr1.length; i++) {
+      if (arr1[i] < arr2[i]) {
+        return true;
+      } else if (arr1[i] > arr2[i]) {
+        return false;
+      }
+    }
+    return false;
+  }
+\end{Verbatim}
+
+When needed, you can specify which sequences have the same length using the following type qualifiers (Figure~\ref{fig-index-array-types}):
+
+\begin{description}
+\item[\refqualclasswithparams{checker/samelen/qual}{SameLen}{String[] names}]
+  An expression with this type represents a sequence that has the
+  same length as the other sequences named in \<names>. In general,
+  \code{@SameLen} types that have non-intersecting lists of names
+  are \textit{not} subtypes of each other. However, if at least one
+  sequence is named by both types, the types are actually the same,
+  because all the named sequences must have the same length.
+\item[\refqualclass{checker/samelen/qual}{SameLenUnknown}]
+  No information is known about which other sequences have the same length
+  as this one.
+  This is the top type, and programmers should never need to write it.
+\item[\refqualclass{checker/samelen/qual}{SameLenBottom}]
+  This is the bottom type, and programmers should rarely need to write it.
+  \code{null} has this type.
+  \end{description}
+
+%%  LocalWords:  NegativeArraySizeException pre myArray IndexFor someArray
+%%  LocalWords:  MyJavaFile LTLengthOf LTEqLengthOf GTENegativeOne GTE
+%%  LocalWords:  LowerBoundUnknown LTOMLengthOf LTEq LTOM UpperBoundBottom
+%%  LocalWords:  UpperBoundUnknown MinLen MinLenBottom SameLen
+%%  LocalWords:  SameLenUnknown SameLenBottom

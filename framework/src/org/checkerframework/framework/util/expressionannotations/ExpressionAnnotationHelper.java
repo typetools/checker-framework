@@ -345,11 +345,19 @@ public class ExpressionAnnotationHelper {
         }
 
         switch (elt.getKind()) {
+            case PARAMETER:
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
             case EXCEPTION_PARAMETER:
                 Tree tree = factory.declarationFromElement(elt);
                 if (tree == null) {
+                    if (elt.getKind() == ElementKind.PARAMETER) {
+                        // The tree might be null when
+                        // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory()
+                        // gets the assignment context for a pseudo assignment of an argument to
+                        // a method parameter.
+                        return;
+                    }
                     ErrorReporter.errorAbort(this.getClass() + ": tree not found");
                 }
                 standardizeVariable(tree, type, elt);
