@@ -203,7 +203,7 @@ JSR308_LIVE_RELEASES_DIR = os.path.join(JSR308_LIVE_SITE, "releases")
 AFU_LIVE_SITE = os.path.join(FILE_PATH_TO_LIVE_SITE, "annotation-file-utilities")
 AFU_LIVE_RELEASES_DIR = os.path.join(AFU_LIVE_SITE, "releases")
 
-CHECKER_LIVE_SITE = os.path.join(FILE_PATH_TO_LIVE_SITE, "checker-framework")
+CHECKER_LIVE_SITE = FILE_PATH_TO_LIVE_SITE
 CHECKER_LIVE_RELEASES_DIR = os.path.join(CHECKER_LIVE_SITE, "releases")
 LIVE_CF_LOGO = os.path.join(CHECKER_LIVE_SITE, "CFLogo.png")
 
