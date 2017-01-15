@@ -36,7 +36,10 @@ To run the Index Checker, run the command
 \section{Index Checker structure and annotations\label{index-annotations}}
 
 Internally, the Index Checker computes several types of information about
-program variables, and this manual discusses each one in a different
+program variables, recording each one in a different type system.  The
+Index Checker does type-checking of all these type systems at once; the
+type systems cooperate to permit precise verification of sequence indexing
+operations.  This manual discusses each type system in a different
 section:
 \begin{itemize}
 \item
@@ -270,3 +273,9 @@ When needed, you can specify which sequences have the same length using the foll
   This is the bottom type, and programmers should rarely need to write it.
   \code{null} has this type.
   \end{description}
+
+%%  LocalWords:  NegativeArraySizeException pre myArray IndexFor someArray
+%%  LocalWords:  MyJavaFile LTLengthOf LTEqLengthOf GTENegativeOne GTE
+%%  LocalWords:  LowerBoundUnknown LTOMLengthOf LTEq LTOM UpperBoundBottom
+%%  LocalWords:  UpperBoundUnknown MinLen MinLenBottom SameLen
+%%  LocalWords:  SameLenUnknown SameLenBottom
