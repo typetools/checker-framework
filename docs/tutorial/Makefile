@@ -2,7 +2,7 @@
 # Make will silently continue if that file does not exist.
 -include Makefile.user
 
-CHECKER_QUAL_JAR=../checker/dist/checker-qual.jar
+CHECKER_QUAL_JAR=../../checker/dist/checker-qual.jar
 
 ZIPFILES = eclipse-projects.zip sourcefiles.zip
 

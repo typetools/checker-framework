@@ -379,6 +379,9 @@
         <fail unless="file.name"   message="file.name property is not set!" />
         <fail unless="version"     message="version is not set!" />
 
+        <property name="cf.docs"             value="${checker}/../docs"  />
+        <property name="cf.docs.examples"    value="${cf.docs}/examples" />
+
         <zip destfile="${dest.dir}/${file.name}">
             <zipfileset dir="${cf.docs.examples}/MavenExample" filemode="755" prefix="maven-examples-${version}"/>
         </zip>
@@ -426,10 +429,6 @@
         <copy todir="${dest.dir}" file="${langtools.doc}/Makefile-jsr308-install" />
         <copy todir="${dest.dir}" file="${langtools.doc}/changelog-jsr308.txt"    />
 
-        <symlink overwrite="true" link="${web.root}/index.html" resource="current/jsr308-webpage.html"/>
-        <symlink overwrite="true"
-                 link="${web.root}/favicon-jsr308.png" resource="current/favicon-jsr308.png"/>
-
     </target>
 
     <!-- TODO: Document the params -->
@@ -446,35 +445,41 @@
         <fail unless="checker.webpage"   message="checker.webpage property is not set!" />
 
         <!-- //TODO: PERHAPS CHECK THAT THESE FILES EXIST -->
+        <property name="cf.docs"          value="${checker}/../docs" />
         <property name="checker.manual"   value="${cf.docs}/manual" />
         <property name="checker.logo"     value="${cf.docs}/logo" />
         <property name="dataflow.manual"  value="${checker}/../dataflow/manual" />
         <property name="checker.tutorial" value="${cf.docs}/tutorial" />
+        <property name="dest.dir.manual"         value="${dest.dir}/manual" />
         <property name="web.root"         value="${dest.dir}/../.." />
 
-        <copy file="${checker.manual}/${checker.webpage}" tofile="${dest.dir}/${checker.webpage}" />
+        <copy file="${cf.docs}/${checker.webpage}" tofile="${dest.dir}/${checker.webpage}" />
 
-        <copy file="${checker.manual}/manual.html" tofile="${dest.dir}/${manual.name}.html"/>
-        <copy file="${checker.manual}/manual.pdf"  tofile="${dest.dir}/${manual.name}.pdf"/>
+	<mkdir dir="${dest.dir.manual}" />
 
-        <copy file="${dataflow.manual}/dataflow.pdf"  tofile="${dest.dir}/${dataflow.manual.name}.pdf" failonerror="false"/>
+        <copy file="${checker.manual}/manual.html" tofile="${dest.dir.manual}/${manual.name}.html"/>
+        <symlink link="${dest.dir.manual}/index.html" resource="${manual.name}.html" />
+        <copy file="${checker.manual}/manual.pdf"  tofile="${dest.dir.manual}/${manual.name}.pdf"/>
 
-        <copy todir="${dest.dir}" flatten="true">
+        <copy file="${dataflow.manual}/dataflow.pdf"  tofile="${dest.dir.manual}/${dataflow.manual.name}.pdf" failonerror="false"/>
+
+        <copy todir="${dest.dir.manual}" flatten="true">
             <fileset dir="${checker.manual}">
                 <include name="*.svg"/>
                 <include name="manual001.png"/>
             </fileset>
         </copy>
 
-        <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${web.root}/current/CFLogo.png" />
+        <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${web.root}/CFLogo.png" />
         <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${checker.manual}/CFLogo.png" />
-
-        <copy file="${checker.logo}/Checkmark/CFCheckmark_favicon.png" tofile="${dest.dir}/favicon-checkerframework.png" />
-        <copy file="${checker.logo}/Checkmark/CFCheckmark_favicon.png" tofile="${web.root}/favicon-checkerframework.png" />
-
         <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${dest.dir}/docs/tutorial/CFLogo.png" />
         <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${dest.dir}/docs/tutorial/webpages/CFLogo.png" />
-        <copy todir="${dest.dir}/docs/tutorial" >
+
+        <copy file="${checker.logo}/Checkmark/CFCheckmark_favicon.png" tofile="${dest.dir}/favicon-checkerframework.png" />
+        <copy file="${checker.logo}/Checkmark/CFCheckmark_favicon.png" tofile="${dest.dir.manual}/favicon-checkerframework.png" />
+        <copy file="${checker.logo}/Checkmark/CFCheckmark_favicon.png" tofile="${web.root}/favicon-checkerframework.png" />
+
+        <copy todir="${dest.dir}/tutorial" >
             <fileset dir="${checker.tutorial}" includes="**"/>
         </copy>
 

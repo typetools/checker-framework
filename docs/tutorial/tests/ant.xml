@@ -139,6 +139,7 @@ ${line.separator}NOTE: Did you run 'ant touch-files'?"/>
         <arg line="-l @{logfile}"/>
         <arg line="@{task}"/>
       </exec>
+      <sleep milliseconds="100"/> <!--sometimes output gets truncated -->
     </sequential>
   </macrodef>
 

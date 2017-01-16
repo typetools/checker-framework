@@ -33,7 +33,8 @@ def match_arg(arg):
     return matched_project
 
 def read_projects(argv, error_call_back):
-    """Determine which of the jsr308-langtools, AFU and Checker Framework
+    """Returns a map from project-name to boolean.
+    Determine which of the jsr308-langtools, AFU and Checker Framework
     projects to build based on the command-line arguments to release_build.
     \"all\" indicates that all 3 projects are to be built. If the arguments
     are incorrect, the error_call_back function is called and  the script
@@ -131,7 +132,10 @@ def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=N
 If capture_output is true, then return the output (and ignore the halt_if_fail argument).
 If capture_output is not true, return the return code of the subprocess call."""
 
-    print "Executing: %s" % (command_args)
+    if working_dir != None:
+        print "Executing in %s: %s" % (working_dir, command_args)
+    else:
+        print "Executing: %s" % (command_args)
     import shlex
     args = shlex.split(command_args) if isinstance(command_args, str) else command_args
 
@@ -177,7 +181,7 @@ def prompt_yes_no(msg, default=False):
     if default:
         default_str = "yes"
 
-    result = prompt_w_suggestion(msg, default_str, "^(Yes|yes|No|no)$")
+    result = prompt_w_default(msg, default_str, "^(Yes|yes|No|no)$")
 
     if result == "yes" or result == "Yes":
         return True
@@ -193,19 +197,20 @@ def prompt_yn(msg):
 
     return y_or_n == 'y'
 
-def prompt_until_yes():
-    "Prompts the user continually until they enter yes"
+def prompt_to_continue():
+    "Prompts the user to continue, until they enter yes."
     while not prompt_yes_no("Continue?"):
         pass
 
-def prompt_w_suggestion(msg, suggestion, valid_regex=None):
-    "Only accepts answers that match valid_regex."
+def prompt_w_default(msg, default, valid_regex=None):
+    """Only accepts answers that match valid_regex.
+    If default is None, requires an answer."""
     answer = None
     while answer is None:
-        answer = raw_input(msg + " (%s): " % suggestion)
+        answer = raw_input(msg + " (%s): " % default)
 
         if answer is None or answer == "":
-            answer = suggestion
+            answer = default
         else:
             answer = answer.strip()
 
@@ -215,7 +220,7 @@ def prompt_w_suggestion(msg, suggestion, valid_regex=None):
                     answer = None
                     print "Invalid answer.  Validating regex: " + valid_regex
             else:
-                answer = suggestion
+                answer = default
 
     return answer
 
@@ -296,8 +301,11 @@ def test_increment_version():
 def current_distribution_by_website(site):
     """
     Reads the checker framework version from the checker framework website and
-    returns the version of the current release
+    returns the version of the current release.
     """
+
+    print "FIXME FIXME HARDCODED 2.1.7"
+    return "2.1.7"
     print 'Looking up checker-framework-version from %s\n' % site
     ver_re = re.compile(r"<!-- checker-framework-zip-version -->checker-framework-(.*)\.zip")
     text = urllib2.urlopen(url=site).read()
@@ -307,7 +315,7 @@ def current_distribution_by_website(site):
 def current_distribution(checker_framework_dir):
     """
     Reads the checker framework version from build-common.properties
-    returns the version of the current release
+    returns the version of the current release.
     """
     ver_re = re.compile(r"""build.version = (\d+\.\d+\.\d+(?:\.\d+){0,1})""")
     build_props_location = os.path.join(checker_framework_dir, "build-common.properties")
@@ -443,7 +451,7 @@ def commit_tag_and_push(version, path, tag_prefix):
     push these changes."""
     if is_git(path):
         execute('git commit -a -m "new release %s"' % (version), working_dir=path)
-        execute('git tag %s%s)' % (tag_prefix, version), working_dir=path)
+        execute('git tag %s%s' % (tag_prefix, version), working_dir=path)
     else:
         execute('hg -R %s commit -m "new release %s"' % (path, version))
         execute('hg -R %s tag %s%s' % (path, tag_prefix, version))
@@ -640,7 +648,7 @@ def propose_documentation_change_review(dir_title, old_version, repository_path,
         # those updates.
         print  "Please review " + dir_title + " and make any edits you deem necessary in your local clone of the repository."
         print  "Diff file: " + diff_output_file
-        prompt_until_yes()
+        prompt_to_continue()
 
 #=========================================================================================
 # File Utils
@@ -741,20 +749,20 @@ def prompt_to_delete(path):
     """Ask the user if the specified file/directory should be deleted, and if
     they answer yes, delete it."""
     if os.path.exists(path):
-        result = prompt_w_suggestion("Delete the following file/directory:\n %s [Yes|No]" % path, "yes", "^(Yes|yes|No|no)$")
+        result = prompt_w_default("Delete the following file/directory:\n %s [Yes|No]" % path, "yes", "^(Yes|yes|No|no)$")
         if result == "Yes" or result == "yes":
             delete_path(path)
 
-def force_symlink(target_of_link, path_to_symlink):
-    """Forces the creation of a symlink to the given path at the given target
-    location. That is, if a file or symlink exists at the target location, it
-    is deleted and the symlink is then created."""
-    try:
-        os.symlink(target_of_link, path_to_symlink)
-    except OSError, e:
-        if e.errno == errno.EEXIST:
-            os.remove(path_to_symlink)
-            os.symlink(target_of_link, path_to_symlink)
+### def force_symlink(target_of_link, path_to_symlink):
+###     """Forces the creation of a symlink to the given path at the given target
+###     location. That is, if a file or symlink exists at the target location, it
+###     is deleted and the symlink is then created."""
+###     try:
+###         os.symlink(target_of_link, path_to_symlink)
+###     except OSError, e:
+###         if e.errno == errno.EEXIST:
+###             os.remove(path_to_symlink)
+###             os.symlink(target_of_link, path_to_symlink)
 
 def are_in_file(file_path, strs_to_find):
     """Returns true if every string in the given strs_to_find array is found in
