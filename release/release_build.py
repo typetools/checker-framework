@@ -112,8 +112,9 @@ def create_dev_website_release_version_dir(project_name, version):
 
 def create_dirs_for_dev_website_release_versions(jsr308_and_cf_version, afu_version):
     """Create directories for the given versions of the JSR308, CF, and AFU
-    projects under the releases directory of the dev web site."""
-    # these directories correspond to the /cse/www2/types/dev/<project_name>/releases/<version> dirs
+    projects under the releases directory of the dev web site.
+    For example,
+    /cse/www2/types/dev/checker-framework/<project_name>/releases/<version> ."""
     jsr308_interm_dir = create_dev_website_release_version_dir("jsr308", jsr308_and_cf_version)
     afu_interm_dir = create_dev_website_release_version_dir("annotation-file-utilities", afu_version)
     checker_framework_interm_dir = create_dev_website_release_version_dir(None, jsr308_and_cf_version)
