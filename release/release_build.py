@@ -171,7 +171,7 @@ def build_jsr308_langtools_release(version, afu_version, afu_release_date, jsr30
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # build jsr308 website
-    make_cmd = "make jsr308_www=%s jsr308_www_online=%s web-no-checks" % (jsr308_interm_dir, HTTP_PATH_TO_DEV_SITE)
+    make_cmd = "make jsr308_www_dir=%s jsr308_url=%s web-no-checks" % (jsr308_interm_dir, HTTP_PATH_TO_DEV_SITE)
     execute(make_cmd, True, False, JSR308_LT_DOC)
 
     # copy remaining website files to jsr308_interm_dir
