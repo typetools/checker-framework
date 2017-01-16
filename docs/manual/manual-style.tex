@@ -132,16 +132,16 @@
 % Arg 2: class name.
 % In the printed version, only the base class name appears.
 % In the HTML version, it's a link to the Javadoc.
-\newcommand{\refclass}[2]{\href{api/org/checkerframework/#1/#2.html}{\<#2>}}
+\newcommand{\refclass}[2]{\href{../api/org/checkerframework/#1/#2.html}{\<#2>}}
 
 % Reference to Checker Framework Javadoc for a type qualifier/annotation class
 % (not a method, etc.).  Like \refclass, but prepends an @ to the qualifier name.
-\newcommand{\refqualclass}[2]{\href{api/org/checkerframework/#1/#2.html}{\<@#2>}}
+\newcommand{\refqualclass}[2]{\href{../api/org/checkerframework/#1/#2.html}{\<@#2>}}
 
 % Reference to Checker Framework Javadoc for a type qualifier/annotation class
 % (not a method, etc.) that takes parameters.  This prepends an @ to the
 % qualifier name and includes parentheses around the parameters.
-\newcommand{\refqualclasswithparams}[3]{\href{api/org/checkerframework/#1/#2.html}{\<@#2>}\<(#3)>}
+\newcommand{\refqualclasswithparams}[3]{\href{../api/org/checkerframework/#1/#2.html}{\<@#2>}\<(#3)>}
 
 % Reference to Checker Framework Javadoc for a method or field.).
 % Arg 1: package name under org/checkerframework, using "/" as a separator,
@@ -152,16 +152,16 @@
 % to use "-T-" with dashes instead of parentheses.
 % In the printed version, only "class.method" appears.
 % In the HTML version, it's a link to the Javadoc.
-\newcommand{\refmethod}[4]{\href{api/org/checkerframework/#1/#2.html\##3#4}{\<#2.#3>}}
+\newcommand{\refmethod}[4]{\href{../api/org/checkerframework/#1/#2.html\##3#4}{\<#2.#3>}}
 % Omits the class name in the visible text; is terser.  Good for mentioning
 % a method that needs to be overridden.
-\newcommand{\refmethodterse}[4]{\href{api/org/checkerframework/#1/#2.html\##3#4}{\<#3>}}
+\newcommand{\refmethodterse}[4]{\href{../api/org/checkerframework/#1/#2.html\##3#4}{\<#3>}}
 % Permits specification of the anchor text.  Good for mentioning the
 % arguments of an overloaded method that needs to be overridden.
-\newcommand{\refmethodanchortext}[5]{\href{api/org/checkerframework/#1/#2.html\##3#4}{\<#5>}}
+\newcommand{\refmethodanchortext}[5]{\href{../api/org/checkerframework/#1/#2.html\##3#4}{\<#5>}}
 % Like refmethod, but formatted more concisely as ``field'' instead of
 % ``Class.field''.  The last argument is usually empty {}.
-\newcommand{\refenum}[4]{\href{api/org/checkerframework/#1/#2.html\##3#4}{\<#3>}}
+\newcommand{\refenum}[4]{\href{../api/org/checkerframework/#1/#2.html\##3#4}{\<#3>}}
 
 % Reference to Sun Javadoc.
 % Arg 1: .html reference, without the .../api/ prefix
