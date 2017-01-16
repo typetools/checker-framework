@@ -472,6 +472,7 @@
 
         <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${web.root}/CFLogo.png" />
         <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${checker.manual}/CFLogo.png" />
+        <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${dest.dir.manual}/CFLogo.png" />
         <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${dest.dir}/docs/tutorial/CFLogo.png" />
         <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${dest.dir}/docs/tutorial/webpages/CFLogo.png" />
 
