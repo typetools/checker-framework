@@ -231,8 +231,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     List<Long> values =
                             AnnotationUtils.getElementValueArray(anno, "value", Long.class, true);
                     if (values != null && values.size() > MAX_VALUES) {
-                        long annoMinVal = Collections.min(new ArrayList<>(values));
-                        long annoMaxVal = Collections.max(new ArrayList<>(values));
+                        long annoMinVal = Collections.min(values);
+                        long annoMaxVal = Collections.max(values);
                         atm.replaceAnnotation(
                                 createIntRangeAnnotation(new Range(annoMinVal, annoMaxVal)));
                     }
@@ -450,8 +450,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<Long> rhsValues =
                         AnnotationUtils.getElementValueArray(rhs, "value", Long.class, true);
                 Range lhsRange = getIntRange(lhs);
-                long rhsMinVal = Collections.min(new ArrayList<>(rhsValues));
-                long rhsMaxVal = Collections.max(new ArrayList<>(rhsValues));
+                long rhsMinVal = Collections.min(rhsValues);
+                long rhsMaxVal = Collections.max(rhsValues);
                 return rhsMinVal >= lhsRange.from && rhsMaxVal <= lhsRange.to;
             } else if (AnnotationUtils.areSameByClass(lhs, DoubleVal.class)
                     && AnnotationUtils.areSameByClass(rhs, IntRange.class)) {
@@ -971,8 +971,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (intValues.isEmpty()) {
             return UNKNOWNVAL;
         } else if (intValues.size() > MAX_VALUES) {
-            long valMin = Collections.min(new ArrayList<>(intValues));
-            long valMax = Collections.max(new ArrayList<>(intValues));
+            long valMin = Collections.min(intValues);
+            long valMax = Collections.max(intValues);
             return createIntRangeAnnotation(new Range(valMin, valMax));
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntVal.class);
@@ -1081,8 +1081,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public static Range getRangeFromValues(List<Long> values) {
-        return new Range(
-                Collections.min(new ArrayList<>(values)), Collections.max(new ArrayList<>(values)));
+        return new Range(Collections.min(values), Collections.max(values));
     }
 
     public static List<Long> getIntValuesFromRange(Range range) {
