@@ -195,7 +195,7 @@ LIVE_TO_INTERM_REPOS = (
 
 JSR308_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "jsr308", "releases")
 AFU_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "annotation-file-utilities", "releases")
-CHECKER_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "checker-framework", "releases")
+CHECKER_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "releases")
 
 JSR308_LIVE_SITE = os.path.join(FILE_PATH_TO_LIVE_SITE, "jsr308")
 JSR308_LIVE_RELEASES_DIR = os.path.join(JSR308_LIVE_SITE, "releases")
