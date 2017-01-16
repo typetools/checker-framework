@@ -458,6 +458,7 @@
 	<mkdir dir="${dest.dir.manual}" />
 
         <copy file="${checker.manual}/manual.html" tofile="${dest.dir.manual}/${manual.name}.html"/>
+        <symlink link="${dest.dir.manual}/index.html" resource="${manual.name}.html" />
         <copy file="${checker.manual}/manual.pdf"  tofile="${dest.dir.manual}/${manual.name}.pdf"/>
 
         <copy file="${dataflow.manual}/dataflow.pdf"  tofile="${dest.dir.manual}/${dataflow.manual.name}.pdf" failonerror="false"/>
