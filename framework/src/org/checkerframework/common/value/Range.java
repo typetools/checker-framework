@@ -1,6 +1,9 @@
 package org.checkerframework.common.value;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * The Range Class with mathematics operations. Models the range indicated by the @IntRange
@@ -28,22 +31,6 @@ public class Range {
     public Range() {
         this.from = Long.MIN_VALUE;
         this.to = Long.MAX_VALUE;
-    }
-
-    /**
-     * Finds min and max in a given long array and return as a range.
-     *
-     * @param possibleValues the given long array
-     * @return a range from min value to max value
-     */
-    private Range getRangeFromPossibleValues(long[] possibleValues) {
-        long resultFrom = Long.MAX_VALUE;
-        long resultTo = Long.MIN_VALUE;
-        for (long pv : possibleValues) {
-            resultFrom = Math.min(resultFrom, pv);
-            resultTo = Math.max(resultTo, pv);
-        }
-        return new Range(resultFrom, resultTo);
     }
 
     /**
@@ -109,12 +96,14 @@ public class Range {
      *     arbitrary value in @param by an arbitrary value in this range
      */
     public Range times(Range right) {
-        long[] possibleValues = new long[4];
-        possibleValues[0] = from * right.from;
-        possibleValues[1] = from * right.to;
-        possibleValues[2] = to * right.from;
-        possibleValues[3] = to * right.to;
-        return getRangeFromPossibleValues(possibleValues);
+        ArrayList<Long> possibleValues =
+                new ArrayList<>(
+                        Arrays.asList(
+                                from * right.from,
+                                from * right.to,
+                                to * right.from,
+                                to * right.to));
+        return new Range(Collections.min(possibleValues), Collections.max(possibleValues));
     }
 
     /**
@@ -169,17 +158,19 @@ public class Range {
      *     in @param
      */
     public Range remainder(Range right) {
-        long[] possibleValues = new long[9];
-        possibleValues[0] = 0;
-        possibleValues[1] = Math.min(from, Math.abs(right.from) - 1);
-        possibleValues[2] = Math.min(from, Math.abs(right.to) - 1);
-        possibleValues[3] = Math.min(to, Math.abs(right.from) - 1);
-        possibleValues[4] = Math.min(to, Math.abs(right.to) - 1);
-        possibleValues[5] = Math.max(from, -Math.abs(right.from) + 1);
-        possibleValues[6] = Math.max(from, -Math.abs(right.to) + 1);
-        possibleValues[7] = Math.max(to, -Math.abs(right.from) + 1);
-        possibleValues[8] = Math.max(to, -Math.abs(right.to) + 1);
-        return getRangeFromPossibleValues(possibleValues);
+        ArrayList<Long> possibleValues =
+                new ArrayList<>(
+                        Arrays.asList(
+                                0L,
+                                Math.min(from, Math.abs(right.from) - 1),
+                                Math.min(from, Math.abs(right.to) - 1),
+                                Math.min(to, Math.abs(right.from) - 1),
+                                Math.min(to, Math.abs(right.to) - 1),
+                                Math.max(from, -Math.abs(right.from) + 1),
+                                Math.max(from, -Math.abs(right.to) + 1),
+                                Math.max(to, -Math.abs(right.from) + 1),
+                                Math.max(to, -Math.abs(right.to) + 1)));
+        return new Range(Collections.min(possibleValues), Collections.max(possibleValues));
     }
 
     /**
