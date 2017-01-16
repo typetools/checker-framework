@@ -51,7 +51,7 @@ def promote_release(path_to_releases, release_version):
     from_dir = os.path.join(path_to_releases, release_version)
     to_dir = os.path.join(path_to_releases, "..")
     # Trailing slash is crucial.
-    cmd = "rsync -a %s/ %s" % (from_dir, to_dir)
+    cmd = "rsync -a --omit-dir-times %s/ %s" % (from_dir, to_dir)
     execute(cmd)
 
 def copy_htaccess():
