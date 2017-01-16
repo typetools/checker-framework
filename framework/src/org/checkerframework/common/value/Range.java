@@ -19,6 +19,17 @@ public class Range {
     /** The value 'to' */
     public final long to;
 
+    /**
+     * Constructs a range with its bounds specified by two parameters, "from" and "to".
+     *
+     * <p>Note that it is possible to construct a range with incorrect parameters, e.g. the value of
+     * "from" could be greater than the value to "to". This incorrectness would be caught by {@link
+     * org.checkerframework.common.value.ValueAnnotatedTypeFactory#createIntRangeAnnotation(Range)}
+     * when creating an annotation from range, which would then be replaced with @UnknownVal
+     *
+     * @param from the lower bound (inclusive)
+     * @param to the higher bound (inclusive)
+     */
     public Range(long from, long to) {
         this.from = from;
         this.to = to;
@@ -35,7 +46,7 @@ public class Range {
 
     /**
      * Unions two ranges into one. If there is no overlap between two ranges, the gap between the
-     * two would be filled and thus results in only one single range
+     * two would be filled and thus results in only one single range.
      *
      * @param right the range to union with this range
      * @return a range from the lowest possible value of the two ranges to the highest possible
@@ -48,10 +59,10 @@ public class Range {
     }
 
     /**
-     * Intersects two ranges. If there is no overlap between two ranges, a abnormal range with from
-     * greater than to would be returned. This would be caught by
-     * ValueAnnotatedTypeFactory.createIntRangeAnnotation when creating an annotation from range,
-     * which would then be replaced with @UnknownVal
+     * Intersects two ranges. If there is no overlap between two ranges, an incorrect range with
+     * from greater than to would be returned. This incorrectness would be caught by {@link
+     * org.checkerframework.common.value.ValueAnnotatedTypeFactory#createIntRangeAnnotation(Range)}
+     * when creating an annotation from range, which would then be replaced with @UnknownVal
      *
      * @param right the range to intersect with this range
      * @return a range from
@@ -117,7 +128,7 @@ public class Range {
         long resultFrom = Long.MIN_VALUE;
         long resultTo = Long.MAX_VALUE;
 
-        // TODO: be careful of divided by zero!
+        // Here we assume devide-by-zero is checked and avoided.
         if (from > 0 && right.from >= 0) {
             resultFrom = from / Math.max(right.to, 1);
             resultTo = to / Math.max(right.from, 1);
@@ -294,20 +305,21 @@ public class Range {
     }
 
     /**
-     * Gets the number of possible values within this range. To prevent overflow, we use BigInteger
-     * for calculation.
+     * Gets the number of possible values enclosed by this range. To prevent overflow, we use
+     * BigInteger for calculation.
      *
-     * @return
+     * @return the number of possible values enclosed by this range.
      */
     public BigInteger numberOfPossibleValues() {
         return BigInteger.valueOf(to).subtract(BigInteger.valueOf(from)).add(BigInteger.valueOf(1));
     }
 
     /**
-     * Determines if the range is wider than a given value
+     * Determines if the range is wider than a given value, i.e., if the number of possible values
+     * enclosed by this range is more than the given value.
      *
      * @param value
-     * @return true if wider than the given value
+     * @return true if wider than the given value.
      */
     public boolean isWiderThan(int value) {
         return numberOfPossibleValues().compareTo(BigInteger.valueOf(value)) == 1;

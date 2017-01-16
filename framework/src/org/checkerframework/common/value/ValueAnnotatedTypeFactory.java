@@ -236,8 +236,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         atm.replaceAnnotation(
                                 createIntRangeAnnotation(new Range(annoMinVal, annoMaxVal)));
                     }
-
                 } else {
+                    // In here the annotation is @*Val where (*) is not Int but other types (String, Double, etc)
+                    // Therefore we extract its values in a generic way to check its size
                     List<Object> values =
                             AnnotationUtils.getElementValueArray(
                                     anno, "value", Object.class, false);

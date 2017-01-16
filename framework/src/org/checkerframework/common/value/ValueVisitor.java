@@ -65,14 +65,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
     /**
      * Issues an error if any @IntRange annotation has its 'from' value greater than 'to' value.
-     * Works together with
-     * ValueAnnotatedTypeFactory.ValueTypeAnnotator.replaceWithUnknownValInSpecialCases which treats
-     * to value as @UnknownVal in this case.
      *
      * <p>Issues a warning if any constant-value annotation has &gt; MAX_VALUES number of values
-     * provided. Works together with
-     * ValueAnnotatedTypeFactory.ValueTypeAnnotator.replaceWithUnknownValInSpecialCases which treats
-     * the value as @IntRange for @IntVal and @UnknownVal for other *Val annotations in this case.
+     * provided.
      */
     @Override
     public Void visitAnnotation(AnnotationTree node, Void p) {
