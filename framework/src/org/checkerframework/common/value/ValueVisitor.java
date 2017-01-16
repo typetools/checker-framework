@@ -31,7 +31,7 @@ import org.checkerframework.framework.source.Result;
 public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
     /** helper set that includes all integer literal kinds */
-    private final Set<Kind> intLiteralKinds =
+    private final static Set<Kind> intLiteralKinds =
             EnumSet.of(Kind.INT_LITERAL, Kind.LONG_LITERAL, Kind.CHAR_LITERAL);
 
     public ValueVisitor(BaseTypeChecker checker) {
@@ -39,7 +39,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     }
 
     /** helper function to determine if a given kind is integer literal */
-    private boolean isIntLiteral(Kind k) {
+    private static boolean isIntLiteral(Kind k) {
         return intLiteralKinds.contains(k);
     }
 
