@@ -247,7 +247,7 @@ Documentation:
 For type-system developers:
  * The org.checkerframework.framework.qual.TypeQualifier{s} annotations are
    now deprecated.  To indicate which annotations a checker supports, see
-   http://checker-framework.com/manual/#indicating-supported-annotations .
+   http://checker-framework.com/manual/#creating-indicating-supported-annotations .
    Support for TypeQualifier{s} will be removed in the next release.
  * Renamed
    org.checkerframework.framework.qual.Default{,Qualifier}ForUnannotatedCode to
