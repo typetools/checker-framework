@@ -29,7 +29,7 @@ class Issue524 {
             @GuardedBy("localLock") MyClass q = new MyClass();
             localLock.lock();
             localLock.lock();
-            // Without a fix for issue 524 in place, the error contracts.precondition.not.satisfied.field
+            // Without a fix for issue 524 in place, the error lock.not.held
             // (unguarded access to field, variable or parameter 'q' guarded by 'localLock') is issued for the following line.
             q.field.toString();
         }

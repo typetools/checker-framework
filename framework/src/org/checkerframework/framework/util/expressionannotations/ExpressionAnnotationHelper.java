@@ -70,6 +70,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class ExpressionAnnotationHelper {
     protected final AnnotatedTypeFactory factory;
+
     /** A list of annotations that are expression annotations. */
     protected final List<Class<? extends Annotation>> expressionAnnos;
 
@@ -190,7 +191,6 @@ public class ExpressionAnnotationHelper {
         // list.get(0)
         // If the type of List.get is viewpoint adapted for the invocation "list.get(0)", then
         // typeFromUse would be @KeyFor("map") String get(int).
-
         // Instead, use the type for the method (viewpointAdaptedType) and viewpoint adapt that
         // type.
         // Then copy annotations from the viewpoint adapted type to typeFromUse, if that annotation

@@ -1,6 +1,5 @@
 package chapter;
 
-import chapter.ChapterExamples.MyClass;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.GuardedByBottom;
@@ -30,20 +29,20 @@ public class Strings {
     void StringConcat(@GuardedBy("lock") MyClass param) {
         {
             String s1a = "a" + "a";
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             String s1b = "a" + param;
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             String s1c = param + "a";
-            //:: error: (contracts.precondition.not.satisfied)
+            //:: error: (lock.not.held)
             String s1d = param.toString();
 
             String s2 = "a";
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             s2 += param;
 
             String s3 = "a";
             // In addition to testing whether "lock" is held, tests that the result of a string concatenation has type @GuardedBy({}).
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             String s4 = s3 += param;
         }
         synchronized (lock) {
@@ -59,5 +58,9 @@ public class Strings {
             // In addition to testing whether "lock" is held, tests that the result of a string concatenation has type @GuardedBy({}).
             String s4 = s3 += param;
         }
+    }
+
+    class MyClass {
+        Object field = new Object();
     }
 }
