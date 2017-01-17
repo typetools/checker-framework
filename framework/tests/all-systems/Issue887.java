@@ -3,6 +3,8 @@
 // Additional test case in checker/tests/nullness/Issue887.java
 import java.util.List;
 
+@SuppressWarnings(
+        "list.access.unsafe.high") // The Index Checker correctly issues this warning here.
 public abstract class Issue887 {
     @SuppressWarnings("nullness") // See checker/tests/nullness/Issue887.java
     void test() {

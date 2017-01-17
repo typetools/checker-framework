@@ -11,6 +11,7 @@ nullness-checker.tex \
 map-key-checker.tex \
 interning-checker.tex \
 lock-checker.tex \
+index-checker.tex \
 fenum-checker.tex \
 tainting-checker.tex \
 regex-checker.tex \
