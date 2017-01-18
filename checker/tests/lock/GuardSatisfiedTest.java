@@ -32,16 +32,16 @@ public class GuardSatisfiedTest {
             @GuardSatisfied Object q) {
         // Test matching parameters
 
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         methodToCall1(o, o);
-        //:: error: (contracts.precondition.not.satisfied.field) :: error: (guardsatisfied.parameters.must.match)
+        //:: error: (lock.not.held) :: error: (guardsatisfied.parameters.must.match)
         methodToCall1(o, p);
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         methodToCall1(p, p);
         synchronized (lock2) {
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             methodToCall1(o, o);
-            //:: error: (guardsatisfied.parameters.must.match) :: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (guardsatisfied.parameters.must.match) :: error: (lock.not.held)
             methodToCall1(o, p);
             methodToCall1(p, p);
             synchronized (lock1) {
@@ -54,20 +54,20 @@ public class GuardSatisfiedTest {
 
         // Test a return type matching a parameter.
 
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         o = methodToCall2(o);
-        //:: error: (contracts.precondition.not.satisfied.field) :: error: (assignment.type.incompatible)
+        //:: error: (lock.not.held) :: error: (assignment.type.incompatible)
         p = methodToCall2(o);
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         methodToCall2(o);
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         methodToCall2(p);
         synchronized (lock2) {
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             o = methodToCall2(o);
-            //:: error: (contracts.precondition.not.satisfied.field) :: error: (assignment.type.incompatible)
+            //:: error: (lock.not.held) :: error: (assignment.type.incompatible)
             p = methodToCall2(o);
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             methodToCall2(o);
             methodToCall2(p);
         }
@@ -76,7 +76,7 @@ public class GuardSatisfiedTest {
             //:: error: (assignment.type.incompatible)
             p = methodToCall2(o);
             methodToCall2(o);
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             methodToCall2(p);
         }
 
@@ -86,13 +86,13 @@ public class GuardSatisfiedTest {
         //:: error: (guardsatisfied.parameters.must.match)
         methodToCall3(q);
 
-        //:: error: (guardsatisfied.parameters.must.match) :: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (guardsatisfied.parameters.must.match) :: error: (lock.not.held)
         methodToCall3(p);
         synchronized (lock1) {
             // Two @GS parameters with no index are incomparable (as is the case for 'this' and 'q')
             //:: error: (guardsatisfied.parameters.must.match)
             methodToCall3(q);
-            //:: error: (guardsatisfied.parameters.must.match) :: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (guardsatisfied.parameters.must.match) :: error: (lock.not.held)
             methodToCall3(p);
             synchronized (lock2) {
                 // Two @GS parameters with no index are incomparable (as is the case for 'this' and 'q')
@@ -111,21 +111,21 @@ public class GuardSatisfiedTest {
     // Test the return type NOT matching the receiver type
     void testMethodCall(@GuardedBy("lock1") GuardSatisfiedTest this) {
         @GuardedBy("lock2") Object g;
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         methodToCall4();
-        // TODO: contracts.precondition.not.satisfied is getting swallowed below
-        //  error (assignment.type.incompatible) error (contracts.precondition.not.satisfied)
+        // TODO: lock.not.held is getting swallowed below
+        //  error (assignment.type.incompatible) error (lock.not.held)
         // g = methodToCall4();
 
         // Separate the above test case into two for now
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         methodToCall4();
 
         // The following error is due to the fact that you cannot access "this.lock1" without first having acquired "lock1".
         // The right fix in a user scenario would be to not guard "this" with "this.lock1". The current object could instead
         // be guarded by "<self>" or by some other lock expression that is not one of its fields. We are keeping this test
         // case here to make sure this scenario issues a warning.
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         synchronized (lock1) {
             //:: error: (assignment.type.incompatible)
             g = methodToCall4();
@@ -190,10 +190,10 @@ public class GuardSatisfiedTest {
 
     void testAssignment(@GuardSatisfied Object o) {
         @GuardedBy({"lock1", "lock2"}) Object p = new Object();
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         o = p;
         synchronized (lock1) {
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             o = p;
             synchronized (lock2) {
                 o = p;
