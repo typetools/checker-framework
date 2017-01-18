@@ -16,7 +16,7 @@ public class CheckerFrameworkPanelProvider implements ProjectCustomizer.Composit
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
         projectType = "org-netbeans-modules-java-j2seproject",
-        position = 2147483647
+        position = Integer.MAX_VALUE
     )
     public static CheckerFrameworkPanelProvider createCheckerFramework() {
         return new CheckerFrameworkPanelProvider();
@@ -32,7 +32,7 @@ public class CheckerFrameworkPanelProvider implements ProjectCustomizer.Composit
                 p.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
         ResourceBundle bundle = NbBundle.getBundle(CheckerFrameworkPanelProvider.class);
-        ProjectCustomizer.Category toReturn = null;
+        ProjectCustomizer.Category toReturn;
         toReturn =
                 ProjectCustomizer.Category.create(
                         NAME, bundle.getString("LBL_Config_CheckerFramework"), null);

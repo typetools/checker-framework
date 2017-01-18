@@ -73,7 +73,7 @@ public class CheckerFrameworkPanel extends JPanel {
         String tmp = editableProperty.get("annotation.processing.processors.list");
         for (Entry<String, String> e : checkerStrings) {
             checkerList[i] = new JCheckBox(e.getValue());
-            if (tmp.toString().contains(e.getKey())) {
+            if (tmp.contains(e.getKey())) {
                 checkerList[i].setSelected(true);
             }
             this.add(checkerList[i]);
@@ -134,11 +134,10 @@ public class CheckerFrameworkPanel extends JPanel {
                     }
                 }
                 //try to add the item
-                if (sel.toString().isEmpty()) {
-                    sel.append(selectedChecker);
-                } else {
-                    sel.append(",").append(selectedChecker);
+                if (sel.length() != 0) {
+                    sel.append(',');
                 }
+                sel.append(selectedChecker);
             }
         }
         return sel.toString();
