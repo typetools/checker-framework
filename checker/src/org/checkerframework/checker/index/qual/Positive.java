@@ -11,7 +11,7 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * This type represents any integer greater than or equal to 1.
+ * The annotated expression evaluates to an integer greater than or equal to 1.
  *
  * @checker_framework.manual #index-checker Index Checker
  */

@@ -6,8 +6,8 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * In the Upper Bound Checker's type system, this type represents any variable not known to have a
- * relation to an array length
+ * A variable not known to have a relation to any sequence length. This is the top type of the Upper
+ * Bound type system. Programmers should not need to write this type.
  *
  * @checker_framework.manual #index-checker Index Checker
  */

@@ -132,8 +132,9 @@ or \code{@LTOMLengthOf({''arr''})}.
 \item[\refqualclasswithparams{checker/index/qual}{LTLengthOf}{String[] names}]
   An expression with this type
   has value less than the length of each sequence listed in \<names>.
-  The expression may be used as an index into any of those sequences.
-  For example, an expression of type \code{@LTLengthOf("a") int} can be
+  The expression may be used as an index into any of those sequences,
+  if it is non-negative.
+  For example, an expression of type \code{@LTLengthOf("a") int} might be
   used as an index to \<a>.
   The type \code{@LTLengthOf({"a", "b"})} is a subtype of both
   \code{@LTLengthOf("a")} and \code{@LTLengthOf("b")}.
@@ -149,23 +150,27 @@ or \code{@LTOMLengthOf({''arr''})}.
 
 \item[\refqualclasswithparams{checker/index/qual}{LTOMLengthOf}{String[] names}]
   An expression with this type
-  has value less than one less than the length of each sequence listed in \<names>. This type exists to allow the checker to infer the safety of loops of
+  has value at least 2 less than the length of each sequence listed in \<names>.
+  It may always used as an index for a sequence listed in \<names>, if it is
+  non-negative.
+
+  This type exists to allow the checker to infer the safety of loops of
   the form:
 \begin{Verbatim}
   for (int i = 0; i < array.length - 1; ++i) {
     arr[i] = arr[i+1];
   }
 \end{Verbatim}
-It may always used as an index for a sequence listed in \<names>, but
-should rarely (if ever) be written by the programmer; usually
-\refqualclasswithparams{checker/index/qual}{LTLengthOf}{String[] names}
-should be written instead.
+  This annotation should rarely (if ever) be written by the programmer; usually
+  \refqualclasswithparams{checker/index/qual}{LTLengthOf}{String[] names}
+  should be written instead.
   \code{@LTOMLengthOf({"a", "b"})} is a subtype of both
   \code{@LTOMLengthOf("a")} and \code{@LTOMLengthOf("b")}.
-  (``\<LTOM>'' stands for ``Less Than One Minus''.)
+  (``\<LTOM>'' stands for ``Less Than One Minus'', because another way of
+  saying ``at least 2 less than \<a.length>'' is ``less than \<a.length-1>''.)
 
 \item[\refqualclass{checker/index/qual}{UpperBoundUnknown}]
-  There is no information about the value of an expression with this type.
+  There is no information about the upper bound on the value of an expression with this type.
   It may not be used as an index for a sequence, because it might be too high.
   This type is the top type, and should never need to be written by the
   programmer.
