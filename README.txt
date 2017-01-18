@@ -7,5 +7,5 @@ It appears in this repository (after you run `make -C docs/manual`):
 
 Prebuilt versions also appear on the web:
 
-  * HTML: http://checker-framework.com/manual/
-  * PDF: http://checker-framework.com/manual/checker-framework-manual.pdf
+  * HTML: http://checker-framework.com/current/checker-framework-manual.html
+  * PDF: http://checker-framework.com/current/checker-framework-manual.pdf
