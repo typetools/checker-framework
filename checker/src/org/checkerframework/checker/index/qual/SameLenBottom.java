@@ -4,7 +4,7 @@ import java.lang.annotation.*;
 import org.checkerframework.framework.qual.*;
 
 /**
- * The bottom type for the SameLen type system.
+ * The bottom type for the SameLen type system. Programmers should not need to write this type.
  *
  * @checker_framework.manual #index-checker Index Checker
  */

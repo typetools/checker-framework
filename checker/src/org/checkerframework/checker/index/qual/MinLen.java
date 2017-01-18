@@ -5,9 +5,8 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.*;
 
 /**
- * This type annotation indicates that an expression's value is an array containing at least the
- * given number of elements. MinLen(0) is the top type for the MinLen type system, and in general
- * MinLen(x) is a subtype of MinLen(x-1).
+ * The value of the annotated expression is a sequence containing at least the given number of
+ * elements.
  *
  * @checker_framework.manual #index-checker Index Checker
  */
@@ -15,6 +14,6 @@ import org.checkerframework.framework.qual.*;
 @SubtypeOf({})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface MinLen {
-    /** The minimum number of elements in this array. */
+    /** The minimum number of elements in this sequence. */
     int value() default 0;
 }

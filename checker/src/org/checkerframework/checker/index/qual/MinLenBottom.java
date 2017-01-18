@@ -4,7 +4,7 @@ import java.lang.annotation.*;
 import org.checkerframework.framework.qual.*;
 
 /**
- * The bottom type for the MinLen type system.
+ * The bottom type for the MinLen type system. Programmers should not have to write this type.
  *
  * @checker_framework.manual #index-checker Index Checker
  */

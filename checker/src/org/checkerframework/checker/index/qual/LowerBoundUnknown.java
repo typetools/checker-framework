@@ -6,7 +6,8 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * This type represents any variable whose lower bound is not known.
+ * The annotated expression evaluates to value that might be -2 or lower. This is the top type for
+ * the Lower Bound type system. It should not have to be written by a programmer.
  *
  * @checker_framework.manual #index-checker Index Checker
  */

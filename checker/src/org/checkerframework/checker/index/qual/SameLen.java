@@ -5,14 +5,15 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.*;
 
 /**
- * This type annotation indicates that an expression's value is an array that has the same length as
- * the other arrays listed in value field.
+ * The annotated expressios evaluates to a value that is a sequence, and that sequence has the same
+ * length as the given sequences. For example, if {@code b}'s type is annotated with
+ * {@code @SameLen("a")}, then {@code a} and {@code b} have the same length.
  *
  * @checker_framework.manual #index-checker Index Checker
  */
 @SubtypeOf(SameLenUnknown.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface SameLen {
-    /** A list of other arrays with the same length. */
+    /** A list of other sequences with the same length. */
     String[] value();
 }
