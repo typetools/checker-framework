@@ -177,6 +177,7 @@ public class ContractsUtils {
         contracts.addAll(getConditionalPostconditions(element));
         return contracts;
     }
+
     /** Returns the set of preconditions on the element {@code element}. */
     public Set<Precondition> getPreconditions(Element element) {
         Set<Precondition> result = new LinkedHashSet<>();

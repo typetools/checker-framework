@@ -7,6 +7,8 @@
 
 # This script is used by the release_push script in the "Run javac sanity tests on the live release" step
 
+set -x
+
 if [ $# -eq 0 ]; then
     echo "Usage: test-checker-framework.sh <current version of Checker Framework on live web site>"
     exit 6
@@ -15,7 +17,7 @@ fi
 rm -f checker-framework-$1.zip
 rm -rf checker-framework-$1/
 
-wget -q http://checker-framework.com/checker-framework-$1.zip
+wget http://checker-framework.com/checker-framework-$1.zip
 unzip -q checker-framework-$1.zip
 
 export CHECKERFRAMEWORK=checker-framework-$1

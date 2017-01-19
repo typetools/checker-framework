@@ -59,13 +59,13 @@ public class LockEffectAnnotations {
             x3.field =
                     new Object(); // OK: the lock is still held since mySideEffectFreeMethod is side-effect-free
             myUnlockingMethod();
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             x3.field = new Object(); // ILLEGAL: myLockingMethod is not locking-free
         }
         if (myLock2.tryLock()) {
             x3.field = new Object(); // OK: the lock is held
             myReleaseLocksEmptyMethod();
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             x3.field =
                     new Object(); // ILLEGAL: even though myUnannotatedEmptyMethod is empty, since
             // myReleaseLocksEmptyMethod() is annotated with @MayReleaseLocks and the Lock Checker no longer knows
@@ -141,7 +141,7 @@ public class LockEffectAnnotations {
 
     //:: error: (class.declaration.guardedby.annotation.invalid)
     @GuardedByUnknown class MyClass2 {}
-    //:: error: (class.declaration.guardedby.annotation.invalid) :: error: (lock.expression.possibly.not.final)
+    //:: error: (class.declaration.guardedby.annotation.invalid)
     @GuardedBy("lock") class MyClass3 {}
 
     @GuardedBy({}) class MyClass4 {}

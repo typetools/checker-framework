@@ -19,7 +19,7 @@ public class TestTreeKinds {
 
     {
         // In constructor/initializer, it's OK not to hold the lock on 'this', but other locks must be respected.
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         m.field = new Object();
     }
 
@@ -136,7 +136,7 @@ public class TestTreeKinds {
         if (Thread.holdsLock(intrinsicLock)) {
             m.field.toString();
         } else {
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             m.field.toString();
         }
     }
@@ -151,7 +151,7 @@ public class TestTreeKinds {
 
         // TODO: File a bug for the dataflow issue mentioned in the line below.
         // TODO: uncomment: Hits a bug in dataflow:    do { break; } while (foo.field != null); // access to guarded object in while condition of do/while loop
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         for (foo = new MyClass(); foo.field != null; foo = new MyClass()) {
             break;
         } // access to guarded object in condition of for loop
@@ -160,33 +160,33 @@ public class TestTreeKinds {
         // A simple method call to a guarded object is not considered a dereference (only field accesses are considered dereferences).
         unguardedFoo.method2();
         // Same as above, but the guard must be satisfied if the receiver is @GuardSatisfied.
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         foo.method2();
         // attempt to use guarded object in a switch statement
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         switch (foo.field.hashCode()) {
         }
         // attempt to use guarded object inside a try with resources
         // try(foo = new MyClass()) { foo.field.toString(); }
 
         // Retrieving an element from a guarded array is a dereference
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         MyClass m = fooArray[0];
 
         // method call on dereference of unguarded element of *guarded* array
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         fooArray[0].field.toString();
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         l = fooArray.length; // dereference of guarded array itself
 
         // method call on dereference of guarded array element
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         fooArray2[0].field.toString();
         // method call on dereference of unguarded array - TODO: currently preconditions are not retrieved correctly from array types. This is not unique to the Lock Checker.
         // fooArray2.field.toString();
 
         // method call on dereference of guarded array element of multidimensional array
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         fooArray3[0][0].field.toString();
         // method call on dereference of unguarded single-dimensional array element of unguarded multidimensional array - TODO: currently preconditions are not retrieved correctly from array types. This is not unique to the Lock Checker.
         // fooArray3[0].field.toString();
@@ -194,35 +194,35 @@ public class TestTreeKinds {
         // fooArray3.field.toString();
 
         // method call on dereference of unguarded array element of *guarded* multidimensional array
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         fooArray4[0][0].field.toString();
         // dereference of unguarded single-dimensional array element of *guarded* multidimensional array
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         l = fooArray4[0].length;
         // dereference of guarded multidimensional array
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         l = fooArray4.length;
 
         // method call on dereference of unguarded array element of *guarded subarray* of multidimensional array
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         fooArray5[0][0].field.toString();
         // dereference of guarded single-dimensional array element of multidimensional array
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         l = fooArray5[0].length;
         // dereference of unguarded multidimensional array
         l = fooArray5.length;
 
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         l = getFooArray().length; // dereference of guarded array returned by a method
 
         // method call on dereference of guarded array element returned by a method
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         getFooArray2()[0].field.toString();
         // dereference of unguarded array returned by a method
         l = getFooArray2().length;
 
         // method call on dereference of guarded array element of multidimensional array returned by a method
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         getFooArray3()[0][0].field.toString();
         // dereference of unguarded single-dimensional array element of multidimensional array returned by a method
         l = getFooArray3()[0].length;
@@ -230,30 +230,30 @@ public class TestTreeKinds {
         l = getFooArray3().length;
 
         // method call on dereference of unguarded array element of *guarded* multidimensional array returned by a method
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         getFooArray4()[0][0].field.toString();
         // dereference of unguarded single-dimensional array element of *guarded* multidimensional array returned by a method
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         l = getFooArray4()[0].length;
         // dereference of guarded multidimensional array returned by a method
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         l = getFooArray4().length;
 
         // method call on dereference of unguarded array element of *guarded subarray* of multidimensional array returned by a method
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         getFooArray5()[0][0].field.toString();
         // dereference of guarded single-dimensional array element of multidimensional array returned by a method
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         l = getFooArray5()[0].length;
         // dereference of unguarded multidimensional array returned by a method
         l = getFooArray5().length;
 
         // Test different @GuardedBy(...) present on the element and array locations.
         @GuardedBy("lock") MyClass @GuardedBy("lock2") [] array = new MyClass[3];
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         array[0].field = new Object();
         if (lock.isHeldByCurrentThread()) {
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             array[0].field = new Object();
             if (lock2.isHeldByCurrentThread()) {
                 array[0].field = new Object();
@@ -261,17 +261,17 @@ public class TestTreeKinds {
         }
 
         // method call on guarded object within parenthesized expression
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         String s = (foo.field.toString());
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         foo.field.toString(); // method call on guarded object
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         getFoo().field.toString(); // method call on guarded object returned by a method
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         this.foo.field.toString(); // method call on guarded object using 'this' literal
         // dereference of guarded object in labeled statement
         label:
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         foo.field.toString();
         // access to guarded object in instanceof expression (OK)
         if (foo instanceof MyClass) {}
@@ -286,18 +286,18 @@ public class TestTreeKinds {
         // access to guarded object in a lambda expression
         Runnable rn =
                 () -> {
-                    //:: error: (contracts.precondition.not.satisfied.field)
+                    //:: error: (lock.not.held)
                     foo.field.toString();
                 };
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         i = myClassInstance.i; // access to member field of guarded object
         // MemberReferenceTrees? how do they work
         fooArray = new MyClass[3]; // second allocation of guarded array (OK)
         // dereference of guarded object in conditional expression tree
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         s = i == 5 ? foo.field.toString() : f.field.toString();
         // dereference of guarded object in conditional expression tree
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         s = i == 5 ? f.field.toString() : foo.field.toString();
         // Testing of 'return' is done in getFooWithWrongReturnType()
         // throwing a guarded object - when throwing an exception, it must be @GuardedBy({}). Even @GuardedByUnknown is not allowed.
@@ -311,7 +311,7 @@ public class TestTreeKinds {
         @GuardedBy({}) Object e1 = (Object) exception;
         // OK, since the local variable's type gets refined to @GuardedBy("lock")
         Object e2 = (Object) exception;
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         l = myParametrizedType.l; // dereference of guarded object having a parameterized type
 
         // We need to support locking on local variables and protecting local variables because these locals may contain references to fields. Somehow we need to pass along the information of which field it was.
@@ -325,8 +325,8 @@ public class TestTreeKinds {
             // there is an attempt to dereference an expression whose type has been refined to @GuardedByBottom
             // (due to the comparison to null). However, with -AconcurrentSemantics turned on, foo may no longer
             // be null by now, the refinement to @GuardedByBottom is lost and the refined type of foo is now the
-            // declared type ( @GuardedBy("lock") ), resulting in the contracts.precondition.not.satisfied.field error.
-            //:: error: (contracts.precondition.not.satisfied.field)
+            // declared type ( @GuardedBy("lock") ), resulting in the lock.not.held error.
+            //:: error: (lock.not.held)
             foo.field.toString();
         }
 
@@ -343,12 +343,12 @@ public class TestTreeKinds {
 
         @GuardedBy("localLock") MyClass guardedByLocalLock = new MyClass();
 
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         guardedByLocalLock.field.toString();
 
         @GuardedBy("lock") MyClass local = new MyClass();
 
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         local.field.toString();
 
         lockTheLock();
@@ -376,17 +376,17 @@ public class TestTreeKinds {
 
             unlockTheLock();
 
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             foo.field.toString();
         } else {
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             foo.field.toString();
         }
 
         if (tryToLockTheLock()) {
             foo.field.toString();
         } else {
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             foo.field.toString();
         }
 
@@ -397,7 +397,7 @@ public class TestTreeKinds {
         } else {
             lockTheLock();
             nonSideEffectFreeMethod();
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             foo.field.toString();
         }
 
@@ -408,7 +408,7 @@ public class TestTreeKinds {
         } else {
             lockTheLock();
             nonSideEffectFreeMethod();
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             foo.field.toString();
         }
     }
@@ -423,7 +423,7 @@ public class TestTreeKinds {
     }
 
     void testReceiverGuardedByItself(@GuardedBy("<self>") TestTreeKinds this) {
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         method();
         synchronized (this) {
             method();
@@ -433,7 +433,7 @@ public class TestTreeKinds {
     void method(@GuardSatisfied TestTreeKinds this) {}
 
     void testOtherClassReceiverGuardedByItself(final @GuardedBy("<self>") OtherClass o) {
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         o.foo();
         synchronized (o) {
             o.foo();

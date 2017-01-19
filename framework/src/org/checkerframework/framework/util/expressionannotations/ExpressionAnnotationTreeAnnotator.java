@@ -7,6 +7,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -53,7 +54,9 @@ public class ExpressionAnnotationTreeAnnotator extends TreeAnnotator {
     @Override
     public Void visitIdentifier(IdentifierTree node, AnnotatedTypeMirror annotatedTypeMirror) {
         Element ele = TreeUtils.elementFromUse(node);
-        helper.standardizeVariable(node, annotatedTypeMirror, ele);
+        if (ele.getKind() == ElementKind.FIELD) {
+            helper.standardizeVariable(node, annotatedTypeMirror, ele);
+        }
         return super.visitIdentifier(node, annotatedTypeMirror);
     }
 

@@ -22,13 +22,13 @@ def check_release_version(previous_release, new_release):
         raise Exception("Previous release version (" + previous_release + ") should be less than " +
                         "the new release version (" + new_release + ")")
 
-def copy_release_dir(path_to_dev, path_to_live, release_version):
+def copy_release_dir(path_to_dev_releases, path_to_live_releases, release_version):
     """Copy a release directory with the given release version from the dev
     site to the live site. For example,
     /cse/www2/types/dev/checker-framework/releases/2.0.0 ->
     /cse/www2/types/checker-framework/releases/2.0.0"""
-    source_location = os.path.join(path_to_dev, release_version)
-    dest_location = os.path.join(path_to_live, release_version)
+    source_location = os.path.join(path_to_dev_releases, release_version)
+    dest_location = os.path.join(path_to_live_releases, release_version)
 
     if os.path.exists(dest_location):
         delete_path(dest_location)
@@ -44,6 +44,16 @@ def copy_release_dir(path_to_dev, path_to_live, release_version):
 
     return dest_location
 
+def promote_release(path_to_releases, release_version):
+    """Copy a release directory to the top level. For example,
+    /cse/www2/types/checker-framework/releases/2.0.0/* ->
+    /cse/www2/types/checker-framework/*"""
+    from_dir = os.path.join(path_to_releases, release_version)
+    to_dir = os.path.join(path_to_releases, "..")
+    # Trailing slash is crucial.
+    cmd = "rsync -a --omit-dir-times %s/ %s" % (from_dir, to_dir)
+    execute(cmd)
+
 def copy_htaccess():
     "Copy the .htaccess file from the dev site to the live site."
     execute("rsync --times %s %s" % (DEV_HTACCESS, LIVE_HTACCESS))
@@ -53,19 +63,22 @@ def copy_releases_to_live_site(checker_version, afu_version):
     """Copy the new releases of jsr308-langtools, the AFU and the Checker
     Framework from the dev site to the live site."""
     copy_release_dir(JSR308_INTERM_RELEASES_DIR, JSR308_LIVE_RELEASES_DIR, checker_version)
+    promote_release(JSR308_LIVE_RELEASES_DIR, checker_version)
     copy_release_dir(CHECKER_INTERM_RELEASES_DIR, CHECKER_LIVE_RELEASES_DIR, checker_version)
+    promote_release(CHECKER_LIVE_RELEASES_DIR, checker_version)
     copy_release_dir(AFU_INTERM_RELEASES_DIR, AFU_LIVE_RELEASES_DIR, afu_version)
+    promote_release(AFU_LIVE_RELEASES_DIR, afu_version)
 
 ### def update_release_symlinks(checker_version, afu_version):
 ###     """Update the \"current\" subdirectories of the jsr308-langtools, the AFU
 ###     and the Checker Framework live sites to point to the new releases of each
 ###     project."""
-###     afu_relative_latest_release_dir = os.path.join(RELEASES_SUBDIR, afu_version)
-###     checker_and_jsr308_relative_latest_release_dir = os.path.join(RELEASES_SUBDIR, checker_version)
+###     afu_relative_latest_release_dir = os.path.join("releases", afu_version)
+###     checker_and_jsr308_relative_latest_release_dir = os.path.join("releases", checker_version)
 ###
-###     force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(JSR308_LIVE_SITE, CURRENT_SUBDIR))
-###     force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(CHECKER_LIVE_SITE, CURRENT_SUBDIR))
-###     force_symlink(afu_relative_latest_release_dir, os.path.join(AFU_LIVE_SITE, CURRENT_SUBDIR))
+###     force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(JSR308_LIVE_SITE, "current"))
+###     force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(CHECKER_LIVE_SITE, "current"))
+###     force_symlink(afu_relative_latest_release_dir, os.path.join(AFU_LIVE_SITE, "current"))
 
 def ensure_group_access_to_releases():
     """Gives group access to all files and directories in the \"releases\"
@@ -218,7 +231,7 @@ def push_interm_to_release_repos():
 
 def continue_or_exit(msg):
     "Prompts the user whether to continue executing the script."
-    continue_script = prompt_w_suggestion(msg + " Continue ('no' will exit the script)?", "yes", "^(Yes|yes|No|no)$")
+    continue_script = prompt_w_default(msg + " Continue ('no' will exit the script)?", "yes", "^(Yes|yes|No|no)$")
     if continue_script == "no" or continue_script == "No":
         raise Exception("User elected NOT to continue at prompt: " + msg)
 
@@ -242,10 +255,10 @@ def print_usage():
            "steps but will NOT actually perform a release.  This is for testing the script.")
 
 def main(argv):
-    """The release_push script is mainly responsible for taking the artifacts
-    for jsr308-langtools, the AFU and the Checker Framework from the
-    development web site and staging them on Maven Central and releasing them
-    on the live site. It also performs link checking on the live site, pushes
+    """The release_push script is mainly responsible for copying the artifacts
+    (for jsr308-langtools, the AFU and the Checker Framework) from the
+    development web site to Maven Central and to
+    the live site. It also performs link checking on the live site, pushes
     the release to GitHub/Bitbucket repositories, and guides the user to
     perform manual steps such as building the Eclipse plug-in and sending the
     release announcement e-mail."""
@@ -260,28 +273,21 @@ def main(argv):
     auto = read_command_line_option(argv, "--auto")
     test_mode = not read_command_line_option(argv, "release")
 
-    msg = ("You have chosen test_mode.\n" +
+    if test_mode:
+        msg = ("You have chosen test_mode.\n" +
            "This means that this script will execute all build steps that " +
            "do not have side-effects.  That is, this is a test run of the script.  All checks and user prompts "  +
            "will be shown but no steps will be executed that will cause the release to be deployed or partially " +
            "deployed.\n" +
            "If you meant to do an actual release, re-run this script with one argument, \"release\".")
-
-    if not test_mode:
-        msg = "You have chosen release_mode.  Please follow the prompts to run a full Checker Framework release"
+    else:
+        msg = "You have chosen release_mode.  Please follow the prompts to run a full Checker Framework release."
 
     continue_or_exit(msg + "\n")
     if test_mode:
         print "Continuing in test mode."
     else:
         print "Continuing in release mode."
-
-    if not auto:
-        print_step("Push Step 0: Verify Requirements\n") # MANUAL
-        print("If this is your first time running the release_push script, please verify that you have met " +
-              "all the requirements specified in README-release-process.html \"Pre-release Checklist\"\n")
-
-        continue_or_exit("")
 
     if not os.path.exists(RELEASE_BUILD_COMPLETED_FLAG_FILE):
         continue_or_exit("It appears that release_build.py has not been run since the last push to " +
@@ -296,8 +302,8 @@ def main(argv):
     dev_afu_website = os.path.join(HTTP_PATH_TO_DEV_SITE, "annotation-file-utilities")
     live_afu_website = os.path.join(HTTP_PATH_TO_LIVE_SITE, "annotation-file-utilities")
 
-    dev_checker_website = os.path.join(HTTP_PATH_TO_DEV_SITE, "checker-framework")
-    live_checker_website = os.path.join(HTTP_PATH_TO_LIVE_SITE, "checker-framework")
+    dev_checker_website = HTTP_PATH_TO_DEV_SITE
+    live_checker_website = HTTP_PATH_TO_LIVE_SITE
     current_checker_version = current_distribution_by_website(live_checker_website)
     new_checker_version = current_distribution(CHECKER_FRAMEWORK)
     check_release_version(current_checker_version, new_checker_version)
@@ -398,7 +404,7 @@ def main(argv):
     # to the live website rather than the development website. A straight copy of the directory
     # will NOT update the symlinks.
 
-    print_step("Push Step 5. Push dev current release website to live website") # SEMIAUTO
+    print_step("Push Step 5. Copy dev current release website to live website") # SEMIAUTO
     if not test_mode:
         if auto or prompt_yes_no("Copy release to the live website?"):
             print "Copying to live site"
@@ -495,7 +501,7 @@ def main(argv):
     # TODO: fix this so that the maven plug-in directory directory is not included in the first place.
 
     print  msg
-    prompt_until_yes()
+    prompt_to_continue()
 
     if test_mode:
         msg = ("Test Mode: You are in test_mode.  If you built the Eclipse plugin on "   +
@@ -518,7 +524,7 @@ def main(argv):
                "checker-framework-eclipse-update-site/site.xml")
 
         print  msg
-        prompt_until_yes()
+        prompt_to_continue()
 
         print_step("Push Step 13. Post the Checker Framework and Annotation File Utilities releases on GitHub.") # MANUAL
 
@@ -548,7 +554,7 @@ def main(argv):
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 
-    prompt_until_yes()
+    prompt_to_continue()
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
