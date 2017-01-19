@@ -421,7 +421,7 @@ public abstract class MethodHandle {
     @interface PolymorphicSignature { }
 
     private final MethodType type;
-    /*private*/ final LambdaForm form;
+//    /*private*/ final LambdaForm form;
     // form is not private so that invokers can easily fetch it
 
     /**
@@ -439,14 +439,14 @@ public abstract class MethodHandle {
      * the {@code java.lang.invoke} package.
      */
     // @param type type (permanently assigned) of the new method handle
-    /*non-public*/ MethodHandle(MethodType type, LambdaForm form) {
-        type.getClass();  // explicit NPE
-        form.getClass();  // explicit NPE
-        this.type = type;
-        this.form = form;
-
-        form.prepare();  // TO DO:  Try to delay this step until just before invocation.
-    }
+//     /*non-public*/ MethodHandle(MethodType type, LambdaForm form) {
+//         type.getClass();  // explicit NPE
+//         form.getClass();  // explicit NPE
+//         this.type = type;
+//         this.form = form;
+//
+//         form.prepare();  // TO DO:  Try to delay this step until just before invocation.
+//     }
 
     /**
      * Invokes the method handle, allowing any caller type descriptor, but requiring an exact type match.
@@ -1241,7 +1241,8 @@ assertEquals("[three, thee, tee]", asListFix.invoke((Object)argv).toString());
         return "MethodHandle"+type;
     }
     String debugString() {
-        return standardString()+"/LF="+internalForm()+internalProperties();
+//        return standardString()+"/LF="+internalForm()+internalProperties();
+        return null;
     }
 
     //// Implementation methods.
@@ -1271,10 +1272,10 @@ assertEquals("[three, thee, tee]", asListFix.invoke((Object)argv).toString());
 
     // Decoding
 
-    /*non-public*/
-    LambdaForm internalForm() {
-        return form;
-    }
+//     /*non-public*/
+//     LambdaForm internalForm() {
+//         return form;
+//     }
 
     /*non-public*/
     MemberName internalMemberName() {
@@ -1329,10 +1330,10 @@ assertEquals("[three, thee, tee]", asListFix.invoke((Object)argv).toString());
     	return null;
     }
 
-    /*non-public*/
-    MethodHandle copyWith(MethodType mt, LambdaForm lf) {
-        throw new InternalError("copyWith: " + this.getClass());
-    }
+//     /*non-public*/
+//     MethodHandle copyWith(MethodType mt, LambdaForm lf) {
+//         throw new InternalError("copyWith: " + this.getClass());
+//     }
 
     /*non-public*/
     MethodHandle dropArguments(MethodType srcType, int pos, int drops) {
@@ -1350,9 +1351,10 @@ assertEquals("[three, thee, tee]", asListFix.invoke((Object)argv).toString());
     MethodHandle rebind() {
         // Bind 'this' into a new invoker, of the known class BMH.
         MethodType type2 = type();
-        LambdaForm form2 = reinvokerForm(type2.basicType());
+        // LambdaForm form2 = reinvokerForm(type2.basicType());
         // form2 = lambda (bmh, arg*) { thismh = bmh[0]; invokeBasic(thismh, arg*) }
-        return BoundMethodHandle.bindSingle(type2, form2, this);
+        // return BoundMethodHandle.bindSingle(type2, form2, this);
+        return null;
     }
 
     /*non-public*/
@@ -1360,27 +1362,27 @@ assertEquals("[three, thee, tee]", asListFix.invoke((Object)argv).toString());
         throw new InternalError("not a reinvoker MH: "+this.getClass().getName()+": "+this);
     }
 
-    /** Create a LF which simply reinvokes a target of the given basic type.
-     *  The target MH must override {@link #reinvokerTarget} to provide the target.
-     */
-    static LambdaForm reinvokerForm(MethodType mtype) {
-        mtype = mtype.basicType();
-        LambdaForm reinvoker = mtype.form().cachedLambdaForm(MethodTypeForm.LF_REINVOKE);
-        if (reinvoker != null)  return reinvoker;
-        MethodHandle MH_invokeBasic = MethodHandles.basicInvoker(mtype);
-        final int THIS_BMH    = 0;
-        final int ARG_BASE    = 1;
-        final int ARG_LIMIT   = ARG_BASE + mtype.parameterCount();
-        int nameCursor = ARG_LIMIT;
-        final int NEXT_MH     = nameCursor++;
-        final int REINVOKE    = nameCursor++;
-        LambdaForm.Name[] names = LambdaForm.arguments(nameCursor - ARG_LIMIT, mtype.invokerType());
-        names[NEXT_MH] = new LambdaForm.Name(NF_reinvokerTarget, names[THIS_BMH]);
-        Object[] targetArgs = Arrays.copyOfRange(names, THIS_BMH, ARG_LIMIT, Object[].class);
-        targetArgs[0] = names[NEXT_MH];  // overwrite this MH with next MH
-        names[REINVOKE] = new LambdaForm.Name(MH_invokeBasic, targetArgs);
-        return mtype.form().setCachedLambdaForm(MethodTypeForm.LF_REINVOKE, new LambdaForm("BMH.reinvoke", ARG_LIMIT, names));
-    }
+//     /** Create a LF which simply reinvokes a target of the given basic type.
+//      *  The target MH must override {@link #reinvokerTarget} to provide the target.
+//      */
+//     static LambdaForm reinvokerForm(MethodType mtype) {
+//         mtype = mtype.basicType();
+//         LambdaForm reinvoker = mtype.form().cachedLambdaForm(MethodTypeForm.LF_REINVOKE);
+//         if (reinvoker != null)  return reinvoker;
+//         MethodHandle MH_invokeBasic = MethodHandles.basicInvoker(mtype);
+//         final int THIS_BMH    = 0;
+//         final int ARG_BASE    = 1;
+//         final int ARG_LIMIT   = ARG_BASE + mtype.parameterCount();
+//         int nameCursor = ARG_LIMIT;
+//         final int NEXT_MH     = nameCursor++;
+//         final int REINVOKE    = nameCursor++;
+//         LambdaForm.Name[] names = LambdaForm.arguments(nameCursor - ARG_LIMIT, mtype.invokerType());
+//         names[NEXT_MH] = new LambdaForm.Name(NF_reinvokerTarget, names[THIS_BMH]);
+//         Object[] targetArgs = Arrays.copyOfRange(names, THIS_BMH, ARG_LIMIT, Object[].class);
+//         targetArgs[0] = names[NEXT_MH];  // overwrite this MH with next MH
+//         names[REINVOKE] = new LambdaForm.Name(MH_invokeBasic, targetArgs);
+//         return mtype.form().setCachedLambdaForm(MethodTypeForm.LF_REINVOKE, new LambdaForm("BMH.reinvoke", ARG_LIMIT, names));
+//     }
 
     private static final LambdaForm.NamedFunction NF_reinvokerTarget;
     static {
