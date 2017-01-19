@@ -53,7 +53,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import sun.misc.Unsafe;
-import sun.reflect.CallerSensitive;
+// import sun.reflect.CallerSensitive;
 import sun.reflect.ConstantPool;
 import sun.reflect.Reflection;
 import sun.reflect.ReflectionFactory;
@@ -187,7 +187,7 @@ public final
      *            by this method fails
      * @exception ClassNotFoundException if the class cannot be located
      */
-    @CallerSensitive
+//    @CallerSensitive
     public static Class<?> forName(String className)
                 throws ClassNotFoundException {
         Class<?> caller = Reflection.getCallerClass();
@@ -255,7 +255,7 @@ public final
      * @see       java.lang.ClassLoader
      * @since     1.2
      */
-    @CallerSensitive
+//    @CallerSensitive
     public static Class<?> forName(String name, boolean initialize,
                                    ClassLoader loader)
         throws ClassNotFoundException
@@ -330,7 +330,7 @@ public final
      *             </ul>
      *
      */
-    @CallerSensitive
+//    @CallerSensitive
     public T newInstance()
         throws InstantiationException, IllegalAccessException
     {
@@ -612,7 +612,7 @@ public final
      * @see SecurityManager#checkPermission
      * @see java.lang.RuntimePermission
      */
-    @CallerSensitive
+//    @CallerSensitive
     public ClassLoader getClassLoader() {
         ClassLoader cl = getClassLoader0();
         if (cl == null)
@@ -900,7 +900,7 @@ public final
      *     that class is a local or anonymous class; otherwise {@code null}.
      * @since 1.5
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Method getEnclosingMethod() {
         EnclosingMethodInfo enclosingInfo = getEnclosingMethodInfo();
 
@@ -1038,7 +1038,7 @@ public final
      *     that class is a local or anonymous class; otherwise {@code null}.
      * @since 1.5
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Constructor<?> getEnclosingConstructor() {
         EnclosingMethodInfo enclosingInfo = getEnclosingMethodInfo();
 
@@ -1104,7 +1104,7 @@ public final
      * @return the declaring class for this class
      * @since JDK1.1
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Class<?> getDeclaringClass() {
         final Class<?> candidate = getDeclaringClass0();
 
@@ -1124,7 +1124,7 @@ public final
      * @return the immediately enclosing class of the underlying class
      * @since 1.5
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Class<?> getEnclosingClass() {
         // There are five kinds of classes (or interfaces):
         // a) Top level classes
@@ -1338,7 +1338,7 @@ public final
      *
      * @since JDK1.1
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Class<?>[] getClasses() {
         // be very careful not to change the stack depth of this
         // checkMemberAccess call for security reasons
@@ -1414,7 +1414,7 @@ public final
      *
      * @since JDK1.1
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Field[] getFields() throws SecurityException {
         // be very careful not to change the stack depth of this
         // checkMemberAccess call for security reasons
@@ -1466,7 +1466,7 @@ public final
      *
      * @since JDK1.1
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Method[] getMethods() throws SecurityException {
         // be very careful not to change the stack depth of this
         // checkMemberAccess call for security reasons
@@ -1516,7 +1516,7 @@ public final
      *
      * @since JDK1.1
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Constructor<?>[] getConstructors() throws SecurityException {
         // be very careful not to change the stack depth of this
         // checkMemberAccess call for security reasons
@@ -1575,7 +1575,7 @@ public final
      *
      * @since JDK1.1
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Field getField(String name)
         throws NoSuchFieldException, SecurityException {
         // be very careful not to change the stack depth of this
@@ -1661,7 +1661,7 @@ public final
      *
      * @since JDK1.1
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Method getMethod(String name, Class<?>... parameterTypes)
         throws NoSuchMethodException, SecurityException {
         // be very careful not to change the stack depth of this
@@ -1716,7 +1716,7 @@ public final
      *
      * @since JDK1.1
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Constructor<T> getConstructor(Class<?>... parameterTypes)
         throws NoSuchMethodException, SecurityException {
         // be very careful not to change the stack depth of this
@@ -1760,7 +1760,7 @@ public final
      *
      * @since JDK1.1
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Class<?>[] getDeclaredClasses() throws SecurityException {
         // be very careful not to change the stack depth of this
         // checkMemberAccess call for security reasons
@@ -1805,7 +1805,7 @@ public final
      *
      * @since JDK1.1
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Field[] getDeclaredFields() throws SecurityException {
         // be very careful not to change the stack depth of this
         // checkMemberAccess call for security reasons
@@ -1854,7 +1854,7 @@ public final
      *
      * @since JDK1.1
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Method[] getDeclaredMethods() throws SecurityException {
         // be very careful not to change the stack depth of this
         // checkMemberAccess call for security reasons
@@ -1900,7 +1900,7 @@ public final
      *
      * @since JDK1.1
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Constructor<?>[] getDeclaredConstructors() throws SecurityException {
         // be very careful not to change the stack depth of this
         // checkMemberAccess call for security reasons
@@ -1944,7 +1944,7 @@ public final
      *
      * @since JDK1.1
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Field getDeclaredField(String name)
         throws NoSuchFieldException, SecurityException {
         // be very careful not to change the stack depth of this
@@ -2000,7 +2000,7 @@ public final
      *
      * @since JDK1.1
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Method getDeclaredMethod(String name, Class<?>... parameterTypes)
         throws NoSuchMethodException, SecurityException {
         // be very careful not to change the stack depth of this
@@ -2051,7 +2051,7 @@ public final
      *
      * @since JDK1.1
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Constructor<T> getDeclaredConstructor(Class<?>... parameterTypes)
         throws NoSuchMethodException, SecurityException {
         // be very careful not to change the stack depth of this

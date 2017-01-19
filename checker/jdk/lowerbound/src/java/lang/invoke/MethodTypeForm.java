@@ -59,7 +59,7 @@ final class MethodTypeForm {
     /*lazy*/ MethodHandle namedFunctionInvoker; // cached helper for LF.NamedFunction
 
     // Cached lambda form information, for basic types only:
-    final LambdaForm[] lambdaForms;
+//    final LambdaForm[] lambdaForms;
     // Indexes into lambdaForms:
     static final int
             LF_INVVIRTUAL     =  0,  // DMH invokeVirtual
@@ -86,14 +86,14 @@ final class MethodTypeForm {
         return basicType;
     }
 
-    public LambdaForm cachedLambdaForm(@NonNegative int which) {
-        return lambdaForms[which];
-    }
+//     public LambdaForm cachedLambdaForm(@NonNegative int which) {
+//        return lambdaForms[which];
+//     }
 
-    public LambdaForm setCachedLambdaForm(@NonNegative int which, LambdaForm form) {
-        // Should we perform some sort of CAS, to avoid racy duplication?
-        return lambdaForms[which] = form;
-    }
+//     public LambdaForm setCachedLambdaForm(@NonNegative int which, LambdaForm form) {
+//         // Should we perform some sort of CAS, to avoid racy duplication?
+//         return lambdaForms[which] = form;
+//     }
 
     public MethodHandle basicInvoker() {
         assert(erasedType == basicType) : "erasedType: " + erasedType + " != basicType: " + basicType;  // primitives must be flattened also
@@ -194,9 +194,9 @@ final class MethodTypeForm {
         this.vmslots = parameterSlotCount();
 
         if (basicType == erasedType) {
-            lambdaForms = new LambdaForm[LF_LIMIT];
+//            lambdaForms = new LambdaForm[LF_LIMIT];
         } else {
-            lambdaForms = null;  // could be basicType.form().lambdaForms;
+//            lambdaForms = null;  // could be basicType.form().lambdaForms;
         }
     }
 

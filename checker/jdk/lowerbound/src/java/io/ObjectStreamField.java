@@ -26,7 +26,7 @@
 package java.io;
 
 import java.lang.reflect.Field;
-import sun.reflect.CallerSensitive;
+// import sun.reflect.CallerSensitive;
 import sun.reflect.Reflection;
 import sun.reflect.misc.ReflectUtil;
 
@@ -163,7 +163,7 @@ public class ObjectStreamField
      * @return  a <code>Class</code> object representing the type of the
      *          serializable field
      */
-    @CallerSensitive
+//    @CallerSensitive
     public Class<?> getType() {
         if (System.getSecurityManager() != null) {
             Class<?> caller = Reflection.getCallerClass();
