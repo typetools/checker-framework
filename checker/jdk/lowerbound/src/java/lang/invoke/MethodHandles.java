@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import sun.reflect.CallerSensitive;
+// import sun.reflect.CallerSensitive;
 import sun.reflect.Reflection;
 import sun.reflect.misc.ReflectUtil;
 import static java.lang.invoke.MethodHandleStatics.*;
@@ -74,7 +74,7 @@ public class MethodHandles {
      * This lookup object is a <em>capability</em> which may be delegated to trusted agents.
      * Do not store it in place where untrusted code can access it.
      */
-    @CallerSensitive
+//    @CallerSensitive
     public static Lookup lookup() {
         return new Lookup(Reflection.getCallerClass());
     }
