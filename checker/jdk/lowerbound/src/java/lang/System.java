@@ -1062,7 +1062,7 @@ public final class System {
      */
 //    @CallerSensitive
     public static void load(String filename) {
-        Runtime.getRuntime().load0(Reflection.getCallerClass(), filename);
+//        Runtime.getRuntime().load0(Reflection.getCallerClass(), filename);
     }
 
     /**
@@ -1088,7 +1088,7 @@ public final class System {
      */
 //    @CallerSensitive
     public static void loadLibrary(String libname) {
-        Runtime.getRuntime().loadLibrary0(Reflection.getCallerClass(), libname);
+//        Runtime.getRuntime().loadLibrary0(Reflection.getCallerClass(), libname);
     }
 
     /**
