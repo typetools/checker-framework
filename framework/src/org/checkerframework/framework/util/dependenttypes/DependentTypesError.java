@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util.expressionannotations;
+package org.checkerframework.framework.util.dependenttypes;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -6,8 +6,8 @@ import java.util.regex.Pattern;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 
-/** Helper class for creating expression annotation error strings. */
-public class ExpressionAnnotationError {
+/** Helper class for creating dependant type annotation error strings. */
+public class DependentTypesError {
     private static final String formatString = "[error for expression: %s error: %s]";
 
     private static final Pattern errorPattern =
@@ -28,12 +28,12 @@ public class ExpressionAnnotationError {
     public final String expression;
     public final String error;
 
-    public ExpressionAnnotationError(String expression, String error) {
+    public DependentTypesError(String expression, String error) {
         this.expression = expression;
         this.error = error;
     }
 
-    public ExpressionAnnotationError(String expression, FlowExpressionParseException e) {
+    public DependentTypesError(String expression, FlowExpressionParseException e) {
         StringBuffer buf = new StringBuffer();
         List<Result.DiagMessage> msgs = e.getResult().getDiagMessages();
 
@@ -44,7 +44,7 @@ public class ExpressionAnnotationError {
         this.expression = expression;
     }
 
-    public ExpressionAnnotationError(String error) {
+    public DependentTypesError(String error) {
         Matcher matcher = errorPattern.matcher(error);
         if (matcher.matches() && matcher.groupCount() == 2) {
             this.expression = matcher.group(1);
@@ -64,7 +64,7 @@ public class ExpressionAnnotationError {
             return false;
         }
 
-        ExpressionAnnotationError that = (ExpressionAnnotationError) o;
+        DependentTypesError that = (DependentTypesError) o;
 
         return expression.equals(that.expression) && error.equals(that.error);
     }
