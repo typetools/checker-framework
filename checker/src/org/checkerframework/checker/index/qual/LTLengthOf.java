@@ -21,5 +21,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface LTLengthOf {
     /** Sequences, each of which is longer than the annotated expression's value. */
-    public String[] value();
+    public @JavaExpression String[] value();
 }

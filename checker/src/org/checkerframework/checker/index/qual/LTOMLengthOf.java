@@ -27,5 +27,6 @@ public @interface LTOMLengthOf {
      * Sequences, each of whose lengths is at least 1 larger than than the annotated expression's
      * value.
      */
+    @JavaExpression
     public String[] value();
 }

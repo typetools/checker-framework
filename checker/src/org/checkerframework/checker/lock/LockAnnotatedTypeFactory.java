@@ -116,7 +116,7 @@ public class LockAnnotatedTypeFactory
 
     @Override
     protected DependentTypesHelper createDependentTypesHelper() {
-        return new DependentTypesHelper(this, GuardedBy.class) {
+        return new DependentTypesHelper(this) {
             @Override
             protected void reportErrors(Tree errorTree, List<DependentTypesError> errors) {
                 // If the error message is NOT_EFFECTIVELY_FINAL, then report lock.expression.not

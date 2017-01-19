@@ -647,10 +647,12 @@ class MyClass {
 and assuming the variable \<myClass> is of type \<MyClass>, then the type of
 \<myClass.field> is viewpoint-adapted to \<@Anno("myClass.field")>.
 
-To use this built-in functionality, your checker implementation should override
+To use this built-in functionality, add a \refqualclass{framework/qual}{JavaExpression} annotation
+to any element of any annotation that should be interpreted as Java expressions.  The type of the
+element must be an array of Strings.  If your checker requires special handling of Java expressions,
+your checker implementation should override
 \refmethod{framework/type}{GenericAnnotatedTypeFactory}{createDependentTypesHelper}{--}
-to return a new \<DependentTypesHelper> that has been initialized with the
-checker's dependent type annotations.
+to return a subclass of \<DependentTypesHelper>.
 
 Given a specific expression in the program (of type Tree or Node), a
 checker may need to obtain its canonical string representation.  This
