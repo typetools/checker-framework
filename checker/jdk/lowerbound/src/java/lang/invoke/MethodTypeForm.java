@@ -86,10 +86,9 @@ final class MethodTypeForm {
         return basicType;
     }
 
-    public LambdaForm cachedLambdaForm(@NonNegative int which) {
+//     public LambdaForm cachedLambdaForm(@NonNegative int which) {
 //        return lambdaForms[which];
-        return null;
-    }
+//     }
 
 //     public LambdaForm setCachedLambdaForm(@NonNegative int which, LambdaForm form) {
 //         // Should we perform some sort of CAS, to avoid racy duplication?

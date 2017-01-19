@@ -1323,10 +1323,10 @@ assertEquals("[three, thee, tee]", asListFix.invoke((Object)argv).toString());
 
         // CURRENT RESTRICTIONS
         // * only for pos 0 and UNSAFE (position is adjusted in MHImpl to make API usable for others)
-/*        assert pos == 0 && basicType == 'L' && value instanceof Unsafe;
-        MethodType type2 = type.dropParameterTypes(pos, pos + 1); // adjustment: ignore receiver!
-        LambdaForm form2 = form.bindImmediate(pos + 1, basicType, value); // adjust pos to form-relative pos
-        return copyWith(type2, form2);*/
+// /*        assert pos == 0 && basicType == 'L' && value instanceof Unsafe;
+//         MethodType type2 = type.dropParameterTypes(pos, pos + 1); // adjustment: ignore receiver!
+//         LambdaForm form2 = form.bindImmediate(pos + 1, basicType, value); // adjust pos to form-relative pos
+//         return copyWith(type2, form2);*/
     	return null;
     }
 
@@ -1384,15 +1384,15 @@ assertEquals("[three, thee, tee]", asListFix.invoke((Object)argv).toString());
 //         return mtype.form().setCachedLambdaForm(MethodTypeForm.LF_REINVOKE, new LambdaForm("BMH.reinvoke", ARG_LIMIT, names));
 //     }
 
-    private static final LambdaForm.NamedFunction NF_reinvokerTarget;
-    static {
-        try {
-            NF_reinvokerTarget = new LambdaForm.NamedFunction(MethodHandle.class
-                .getDeclaredMethod("reinvokerTarget"));
-        } catch (ReflectiveOperationException ex) {
-            throw newInternalError(ex);
-        }
-    }
+//    private static final LambdaForm.NamedFunction NF_reinvokerTarget;
+//     static {
+//         try {
+//             NF_reinvokerTarget = new LambdaForm.NamedFunction(MethodHandle.class
+//                 .getDeclaredMethod("reinvokerTarget"));
+//         } catch (ReflectiveOperationException ex) {
+//             throw newInternalError(ex);
+//         }
+//     }
 
     /**
      * Replace the old lambda form of this method handle with a new one.
@@ -1403,12 +1403,12 @@ assertEquals("[three, thee, tee]", asListFix.invoke((Object)argv).toString());
      * @param newForm
      */
     /*non-public*/
-    void updateForm(LambdaForm newForm) {
-        if (form == newForm)  return;
-        // ISSUE: Should we have a memory fence here?
-        UNSAFE.putObject(this, FORM_OFFSET, newForm);
-        this.form.prepare();  // as in MethodHandle.<init>
-    }
+//     void updateForm(LambdaForm newForm) {
+//         if (form == newForm)  return;
+//         // ISSUE: Should we have a memory fence here?
+//         UNSAFE.putObject(this, FORM_OFFSET, newForm);
+//         this.form.prepare();  // as in MethodHandle.<init>
+//     }
 
     private static final long FORM_OFFSET;
     static {
