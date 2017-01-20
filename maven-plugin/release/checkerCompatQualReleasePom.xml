@@ -5,7 +5,7 @@
     <packaging>jar</packaging>
 
     <name>Checker Qual</name>
-    <url>http://checker-framework.com</url>
+    <url>https://checkerframework.org</url>
     <description>
         Checker Qual is the set of annotations (qualifiers) and supporting classes
         used by the Checker Framework to type check Java source code.  Please

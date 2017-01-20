@@ -5,7 +5,7 @@
     <packaging>jar</packaging>
 
     <name>Checker Framework</name>
-    <url>http://checker-framework.com</url>
+    <url>https://checkerframework.org</url>
     <description>
         The Checker Framework enhances Java's type system to
         make it more powerful and useful. This lets software developers

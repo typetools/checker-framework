@@ -14,7 +14,7 @@
     <distributionManagement>
         <repository>
             <id>checker-releases</id>
-            <url>http://checker-framework.com/dev/m2-repo</url>
+            <url>https://checkerframework.org/dev/m2-repo</url>
         </repository>
     </distributionManagement>
 
