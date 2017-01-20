@@ -9,7 +9,7 @@ Options +FollowSymlinks
 # Redirect /specification/java-annotation-design.html /jsr308/specification/java-annotation-design.html
 # Redirect /dev/specification/java-annotation-design.html /dev/jsr308/specification/java-annotation-design.html
 # Don't remove this redirect.  The old URL is
-# http://checker-framework.com/checkers-manual.html
+# https://checkerframework.org/checkers-manual.html
 # is referenced from
 # https://blogs.oracle.com/java-platform-group/entry/java_8_s_new_type
 # and perhaps from elsewhere.

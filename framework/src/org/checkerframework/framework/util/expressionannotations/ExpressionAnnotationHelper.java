@@ -246,9 +246,10 @@ public class ExpressionAnnotationHelper {
             case PARAMETER:
                 MethodTree methodTree = TreeUtils.enclosingMethod(path);
                 if (methodTree != null) {
+                    TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
                     FlowExpressionContext parameterContext =
                             FlowExpressionContext.buildContextForMethodDeclaration(
-                                    methodTree, path, factory.getContext());
+                                    methodTree, enclosingType, factory.getContext());
                     standardizeDoNotUseLocals(parameterContext, path, type);
                     break;
                 }
@@ -359,7 +360,13 @@ public class ExpressionAnnotationHelper {
                         return;
                     }
                     ErrorReporter.errorAbort(this.getClass() + ": tree not found");
+                } else if (InternalUtils.typeOf(tree) == null) {
+                    // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory()
+                    // gets the assignment context for a pseudo assignment of an argument to
+                    // a method parameter.
+                    return;
                 }
+
                 standardizeVariable(tree, type, elt);
         }
     }

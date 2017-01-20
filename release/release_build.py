@@ -494,7 +494,7 @@ def main(argv):
     # The projects are built in the following order: JSR308-Langtools,
     # Annotation File Utilities, and Checker Framework. Furthermore, their
     # manuals and websites are also built and placed in their relevant locations
-    # at http://checker-framework.com/dev/ .  This is the most time-consuming
+    # at https://checkerframework.org/dev/ .  This is the most time-consuming
     # piece of the release. There are no prompts from this step forward; you
     # might want to get a cup of coffee and do something else until it is done.
 
@@ -528,7 +528,7 @@ def main(argv):
     commit_to_interm_projects(jsr308_version, afu_version, projects_to_release)
 
     # Adds read/write/execute group permissions to all of the new dev website directories
-    # under http://checker-framework.com/dev/ These directories need group read/execute
+    # under https://checkerframework.org/dev/ These directories need group read/execute
     # permissions in order for them to be served.
 
     print_step("\n\nBuild Step 9: Add group permissions to repos.")

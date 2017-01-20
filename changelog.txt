@@ -1,10 +1,14 @@
-Version 2.1.8, 1 February 2017
+Version 2.1.8, 20 January 2017
 
-The Checker Framework webpage has moved to http://checker-framework.org/.
-Old URLs should redirect to the new one, but please update your links.
+The Checker Framework webpage has moved to https://checkerframework.org/.
+Old URLs should redirect to the new one, but please update your links
+and let us know if any old links are broken rather than redirecting.
 
 The documentation has been reorganized in the Checker Framework repository.
 The manual, tutorial, and webpages now appear under checker-framework/docs/.
+
+Closed issues:
+770, 1003, 1012;
 
 ---------------------------------------------------------------------------
 
@@ -247,7 +251,7 @@ Documentation:
 For type-system developers:
  * The org.checkerframework.framework.qual.TypeQualifier{s} annotations are
    now deprecated.  To indicate which annotations a checker supports, see
-   http://checker-framework.com/manual/#creating-indicating-supported-annotations .
+   https://checkerframework.org/manual/#creating-indicating-supported-annotations .
    Support for TypeQualifier{s} will be removed in the next release.
  * Renamed
    org.checkerframework.framework.qual.Default{,Qualifier}ForUnannotatedCode to
@@ -840,7 +844,7 @@ Adapt to underlying jsr308-langtools changes.
   JDK 7 is now required.  The Checker Framework does not build or run on JDK 6.
 
 Documentation:
-  A new tutorial is available at http://checker-framework.com/tutorial/
+  A new tutorial is available at https://checkerframework.org/tutorial/
 
 ----------------------------------------------------------------------
 Version 1.5.0, 14 Jan 2013
@@ -1378,7 +1382,7 @@ Eclipse support:
   different repository
   (http://code.google.com/a/eclipselabs.org/p/checker-plugin/) but a user
   obtains it from the same URL as before:
-  http://checker-framework.com/eclipse/
+  https://checkerframework.org/eclipse/
 
 Property Key Checker:
   The property key checker allows multiple resource bundles and the
@@ -2086,7 +2090,7 @@ Manual
     8  Annotating libraries
     9  How to create a new checker plugin
   Javadoc for the Checker Framework is included in its distribution and is
-    available online at http://checker-framework.com/api/ .
+    available online at https://checkerframework.org/api/ .
 
 ----------------------------------------------------------------------
 Version 0.6.4, 9 June 2008

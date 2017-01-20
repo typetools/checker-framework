@@ -383,7 +383,7 @@
             <manifest>
                 <attribute name="Main-Class" value="org.checkerframework.framework.util.CheckerMain"/>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checker-framework.com/"/>
+                <attribute name="Implementation-URL" value="https://checkerframework.org/"/>
             </manifest>
         </jar>
     </target>
@@ -464,14 +464,14 @@
         <jar destfile="${checker.qual.lib}" basedir="${checker-qual-classes-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checker-framework.com/"/>
+                <attribute name="Implementation-URL" value="https://checkerframework.org/"/>
             </manifest>
         </jar>
 
         <jar destfile="${checker.qual.sources.lib}" basedir="${checker-qual-sources-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checker-framework.com/"/>
+                <attribute name="Implementation-URL" value="https://checkerframework.org/"/>
             </manifest>
         </jar>
         <delete dir="${checker-qual-sources-tmp}" failonerror="false"/>
@@ -568,7 +568,7 @@
         <jar destfile="${checker.compat.qual.lib}" basedir="${checker-compat-qual-classes-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checker-framework.com/"/>
+                <attribute name="Implementation-URL" value="https://checkerframework.org/"/>
             </manifest>
         </jar>
 
@@ -576,7 +576,7 @@
              basedir="${checker-compat-qual-sources-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checker-framework.com/"/>
+                <attribute name="Implementation-URL" value="https://checkerframework.org/"/>
             </manifest>
         </jar>
         <delete dir="${checker-compat-qual-sources-tmp}" failonerror="false"/>
@@ -1531,7 +1531,7 @@ So, use our own archived version.
             description="Create the instrumented jdkX.jar using the JDK specified by JAVA_HOME">
       <property name="annotation-file-utilities.jar" value="${annotation.tools}/annotation-file-utilities/annotation-file-utilities.jar"/>
       <available property="annotation-file-utilities.exist" file="${annotation-file-utilities.jar}" />
-      <fail unless="annotation-file-utilities.exist" message="Could not find annotation-file-utilities.jar: ${annotation-file-utilities.jar}.  You must build Annotation Tools; see http://checker-framework.com/manual/#build-source" />
+      <fail unless="annotation-file-utilities.exist" message="Could not find annotation-file-utilities.jar: ${annotation-file-utilities.jar}.  You must build Annotation Tools; see https://checkerframework.org/manual/#build-source" />
 
       <exec executable="make" failonerror="true">
          <arg value="LANGTOOLS=${jsr308.langtools}"/>

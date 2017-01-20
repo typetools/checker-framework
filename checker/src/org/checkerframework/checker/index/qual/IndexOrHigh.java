@@ -1,17 +1,21 @@
 package org.checkerframework.checker.index.qual;
 
 /**
- * This annotation is used by the Index Checker to indicate an integer that is either: safe to use
- * to access each of the variables named in its 'value' field, or exactly equal to the length of one
- * or more of those variables, and safe to use as an index for the rest. Writing @IndexOrHigh("arr")
- * is equivalent to writing {@link NonNegative @NonNegative} {@link
- * LTEqLengthOf @LTEqLengthOf("arr")}; internally, the IndexOrHigh annotation is translated into
- * those two annotations (from the Lower Bound Checker and Upper Bound Checker, respectively), so
- * annotating a variable as @IndexOrHigh might result in warnings about @NonNegative
- * or @LTEqLengthOf.
+ * An integer that, for each of the given sequences, is either a valid index or is equal to the
+ * sequence's length.
  *
+ * <p>Writing {@code @IndexOrHigh("arr")} is equivalent to writing {@link NonNegative @NonNegative}
+ * {@link LTEqLengthOf @LTEqLengthOf("arr")}, and that is how it is treated internally by the
+ * checker. Thus, if you write an {@code @IndexFor("arr")} annotation, you might see warnings about
+ * {@code @NonNegative} or {@code @LTEqLengthOf}.
+ *
+ * @see NonNegative
+ * @see LTLengthOf
  * @checker_framework.manual #index-checker Index Checker
  */
 public @interface IndexOrHigh {
+    /**
+     * Sequences that the annotated expression is a valid index for or is equal to the lengeth of.
+     */
     String[] value() default {};
 }

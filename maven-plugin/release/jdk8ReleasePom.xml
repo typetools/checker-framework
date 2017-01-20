@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
     <name>Annotated JDK 8</name>
-    <url>http://checker-framework.com</url>
+    <url>https://checkerframework.org</url>
     <description>
         Annotated JDK 8 consists of bytecode implementing the Open JDK Java 8 api
         annotated with Checker Framework annotations.  Method implementations

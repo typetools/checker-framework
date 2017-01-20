@@ -8,8 +8,8 @@ package org.checkerframework.checker.index.qual;
  * different lengths.
  *
  * <p>Writing {@code @IndexFor("arr")} is equivalent to writing {@link NonNegative @NonNegative}
- * {@link LTLengthOf @LTLengthOf("arr")}, and that is how it is treated interlally by the checker.
- * This if you write an {@code @IndexFor("arr")} annotation, you might see warnings about
+ * {@link LTLengthOf @LTLengthOf("arr")}, and that is how it is treated internally by the checker.
+ * Thus, if you write an {@code @IndexFor("arr")} annotation, you might see warnings about
  * {@code @NonNegative} or {@code @LTLengthOf}.
  *
  * @see NonNegative
@@ -17,5 +17,6 @@ package org.checkerframework.checker.index.qual;
  * @checker_framework.manual #index-checker Index Checker
  */
 public @interface IndexFor {
+    /** Sequences that the annotated expression is a valid index for. */
     String[] value() default {};
 }
