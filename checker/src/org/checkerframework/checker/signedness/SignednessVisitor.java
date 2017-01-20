@@ -76,6 +76,14 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     }
 
     /**
+     * Determines if a right shift operation, {@code >>} or {@code >>>}, is masked with a masking
+     * operation of the form {@code shiftOp & maskLit} or {@code shiftOp | maskLit} such that the
+     * mask renders the shift signedness irrelevent by destroying the bits introduced by the shift.
+     * For example, the following pairs of right shifts on {@code byte b} both produce the same
+     * results under any input, because of their masks:
+     *
+     * <p>{@code (b >> 4) & 0x0F == (b >>> 4) & 0x0F;} {@code (b >> 4) | 0xF0 == (b >>> 4) | 0xF0;}
+     *
      * @param shiftOp a right shift operation: {@code >>} or {@code >>>}
      * @return true iff the right shift is masked such that a signed or unsigned right shift has the
      *     same effect

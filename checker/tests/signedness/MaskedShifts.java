@@ -33,6 +33,29 @@ public class MaskedShifts {
         //:: error: (shift.unsigned)
         testRes = (signed >>> 8) & 0x1FFFFFF;
         testRes = (signed >> 8) & 0x1FFFFFF;
+
+        // Use mask that doesn't render the MSB irrelevent, but does render the next 7 MSB_s irrelevent
+
+        // Now the left-most introduced introduced bit matters
+        testRes = (unsigned >>> 8) & 0x90FFFFFF;
+
+        //:: error: (shift.signed)
+        testRes = (unsigned >> 8) & 0x90FFFFFF;
+
+        //:: error: (shift.unsigned)
+        testRes = (signed >>> 8) & 0x90FFFFFF;
+        testRes = (signed >> 8) & 0x90FFFFFF;
+
+        // Use mask that doesn't render any bits irrelevent
+
+        testRes = (unsigned >>> 8) & 0xFFFFFFFF;
+
+        //:: error: (shift.signed)
+        testRes = (unsigned >> 8) & 0xFFFFFFFF;
+
+        //:: error: (shift.unsigned)
+        testRes = (signed >>> 8) & 0xFFFFFFFF;
+        testRes = (signed >> 8) & 0xFFFFFFFF;
     }
 
     public void MaskedOrShifts(@Unsigned int unsigned, @Signed int signed) {
@@ -66,5 +89,28 @@ public class MaskedShifts {
         //:: error: (shift.unsigned)
         testRes = (signed >>> 8) | 0xFE000000;
         testRes = (signed >> 8) | 0xFE000000;
+
+        // Use mask that doesn't render the MSB irrelevent, but does render the next 7 MSB_s irrelevent
+
+        // Now the left-most introduced introduced bit matters
+        testRes = (unsigned >>> 8) & 0x8F000000;
+
+        //:: error: (shift.signed)
+        testRes = (unsigned >> 8) & 0x8F000000;
+
+        //:: error: (shift.unsigned)
+        testRes = (signed >>> 8) & 0x8F000000;
+        testRes = (signed >> 8) & 0x8F000000;
+
+        // Use mask that doesn't render any bits irrelevent
+
+        testRes = (unsigned >>> 8) & 0x0;
+
+        //:: error: (shift.signed)
+        testRes = (unsigned >> 8) & 0x0;
+
+        //:: error: (shift.unsigned)
+        testRes = (signed >>> 8) & 0x0;
+        testRes = (signed >> 8) & 0x0;
     }
 }
