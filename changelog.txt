@@ -1,4 +1,4 @@
-Version 2.1.8, 1 February 2017
+Version 2.1.8, 20 January 2017
 
 The Checker Framework webpage has moved to https://checkerframework.org/.
 Old URLs should redirect to the new one, but please update your links
@@ -6,6 +6,9 @@ and let us know if any old links are broken rather than redirecting.
 
 The documentation has been reorganized in the Checker Framework repository.
 The manual, tutorial, and webpages now appear under checker-framework/docs/.
+
+Closed issues:
+770, 1003, 1012;
 
 ---------------------------------------------------------------------------
 
