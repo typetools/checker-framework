@@ -76,7 +76,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         addAliasedAnnotation(IndexFor.class, NN);
-        addAliasedAnnotation(IndexOrLow.class, NN);
+        addAliasedAnnotation(IndexOrLow.class, GTEN1);
         addAliasedAnnotation(IndexOrHigh.class, NN);
 
         imf = new IndexMethodIdentifier(processingEnv);

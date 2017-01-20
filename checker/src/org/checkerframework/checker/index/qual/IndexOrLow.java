@@ -5,8 +5,8 @@ package org.checkerframework.checker.index.qual;
  *
  * <p>Writing {@code @IndexOrLow("arr")} is equivalent to writing {@link
  * GTENegativeOne @GTENegativeOne} {@link LTLengthOf @LTLengthOf("arr")}, and that is how it is
- * treated internally by the checker. Thus, if you write an {@code @IndexFor("arr")} annotation, you
- * might see warnings about {@code @GTENegativeOne} or {@code @LTLengthOf}.
+ * treated internally by the checker. Thus, if you write an {@code @IndexOrLow("arr")} annotation,
+ * you might see warnings about {@code @GTENegativeOne} or {@code @LTLengthOf}.
  *
  * @see GTENegativeOne
  * @see LTLengthOf
