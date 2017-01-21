@@ -516,7 +516,6 @@ def main(argv):
     print_step("Build Step 7: Overwrite .htaccess and CFLogo.png .") # AUTO
 
     # Not "cp -p" because that does not work across filesystems whereas rsync does
-    execute("rsync --times %s %s" % (RELEASE_HTACCESS, DEV_HTACCESS))
     execute("rsync --times %s %s" % (CFLOGO, checker_framework_interm_dir))
 
     # Each project has a set of files that are updated for release. Usually these updates include new
