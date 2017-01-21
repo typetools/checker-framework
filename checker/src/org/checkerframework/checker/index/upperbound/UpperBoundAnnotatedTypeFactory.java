@@ -22,6 +22,7 @@ import org.checkerframework.checker.index.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.minlen.MinLenChecker;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
+import org.checkerframework.checker.index.qual.IndexOrLow;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
@@ -66,6 +67,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         UNKNOWN = AnnotationUtils.fromClass(elements, UpperBoundUnknown.class);
 
         addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation(new String[0]));
+        addAliasedAnnotation(IndexOrLow.class, createLTLengthOfAnnotation(new String[0]));
         addAliasedAnnotation(IndexOrHigh.class, createLTEqLengthOfAnnotation(new String[0]));
 
         imf = new IndexMethodIdentifier(processingEnv);
@@ -126,6 +128,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         annos.add(LTLengthOf.class);
         annos.add(LTEqLengthOf.class);
         annos.add(IndexFor.class);
+        annos.add(IndexOrLow.class);
         annos.add(IndexOrHigh.class);
         annos.add(LTOMLengthOf.class);
         return new ExpressionAnnotationHelper(this, annos) {
@@ -151,6 +154,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
         if (AnnotationUtils.areSameByClass(a, IndexFor.class)) {
+            List<String> stringList =
+                    AnnotationUtils.getElementValueArray(a, "value", String.class, true);
+            return createLTLengthOfAnnotation(stringList.toArray(new String[0]));
+        }
+        if (AnnotationUtils.areSameByClass(a, IndexOrLow.class)) {
             List<String> stringList =
                     AnnotationUtils.getElementValueArray(a, "value", String.class, true);
             return createLTLengthOfAnnotation(stringList.toArray(new String[0]));
