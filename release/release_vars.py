@@ -46,7 +46,7 @@ MAX_DOWNLOAD_SIZE = 2000000000
 
 # The location the test site is built in
 HTTP_PATH_TO_DEV_SITE = "https://checkerframework.org/dev"
-FILE_PATH_TO_DEV_SITE = "/cse/www2/types/dev/checker-framework"
+FILE_PATH_TO_DEV_SITE = "/cse/www2/types/checker-framework/dev"
 DEV_HTACCESS = os.path.join(FILE_PATH_TO_DEV_SITE, ".htaccess")
 
 # The location the test site is pushed to when it is ready
