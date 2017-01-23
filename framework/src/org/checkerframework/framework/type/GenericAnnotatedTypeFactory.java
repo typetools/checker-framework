@@ -1312,10 +1312,25 @@ public abstract class GenericAnnotatedTypeFactory<
         return emptyStore;
     }
 
-    /** @see BaseTypeChecker#getTypeFactoryOfSubchecker(Class) */
+    /**
+     * Returns the AnnotatedTypeFactory of the subchecker and copies the current visitor state to
+     * the sub-factory so that the types are computed properly. Because the visitor state is copied,
+     * call this method each time a subfactory is needed rather than store the returned factory in a
+     * field.
+     *
+     * @see BaseTypeChecker#getTypeFactoryOfSubchecker(Class)
+     */
     public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker>
             T getTypeFactoryOfSubchecker(Class<U> checkerClass) {
-        return checker.getTypeFactoryOfSubchecker(checkerClass);
+        T subFactory = checker.getTypeFactoryOfSubchecker(checkerClass);
+        if (subFactory != null && subFactory.getVisitorState() != null) {
+            // Copy the visitor state so that the types are computed properly.
+            VisitorState subFactoryVisitorState = subFactory.getVisitorState();
+            subFactoryVisitorState.setPath(visitorState.getPath());
+            subFactoryVisitorState.setClassTree(visitorState.getClassTree());
+            subFactoryVisitorState.setMethodTree(visitorState.getMethodTree());
+        }
+        return subFactory;
     }
 
     /**

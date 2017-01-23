@@ -28,3 +28,6 @@ it is best if you can provide a fully-annotated class (this requires
 examining all the methods in the class).  Otherwise, provide what you can,
 but the annotations won't be added to the Checker Framework distribution
 until someone else gets a chance to examine all the other methods.
+
+When adding a file, currently you should use the JDK 7 version of the file,
+so that it can be compiled using JDK 7.

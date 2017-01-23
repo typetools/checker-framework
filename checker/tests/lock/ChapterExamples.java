@@ -89,12 +89,12 @@ class ChapterExamples {
             m.method();
 
             @GuardedByUnknown MyClass local = new @GuardedByUnknown MyClass();
-            //:: error: (cannot.dereference)
+            //:: error: (lock.not.held)
             local.field = new Object();
             //:: error: (method.invocation.invalid)
             local.method();
 
-            //:: error: (cannot.dereference)
+            //:: error: (lock.not.held)
             m.field = new Object();
         }
     }
@@ -116,7 +116,7 @@ class ChapterExamples {
         final Object myLock = new Object();
 
         void testCallToMethod(@GuardedBy("myLock") MyClass this) {
-            //:: error: (contracts.precondition.not.satisfied)
+            //:: error: (lock.not.held)
             this.method(); // method()'s receiver is annotated as @GuardSatisfied
         }
     }
@@ -134,24 +134,24 @@ class ChapterExamples {
             this.myField = new MyClass();
             this.myField.toString();
         }
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         myField = new MyClass();
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         myField.toString();
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         this.myField = new MyClass();
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         this.myField.toString();
     }
 
     void guardedByThisOnReceiver(@GuardedBy("this") ChapterExamples this) {
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         myField = new MyClass();
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         myField.toString();
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         this.myField = new MyClass();
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         this.myField.toString();
         synchronized (this) {
             myField = new MyClass();
@@ -163,23 +163,23 @@ class ChapterExamples {
 
     void testDereferenceOfReceiverAndParameter(
             @GuardedBy("lock") ChapterExamples this, @GuardedBy("lock") MyClass m) {
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         myField = new MyClass();
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         myField.toString();
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         this.myField = new MyClass();
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         this.myField.toString();
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         m.field = new Object();
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         m.field.toString();
         // The following error is due to the fact that you cannot access "this.lock" without first having acquired "lock".
         // The right fix in a user scenario would be to not guard "this" with "this.lock". The current object could instead
         // be guarded by "<self>" or by some other lock expression that is not one of its fields. We are keeping this test
         // case here to make sure this scenario issues a warning.
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         synchronized (lock) {
             myField = new MyClass();
             myField.toString();
@@ -202,18 +202,18 @@ class ChapterExamples {
     }
 
     void myMethod8() {
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         boolean b4 = compare(p1, myMethod());
 
         // An error is issued indicating that p2 might be dereferenced without
         // "lock" being held. The method call need not be modified, since
         // @GuardedBy({}) <: @GuardedByUnknown and @GuardedBy("lock") <: @GuardedByUnknown,
         // but the lock must be acquired prior to the method call.
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         boolean b2 = compare(p1, p2);
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         boolean b3 = compare(p1, this.p2);
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         boolean b5 = compare(p1, this.myMethod());
         synchronized (lock) {
             boolean b6 = compare(p1, p2); // OK
@@ -231,13 +231,13 @@ class ChapterExamples {
     // myMethod().method()
 
     void myMethod7() {
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         Object f = myObj.field;
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         Object f2 = myMethodReturningMyObj().field;
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         myObj.method(); // method()'s receiver is annotated as @GuardSatisfied
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         myMethodReturningMyObj().method(); // method()'s receiver is annotated as @GuardSatisfied
 
         synchronized (lock) {
@@ -247,9 +247,9 @@ class ChapterExamples {
             myMethodReturningMyObj().method();
         }
 
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         myMethodReturningMyObj().field = new Object();
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         x.field = new Object();
         synchronized (lock) {
             myMethod().field = new Object();
@@ -275,11 +275,11 @@ class ChapterExamples {
     }
 
     void exampleMethod() {
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         x.field = new Object(); // ILLEGAL because the lock is not known to be held
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         y.field = new Object(); // ILLEGAL because the lock is not known to be held
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         myMethod().field = new Object(); // ILLEGAL because the lock is not known to be held
         synchronized (lock) {
             x.field = new Object(); // OK: the lock is known to be held
@@ -337,7 +337,7 @@ class ChapterExamples {
     @GuardedBy("ChapterExamples.myLock") MyClass y2 = x2;
 
     void myMethod4() {
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         x2.field = new Object(); // ILLEGAL because the lock is not held
         synchronized (ChapterExamples.myLock) {
             y2.field = new Object(); // OK: the lock is held
@@ -345,7 +345,7 @@ class ChapterExamples {
     }
 
     void myMethod5(@GuardedBy("ChapterExamples.myLock") MyClass a) {
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         a.field = new Object(); // ILLEGAL: the lock is not held
         synchronized (ChapterExamples.myLock) {
             a.field = new Object(); // OK: the lock is held
@@ -366,15 +366,15 @@ class ChapterExamples {
         synchronized (lock) {
             boolean b1 = compare(p1, p2); // OK. No error issued.
         }
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         p2.field = new Object();
         // An error is issued indicating that p2 might be dereferenced without "lock" being held. The method call need not be modified, since @GuardedBy({}) <: @GuardedByUnknown and @GuardedBy("lock") <: @GuardedByUnknown, but the lock must be acquired prior to the method call.
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         boolean b2 = compare(p1, p2);
     }
 
     void helper1(@GuardedBy("ChapterExamples.myLock") MyClass a) {
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         a.field = new Object(); // ILLEGAL: the lock is not held
         synchronized (ChapterExamples.myLock) {
             a.field = new Object(); // OK: the lock is held
@@ -394,7 +394,7 @@ class ChapterExamples {
 
     @LockingFree
     void helper4(@GuardedBy("ChapterExamples.myLock") MyClass d) {
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         d.field = new Object(); // ILLEGAL: the lock is not held
     }
 
@@ -405,11 +405,11 @@ class ChapterExamples {
 
     void myMethod2(@GuardedBy("ChapterExamples.myLock") MyClass e) {
         helper1(e); // OK to pass to another routine without holding the lock.
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         e.field = new Object(); // ILLEGAL: the lock is not held
         //:: error: (contracts.precondition.not.satisfied)
         helper2(e);
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         helper3(e);
         synchronized (ChapterExamples.myLock) {
             helper2(e);
@@ -480,9 +480,9 @@ class ChapterExamples {
         d = b.intValue(); // The de-sugared version does not issue an error.
       }
 
-      // TODO re-enable this error (contracts.precondition.not.satisfied.field)
+      // TODO re-enable this error (lock.not.held)
       c = c + b; // Syntactic sugar for c = new Integer(c.intValue() + b.intValue()), hence 'lock' must be held.
-      // TODO re-enable this error (contracts.precondition.not.satisfied.field)
+      // TODO re-enable this error (lock.not.held)
       c = new Integer(c.intValue() + b.intValue()); // The de-sugared version
 
       synchronized(lock) {
@@ -490,7 +490,7 @@ class ChapterExamples {
         c = new Integer(c.intValue() + b.intValue()); // The de-sugared version
       }
 
-      // TODO re-enable this error (contracts.precondition.not.satisfied.field)
+      // TODO re-enable this error (lock.not.held)
       a = b; // TODO: This assignment between two reference types should not require a lock to be held.
     }*/
 
@@ -502,19 +502,19 @@ class ChapterExamples {
     @GuardedBy("lock2") MyClass extension;
 
     void method0() {
-        //:: error: (contracts.precondition.not.satisfied) :: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held) :: error: (lock.not.held)
         filename = filename.append(extension);
     }
 
     void method1() {
         lock1.lock();
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         filename = filename.append(extension);
     }
 
     void method2() {
         lock2.lock();
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         filename = filename.append(extension);
     }
 

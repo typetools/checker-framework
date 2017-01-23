@@ -494,7 +494,7 @@ def main(argv):
     # The projects are built in the following order: JSR308-Langtools,
     # Annotation File Utilities, and Checker Framework. Furthermore, their
     # manuals and websites are also built and placed in their relevant locations
-    # at http://checker-framework.com/dev/ .  This is the most time-consuming
+    # at https://checkerframework.org/dev/ .  This is the most time-consuming
     # piece of the release. There are no prompts from this step forward; you
     # might want to get a cup of coffee and do something else until it is done.
 
@@ -516,7 +516,6 @@ def main(argv):
     print_step("Build Step 7: Overwrite .htaccess and CFLogo.png .") # AUTO
 
     # Not "cp -p" because that does not work across filesystems whereas rsync does
-    execute("rsync --times %s %s" % (RELEASE_HTACCESS, DEV_HTACCESS))
     execute("rsync --times %s %s" % (CFLOGO, checker_framework_interm_dir))
 
     # Each project has a set of files that are updated for release. Usually these updates include new
@@ -528,7 +527,7 @@ def main(argv):
     commit_to_interm_projects(jsr308_version, afu_version, projects_to_release)
 
     # Adds read/write/execute group permissions to all of the new dev website directories
-    # under http://checker-framework.com/dev/ These directories need group read/execute
+    # under https://checkerframework.org/dev/ These directories need group read/execute
     # permissions in order for them to be served.
 
     print_step("\n\nBuild Step 9: Add group permissions to repos.")

@@ -26,7 +26,7 @@ public class Issue986 {
     }
 
     // Flow should refine @MonotonicNonNull component types to @NonNull.
-    // This is a prerequisite for issue 154 (or for workarounds to issue 154).
+    // This is a prerequisite for issue #986 (or for workarounds to issue #986).
     void testArr5(@MonotonicNonNull Object @NonNull [] a) {
         @MonotonicNonNull Object[] l5 = NullnessUtil.castNonNullDeep(a);
         @NonNull Object[] l6 = l5;
