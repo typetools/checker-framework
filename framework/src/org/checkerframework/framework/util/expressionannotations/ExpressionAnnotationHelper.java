@@ -70,6 +70,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class ExpressionAnnotationHelper {
     protected final AnnotatedTypeFactory factory;
+
     /** A list of annotations that are expression annotations. */
     protected final List<Class<? extends Annotation>> expressionAnnos;
 
@@ -190,7 +191,6 @@ public class ExpressionAnnotationHelper {
         // list.get(0)
         // If the type of List.get is viewpoint adapted for the invocation "list.get(0)", then
         // typeFromUse would be @KeyFor("map") String get(int).
-
         // Instead, use the type for the method (viewpointAdaptedType) and viewpoint adapt that
         // type.
         // Then copy annotations from the viewpoint adapted type to typeFromUse, if that annotation
@@ -246,9 +246,10 @@ public class ExpressionAnnotationHelper {
             case PARAMETER:
                 MethodTree methodTree = TreeUtils.enclosingMethod(path);
                 if (methodTree != null) {
+                    TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
                     FlowExpressionContext parameterContext =
                             FlowExpressionContext.buildContextForMethodDeclaration(
-                                    methodTree, path, factory.getContext());
+                                    methodTree, enclosingType, factory.getContext());
                     standardizeDoNotUseLocals(parameterContext, path, type);
                     break;
                 }
@@ -345,13 +346,27 @@ public class ExpressionAnnotationHelper {
         }
 
         switch (elt.getKind()) {
+            case PARAMETER:
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
             case EXCEPTION_PARAMETER:
                 Tree tree = factory.declarationFromElement(elt);
                 if (tree == null) {
+                    if (elt.getKind() == ElementKind.PARAMETER) {
+                        // The tree might be null when
+                        // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory()
+                        // gets the assignment context for a pseudo assignment of an argument to
+                        // a method parameter.
+                        return;
+                    }
                     ErrorReporter.errorAbort(this.getClass() + ": tree not found");
+                } else if (InternalUtils.typeOf(tree) == null) {
+                    // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory()
+                    // gets the assignment context for a pseudo assignment of an argument to
+                    // a method parameter.
+                    return;
                 }
+
                 standardizeVariable(tree, type, elt);
         }
     }

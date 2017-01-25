@@ -1,6 +1,5 @@
 // Test case for Issue #770
 // https://github.com/typetools/checker-framework/issues/770
-// @skip-test
 import org.checkerframework.checker.lock.qual.GuardedBy;
 
 public class ViewpointAdaptation3 {
@@ -38,20 +37,6 @@ public class ViewpointAdaptation3 {
             final LockExampleSubclass les3 = les2;
             LockExample le1 = new LockExample();
 
-            synchronized (super.myLock) {
-                super.locked.toString();
-                super.locked2.toString();
-                //:: error: (contracts.precondition.not.satisfied)
-                locked.toString();
-            }
-            synchronized (myLock) {
-                //:: error: (contracts.precondition.not.satisfied)
-                super.locked.toString();
-                //:: error: (contracts.precondition.not.satisfied)
-                super.locked2.toString();
-                locked.toString();
-            }
-
             //:: error: (assignment.type.incompatible)
             les1.locked = le1.locked;
             //:: error: (assignment.type.incompatible)
@@ -59,31 +44,6 @@ public class ViewpointAdaptation3 {
 
             //:: error: (assignment.type.incompatible)
             les1.locked = les2.locked;
-
-            //:: error: (assignment.type.incompatible)
-            this.locked = super.locked;
-            //:: error: (assignment.type.incompatible)
-            this.locked = super.locked2;
-
-            //:: error: (assignment.type.incompatible)
-            m1 = m2;
-        }
-
-        @Override
-        public void accessLock() {
-            synchronized (myLock) {
-                this.locked.field = new Object();
-                //:: error: (contracts.precondition.not.satisfied.field)
-                super.locked.field = new Object();
-                System.out.println(
-                        this.locked.field
-                                + " "
-                                +
-                                //:: error: (contracts.precondition.not.satisfied.field)
-                                super.locked.field);
-                System.out.println(
-                        "Are locks equal? " + (super.locked == this.locked ? "yes" : "no"));
-            }
         }
     }
 
@@ -105,15 +65,15 @@ public class ViewpointAdaptation3 {
             //:: error: (assignment.type.incompatible)
             local = m;
 
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             local.field = new Object();
 
             synchronized (lock) {
-                //:: error: (contracts.precondition.not.satisfied.field)
+                //:: error: (lock.not.held)
                 a.m.field = new Object();
             }
             synchronized (this.lock) {
-                //:: error: (contracts.precondition.not.satisfied.field)
+                //:: error: (lock.not.held)
                 a.m.field = new Object();
             }
             synchronized (a.lock) {
@@ -124,18 +84,18 @@ public class ViewpointAdaptation3 {
                 local.field = new Object();
             }
             synchronized (this.lock) {
-                //:: error: (contracts.precondition.not.satisfied.field)
+                //:: error: (lock.not.held)
                 local.field = new Object();
             }
             synchronized (a.lock) {
-                //:: error: (contracts.precondition.not.satisfied.field)
+                //:: error: (lock.not.held)
                 local.field = new Object();
             }
 
             synchronized (lock) {
-                //:: error: (contracts.precondition.not.satisfied.field)
+                //:: error: (lock.not.held)
                 this.m.field = new Object();
-                //:: error: (contracts.precondition.not.satisfied.field)
+                //:: error: (lock.not.held)
                 m.field = new Object();
             }
             synchronized (this.lock) {
@@ -143,9 +103,9 @@ public class ViewpointAdaptation3 {
                 m.field = new Object();
             }
             synchronized (a.lock) {
-                //:: error: (contracts.precondition.not.satisfied.field)
+                //:: error: (lock.not.held)
                 this.m.field = new Object();
-                //:: error: (contracts.precondition.not.satisfied.field)
+                //:: error: (lock.not.held)
                 m.field = new Object();
             }
         }

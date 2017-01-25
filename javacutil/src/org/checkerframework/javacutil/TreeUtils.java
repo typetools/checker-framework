@@ -31,7 +31,9 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.tree.JCTree;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -679,18 +681,7 @@ public final class TreeUtils {
         }
         MethodInvocationTree methInvok = (MethodInvocationTree) tree;
         ExecutableElement invoked = TreeUtils.elementFromUse(methInvok);
-        return isMethod(invoked, method, env);
-    }
-
-    /** Returns true if the given element is, or overrides, method. */
-    private static boolean isMethod(
-            ExecutableElement questioned, ExecutableElement method, ProcessingEnvironment env) {
-        return (questioned.equals(method)
-                || env.getElementUtils()
-                        .overrides(
-                                questioned,
-                                method,
-                                (TypeElement) questioned.getEnclosingElement()));
+        return ElementUtils.isMethod(invoked, method, env);
     }
 
     /**
@@ -702,13 +693,28 @@ public final class TreeUtils {
      */
     public static ExecutableElement getMethod(
             String typeName, String methodName, int params, ProcessingEnvironment env) {
-        TypeElement mapElt = env.getElementUtils().getTypeElement(typeName);
-        for (ExecutableElement exec : ElementFilter.methodsIn(mapElt.getEnclosedElements())) {
+        TypeElement typeElt = env.getElementUtils().getTypeElement(typeName);
+        for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
             if (exec.getSimpleName().contentEquals(methodName)
-                    && exec.getParameters().size() == params) return exec;
+                    && exec.getParameters().size() == params) {
+                return exec;
+            }
         }
         ErrorReporter.errorAbort("TreeUtils.getMethod: shouldn't be here!");
         return null; // dead code
+    }
+
+    public static List<ExecutableElement> getMethodList(
+            String typeName, String methodName, int params, ProcessingEnvironment env) {
+        List<ExecutableElement> methods = new ArrayList<>();
+        TypeElement typeElement = env.getElementUtils().getTypeElement(typeName);
+        for (ExecutableElement exec : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
+            if (exec.getSimpleName().contentEquals(methodName)
+                    && exec.getParameters().size() == params) {
+                methods.add(exec);
+            }
+        }
+        return methods;
     }
 
     /**

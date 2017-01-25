@@ -49,7 +49,7 @@ class ThisPostCondition {
     }
 
     void doNotLock() {
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         bar.field.toString();
     }
 
@@ -57,7 +57,7 @@ class ThisPostCondition {
         if (myLock.tryLock()) {
             bar.field.toString();
         } else {
-            //:: error: (contracts.precondition.not.satisfied.field)
+            //:: error: (lock.not.held)
             bar.field.toString();
         }
     }

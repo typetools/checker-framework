@@ -65,7 +65,7 @@ def javac_sanity_check(checker_framework_website, release_version):
     ])
 
     # this is a smoke test for the built-in checker shorthand feature
-    # http://checker-framework.com/manual/#shorthand-for-checkers
+    # https://checkerframework.org/manual/#shorthand-for-checkers
     nullness_shorthand_output = os.path.join(deploy_dir, "output_shorthand.log")
     cmd = sanity_javac + " -processor NullnessChecker " + nullness_example + " -Anomsgtext"
     execute_write_to_file(cmd, nullness_shorthand_output, False)
