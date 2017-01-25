@@ -1,22 +1,19 @@
 package org.checkerframework.checker.index.upperbound;
 
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.Tree;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
-import org.checkerframework.checker.index.qual.LTEqLengthOf;
-import org.checkerframework.checker.index.qual.LTLengthOf;
-import org.checkerframework.checker.index.qual.LTOMLengthOf;
+import org.checkerframework.checker.index.qual.*;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
-import org.checkerframework.dataflow.cfg.node.AssignmentNode;
-import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
-import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.*;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
@@ -65,6 +62,54 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
             Receiver arrayRec =
                     FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getTarget());
+
+            if (dim.getTree().getKind() == Tree.Kind.PLUS) {
+                // In this case, the array is being initialized with length equal to the
+                // sum of two other expressions. If those expressions are non-negative, they
+                // become LTEL of the new array; if either is positive, the other becomes LTL.
+
+                BinaryOperationNode binaryNode = (BinaryOperationNode) dim;
+
+                Receiver rightRec =
+                        FlowExpressions.internalReprOf(
+                                analysis.getTypeFactory(), binaryNode.getRightOperand());
+                Receiver leftRec =
+                        FlowExpressions.internalReprOf(
+                                analysis.getTypeFactory(), binaryNode.getLeftOperand());
+
+                BinaryTree bTree = (BinaryTree) dim.getTree();
+                if (atypeFactory.hasLowerBoundTypeByClass(
+                        bTree.getLeftOperand(), NonNegative.class)) {
+                    AnnotationMirror newAM;
+                    if (atypeFactory.hasLowerBoundTypeByClass(
+                            bTree.getLeftOperand(), Positive.class)) {
+                        newAM = atypeFactory.createLTLengthOfAnnotation(arrayRec.toString());
+                    } else {
+                        newAM = atypeFactory.createLTEqLengthOfAnnotation(arrayRec.toString());
+                    }
+                    Set<AnnotationMirror> oldType =
+                            in.getValueOfSubNode(binaryNode.getRightOperand()).getAnnotations();
+                    AnnotationMirror oldAM =
+                            qualifierHierarchy.findAnnotationInHierarchy(oldType, UNKNOWN);
+                    combineFacts(store, rightRec, oldAM, newAM);
+                }
+
+                if (atypeFactory.hasLowerBoundTypeByClass(
+                        bTree.getRightOperand(), NonNegative.class)) {
+                    AnnotationMirror newAM;
+                    if (atypeFactory.hasLowerBoundTypeByClass(
+                            bTree.getRightOperand(), Positive.class)) {
+                        newAM = atypeFactory.createLTLengthOfAnnotation(arrayRec.toString());
+                    } else {
+                        newAM = atypeFactory.createLTEqLengthOfAnnotation(arrayRec.toString());
+                    }
+                    Set<AnnotationMirror> oldType =
+                            in.getValueOfSubNode(binaryNode.getLeftOperand()).getAnnotations();
+                    AnnotationMirror oldAM =
+                            qualifierHierarchy.findAnnotationInHierarchy(oldType, UNKNOWN);
+                    combineFacts(store, leftRec, oldAM, newAM);
+                }
+            }
 
             Set<AnnotationMirror> oldType = in.getValueOfSubNode(dim).getAnnotations();
             AnnotationMirror oldAM = qualifierHierarchy.findAnnotationInHierarchy(oldType, UNKNOWN);

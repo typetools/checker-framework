@@ -1,6 +1,7 @@
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 
+@SuppressWarnings("lowerbound")
 class LTLDivide {
     int[] test(int[] array) {
         //        @LTLengthOf("array") int len = array.length / 2;

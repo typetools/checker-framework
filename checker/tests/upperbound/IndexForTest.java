@@ -2,6 +2,7 @@ package index;
 
 import org.checkerframework.checker.index.qual.IndexFor;
 
+@SuppressWarnings("lowerbound")
 public class IndexForTest {
     int[] array = {0};
 
