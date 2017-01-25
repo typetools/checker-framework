@@ -5,14 +5,9 @@
 <project name="org.checkerframework.netbeans" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.checkerframework.netbeans.</description>
     <import file="nbproject/build-impl.xml"/>
-    <target name = "netbeans-extra" depends="init">
-        <copy todir="lib">
-            <fileset dir="${user.home}">
-                <include name="checker.jar"/>
-            </fileset>
-        </copy>
+    <target name = "post-jar">
+        <makenbm></makenbm>
     </target>
-
 
 </project>
  <!-- On Mac/Linux, use the javac shell script; on Windows, use javac.bat -->
