@@ -7,6 +7,15 @@ package org.checkerframework.checker.index.qual;
  * than both {@code a.length} and {@code b.length}. The sequences {@code a} and {@code b} might have
  * different lengths.
  *
+ * <p>The <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#charAt-int-">
+ * <code>String.charAt(int)</code></a> method is declared as
+ *
+ * <pre>{@code
+ * class String {
+ *   char charAt(@IndexFor("this") index) { ... }
+ * }
+ * }</pre>
+ *
  * <p>Writing {@code @IndexFor("arr")} is equivalent to writing {@link NonNegative @NonNegative}
  * {@link LTLengthOf @LTLengthOf("arr")}, and that is how it is treated internally by the checker.
  * Thus, if you write an {@code @IndexFor("arr")} annotation, you might see warnings about

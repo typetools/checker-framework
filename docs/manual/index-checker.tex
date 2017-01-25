@@ -1,9 +1,12 @@
 %\htmlhr
-\chapter{Index Checker for sequence bounds (arrays, strings, lists)\label{index-checker}}
+% Reinstate when lists are supported:
+% \chapter{Index Checker for sequence bounds (arrays, strings, lists)\label{index-checker}}
+\chapter{Index Checker for sequence bounds (arrays and strings)\label{index-checker}}
 
 The Index Checker warns about potentially out-of-bounds accesses to sequence
-data structures, such as arrays, lists, and strings.
-(Note:  Support for lists is not yet implemented.)
+data structures, such as arrays
+% , lists,
+and strings.
 
 The Index Checker prevents \<IndexOutOfBoundsException>s that result from
 an index expression that might be negative or might be equal to or larger
@@ -60,7 +63,17 @@ are some annotations that give multiple types of information:
 
 \begin{description}
 \item[\refqualclasswithparams{checker/index/qual}{IndexFor}{String[] names}]
-  The value is a valid index for the named arrays.  For example, a variable
+  The value is a valid index for the named arrays.  For example, the
+  \sunjavadoc{java/lang/String.html\#charAt-int-}{String.charAt(int)}
+  method is declared as
+
+  \begin{Verbatim}
+  class String {
+    char charAt(@IndexFor("this") index) { ... }
+  }
+  \end{Verbatim}
+
+  More generally, a variable
   declared as \<@IndexFor("someArray") int i> has type
   \<@IndexFor("someArray") int> and its run-time value is guaranteed to be
   non-negative and less than the length of \<someArray>.  You could also
@@ -75,6 +88,35 @@ are some annotations that give multiple types of information:
    each named array.  This type combines
   \refqualclass{checker/index/qual}{NonNegative} and
   \refqualclass{checker/index/qual}{LTEqLengthOf}.
+
+  For example, the
+  \sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-int-int-java.lang.Object-}{Arrays.binarySearch}
+   method is declared as
+
+  \begin{mysmall}
+  \begin{Verbatim}
+  class Arrays {
+    int binarySearch(Object[] a, @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex, Object key)
+  }
+  \end{Verbatim}
+  \end{mysmall}
+
+ \item[\refqualclasswithparams{checker/index/qual}{IndexOrLow}{String[] names}]
+   The value is -1 or is a valid index for
+   each named array.  This type combines
+  \refqualclass{checker/index/qual}{GTENegativeOne} and
+  \refqualclass{checker/index/qual}{LTEqLengthOf}.
+
+  For example, the
+  \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf(String)}
+  method is declared as
+
+  \begin{Verbatim}
+  class String {
+    @IndexOrLow("this") int indexOf(String str) { ... }
+  }
+  \end{Verbatim}
+
 \end{description}
 
 \section{Lower bounds\label{index-lowerbound}}
@@ -124,8 +166,8 @@ It uses a type system (Figure~\ref{fig-index-int-types}) with the following
 qualifiers:
 
 It issues an error when a sequence \code{arr}
-is indexed by an integer that is not of type \code{@LTLengthOf({''arr''})}
-or \code{@LTOMLengthOf({''arr''})}.
+is indexed by an integer that is not of type \code{@LTLengthOf({"arr"})}
+or \code{@LTOMLengthOf({"arr"})}.
 
 \begin{description}
 
@@ -266,7 +308,7 @@ When needed, you can specify which sequences have the same length using the foll
 \item[\refqualclasswithparams{checker/index/qual}{SameLen}{String[] names}]
   An expression with this type represents a sequence that has the
   same length as the other sequences named in \<names>. In general,
-  \code{@SameLen} types that have non-intersecting lists of names
+  \code{@SameLen} types that have non-intersecting sets of names
   are \textit{not} subtypes of each other. However, if at least one
   sequence is named by both types, the types are actually the same,
   because all the named sequences must have the same length.
