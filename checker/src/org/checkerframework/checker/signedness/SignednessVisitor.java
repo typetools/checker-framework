@@ -49,27 +49,35 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
     /**
      * Given a masking operation of the form {@code x & maskLit} or {@code x | maskLit}, return true
-     * iff the masking operation ignores the numBits most significant bits. This is if the s most
-     * significant bits of m are 0 for AND, and 1 for OR.
+     * iff the masking operation results in the same output regardless of the value of the numBits
+     * most significant bits of x. This is if the numBits most significant bits of mask are 0 for
+     * AND, and 1 for OR. For example, assuming that numBits is 4, the following is true about AND
+     * and OR masks:
+     *
+     * <p>{@code x & 0x0... == 0x0...;} {@code x | 0xF... == 0xF...;}
      *
      * @param maskKind the kind of mask (AND or OR)
-     * @param numBits the LiteralTree whose value is s
-     * @param maskLit the LiteralTree whose value is m
-     * @return true iff the s most significant bits of m are 0 for AND, and 1 for OR
+     * @param numBitsLit the LiteralTree whose value is numBits
+     * @param maskLit the LiteralTree whose value is mask
+     * @return true iff the numBits most significant bits of mask are 0 for AND, and 1 for OR
      */
-    private boolean maskIgnoresMSB(Kind maskKind, LiteralTree numBits, LiteralTree maskLit) {
-        long s = getLong(numBits.getValue());
-        long m = getLong(maskLit.getValue());
+    private boolean maskIgnoresMSB(Kind maskKind, LiteralTree numBitsLit, LiteralTree maskLit) {
+        long numBits = getLong(numBitsLit.getValue());
+        long mask = getLong(maskLit.getValue());
 
+        // If maskLit was an int, then shift mask so that the numBits most significant bits are in the right position
         if (maskLit.getKind() != Kind.LONG_LITERAL) {
-            m <<= 32;
+            mask <<= 32;
         }
 
-        m >>>= (64 - s);
+        // Shift the numBits most significant bits to become the numBits least significant bits, zeroing out the rest
+        mask >>>= (64 - numBits);
         if (maskKind == Kind.AND) {
-            return m == 0;
+            // Check that the numBits most significant bits of the mask were 0
+            return mask == 0;
         } else if (maskKind == Kind.OR) {
-            return m == (1 << s) - 1;
+            // Check that the numBits most significant bits of the mask were 1
+            return mask == (1 << numBits) - 1;
         } else {
             return false;
         }
@@ -91,12 +99,16 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     private boolean isMaskedShift(BinaryTree shiftOp) {
         // parent is the operation or statement that immediately contains shiftOp
         Tree parent;
+        // topChild is the top node in the chain of nodes from shiftOp to parent
+        Tree topChild;
         {
             TreePath parentPath = visitorState.getPath().getParentPath();
             parent = parentPath.getLeaf();
+            topChild = parent;
             // Strip away all parentheses from the shift operation
             while (parent.getKind() == Kind.PARENTHESIZED) {
                 parentPath = parentPath.getParentPath();
+                topChild = parent;
                 parent = parentPath.getLeaf();
             }
         }
@@ -107,10 +119,16 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
         BinaryTree maskOp = (BinaryTree) parent;
         ExpressionTree shiftExpr = shiftOp.getRightOperand();
+
+        // Determine which child of maskOp leads to shiftOp. The other one is the mask expression
         ExpressionTree maskExpr =
-                maskOp.getRightOperand() == shiftOp
+                maskOp.getRightOperand() == topChild
                         ? maskOp.getLeftOperand()
                         : maskOp.getRightOperand();
+
+        // Strip away the parentheses from the mask expression if any exist
+        while (maskExpr.getKind() == Kind.PARENTHESIZED)
+            maskExpr = ((ParenthesizedTree) maskExpr).getExpression();
 
         if (!isLiteral(shiftExpr) || !isLiteral(maskExpr)) {
             return false;
