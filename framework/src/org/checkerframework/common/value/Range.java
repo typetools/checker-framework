@@ -402,7 +402,7 @@ public class Range {
     }
 
     /**
-     * <<<<<<< HEAD Control flow refinement for not equal to operator
+     * Control flow refinement for not equal to operator
      *
      * @param right the range to compare with
      * @return the refined result
@@ -412,22 +412,8 @@ public class Range {
     }
 
     /**
-     * Gets the number of possible values enclosed by this range. To prevent overflow, we use
-     * BigInteger for calculation. ||||||| merged common ancestors Control flow refinement for not
-     * equal to operator
-     *
-     * @param right the range to compare with
-     * @return the refined result
-     */
-    public Range notEqualTo(Range right) {
-        return new Range(from, to);
-    }
-
-    /**
-     * Gets the number of possible values within this range. To prevent overflow, we use BigInteger
-     * for calculation. ======= Returns the number of possible values enclosed by this range. To
-     * prevent overflow, we use BigInteger for calculation and return a BitInteger. >>>>>>>
-     * 269094d43386325239a73714a1d69ff48576eb4a
+     * Returns the number of possible values enclosed by this range. To
+     * prevent overflow, we use BigInteger for calculation and return a BitInteger.
      *
      * @return the number of possible values enclosed by this range.
      */
@@ -439,14 +425,8 @@ public class Range {
      * Determines if the range is wider than a given value, i.e., if the number of possible values
      * enclosed by this range is more than the given value.
      *
-     * <p><<<<<<< HEAD
-     *
-     * @param value
-     * @return true if wider than the given value. ||||||| merged common ancestors
-     * @param value
-     * @return true if wider than the given value =======
-     * @param value the value to compare with.
-     * @return true if wider than the given value. >>>>>>> 269094d43386325239a73714a1d69ff48576eb4a
+     * @param value the value to compare with
+     * @return true if wider than the given value
      */
     public boolean isWiderThan(int value) {
         return numberOfPossibleValues().compareTo(BigInteger.valueOf(value)) == 1;
