@@ -242,7 +242,7 @@
     <command
       categoryId="checkers.eclipse.category"
       defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$IndexAction"
-      id="checkers.eclipse.runlock"
+      id="checkers.eclipse.runindex"
       name="Run Index Checker">
     </command>
     <command

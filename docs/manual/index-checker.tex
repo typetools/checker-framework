@@ -290,7 +290,7 @@ This enables it to verify that all the indexing operations are safe in code
 like the following:
 
 \begin{Verbatim}
-  boolean lessThan(double[] arr1, double @SameLen("arr1") [] arr2) {
+  boolean lessThan(double[] arr1, double @SameLen("#1") [] arr2) {
     for (int i=0; i<arr1.length; i++) {
       if (arr1[i] < arr2[i]) {
         return true;
