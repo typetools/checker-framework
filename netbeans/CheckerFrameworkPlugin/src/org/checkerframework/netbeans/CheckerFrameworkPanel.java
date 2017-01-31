@@ -2,9 +2,8 @@ package org.checkerframework.netbeans;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Map.Entry;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -19,7 +18,7 @@ import org.openide.util.MutexException;
 public class CheckerFrameworkPanel extends JPanel {
 
     private EditableProperties editableProperty;
-    private static Set<Entry<String, String>> checkerStrings;
+    private static Map<String, String> checkerStrings;
     private final FileObject projectProperties;
     private final JLabel title;
     private final JCheckBox[] checkerList;
@@ -56,24 +55,23 @@ public class CheckerFrameworkPanel extends JPanel {
         try {
             checkerStrings =
                     loadProperties(
-                                    FileUtil.toFileObject(
-                                            InstalledFileLocator.getDefault()
-                                                    .locate(
-                                                            "checkerstrings.properties",
-                                                            "org.checkerframework.netbeans",
-                                                            false)))
-                            .entrySet();
+                            FileUtil.toFileObject(
+                                    InstalledFileLocator.getDefault()
+                                            .locate(
+                                                    "checkerstrings.properties",
+                                                    "org.checkerframework.netbeans",
+                                                    false)));
         } catch (IOException e) {
             System.out.println("Failed to load checker strings properties file.");
-            checkerStrings = new HashSet(); //create an empty hash set
+            checkerStrings = new HashMap<>(); //create an empty hash map
         }
 
         checkerList = new JCheckBox[checkerStrings.size()];
         int i = 0;
         String tmp = editableProperty.get("annotation.processing.processors.list");
-        for (Entry<String, String> e : checkerStrings) {
-            checkerList[i] = new JCheckBox(e.getValue());
-            if (tmp.contains(e.getKey())) {
+        for (String s : checkerStrings.keySet()) {
+            checkerList[i] = new JCheckBox(s);
+            if (tmp.contains(checkerStrings.get(s))) {
                 checkerList[i].setSelected(true);
             }
             this.add(checkerList[i]);
@@ -128,11 +126,7 @@ public class CheckerFrameworkPanel extends JPanel {
         String selectedChecker = "";
         for (JCheckBox checkBox : checkerList) {
             if (checkBox.isSelected()) {
-                for (Entry<String, String> entry : checkerStrings) {
-                    if (entry.getValue().equals(checkBox.getText())) {
-                        selectedChecker = entry.getKey();
-                    }
-                }
+                selectedChecker = checkerStrings.get(checkBox.getText());
                 //try to add the item
                 if (sel.length() != 0) {
                     sel.append(',');
