@@ -2,6 +2,7 @@ package org.checkerframework.checker.index.samelen;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -89,38 +90,41 @@ public class SameLenTransfer extends CFTransfer {
      * both a and b to have SameLen of each other in the store.
      */
     private void refineEq(Node left, Node right, CFStore store) {
-        if (isArrayLengthAccess(left)) {
-            if (isArrayLengthAccess(right)) {
+        if (isArrayLengthAccess(left) && isArrayLengthAccess(right)) {
 
-                Node leftReceiverNode = ((FieldAccessNode) left).getReceiver();
-                Node rightReceiverNode = ((FieldAccessNode) right).getReceiver();
+            Node leftReceiverNode = ((FieldAccessNode) left).getReceiver();
+            Node rightReceiverNode = ((FieldAccessNode) right).getReceiver();
 
-                Receiver leftRec =
-                        FlowExpressions.internalReprOf(analysis.getTypeFactory(), leftReceiverNode);
-                Receiver rightRec =
-                        FlowExpressions.internalReprOf(
-                                analysis.getTypeFactory(), rightReceiverNode);
+            Receiver leftRec =
+                    FlowExpressions.internalReprOf(analysis.getTypeFactory(), leftReceiverNode);
+            Receiver rightRec =
+                    FlowExpressions.internalReprOf(analysis.getTypeFactory(), rightReceiverNode);
 
-                AnnotationMirror rightReceiverAnno =
-                        aTypeFactory
-                                .getAnnotatedType(rightReceiverNode.getTree())
-                                .getAnnotationInHierarchy(UNKNOWN);
-                AnnotationMirror leftReceiverAnno =
-                        aTypeFactory
-                                .getAnnotatedType(leftReceiverNode.getTree())
-                                .getAnnotationInHierarchy(UNKNOWN);
-                AnnotationMirror combinedSameLen =
-                        aTypeFactory.createCombinedSameLen(
-                                rightRec.toString(),
-                                leftRec.toString(),
-                                rightReceiverAnno,
-                                leftReceiverAnno);
-                store.clearValue(leftRec);
-                store.clearValue(rightRec);
-                store.insertValue(leftRec, combinedSameLen);
-                store.insertValue(rightRec, combinedSameLen);
-            }
+            AnnotationMirror rightReceiverAnno = getAnno(rightReceiverNode);
+            AnnotationMirror leftReceiverAnno = getAnno(leftReceiverNode);
+            AnnotationMirror combinedSameLen =
+                    aTypeFactory.createCombinedSameLen(
+                            rightRec.toString(),
+                            leftRec.toString(),
+                            rightReceiverAnno,
+                            leftReceiverAnno);
+
+            store.clearValue(leftRec);
+            store.clearValue(rightRec);
+            store.insertValue(leftRec, combinedSameLen);
+            store.insertValue(rightRec, combinedSameLen);
         }
+    }
+
+    AnnotationMirror getAnno(Node n) {
+        CFValue cfValue = analysis.getValue(n);
+        if (cfValue == null) {
+            return UNKNOWN;
+        }
+        if (cfValue.getAnnotations().size() == 1) {
+            return cfValue.getAnnotations().iterator().next();
+        }
+        return UNKNOWN;
     }
 
     /** Implements the transfer rules for both equal nodes and not-equals nodes. */
@@ -140,6 +144,7 @@ public class SameLenTransfer extends CFTransfer {
             // Refinement in the then store if this is a.length == b.length.
             refineEq(firstNode, secondNode, result.getThenStore());
         }
-        return result;
+        return new ConditionalTransferResult<>(
+                result.getResultValue(), result.getThenStore(), result.getElseStore());
     }
 }
