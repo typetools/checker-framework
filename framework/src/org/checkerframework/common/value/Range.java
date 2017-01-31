@@ -412,8 +412,8 @@ public class Range {
     }
 
     /**
-     * Returns the number of possible values enclosed by this range. To
-     * prevent overflow, we use BigInteger for calculation and return a BitInteger.
+     * Returns the number of possible values enclosed by this range. To prevent overflow, we use
+     * BigInteger for calculation and return a BitInteger.
      *
      * @return the number of possible values enclosed by this range.
      */
