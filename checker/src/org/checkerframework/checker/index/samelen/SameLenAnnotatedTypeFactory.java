@@ -17,7 +17,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationHelper;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -45,8 +45,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected ExpressionAnnotationHelper createExpressionAnnotationHelper() {
-        return new ExpressionAnnotationHelper(this, SameLen.class);
+    protected DependentTypesHelper createDependentTypesHelper() {
+        return new DependentTypesHelper(this, SameLen.class);
     }
 
     @Override
