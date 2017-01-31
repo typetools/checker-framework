@@ -29,6 +29,11 @@ public class Range {
     /**
      * Constructs a range with its bounds specified by two parameters, "from" and "to".
      *
+     * <p>Note that it is possible to construct a range with incorrect parameters, e.g. the value of
+     * "from" could be greater than the value to "to". This incorrectness would be caught by {@link
+     * org.checkerframework.common.value.ValueAnnotatedTypeFactory#createIntRangeAnnotation(Range)}
+     * when creating an annotation from range, which would then be replaced with @UnknownVal
+     *
      * @param from the lower bound (inclusive)
      * @param to the higher bound (inclusive)
      */
@@ -397,6 +402,16 @@ public class Range {
     }
 
     /**
+     * Control flow refinement for not equal to operator
+     *
+     * @param right the range to compare with
+     * @return the refined result
+     */
+    public Range notEqualTo(Range right) {
+        return new Range(from, to);
+    }
+
+    /**
      * Returns the number of possible values enclosed by this range. To prevent overflow, we use
      * BigInteger for calculation and return a BitInteger.
      *
@@ -410,8 +425,8 @@ public class Range {
      * Determines if the range is wider than a given value, i.e., if the number of possible values
      * enclosed by this range is more than the given value.
      *
-     * @param value the value to compare with.
-     * @return true if wider than the given value.
+     * @param value the value to compare with
+     * @return true if wider than the given value
      */
     public boolean isWiderThan(int value) {
         return numberOfPossibleValues().compareTo(BigInteger.valueOf(value)) == 1;
