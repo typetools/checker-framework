@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 
-/** Helper class for creating dependant type annotation error strings. */
+/** Helper class for creating dependent type annotation error strings. */
 public class DependentTypesError {
     private static final String formatString = "[error for expression: %s error: %s]";
 

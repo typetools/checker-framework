@@ -71,7 +71,7 @@ import org.checkerframework.javacutil.TreeUtils;
 public class DependentTypesHelper {
     protected final AnnotatedTypeFactory factory;
 
-    /** A list of annotations that are dependant type annotations. */
+    /** A list of annotations that are dependent type annotations. */
     protected final List<Class<? extends Annotation>> expressionAnnos;
 
     public DependentTypesHelper(
@@ -96,17 +96,17 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Creates a TreeAnnotator that standardizes dependant type annotations.
+     * Creates a TreeAnnotator that standardizes dependent type annotations.
      *
      * @param factory annotated type factory
-     * @return a new TreeAnnotator that standardizes dependant type annotations
+     * @return a new TreeAnnotator that standardizes dependent type annotations
      */
     public TreeAnnotator createDependentTypesTreeAnnotator(AnnotatedTypeFactory factory) {
         return new DependentTypesTreeAnnotator(factory, this);
     }
 
     /**
-     * Viewpoint adapts the dependant type annotations on the bounds to the use of the type.
+     * Viewpoint adapts the dependent type annotations on the bounds to the use of the type.
      *
      * @param classDecl class or interface declaration whose type variables should be viewpoint
      *     adapted
@@ -124,7 +124,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Viewpoint adapts the dependant type annotations in the methodDeclType based on the
+     * Viewpoint adapts the dependent type annotations in the methodDeclType based on the
      * methodInvocationTree.
      *
      * @param methodInvocationTree use of the method
@@ -138,7 +138,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Viewpoint adapts the dependant type annotations in the constructorType based on the
+     * Viewpoint adapts the dependent type annotations in the constructorType based on the
      * newClassTree.
      *
      * @param newClassTree invocation of the constructor
@@ -183,8 +183,8 @@ public class DependentTypesHelper {
                 new FlowExpressionContext(receiver, argReceivers, factory.getContext());
 
         // typeForUse cannot be viewpoint adapted directly because it is the type post type variable
-        // substitution.  Dependant type annotations on type arguments do not (and cannot) be
-        // viewpoint adapted along with the dependant type annotations that are on the method
+        // substitution.  Dependent type annotations on type arguments do not (and cannot) be
+        // viewpoint adapted along with the dependent type annotations that are on the method
         // declaration. For example:
         // Map<String, String> map = ...;
         // List<@KeyFor("map") String> list = ...;
@@ -579,7 +579,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Checks all dependant type annotations in the given annotated type to see if the expression
+     * Checks all dependent type annotations in the given annotated type to see if the expression
      * string is an error string as specified by DependentTypesError#isExpressionError. If the
      * annotated type has any errors, then a non-empty list of {@link DependentTypesError} is
      * returned.
@@ -681,8 +681,8 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Whether or not atm has any dependant type annotations. If an annotated type does not have a
-     * dependant type annotation, then no standardization or viewpoint adaption is performed. (This
+     * Whether or not atm has any dependent type annotations. If an annotated type does not have a
+     * dependent type annotation, then no standardization or viewpoint adaption is performed. (This
      * check avoids calling time intensive methods unless absolutely required.)
      */
     private boolean hasDependentType(AnnotatedTypeMirror atm) {
@@ -696,7 +696,7 @@ public class DependentTypesHelper {
         return b;
     }
 
-    /** Checks whether or not an annotated type contains an dependant type annotation. */
+    /** Checks whether or not an annotated type contains an dependent type annotation. */
     private class ContainsDependentType extends AnnotatedTypeScanner<Boolean, Void> {
         @Override
         protected Boolean scan(AnnotatedTypeMirror type, Void aVoid) {
