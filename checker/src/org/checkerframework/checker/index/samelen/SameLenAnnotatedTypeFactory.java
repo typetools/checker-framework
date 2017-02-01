@@ -85,7 +85,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         newValues.addAll(a1Names);
         newValues.addAll(a2Names);
-        String[] names = newValues.toArray(new String[0]);
+        String[] names = newValues.toArray(new String[newValues.size()]);
+        Arrays.sort(names);
         return createSameLen(names);
     }
 
@@ -102,20 +103,18 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror createCombinedSameLen(
             String a, String b, AnnotationMirror sl1, AnnotationMirror sl2) {
 
-        // The names of the arrays.
-        ArrayList<String> arrayNames = new ArrayList<>();
-        arrayNames.add(a);
-        arrayNames.add(b);
-
-        ArrayList<String> slStrings = new ArrayList<>();
+        List<String> aValues = new ArrayList<String>();
+        aValues.add(a);
         if (AnnotationUtils.areSameByClass(sl1, SameLen.class)) {
-            slStrings.addAll(SameLenUtils.getValue(sl1));
+            aValues.addAll(SameLenUtils.getValue(sl1));
         }
+        List<String> bValues = new ArrayList<String>();
+        bValues.add(b);
         if (AnnotationUtils.areSameByClass(sl2, SameLen.class)) {
-            slStrings.addAll(SameLenUtils.getValue(sl2));
+            bValues.addAll(SameLenUtils.getValue(sl2));
         }
 
-        return getCombinedSameLen(arrayNames, slStrings);
+        return getCombinedSameLen(aValues, bValues);
     }
 
     /**
