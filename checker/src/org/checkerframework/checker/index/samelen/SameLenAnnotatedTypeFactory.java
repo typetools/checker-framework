@@ -85,7 +85,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         newValues.addAll(a1Names);
         newValues.addAll(a2Names);
-
         String[] names = newValues.toArray(new String[newValues.size()]);
         Arrays.sort(names);
         return createSameLen(names);
