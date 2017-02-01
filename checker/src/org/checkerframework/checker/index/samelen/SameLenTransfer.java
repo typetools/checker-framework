@@ -17,16 +17,19 @@ import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 
 /**
- * The transfer function for the SameLen checker. Contains two interesting cases: 1. If an array is
- * created using another array's length for its length, then the arrays have the same length. 2. If
- * the lengths of two arrays are explicitly checked to be equal, they have the same length.
+ * The transfer function for the SameLen checker. Contains two cases:
+ *
+ * <ol>
+ *   <li>"new T[a.length]" has the same length as a.
+ *   <li>after "if (a.length == b.length)", a and b have the same length.
+ * </ol>
  */
 public class SameLenTransfer extends CFTransfer {
 
     // The ATF (Annotated Type Factory).
     private SameLenAnnotatedTypeFactory aTypeFactory;
 
-    /** Easy shorthand for SameLenUnknown.class, basically. */
+    /** Shorthand for SameLenUnknown.class. */
     private AnnotationMirror UNKNOWN;
 
     private CFAnalysis analysis;
@@ -43,14 +46,15 @@ public class SameLenTransfer extends CFTransfer {
             AssignmentNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitAssignment(node, in);
 
-        // Check if an array is being created.
+        // Handle "new T[a.length]".
 
         if (node.getExpression() instanceof ArrayCreationNode) {
             ArrayCreationNode acNode = (ArrayCreationNode) node.getExpression();
             if (acNode.getDimensions().size() == 1 && isArrayLengthAccess(acNode.getDimension(0))) {
-                // This array that's being created is the same size as the other one.
+                // node is known to be "new T[a.length]"
                 FieldAccessNode arrayLengthNode = (FieldAccessNode) acNode.getDimension(0);
                 Node arrayLengthNodeReceiver = arrayLengthNode.getReceiver();
+                // arrayLengthNode is known to be "new T[arrayLengthNodeReceiver.length]"
 
                 Receiver targetRec =
                         FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getTarget());
@@ -58,17 +62,17 @@ public class SameLenTransfer extends CFTransfer {
                         FlowExpressions.internalReprOf(
                                 analysis.getTypeFactory(), arrayLengthNodeReceiver);
 
-                AnnotationMirror arrayLengthAnnotation =
+                AnnotationMirror arrayLengthNodeAnnotation =
                         aTypeFactory
                                 .getAnnotatedType(arrayLengthNodeReceiver.getTree())
                                 .getAnnotationInHierarchy(UNKNOWN);
 
                 AnnotationMirror combinedSameLen =
                         aTypeFactory.createCombinedSameLen(
-                                otherRec.toString(),
                                 targetRec.toString(),
-                                arrayLengthAnnotation,
-                                UNKNOWN);
+                                otherRec.toString(),
+                                UNKNOWN,
+                                arrayLengthNodeAnnotation);
 
                 result.getRegularStore().clearValue(targetRec);
                 result.getRegularStore().insertValue(targetRec, combinedSameLen);
@@ -80,16 +84,18 @@ public class SameLenTransfer extends CFTransfer {
         return result;
     }
 
+    /** Returns true if node is of the form "someArray.length". */
     private boolean isArrayLengthAccess(Node node) {
         return (node instanceof FieldAccessNode
                 && ((FieldAccessNode) node).getFieldName().equals("length")
                 && ((FieldAccessNode) node).getReceiver().getType().getKind() == TypeKind.ARRAY);
     }
     /**
-     * Handles refinement of equality comparisons. Looks for a.length and b.length, then annotates
-     * both a and b to have SameLen of each other in the store.
+     * Handles refinement of equality comparisons. After "a.length == b.length" evaluates to true, a
+     * and b have SameLen of each other in the store.
      */
     private void refineEq(Node left, Node right, CFStore store) {
+        // Look for "a.length == b.length".
         if (isArrayLengthAccess(left) && isArrayLengthAccess(right)) {
 
             Node leftReceiverNode = ((FieldAccessNode) left).getReceiver();
@@ -100,22 +106,23 @@ public class SameLenTransfer extends CFTransfer {
             Receiver rightRec =
                     FlowExpressions.internalReprOf(analysis.getTypeFactory(), rightReceiverNode);
 
-            AnnotationMirror rightReceiverAnno = getAnno(rightReceiverNode);
             AnnotationMirror leftReceiverAnno = getAnno(leftReceiverNode);
+            AnnotationMirror rightReceiverAnno = getAnno(rightReceiverNode);
             AnnotationMirror combinedSameLen =
                     aTypeFactory.createCombinedSameLen(
-                            rightRec.toString(),
                             leftRec.toString(),
-                            rightReceiverAnno,
-                            leftReceiverAnno);
+                            rightRec.toString(),
+                            leftReceiverAnno,
+                            rightReceiverAnno);
 
             store.clearValue(leftRec);
-            store.clearValue(rightRec);
             store.insertValue(leftRec, combinedSameLen);
+            store.clearValue(rightRec);
             store.insertValue(rightRec, combinedSameLen);
         }
     }
 
+    /** Return n's annotation from the SameLen hierarchy. */
     AnnotationMirror getAnno(Node n) {
         CFValue cfValue = analysis.getValue(n);
         if (cfValue == null) {
