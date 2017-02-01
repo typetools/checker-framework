@@ -60,7 +60,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * @param listA the first string list
      * @param listB the second string list
-     * @return true if there is the intersection is non-empty; false otherwise
+     * @return true if the intersection is non-empty; false otherwise
      */
     private boolean overlap(List<String> listA, List<String> listB) {
         for (String a : listA) {
@@ -209,6 +209,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /** Creates a @SameLen annotation whose values are the given strings. */
     public AnnotationMirror createSameLen(String... val) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
         builder.setValue("value", val);
