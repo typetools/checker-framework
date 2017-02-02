@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.checker.index.qual.*;
 
 /**
  * A <tt>CharSequence</tt> is a readable sequence of <code>char</code> values. This
