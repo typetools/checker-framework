@@ -141,11 +141,11 @@ import org.checkerframework.checker.index.qual.*;
         append(seq);
     }
 
-    public synchronized int length() {
+    public synchronized /*@NonNegative*/ int length() {
         return count;
     }
 
-    public synchronized int capacity() {
+    public synchronized /*@NonNegative*/ int capacity() {
         return value.length;
     }
 
@@ -305,7 +305,7 @@ import org.checkerframework.checker.index.qual.*;
      * @throws IndexOutOfBoundsException {@inheritDoc}
      * @since      1.5
      */
-    public synchronized StringBuffer append(CharSequence s, int start, int end)
+    public synchronized StringBuffer append(CharSequence s, /*@ IndexFor("#1")*/ int start, /*@ IndexOrHigh("#1")*/ int end)
     {
         super.append(s, start, end);
         return this;
@@ -519,7 +519,7 @@ import org.checkerframework.checker.index.qual.*;
      * @throws NullPointerException {@inheritDoc}
      * @since      1.4
      */
-    public int indexOf(String str) {
+    public /*@GTENegativeOne*/ int indexOf(String str) {
         return indexOf(str, 0);
     }
 
@@ -527,7 +527,7 @@ import org.checkerframework.checker.index.qual.*;
      * @throws NullPointerException {@inheritDoc}
      * @since      1.4
      */
-    public synchronized int indexOf(String str, int fromIndex) {
+    public synchronized /*@GTENegativeOne*/ int indexOf(String str, int fromIndex) {
         return String.indexOf(value, 0, count,
                               str.toCharArray(), 0, str.length(), fromIndex);
     }
@@ -536,7 +536,7 @@ import org.checkerframework.checker.index.qual.*;
      * @throws NullPointerException {@inheritDoc}
      * @since      1.4
      */
-    public int lastIndexOf(String str) {
+    public /*@GTENegativeOne*/ int lastIndexOf(String str) {
         // Note, synchronization achieved via other invocations
         return lastIndexOf(str, count);
     }
@@ -545,7 +545,7 @@ import org.checkerframework.checker.index.qual.*;
      * @throws NullPointerException {@inheritDoc}
      * @since      1.4
      */
-    public synchronized int lastIndexOf(String str, int fromIndex) {
+    public synchronized /*@GTENegativeOne*/ int lastIndexOf(String str, int fromIndex) {
         return String.lastIndexOf(value, 0, count,
                               str.toCharArray(), 0, str.length(), fromIndex);
     }

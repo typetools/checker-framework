@@ -4835,7 +4835,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * the length of the {@code char} array.
      * @since  1.5
      */
-    public static int codePointBefore(char[] a, /*@Positive LTEqLengthOf("#1")*/ int index, /*@IndexOrHigh("#1")*/ int start) {
+    public static int codePointBefore(char[] a, /*@Positive @LTEqLengthOf("#1")*/ int index, /*@IndexOrHigh("#1")*/ int start) {
         if (index <= start || start < 0 || start >= a.length) {
             throw new IndexOutOfBoundsException();
         }

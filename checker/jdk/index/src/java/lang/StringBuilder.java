@@ -188,7 +188,7 @@ public final class StringBuilder
     /**
      * @throws     IndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder append(CharSequence s, int start, int end) {
+    public StringBuilder append(CharSequence s, /*@ IndexFor("#1")*/ int start, /*@ IndexOrHigh("#1")*/ int end) {
         super.append(s, start, end);
         return this;
     }
@@ -369,14 +369,14 @@ public final class StringBuilder
     /**
      * @throws NullPointerException {@inheritDoc}
      */
-    public int indexOf(String str) {
+    public /*@GTENegativeOne*/ int indexOf(String str) {
         return indexOf(str, 0);
     }
 
     /**
      * @throws NullPointerException {@inheritDoc}
      */
-    public int indexOf(String str, int fromIndex) {
+    public /*@GTENegativeOne*/ int indexOf(String str, int fromIndex) {
         return String.indexOf(value, 0, count,
                               str.toCharArray(), 0, str.length(), fromIndex);
     }
@@ -384,14 +384,14 @@ public final class StringBuilder
     /**
      * @throws NullPointerException {@inheritDoc}
      */
-    public int lastIndexOf(String str) {
+    public /*@GTENegativeOne*/ int lastIndexOf(String str) {
         return lastIndexOf(str, count);
     }
 
     /**
      * @throws NullPointerException {@inheritDoc}
      */
-    public int lastIndexOf(String str, int fromIndex) {
+    public /*@GTENegativeOne*/ int lastIndexOf(String str, int fromIndex) {
         return String.lastIndexOf(value, 0, count,
                               str.toCharArray(), 0, str.length(), fromIndex);
     }

@@ -2844,7 +2844,7 @@ public class Arrays {
             a = array;
         }
 
-        public int size() {
+        public /*@NonNegative*/ int size() {
             return a.length;
         }
 

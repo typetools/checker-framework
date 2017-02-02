@@ -346,7 +346,7 @@ public final class System {
      *          the current time and midnight, January 1, 1970 UTC.
      * @see     java.util.Date
      */
-    public static native /*@NonNegative*/ long currentTimeMillis();
+    public static native long currentTimeMillis();
 
     /**
      * Returns the current value of the running Java Virtual Machine's
