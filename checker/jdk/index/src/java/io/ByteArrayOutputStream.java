@@ -186,7 +186,7 @@ public class ByteArrayOutputStream extends OutputStream {
      *          of valid bytes in this output stream.
      * @see     java.io.ByteArrayOutputStream#count
      */
-    public synchronized int size() {
+    public synchronized /*@NonNegative*/ int size() {
         return count;
     }
 

@@ -176,7 +176,7 @@ class LineNumberInputStream extends FilterInputStream {
      * @exception  IOException  if an I/O error occurs.
      * @see        java.io.FilterInputStream#in
      */
-    public /*@NonNegative*/ long skip(/*@NonNegative*/ long n) throws IOException {
+    public long skip(long n) throws IOException {
         int chunk = 2048;
         long remaining = n;
         byte data[];

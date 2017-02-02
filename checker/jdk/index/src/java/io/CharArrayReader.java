@@ -98,7 +98,7 @@ public class CharArrayReader extends Reader {
      *
      * @exception   IOException  If an I/O error occurs
      */
-    public int read() throws IOException {
+    public /*@GTENegativeOne*/ int read() throws IOException {
         synchronized (lock) {
             ensureOpen();
             if (pos >= count)
@@ -155,7 +155,7 @@ public class CharArrayReader extends Reader {
      * @return       The number of characters actually skipped
      * @exception  IOException If the stream is closed, or an I/O error occurs
      */
-    public /*@NonNegative*/ long skip(long n) throws IOException {
+    public long skip(long n) throws IOException {
         synchronized (lock) {
             ensureOpen();
             if (pos + n > count) {
