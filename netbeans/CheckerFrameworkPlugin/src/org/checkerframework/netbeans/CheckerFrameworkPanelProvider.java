@@ -48,7 +48,7 @@ public class CheckerFrameworkPanelProvider implements ProjectCustomizer.Composit
     }
 
     private static class ModifyPropertiesListener implements ActionListener {
-        private CheckerFrameworkPanel checkerFrameworkPanel;
+        private final CheckerFrameworkPanel checkerFrameworkPanel;
 
         public ModifyPropertiesListener(CheckerFrameworkPanel inCheckerFrameworkPanel) {
             checkerFrameworkPanel = inCheckerFrameworkPanel;

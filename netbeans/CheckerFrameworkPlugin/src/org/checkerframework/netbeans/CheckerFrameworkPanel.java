@@ -17,10 +17,9 @@ import org.openide.util.MutexException;
 
 public class CheckerFrameworkPanel extends JPanel {
 
-    private EditableProperties editableProperty;
+    private final EditableProperties editableProperty;
     private static Map<String, String> checkerStrings;
     private final FileObject projectProperties;
-    private final JLabel title;
     private final JCheckBox[] checkerList;
     private final String checkerPath;
     private final String checkerQualPath;
@@ -33,8 +32,7 @@ public class CheckerFrameworkPanel extends JPanel {
     public CheckerFrameworkPanel(FileObject inProjectProperties) {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        title = new JLabel("Run Built-In Checker");
-        this.add(title);
+        this.add(new JLabel("Run Built-In Checker"));
 
         projectProperties = inProjectProperties;
         checkerPath =
@@ -46,12 +44,14 @@ public class CheckerFrameworkPanel extends JPanel {
                         .locate("checker-qual.jar", "org.checkerframework.netbeans", false)
                         .getAbsolutePath();
 
+        EditableProperties tempProperty;
         try {
-            editableProperty = loadProperties(projectProperties);
+            tempProperty = loadProperties(projectProperties);
         } catch (IOException e) {
+            tempProperty = new EditableProperties(false);
             System.out.println("Failed to load netbeans project.properties file.");
         }
-
+        editableProperty = tempProperty;
         try {
             checkerStrings =
                     loadProperties(
@@ -117,13 +117,9 @@ public class CheckerFrameworkPanel extends JPanel {
         }
     }
 
-    public JCheckBox[] getCheckBoxes() {
-        return checkerList;
-    }
-
     private String updateSelections() {
         StringBuilder sel = new StringBuilder();
-        String selectedChecker = "";
+        String selectedChecker;
         for (JCheckBox checkBox : checkerList) {
             if (checkBox.isSelected()) {
                 selectedChecker = checkerStrings.get(checkBox.getText());
