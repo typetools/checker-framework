@@ -13,10 +13,26 @@ an index expression that might be negative or might be equal to or larger
 than the sequence's length.
 It also prevents \<NegativeArraySizeException>s that result from a negative
 array dimension in an array creation expression.
+(A caveat:  the Index Checker does not check for arithmetic overflow.  If
+an expression overflows, the Index Checker might fail to warn about a
+possible exception.)
+
+% Here's a pathological example of overflow leading to unsoundness:
+%
+% public class IndexOverflow {
+%     public static void main(String[] args) {
+%         @Positive int x = 1073741825; // 2 ^ 30 + 1
+%         @Positive int x2 = x + x; // 2 ^ 31 + 2 == - 2 ^ 31 + 2
+%         int[] a = new int[0];
+%         if (x2 < a.length) {
+%             a[x2] = 42;
+%         }
+%     }
+% }
 
 The programmer can write annotations that indicate which expressions are
-indices for which arrays.  The Index Checker will enforce that any
-run-time operation preserves these properties, and will take advantage of
+indices for which arrays.  The Index Checker prohibits any operation that
+may violate these properties, and the Index Checker takes advantage of
 these properties when verifying indexing operations.
 %
 Typically, a programmer writes few annotations, because the Index Checker
