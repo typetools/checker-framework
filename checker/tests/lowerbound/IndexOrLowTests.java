@@ -32,8 +32,9 @@ public class IndexOrLowTests {
     }
 
     void test3(int[] a, int b) {
-        //:: error: (assignment.type.incompatible)
         @IndexOrLow("a")
-        int k = a.length - b;
+        int k;
+        //:: error: (assignment.type.incompatible)
+        k = a.length - b;
     }
 }
