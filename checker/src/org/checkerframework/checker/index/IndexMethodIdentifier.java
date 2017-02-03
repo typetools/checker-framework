@@ -22,7 +22,7 @@ public class IndexMethodIdentifier {
     public IndexMethodIdentifier(ProcessingEnvironment processingEnv) {
         fcnRandom = TreeUtils.getMethod("java.lang.Math", "random", 0, processingEnv);
         fcnNextDouble = TreeUtils.getMethod("java.util.Random", "nextDouble", 0, processingEnv);
-	fcnNextInt = TreeUtils.getMethod("java.util.Random", "nextInt", 1, processingEnv);
+        fcnNextInt = TreeUtils.getMethod("java.util.Random", "nextInt", 1, processingEnv);
 
         mathMinMethods = TreeUtils.getMethodList("java.lang.Math", "min", 2, processingEnv);
         mathMaxMethods = TreeUtils.getMethodList("java.lang.Math", "max", 2, processingEnv);
