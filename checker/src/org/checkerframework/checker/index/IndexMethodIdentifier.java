@@ -14,6 +14,7 @@ public class IndexMethodIdentifier {
 
     private final ExecutableElement fcnRandom;
     private final ExecutableElement fcnNextDouble;
+    private final ExecutableElement fcnNextInt;
 
     private final List<ExecutableElement> mathMinMethods;
     private final List<ExecutableElement> mathMaxMethods;
@@ -21,6 +22,7 @@ public class IndexMethodIdentifier {
     public IndexMethodIdentifier(ProcessingEnvironment processingEnv) {
         fcnRandom = TreeUtils.getMethod("java.lang.Math", "random", 0, processingEnv);
         fcnNextDouble = TreeUtils.getMethod("java.util.Random", "nextDouble", 0, processingEnv);
+	fcnNextInt = TreeUtils.getMethod("java.util.Random", "nextInt", 1, processingEnv);
 
         mathMinMethods = TreeUtils.getMethodList("java.lang.Math", "min", 2, processingEnv);
         mathMaxMethods = TreeUtils.getMethodList("java.lang.Math", "max", 2, processingEnv);
@@ -50,5 +52,9 @@ public class IndexMethodIdentifier {
 
     public boolean isRandomNextDouble(Tree tree, ProcessingEnvironment processingEnv) {
         return TreeUtils.isMethodInvocation(tree, fcnNextDouble, processingEnv);
+    }
+
+    public boolean isRandomNextInt(Tree tree, ProcessingEnvironment processingEnv) {
+        return TreeUtils.isMethodInvocation(tree, fcnNextInt, processingEnv);
     }
 }
