@@ -48,13 +48,15 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     }
 
     /**
-     * Given a masking operation of the form {@code x & maskLit} or {@code x | maskLit}, return true
-     * iff the masking operation results in the same output regardless of the value of the numBits
-     * most significant bits of x. This is if the numBits most significant bits of mask are 0 for
-     * AND, and 1 for OR. For example, assuming that numBits is 4, the following is true about AND
-     * and OR masks:
+     * Given a masking operation of the form {@code expr & maskLit} or {@code expr | maskLit},
+     * return true iff the masking operation results in the same output regardless of the value of
+     * the numBits most significant bits of expr. This is if the numBits most significant bits of
+     * mask are 0 for AND, and 1 for OR. For example, assuming that numBits is 4, the following is
+     * true about AND and OR masks:
      *
-     * <p>{@code x & 0x0... == 0x0...;} {@code x | 0xF... == 0xF...;}
+     * <p>{@code expr & 0x0... == 0x0... ;}
+     *
+     * <p>{@code expr | 0xF... == 0xF... ;}
      *
      * @param maskKind the kind of mask (AND or OR)
      * @param numBitsLit the LiteralTree whose value is numBits
@@ -65,79 +67,81 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         long numBits = getLong(numBitsLit.getValue());
         long mask = getLong(maskLit.getValue());
 
-        // If maskLit was an int, then shift mask so that the numBits most significant bits are in the right position
+        // Shift the numBits most significant bits to become the numBits least significant bits, zeroing out the rest.
         if (maskLit.getKind() != Kind.LONG_LITERAL) {
             mask <<= 32;
         }
-
-        // Shift the numBits most significant bits to become the numBits least significant bits, zeroing out the rest
         mask >>>= (64 - numBits);
+
         if (maskKind == Kind.AND) {
-            // Check that the numBits most significant bits of the mask were 0
+            // Check that the numBits most significant bits of the mask were 0.
             return mask == 0;
         } else if (maskKind == Kind.OR) {
-            // Check that the numBits most significant bits of the mask were 1
+            // Check that the numBits most significant bits of the mask were 1.
             return mask == (1 << numBits) - 1;
         } else {
-            return false;
+            // This shouldn't be possible.
+            throw new RuntimeException("Invalid Masking Operation");
         }
     }
 
     /**
      * Determines if a right shift operation, {@code >>} or {@code >>>}, is masked with a masking
-     * operation of the form {@code shiftOp & maskLit} or {@code shiftOp | maskLit} such that the
-     * mask renders the shift signedness irrelevent by destroying the bits introduced by the shift.
-     * For example, the following pairs of right shifts on {@code byte b} both produce the same
-     * results under any input, because of their masks:
+     * operation of the form {@code shiftExpr & maskLit} or {@code shiftExpr | maskLit} such that
+     * the mask renders the shift signedness ({@code >>} vs {@code >>>}) irrelevent by destroying
+     * the bits duplicated into the shift result. For example, the following pairs of right shifts
+     * on {@code byte b} both produce the same results under any input, because of their masks:
      *
-     * <p>{@code (b >> 4) & 0x0F == (b >>> 4) & 0x0F;} {@code (b >> 4) | 0xF0 == (b >>> 4) | 0xF0;}
+     * <p>{@code (b >> 4) & 0x0F == (b >>> 4) & 0x0F;}
      *
-     * @param shiftOp a right shift operation: {@code >>} or {@code >>>}
+     * <p>{@code (b >> 4) | 0xF0 == (b >>> 4) | 0xF0;}
+     *
+     * @param shiftExpr a right shift expression: {@code expr1 >> expr2} or {@code expr1 >>> expr2}
      * @return true iff the right shift is masked such that a signed or unsigned right shift has the
      *     same effect
      */
-    private boolean isMaskedShift(BinaryTree shiftOp) {
-        // parent is the operation or statement that immediately contains shiftOp
-        Tree parent;
-        // topChild is the top node in the chain of nodes from shiftOp to parent
-        Tree topChild;
+    private boolean isMaskedShift(BinaryTree shiftExpr) {
+        // enclosing is the operation or statement that immediately contains shiftExpr
+        Tree enclosing;
+        // enclosingChild is the top node in the chain of nodes from shiftExpr to parent
+        Tree enclosingChild;
         {
             TreePath parentPath = visitorState.getPath().getParentPath();
-            parent = parentPath.getLeaf();
-            topChild = parent;
+            enclosing = parentPath.getLeaf();
+            enclosingChild = enclosing;
             // Strip away all parentheses from the shift operation
-            while (parent.getKind() == Kind.PARENTHESIZED) {
+            while (enclosing.getKind() == Kind.PARENTHESIZED) {
                 parentPath = parentPath.getParentPath();
-                topChild = parent;
-                parent = parentPath.getLeaf();
+                enclosingChild = enclosing;
+                enclosing = parentPath.getLeaf();
             }
         }
 
-        if (!isMask(parent)) {
+        if (!isMask(enclosing)) {
             return false;
         }
 
-        BinaryTree maskOp = (BinaryTree) parent;
-        ExpressionTree shiftExpr = shiftOp.getRightOperand();
+        BinaryTree maskExpr = (BinaryTree) enclosing;
+        ExpressionTree shift = shiftExpr.getRightOperand();
 
-        // Determine which child of maskOp leads to shiftOp. The other one is the mask expression
-        ExpressionTree maskExpr =
-                maskOp.getRightOperand() == topChild
-                        ? maskOp.getLeftOperand()
-                        : maskOp.getRightOperand();
+        // Determine which child of maskExpr leads to shiftExpr. The other one is the mask.
+        ExpressionTree mask =
+                maskExpr.getRightOperand() == enclosingChild
+                        ? maskExpr.getLeftOperand()
+                        : maskExpr.getRightOperand();
 
-        // Strip away the parentheses from the mask expression if any exist
-        while (maskExpr.getKind() == Kind.PARENTHESIZED)
-            maskExpr = ((ParenthesizedTree) maskExpr).getExpression();
+        // Strip away the parentheses from the mask if any exist
+        while (mask.getKind() == Kind.PARENTHESIZED)
+            mask = ((ParenthesizedTree) mask).getExpression();
 
-        if (!isLiteral(shiftExpr) || !isLiteral(maskExpr)) {
+        if (!isLiteral(shift) || !isLiteral(mask)) {
             return false;
         }
 
-        LiteralTree shiftLit = (LiteralTree) shiftExpr;
-        LiteralTree maskLit = (LiteralTree) maskExpr;
+        LiteralTree shiftLit = (LiteralTree) shift;
+        LiteralTree maskLit = (LiteralTree) mask;
 
-        return maskIgnoresMSB(maskOp.getKind(), shiftLit, maskLit);
+        return maskIgnoresMSB(maskExpr.getKind(), shiftLit, maskLit);
     }
 
     /**
