@@ -23,7 +23,7 @@ fi
 
 # This is to handle non-.java files, since the above already handled .java files.
 # May need to remove files that are allowed to have trailing whitespace.
-CHANGED_STYLE_FILES=`git diff --staged --name-only --diff-filter=ACM` || true
+CHANGED_STYLE_FILES=`git diff --staged --name-only --diff-filter=ACM | grep -v '.png$' | grep -v '.xcf$'` || true
 if [ ! -z "$CHANGED_STYLE_FILES" ]; then
     # echo "CHANGED_STYLE_FILES: ${CHANGED_STYLE_FILES}"
     grep -q '[[:blank:]]$' ${CHANGED_STYLE_FILES} 2>&1 && (echo "Some files have trailing whitespace:" && grep -l '[[:blank:]]$' ${CHANGED_STYLE_FILES} && exit 1)
