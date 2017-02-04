@@ -420,8 +420,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 validateTypeOf(thr);
             }
 
-            if (atypeFactory.getExpressionAnnotationHelper() != null) {
-                atypeFactory.getExpressionAnnotationHelper().checkMethod(node, methodType);
+            if (atypeFactory.getDependentTypesHelper() != null) {
+                atypeFactory.getDependentTypesHelper().checkMethod(node, methodType);
             }
 
             AnnotatedDeclaredType enclosingType =
@@ -699,9 +699,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 Pair.of((Tree) node, atypeFactory.getAnnotatedType(node)));
 
         try {
-            if (atypeFactory.getExpressionAnnotationHelper() != null) {
+            if (atypeFactory.getDependentTypesHelper() != null) {
                 atypeFactory
-                        .getExpressionAnnotationHelper()
+                        .getDependentTypesHelper()
                         .checkType(visitorState.getAssignmentContext().second, node);
             }
             // If there's no assignment in this variable declaration, skip it.
@@ -986,8 +986,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         if (valid) {
             AnnotatedDeclaredType dt = atypeFactory.getAnnotatedType(node);
-            if (atypeFactory.getExpressionAnnotationHelper() != null) {
-                atypeFactory.getExpressionAnnotationHelper().checkType(dt, node);
+            if (atypeFactory.getDependentTypesHelper() != null) {
+                atypeFactory.getDependentTypesHelper().checkType(dt, node);
             }
             checkConstructorInvocation(dt, constructor, node);
         }
@@ -1245,8 +1245,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         if (valid && node.getType() != null) {
             AnnotatedArrayType arrayType = atypeFactory.getAnnotatedType(node);
-            if (atypeFactory.getExpressionAnnotationHelper() != null) {
-                atypeFactory.getExpressionAnnotationHelper().checkType(arrayType, node);
+            if (atypeFactory.getDependentTypesHelper() != null) {
+                atypeFactory.getDependentTypesHelper().checkType(arrayType, node);
             }
             if (node.getInitializers() != null) {
                 checkArrayInitialization(arrayType.getComponentType(), node.getInitializers());
@@ -1365,9 +1365,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             checkTypecastSafety(node, p);
             checkTypecastRedundancy(node, p);
         }
-        if (atypeFactory.getExpressionAnnotationHelper() != null) {
+        if (atypeFactory.getDependentTypesHelper() != null) {
             AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
-            atypeFactory.getExpressionAnnotationHelper().checkType(type, node.getType());
+            atypeFactory.getDependentTypesHelper().checkType(type, node.getType());
         }
         return super.visitTypeCast(node, p);
         // return scan(node.getExpression(), p);

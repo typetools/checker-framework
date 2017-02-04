@@ -45,8 +45,8 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationHelper;
-import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationTreeAnnotator;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -123,7 +123,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected ExpressionAnnotationHelper createExpressionAnnotationHelper() {
+    protected DependentTypesHelper createDependentTypesHelper() {
         List<Class<? extends Annotation>> annos = new ArrayList<>();
         annos.add(LTLengthOf.class);
         annos.add(LTEqLengthOf.class);
@@ -131,15 +131,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         annos.add(IndexOrLow.class);
         annos.add(IndexOrHigh.class);
         annos.add(LTOMLengthOf.class);
-        return new ExpressionAnnotationHelper(this, annos) {
+        return new DependentTypesHelper(this, annos) {
             @Override
-            public TreeAnnotator createExpressionAnnotationTreeAnnotator(
-                    AnnotatedTypeFactory factory) {
-                return new ExpressionAnnotationTreeAnnotator(factory, this) {
+            public TreeAnnotator createDependentTypesTreeAnnotator(AnnotatedTypeFactory factory) {
+                return new DependentTypesTreeAnnotator(factory, this) {
                     @Override
                     public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
                         // UpperBoundTreeAnnotator changes the type of array.length to @LTEL
-                        // ("array"). If the ExpressionAnnotationTreeAnnotator tries to viewpoint
+                        // ("array"). If the DependentTypesTreeAnnotator tries to viewpoint
                         // adapt it based on the declaration of length; it will fail.
                         if (TreeUtils.isArrayLengthAccess(tree)) {
                             return null;

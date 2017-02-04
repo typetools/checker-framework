@@ -210,13 +210,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * If any constant-value annotation has &gt; MAX_VALUES number of values provided, treats
-         * the value as UnknownVal. Works together with ValueVisitor.visitAnnotation, which issues a
-         * warning to the user in this case.
+         * This method performs pre-processing on annotations written by users.
          *
-         * <p>Additional rules applied for IntVal and IntRange annotations: if anno is IntVal and
-         * the number of values provided is &gt; MAX_VALUES, replace with IntRange; if anno is
-         * IntRange and the range is &le; MAX_VALUES, replace with IntVal
+         * <p>If any *Val annotation has &gt; MAX_VALUES number of values provided, replaces the
+         * annotation by @IntRange for integral types and @UnknownVal for all other types. Works
+         * together with {@link
+         * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
+         * Void)} which issues warnings to users in these cases.
+         *
+         * <p>If any @IntRange annotation has incorrect parameters, e.g. the value "from" is
+         * specified to be greater than the value "to", replaces the annotation by @UnknownVal as
+         * well. The {@link
+         * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
+         * Void)} would raise error to users in this case.
          */
         private void replaceWithNewAnnoInSpecialCases(AnnotatedTypeMirror atm) {
             AnnotationMirror anno = atm.getAnnotationInHierarchy(UNKNOWNVAL);
@@ -230,19 +236,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
                     List<Long> values =
                             AnnotationUtils.getElementValueArray(anno, "value", Long.class, true);
-                    if (values != null && values.size() > MAX_VALUES) {
+                    if (values.size() > MAX_VALUES) {
                         long annoMinVal = Collections.min(values);
                         long annoMaxVal = Collections.max(values);
                         atm.replaceAnnotation(
                                 createIntRangeAnnotation(new Range(annoMinVal, annoMaxVal)));
                     }
                 } else {
-                    // In here the annotation is @*Val where (*) is not Int but other types (String, Double, etc)
-                    // Therefore we extract its values in a generic way to check its size
+                    // In here the annotation is @*Val where (*) is not Int but other types (String, Double, etc).
+                    // Therefore we extract its values in a generic way to check its size.
                     List<Object> values =
                             AnnotationUtils.getElementValueArray(
                                     anno, "value", Object.class, false);
-                    if (values != null && values.size() > MAX_VALUES) {
+                    if (values.size() > MAX_VALUES) {
                         atm.replaceAnnotation(UNKNOWNVAL);
                     }
                 }

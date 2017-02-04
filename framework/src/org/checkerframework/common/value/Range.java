@@ -7,14 +7,13 @@ import java.util.Collections;
 
 /**
  * The Range Class with mathematics operations. Models the range indicated by the @IntRange
- * annotation
+ * annotation.
  *
  * <p>Note that this class is not responsible for detecting incorrect parameters, e.g. the value of
  * "from" could be greater than the value of "to". This incorrectness would be eventually caught by
  * {@link
  * org.checkerframework.common.value.ValueAnnotatedTypeFactory#createIntRangeAnnotation(Range)} when
- * creating an annotation from range, which would then be replaced with {@code
- * {@literal @}UnknownVal}
+ * creating an annotation from range, which would then be replaced with @UnknownVal.
  *
  * @author JasonMrX
  */
@@ -32,7 +31,7 @@ public class Range {
      * <p>Note that it is possible to construct a range with incorrect parameters, e.g. the value of
      * "from" could be greater than the value to "to". This incorrectness would be caught by {@link
      * org.checkerframework.common.value.ValueAnnotatedTypeFactory#createIntRangeAnnotation(Range)}
-     * when creating an annotation from range, which would then be replaced with @UnknownVal
+     * when creating an annotation from range, which would then be replaced with @UnknownVal.
      *
      * @param from the lower bound (inclusive)
      * @param to the higher bound (inclusive)
@@ -62,7 +61,7 @@ public class Range {
      *       thus still results in only one single range.
      * </ul>
      *
-     * @param right a range to union with this range
+     * @param right a range to union with this range.
      * @return a range resulted from the union of the specified range and this range.
      */
     public Range union(Range right) {
@@ -72,7 +71,7 @@ public class Range {
     }
 
     /**
-     * Returns the smallest single range that includes all values enclosed by both of the two
+     * Returns the smallest single range that includes all values enclosed by both of the two.
      * ranges. We call this the intersection of two ranges.
      *
      * <p>Special case:
@@ -82,10 +81,10 @@ public class Range {
      *       would be returned. This incorrectness would be then caught by {@link
      *       org.checkerframework.common.value.ValueAnnotatedTypeFactory#createIntRangeAnnotation(Range)}
      *       when creating an annotation from range, which would then be replaced with
-     *       {@code @UnknownVal}
+     *       {@code @UnknownVal}.
      * </ul>
      *
-     * @param right the range to intersect with this range
+     * @param right the range to intersect with this range.
      * @return a range resulted from the intersection of the specified range and this range.
      */
     public Range intersect(Range right) {
@@ -110,10 +109,10 @@ public class Range {
     /**
      * Returns the smallest single range that includes all possible values resulted from subtracting
      * an arbitrary value in the specified range from an arbitrary value in this range. We call this
-     * the subtraction of two ranges
+     * the subtraction of two ranges.
      *
-     * @param right the range to be subtracted from this range
-     * @return the range resulted from subtracting the specified range from this range
+     * @param right the range to be subtracted from this range.
+     * @return the range resulted from subtracting the specified range from this range.
      */
     public Range minus(Range right) {
         long resultFrom = from - right.to;
@@ -124,10 +123,10 @@ public class Range {
     /**
      * Returns the smallest single range that includes all possible values resulted from multiplying
      * an arbitrary value in the specified range by an arbitrary value in this range. We call this
-     * the multiplication of two ranges
+     * the multiplication of two ranges.
      *
-     * @param right the specified range to be multiplied by this range
-     * @return the range resulted from multiplying the specified range by this range
+     * @param right the specified range to be multiplied by this range.
+     * @return the range resulted from multiplying the specified range by this range.
      */
     public Range times(Range right) {
         ArrayList<Long> possibleValues =
@@ -143,7 +142,7 @@ public class Range {
     /**
      * Returns the smallest single range that includes all possible values resulted from dividing an
      * arbitrary value in this range by an arbitrary value in the specified range. We call this the
-     * division of two ranges
+     * division of two ranges.
      *
      * @param right the specified range by which this range is divided.
      * @return the range resulted from dividing this range by the specified range.
@@ -211,7 +210,7 @@ public class Range {
     /**
      * Returns the smallest single range that includes all possible values resulted from left
      * shifting an arbitrary value in this range by an arbitrary number of bits in the specified
-     * range. We call this the left shift operation of a range
+     * range. We call this the left shift operation of a range.
      *
      * @param right the range of bits by which this range is left shifted.
      * @return the range resulted from left shifting this range by the specified range.
@@ -225,7 +224,7 @@ public class Range {
     /**
      * Returns the smallest single range that includes all possible values resulted from signed
      * right shifting an arbitrary value in this range by an arbitrary number of bits in the
-     * specified range. We call this the signed right shift operation of a range
+     * specified range. We call this the signed right shift operation of a range.
      *
      * @param right the range of bits by which this range is signed right shifted.
      * @return the range resulted from signed right shifting this range by the specified range.
@@ -240,7 +239,7 @@ public class Range {
      * Returns the range of a variable that falls within this range after applying unary plus
      * operation.
      *
-     * @return the resulted range of applying unary plus on an arbitrary value in this range
+     * @return the resulted range of applying unary plus on an arbitrary value in this range.
      */
     public Range unaryPlus() {
         return new Range(from, to);
@@ -250,7 +249,7 @@ public class Range {
      * Returns the range of a variable that falls within this range after applying unary minus
      * operation.
      *
-     * @return the resulted range of applying unary minus on an arbitrary value in this range
+     * @return the resulted range of applying unary minus on an arbitrary value in this range.
      */
     public Range unaryMinus() {
         return new Range(-to, -from);
@@ -260,7 +259,8 @@ public class Range {
      * Returns the range of a variable that falls within this range after applying bitwise
      * complement operation.
      *
-     * @return the resulted range of applying bitwise complement on an arbitrary value in this range
+     * @return the resulted range of applying bitwise complement on an arbitrary value in this
+     *     range.
      */
     public Range bitwiseComplement() {
         return new Range(~to, ~from);
@@ -286,8 +286,8 @@ public class Range {
      * </code>
      * </pre>
      *
-     * @param right the specified {@code Range} to compare with
-     * @return the refined {@code Range}
+     * @param right the specified {@code Range} to compare with.
+     * @return the refined {@code Range}.
      */
     public Range lessThan(Range right) {
         return new Range(from, Math.min(to, right.to - 1));
@@ -313,8 +313,8 @@ public class Range {
      * </code>
      * </pre>
      *
-     * @param right the specified {@code Range} to compare with
-     * @return the refined {@code Range}
+     * @param right the specified {@code Range} to compare with.
+     * @return the refined {@code Range}.
      */
     public Range lessThanEq(Range right) {
         return new Range(from, Math.min(to, right.to));
@@ -340,8 +340,8 @@ public class Range {
      * </code>
      * </pre>
      *
-     * @param right the specified {@code Range} to compare with
-     * @return the refined {@code Range}
+     * @param right the specified {@code Range} to compare with.
+     * @return the refined {@code Range}.
      */
     public Range greaterThan(Range right) {
         return new Range(Math.max(from, right.from + 1), to);
@@ -367,8 +367,8 @@ public class Range {
      * </code>
      * </pre>
      *
-     * @param right the specified {@code Range} to compare with
-     * @return the refined {@code Range}
+     * @param right the specified {@code Range} to compare with.
+     * @return the refined {@code Range}.
      */
     public Range greaterThanEq(Range right) {
         return new Range(Math.max(from, right.from), to);
@@ -394,21 +394,11 @@ public class Range {
      * </code>
      * </pre>
      *
-     * @param right the specified {@code Range} to compare with
-     * @return the refined {@code Range}
+     * @param right the specified {@code Range} to compare with.
+     * @return the refined {@code Range}.
      */
     public Range equalTo(Range right) {
         return new Range(Math.max(from, right.from), Math.min(to, right.to));
-    }
-
-    /**
-     * Control flow refinement for not equal to operator
-     *
-     * @param right the range to compare with
-     * @return the refined result
-     */
-    public Range notEqualTo(Range right) {
-        return new Range(from, to);
     }
 
     /**
@@ -425,8 +415,8 @@ public class Range {
      * Determines if the range is wider than a given value, i.e., if the number of possible values
      * enclosed by this range is more than the given value.
      *
-     * @param value the value to compare with
-     * @return true if wider than the given value
+     * @param value the value to compare with.
+     * @return true if wider than the given value.
      */
     public boolean isWiderThan(int value) {
         return numberOfPossibleValues().compareTo(BigInteger.valueOf(value)) == 1;
