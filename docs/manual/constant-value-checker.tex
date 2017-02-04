@@ -217,8 +217,8 @@ Some examples of these:
   The checker could not find the method \code{foo(int)} specified for
   resolving a \<@StaticallyExecutable> method, but could find the
   class. This is usually due to providing an outdated version of the
-  class-file that does not contain the \<@StaticallyExecutable>
-  method.
+  class-file that does not contain the
+  method that was annotated as \<@StaticallyExecutable>.
 
 \item \code{[method.evaluation.exception] Failed to evaluate method public static int Test.foo(int) because it threw an exception: java.lang.ArithmeticException: / by zero.}
 
@@ -242,14 +242,6 @@ warning message:
   The Constant Value Checker only tracks up to 10 possible values for an
   expression.  If you write an annotation with more values than will be
   tracked, the annotation is replaced with \<@IntRange> or \<@UnknownVal>.
-
-\item \code{[too.narrow.int.range] The smallest interval of integer range permitted is 10.}
-
-  Vice versa.
-
-\item \code{[from.greater.than.to] The integer range specified is abnormal.}
-
-  Issue a warning when user accidentally confuse \<from> for \<to>.
 
 \end{itemize}
 \end{sloppypar}
