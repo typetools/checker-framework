@@ -54,7 +54,7 @@ public final class Byte extends Number implements Comparable<Byte> {
      * A constant holding the maximum value a {@code byte} can
      * have, 2<sup>7</sup>-1.
      */
-    public static final /*@Positive*/ byte   MAX_VALUE = 127;
+    public static final @Positive byte   MAX_VALUE = 127;
 
     /**
      * The {@code Class} instance representing the primitive type
@@ -446,7 +446,7 @@ public final class Byte extends Number implements Comparable<Byte> {
      *
      * @since 1.5
      */
-    public static final /*@Positive*/ int SIZE = 8;
+    public static final @Positive int SIZE = 8;
 
     /** use serialVersionUID from JDK 1.1. for interoperability */
     private static final long serialVersionUID = -7183698231559129828L;

@@ -321,7 +321,7 @@ public class LinkedList<E>
      *
      * @return the number of elements in this list
      */
-    public /*@NonNegative*/ int size() {
+    public @NonNegative int size() {
         return size;
     }
 
@@ -591,7 +591,7 @@ public class LinkedList<E>
      * @return the index of the first occurrence of the specified element in
      *         this list, or -1 if this list does not contain the element
      */
-    public /*@GTENegativeOne*/ int indexOf(Object o) {
+    public @GTENegativeOne int indexOf(Object o) {
         int index = 0;
         if (o == null) {
             for (Node<E> x = first; x != null; x = x.next) {
@@ -620,7 +620,7 @@ public class LinkedList<E>
      * @return the index of the last occurrence of the specified element in
      *         this list, or -1 if this list does not contain the element
      */
-    public /*@GTENegativeOne*/ int lastIndexOf(Object o) {
+    public @GTENegativeOne int lastIndexOf(Object o) {
         int index = size;
         if (o == null) {
             for (Node<E> x = last; x != null; x = x.prev) {

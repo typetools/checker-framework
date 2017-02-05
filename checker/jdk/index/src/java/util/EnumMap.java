@@ -189,7 +189,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
      *
      * @return the number of key-value mappings in this map
      */
-    public /*@NonNegative*/ int size() {
+    public @NonNegative int size() {
         return size;
     }
 
@@ -429,7 +429,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
         public Iterator<V> iterator() {
             return new ValueIterator();
         }
-        public /*@NonNegative*/ int size() {
+        public @NonNegative int size() {
             return size;
         }
         public boolean contains(Object o) {
@@ -486,7 +486,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
             Map.Entry entry = (Map.Entry)o;
             return removeMapping(entry.getKey(), entry.getValue());
         }
-        public /*@NonNegative*/ int size() {
+        public @NonNegative int size() {
             return size;
         }
         public void clear() {

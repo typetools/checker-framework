@@ -121,7 +121,7 @@ public class PipedInputStream extends InputStream {
      * @exception  IllegalArgumentException if <code>pipeSize <= 0</code>.
      * @since      1.6
      */
-    public PipedInputStream(PipedOutputStream src, /*@NonNegative*/ int pipeSize)
+    public PipedInputStream(PipedOutputStream src, @NonNegative int pipeSize)
             throws IOException {
          initPipe(pipeSize);
          connect(src);
@@ -151,11 +151,11 @@ public class PipedInputStream extends InputStream {
      * @exception  IllegalArgumentException if <code>pipeSize <= 0</code>.
      * @since      1.6
      */
-    public PipedInputStream(/*@NonNegative*/ int pipeSize) {
+    public PipedInputStream(@NonNegative int pipeSize) {
         initPipe(pipeSize);
     }
 
-    private void initPipe(/*@NonNegative*/ int pipeSize) {
+    private void initPipe(@NonNegative int pipeSize) {
          if (pipeSize <= 0) {
             throw new IllegalArgumentException("Pipe Size <= 0");
          }
@@ -302,7 +302,7 @@ public class PipedInputStream extends InputStream {
      *           <a href=#BROKEN> <code>broken</code></a>, closed,
      *           or if an I/O error occurs.
      */
-    public synchronized /*@GTENegativeOne*/ int read()  throws IOException {
+    public synchronized @GTENegativeOne int read()  throws IOException {
         if (!connected) {
             throw new IOException("Pipe not connected");
         } else if (closedByReader) {
@@ -366,7 +366,7 @@ public class PipedInputStream extends InputStream {
      *           {@link #connect(java.io.PipedOutputStream) unconnected},
      *           closed, or if an I/O error occurs.
      */
-    public synchronized /*@GTENegativeOne*/ int read(byte b[], /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len)  throws IOException {
+    public synchronized @GTENegativeOne int read(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len)  throws IOException {
         if (b == null) {
             throw new NullPointerException();
         } else if (off < 0 || len < 0 || len > b.length - off) {
@@ -425,7 +425,7 @@ public class PipedInputStream extends InputStream {
      * @exception  IOException  if an I/O error occurs.
      * @since   JDK1.0.2
      */
-    public synchronized /*@NonNegative*/ int available() throws IOException {
+    public synchronized @NonNegative int available() throws IOException {
         if(in < 0)
             return 0;
         else if(in == out)

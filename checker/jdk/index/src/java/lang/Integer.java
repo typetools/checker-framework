@@ -61,7 +61,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * A constant holding the maximum value an {@code int} can
      * have, 2<sup>31</sup>-1.
      */
-    public static final /*@Positive*/ int   MAX_VALUE = 0x7fffffff;
+    public static final @Positive int   MAX_VALUE = 0x7fffffff;
 
     /**
      * The {@code Class} instance representing the primitive type
@@ -1031,7 +1031,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *
      * @since 1.5
      */
-    public static final /*@Positive*/ int SIZE = 32;
+    public static final @Positive int SIZE = 32;
 
     /**
      * Returns an {@code int} value with at most a single one-bit, in the
@@ -1092,7 +1092,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     is equal to zero.
      * @since 1.5
      */
-    public static /*@NonNegative*/ int numberOfLeadingZeros(int i) {
+    public static @NonNegative int numberOfLeadingZeros(int i) {
         // HD, Figure 5-6
         if (i == 0)
             return 32;
@@ -1118,7 +1118,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     to zero.
      * @since 1.5
      */
-    public static /*@NonNegative*/ int numberOfTrailingZeros(int i) {
+    public static @NonNegative int numberOfTrailingZeros(int i) {
         // HD, Figure 5-14
         int y;
         if (i == 0) return 32;
@@ -1139,7 +1139,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     representation of the specified {@code int} value.
      * @since 1.5
      */
-    public static /*@NonNegative*/ int bitCount(int i) {
+    public static @NonNegative int bitCount(int i) {
         // HD, Figure 5-2
         i = i - ((i >>> 1) & 0x55555555);
         i = (i & 0x33333333) + ((i >>> 2) & 0x33333333);
@@ -1220,7 +1220,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @return the signum function of the specified {@code int} value.
      * @since 1.5
      */
-    public static /*@GTENegativeOne*/ int signum(int i) {
+    public static @GTENegativeOne int signum(int i) {
         // HD, Section 2-7
         return (i >> 31) | (-i >>> 31);
     }

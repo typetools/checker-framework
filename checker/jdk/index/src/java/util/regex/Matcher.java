@@ -368,7 +368,7 @@ public final class Matcher implements MatchResult {
      *          If there is no capturing group in the pattern
      *          with the given index
      */
-    public /*@GTENegativeOne*/ int start(/*@NonNegative*/ int group) {
+    public @GTENegativeOne int start(@NonNegative int group) {
         if (first < 0)
             throw new IllegalStateException("No match available");
         if (group > groupCount())
@@ -385,7 +385,7 @@ public final class Matcher implements MatchResult {
      *          If no match has yet been attempted,
      *          or if the previous match operation failed
      */
-    public /*@GTENegativeOne*/ int end() {
+    public @GTENegativeOne int end() {
         if (first < 0)
             throw new IllegalStateException("No match available");
         return last;
@@ -415,7 +415,7 @@ public final class Matcher implements MatchResult {
      *          If there is no capturing group in the pattern
      *          with the given index
      */
-    public /*@GTENegativeOne*/ int end(/*@NonNegative*/ int group) {
+    public @GTENegativeOne int end(@NonNegative int group) {
         if (first < 0)
             throw new IllegalStateException("No match available");
         if (group > groupCount())
@@ -481,7 +481,7 @@ public final class Matcher implements MatchResult {
      *          If there is no capturing group in the pattern
      *          with the given index
      */
-    public String group(/*@NonNegative*/ int group) {
+    public String group(@NonNegative int group) {
         if (first < 0)
             throw new IllegalStateException("No match found");
         if (group < 0 || group > groupCount())
@@ -543,7 +543,7 @@ public final class Matcher implements MatchResult {
      *
      * @return The number of capturing groups in this matcher's pattern
      */
-    public /*@NonNegative*/ int groupCount() {
+    public @NonNegative int groupCount() {
         return parentPattern.capturingGroupCount - 1;
     }
 
@@ -611,7 +611,7 @@ public final class Matcher implements MatchResult {
      *          sequence starting at the given index matches this matcher's
      *          pattern
      */
-    public boolean find(/*@NonNegative*/ int start) {
+    public boolean find(@NonNegative int start) {
         int limit = getTextLength();
         if ((start < 0) || (start > limit))
             throw new IndexOutOfBoundsException("Illegal start index");
@@ -983,7 +983,7 @@ public final class Matcher implements MatchResult {
      * @return  this matcher
      * @since 1.5
      */
-    public Matcher region(/*@NonNegative*/ int start, /*@NonNegative*/ int end) {
+    public Matcher region(@NonNegative int start, @NonNegative int end) {
         if ((start < 0) || (start > getTextLength()))
             throw new IndexOutOfBoundsException("start");
         if ((end < 0) || (end > getTextLength()))
@@ -1005,7 +1005,7 @@ public final class Matcher implements MatchResult {
      * @return  The starting point of this matcher's region
      * @since 1.5
      */
-    public /*@GTENegativeOne*/ int regionStart() {
+    public @GTENegativeOne int regionStart() {
         return from;
     }
 
@@ -1018,7 +1018,7 @@ public final class Matcher implements MatchResult {
      * @return  the ending point of this matcher's region
      * @since 1.5
      */
-    public /*@GTENegativeOne*/ int regionEnd() {
+    public @GTENegativeOne int regionEnd() {
         return to;
     }
 

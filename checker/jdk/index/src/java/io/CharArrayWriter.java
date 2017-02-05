@@ -65,7 +65,7 @@ class CharArrayWriter extends Writer {
      * @param initialSize  an int specifying the initial buffer size.
      * @exception IllegalArgumentException if initialSize is negative
      */
-    public CharArrayWriter(/*@NonNegative*/ int initialSize) {
+    public CharArrayWriter(@NonNegative int initialSize) {
         if (initialSize < 0) {
             throw new IllegalArgumentException("Negative initial size: "
                                                + initialSize);
@@ -76,7 +76,7 @@ class CharArrayWriter extends Writer {
     /**
      * Writes a character to the buffer.
      */
-    public void write(/*@NonNegative*/ int c) {
+    public void write(@NonNegative int c) {
         synchronized (lock) {
             int newcount = count + 1;
             if (newcount > buf.length) {
@@ -93,7 +93,7 @@ class CharArrayWriter extends Writer {
      * @param off       the start offset in the data
      * @param len       the number of chars that are written
      */
-    public void write(char c[], /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) {
+    public void write(char c[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) {
         if ((off < 0) || (off > c.length) || (len < 0) ||
             ((off + len) > c.length) || ((off + len) < 0)) {
             throw new IndexOutOfBoundsException();
@@ -116,7 +116,7 @@ class CharArrayWriter extends Writer {
      * @param  off  Offset from which to start reading characters
      * @param  len  Number of characters to be written
      */
-    public void write(String str, /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) {
+    public void write(String str, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) {
         synchronized (lock) {
             int newcount = count + len;
             if (newcount > buf.length) {
@@ -201,7 +201,7 @@ class CharArrayWriter extends Writer {
      *
      * @since  1.5
      */
-    public CharArrayWriter append(CharSequence csq, /*@IndexFor("#1")*/ int start, /*@IndexOrHigh("#1")*/ int end) {
+    public CharArrayWriter append(CharSequence csq, @IndexFor("#1") int start, @IndexOrHigh("#1") int end) {
         String s = (csq == null ? "null" : csq).subSequence(start, end).toString();
         write(s, 0, s.length());
         return this;
@@ -252,7 +252,7 @@ class CharArrayWriter extends Writer {
      *
      * @return an int representing the current size of the buffer.
      */
-    public /*@NonNegative*/ int size() {
+    public @NonNegative int size() {
         return count;
     }
 

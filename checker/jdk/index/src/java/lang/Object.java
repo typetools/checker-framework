@@ -445,7 +445,7 @@ public class Object {
      *             status</i> of the current thread is cleared when
      *             this exception is thrown.
      */
-    public final void wait(long timeout, /*@NonNegative*/ int nanos) throws InterruptedException {
+    public final void wait(long timeout, @NonNegative int nanos) throws InterruptedException {
         if (timeout < 0) {
             throw new IllegalArgumentException("timeout value is negative");
         }

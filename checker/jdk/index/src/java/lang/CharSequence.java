@@ -58,7 +58,7 @@ public interface CharSequence {
      *
      * @return  the number of <code>char</code>s in this sequence
      */
-    /*@NonNegative*/ int length();
+    @NonNegative int length();
 
     /**
      * Returns the <code>char</code> value at the specified index.  An index ranges from zero

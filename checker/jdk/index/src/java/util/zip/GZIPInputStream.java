@@ -73,7 +73,7 @@ class GZIPInputStream extends InflaterInputStream {
      * @exception IOException if an I/O error has occurred
      * @exception IllegalArgumentException if size is <= 0
      */
-    public GZIPInputStream(InputStream in, /*@Positive*/ int size) throws IOException {
+    public GZIPInputStream(InputStream in, @Positive int size) throws IOException {
         super(in, new Inflater(true), size);
         usesDefaultInflater = true;
         readHeader(in);
@@ -109,7 +109,7 @@ class GZIPInputStream extends InflaterInputStream {
      * @exception IOException if an I/O error has occurred.
      *
      */
-    public /*@GTENegativeOne*/ int read(byte[] buf, /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException {
+    public @GTENegativeOne int read(byte[] buf, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         ensureOpen();
         if (eos) {
             return -1;

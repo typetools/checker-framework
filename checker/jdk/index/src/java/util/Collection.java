@@ -135,7 +135,7 @@ public interface Collection<E> extends Iterable<E> {
      *
      * @return the number of elements in this collection
      */
-    /*@NonNegative*/ int size();
+    @NonNegative int size();
 
     /**
      * Returns <tt>true</tt> if this collection contains no elements.

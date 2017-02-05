@@ -120,7 +120,7 @@ class Inflater {
      * @param len the length of the input data
      * @see Inflater#needsInput
      */
-    public void setInput(byte[] b, /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) {
+    public void setInput(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) {
         if (b == null) {
             throw new NullPointerException();
         }
@@ -156,7 +156,7 @@ class Inflater {
      * @see Inflater#needsDictionary
      * @see Inflater#getAdler
      */
-    public void setDictionary(byte[] b, /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) {
+    public void setDictionary(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) {
         if (b == null) {
             throw new NullPointerException();
         }
@@ -189,7 +189,7 @@ class Inflater {
      * buffer after decompression has finished.
      * @return the total number of bytes remaining in the input buffer
      */
-    public /*@NonNegative*/ int getRemaining() {
+    public @NonNegative int getRemaining() {
         synchronized (zsRef) {
             return len;
         }
@@ -245,7 +245,7 @@ class Inflater {
      * @see Inflater#needsInput
      * @see Inflater#needsDictionary
      */
-    public /*@GTENegativeOne*/ int inflate(byte[] b, /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len)
+    public @GTENegativeOne int inflate(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len)
         throws DataFormatException
     {
         if (b == null) {
@@ -273,7 +273,7 @@ class Inflater {
      * @see Inflater#needsInput
      * @see Inflater#needsDictionary
      */
-    public /*@GTENegativeOne*/ int inflate(byte[] b) throws DataFormatException {
+    public @GTENegativeOne int inflate(byte[] b) throws DataFormatException {
         return inflate(b, 0, b.length);
     }
 

@@ -185,7 +185,7 @@ public class HashMap<K,V>
      * @throws IllegalArgumentException if the initial capacity is negative
      *         or the load factor is nonpositive
      */
-    public HashMap(/*@NonNegative*/ int initialCapacity, float loadFactor) {
+    public HashMap(@NonNegative int initialCapacity, float loadFactor) {
         if (initialCapacity < 0)
             throw new IllegalArgumentException("Illegal initial capacity: " +
                                                initialCapacity);
@@ -213,7 +213,7 @@ public class HashMap<K,V>
      * @param  initialCapacity the initial capacity.
      * @throws IllegalArgumentException if the initial capacity is negative.
      */
-    public HashMap(/*@NonNegative*/ int initialCapacity) {
+    public HashMap(@NonNegative int initialCapacity) {
         this(initialCapacity, DEFAULT_LOAD_FACTOR);
     }
 
@@ -282,7 +282,7 @@ public class HashMap<K,V>
      *
      * @return the number of key-value mappings in this map
      */
-    public /*@NonNegative*/ int size() {
+    public @NonNegative int size() {
         return size;
     }
 

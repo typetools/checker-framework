@@ -83,7 +83,7 @@ public class LineNumberReader extends BufferedReader {
      * @param  sz
      *         An int specifying the size of the buffer
      */
-    public LineNumberReader(Reader in, /*@NonNegative*/ int sz) {
+    public LineNumberReader(Reader in, @NonNegative int sz) {
         super(in, sz);
     }
 
@@ -160,7 +160,7 @@ public class LineNumberReader extends BufferedReader {
      * @throws  IOException
      *          If an I/O error occurs
      */
-    public /*@GTENegativeOne*/ int read(char cbuf[], /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException {
+    public @GTENegativeOne int read(char cbuf[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         synchronized (lock) {
             int n = super.read(cbuf, off, len);
 
@@ -256,7 +256,7 @@ public class LineNumberReader extends BufferedReader {
      * @throws  IOException
      *          If an I/O error occurs
      */
-    public void mark(/*@NonNegative*/ int readAheadLimit) throws IOException {
+    public void mark(@NonNegative int readAheadLimit) throws IOException {
         synchronized (lock) {
             super.mark(readAheadLimit);
             markedLineNumber = lineNumber;

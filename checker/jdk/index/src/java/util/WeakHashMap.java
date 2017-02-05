@@ -199,7 +199,7 @@ public class WeakHashMap<K,V>
      * @throws IllegalArgumentException if the initial capacity is negative,
      *         or if the load factor is nonpositive.
      */
-    public WeakHashMap(/*@NonNegative*/ int initialCapacity, float loadFactor) {
+    public WeakHashMap(@NonNegative int initialCapacity, float loadFactor) {
         if (initialCapacity < 0)
             throw new IllegalArgumentException("Illegal Initial Capacity: "+
                                                initialCapacity);
@@ -224,7 +224,7 @@ public class WeakHashMap<K,V>
      * @param  initialCapacity The initial capacity of the <tt>WeakHashMap</tt>
      * @throws IllegalArgumentException if the initial capacity is negative
      */
-    public WeakHashMap(/*@NonNegative*/ int initialCapacity) {
+    public WeakHashMap(@NonNegative int initialCapacity) {
         this(initialCapacity, DEFAULT_LOAD_FACTOR);
     }
 
@@ -336,7 +336,7 @@ public class WeakHashMap<K,V>
      * entries that will be removed before next attempted access
      * because they are no longer referenced.
      */
-    public /*@NonNegative*/ int size() {
+    public @NonNegative int size() {
         if (size == 0)
             return 0;
         expungeStaleEntries();
@@ -853,7 +853,7 @@ public class WeakHashMap<K,V>
             return new KeyIterator();
         }
 
-        public /*@NonNegative*/ int size() {
+        public @NonNegative int size() {
             return WeakHashMap.this.size();
         }
 
@@ -898,7 +898,7 @@ public class WeakHashMap<K,V>
             return new ValueIterator();
         }
 
-        public /*@NonNegative*/ int size() {
+        public @NonNegative int size() {
             return WeakHashMap.this.size();
         }
 
@@ -947,7 +947,7 @@ public class WeakHashMap<K,V>
             return removeMapping(o);
         }
 
-        public /*@NonNegative*/ int size() {
+        public @NonNegative int size() {
             return WeakHashMap.this.size();
         }
 

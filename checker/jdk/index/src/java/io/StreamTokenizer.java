@@ -773,7 +773,7 @@ public class StreamTokenizer {
      *
      * @return  the current line number of this stream tokenizer.
      */
-    public /*@NonNegative*/ int lineno() {
+    public @NonNegative int lineno() {
         return LINENO;
     }
 

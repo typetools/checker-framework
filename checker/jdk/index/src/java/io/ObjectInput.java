@@ -68,7 +68,7 @@ public interface ObjectInput extends DataInput, AutoCloseable {
      *          returned when the end of the stream is reached.
      * @exception IOException If an I/O error has occurred.
      */
-    public /*@GTENegativeOne*/ int read(byte b[]) throws IOException;
+    public @GTENegativeOne int read(byte b[]) throws IOException;
 
     /**
      * Reads into an array of bytes.  This method will
@@ -80,7 +80,7 @@ public interface ObjectInput extends DataInput, AutoCloseable {
      *          returned when the end of the stream is reached.
      * @exception IOException If an I/O error has occurred.
      */
-    public /*@GTENegativeOne*/ int read(byte b[], /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException;
+    public @GTENegativeOne int read(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException;
 
     /**
      * Skips n bytes of input.
@@ -96,7 +96,7 @@ public interface ObjectInput extends DataInput, AutoCloseable {
      * @return the number of available bytes.
      * @exception IOException If an I/O error has occurred.
      */
-    public /*@NonNegative*/ int available() throws IOException;
+    public @NonNegative int available() throws IOException;
 
     /**
      * Closes the input stream. Must be called

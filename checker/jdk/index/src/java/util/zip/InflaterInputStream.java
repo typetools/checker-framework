@@ -78,7 +78,7 @@ class InflaterInputStream extends FilterInputStream {
      * @param size the input buffer size
      * @exception IllegalArgumentException if size is <= 0
      */
-    public InflaterInputStream(InputStream in, Inflater inf, /*@Positive*/ int size) {
+    public InflaterInputStream(InputStream in, Inflater inf, @Positive int size) {
         super(in);
         if (in == null || inf == null) {
             throw new NullPointerException();
@@ -139,7 +139,7 @@ class InflaterInputStream extends FilterInputStream {
      * @exception ZipException if a ZIP format error has occurred
      * @exception IOException if an I/O error has occurred
      */
-    public /*@GTENegativeOne*/ int read(byte[] b, /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException {
+    public @GTENegativeOne int read(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         ensureOpen();
         if (b == null) {
             throw new NullPointerException();

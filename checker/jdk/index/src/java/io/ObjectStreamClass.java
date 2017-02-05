@@ -70,7 +70,7 @@ import sun.reflect.ReflectionFactory;
 public class ObjectStreamClass implements Serializable {
 
     /** serialPersistentFields value indicating no serializable fields */
-    public static final ObjectStreamField /*@MinLen(1)*/ [] NO_FIELDS =
+    public static final ObjectStreamField @MinLen(1) [] NO_FIELDS =
         new ObjectStreamField[0];
 
     private static final long serialVersionUID = -6120832682080437368L;

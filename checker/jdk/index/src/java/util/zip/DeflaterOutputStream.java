@@ -78,7 +78,7 @@ class DeflaterOutputStream extends FilterOutputStream {
      */
     public DeflaterOutputStream(OutputStream out,
                                 Deflater def,
-                                /*@Positive*/ int size,
+                                @Positive int size,
                                 boolean syncFlush) {
         super(out);
         if (out == null || def == null) {
@@ -104,7 +104,7 @@ class DeflaterOutputStream extends FilterOutputStream {
      * @param size the output buffer size
      * @exception IllegalArgumentException if size is <= 0
      */
-    public DeflaterOutputStream(OutputStream out, Deflater def, /*@Positive*/ int size) {
+    public DeflaterOutputStream(OutputStream out, Deflater def, @Positive int size) {
         this(out, def, size, false);
     }
 
@@ -183,7 +183,7 @@ class DeflaterOutputStream extends FilterOutputStream {
      * @param b the byte to be written
      * @exception IOException if an I/O error has occurred
      */
-    public void write(/*@NonNegative*/ int b) throws IOException {
+    public void write(@NonNegative int b) throws IOException {
         byte[] buf = new byte[1];
         buf[0] = (byte)(b & 0xff);
         write(buf, 0, 1);
@@ -197,7 +197,7 @@ class DeflaterOutputStream extends FilterOutputStream {
      * @param len the length of the data
      * @exception IOException if an I/O error has occurred
      */
-    public void write(byte[] b, /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException {
+    public void write(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         if (def.finished()) {
             throw new IOException("write beyond end of stream");
         }

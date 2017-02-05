@@ -101,7 +101,7 @@ public class DeflaterInputStream extends FilterInputStream {
      * @throws IllegalArgumentException if {@code bufLen} is <= 0
      * @throws NullPointerException if {@code in} or {@code defl} is null
      */
-    public DeflaterInputStream(InputStream in, Deflater defl, /*@Positive*/ int bufLen) {
+    public DeflaterInputStream(InputStream in, Deflater defl, @Positive int bufLen) {
         super(in);
 
         // Sanity checks
@@ -169,7 +169,7 @@ public class DeflaterInputStream extends FilterInputStream {
      * @throws IOException if an I/O error occurs or if this input stream is
      * already closed
      */
-    public /*@GTENegativeOne*/ int read(byte[] b, /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException {
+    public @GTENegativeOne int read(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         // Sanity checks
         ensureOpen();
         if (b == null) {

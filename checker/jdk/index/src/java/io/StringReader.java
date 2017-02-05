@@ -86,7 +86,7 @@ public class StringReader extends Reader {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public /*@GTENegativeOne*/ int read(char cbuf[], /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException {
+    public @GTENegativeOne int read(char cbuf[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         synchronized (lock) {
             ensureOpen();
             if ((off < 0) || (off > cbuf.length) || (len < 0) ||
@@ -167,7 +167,7 @@ public class StringReader extends Reader {
      * @exception  IllegalArgumentException  If readAheadLimit is < 0
      * @exception  IOException  If an I/O error occurs
      */
-    public void mark(/*@NonNegative*/ int readAheadLimit) throws IOException {
+    public void mark(@NonNegative int readAheadLimit) throws IOException {
         if (readAheadLimit < 0){
             throw new IllegalArgumentException("Read-ahead limit < 0");
         }
