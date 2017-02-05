@@ -50,6 +50,16 @@ public class Range {
         this.to = Long.MAX_VALUE;
     }
 
+    @Override
+    public String toString() {
+        return String.format("[%s..%s]", from, to);
+    }
+
+    /** Returns true if the element is contained in this range. */
+    public boolean contains(int element) {
+        return from <= element && element <= to;
+    }
+
     /**
      * Returns the smallest single range that includes all values enclosed by either of the two
      * ranges. We call this the union of two ranges.
