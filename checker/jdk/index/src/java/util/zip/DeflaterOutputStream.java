@@ -183,7 +183,7 @@ class DeflaterOutputStream extends FilterOutputStream {
      * @param b the byte to be written
      * @exception IOException if an I/O error has occurred
      */
-    public void write(int b) throws IOException {
+    public void write(/*@NonNegative*/ int b) throws IOException {
         byte[] buf = new byte[1];
         buf[0] = (byte)(b & 0xff);
         write(buf, 0, 1);
