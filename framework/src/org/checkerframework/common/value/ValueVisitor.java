@@ -30,7 +30,7 @@ import org.checkerframework.framework.source.Result;
  */
 public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
-    /** helper set that includes all integer literal kinds */
+    /** All integral literal kinds */
     private static final Set<Kind> intLiteralKinds =
             EnumSet.of(Kind.INT_LITERAL, Kind.LONG_LITERAL, Kind.CHAR_LITERAL);
 
@@ -38,12 +38,15 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         super(checker);
     }
 
-    /** helper function to determine if a given kind is integer literal */
+    /** @return true if the given kind is an integral literal */
     private static boolean isIntLiteral(Kind k) {
         return intLiteralKinds.contains(k);
     }
 
-    /** get value from a give expression tree, assuming the tree kind is int literal */
+    /**
+     * @param exp an integral literal tree
+     * @return {@code exp}'s literal value
+     */
     private long getIntLiteralValue(ExpressionTree exp) {
         switch (exp.getKind()) {
             case INT_LITERAL:
@@ -54,7 +57,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 return (long) ((Character) ((LiteralTree) exp).getValue());
             default:
                 throw new IllegalArgumentException(
-                        "exp should be within the covered kinds (INT_LITERAL, LONG_LITERAL, CHAR_LITERAL");
+                        "exp is not an intergral literal (INT_LITERAL, LONG_LITERAL, CHAR_LITERAL)");
         }
     }
 
@@ -64,10 +67,11 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     }
 
     /**
-     * Issues an error if any @IntRange annotation has its 'from' value greater than 'to' value.
+     * Warns about malformed constant-value annotations.
      *
-     * <p>Issues a warning if any constant-value annotation has &gt; MAX_VALUES number of values
-     * provided.
+     * <p>Issues an error if any @IntRange annotation has its 'from' value greater than 'to' value.
+     *
+     * <p>Issues a warning if any constant-value annotation has &gt; MAX_VALUES arguments.
      */
     @Override
     public Void visitAnnotation(AnnotationTree node, Void p) {
