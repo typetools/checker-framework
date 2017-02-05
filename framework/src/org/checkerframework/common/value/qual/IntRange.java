@@ -7,9 +7,9 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * An annotation indicating that the annotated target should be an integral value (byte, short,
- * char, int, or long) in the given range. The bounds are inclusive; for example,
- * {@code @IntRange(from=5, to=8)} represents the 4 values 5, 6, 7, and 8.
+ * An expression with this type evaluates to an integral value (byte, short, char, int, or long) in
+ * the given range. The bounds are inclusive; for example, {@code @IntRange(from=6, to=9)}
+ * represents the four values 6, 7, 8, and 9.
  *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
