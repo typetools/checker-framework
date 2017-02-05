@@ -61,8 +61,8 @@ public class Range {
      *       thus still results in only one single range.
      * </ul>
      *
-     * @param right a range to union with this range.
-     * @return a range resulted from the union of the specified range and this range.
+     * @param right a range to union with this range
+     * @return a range resulted from the union of the specified range and this range
      */
     public Range union(Range right) {
         long resultFrom = Math.min(from, right.from);
@@ -84,8 +84,8 @@ public class Range {
      *       {@code @UnknownVal}.
      * </ul>
      *
-     * @param right the range to intersect with this range.
-     * @return a range resulted from the intersection of the specified range and this range.
+     * @param right the range to intersect with this range
+     * @return a range resulted from the intersection of the specified range and this range
      */
     public Range intersect(Range right) {
         long resultFrom = Math.max(from, right.from);
@@ -97,8 +97,8 @@ public class Range {
      * Returns the smallest single range that includes all possible values resulted from adding any
      * two values selected from two ranges respectively. We call this the addition of two ranges.
      *
-     * @param right a range to be added to this range.
-     * @return the range resulted from the addition of the specified range and this range.
+     * @param right a range to be added to this range
+     * @return the range resulted from the addition of the specified range and this range
      */
     public Range plus(Range right) {
         long resultFrom = from + right.from;
@@ -111,8 +111,8 @@ public class Range {
      * an arbitrary value in the specified range from an arbitrary value in this range. We call this
      * the subtraction of two ranges.
      *
-     * @param right the range to be subtracted from this range.
-     * @return the range resulted from subtracting the specified range from this range.
+     * @param right the range to be subtracted from this range
+     * @return the range resulted from subtracting the specified range from this range
      */
     public Range minus(Range right) {
         long resultFrom = from - right.to;
@@ -125,8 +125,8 @@ public class Range {
      * an arbitrary value in the specified range by an arbitrary value in this range. We call this
      * the multiplication of two ranges.
      *
-     * @param right the specified range to be multiplied by this range.
-     * @return the range resulted from multiplying the specified range by this range.
+     * @param right the specified range to be multiplied by this range
+     * @return the range resulted from multiplying the specified range by this range
      */
     public Range times(Range right) {
         ArrayList<Long> possibleValues =
@@ -144,8 +144,8 @@ public class Range {
      * arbitrary value in this range by an arbitrary value in the specified range. We call this the
      * division of two ranges.
      *
-     * @param right the specified range by which this range is divided.
-     * @return the range resulted from dividing this range by the specified range.
+     * @param right the specified range by which this range is divided
+     * @return the range resulted from dividing this range by the specified range
      */
     public Range divide(Range right) {
         long resultFrom = Long.MIN_VALUE;
@@ -187,7 +187,7 @@ public class Range {
      * Returns the a single range that includes all possible values of the remainder of dividing an
      * arbitrary value in this range by an arbitrary value in the specified range.
      *
-     * @param right the specified range by which this range is divided.
+     * @param right the specified range by which this range is divided
      * @return the range of the remainder of dividing this range by the specified range. Note that
      *     this range might not be the smallest single range that includes all the possible values.
      */
@@ -212,8 +212,8 @@ public class Range {
      * shifting an arbitrary value in this range by an arbitrary number of bits in the specified
      * range. We call this the left shift operation of a range.
      *
-     * @param right the range of bits by which this range is left shifted.
-     * @return the range resulted from left shifting this range by the specified range.
+     * @param right the range of bits by which this range is left shifted
+     * @return the range resulted from left shifting this range by the specified range
      */
     public Range shiftLeft(Range right) {
         long resultFrom = from << (from >= 0 ? right.from : right.to);
@@ -226,8 +226,8 @@ public class Range {
      * right shifting an arbitrary value in this range by an arbitrary number of bits in the
      * specified range. We call this the signed right shift operation of a range.
      *
-     * @param right the range of bits by which this range is signed right shifted.
-     * @return the range resulted from signed right shifting this range by the specified range.
+     * @param right the range of bits by which this range is signed right shifted
+     * @return the range resulted from signed right shifting this range by the specified range
      */
     public Range signedShiftRight(Range right) {
         long resultFrom = from >> (from >= 0 ? right.to : right.from);
@@ -239,7 +239,7 @@ public class Range {
      * Returns the range of a variable that falls within this range after applying unary plus
      * operation.
      *
-     * @return the resulted range of applying unary plus on an arbitrary value in this range.
+     * @return the resulted range of applying unary plus on an arbitrary value in this range
      */
     public Range unaryPlus() {
         return new Range(from, to);
@@ -249,7 +249,7 @@ public class Range {
      * Returns the range of a variable that falls within this range after applying unary minus
      * operation.
      *
-     * @return the resulted range of applying unary minus on an arbitrary value in this range.
+     * @return the resulted range of applying unary minus on an arbitrary value in this range
      */
     public Range unaryMinus() {
         return new Range(-to, -from);
@@ -259,8 +259,7 @@ public class Range {
      * Returns the range of a variable that falls within this range after applying bitwise
      * complement operation.
      *
-     * @return the resulted range of applying bitwise complement on an arbitrary value in this
-     *     range.
+     * @return the resulted range of applying bitwise complement on an arbitrary value in this range
      */
     public Range bitwiseComplement() {
         return new Range(~to, ~from);
@@ -405,7 +404,7 @@ public class Range {
      * Returns the number of possible values enclosed by this range. To prevent overflow, we use
      * BigInteger for calculation and return a BitInteger.
      *
-     * @return the number of possible values enclosed by this range.
+     * @return the number of possible values enclosed by this range
      */
     public BigInteger numberOfPossibleValues() {
         return BigInteger.valueOf(to).subtract(BigInteger.valueOf(from)).add(BigInteger.valueOf(1));
@@ -415,8 +414,8 @@ public class Range {
      * Determines if the range is wider than a given value, i.e., if the number of possible values
      * enclosed by this range is more than the given value.
      *
-     * @param value the value to compare with.
-     * @return true if wider than the given value.
+     * @param value the value to compare with
+     * @return true if wider than the given value
      */
     public boolean isWiderThan(int value) {
         return numberOfPossibleValues().compareTo(BigInteger.valueOf(value)) == 1;
