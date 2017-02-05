@@ -129,7 +129,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Creates an annotation of the name given with the set of values given. Issues a checker
-     * warning and return UNKNOWNVAL if values.size &gt; MAX_VALUES
+     * warning and returns UNKNOWNVAL if values.size &gt; MAX_VALUES.
      *
      * @return annotation given by name with values=values, or UNKNOWNVAL
      */
@@ -1103,6 +1103,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return values;
     }
 
+    /** The argument is an @IntRange annotation. */
     public static Range getIntRange(AnnotationMirror rangeAnno) {
         return new Range(
                 AnnotationUtils.getElementValue(rangeAnno, "from", Long.class, true),
