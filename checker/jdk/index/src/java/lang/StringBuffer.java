@@ -152,7 +152,7 @@ import org.checkerframework.checker.index.qual.*;
 
     public synchronized void ensureCapacity(int minimumCapacity) {
         if (minimumCapacity > value.length) {
-            expandCapacity(minimumCapacity);
+            // expandCapacity(minimumCapacity);
         }
     }
 
