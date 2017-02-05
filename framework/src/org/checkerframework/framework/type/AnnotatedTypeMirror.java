@@ -131,7 +131,7 @@ public abstract class AnnotatedTypeMirror {
     /** The factory to use for lazily creating annotated types. */
     protected final AnnotatedTypeFactory atypeFactory;
 
-    /** Actual type wrapped with this AnnotatedTypeMirror * */
+    /** Actual type wrapped with this AnnotatedTypeMirror */
     protected final TypeMirror actualType;
 
     /** Used to format AnnotatedTypeMirrors into strings for printing. */
@@ -804,7 +804,7 @@ public abstract class AnnotatedTypeMirror {
     /** Represents a declared type (whether class or interface). */
     public static class AnnotatedDeclaredType extends AnnotatedTypeMirror {
 
-        /** Parametrized Type Arguments * */
+        /** Parametrized Type Arguments */
         protected List<AnnotatedTypeMirror> typeArgs;
 
         /**
@@ -817,7 +817,7 @@ public abstract class AnnotatedTypeMirror {
          */
         private boolean wasRaw;
 
-        /** The enclosing Type * */
+        /** The enclosing Type */
         protected AnnotatedDeclaredType enclosingType;
 
         protected List<AnnotatedDeclaredType> supertypes = null;
@@ -1457,10 +1457,10 @@ public abstract class AnnotatedTypeMirror {
             this.declaration = declaration;
         }
 
-        /** The lower bound of the type variable. * */
+        /** The lower bound of the type variable. */
         private AnnotatedTypeMirror lowerBound;
 
-        /** The upper bound of the type variable. * */
+        /** The upper bound of the type variable. */
         private AnnotatedTypeMirror upperBound;
 
         private boolean declaration;
@@ -1884,10 +1884,10 @@ public abstract class AnnotatedTypeMirror {
      * explicitly set by a super clause, or neither (but not both).
      */
     public static class AnnotatedWildcardType extends AnnotatedTypeMirror {
-        /** SuperBound * */
+        /** SuperBound */
         private AnnotatedTypeMirror superBound;
 
-        /** ExtendBound * */
+        /** ExtendBound */
         private AnnotatedTypeMirror extendsBound;
 
         private AnnotatedWildcardType(WildcardType type, AnnotatedTypeFactory factory) {
