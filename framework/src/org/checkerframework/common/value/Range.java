@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 /**
- * The Range Class with mathematics operations. Models the range indicated by the @IntRange
+ * The Range Class models an integer interval, such as all integers between 1 and 10, inclusive.
  * annotation.
  *
  * <p>Note that this class is not responsible for detecting incorrect parameters, e.g. the value of
@@ -61,18 +61,11 @@ public class Range {
     }
 
     /**
-     * Returns the smallest single range that includes all values enclosed by either of the two
-     * ranges. We call this the union of two ranges.
-     *
-     * <p>Special case:
-     *
-     * <ul>
-     *   <li>If there is no overlap between two ranges, the gap between the two would be filled and
-     *       thus still results in only one single range.
-     * </ul>
+     * Returns the smallest range that includes all values contained in either of the two ranges. We
+     * call this the union of two ranges.
      *
      * @param right a range to union with this range
-     * @return a range resulted from the union of the specified range and this range
+     * @return a range resulting from the union of the specified range and this range
      */
     public Range union(Range right) {
         long resultFrom = Math.min(from, right.from);
@@ -81,8 +74,8 @@ public class Range {
     }
 
     /**
-     * Returns the smallest single range that includes all values enclosed by both of the two.
-     * ranges. We call this the intersection of two ranges.
+     * Returns the smallest range that includes all values contained in both of the two ranges. We
+     * call this the intersection of two ranges.
      *
      * <p>Special case:
      *
@@ -95,7 +88,7 @@ public class Range {
      * </ul>
      *
      * @param right the range to intersect with this range
-     * @return a range resulted from the intersection of the specified range and this range
+     * @return a range resulting from the intersection of the specified range and this range
      */
     public Range intersect(Range right) {
         long resultFrom = Math.max(from, right.from);
@@ -104,11 +97,12 @@ public class Range {
     }
 
     /**
-     * Returns the smallest single range that includes all possible values resulted from adding any
-     * two values selected from two ranges respectively. We call this the addition of two ranges.
+     * Returns the smallest range that includes all possible values resulting from adding an
+     * arbitrary value in the specified range to an arbitrary value in this range. We call this We
+     * call this the addition of two ranges.
      *
      * @param right a range to be added to this range
-     * @return the range resulted from the addition of the specified range and this range
+     * @return the range resulting from the addition of the specified range and this range
      */
     public Range plus(Range right) {
         long resultFrom = from + right.from;
@@ -117,12 +111,12 @@ public class Range {
     }
 
     /**
-     * Returns the smallest single range that includes all possible values resulted from subtracting
-     * an arbitrary value in the specified range from an arbitrary value in this range. We call this
+     * Returns the smallest range that includes all possible values resulting from subtracting an
+     * arbitrary value in the specified range from an arbitrary value in this range. We call this
      * the subtraction of two ranges.
      *
      * @param right the range to be subtracted from this range
-     * @return the range resulted from subtracting the specified range from this range
+     * @return the range resulting from subtracting the specified range from this range
      */
     public Range minus(Range right) {
         long resultFrom = from - right.to;
@@ -131,31 +125,26 @@ public class Range {
     }
 
     /**
-     * Returns the smallest single range that includes all possible values resulted from multiplying
-     * an arbitrary value in the specified range by an arbitrary value in this range. We call this
-     * the multiplication of two ranges.
+     * Returns the smallest range that includes all possible values resulting from multiplying an
+     * arbitrary value in the specified range by an arbitrary value in this range. We call this the
+     * multiplication of two ranges.
      *
      * @param right the specified range to be multiplied by this range
-     * @return the range resulted from multiplying the specified range by this range
+     * @return the range resulting from multiplying the specified range by this range
      */
     public Range times(Range right) {
         ArrayList<Long> possibleValues =
-                new ArrayList<>(
-                        Arrays.asList(
-                                from * right.from,
-                                from * right.to,
-                                to * right.from,
-                                to * right.to));
+                Arrays.asList(from * right.from, from * right.to, to * right.from, to * right.to);
         return new Range(Collections.min(possibleValues), Collections.max(possibleValues));
     }
 
     /**
-     * Returns the smallest single range that includes all possible values resulted from dividing an
-     * arbitrary value in this range by an arbitrary value in the specified range. We call this the
-     * division of two ranges.
+     * Returns the smallest range that includes all possible values resulting from dividing (integer
+     * division) an arbitrary value in this range by an arbitrary value in the specified range. We
+     * call this the division of two ranges.
      *
      * @param right the specified range by which this range is divided
-     * @return the range resulted from dividing this range by the specified range
+     * @return the range resulting from dividing this range by the specified range
      */
     public Range divide(Range right) {
         long resultFrom = Long.MIN_VALUE;
@@ -194,12 +183,12 @@ public class Range {
     }
 
     /**
-     * Returns the a single range that includes all possible values of the remainder of dividing an
-     * arbitrary value in this range by an arbitrary value in the specified range.
+     * Returns a range that includes all possible values of the remainder of dividing an arbitrary
+     * value in this range by an arbitrary value in the specified range.
      *
      * @param right the specified range by which this range is divided
      * @return the range of the remainder of dividing this range by the specified range. Note that
-     *     this range might not be the smallest single range that includes all the possible values.
+     *     this range might not be the smallest range that includes all the possible values.
      */
     public Range remainder(Range right) {
         ArrayList<Long> possibleValues =
@@ -218,12 +207,12 @@ public class Range {
     }
 
     /**
-     * Returns the smallest single range that includes all possible values resulted from left
-     * shifting an arbitrary value in this range by an arbitrary number of bits in the specified
-     * range. We call this the left shift operation of a range.
+     * Returns the smallest range that includes all possible values resulting from left shifting an
+     * arbitrary value in this range by an arbitrary number of bits in the specified range. We call
+     * this the left shift operation of a range.
      *
      * @param right the range of bits by which this range is left shifted
-     * @return the range resulted from left shifting this range by the specified range
+     * @return the range resulting from left shifting this range by the specified range
      */
     public Range shiftLeft(Range right) {
         long resultFrom = from << (from >= 0 ? right.from : right.to);
@@ -232,12 +221,12 @@ public class Range {
     }
 
     /**
-     * Returns the smallest single range that includes all possible values resulted from signed
-     * right shifting an arbitrary value in this range by an arbitrary number of bits in the
-     * specified range. We call this the signed right shift operation of a range.
+     * Returns the smallest range that includes all possible values resulting from signed right
+     * shifting an arbitrary value in this range by an arbitrary number of bits in the specified
+     * range. We call this the signed right shift operation of a range.
      *
      * @param right the range of bits by which this range is signed right shifted
-     * @return the range resulted from signed right shifting this range by the specified range
+     * @return the range resulting from signed right shifting this range by the specified range
      */
     public Range signedShiftRight(Range right) {
         long resultFrom = from >> (from >= 0 ? right.to : right.from);
@@ -246,13 +235,13 @@ public class Range {
     }
 
     /**
-     * Returns the range of a variable that falls within this range after applying unary plus
-     * operation.
+     * Returns the range of a variable that falls within this range after applying the unary plus
+     * operation (which is a no-op).
      *
-     * @return the resulted range of applying unary plus on an arbitrary value in this range
+     * @return this range
      */
     public Range unaryPlus() {
-        return new Range(from, to);
+        return this;
     }
 
     /**
@@ -283,15 +272,14 @@ public class Range {
      *
      * <pre>
      * <code>
-     * void foo(
-     *     {@literal @}IntRange(from = 0, to = 10) int a, // range of <i>a</i> is [0, 10]
-     *     {@literal @}IntRange(from = 3, to = 5) int b) // range of <i>b</i> is [3, 5]
+     *     {@literal @}IntRange(from = 0, to = 10) int a;
+     *     {@literal @}IntRange(from = 3, to = 5) int b;
+     *     ...
      *     if (a &lt; b) {
      *         // range of <i>a</i> is now refined to [0, 4] because a value in range [5, 10]
      *         // cannot be smaller than variable <i>b</i> with range [3, 5]
      *         ...
      *     }
-     * }
      * </code>
      * </pre>
      *
@@ -310,15 +298,14 @@ public class Range {
      *
      * <pre>
      * <code>
-     * void foo(
-     *     {@literal @}IntRange(from = 0, to = 10) int a, // range of <i>a</i> is [0, 10]
-     *     {@literal @}IntRange(from = 3, to = 5) int b) // range of <i>b</i> is [3, 5]
+     *     {@literal @}IntRange(from = 0, to = 10) int a;
+     *     {@literal @}IntRange(from = 3, to = 5) int b;
+     *     ...
      *     if (a &lt;= b) {
      *         // range of <i>a</i> is now refined to [0, 5] because a value in range [6, 10]
      *         // cannot be less than or equal to variable <i>b</i> with range [3, 5]
      *         ...
      *     }
-     * }
      * </code>
      * </pre>
      *
@@ -337,15 +324,14 @@ public class Range {
      *
      * <pre>
      * <code>
-     * void foo(
-     *     {@literal @}IntRange(from = 0, to = 10) int a, // range of <i>a</i> is [0, 10]
-     *     {@literal @}IntRange(from = 3, to = 5) int b) // range of <i>b</i> is [3, 5]
+     *     {@literal @}IntRange(from = 0, to = 10) int a;
+     *     {@literal @}IntRange(from = 3, to = 5) int b;
+     *     ...
      *     if (a &gt; b) {
      *         // range of <i>a</i> is now refined to [6, 10] because a value in range [0, 5]
      *         // cannot be greater than variable <i>b</i> with range [3, 5]
      *         ...
      *     }
-     * }
      * </code>
      * </pre>
      *
@@ -364,15 +350,14 @@ public class Range {
      *
      * <pre>
      * <code>
-     * void foo(
-     *     {@literal @}IntRange(from = 0, to = 10) int a, // range of <i>a</i> is [0, 10]
-     *     {@literal @}IntRange(from = 3, to = 5) int b) // range of <i>b</i> is [3, 5]
+     *     {@literal @}IntRange(from = 0, to = 10) int a;
+     *     {@literal @}IntRange(from = 3, to = 5) int b;
+     *     ...
      *     if (a &gt;= b) {
      *         // range of <i>a</i> is now refined to [5, 10] because a value in range [0, 4]
      *         // cannot be greater than or equal to variable <i>b</i> with range [3, 5]
      *         ...
      *     }
-     * }
      * </code>
      * </pre>
      *
@@ -391,15 +376,14 @@ public class Range {
      *
      * <pre>
      * <code>
-     * void foo(
-     *     {@literal @}IntRange(from = 0, to = 10) int a, // range of <i>a</i> is [0, 10]
-     *     {@literal @}IntRange(from = 3, to = 15) int b) // range of <i>b</i> is [3, 15]
+     *     {@literal @}IntRange(from = 0, to = 10) int a;
+     *     {@literal @}IntRange(from = 3, to = 15) int b;
+     *     ...
      *     if (a == b) {
      *         // range of <i>a</i> is now refined to [3. 10] because a value in range [0, 2]
      *         // cannot be equal to variable <i>b</i> with range [3, 15]
      *         ...
      *     }
-     * }
      * </code>
      * </pre>
      *
