@@ -668,14 +668,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private List<?> getValues(AnnotatedTypeMirror type, TypeMirror castTo) {
             AnnotationMirror anno = type.getAnnotationInHierarchy(UNKNOWNVAL);
             if (anno == null) {
-                // if type is an AnnotatedTypeVariable (or other type without a
-                // primary annotation)
-                // then anno will be null. It would be safe to use the
-                // annotation on the upper bound;
-                // however, unless the upper bound was explicitly annotated, it
-                // will be unknown.
-                // AnnotatedTypes.findEffectiveAnnotationInHierarchy(, toSearch,
-                // top)
+                // if type is an AnnotatedTypeVariable (or other type without a primary annotation)
+                // then anno will be null. It would be safe to use the annotation on the upper bound;
+                //  however, unless the upper bound was explicitly annotated, it will be unknown.
+                // AnnotatedTypes.findEffectiveAnnotationInHierarchy(, toSearch, top)
                 return new ArrayList<>();
             }
             return ValueCheckerUtils.getValuesCastedToType(anno, castTo);
