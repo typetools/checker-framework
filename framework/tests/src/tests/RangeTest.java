@@ -153,6 +153,11 @@ public class RangeTest {
         }
 
         @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public Iterator<RangeAndElement> iterator() {
             return this;
         }
@@ -193,6 +198,11 @@ public class RangeTest {
                 }
             }
             return nextValueValid;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
         }
 
         @Override
