@@ -2,12 +2,7 @@ package org.checkerframework.checker.index.upperbound;
 
 import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.*;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -354,6 +349,16 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
+     * Check if type is either LTL or LTOM. Prevents duplication and makes code more readable.
+     *
+     * @param type
+     * @return
+     */
+    private boolean isLTL(AnnotatedTypeMirror type) {
+        return type.hasAnnotation(LTLengthOf.class) || type.hasAnnotation(LTOMLengthOf.class);
+    }
+
+    /**
      * The qualifier hierarchy for the upperbound type system. The qh is responsible for determining
      * the relationships within the qualifiers - especially subtyping relations.
      */
@@ -648,24 +653,58 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Integer maybeValRight = maybeValFromValueType(valueTypeRight);
             if (maybeValRight != null) {
                 AnnotatedTypeMirror leftType = getAnnotatedType(left);
-                addAnnotationForLiteralDivide(maybeValRight, leftType, type);
+                addAnnotationForLiteralDivide(maybeValRight, left, leftType, type);
             }
         }
 
         private void addAnnotationForLiteralDivide(
-                int val, AnnotatedTypeMirror nonLiteralType, AnnotatedTypeMirror type) {
-            if (nonLiteralType.hasAnnotation(LTLengthOf.class)
-                    || nonLiteralType.hasAnnotation(LTOMLengthOf.class)) {
+                int val,
+                ExpressionTree leftTree,
+                AnnotatedTypeMirror leftType,
+                AnnotatedTypeMirror type) {
+            if (isLTL(leftType)) {
                 if (val >= 1) {
-                    type.replaceAnnotation(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    type.replaceAnnotation(leftType.getAnnotationInHierarchy(UNKNOWN));
                 }
-            } else if (nonLiteralType.hasAnnotation(LTEqLengthOf.class)) {
+            } else if (leftType.hasAnnotation(LTEqLengthOf.class)) {
                 // FIXME: Is this unsafe? What if the length is zero?
                 if (val >= 2) {
-                    String[] names = getValue(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    String[] names = getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
                     type.replaceAnnotation(createLTLengthOfAnnotation(names));
                 } else if (val == 1) {
-                    type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    type.addAnnotation(leftType.getAnnotationInHierarchy(UNKNOWN));
+                }
+            } else if (val == 2) {
+                // The average of two LTL/LTOMs, the result is LTL.
+                // True in general, but this only solves the case for two.
+                // see https://github.com/kelloggm/checker-framework/issues/89
+
+                // Necessary because otherwise an expression in paretheses doesn't make it past
+                // the next check...
+                if (leftTree.getKind() == Tree.Kind.PARENTHESIZED) {
+                    leftTree = ((ParenthesizedTree) leftTree).getExpression();
+                }
+
+                if (leftTree.getKind() == Tree.Kind.PLUS) {
+                    BinaryTree leftBinTree = (BinaryTree) leftTree;
+                    AnnotatedTypeMirror leftLeftType =
+                            getAnnotatedType(leftBinTree.getLeftOperand());
+                    AnnotatedTypeMirror leftRightType =
+                            getAnnotatedType(leftBinTree.getRightOperand());
+
+                    if (isLTL(leftLeftType) && isLTL(leftRightType)) {
+                        AnnotationMirror leftLeftAnno =
+                                leftLeftType.getAnnotationInHierarchy(UNKNOWN);
+                        AnnotationMirror leftRightAnno =
+                                leftRightType.getAnnotationInHierarchy(UNKNOWN);
+                        String[] intersection = getIntersectingNames(leftLeftAnno, leftRightAnno);
+
+                        if (intersection.length != 0) {
+                            type.addAnnotation(createLTLengthOfAnnotation(intersection));
+                        } else {
+                            type.addAnnotation(UNKNOWN);
+                        }
+                    }
                 }
             }
         }
@@ -685,9 +724,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return;
             }
             if (val < -1) {
-                if (nonLiteralType.hasAnnotation(LTLengthOf.class)
-                        || nonLiteralType.hasAnnotation(LTOMLengthOf.class)
-                        || nonLiteralType.hasAnnotation(LTEqLengthOf.class)) {
+                if (isLTL(nonLiteralType) || nonLiteralType.hasAnnotation(LTEqLengthOf.class)) {
 
                     String[] names = getValue(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
                     type.replaceAnnotation(createLTOMLengthOfAnnotation(names));
