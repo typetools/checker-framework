@@ -38,7 +38,6 @@ import java.lang.ref.WeakReference;
  * using a hierarchical dot-separated namespace.  Logger names
  * can be arbitrary strings, but they should normally be based on
  * the package name or class name of the logged component, such
-import org.checkerframework.checker.index.qual.*;
  * as java.net or javax.swing.  In addition it is possible to create
  * "anonymous" Loggers that are not stored in the Logger namespace.
  * <p>
@@ -212,9 +211,7 @@ public class Logger {
     /**
      * The "global" Logger object is provided as a convenience to developers
      * who are making casual use of the Logging package.  Developers
-import org.checkerframework.checker.index.qual.*;
      * who are making serious use of the logging package (for example
-import org.checkerframework.checker.index.qual.*;
      * in products) should create and use their own Logger objects,
      * with appropriate names, so that logging can be controlled on a
      * suitable per-Logger granularity. Developers also need to keep a
@@ -244,7 +241,6 @@ import org.checkerframework.checker.index.qual.*;
      * @param   name    A name for the logger.  This should
      *                          be a dot-separated name and should normally
      *                          be based on the package name or class name
-import org.checkerframework.checker.index.qual.*;
      *                          of the subsystem, such as java.net
      *                          or javax.swing.  It may be null for anonymous Loggers.
      * @param   resourceBundleName  name of ResourceBundle to be used for localizing
@@ -310,7 +306,6 @@ import org.checkerframework.checker.index.qual.*;
      * @param   name            A name for the logger.  This should
      *                          be a dot-separated name and should normally
      *                          be based on the package name or class name
-import org.checkerframework.checker.index.qual.*;
      *                          of the subsystem, such as java.net
      *                          or javax.swing
      * @return a suitable Logger
@@ -362,7 +357,6 @@ import org.checkerframework.checker.index.qual.*;
      * @param   name    A name for the logger.  This should
      *                          be a dot-separated name and should normally
      *                          be based on the package name or class name
-import org.checkerframework.checker.index.qual.*;
      *                          of the subsystem, such as java.net
      *                          or javax.swing
      * @param   resourceBundleName  name of ResourceBundle to be used for localizing

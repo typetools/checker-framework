@@ -166,7 +166,6 @@ class TimSort<T> {
 
     /*
      * The next two methods (which are package private and static) constitute
-import org.checkerframework.checker.index.qual.*;
      * the entire API of this class.  Each of these methods obeys the contract
      * of the public method with the same signature in java.util.Arrays.
      */

@@ -25,7 +25,6 @@
 
 
 package java.util.logging;
-import org.checkerframework.checker.index.qual.*;
 
 import java.io.*;
 import java.text.*;

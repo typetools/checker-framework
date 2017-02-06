@@ -24,7 +24,6 @@
  */
 
 package java.io;
-import org.checkerframework.checker.index.qual.*;
 
 /**
  * Utility methods for packing/unpacking primitive values in/out of byte arrays

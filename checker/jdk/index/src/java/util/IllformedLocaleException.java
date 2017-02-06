@@ -31,7 +31,6 @@
  */
 
 package java.util;
-import org.checkerframework.checker.index.qual.*;
 
 /**
  * Thrown by methods in {@link Locale} and {@link Locale.Builder} to

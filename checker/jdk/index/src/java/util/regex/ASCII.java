@@ -24,8 +24,6 @@
  */
 
 package java.util.regex;
-import org.checkerframework.checker.index.qual.*;
-
 
 /**
  * Utility class that implements the standard C ctype functionality.

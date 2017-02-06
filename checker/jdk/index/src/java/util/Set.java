@@ -24,7 +24,6 @@
  */
 
 package java.util;
-import org.checkerframework.checker.index.qual.*;
 
 /**
  * A collection that contains no duplicate elements.  More formally, sets

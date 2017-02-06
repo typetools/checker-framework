@@ -25,7 +25,6 @@
 
 
 package java.util.logging;
-import org.checkerframework.checker.index.qual.*;
 
 /**
  * A Formatter provides support for formatting LogRecords.

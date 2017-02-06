@@ -111,7 +111,6 @@ import java.io.SerialCallbackContext;
  * In this case it is the responsibility of the subclass to save and restore
  * the state of the non-serializable class. It is frequently the case that the
  * fields of that class are accessible (public, package, or protected) or that
-import org.checkerframework.checker.index.qual.*;
  * there are get and set methods that can be used to restore the state.
  *
  * <p>Serialization of an object can be prevented by implementing writeObject

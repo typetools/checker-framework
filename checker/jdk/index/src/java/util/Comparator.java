@@ -24,7 +24,6 @@
  */
 
 package java.util;
-import org.checkerframework.checker.index.qual.*;
 
 /**
  * A comparison function, which imposes a <i>total ordering</i> on some

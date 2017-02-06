@@ -24,7 +24,6 @@
  */
 
 package java.util;
-import org.checkerframework.checker.index.qual.*;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -63,7 +62,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * tasks using the <tt>Object.wait(long)</tt> method.
  *
  * <p>Java 5.0 introduced the {@code java.util.concurrent} package and
-import org.checkerframework.checker.index.qual.*;
  * one of the concurrency utilities therein is the {@link
  * java.util.concurrent.ScheduledThreadPoolExecutor
  * ScheduledThreadPoolExecutor} which is a thread pool for repeatedly

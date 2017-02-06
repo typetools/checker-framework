@@ -1212,7 +1212,6 @@ public final class String
      * Note that this Comparator does <em>not</em> take locale into account,
      * and will result in an unsatisfactory ordering for certain locales.
      * The java.text package provides <em>Collators</em> to allow
-import org.checkerframework.checker.index.qual.*;
      * locale-sensitive ordering.
      *
      * @see     java.text.Collator#compare(String, String)
@@ -1260,7 +1259,6 @@ import org.checkerframework.checker.index.qual.*;
      * Note that this method does <em>not</em> take locale into account,
      * and will result in an unsatisfactory ordering for certain locales.
      * The java.text package provides <em>collators</em> to allow
-import org.checkerframework.checker.index.qual.*;
      * locale-sensitive ordering.
      *
      * @param   str   the <code>String</code> to be compared.

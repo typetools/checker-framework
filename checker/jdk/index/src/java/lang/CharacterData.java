@@ -24,7 +24,6 @@
  */
 
 package java.lang;
-import org.checkerframework.checker.index.qual.*;
 
 abstract class CharacterData {
     abstract int getProperties(int ch);

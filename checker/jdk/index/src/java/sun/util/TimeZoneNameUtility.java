@@ -24,7 +24,6 @@
  */
 
 package sun.util;
-import org.checkerframework.checker.index.qual.*;
 
 import java.lang.ref.SoftReference;
 import java.util.Enumeration;

@@ -917,7 +917,6 @@ class Properties extends Hashtable<Object,Object> {
      *                  if no comment is desired.
      * @param  encoding the name of a supported
      *                  <a href="../lang/package-summary.html#charenc">
-import org.checkerframework.checker.index.qual.*;
      *                  character encoding</a>
      *
      * @throws IOException if writing to the specified output stream

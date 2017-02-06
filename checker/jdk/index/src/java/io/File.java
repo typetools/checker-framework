@@ -76,7 +76,6 @@ import sun.security.action.GetPropertyAction;
  * denotes.  A relative pathname, in contrast, must be interpreted in terms of
  * information taken from some other pathname.  By default the classes in the
  * <code>java.io</code> package always resolve relative pathnames against the
-import org.checkerframework.checker.index.qual.*;
  * current user directory.  This directory is named by the system property
  * <code>user.dir</code>, and is typically the directory in which the Java
  * virtual machine was invoked.
@@ -132,12 +131,9 @@ import org.checkerframework.checker.index.qual.*;
  * will never change.
  *
  * <h4>Interoperability with {@code java.nio.file} package</h4>
-import org.checkerframework.checker.index.qual.*;
  *
  * <p> The <a href="../../java/nio/file/package-summary.html">{@code java.nio.file}</a>
-import org.checkerframework.checker.index.qual.*;
  * package defines interfaces and classes for the Java virtual machine to access
-import org.checkerframework.checker.index.qual.*;
  * files, file attributes, and file systems. This API may be used to overcome
  * many of the limitations of the {@code java.io.File} class.
  * The {@link #toPath toPath} method may be used to obtain a {@link

@@ -24,7 +24,6 @@
  */
 
 package java.lang;
-import org.checkerframework.checker.index.qual.*;
 
 import sun.misc.FloatingDecimal;
 import sun.misc.FpUtils;

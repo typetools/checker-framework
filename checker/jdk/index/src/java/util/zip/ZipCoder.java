@@ -24,7 +24,6 @@
  */
 
 package java.util.zip;
-import org.checkerframework.checker.index.qual.*;
 
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;

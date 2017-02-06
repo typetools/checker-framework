@@ -79,7 +79,6 @@ import java.lang.*;
  * compatibility reasons although its use is discouraged in new code. It is
  * recommended that anyone seeking this functionality use the <tt>split</tt>
  * method of <tt>String</tt> or the java.util.regex package instead.
-import org.checkerframework.checker.index.qual.*;
  * <p>
  * The following example illustrates how the <tt>String.split</tt>
  * method can be used to break up a string into its basic tokens:
