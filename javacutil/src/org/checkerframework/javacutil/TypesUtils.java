@@ -116,7 +116,7 @@ public final class TypesUtils {
                 || qualifiedName.equals("java.lang.Float"));
     }
 
-    /** @return type represents a Throwable type (e.g. Exception, Error) * */
+    /** @return type represents a Throwable type (e.g. Exception, Error) */
     public static boolean isThrowable(TypeMirror type) {
         while (type != null && type.getKind() == TypeKind.DECLARED) {
             DeclaredType dt = (DeclaredType) type;

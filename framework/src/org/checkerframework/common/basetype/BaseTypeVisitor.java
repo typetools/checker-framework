@@ -167,7 +167,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** For obtaining line numbers in -Ashowchecks debugging output. */
     protected final SourcePositions positions;
 
-    /** For storing visitor state. * */
+    /** For storing visitor state. */
     protected final VisitorState visitorState;
 
     /** An instance of the {@link ContractsUtils} helper class. */
