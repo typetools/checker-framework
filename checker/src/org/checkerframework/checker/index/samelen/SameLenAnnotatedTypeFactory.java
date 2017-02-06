@@ -214,4 +214,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         builder.setValue("value", val);
         return builder.build();
     }
+
+    public AnnotationMirror createSameLenUnknown() {
+        return UNKNOWN;
+    }
 }

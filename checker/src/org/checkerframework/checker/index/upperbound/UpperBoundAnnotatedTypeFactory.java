@@ -20,15 +20,7 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.minlen.MinLenChecker;
-import org.checkerframework.checker.index.qual.IndexFor;
-import org.checkerframework.checker.index.qual.IndexOrHigh;
-import org.checkerframework.checker.index.qual.IndexOrLow;
-import org.checkerframework.checker.index.qual.LTEqLengthOf;
-import org.checkerframework.checker.index.qual.LTLengthOf;
-import org.checkerframework.checker.index.qual.LTOMLengthOf;
-import org.checkerframework.checker.index.qual.MinLen;
-import org.checkerframework.checker.index.qual.UpperBoundBottom;
-import org.checkerframework.checker.index.qual.UpperBoundUnknown;
+import org.checkerframework.checker.index.qual.*;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.samelen.SameLenChecker;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -189,8 +181,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * given expression tree.
      */
     public AnnotationMirror sameLenAnnotationFromExpressionTree(ExpressionTree tree) {
-        AnnotatedTypeMirror sameLenType = getMinLenAnnotatedTypeFactory().getAnnotatedType(tree);
-        return sameLenType.getAnnotationInHierarchy(UNKNOWN);
+        AnnotatedTypeMirror sameLenType = getSameLenAnnotatedTypeFactory().getAnnotatedType(tree);
+        return sameLenType.getAnnotationInHierarchy(
+                getSameLenAnnotatedTypeFactory().createSameLenUnknown());
     }
 
     /** Get the list of possible values from a value checker type. May return null. */
