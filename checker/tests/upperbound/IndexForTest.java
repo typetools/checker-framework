@@ -1,7 +1,8 @@
 import org.checkerframework.checker.index.qual.IndexFor;
+import org.checkerframework.checker.index.qual.MinLen;
 
 public class IndexForTest {
-    int[] array = {0};
+    int @MinLen(1) [] array = {0};
 
     void test1(@IndexFor("array") int i) {
         int x = array[i];

@@ -783,6 +783,10 @@ public class FlowExpressions {
         public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
             return false; // not modifiable
         }
+
+        public Object getValue() {
+            return value;
+        }
     }
 
     /** A method call. */

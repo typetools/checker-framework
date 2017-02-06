@@ -94,6 +94,7 @@ public class SameLenTransfer extends CFTransfer {
      * and b have SameLen of each other in the store.
      */
     private void refineEq(Node left, Node right, CFStore store) {
+
         // Look for "a.length == b.length".
         if (isArrayLengthAccess(left) && isArrayLengthAccess(right)) {
 

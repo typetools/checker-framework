@@ -9,6 +9,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
+import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -967,5 +968,17 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
         return new ArrayList<>();
+    }
+
+    public List<Long> getIntValuesFromExpression(
+            String expression, Tree tree, TreePath currentPath) {
+        AnnotationMirror intValAnno =
+                getAnnotationFromString(expression, tree, currentPath, IntVal.class);
+        if (intValAnno == null) {
+            // Could not find a more precise type, so return 0;
+            return null;
+        }
+
+        return getIntValues(intValAnno);
     }
 }

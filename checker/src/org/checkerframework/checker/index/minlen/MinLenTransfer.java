@@ -66,8 +66,8 @@ public class MinLenTransfer extends IndexAbstractTransfer {
         CFStore equalsStore = notEqualTo ? rfi.elseStore : rfi.thenStore;
         CFStore notEqualsStore = notEqualTo ? rfi.thenStore : rfi.elseStore;
 
-        refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, equalsStore);
-        refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, equalsStore);
+        refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, equalsStore, null);
+        refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, equalsStore, null);
 
         // Types in the not equal branch should only be refined if a length is being compared
         // to zero.
@@ -134,7 +134,8 @@ public class MinLenTransfer extends IndexAbstractTransfer {
             AnnotationMirror leftAnno,
             Node right,
             AnnotationMirror rightAnno,
-            CFStore store) {
+            CFStore store,
+            TransferInput<CFValue, CFStore> in) {
 
         Receiver rec = getReceiverForFiNodeOrNull(left);
         Integer newMinLen = getNewMinLenForRefinement(left, right);
@@ -149,7 +150,8 @@ public class MinLenTransfer extends IndexAbstractTransfer {
             AnnotationMirror leftAnno,
             Node right,
             AnnotationMirror rightAnno,
-            CFStore store) {
+            CFStore store,
+            TransferInput<CFValue, CFStore> in) {
         Receiver rec = getReceiverForFiNodeOrNull(left);
         Integer newMinLen = getNewMinLenForRefinement(left, right);
         if (rec != null && newMinLen != null) {
