@@ -675,9 +675,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     type.addAnnotation(leftType.getAnnotationInHierarchy(UNKNOWN));
                 }
             } else if (val == 2) {
-                // The average of two LTL/LTOMs, the result is LTL.
-                // True in general, but this only solves the case for two.
-                // see https://github.com/kelloggm/checker-framework/issues/89
+                // The average of two LTL/LTOMs is LTL.
 
                 // Necessary because otherwise an expression in paretheses doesn't make it past
                 // the next check...
