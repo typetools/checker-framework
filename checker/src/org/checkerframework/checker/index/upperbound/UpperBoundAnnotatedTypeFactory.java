@@ -532,12 +532,16 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * This exists for Math.min and Random.nextInt. We need to special case Math.min because it
-         * has unusual semantics: it can be used to combine annotations for the UBC, so it needs to
-         * be special cased. Random.nextInt needs to be special cased because the resulting type is
-         * dependent on the argument, but not equal to it, so a polymorhpic qualifier is
-         * insufficient. Other methods should not be special-cased here unless there is a compelling
-         * reason to do so.
+         * This exists for Math.min and Random.nextInt, which must be special-cased.
+         *
+         * <ul>
+         *   <li>Math.min has unusual semantics that combines annotations for the UBC.
+         *   <li>The return type of Random.nextInt depends on the argument, but is not equal to it,
+         *       so a polymorhpic qualifier is insufficient.
+         * </ul>
+         *
+         * Other methods should not be special-cased here unless there is a compelling reason to do
+         * so.
          */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
