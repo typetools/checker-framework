@@ -133,7 +133,7 @@ public class Range {
      * @return the range resulting from multiplying the specified range by this range
      */
     public Range times(Range right) {
-        ArrayList<Long> possibleValues =
+        List<Long> possibleValues =
                 Arrays.asList(from * right.from, from * right.to, to * right.from, to * right.to);
         return new Range(Collections.min(possibleValues), Collections.max(possibleValues));
     }
