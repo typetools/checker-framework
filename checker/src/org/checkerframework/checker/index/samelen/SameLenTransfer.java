@@ -20,7 +20,7 @@ import org.checkerframework.framework.flow.CFValue;
  * The transfer function for the SameLen checker. Contains two cases:
  *
  * <ol>
- *   <li>"new T[a.length]" has the same length as a.
+ *   <li>"b = new T[a.length]" implies that b is the same length as a.
  *   <li>after "if (a.length == b.length)", a and b have the same length.
  * </ol>
  */
@@ -45,17 +45,16 @@ public class SameLenTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitAssignment(
             AssignmentNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitAssignment(node, in);
-
-        // Handle "new T[a.length]".
-
+        // Handle b = new T[a.length]
         if (node.getExpression() instanceof ArrayCreationNode) {
             ArrayCreationNode acNode = (ArrayCreationNode) node.getExpression();
             if (acNode.getDimensions().size() == 1 && isArrayLengthAccess(acNode.getDimension(0))) {
-                // node is known to be "new T[a.length]"
+                // "new T[a.length]" is the right hand side of the assignment.
                 FieldAccessNode arrayLengthNode = (FieldAccessNode) acNode.getDimension(0);
                 Node arrayLengthNodeReceiver = arrayLengthNode.getReceiver();
                 // arrayLengthNode is known to be "new T[arrayLengthNodeReceiver.length]"
 
+                // targetRec is the receiver for the left hand side of the assignment.
                 Receiver targetRec =
                         FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getTarget());
                 Receiver otherRec =
