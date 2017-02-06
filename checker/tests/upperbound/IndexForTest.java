@@ -1,5 +1,3 @@
-package index;
-
 import org.checkerframework.checker.index.qual.IndexFor;
 
 public class IndexForTest {
