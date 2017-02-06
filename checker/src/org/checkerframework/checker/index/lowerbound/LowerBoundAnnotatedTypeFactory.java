@@ -625,6 +625,11 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 type.addAnnotation(POS);
             } else if (val == 1) {
                 type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
+            } else if (val >= 2) {
+                if (leftType.hasAnnotation(NonNegative.class)
+                        || leftType.hasAnnotation(Positive.class)) {
+                    type.addAnnotation(NN);
+                }
             }
         }
 
