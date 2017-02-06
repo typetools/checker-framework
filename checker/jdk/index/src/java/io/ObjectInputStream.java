@@ -853,7 +853,7 @@ public class ObjectInputStream
      * @throws  IOException If an I/O error has occurred.
      * @see java.io.DataInputStream#readFully(byte[],int,int)
      */
-    public /*@GTENegativeOne*/ int read(byte[] buf, /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException {
+    public @GTENegativeOne int read(byte[] buf, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         if (buf == null) {
             throw new NullPointerException();
         }
@@ -871,7 +871,7 @@ public class ObjectInputStream
      * @throws  IOException if there are I/O errors while reading from the
      *          underlying <code>InputStream</code>
      */
-    public /*@NonNegative*/ int available() throws IOException {
+    public @NonNegative int available() throws IOException {
         return bin.available();
     }
 
@@ -1023,7 +1023,7 @@ public class ObjectInputStream
      * @throws  EOFException If end of file is reached.
      * @throws  IOException If other I/O error has occurred.
      */
-    public void readFully(byte[] buf, /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException {
+    public void readFully(byte[] buf, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         int endoff = off + len;
         if (off < 0 || len < 0 || endoff > buf.length || endoff < 0) {
             throw new IndexOutOfBoundsException();
@@ -1038,7 +1038,7 @@ public class ObjectInputStream
      * @return  the actual number of bytes skipped.
      * @throws  IOException If an I/O error has occurred.
      */
-    public /*@NonNegative*/ int skipBytes(/*@NonNegative*/ int len) throws IOException {
+    public @NonNegative int skipBytes(@NonNegative int len) throws IOException {
         return bin.skipBytes(len);
     }
 

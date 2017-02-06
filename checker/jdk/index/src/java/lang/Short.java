@@ -53,7 +53,7 @@ public final class Short extends Number implements Comparable<Short> {
      * A constant holding the maximum value a {@code short} can
      * have, 2<sup>15</sup>-1.
      */
-    public static final /*@Positive*/ short   MAX_VALUE = 32767;
+    public static final @Positive short   MAX_VALUE = 32767;
 
     /**
      * The {@code Class} instance representing the primitive type
@@ -450,7 +450,7 @@ public final class Short extends Number implements Comparable<Short> {
      * complement binary form.
      * @since 1.5
      */
-    public static final /*@Positive*/ int SIZE = 16;
+    public static final @Positive int SIZE = 16;
 
     /**
      * Returns the value obtained by reversing the order of the bytes in the

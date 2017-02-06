@@ -71,7 +71,7 @@ public abstract class FilterReader extends Reader {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public /*@GTENegativeOne*/ int read(char cbuf[], /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException {
+    public @GTENegativeOne int read(char cbuf[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         return in.read(cbuf, off, len);
     }
 
@@ -105,7 +105,7 @@ public abstract class FilterReader extends Reader {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public void mark(/*@NonNegative*/ int readAheadLimit) throws IOException {
+    public void mark(@NonNegative int readAheadLimit) throws IOException {
         in.mark(readAheadLimit);
     }
 

@@ -134,7 +134,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @see     Integer#toString(int, int)
      * @see     Integer#valueOf(String)
      */
-    public static final /*@Positive*/ int MIN_RADIX = 2;
+    public static final @Positive int MIN_RADIX = 2;
 
     /**
      * The maximum radix available for conversion to and from strings.
@@ -148,7 +148,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @see     Integer#toString(int, int)
      * @see     Integer#valueOf(String)
      */
-    public static final /*@Positive*/ int MAX_RADIX = 36;
+    public static final @Positive int MAX_RADIX = 36;
 
     /**
      * The constant value of this field is the smallest value of type
@@ -4699,7 +4699,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * the length of the {@code char} array.
      * @since  1.5
      */
-    public static int codePointAt(char[] a, /*@IndexFor("#1")*/ int index) {
+    public static int codePointAt(char[] a, @IndexFor("#1") int index) {
         return codePointAtImpl(a, index, a.length);
     }
 
@@ -4728,7 +4728,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * greater than the length of the {@code char} array.
      * @since  1.5
      */
-    public static int codePointAt(char[] a, /*@IndexFor("#1")*/ int index, /*@IndexOrHigh("#1")*/ int limit) {
+    public static int codePointAt(char[] a, @IndexFor("#1") int index, @IndexOrHigh("#1") int limit) {
         if (index >= limit || limit < 0 || limit > a.length) {
             throw new IndexOutOfBoundsException();
         }
@@ -4835,7 +4835,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * the length of the {@code char} array.
      * @since  1.5
      */
-    public static int codePointBefore(char[] a, /*@Positive @LTEqLengthOf("#1")*/ int index, /*@IndexOrHigh("#1")*/ int start) {
+    public static int codePointBefore(char[] a, /*@Positive @LTEqLengthOf("#1")*/ int index, @IndexOrHigh("#1") int start) {
         if (index <= start || start < 0 || start >= a.length) {
             throw new IndexOutOfBoundsException();
         }
@@ -4944,7 +4944,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * {@code dst[dstIndex]}.)
      * @since  1.5
      */
-    public static int toChars(int codePoint, char[] dst, /*@IndexFor("#2")*/ int dstIndex) {
+    public static int toChars(int codePoint, char[] dst, @IndexFor("#2") int dstIndex) {
         if (isBmpCodePoint(codePoint)) {
             dst[dstIndex] = (char) codePoint;
             return 1;
@@ -5013,7 +5013,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * {@code beginIndex} is larger than {@code endIndex}.
      * @since  1.5
      */
-    public static /*@NonNegative*/ int codePointCount(CharSequence seq, /*@ IndexFor("#1")*/ int beginIndex, /*@ IndexOrHigh("#1")*/ int endIndex) {
+    public static @NonNegative int codePointCount(CharSequence seq, /*@ IndexFor("#1")*/ int beginIndex, /*@ IndexOrHigh("#1")*/ int endIndex) {
         int length = seq.length();
         if (beginIndex < 0 || endIndex > length || beginIndex > endIndex) {
             throw new IndexOutOfBoundsException();
@@ -5048,7 +5048,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * count} is larger than the length of the given array.
      * @since  1.5
      */
-    public static /*@NonNegative*/ int codePointCount(char[] a, /*@IndexFor("#1")*/ int offset, /*@IndexOrHigh("#1")*/ int count) {
+    public static @NonNegative int codePointCount(char[] a, @IndexFor("#1") int offset, @IndexOrHigh("#1") int count) {
         if (count > a.length - offset || offset < 0 || count < 0) {
             throw new IndexOutOfBoundsException();
         }
@@ -5157,8 +5157,8 @@ class Character implements java.io.Serializable, Comparable<Character> {
      *   {@code codePointOffset} code points.
      * @since 1.5
      */
-    public static /*@IndexFor("#1")*/ int offsetByCodePoints(char[] a, /*@IndexFor("#1")*/ int start, /*@IndexOrHigh("#1")*/ int count,
-                                         /*@IndexFor("#1")*/ int index, int codePointOffset) {
+    public static @IndexFor("#1") int offsetByCodePoints(char[] a, @IndexFor("#1") int start, @IndexOrHigh("#1") int count,
+                                         @IndexFor("#1") int index, int codePointOffset) {
         if (count > a.length-start || start < 0 || count < 0
             || index < start || index > start+count) {
             throw new IndexOutOfBoundsException();
@@ -6972,7 +6972,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      *
      * @since 1.5
      */
-    public static final /*@Positive*/ int SIZE = 16;
+    public static final @Positive int SIZE = 16;
 
     /**
      * Returns the value obtained by reversing the order of the bytes in the

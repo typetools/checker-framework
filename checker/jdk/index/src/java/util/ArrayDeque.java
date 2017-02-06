@@ -572,7 +572,7 @@ public class ArrayDeque<E> extends AbstractCollection<E>
      *
      * @return the number of elements in this deque
      */
-    public /*@NonNegative*/ int size() {
+    public @NonNegative int size() {
         return (tail - head) & (elements.length - 1);
     }
 

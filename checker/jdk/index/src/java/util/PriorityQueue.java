@@ -130,7 +130,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
      * @throws IllegalArgumentException if {@code initialCapacity} is less
      *         than 1
      */
-    public PriorityQueue(/*@Positive*/ int initialCapacity) {
+    public PriorityQueue(@Positive int initialCapacity) {
         this(initialCapacity, null);
     }
 
@@ -145,7 +145,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
      * @throws IllegalArgumentException if {@code initialCapacity} is
      *         less than 1
      */
-    public PriorityQueue(/*@Positive*/ int initialCapacity,
+    public PriorityQueue(@Positive int initialCapacity,
                          Comparator<? super E> comparator) {
         // Note: This restriction of at least one is not actually needed,
         // but continues for 1.5 compatibility
@@ -552,7 +552,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
         }
     }
 
-    public /*@NonNegative*/ int size() {
+    public @NonNegative int size() {
         return size;
     }
 

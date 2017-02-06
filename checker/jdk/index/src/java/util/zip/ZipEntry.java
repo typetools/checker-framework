@@ -132,7 +132,7 @@ import org.checkerframework.checker.index.qual.*;
      *            or is less than 0 when ZIP64 is supported
      * @see #getSize()
      */
-    public void setSize(/*@NonNegative*/ long size) {
+    public void setSize(@NonNegative long size) {
         if (size < 0) {
             throw new IllegalArgumentException("invalid entry size");
         }
@@ -144,7 +144,7 @@ import org.checkerframework.checker.index.qual.*;
      * @return the uncompressed size of the entry data, or -1 if not known
      * @see #setSize(long)
      */
-    public /*@NonNegative*/ long getSize() {
+    public @NonNegative long getSize() {
         return size;
     }
 

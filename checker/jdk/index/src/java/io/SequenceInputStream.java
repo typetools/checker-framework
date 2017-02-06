@@ -135,7 +135,7 @@ class SequenceInputStream extends InputStream {
      *
      * @since   JDK1.1
      */
-    public /*@NonNegative*/ int available() throws IOException {
+    public @NonNegative int available() throws IOException {
         if(in == null) {
             return 0; // no way to signal EOF from available()
         }
@@ -195,7 +195,7 @@ class SequenceInputStream extends InputStream {
      * <code>b.length - off</code>
      * @exception  IOException  if an I/O error occurs.
      */
-    public /*@GTENegativeOne*/ int read(byte b[], /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException {
+    public @GTENegativeOne int read(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         if (in == null) {
             return -1;
         } else if (b == null) {

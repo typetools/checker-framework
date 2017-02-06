@@ -399,7 +399,7 @@ public class PrintWriter extends Writer {
      * Writes a single character.
      * @param c int specifying a character to be written.
      */
-    public void write(int c) {
+    public void write(@NonNegative int c) {
         try {
             synchronized (lock) {
                 ensureOpen();
@@ -420,7 +420,7 @@ public class PrintWriter extends Writer {
      * @param off Offset from which to start writing characters
      * @param len Number of characters to write
      */
-    public void write(char buf[], /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) {
+    public void write(char buf[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) {
         try {
             synchronized (lock) {
                 ensureOpen();

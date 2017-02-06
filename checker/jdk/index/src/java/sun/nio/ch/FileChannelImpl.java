@@ -153,7 +153,7 @@ public class FileChannelImpl
         }
     }
 
-    public long read(ByteBuffer[] dsts, /*@IndexFor("#1")*/ int offset, /*@IndexOrHigh("#1")*/ int length)
+    public long read(ByteBuffer[] dsts, @IndexFor("#1") int offset, @IndexOrHigh("#1") int length)
         throws IOException
     {
         if ((offset < 0) || (length < 0) || (offset > dsts.length - length))
@@ -205,7 +205,7 @@ public class FileChannelImpl
         }
     }
 
-    public long write(ByteBuffer[] srcs, /*@IndexFor("#1")*/ int offset, /*@IndexOrHigh("#1")*/ int length)
+    public long write(ByteBuffer[] srcs, @IndexFor("#1") int offset, @IndexOrHigh("#1") int length)
         throws IOException
     {
         if ((offset < 0) || (length < 0) || (offset > srcs.length - length))
@@ -282,7 +282,7 @@ public class FileChannelImpl
         }
     }
 
-    public /*@GTENegativeOne*/ long size() throws IOException {
+    public @GTENegativeOne long size() throws IOException {
         ensureOpen();
         synchronized (positionLock) {
             long s = -1;

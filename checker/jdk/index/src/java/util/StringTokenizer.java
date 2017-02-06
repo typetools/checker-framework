@@ -418,7 +418,7 @@ class StringTokenizer implements Enumeration<Object> {
      *          delimiter set.
      * @see     java.util.StringTokenizer#nextToken()
      */
-    public /*@NonNegative*/ int countTokens() {
+    public @NonNegative int countTokens() {
         int count = 0;
         int currpos = currentPosition;
         while (currpos < maxPosition) {

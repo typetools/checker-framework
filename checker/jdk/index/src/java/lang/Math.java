@@ -729,7 +729,7 @@ public final class Math {
      * @param   a   the argument whose absolute value is to be determined
      * @return  the absolute value of the argument.
      */
-    public static /*@NonNegative*/ int abs(int a) {
+    public static @NonNegative int abs(int a) {
         return (a < 0) ? -a : a;
     }
 
@@ -746,7 +746,7 @@ public final class Math {
      * @param   a   the argument whose absolute value is to be determined
      * @return  the absolute value of the argument.
      */
-    public static /*@NonNegative*/ long abs(long a) {
+    public static @NonNegative long abs(long a) {
         return (a < 0) ? -a : a;
     }
 

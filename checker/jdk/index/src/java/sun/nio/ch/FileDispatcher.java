@@ -31,10 +31,10 @@ import java.io.*;
 
 abstract class FileDispatcher extends NativeDispatcher {
 
-    public static final /*@GTENegativeOne*/ int NO_LOCK = -1;       // Failed to lock
-    public static final /*@NonNegative*/ int LOCKED = 0;         // Obtained requested lock
-    public static final /*@Positive*/ int RET_EX_LOCK = 1;    // Obtained exclusive lock
-    public static final /*@Positive*/ int INTERRUPTED = 2;    // Request interrupted
+    public static final @GTENegativeOne int NO_LOCK = -1;       // Failed to lock
+    public static final @NonNegative int LOCKED = 0;         // Obtained requested lock
+    public static final @Positive int RET_EX_LOCK = 1;    // Obtained exclusive lock
+    public static final @Positive int INTERRUPTED = 2;    // Request interrupted
 
     abstract int force(FileDescriptor fd, boolean metaData) throws IOException;
 

@@ -89,7 +89,7 @@ class PushbackInputStream extends FilterInputStream {
      * @exception IllegalArgumentException if size is <= 0
      * @since  JDK1.1
      */
-    public PushbackInputStream(InputStream in, /*@Positive*/ int size) {
+    public PushbackInputStream(InputStream in, @Positive int size) {
         super(in);
         if (size <= 0) {
             throw new IllegalArgumentException("size <= 0");
@@ -132,7 +132,7 @@ class PushbackInputStream extends FilterInputStream {
      *             or an I/O error occurs.
      * @see        java.io.InputStream#read()
      */
-    public /*@GTENegativeOne*/ int read() throws IOException {
+    public @GTENegativeOne int read() throws IOException {
         ensureOpen();
         if (pos < buf.length) {
             return buf[pos++] & 0xff;
@@ -163,7 +163,7 @@ class PushbackInputStream extends FilterInputStream {
      *             or an I/O error occurs.
      * @see        java.io.InputStream#read(byte[], int, int)
      */
-    public /*@GTENegativeOne*/ int read(byte[] b, /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException {
+    public @GTENegativeOne int read(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         ensureOpen();
         if (b == null) {
             throw new NullPointerException();
@@ -227,7 +227,7 @@ class PushbackInputStream extends FilterInputStream {
      *            invoking its {@link #close()} method.
      * @since     JDK1.1
      */
-    public void unread(byte[] b, /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException {
+    public void unread(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         ensureOpen();
         if (len > pos) {
             throw new IOException("Push back buffer is full");
@@ -272,7 +272,7 @@ class PushbackInputStream extends FilterInputStream {
      * @see        java.io.FilterInputStream#in
      * @see        java.io.InputStream#available()
      */
-    public /*@NonNegative*/ int available() throws IOException {
+    public @NonNegative int available() throws IOException {
         ensureOpen();
         int n = buf.length - pos;
         int avail = super.available();
@@ -346,7 +346,7 @@ class PushbackInputStream extends FilterInputStream {
      *                      the mark position becomes invalid.
      * @see     java.io.InputStream#reset()
      */
-    public synchronized void mark(/*@NonNegative*/ int readlimit) {
+    public synchronized void mark(@NonNegative int readlimit) {
     }
 
     /**

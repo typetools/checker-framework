@@ -191,7 +191,7 @@ public class OutputStreamWriter extends Writer {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public void write(int c) throws IOException {
+    public void write(@NonNegative int c) throws IOException {
         se.write(c);
     }
 
@@ -204,7 +204,7 @@ public class OutputStreamWriter extends Writer {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public void write(char cbuf[], /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException {
+    public void write(char cbuf[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         se.write(cbuf, off, len);
     }
 

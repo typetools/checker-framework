@@ -208,7 +208,7 @@ public class Observable {
      *
      * @return  the number of observers of this object.
      */
-    public synchronized /*@NonNegative*/ int countObservers() {
+    public synchronized @NonNegative int countObservers() {
         return obs.size();
     }
 }

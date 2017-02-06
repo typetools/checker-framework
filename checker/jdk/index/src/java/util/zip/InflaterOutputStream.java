@@ -101,7 +101,7 @@ public class InflaterOutputStream extends FilterOutputStream {
      * @throws IllegalArgumentException if {@code bufLen} is <= 0
      * @throws NullPointerException if {@code out} or {@code infl} is null
      */
-    public InflaterOutputStream(OutputStream out, Inflater infl, /*@Positive*/ int bufLen) {
+    public InflaterOutputStream(OutputStream out, Inflater infl, @Positive int bufLen) {
         super(out);
 
         // Sanity checks
@@ -219,7 +219,7 @@ public class InflaterOutputStream extends FilterOutputStream {
      * @throws NullPointerException if {@code b} is null
      * @throws ZipException if a compression (ZIP) format error occurs
      */
-    public void write(byte[] b, /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException {
+    public void write(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         // Sanity checks
         ensureOpen();
         if (b == null) {

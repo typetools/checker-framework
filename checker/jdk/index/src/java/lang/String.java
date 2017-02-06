@@ -219,7 +219,7 @@ public final class String
      *          If the {@code offset} and {@code count} arguments index
      *          characters outside the bounds of the {@code value} array
      */
-    public String(char value[], /*@IndexFor("#1")*/ int offset, /*@IndexOrHigh("#1")*/ int count) {
+    public String(char value[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int count) {
         if (offset < 0) {
             throw new StringIndexOutOfBoundsException(offset);
         }
@@ -263,7 +263,7 @@ public final class String
      *
      * @since  1.5
      */
-    public String(int[] codePoints, /*@IndexFor("#1")*/ int offset, /*@IndexOrHigh("#1")*/ int count) {
+    public String(int[] codePoints, @IndexFor("#1") int offset, @IndexOrHigh("#1") int count) {
         if (offset < 0) {
             throw new StringIndexOutOfBoundsException(offset);
         }
@@ -344,7 +344,7 @@ public final class String
      * @see  #String(byte[])
      */
     @Deprecated
-    public String(byte ascii[], int hibyte, /*@IndexFor("#1")*/ int offset, /*@IndexOrHigh("#1")*/ int count) {
+    public String(byte ascii[], int hibyte, @IndexFor("#1") int offset, @IndexOrHigh("#1") int count) {
         checkBounds(ascii, offset, count);
         char value[] = new char[count];
 
@@ -444,7 +444,7 @@ public final class String
      *
      * @since  JDK1.1
      */
-    public String(byte bytes[], /*@IndexFor("#1")*/ int offset, /*@IndexOrHigh("#1")*/ int length, String charsetName)
+    public String(byte bytes[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int length, String charsetName)
         throws UnsupportedEncodingException
     {
         if (charsetName == null)
@@ -486,7 +486,7 @@ public final class String
      *
      * @since  1.6
      */
-    public String(byte bytes[], /*@IndexFor("#1")*/ int offset, /*@IndexOrHigh("#1")*/ int length, Charset charset) {
+    public String(byte bytes[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int length, Charset charset) {
         if (charset == null)
             throw new NullPointerException("charset");
         checkBounds(bytes, offset, length);
@@ -575,7 +575,7 @@ public final class String
      *
      * @since  JDK1.1
      */
-    public String(byte bytes[], /*@IndexFor("#1")*/ int offset, /*@IndexOrHigh("#1")*/ int length) {
+    public String(byte bytes[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int length) {
         checkBounds(bytes, offset, length);
         char[] v  = StringCoding.decode(bytes, offset, length);
         this.offset = 0;
@@ -851,7 +851,7 @@ public final class String
      *            <li><code>dstBegin+(srcEnd-srcBegin)</code> is larger than
      *                <code>dst.length</code></ul>
      */
-    public void getChars(/*@ IndexFor("this")*/ int srcBegin, /*@ IndexOrHigh("this")*/ int srcEnd, char dst[], /*@IndexFor("#3")*/ int dstBegin) {
+    public void getChars(/*@ IndexFor("this")*/ int srcBegin, /*@ IndexOrHigh("this")*/ int srcEnd, char dst[], @IndexFor("#3") int dstBegin) {
         if (srcBegin < 0) {
             throw new StringIndexOutOfBoundsException(srcBegin);
         }
@@ -909,7 +909,7 @@ public final class String
      *          </ul>
      */
     @Deprecated
-    public void getBytes(/*@ IndexFor("this")*/ int srcBegin, /*@ IndexOrHigh("#1")*/ int srcEnd, byte dst[], /*@IndexFor("#3")*/ int dstBegin) {
+    public void getBytes(/*@ IndexFor("this")*/ int srcBegin, /*@ IndexOrHigh("#1")*/ int srcEnd, byte dst[], @IndexFor("#3") int dstBegin) {
         if (srcBegin < 0) {
             throw new StringIndexOutOfBoundsException(srcBegin);
         }
@@ -1305,9 +1305,9 @@ import org.checkerframework.checker.index.qual.*;
      *          exactly matches the specified subregion of the string argument;
      *          <code>false</code> otherwise.
      */
-    public boolean regionMatches(/*@ IndexFor("this")*/ int toffset, String other, /*@IndexFor("#2")*/ int ooffset,
+    public boolean regionMatches(/*@ IndexFor("this")*/ int toffset, String other, @IndexFor("#2") int ooffset,
                                  /*@ IndexOrHigh({"this","#2"})*/
-				 /*@IndexOrHigh("#2")*/  int len) {
+				 @IndexOrHigh("#2")  int len) {
         char ta[] = value;
         int to = offset + toffset;
         char pa[] = other.value;
@@ -1376,9 +1376,9 @@ import org.checkerframework.checker.index.qual.*;
      *          argument.
      */
     public boolean regionMatches(boolean ignoreCase, /*@ IndexFor("this")*/ int toffset,
-                           String other, /*@IndexFor("#2")*/ int ooffset,
+                           String other, @IndexFor("#2") int ooffset,
 				 /*@ IndexOrHigh({"this","#2"})*/
-				 /*@IndexOrHigh("#2")*/ int len) {
+				 @IndexOrHigh("#2") int len) {
         char ta[] = value;
         int to = offset + toffset;
         char pa[] = other.value;
@@ -1536,7 +1536,7 @@ import org.checkerframework.checker.index.qual.*;
      *          character sequence represented by this object, or
      *          <code>-1</code> if the character does not occur.
      */
-    public /*@GTENegativeOne*/ int indexOf(int ch) {
+    public @GTENegativeOne int indexOf(int ch) {
         return indexOf(ch, 0);
     }
 
@@ -1579,7 +1579,7 @@ import org.checkerframework.checker.index.qual.*;
      *          than or equal to <code>fromIndex</code>, or <code>-1</code>
      *          if the character does not occur.
      */
-    public /*@GTENegativeOne*/ int indexOf(int ch, /*@ IndexFor("this")*/ int fromIndex) {
+    public @GTENegativeOne int indexOf(int ch, /*@ IndexFor("this")*/ int fromIndex) {
         if (fromIndex < 0) {
             fromIndex = 0;
         } else if (fromIndex >= count) {
@@ -1646,7 +1646,7 @@ import org.checkerframework.checker.index.qual.*;
      *          character sequence represented by this object, or
      *          <code>-1</code> if the character does not occur.
      */
-    public /*@GTENegativeOne*/ int lastIndexOf(int ch) {
+    public @GTENegativeOne int lastIndexOf(int ch) {
         return lastIndexOf(ch, count - 1);
     }
 
@@ -1684,7 +1684,7 @@ import org.checkerframework.checker.index.qual.*;
      *          than or equal to <code>fromIndex</code>, or <code>-1</code>
      *          if the character does not occur before that point.
      */
-    public /*@GTENegativeOne*/ int lastIndexOf(int ch, /*@ IndexFor("this")*/ int fromIndex) {
+    public @GTENegativeOne int lastIndexOf(int ch, /*@ IndexFor("this")*/ int fromIndex) {
         if (ch < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
             // handle most cases here (ch is a BMP code point or a
             // negative value (invalid code point))
@@ -1735,7 +1735,7 @@ import org.checkerframework.checker.index.qual.*;
      * @return  the index of the first occurrence of the specified substring,
      *          or {@code -1} if there is no such occurrence.
      */
-    public /*@GTENegativeOne*/ int indexOf(String str) {
+    public @GTENegativeOne int indexOf(String str) {
         return indexOf(str, 0);
     }
 
@@ -1755,7 +1755,7 @@ import org.checkerframework.checker.index.qual.*;
      *          starting at the specified index,
      *          or {@code -1} if there is no such occurrence.
      */
-    public /*@GTENegativeOne*/ int indexOf(String str, /*@ IndexFor("this")*/ int fromIndex) {
+    public @GTENegativeOne int indexOf(String str, /*@ IndexFor("this")*/ int fromIndex) {
         return indexOf(value, offset, count,
                        str.value, str.offset, str.count, fromIndex);
     }
@@ -1826,7 +1826,7 @@ import org.checkerframework.checker.index.qual.*;
      * @return  the index of the last occurrence of the specified substring,
      *          or {@code -1} if there is no such occurrence.
      */
-    public /*@GTENegativeOne*/ int lastIndexOf(String str) {
+    public @GTENegativeOne int lastIndexOf(String str) {
         return lastIndexOf(str, count);
     }
 
@@ -1846,7 +1846,7 @@ import org.checkerframework.checker.index.qual.*;
      *          searching backward from the specified index,
      *          or {@code -1} if there is no such occurrence.
      */
-    public /*@GTENegativeOne*/ int lastIndexOf(String str, /*@ IndexFor("this")*/ int fromIndex) {
+    public @GTENegativeOne int lastIndexOf(String str, /*@ IndexFor("this")*/ int fromIndex) {
         return lastIndexOf(value, offset, count,
                            str.value, str.offset, str.count, fromIndex);
     }
@@ -2943,7 +2943,7 @@ import org.checkerframework.checker.index.qual.*;
      *          <code>offset+count</code> is larger than
      *          <code>data.length</code>.
      */
-    public static String valueOf(char data[], /*@IndexFor("#1")*/ int offset, /*@IndexOrHigh("#1")*/ int count) {
+    public static String valueOf(char data[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int count) {
         return new String(data, offset, count);
     }
 
@@ -2957,7 +2957,7 @@ import org.checkerframework.checker.index.qual.*;
      * @return  a <code>String</code> that contains the characters of the
      *          specified subarray of the character array.
      */
-    public static String copyValueOf(char data[], /*@IndexFor("#1")*/ int offset, /*@IndexOrHigh("#1")*/ int count) {
+    public static String copyValueOf(char data[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int count) {
         // All public String constructors now copy the data.
         return new String(data, offset, count);
     }
@@ -2982,7 +2982,7 @@ import org.checkerframework.checker.index.qual.*;
      *          <code>"true"</code> is returned; otherwise, a string equal to
      *          <code>"false"</code> is returned.
      */
-    public static /*@MinLen(4)*/ String valueOf(boolean b) {
+    public static @MinLen(4) String valueOf(boolean b) {
         return b ? "true" : "false";
     }
 
@@ -2994,7 +2994,7 @@ import org.checkerframework.checker.index.qual.*;
      * @return  a string of length <code>1</code> containing
      *          as its single character the argument <code>c</code>.
      */
-    public static /*@MinLen(1)*/ String valueOf(char c) {
+    public static @MinLen(1) String valueOf(char c) {
         char data[] = {c};
         return new String(0, 1, data);
     }
@@ -3009,7 +3009,7 @@ import org.checkerframework.checker.index.qual.*;
      * @return  a string representation of the <code>int</code> argument.
      * @see     java.lang.Integer#toString(int, int)
      */
-    public static /*@MinLen(1)*/ String valueOf(int i) {
+    public static @MinLen(1) String valueOf(int i) {
         return Integer.toString(i);
     }
 
@@ -3023,7 +3023,7 @@ import org.checkerframework.checker.index.qual.*;
      * @return  a string representation of the <code>long</code> argument.
      * @see     java.lang.Long#toString(long)
      */
-    public static /*@MinLen(1)*/ String valueOf(long l) {
+    public static @MinLen(1) String valueOf(long l) {
         return Long.toString(l);
     }
 
@@ -3037,7 +3037,7 @@ import org.checkerframework.checker.index.qual.*;
      * @return  a string representation of the <code>float</code> argument.
      * @see     java.lang.Float#toString(float)
      */
-    public static /*@MinLen(1)*/ String valueOf(float f) {
+    public static @MinLen(1) String valueOf(float f) {
         return Float.toString(f);
     }
 
@@ -3051,7 +3051,7 @@ import org.checkerframework.checker.index.qual.*;
      * @return  a  string representation of the <code>double</code> argument.
      * @see     java.lang.Double#toString(double)
      */
-    public static /*@MinLen(1)*/ String valueOf(double d) {
+    public static @MinLen(1) String valueOf(double d) {
         return Double.toString(d);
     }
 

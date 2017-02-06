@@ -198,7 +198,7 @@ public class File
      * string for convenience.  This string contains a single character, namely
      * <code>{@link #separatorChar}</code>.
      */
-    public static final /*@MinLen(1)*/ String separator = "" + separatorChar;
+    public static final @MinLen(1) String separator = "" + separatorChar;
 
     /**
      * The system-dependent path-separator character.  This field is
@@ -217,7 +217,7 @@ public class File
      * for convenience.  This string contains a single character, namely
      * <code>{@link #pathSeparatorChar}</code>.
      */
-    public static final /*@MinLen()*/ String pathSeparator = "" + pathSeparatorChar;
+    public static final @MinLen() String pathSeparator = "" + pathSeparatorChar;
 
 
     /* -- Constructors -- */
@@ -909,7 +909,7 @@ public class File
      *          java.lang.SecurityManager#checkRead(java.lang.String)}</code>
      *          method denies read access to the file
      */
-    public /*@NonNegative*/ long length() {
+    public @NonNegative long length() {
         SecurityManager security = System.getSecurityManager();
         if (security != null) {
             security.checkRead(path);
@@ -1681,7 +1681,7 @@ public class File
      *
      * @since  1.6
      */
-    public /*@NonNegative*/ long getTotalSpace() {
+    public @NonNegative long getTotalSpace() {
         SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
             sm.checkPermission(new RuntimePermission("getFileSystemAttributes"));
@@ -1716,7 +1716,7 @@ public class File
      *
      * @since  1.6
      */
-    public /*@NonNegative*/ long getFreeSpace() {
+    public @NonNegative long getFreeSpace() {
         SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
             sm.checkPermission(new RuntimePermission("getFileSystemAttributes"));
@@ -1754,7 +1754,7 @@ public class File
      *
      * @since  1.6
      */
-    public /*@NonNegative*/ long getUsableSpace() {
+    public @NonNegative long getUsableSpace() {
         SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
             sm.checkPermission(new RuntimePermission("getFileSystemAttributes"));

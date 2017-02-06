@@ -109,7 +109,7 @@ class StringBufferInputStream extends InputStream {
      *             <code>-1</code> if there is no more data because the end of
      *             the stream has been reached.
      */
-    public synchronized /*@GTENegativeOne*/ int read(byte b[], /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) {
+    public synchronized @GTENegativeOne int read(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) {
         if (b == null) {
             throw new NullPointerException();
         } else if ((off < 0) || (off > b.length) || (len < 0) ||
@@ -159,7 +159,7 @@ class StringBufferInputStream extends InputStream {
      * @return     the value of <code>count&nbsp;-&nbsp;pos</code>, which is the
      *             number of bytes remaining to be read from the input buffer.
      */
-    public synchronized /*@NonNegative*/ int available() {
+    public synchronized @NonNegative int available() {
         return count - pos;
     }
 

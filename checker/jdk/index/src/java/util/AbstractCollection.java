@@ -76,7 +76,7 @@ public abstract class AbstractCollection<E> implements Collection<E> {
      */
     public abstract Iterator<E> iterator();
 
-    public abstract /*@NonNegative*/ int size();
+    public abstract @NonNegative int size();
 
     /**
      * {@inheritDoc}

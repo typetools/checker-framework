@@ -95,7 +95,7 @@ public abstract class Reader implements Readable, Closeable {
      * @throws ReadOnlyBufferException if target is a read only buffer
      * @since 1.5
      */
-    public /*@GTENegativeOne*/ int read(java.nio.CharBuffer target) throws IOException {
+    public @GTENegativeOne int read(java.nio.CharBuffer target) throws IOException {
         int len = target.remaining();
         char[] cbuf = new char[len];
         int n = read(cbuf, 0, len);
@@ -117,7 +117,7 @@ public abstract class Reader implements Readable, Closeable {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public /*@GTENegativeOne*/ int read() throws IOException {
+    public @GTENegativeOne int read() throws IOException {
         char cb[] = new char[1];
         if (read(cb, 0, 1) == -1)
             return -1;
@@ -137,7 +137,7 @@ public abstract class Reader implements Readable, Closeable {
      *
      * @exception   IOException  If an I/O error occurs
      */
-    public /*@GTENegativeOne*/ int read(char cbuf[]) throws IOException {
+    public @GTENegativeOne int read(char cbuf[]) throws IOException {
         return read(cbuf, 0, cbuf.length);
     }
 
@@ -155,7 +155,7 @@ public abstract class Reader implements Readable, Closeable {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    abstract public /*@GTENegativeOne*/ int read(char cbuf[], /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException;
+    abstract public @GTENegativeOne int read(char cbuf[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException;
 
     /** Maximum skip-buffer size */
     private static final int maxSkipBufferSize = 8192;

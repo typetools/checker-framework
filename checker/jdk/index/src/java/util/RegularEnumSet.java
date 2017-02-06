@@ -118,7 +118,7 @@ class RegularEnumSet<E extends Enum<E>> extends EnumSet<E> {
      *
      * @return the number of elements in this set
      */
-    public /*@NonNegative*/ int size() {
+    public @NonNegative int size() {
         return Long.bitCount(elements);
     }
 

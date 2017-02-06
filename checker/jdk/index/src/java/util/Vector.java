@@ -124,7 +124,7 @@ public class Vector<E>
      * @throws IllegalArgumentException if the specified initial capacity
      *         is negative
      */
-    public Vector(/*@NonNegative*/ int initialCapacity, int capacityIncrement) {
+    public Vector(@NonNegative int initialCapacity, int capacityIncrement) {
         super();
         if (initialCapacity < 0)
             throw new IllegalArgumentException("Illegal Capacity: "+
@@ -141,7 +141,7 @@ public class Vector<E>
      * @throws IllegalArgumentException if the specified initial capacity
      *         is negative
      */
-    public Vector(/*@NonNegative*/ int initialCapacity) {
+    public Vector(@NonNegative int initialCapacity) {
         this(initialCapacity, 0);
     }
 
@@ -280,7 +280,7 @@ public class Vector<E>
      * @param  newSize   the new size of this vector
      * @throws ArrayIndexOutOfBoundsException if the new size is negative
      */
-    public synchronized void setSize(/*@NonNegative*/ int newSize) {
+    public synchronized void setSize(@NonNegative int newSize) {
         modCount++;
         if (newSize > elementCount) {
             ensureCapacityHelper(newSize);
@@ -299,7 +299,7 @@ public class Vector<E>
      *          data array, kept in the field {@code elementData}
      *          of this vector)
      */
-    public synchronized /*@NonNegative*/ int capacity() {
+    public synchronized @NonNegative int capacity() {
         return elementData.length;
     }
 
@@ -308,7 +308,7 @@ public class Vector<E>
      *
      * @return  the number of components in this vector
      */
-    public synchronized /*@NonNegative*/ int size() {
+    public synchronized @NonNegative int size() {
         return elementCount;
     }
 
@@ -375,7 +375,7 @@ public class Vector<E>
      * @return the index of the first occurrence of the specified element in
      *         this vector, or -1 if this vector does not contain the element
      */
-    public /*@GTENegativeOne*/ int indexOf(Object o) {
+    public @GTENegativeOne int indexOf(Object o) {
         return indexOf(o, 0);
     }
 
@@ -395,7 +395,7 @@ public class Vector<E>
      * @throws IndexOutOfBoundsException if the specified index is negative
      * @see     Object#equals(Object)
      */
-    public synchronized /*@GTENegativeOne*/ int indexOf(Object o, /*@NonNegative*/ int index) {
+    public synchronized @GTENegativeOne int indexOf(Object o, @NonNegative int index) {
         if (o == null) {
             for (int i = index ; i < elementCount ; i++)
                 if (elementData[i]==null)
@@ -419,7 +419,7 @@ public class Vector<E>
      * @return the index of the last occurrence of the specified element in
      *         this vector, or -1 if this vector does not contain the element
      */
-    public synchronized /*@GTENegativeOne*/ int lastIndexOf(Object o) {
+    public synchronized @GTENegativeOne int lastIndexOf(Object o) {
         return lastIndexOf(o, elementCount-1);
     }
 
@@ -439,7 +439,7 @@ public class Vector<E>
      * @throws IndexOutOfBoundsException if the specified index is greater
      *         than or equal to the current size of this vector
      */
-    public synchronized /*@GTENegativeOne*/ int lastIndexOf(Object o, /*@NonNegative*/ int index) {
+    public synchronized @GTENegativeOne int lastIndexOf(Object o, @NonNegative int index) {
         if (index >= elementCount)
             throw new IndexOutOfBoundsException(index + " >= "+ elementCount);
 
@@ -466,7 +466,7 @@ public class Vector<E>
      * @throws ArrayIndexOutOfBoundsException if the index is out of range
      *         ({@code index < 0 || index >= size()})
      */
-    public synchronized E elementAt(/*@NonNegative*/ int index) {
+    public synchronized E elementAt(@NonNegative int index) {
         if (index >= elementCount) {
             throw new ArrayIndexOutOfBoundsException(index + " >= " + elementCount);
         }
@@ -522,7 +522,7 @@ public class Vector<E>
      * @throws ArrayIndexOutOfBoundsException if the index is out of range
      *         ({@code index < 0 || index >= size()})
      */
-    public synchronized void setElementAt(E obj, /*@NonNegative*/ int index) {
+    public synchronized void setElementAt(E obj, @NonNegative int index) {
         if (index >= elementCount) {
             throw new ArrayIndexOutOfBoundsException(index + " >= " +
                                                      elementCount);
@@ -549,7 +549,7 @@ public class Vector<E>
      * @throws ArrayIndexOutOfBoundsException if the index is out of range
      *         ({@code index < 0 || index >= size()})
      */
-    public synchronized void removeElementAt(/*@NonNegative*/ int index) {
+    public synchronized void removeElementAt(@NonNegative int index) {
         modCount++;
         if (index >= elementCount) {
             throw new ArrayIndexOutOfBoundsException(index + " >= " +
@@ -589,7 +589,7 @@ public class Vector<E>
      * @throws ArrayIndexOutOfBoundsException if the index is out of range
      *         ({@code index < 0 || index > size()})
      */
-    public synchronized void insertElementAt(E obj, /*@NonNegative*/ int index) {
+    public synchronized void insertElementAt(E obj, @NonNegative int index) {
         modCount++;
         if (index > elementCount) {
             throw new ArrayIndexOutOfBoundsException(index
@@ -740,7 +740,7 @@ public class Vector<E>
      *            ({@code index < 0 || index >= size()})
      * @since 1.2
      */
-    public synchronized E get(/*@NonNegative*/ int index) {
+    public synchronized E get(@NonNegative int index) {
         if (index >= elementCount)
             throw new ArrayIndexOutOfBoundsException(index);
 
@@ -758,7 +758,7 @@ public class Vector<E>
      *         ({@code index < 0 || index >= size()})
      * @since 1.2
      */
-    public synchronized E set(/*@NonNegative*/ int index, E element) {
+    public synchronized E set(@NonNegative int index, E element) {
         if (index >= elementCount)
             throw new ArrayIndexOutOfBoundsException(index);
 
@@ -807,7 +807,7 @@ public class Vector<E>
      *         ({@code index < 0 || index > size()})
      * @since 1.2
      */
-    public void add(/*@NonNegative*/ int index, E element) {
+    public void add(@NonNegative int index, E element) {
         insertElementAt(element, index);
     }
 
@@ -822,7 +822,7 @@ public class Vector<E>
      * @return element that was removed
      * @since 1.2
      */
-    public synchronized E remove(/*@NonNegative*/ int index) {
+    public synchronized E remove(@NonNegative int index) {
         modCount++;
         if (index >= elementCount)
             throw new ArrayIndexOutOfBoundsException(index);
@@ -947,7 +947,7 @@ public class Vector<E>
      * @throws NullPointerException if the specified collection is null
      * @since 1.2
      */
-    public synchronized boolean addAll(/*@NonNegative*/ int index, Collection<? extends E> c) {
+    public synchronized boolean addAll(@NonNegative int index, Collection<? extends E> c) {
         modCount++;
         if (index < 0 || index > elementCount)
             throw new ArrayIndexOutOfBoundsException(index);
@@ -1086,7 +1086,7 @@ public class Vector<E>
      *
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public synchronized ListIterator<E> listIterator(/*@NonNegative*/ int index) {
+    public synchronized ListIterator<E> listIterator(@NonNegative int index) {
         if (index < 0 || index > elementCount)
             throw new IndexOutOfBoundsException("Index: "+index);
         return new ListItr(index);

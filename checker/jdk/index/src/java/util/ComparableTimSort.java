@@ -147,7 +147,7 @@ class ComparableTimSort {
           sort(a, 0, a.length);
     }
 
-    static void sort(Object[] a, /*@IndexFor("#1")*/ int lo, /*@IndexOrHigh("#1")*/ int hi) {
+    static void sort(Object[] a, @IndexFor("#1") int lo, @IndexOrHigh("#1") int hi) {
         rangeCheck(a.length, lo, hi);
         int nRemaining  = hi - lo;
         if (nRemaining < 2)

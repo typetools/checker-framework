@@ -63,7 +63,7 @@ public abstract class InputStream implements Closeable {
      *             stream is reached.
      * @exception  IOException  if an I/O error occurs.
      */
-    public abstract /*@GTENegativeOne*/ int read() throws IOException;
+    public abstract @GTENegativeOne int read() throws IOException;
 
     /**
      * Reads some number of bytes from the input stream and stores them into
@@ -98,7 +98,7 @@ public abstract class InputStream implements Closeable {
      * @exception  NullPointerException  if <code>b</code> is <code>null</code>.
      * @see        java.io.InputStream#read(byte[], int, int)
      */
-    public /*@GTENegativeOne*/ int read(byte b[]) throws IOException {
+    public @GTENegativeOne int read(byte b[]) throws IOException {
         return read(b, 0, b.length);
     }
 
@@ -159,7 +159,7 @@ public abstract class InputStream implements Closeable {
      * <code>b.length - off</code>
      * @see        java.io.InputStream#read()
      */
-    public /*@GTENegativeOne*/ int read(byte b[], /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException {
+    public @GTENegativeOne int read(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         if (b == null) {
             throw new NullPointerException();
         } else if (off < 0 || len < 0 || len > b.length - off) {
@@ -256,7 +256,7 @@ public abstract class InputStream implements Closeable {
      *             it reaches the end of the input stream.
      * @exception  IOException if an I/O error occurs.
      */
-    public /*@NonNegative*/ int available() throws IOException {
+    public @NonNegative int available() throws IOException {
         return 0;
     }
 
@@ -297,7 +297,7 @@ public abstract class InputStream implements Closeable {
      *                      the mark position becomes invalid.
      * @see     java.io.InputStream#reset()
      */
-    public synchronized void mark(/*@NonNegative*/ int readlimit) {}
+    public synchronized void mark(@NonNegative int readlimit) {}
 
     /**
      * Repositions this stream to the position at the time the

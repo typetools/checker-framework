@@ -184,7 +184,7 @@ class FileInputStream extends InputStream
      *             file is reached.
      * @exception  IOException  if an I/O error occurs.
      */
-    public native /*@GTENegativeOne*/ int read() throws IOException;
+    public native @GTENegativeOne int read() throws IOException;
 
     /**
      * Reads a subarray as a sequence of bytes.
@@ -206,7 +206,7 @@ class FileInputStream extends InputStream
      *             the file has been reached.
      * @exception  IOException  if an I/O error occurs.
      */
-    public /*@GTENegativeOne*/ int read(byte b[]) throws IOException {
+    public @GTENegativeOne int read(byte b[]) throws IOException {
         return readBytes(b, 0, b.length);
     }
 
@@ -228,7 +228,7 @@ class FileInputStream extends InputStream
      * <code>b.length - off</code>
      * @exception  IOException  if an I/O error occurs.
      */
-    public /*@GTENegativeOne*/ int read(byte b[], /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException {
+    public @GTENegativeOne int read(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         return readBytes(b, off, len);
     }
 
@@ -272,7 +272,7 @@ class FileInputStream extends InputStream
      * @exception  IOException  if this file input stream has been closed by calling
      *             {@code close} or an I/O error occurs.
      */
-    public native /*@NonNegative*/ int available() throws IOException;
+    public native @NonNegative int available() throws IOException;
 
     /**
      * Closes this file input stream and releases any system resources

@@ -1676,7 +1676,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      * @throws IllegalStateException if this scanner is closed
      * @throws IllegalArgumentException if horizon is negative
      */
-    public String findWithinHorizon(String pattern, /*@NonNegative*/ int horizon) {
+    public String findWithinHorizon(String pattern, @NonNegative int horizon) {
         return findWithinHorizon(patternCache.forName(pattern), horizon);
     }
 
@@ -1710,7 +1710,7 @@ public final class Scanner implements Iterator<String>, Closeable {
      * @throws IllegalStateException if this scanner is closed
      * @throws IllegalArgumentException if horizon is negative
      */
-    public String findWithinHorizon(Pattern pattern, /*@NonNegative*/ int horizon) {
+    public String findWithinHorizon(Pattern pattern, @NonNegative int horizon) {
         ensureOpen();
         if (pattern == null)
             throw new NullPointerException();

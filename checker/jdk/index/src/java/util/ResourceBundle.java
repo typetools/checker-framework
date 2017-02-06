@@ -2665,7 +2665,7 @@ public abstract class ResourceBundle {
          *        if <code>baseName</code> or <code>locale</code> is
          *        <code>null</code>
          */
-        public /*@NonNegative*/ long getTimeToLive(String baseName, Locale locale) {
+        public @NonNegative long getTimeToLive(String baseName, Locale locale) {
             if (baseName == null || locale == null) {
                 throw new NullPointerException();
             }

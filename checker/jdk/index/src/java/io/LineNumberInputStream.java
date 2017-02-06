@@ -127,7 +127,7 @@ class LineNumberInputStream extends FilterInputStream {
      * @exception  IOException  if an I/O error occurs.
      * @see        java.io.LineNumberInputStream#read()
      */
-    public /*@GTENegativeOne*/ int read(byte b[], /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException {
+    public @GTENegativeOne int read(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         if (b == null) {
             throw new NullPointerException();
         } else if ((off < 0) || (off > b.length) || (len < 0) ||
@@ -237,7 +237,7 @@ class LineNumberInputStream extends FilterInputStream {
      * @exception  IOException  if an I/O error occurs.
      * @see        java.io.FilterInputStream#in
      */
-    public /*@NonNegative*/ int available() throws IOException {
+    public @NonNegative int available() throws IOException {
         return (pushBack == -1) ? super.available()/2 : super.available()/2 + 1;
     }
 
@@ -256,7 +256,7 @@ class LineNumberInputStream extends FilterInputStream {
      * @see     java.io.FilterInputStream#in
      * @see     java.io.LineNumberInputStream#reset()
      */
-    public void mark(/*@NonNegative*/ int readlimit) {
+    public void mark(@NonNegative int readlimit) {
         markLineNumber = lineNumber;
         markPushBack   = pushBack;
         in.mark(readlimit);

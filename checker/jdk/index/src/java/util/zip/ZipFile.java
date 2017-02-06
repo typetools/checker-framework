@@ -663,7 +663,7 @@ import org.checkerframework.checker.index.qual.*;
             this.jzentry = jzentry;
         }
 
-        public /*@GTENegativeOne*/ int read(byte b[], /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) throws IOException {
+        public @GTENegativeOne int read(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
             if (rem == 0) {
                 return -1;
             }

@@ -197,7 +197,7 @@ class Deflater {
      * @param len the length of the data
      * @see Deflater#needsInput
      */
-    public void setInput(byte[] b, /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) {
+    public void setInput(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) {
         if (b== null) {
             throw new NullPointerException();
         }
@@ -233,7 +233,7 @@ class Deflater {
      * @see Inflater#inflate
      * @see Inflater#getAdler
      */
-    public void setDictionary(byte[] b, /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) {
+    public void setDictionary(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) {
         if (b == null) {
             throw new NullPointerException();
         }
@@ -349,7 +349,7 @@ class Deflater {
      * @return the actual number of bytes of compressed data written to the
      *         output buffer
      */
-    public /*@GTENegativeOne*/ int deflate(byte[] b, /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len) {
+    public @GTENegativeOne int deflate(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) {
         return deflate(b, off, len, NO_FLUSH);
     }
 
@@ -368,7 +368,7 @@ class Deflater {
      * @return the actual number of bytes of compressed data written to the
      *         output buffer
      */
-    public /*@GTENegativeOne*/ int deflate(byte[] b) {
+    public @GTENegativeOne int deflate(byte[] b) {
         return deflate(b, 0, b.length, NO_FLUSH);
     }
 
@@ -416,7 +416,7 @@ class Deflater {
      * @throws IllegalArgumentException if the flush mode is invalid
      * @since 1.7
      */
-    public /*@GTENegativeOne*/ int deflate(byte[] b, /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len, int flush) {
+    public @GTENegativeOne int deflate(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len, int flush) {
         if (b == null) {
             throw new NullPointerException();
         }

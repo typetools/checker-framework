@@ -94,7 +94,7 @@ public final class StringBuilder
      * @throws     NegativeArraySizeException  if the <code>capacity</code>
      *               argument is less than <code>0</code>.
      */
-    public StringBuilder(/*@NonNegative*/ int capacity) {
+    public StringBuilder(@NonNegative int capacity) {
         super(capacity);
     }
 
@@ -140,8 +140,8 @@ public final class StringBuilder
             return append("null");
         int len = sb.length();
         int newcount = count + len;
-        if (newcount > value.length)
-            expandCapacity(newcount);
+//         if (newcount > value.length)
+//             expandCapacity(newcount);
         sb.getChars(0, len, value, count);
         count = newcount;
         return this;
@@ -201,7 +201,7 @@ public final class StringBuilder
     /**
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder append(char[] str, /*@IndexFor("#1")*/ int offset, /*@IndexOrHigh("#1")*/ int len) {
+    public StringBuilder append(char[] str, @IndexFor("#1") int offset, @IndexOrHigh("#1") int len) {
         super.append(str, offset, len);
         return this;
     }
@@ -271,8 +271,8 @@ public final class StringBuilder
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder insert(int index, char[] str, /*@IndexFor("#2")*/ int offset,
-                                /*@IndexOrHigh("#2")*/ int len)
+    public StringBuilder insert(int index, char[] str, @IndexFor("#2") int offset,
+                                @IndexOrHigh("#2") int len)
     {
         super.insert(index, str, offset, len);
         return this;
@@ -369,14 +369,14 @@ public final class StringBuilder
     /**
      * @throws NullPointerException {@inheritDoc}
      */
-    public /*@GTENegativeOne*/ int indexOf(String str) {
+    public @GTENegativeOne int indexOf(String str) {
         return indexOf(str, 0);
     }
 
     /**
      * @throws NullPointerException {@inheritDoc}
      */
-    public /*@GTENegativeOne*/ int indexOf(String str, int fromIndex) {
+    public @GTENegativeOne int indexOf(String str, int fromIndex) {
         return String.indexOf(value, 0, count,
                               str.toCharArray(), 0, str.length(), fromIndex);
     }
@@ -384,14 +384,14 @@ public final class StringBuilder
     /**
      * @throws NullPointerException {@inheritDoc}
      */
-    public /*@GTENegativeOne*/ int lastIndexOf(String str) {
+    public @GTENegativeOne int lastIndexOf(String str) {
         return lastIndexOf(str, count);
     }
 
     /**
      * @throws NullPointerException {@inheritDoc}
      */
-    public /*@GTENegativeOne*/ int lastIndexOf(String str, int fromIndex) {
+    public @GTENegativeOne int lastIndexOf(String str, int fromIndex) {
         return String.lastIndexOf(value, 0, count,
                               str.toCharArray(), 0, str.length(), fromIndex);
     }

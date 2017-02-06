@@ -102,7 +102,7 @@ class DataOutputStream extends FilterOutputStream implements DataOutput {
      * @exception  IOException  if an I/O error occurs.
      * @see        java.io.FilterOutputStream#out
      */
-    public synchronized void write(byte b[], /*@IndexFor("#1")*/ int off, /*@IndexOrHigh("#1")*/ int len)
+    public synchronized void write(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len)
         throws IOException
     {
         out.write(b, off, len);
@@ -411,7 +411,7 @@ class DataOutputStream extends FilterOutputStream implements DataOutput {
      * @return  the value of the <code>written</code> field.
      * @see     java.io.DataOutputStream#written
      */
-    public final /*@NonNegative*/ int size() {
+    public final @NonNegative int size() {
         return written;
     }
 }
