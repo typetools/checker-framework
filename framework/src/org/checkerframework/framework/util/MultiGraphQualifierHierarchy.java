@@ -25,11 +25,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**
- * Represents the type qualifier hierarchy of a type system.
+ * Represents the type qualifier hierarchy of a type system that supports multiple separate subtype
+ * hierarchies.
  *
  * <p>This class is immutable and can be only created through {@link MultiGraphFactory}.
- *
- * <p>A QualifierHierarchy that supports multiple separate subtype hierarchies.
  */
 public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
@@ -451,7 +450,9 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     }
 
     /**
-     * Most qualifiers have no value fields. However, two annotations with values are subtype of
+     * {@inheritDoc}
+     *
+     * <p>Most qualifiers have no value fields. However, two annotations with values are subtype of
      * each other only if they have the same values. i.e. I(m) is a subtype of I(n) iff m = n
      *
      * <p>When client specifies an annotation, a1, to be a subtype of annotation with values, a2,

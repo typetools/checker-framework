@@ -15,12 +15,12 @@ import org.checkerframework.javacutil.Pair;
 public class VisitorState {
     /** The type of the enclosing class tree* */
     private AnnotatedDeclaredType act;
-    /** The enclosing class tree * */
+    /** The enclosing class tree */
     private ClassTree ct;
 
-    /** The receiver type of the enclosing class tree * */
+    /** The receiver type of the enclosing class tree */
     private AnnotatedDeclaredType mrt;
-    /** The enclosing method tree * */
+    /** The enclosing method tree */
     private MethodTree mt;
 
     /** The assignment context is a tree as well as its type. */

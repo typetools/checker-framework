@@ -807,7 +807,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * @param a1 AnnotationMirror
      * @param a2 AnnotationMirror
-     * @return Combines the facts in a1 with those in a2.
+     * @return combines the facts in a1 with those in a2
      */
     public AnnotationMirror combineFacts(AnnotationMirror a1, AnnotationMirror a2) {
         if (qualHierarchy.isSubtype(a1, a2)) {
