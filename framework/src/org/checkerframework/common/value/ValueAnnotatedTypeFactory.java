@@ -626,7 +626,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (allLiterals) {
                 return new String(bytes);
             }
-            // If any part of the initialize isn't know,
+            // If any part of the initializer isn't known,
             // the stringval isn't known.
             return null;
         }
@@ -739,8 +739,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Simple method to take a MemberSelectTree representing a method call and determine if the
-         * method's return is annotated with {@code @StaticallyExecutable}.
+         * Given a MemberSelectTree representing a method call, return true if the method's
+         * declaration is annotated with {@code @StaticallyExecutable}.
          */
         private boolean methodIsStaticallyExecutable(Element method) {
             return getDeclAnnotation(method, StaticallyExecutable.class) != null;

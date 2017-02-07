@@ -315,7 +315,7 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param arrayExpression flow expression
      * @param tree expression tree or variable declaration
      * @param currentPath path to local scope
-     * @return Min length of arrayExpression or 0
+     * @return min length of arrayExpression or 0
      */
     public int getMinLenFromString(String arrayExpression, Tree tree, TreePath currentPath) {
         TypeMirror enclosingClass = InternalUtils.typeOf(TreeUtils.enclosingClass(currentPath));

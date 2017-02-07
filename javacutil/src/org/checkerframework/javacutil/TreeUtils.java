@@ -988,7 +988,7 @@ public final class TreeUtils {
      * Returns whether or not tree is an access of array length.
      *
      * @param tree tree to check
-     * @return Returns whether or not tree is an access of array length.
+     * @return true if tree is an access of array length
      */
     public static boolean isArrayLengthAccess(Tree tree) {
         if (tree.getKind() == Kind.MEMBER_SELECT

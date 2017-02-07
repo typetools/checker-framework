@@ -368,7 +368,8 @@ public class FlowExpressions {
      *
      * @param annotationProvider annotationProvider
      * @param path TreePath that is enclosed by the method
-     * @return Receiver objects for the formal parameters of the method in which path is enclosed
+     * @return list of Receiver objects for the formal parameters of the method in which path is
+     *     enclosed
      */
     public static List<Receiver> getParametersOfEnclosingMethod(
             AnnotationProvider annotationProvider, TreePath path) {

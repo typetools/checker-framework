@@ -631,7 +631,7 @@ public class ValueTransfer extends CFTransfer {
         AND;
     }
 
-    private List<Boolean> calculateCondtionalOperator(
+    private List<Boolean> calculateConditionalOperator(
             Node leftNode,
             Node rightNode,
             ConditionalOperators op,
@@ -700,7 +700,7 @@ public class ValueTransfer extends CFTransfer {
             ConditionalNotNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitConditionalNot(n, p);
         List<Boolean> resultValues =
-                calculateCondtionalOperator(n.getOperand(), null, ConditionalOperators.NOT, p);
+                calculateConditionalOperator(n.getOperand(), null, ConditionalOperators.NOT, p);
         return createNewResultBoolean(transferResult, resultValues);
     }
 
@@ -709,7 +709,7 @@ public class ValueTransfer extends CFTransfer {
             ConditionalAndNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitConditionalAnd(n, p);
         List<Boolean> resultValues =
-                calculateCondtionalOperator(
+                calculateConditionalOperator(
                         n.getLeftOperand(), n.getRightOperand(), ConditionalOperators.AND, p);
         return createNewResultBoolean(transferResult, resultValues);
     }
@@ -719,7 +719,7 @@ public class ValueTransfer extends CFTransfer {
             ConditionalOrNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitConditionalOr(n, p);
         List<Boolean> resultValues =
-                calculateCondtionalOperator(
+                calculateConditionalOperator(
                         n.getLeftOperand(), n.getRightOperand(), ConditionalOperators.OR, p);
         return createNewResultBoolean(transferResult, resultValues);
     }

@@ -241,6 +241,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return imf.isMathMin(methodTree, processingEnv);
     }
 
+    public boolean isRandomNextInt(Tree methodTree) {
+        return imf.isRandomNextInt(methodTree, processingEnv);
+    }
+
     /**
      * Creates an annotation of the name given with the set of values given.
      *
@@ -528,10 +532,16 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * This exists specifically for Math.min. We need to special case Math.min because it has
-         * unusual semantics: it can be used to combine annotations for the UBC, so it needs to be
-         * special cased. Other methods should not be special-cased here unless there is a
-         * compelling reason to do so.
+         * This exists for Math.min and Random.nextInt, which must be special-cased.
+         *
+         * <ul>
+         *   <li>Math.min has unusual semantics that combines annotations for the UBC.
+         *   <li>The return type of Random.nextInt depends on the argument, but is not equal to it,
+         *       so a polymorhpic qualifier is insufficient.
+         * </ul>
+         *
+         * Other methods should not be special-cased here unless there is a compelling reason to do
+         * so.
          */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
@@ -543,6 +553,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         qualHierarchy.greatestLowerBound(
                                 leftType.getAnnotationInHierarchy(UNKNOWN),
                                 rightType.getAnnotationInHierarchy(UNKNOWN)));
+            }
+            if (isRandomNextInt(tree)) {
+                AnnotatedTypeMirror argType = getAnnotatedType(tree.getArguments().get(0));
+                handleDecrement(argType, type);
             }
             return super.visitMethodInvocation(tree, type);
         }
@@ -807,7 +821,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * @param a1 AnnotationMirror
      * @param a2 AnnotationMirror
-     * @return Combines the facts in a1 with those in a2.
+     * @return combines the facts in a1 with those in a2
      */
     public AnnotationMirror combineFacts(AnnotationMirror a1, AnnotationMirror a2) {
         if (qualHierarchy.isSubtype(a1, a2)) {

@@ -1,5 +1,3 @@
-package plume;
-
 import java.text.DecimalFormat;
 import org.checkerframework.checker.index.qual.IndexFor;
 
