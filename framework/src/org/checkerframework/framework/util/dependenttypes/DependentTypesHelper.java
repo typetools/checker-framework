@@ -92,6 +92,29 @@ public class DependentTypesHelper {
     }
 
     /**
+     * Returns a list of the names of elements in the annotation class that should be interrupted as
+     * Java expressions.
+     *
+     * @param clazz Annotation class
+     * @return a list of the names of elements in the annotation class that should be interrupted as
+     *     Java expressions
+     */
+    private static List<String> getExpressionElementNames(Class<? extends Annotation> clazz) {
+        Method[] methods = clazz.getMethods();
+        if (methods == null) {
+            return Collections.emptyList();
+        }
+        List<String> elements = new ArrayList<>();
+        for (Method method : methods) {
+            JavaExpression javaExpression = method.getAnnotation(JavaExpression.class);
+            if (javaExpression != null) {
+                elements.add(method.getName());
+            }
+        }
+        return elements;
+    }
+
+    /**
      * Creates a TreeAnnotator that standardizes dependent type annotations.
      *
      * @param factory annotated type factory
@@ -408,6 +431,11 @@ public class DependentTypesHelper {
         }
     }
 
+    /**
+     * Returns true if any qualifier in the type system is a dependent type annotation.
+     *
+     * @return true if any qualifier in the type system is a dependent type annotation
+     */
     public boolean hasDependentAnnotations() {
         return !annoToElements.isEmpty();
     }
@@ -440,12 +468,12 @@ public class DependentTypesHelper {
             for (String value : getListOfExpressionElements(anno)) {
                 List<String> expressionStrings =
                         AnnotationUtils.getElementValueArray(anno, value, String.class, true);
-                List<String> vpdStrings = new ArrayList<>();
+                List<String> standardizedStrings = new ArrayList<>();
                 for (String expression : expressionStrings) {
-                    vpdStrings.add(
+                    standardizedStrings.add(
                             standardizeString(expression, context, localScope, useLocalScope));
                 }
-                builder.setValue(value, vpdStrings);
+                builder.setValue(value, standardizedStrings);
             }
             return builder.build();
         }
@@ -624,6 +652,11 @@ public class DependentTypesHelper {
             }
         }
 
+        /**
+         * Checks every Java expression element of the annotation to see if the expression is an
+         * error string as specified by DependentTypesError#isExpressionError. If any expression is
+         * an error, then a non-empty list of {@link DependentTypesError} is returned.
+         */
         private List<DependentTypesError> checkForError(AnnotationMirror am) {
             List<DependentTypesError> errors = new ArrayList<>();
 
@@ -733,21 +766,14 @@ public class DependentTypesHelper {
         }
     }
 
-    private static List<String> getExpressionElementNames(Class<? extends Annotation> clazz) {
-        Method[] methods = clazz.getMethods();
-        if (methods == null) {
-            return Collections.emptyList();
-        }
-        List<String> elements = new ArrayList<>();
-        for (Method method : methods) {
-            JavaExpression javaExpression = method.getAnnotation(JavaExpression.class);
-            if (javaExpression != null) {
-                elements.add(method.getName());
-            }
-        }
-        return elements;
-    }
-
+    /**
+     * Returns the list of elements of the annotation that are Java expressions or the empty list if
+     * there aren't any.
+     *
+     * @param am AnnotationMirror
+     * @return Returns the list of elements of the annotation that are Java expressions or the empty
+     *     list if there aren't any.
+     */
     private List<String> getListOfExpressionElements(AnnotationMirror am) {
         for (Class<? extends Annotation> clazz : annoToElements.keySet()) {
             if (AnnotationUtils.areSameByClass(am, clazz)) {
