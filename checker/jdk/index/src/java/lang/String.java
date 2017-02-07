@@ -1305,7 +1305,7 @@ public final class String
      */
     public boolean regionMatches(/*@ IndexFor("this")*/ int toffset, String other, @IndexFor("#2") int ooffset,
                                  /*@ IndexOrHigh({"this","#2"})*/
-				 @IndexOrHigh("#2")  int len) {
+				 @IndexOrHigh("#2") int len) {
         char ta[] = value;
         int to = offset + toffset;
         char pa[] = other.value;
