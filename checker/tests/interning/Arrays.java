@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
-import org.checkerframework.checker.interning.qual.*;
+import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.interning.qual.PolyInterned;
 
 public class Arrays {
 
