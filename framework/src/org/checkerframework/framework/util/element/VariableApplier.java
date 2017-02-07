@@ -1,6 +1,18 @@
 package org.checkerframework.framework.util.element;
 
-import static com.sun.tools.javac.code.TargetType.*;
+import static com.sun.tools.javac.code.TargetType.CAST;
+import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT;
+import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_REFERENCE;
+import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT;
+import static com.sun.tools.javac.code.TargetType.EXCEPTION_PARAMETER;
+import static com.sun.tools.javac.code.TargetType.FIELD;
+import static com.sun.tools.javac.code.TargetType.INSTANCEOF;
+import static com.sun.tools.javac.code.TargetType.LOCAL_VARIABLE;
+import static com.sun.tools.javac.code.TargetType.METHOD_INVOCATION_TYPE_ARGUMENT;
+import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE;
+import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE_TYPE_ARGUMENT;
+import static com.sun.tools.javac.code.TargetType.NEW;
+import static com.sun.tools.javac.code.TargetType.RESOURCE_VARIABLE;
 import static org.checkerframework.framework.util.element.ElementAnnotationUtil.addAnnotationsFromElement;
 import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
 import static org.checkerframework.framework.util.element.ElementAnnotationUtil.contains;
