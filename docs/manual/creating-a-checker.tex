@@ -648,7 +648,7 @@ and assuming the variable \<myClass> is of type \<MyClass>, then the type of
 \<myClass.field> is viewpoint-adapted to \<@Anno("myClass.field")>.
 
 To use this built-in functionality, add a \refqualclass{framework/qual}{JavaExpression} annotation
-to any element of any annotation that should be interpreted as Java expressions.  The type of the
+to any annotation element that should be interpreted as a Java expression.  The type of the
 element must be an array of Strings.  If your checker requires special handling of Java expressions,
 your checker implementation should override
 \refmethod{framework/type}{GenericAnnotatedTypeFactory}{createDependentTypesHelper}{--}
