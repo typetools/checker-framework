@@ -24,6 +24,7 @@
  */
 
 package java.util;
+import org.checkerframework.checker.index.qual.*;
 
 /**
  * An ordered collection (also known as a <i>sequence</i>).  The user of this
