@@ -677,7 +677,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (val == 2) {
                 // The average of two LTL/LTOMs is LTL.
 
-                // Necessary because otherwise an expression in paretheses doesn't make it past
+                // Necessary because otherwise an expression in parentheses doesn't make it past
                 // the next check...
                 if (leftTree.getKind() == Tree.Kind.PARENTHESIZED) {
                     leftTree = ((ParenthesizedTree) leftTree).getExpression();

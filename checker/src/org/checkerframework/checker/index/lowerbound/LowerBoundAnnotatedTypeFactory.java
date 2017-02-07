@@ -615,7 +615,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * When the value on the right is known at compile time. If the value is zero, then this is
          * division by zero. Division by zero is treated as bottom (i.e. Positive) so that users
-         * aren't warned about dead code that's dividing by zero. This code assume that non-dead
+         * aren't warned about dead code that's dividing by zero. This code assumes that non-dead
          * code won't include literal divide by zeros...
          */
         private void addAnnotationForLiteralDivideRight(
@@ -642,6 +642,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *      lit 1 / {pos, nn} &rarr; nn
          *      lit 1 / * &rarr; gten1
          *      * / lit 1 &rarr; *
+         *      {pos, nn} / lit >1 &rarr; nn
          *      pos / {pos, nn} &rarr; nn (can round to zero)
          *      * / {pos, nn} &rarr; *
          *      * / * &rarr; lbu
