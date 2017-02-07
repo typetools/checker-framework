@@ -1,5 +1,6 @@
 import org.checkerframework.checker.index.qual.MinLen;
 
+@SuppressWarnings("lowerbound")
 class ArrayIntro {
     void test() {
         int @MinLen(5) [] arr = new int[5];

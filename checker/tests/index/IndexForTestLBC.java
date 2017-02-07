@@ -2,7 +2,8 @@ package index;
 
 import org.checkerframework.checker.index.qual.IndexFor;
 
-public class IndexForTest {
+@SuppressWarnings("upperbound")
+public class IndexForTestLBC {
     int[] array = {0};
 
     void test1(@IndexFor("array") int i) {

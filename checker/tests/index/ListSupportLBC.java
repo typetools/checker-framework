@@ -5,7 +5,7 @@ import org.checkerframework.checker.index.qual.Positive;
 
 // @skip-test until we bring list support back
 
-class ListSupport {
+class ListSupportLBC {
 
     void testGet() {
 

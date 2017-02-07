@@ -1,5 +1,7 @@
 import org.checkerframework.checker.index.qual.*;
 
+//@skip-test until fixed.
+
 public class LessThanLen {
 
     public static void m1() {

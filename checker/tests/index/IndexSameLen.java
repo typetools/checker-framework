@@ -1,5 +1,7 @@
 import org.checkerframework.checker.index.qual.*;
 
+//@skip-test until pull request #1025 is merged
+
 public class IndexSameLen {
 
     public static void bug2() {

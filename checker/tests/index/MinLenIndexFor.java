@@ -23,7 +23,9 @@ public class MinLenIndexFor {
     int @MinLen(4) [] arrayLen4 = {0, 1, 2, 4, 5};
 
     void test2(@IndexOrHigh("this.arrayLen4") int i) {
-        int j = arrayLen4[i - 1];
+	if (i > 0) {
+	    int j = arrayLen4[i - 1];
+	}
         int j2 = arrayLen4[1];
     }
 
