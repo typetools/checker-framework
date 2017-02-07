@@ -2,7 +2,7 @@ package org.checkerframework.checker.index.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * The annotated expressios evaluates to a value that is a sequence, and that sequence has the same

@@ -1,5 +1,3 @@
-import org.checkerframework.checker.interning.qual.*;
-
 public class Enumerations {
 
     // All enumeration instances are interned; there should be no need for
