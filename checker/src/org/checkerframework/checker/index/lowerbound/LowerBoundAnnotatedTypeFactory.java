@@ -2,6 +2,7 @@ package org.checkerframework.checker.index.lowerbound;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -300,6 +301,25 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
+         * Compound assignments aren't desugared correctly in some way, which prevents x from
+         * being @Positive after, e.g., this code is executed: "x = 5; x -= 2;". This code is more
+         * general and ensures that any identifier with a compile-time known value is represented
+         * correctly.
+         */
+        @Override
+        public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
+            // Check if the Value Checker's information bounds the value within one of the
+            // lowerbound types.
+            AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
+            AnnotationMirror lowerBoundAnm = getLowerBoundAnnotationFromValueType(valueType);
+            if (lowerBoundAnm != UNKNOWN) {
+                type.replaceAnnotation(lowerBoundAnm);
+            }
+
+            return super.visitIdentifier(tree, type);
+        }
+
+        /**
          * Dispatch to binary operator helper methods. The lower bound checker currently handles
          * addition, subtraction, multiplication, division, and modular division.
          */
@@ -316,7 +336,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
             AnnotationMirror lowerBoundAnm = getLowerBoundAnnotationFromValueType(valueType);
             if (lowerBoundAnm != UNKNOWN) {
-                type.addAnnotation(lowerBoundAnm);
+                type.replaceAnnotation(lowerBoundAnm);
                 return super.visitBinary(tree, type);
             }
 
