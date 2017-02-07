@@ -92,11 +92,11 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Returns a list of the names of elements in the annotation class that should be interrupted as
+     * Returns a list of the names of elements in the annotation class that should be interpreted as
      * Java expressions.
      *
      * @param clazz Annotation class
-     * @return a list of the names of elements in the annotation class that should be interrupted as
+     * @return a list of the names of elements in the annotation class that should be interpreted as
      *     Java expressions
      */
     private static List<String> getExpressionElementNames(Class<? extends Annotation> clazz) {
@@ -532,8 +532,8 @@ public class DependentTypesHelper {
 
     /**
      * Checks all expression in the given annotated type to see if the expression string is an error
-     * string as specified by DependentTypesError#isExpressionError. If the annotated type has any
-     * errors, a flowexpr.parse.error is issued at the errorTree.
+     * string as specified by {@link DependentTypesError#isExpressionError}. If the annotated type
+     * has any errors, a flowexpr.parse.error is issued at the errorTree.
      *
      * @param atm annotated type to check for expression errors
      * @param errorTree the tree at which to report any found errors
@@ -767,12 +767,12 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Returns the list of elements of the annotation that are Java expressions or the empty list if
-     * there aren't any.
+     * Returns the list of elements of the annotation that are Java expressions, or the empty list
+     * if there aren't any.
      *
      * @param am AnnotationMirror
-     * @return Returns the list of elements of the annotation that are Java expressions or the empty
-     *     list if there aren't any.
+     * @return Returns the list of elements of the annotation that are Java expressions, or the
+     *     empty list if there aren't any.
      */
     private List<String> getListOfExpressionElements(AnnotationMirror am) {
         for (Class<? extends Annotation> clazz : annoToElements.keySet()) {
