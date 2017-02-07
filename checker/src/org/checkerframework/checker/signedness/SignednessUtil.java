@@ -2,7 +2,7 @@ package org.checkerframework.checker.signedness;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.Unsigned;
 
 /**
  * Provides static utility methods for unsigned values. Some re-implement functionality in JDK 8,

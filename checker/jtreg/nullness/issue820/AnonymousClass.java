@@ -1,4 +1,4 @@
-import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 class AnonymousClass {
     @NonNull Object error = null;
