@@ -6,7 +6,6 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.lang.annotation.Annotation;
@@ -679,9 +678,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Handles division when the right side is a compile-time constant.
          *
-         * @param val the integer value of the right side.
-         * @param leftTree the tree representing the left side.
-         * @param leftType the upperbound type of the left side.
+         * @param val the integer value of the right side
+         * @param leftTree the tree representing the left side
+         * @param leftType the upperbound type of the left side
          * @param type the type of the whole division expression. Modified by this method.
          */
         private void addAnnotationForLiteralDivide(
@@ -704,11 +703,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (val == 2) {
                 // The average of two LTL/LTOMs is LTL.
 
-                // Necessary because otherwise an expression in parentheses doesn't make it past
-                // the next check...
-                while (leftTree.getKind() == Tree.Kind.PARENTHESIZED) {
-                    leftTree = ((ParenthesizedTree) leftTree).getExpression();
-                }
+                // Necessary because otherwise an expression in parentheses isn't a plus expression.
+                leftTree = TreeUtils.skipParens(leftTree);
 
                 if (leftTree.getKind() == Tree.Kind.PLUS) {
                     BinaryTree leftBinTree = (BinaryTree) leftTree;
@@ -749,8 +745,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return;
             }
             if (val < -1) {
-                if (nonLiteralType.hasAnnotation(LTOMLengthOf.class)
-                        || nonLiteralType.hasAnnotation(LTLengthOf.class)
+                if (nonLiteralType.hasAnnotation(LTLengthOf.class)
+                        || nonLiteralType.hasAnnotation(LTOMLengthOf.class)
                         || nonLiteralType.hasAnnotation(LTEqLengthOf.class)) {
 
                     String[] names = getValue(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
