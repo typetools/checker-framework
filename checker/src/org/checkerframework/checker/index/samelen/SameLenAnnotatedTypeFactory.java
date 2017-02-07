@@ -27,7 +27,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    AnnotationMirror UNKNOWN;
+    public final AnnotationMirror UNKNOWN;
     private AnnotationMirror BOTTOM;
 
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -213,9 +213,5 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
         builder.setValue("value", val);
         return builder.build();
-    }
-
-    public AnnotationMirror createSameLenUnknown() {
-        return UNKNOWN;
     }
 }

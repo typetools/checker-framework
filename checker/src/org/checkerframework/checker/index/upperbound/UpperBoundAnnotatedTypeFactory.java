@@ -190,8 +190,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public AnnotationMirror sameLenAnnotationFromExpressionTree(ExpressionTree tree) {
         AnnotatedTypeMirror sameLenType = getSameLenAnnotatedTypeFactory().getAnnotatedType(tree);
-        return sameLenType.getAnnotationInHierarchy(
-                getSameLenAnnotatedTypeFactory().createSameLenUnknown());
+        return sameLenType.getAnnotationInHierarchy(getSameLenAnnotatedTypeFactory().UNKNOWN);
     }
 
     /** Get the list of possible values from a value checker type. May return null. */
