@@ -116,7 +116,7 @@ public interface List<E> extends Collection<E> {
      *
      * @return the number of elements in this list
      */
-    int size();
+    @NonNegative int size();
 
     /**
      * Returns <tt>true</tt> if this list contains no elements.
@@ -510,7 +510,7 @@ public interface List<E> extends Collection<E> {
      *         list does not permit null elements
      *         (<a href="Collection.html#optional-restrictions">optional</a>)
      */
-    int indexOf(Object o);
+    @GTENegativeOne int indexOf(Object o);
 
     /**
      * Returns the index of the last occurrence of the specified element
@@ -529,7 +529,7 @@ public interface List<E> extends Collection<E> {
      *         list does not permit null elements
      *         (<a href="Collection.html#optional-restrictions">optional</a>)
      */
-    int lastIndexOf(Object o);
+    @GTENegativeOne int lastIndexOf(Object o);
 
 
     // List Iterators
