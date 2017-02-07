@@ -642,7 +642,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *      lit 1 / {pos, nn} &rarr; nn
          *      lit 1 / * &rarr; gten1
          *      * / lit 1 &rarr; *
-         *      {pos, nn} / lit >1 &rarr; nn
+         *      {pos, nn} / lit &gt;1 &rarr; nn
          *      pos / {pos, nn} &rarr; nn (can round to zero)
          *      * / {pos, nn} &rarr; *
          *      * / * &rarr; lbu
