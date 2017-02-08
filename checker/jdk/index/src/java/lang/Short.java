@@ -113,7 +113,7 @@ public final class Short extends Number implements Comparable<Short> {
      * @throws          NumberFormatException If the {@code String}
      *                  does not contain a parsable {@code short}.
      */
-    public static short parseShort(String s, int radix)
+    public static short parseShort(String s, @Positive int radix)
         throws NumberFormatException {
         int i = Integer.parseInt(s, radix);
         if (i < MIN_VALUE || i > MAX_VALUE)
@@ -169,7 +169,7 @@ public final class Short extends Number implements Comparable<Short> {
      * @throws          NumberFormatException If the {@code String} does
      *                  not contain a parsable {@code short}.
      */
-    public static Short valueOf(String s, int radix)
+    public static Short valueOf(String s, @Positive int radix)
         throws NumberFormatException {
         return valueOf(parseShort(s, radix));
     }

@@ -127,7 +127,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @see     java.lang.Character#MAX_RADIX
      * @see     java.lang.Character#MIN_RADIX
      */
-    public static String toString(int i, int radix) {
+    public static String toString(int i, @Positive int radix) {
 
         if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX)
             radix = 10;
@@ -259,7 +259,7 @@ public final class Integer extends Number implements Comparable<Integer> {
     private static String toUnsignedString(int i, int shift) {
         char[] buf = new char[32];
         int charPos = 32;
-        int radix = 1 << shift;
+        @Positive int radix = 1 << shift;
         int mask = radix - 1;
         do {
             buf[--charPos] = digits[i & mask];
@@ -442,7 +442,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @exception  NumberFormatException if the {@code String}
      *             does not contain a parsable {@code int}.
      */
-    public static int parseInt(String s, int radix)
+    public static int parseInt(String s, @Positive int radix)
                 throws NumberFormatException
     {
         /*
@@ -553,7 +553,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @exception NumberFormatException if the {@code String}
      *            does not contain a parsable {@code int}.
      */
-    public static Integer valueOf(String s, int radix) throws NumberFormatException {
+    public static Integer valueOf(String s, @Positive int radix) throws NumberFormatException {
         return Integer.valueOf(parseInt(s,radix));
     }
 
@@ -941,7 +941,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @see java.lang.Integer#parseInt(java.lang.String, int)
      */
     public static Integer decode(String nm) throws NumberFormatException {
-        int radix = 10;
+        @Positive int radix = 10;
         int index = 0;
         boolean negative = false;
         Integer result;

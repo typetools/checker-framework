@@ -805,7 +805,7 @@ public final class String
      *   of <code>codePointOffset</code> code points.
      * @since 1.5
      */
-    public int offsetByCodePoints(/*@ IndexFor("this")*/ int index, int codePointOffset) {
+    public /*@ IndexFor("this")*/ int offsetByCodePoints(/*@ IndexFor("this")*/ int index, int codePointOffset) {
         if (index < 0 || index > count) {
             throw new IndexOutOfBoundsException();
         }

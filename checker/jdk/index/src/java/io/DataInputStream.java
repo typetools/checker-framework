@@ -285,7 +285,7 @@ class DataInputStream extends FilterInputStream implements DataInput {
      *             another I/O error occurs.
      * @see         java.io.FilterInputStream#in
      */
-    public final int readUnsignedByte() throws IOException {
+    public final @NonNegative int readUnsignedByte() throws IOException {
         int ch = in.read();
         if (ch < 0)
             throw new EOFException();
@@ -334,7 +334,7 @@ class DataInputStream extends FilterInputStream implements DataInput {
      *             another I/O error occurs.
      * @see        java.io.FilterInputStream#in
      */
-    public final int readUnsignedShort() throws IOException {
+    public final @NonNegative int readUnsignedShort() throws IOException {
         int ch1 = in.read();
         int ch2 = in.read();
         if ((ch1 | ch2) < 0)

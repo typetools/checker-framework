@@ -368,7 +368,7 @@ public class ArrayList<E> extends AbstractList<E>
     // Positional Access Operations
 
     @SuppressWarnings("unchecked")
-    E elementData(int index) {
+    E elementData(@NonNegative int index) {
         return (E) elementData[index];
     }
 
@@ -379,7 +379,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return the element at the specified position in this list
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public E get(int index) {
+    public E get(@NonNegative int index) {
         rangeCheck(index);
 
         return elementData(index);
@@ -394,7 +394,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return the element previously at the specified position
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public E set(int index, E element) {
+    public E set(@NonNegative int index, E element) {
         rangeCheck(index);
 
         E oldValue = elementData(index);
@@ -423,7 +423,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @param element element to be inserted
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public void add(int index, E element) {
+    public void add(@NonNegative int index, E element) {
         rangeCheckForAdd(index);
 
         ensureCapacityInternal(size + 1);  // Increments modCount!!
@@ -442,7 +442,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return the element that was removed from the list
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public E remove(int index) {
+    public E remove(@NonNegative int index) {
         rangeCheck(index);
 
         modCount++;
@@ -472,13 +472,13 @@ public class ArrayList<E> extends AbstractList<E>
      */
     public boolean remove(Object o) {
         if (o == null) {
-            for (int index = 0; index < size; index++)
+            for (@NonNegative int index = 0; index < size; index++)
                 if (elementData[index] == null) {
                     fastRemove(index);
                     return true;
                 }
         } else {
-            for (int index = 0; index < size; index++)
+            for (@NonNegative int index = 0; index < size; index++)
                 if (o.equals(elementData[index])) {
                     fastRemove(index);
                     return true;
@@ -491,7 +491,7 @@ public class ArrayList<E> extends AbstractList<E>
      * Private remove method that skips bounds checking and does not
      * return the value removed.
      */
-    private void fastRemove(int index) {
+    private void fastRemove(@NonNegative int index) {
         modCount++;
         int numMoved = size - index - 1;
         if (numMoved > 0)
@@ -551,7 +551,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      * @throws NullPointerException if the specified collection is null
      */
-    public boolean addAll(int index, Collection<? extends E> c) {
+    public boolean addAll(@NonNegative int index, Collection<? extends E> c) {
         rangeCheckForAdd(index);
 
         Object[] a = c.toArray();
@@ -600,7 +600,7 @@ public class ArrayList<E> extends AbstractList<E>
      * negative: It is always used immediately prior to an array access,
      * which throws an ArrayIndexOutOfBoundsException if index is negative.
      */
-    private void rangeCheck(int index) {
+    private void rangeCheck(@NonNegative int index) {
         if (index >= size)
             throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
     }
@@ -608,7 +608,7 @@ public class ArrayList<E> extends AbstractList<E>
     /**
      * A version of rangeCheck used by add and addAll.
      */
-    private void rangeCheckForAdd(int index) {
+    private void rangeCheckForAdd(@NonNegative int index) {
         if (index > size || index < 0)
             throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
     }
@@ -618,7 +618,7 @@ public class ArrayList<E> extends AbstractList<E>
      * Of the many possible refactorings of the error handling code,
      * this "outlining" performs best with both server and client VMs.
      */
-    private String outOfBoundsMsg(int index) {
+    private String outOfBoundsMsg(@NonNegative int index) {
         return "Index: "+index+", Size: "+size;
     }
 
@@ -746,7 +746,7 @@ public class ArrayList<E> extends AbstractList<E>
      *
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public ListIterator<E> listIterator(int index) {
+    public ListIterator<E> listIterator(@NonNegative int index) {
         if (index < 0 || index > size)
             throw new IndexOutOfBoundsException("Index: "+index);
         return new ListItr(index);
@@ -825,7 +825,7 @@ public class ArrayList<E> extends AbstractList<E>
      * An optimized version of AbstractList.ListItr
      */
     private class ListItr extends Itr implements ListIterator<E> {
-        ListItr(int index) {
+        ListItr(@NonNegative int index) {
             super();
             cursor = index;
         }
@@ -911,7 +911,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      * @throws IllegalArgumentException {@inheritDoc}
      */
-    public List<E> subList(int fromIndex, int toIndex) {
+    public List<E> subList(@NonNegative int fromIndex, @NonNegative int toIndex) {
         subListRangeCheck(fromIndex, toIndex, size);
         return new SubList(this, 0, fromIndex, toIndex);
     }
@@ -941,7 +941,7 @@ public class ArrayList<E> extends AbstractList<E>
             this.modCount = ArrayList.this.modCount;
         }
 
-        public E set(int index, E e) {
+        public E set(@NonNegative int index, E e) {
             rangeCheck(index);
             checkForComodification();
             E oldValue = ArrayList.this.elementData(offset + index);
@@ -949,7 +949,7 @@ public class ArrayList<E> extends AbstractList<E>
             return oldValue;
         }
 
-        public E get(int index) {
+        public E get(@NonNegative int index) {
             rangeCheck(index);
             checkForComodification();
             return ArrayList.this.elementData(offset + index);
@@ -960,7 +960,7 @@ public class ArrayList<E> extends AbstractList<E>
             return this.size;
         }
 
-        public void add(int index, E e) {
+        public void add(@NonNegative int index, E e) {
             rangeCheckForAdd(index);
             checkForComodification();
             parent.add(parentOffset + index, e);
@@ -968,7 +968,7 @@ public class ArrayList<E> extends AbstractList<E>
             this.size++;
         }
 
-        public E remove(int index) {
+        public E remove(@NonNegative int index) {
             rangeCheck(index);
             checkForComodification();
             E result = parent.remove(parentOffset + index);
@@ -989,7 +989,7 @@ public class ArrayList<E> extends AbstractList<E>
             return addAll(this.size, c);
         }
 
-        public boolean addAll(int index, Collection<? extends E> c) {
+        public boolean addAll(@NonNegative int index, Collection<? extends E> c) {
             rangeCheckForAdd(index);
             int cSize = c.size();
             if (cSize==0)
@@ -1006,7 +1006,7 @@ public class ArrayList<E> extends AbstractList<E>
             return listIterator();
         }
 
-        public ListIterator<E> listIterator(final int index) {
+        public ListIterator<E> listIterator(final @NonNegative int index) {
             checkForComodification();
             rangeCheckForAdd(index);
             final int offset = this.offset;
@@ -1111,17 +1111,17 @@ public class ArrayList<E> extends AbstractList<E>
             return new SubList(this, offset, fromIndex, toIndex);
         }
 
-        private void rangeCheck(int index) {
+        private void rangeCheck(@NonNegative int index) {
             if (index < 0 || index >= this.size)
                 throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
         }
 
-        private void rangeCheckForAdd(int index) {
+        private void rangeCheckForAdd(@NonNegative int index) {
             if (index < 0 || index > this.size)
                 throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
         }
 
-        private String outOfBoundsMsg(int index) {
+        private String outOfBoundsMsg(@NonNegative int index) {
             return "Index: "+index+", Size: "+this.size;
         }
 

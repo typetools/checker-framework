@@ -307,7 +307,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable {
      * @exception  IOException  if an I/O error occurs. Not thrown if
      *                          end-of-file has been reached.
      */
-    public native int read() throws IOException;
+    public native @GTENegativeOne int read() throws IOException;
 
     /**
      * Reads a sub array as a sequence of bytes.
@@ -640,7 +640,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable {
      * @exception  EOFException  if this file has reached the end.
      * @exception  IOException   if an I/O error occurs.
      */
-    public final int readUnsignedByte() throws IOException {
+    public final @NonNegative int readUnsignedByte() throws IOException {
         int ch = this.read();
         if (ch < 0)
             throw new EOFException();
@@ -695,7 +695,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable {
      *               two bytes.
      * @exception  IOException   if an I/O error occurs.
      */
-    public final int readUnsignedShort() throws IOException {
+    public final @NonNegative int readUnsignedShort() throws IOException {
         int ch1 = this.read();
         int ch2 = this.read();
         if ((ch1 | ch2) < 0)

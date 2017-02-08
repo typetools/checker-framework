@@ -4617,7 +4617,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @see     Character#isSupplementaryCodePoint(int)
      * @since   1.5
      */
-    public static int charCount(int codePoint) {
+    public static @Positive int charCount(int codePoint) {
         return codePoint >= MIN_SUPPLEMENTARY_CODE_POINT ? 2 : 1;
     }
 
@@ -6318,7 +6318,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @see     Character#forDigit(int, int)
      * @see     Character#isDigit(char)
      */
-    public static int digit(char ch, int radix) {
+    public static @GTENegativeOne int digit(char ch, @Positive int radix) {
         return digit((int)ch, radix);
     }
 
@@ -6370,7 +6370,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @see     Character#isDigit(int)
      * @since   1.5
      */
-    public static int digit(int codePoint, int radix) {
+    public static @GTENegativeOne int digit(int codePoint, @Positive int radix) {
         return CharacterData.of(codePoint).digit(codePoint, radix);
     }
 
@@ -6759,7 +6759,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @see     Character#MAX_RADIX
      * @see     Character#digit(char, int)
      */
-    public static char forDigit(int digit, int radix) {
+    public static char forDigit(int digit, @Positive int radix) {
         if ((digit >= radix) || (digit < 0)) {
             return '\0';
         }

@@ -352,7 +352,7 @@ interface DataInput {
      *               all the bytes.
      * @exception  IOException   if an I/O error occurs.
      */
-    int readUnsignedByte() throws IOException;
+    @NonNegative int readUnsignedByte() throws IOException;
 
     /**
      * Reads two input bytes and returns
@@ -396,7 +396,7 @@ interface DataInput {
      *               all the bytes.
      * @exception  IOException   if an I/O error occurs.
      */
-    int readUnsignedShort() throws IOException;
+    @NonNegative int readUnsignedShort() throws IOException;
 
     /**
      * Reads two input bytes and returns a <code>char</code> value.

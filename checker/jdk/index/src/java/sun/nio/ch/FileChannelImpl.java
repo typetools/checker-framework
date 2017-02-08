@@ -129,7 +129,7 @@ public class FileChannelImpl
 
     }
 
-    public int read(ByteBuffer dst) throws IOException {
+    public @NonNegative int read(ByteBuffer dst) throws IOException {
         ensureOpen();
         if (!readable)
             throw new NonReadableChannelException();
@@ -153,7 +153,7 @@ public class FileChannelImpl
         }
     }
 
-    public long read(ByteBuffer[] dsts, @IndexFor("#1") int offset, @IndexOrHigh("#1") int length)
+    public @NonNegative long read(ByteBuffer[] dsts, @IndexFor("#1") int offset, @IndexOrHigh("#1") int length)
         throws IOException
     {
         if ((offset < 0) || (length < 0) || (offset > dsts.length - length))
@@ -181,7 +181,7 @@ public class FileChannelImpl
         }
     }
 
-    public int write(ByteBuffer src) throws IOException {
+    public @NonNegative int write(ByteBuffer src) throws IOException {
         ensureOpen();
         if (!writable)
             throw new NonWritableChannelException();
@@ -205,7 +205,7 @@ public class FileChannelImpl
         }
     }
 
-    public long write(ByteBuffer[] srcs, @IndexFor("#1") int offset, @IndexOrHigh("#1") int length)
+    public @NonNegative long write(ByteBuffer[] srcs, @IndexFor("#1") int offset, @IndexOrHigh("#1") int length)
         throws IOException
     {
         if ((offset < 0) || (length < 0) || (offset > srcs.length - length))
@@ -235,7 +235,7 @@ public class FileChannelImpl
 
     // -- Other operations --
 
-    public long position() throws IOException {
+    public @NonNegative long position() throws IOException {
         ensureOpen();
         synchronized (positionLock) {
             long p = -1;
@@ -258,7 +258,7 @@ public class FileChannelImpl
         }
     }
 
-    public FileChannel position(long newPosition) throws IOException {
+    public FileChannel position(@NonNegative long newPosition) throws IOException {
         ensureOpen();
         if (newPosition < 0)
             throw new IllegalArgumentException();
@@ -304,7 +304,7 @@ public class FileChannelImpl
         }
     }
 
-    public FileChannel truncate(long size) throws IOException {
+    public FileChannel truncate(@NonNegative long size) throws IOException {
         ensureOpen();
         if (size < 0)
             throw new IllegalArgumentException();
@@ -527,7 +527,7 @@ public class FileChannelImpl
         }
     }
 
-    public long transferTo(long position, long count,
+    public @NonNegative long transferTo(@NonNegative long position, @NonNegative long count,
                            WritableByteChannel target)
         throws IOException
     {
@@ -637,8 +637,8 @@ public class FileChannelImpl
         }
     }
 
-    public long transferFrom(ReadableByteChannel src,
-                             long position, long count)
+    public @NonNegative long transferFrom(ReadableByteChannel src,
+                             @NonNegative long position, @NonNegative long count)
         throws IOException
     {
         ensureOpen();
@@ -657,7 +657,7 @@ public class FileChannelImpl
         return transferFromArbitraryChannel(src, position, count);
     }
 
-    public int read(ByteBuffer dst, long position) throws IOException {
+    public @GTENegativeOne int read(ByteBuffer dst, @NonNegative long position) throws IOException {
         if (dst == null)
             throw new NullPointerException();
         if (position < 0)
@@ -683,7 +683,7 @@ public class FileChannelImpl
         }
     }
 
-    public int write(ByteBuffer src, long position) throws IOException {
+    public @GTENegativeOne int write(ByteBuffer src, @NonNegative long position) throws IOException {
         if (src == null)
             throw new NullPointerException();
         if (position < 0)
@@ -961,7 +961,7 @@ public class FileChannelImpl
         return fileLockTable;
     }
 
-    public FileLock lock(long position, long size, boolean shared)
+    public FileLock lock(@NonNegative long position, @NonNegative long size, boolean shared)
         throws IOException
     {
         ensureOpen();
@@ -1006,7 +1006,7 @@ public class FileChannelImpl
         return fli;
     }
 
-    public FileLock tryLock(long position, long size, boolean shared)
+    public FileLock tryLock(@NonNegative long position, @NonNegative long size, boolean shared)
         throws IOException
     {
         ensureOpen();

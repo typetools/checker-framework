@@ -38,7 +38,7 @@ abstract class CharacterData {
     abstract int toLowerCase(int ch);
     abstract int toUpperCase(int ch);
     abstract int toTitleCase(int ch);
-    abstract int digit(int ch, int radix);
+    abstract int digit(int ch, @Positive int radix);
     abstract int getNumericValue(int ch);
     abstract byte getDirectionality(int ch);
 

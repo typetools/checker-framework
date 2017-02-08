@@ -401,7 +401,7 @@ public class LinkedList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      * @throws NullPointerException if the specified collection is null
      */
-    public boolean addAll(int index, Collection<? extends E> c) {
+    public boolean addAll(@NonNegative int index, Collection<? extends E> c) {
         checkPositionIndex(index);
 
         Object[] a = c.toArray();
@@ -471,7 +471,7 @@ public class LinkedList<E>
      * @return the element at the specified position in this list
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public E get(int index) {
+    public E get(@NonNegative int index) {
         checkElementIndex(index);
         return node(index).item;
     }
@@ -485,7 +485,7 @@ public class LinkedList<E>
      * @return the element previously at the specified position
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public E set(int index, E element) {
+    public E set(@NonNegative int index, E element) {
         checkElementIndex(index);
         Node<E> x = node(index);
         E oldVal = x.item;
@@ -502,7 +502,7 @@ public class LinkedList<E>
      * @param element element to be inserted
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public void add(int index, E element) {
+    public void add(@NonNegative int index, E element) {
         checkPositionIndex(index);
 
         if (index == size)
@@ -520,7 +520,7 @@ public class LinkedList<E>
      * @return the element previously at the specified position
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public E remove(int index) {
+    public E remove(@NonNegative int index) {
         checkElementIndex(index);
         return unlink(node(index));
     }
@@ -528,7 +528,7 @@ public class LinkedList<E>
     /**
      * Tells if the argument is the index of an existing element.
      */
-    private boolean isElementIndex(int index) {
+    private boolean isElementIndex(@NonNegative int index) {
         return index >= 0 && index < size;
     }
 
@@ -536,7 +536,7 @@ public class LinkedList<E>
      * Tells if the argument is the index of a valid position for an
      * iterator or an add operation.
      */
-    private boolean isPositionIndex(int index) {
+    private boolean isPositionIndex(@NonNegative int index) {
         return index >= 0 && index <= size;
     }
 
@@ -545,16 +545,16 @@ public class LinkedList<E>
      * Of the many possible refactorings of the error handling code,
      * this "outlining" performs best with both server and client VMs.
      */
-    private String outOfBoundsMsg(int index) {
+    private String outOfBoundsMsg(@NonNegative int index) {
         return "Index: "+index+", Size: "+size;
     }
 
-    private void checkElementIndex(int index) {
+    private void checkElementIndex(@NonNegative int index) {
         if (!isElementIndex(index))
             throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
     }
 
-    private void checkPositionIndex(int index) {
+    private void checkPositionIndex(@NonNegative int index) {
         if (!isPositionIndex(index))
             throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
     }
@@ -562,7 +562,7 @@ public class LinkedList<E>
     /**
      * Returns the (non-null) Node at the specified element index.
      */
-    Node<E> node(int index) {
+    Node<E> node(@NonNegative int index) {
         // assert isElementIndex(index);
 
         if (index < (size >> 1)) {
@@ -592,7 +592,7 @@ public class LinkedList<E>
      *         this list, or -1 if this list does not contain the element
      */
     public @GTENegativeOne int indexOf(Object o) {
-        int index = 0;
+        @NonNegative int index = 0;
         if (o == null) {
             for (Node<E> x = first; x != null; x = x.next) {
                 if (x.item == null)
@@ -621,7 +621,7 @@ public class LinkedList<E>
      *         this list, or -1 if this list does not contain the element
      */
     public @GTENegativeOne int lastIndexOf(Object o) {
-        int index = size;
+        @NonNegative int index = size;
         if (o == null) {
             for (Node<E> x = last; x != null; x = x.prev) {
                 index--;
@@ -862,7 +862,7 @@ public class LinkedList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      * @see List#listIterator(int)
      */
-    public ListIterator<E> listIterator(int index) {
+    public ListIterator<E> listIterator(@NonNegative int index) {
         checkPositionIndex(index);
         return new ListItr(index);
     }
@@ -873,7 +873,7 @@ public class LinkedList<E>
         private int nextIndex;
         private int expectedModCount = modCount;
 
-        ListItr(int index) {
+        ListItr(@NonNegative int index) {
             // assert isPositionIndex(index);
             next = (index == size) ? null : node(index);
             nextIndex = index;

@@ -168,7 +168,7 @@ public class BufferedReader extends Reader {
      *         end of the stream has been reached
      * @exception  IOException  If an I/O error occurs
      */
-    public @NonNegative int read() throws IOException {
+    public @GTENegativeOne int read() throws IOException {
         synchronized (lock) {
             ensureOpen();
             for (;;) {

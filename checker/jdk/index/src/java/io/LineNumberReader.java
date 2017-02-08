@@ -95,7 +95,7 @@ public class LineNumberReader extends BufferedReader {
      *
      * @see #getLineNumber
      */
-    public void setLineNumber(int lineNumber) {
+    public void setLineNumber(@NonNegative int lineNumber) {
         this.lineNumber = lineNumber;
     }
 
@@ -106,7 +106,7 @@ public class LineNumberReader extends BufferedReader {
      *
      * @see #setLineNumber
      */
-    public int getLineNumber() {
+    public @NonNegative int getLineNumber() {
         return lineNumber;
     }
 

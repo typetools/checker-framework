@@ -113,7 +113,7 @@ public final class Long extends Number implements Comparable<Long> {
      * @see     java.lang.Character#MAX_RADIX
      * @see     java.lang.Character#MIN_RADIX
      */
-    public static String toString(long i, int radix) {
+    public static String toString(long i, @Positive int radix) {
         if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX)
             radix = 10;
         if (radix == 10)
@@ -242,7 +242,7 @@ public final class Long extends Number implements Comparable<Long> {
     private static String toUnsignedString(long i, int shift) {
         char[] buf = new char[64];
         int charPos = 64;
-        int radix = 1 << shift;
+        @Positive int radix = 1 << shift;
         long mask = radix - 1;
         do {
             buf[--charPos] = Integer.digits[(int)(i & mask)];
@@ -398,7 +398,7 @@ public final class Long extends Number implements Comparable<Long> {
      * @throws     NumberFormatException  if the string does not contain a
      *             parsable {@code long}.
      */
-    public static long parseLong(String s, int radix)
+    public static long parseLong(String s, @Positive int radix)
               throws NumberFormatException
     {
         if (s == null) {
@@ -510,7 +510,7 @@ public final class Long extends Number implements Comparable<Long> {
      * @throws     NumberFormatException  If the {@code String} does not
      *             contain a parsable {@code long}.
      */
-    public static Long valueOf(String s, int radix) throws NumberFormatException {
+    public static Long valueOf(String s, @Positive int radix) throws NumberFormatException {
         return Long.valueOf(parseLong(s, radix));
     }
 
@@ -622,7 +622,7 @@ public final class Long extends Number implements Comparable<Long> {
      * @since 1.2
      */
     public static Long decode(String nm) throws NumberFormatException {
-        int radix = 10;
+        @Positive int radix = 10;
         int index = 0;
         boolean negative = false;
         Long result;

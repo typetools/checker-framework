@@ -556,7 +556,7 @@ class ZipFile implements ZipConstants, Closeable {
      * @return the number of entries in the ZIP file
      * @throws IllegalStateException if the zip file has been closed
      */
-    public int size() {
+    public @NonNegative int size() {
         ensureOpen();
         return total;
     }

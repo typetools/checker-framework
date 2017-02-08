@@ -381,7 +381,7 @@ public class Object {
      * @see        java.lang.Object#notify()
      * @see        java.lang.Object#notifyAll()
      */
-    public final native void wait(long timeout) throws InterruptedException;
+    public final native void wait(@NonNegative long timeout) throws InterruptedException;
 
     /**
      * Causes the current thread to wait until another thread invokes the

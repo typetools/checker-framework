@@ -204,7 +204,7 @@ class LineNumberInputStream extends FilterInputStream {
      * @param      lineNumber   the new line number.
      * @see #getLineNumber
      */
-    public void setLineNumber(int lineNumber) {
+    public void setLineNumber(@NonNegative int lineNumber) {
         this.lineNumber = lineNumber;
     }
 
@@ -214,7 +214,7 @@ class LineNumberInputStream extends FilterInputStream {
      * @return     the current line number.
      * @see #setLineNumber
      */
-    public int getLineNumber() {
+    public @NonNegative int getLineNumber() {
         return lineNumber;
     }
 

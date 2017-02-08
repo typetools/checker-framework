@@ -921,7 +921,7 @@ public class ObjectInputStream
      * @throws  EOFException If end of file is reached.
      * @throws  IOException If other I/O error has occurred.
      */
-    public int readUnsignedByte()  throws IOException {
+    public @NonNegative int readUnsignedByte()  throws IOException {
         return bin.readUnsignedByte();
     }
 
@@ -954,7 +954,7 @@ public class ObjectInputStream
      * @throws  EOFException If end of file is reached.
      * @throws  IOException If other I/O error has occurred.
      */
-    public int readUnsignedShort() throws IOException {
+    public @NonNegative int readUnsignedShort() throws IOException {
         return bin.readUnsignedShort();
     }
 

@@ -453,7 +453,7 @@ public class Timer {
      * @return the number of tasks removed from the queue.
      * @since 1.5
      */
-     public int purge() {
+     public @NonNegative int purge() {
          int result = 0;
 
          synchronized(queue) {

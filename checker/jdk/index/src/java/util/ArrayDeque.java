@@ -193,10 +193,10 @@ public class ArrayDeque<E> extends AbstractCollection<E>
      *
      * @param numElements  lower bound on initial capacity of the deque
      */
-    public ArrayDeque(int numElements) {
+    public ArrayDeque(@NonNegative int numElements) {
         allocateElements(numElements);
     }
-
+    
     /**
      * Constructs a deque containing the elements of the specified
      * collection, in the order they are returned by the collection's

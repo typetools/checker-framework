@@ -144,7 +144,7 @@ public final class Byte extends Number implements Comparable<Byte> {
      * @throws          NumberFormatException If the string does
      *                  not contain a parsable {@code byte}.
      */
-    public static byte parseByte(String s, int radix)
+    public static byte parseByte(String s, @Positive int radix)
         throws NumberFormatException {
         int i = Integer.parseInt(s, radix);
         if (i < MIN_VALUE || i > MAX_VALUE)
@@ -200,7 +200,7 @@ public final class Byte extends Number implements Comparable<Byte> {
      * @throws          NumberFormatException If the {@code String} does
      *                  not contain a parsable {@code byte}.
      */
-    public static Byte valueOf(String s, int radix)
+    public static Byte valueOf(String s, @Positive int radix)
         throws NumberFormatException {
         return valueOf(parseByte(s, radix));
     }

@@ -205,7 +205,7 @@ import org.checkerframework.checker.index.qual.*;
     /**
      * @since     1.5
      */
-    public synchronized int offsetByCodePoints(/*@ IndexFor("this")*/int index, /*@ IndexOrHigh("this")*/ int codePointOffset) {
+    public synchronized /*@ IndexFor("this")*/ int offsetByCodePoints(/*@ IndexFor("this")*/int index, /*@ IndexOrHigh("this")*/ int codePointOffset) {
         return super.offsetByCodePoints(index, codePointOffset);
     }
 
