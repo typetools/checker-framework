@@ -17,7 +17,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -27,7 +26,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    AnnotationMirror UNKNOWN;
+    public final AnnotationMirror UNKNOWN;
     private AnnotationMirror BOTTOM;
 
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -42,11 +41,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // Because the Index Checker is a subclass, the qualifiers have to be explicitly defined.
         return new LinkedHashSet<>(
                 Arrays.asList(SameLen.class, SameLenBottom.class, SameLenUnknown.class));
-    }
-
-    @Override
-    protected DependentTypesHelper createDependentTypesHelper() {
-        return new DependentTypesHelper(this, SameLen.class);
     }
 
     @Override

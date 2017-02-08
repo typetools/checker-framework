@@ -4,6 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.JavaExpression;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
@@ -27,5 +28,6 @@ public @interface LTOMLengthOf {
      * Sequences, each of whose lengths is at least 1 larger than than the annotated expression's
      * value.
      */
+    @JavaExpression
     public String[] value();
 }

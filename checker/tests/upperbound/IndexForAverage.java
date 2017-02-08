@@ -1,7 +1,5 @@
 // test case for issue 86: https://github.com/kelloggm/checker-framework/issues/86
 
-// @skip-test until issue is fixed
-
 import org.checkerframework.checker.index.qual.*;
 
 public class IndexForAverage {
