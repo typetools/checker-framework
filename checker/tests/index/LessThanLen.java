@@ -1,6 +1,7 @@
 import org.checkerframework.checker.index.qual.*;
 
-//@skip-test until fixed.
+//@skip-test until issue https://github.com/kelloggm/checker-framework/issues/88
+// is resolved.
 
 public class LessThanLen {
 
