@@ -53,5 +53,9 @@ public class TransferDivide {
         /** n1p / nn -> n1p */
         @GTENegativeOne int x = a / l;
     }
+
+    void testDivideByTwo(@NonNegative int x) {
+        @NonNegative int y = x / 2;
+    }
 }
 //a comment
