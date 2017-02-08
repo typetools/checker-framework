@@ -9,7 +9,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -124,14 +123,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected DependentTypesHelper createDependentTypesHelper() {
-        List<Class<? extends Annotation>> annos = new ArrayList<>();
-        annos.add(LTLengthOf.class);
-        annos.add(LTEqLengthOf.class);
-        annos.add(IndexFor.class);
-        annos.add(IndexOrLow.class);
-        annos.add(IndexOrHigh.class);
-        annos.add(LTOMLengthOf.class);
-        return new DependentTypesHelper(this, annos) {
+        return new DependentTypesHelper(this) {
             @Override
             public TreeAnnotator createDependentTypesTreeAnnotator(AnnotatedTypeFactory factory) {
                 return new DependentTypesTreeAnnotator(factory, this) {
