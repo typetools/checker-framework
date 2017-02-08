@@ -24,6 +24,7 @@
  */
 
 package java.io;
+import org.checkerframework.checker.index.qual.*;
 
 /**
  * The <code>DataInput</code> interface provides
