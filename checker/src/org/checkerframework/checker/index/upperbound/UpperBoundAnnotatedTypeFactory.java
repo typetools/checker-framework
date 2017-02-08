@@ -9,7 +9,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -124,14 +123,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected DependentTypesHelper createDependentTypesHelper() {
-        List<Class<? extends Annotation>> annos = new ArrayList<>();
-        annos.add(LTLengthOf.class);
-        annos.add(LTEqLengthOf.class);
-        annos.add(IndexFor.class);
-        annos.add(IndexOrLow.class);
-        annos.add(IndexOrHigh.class);
-        annos.add(LTOMLengthOf.class);
-        return new DependentTypesHelper(this, annos) {
+        return new DependentTypesHelper(this) {
             @Override
             public TreeAnnotator createDependentTypesTreeAnnotator(AnnotatedTypeFactory factory) {
                 return new DependentTypesTreeAnnotator(factory, this) {
@@ -189,8 +181,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * given expression tree.
      */
     public AnnotationMirror sameLenAnnotationFromExpressionTree(ExpressionTree tree) {
-        AnnotatedTypeMirror sameLenType = getMinLenAnnotatedTypeFactory().getAnnotatedType(tree);
-        return sameLenType.getAnnotationInHierarchy(UNKNOWN);
+        AnnotatedTypeMirror sameLenType = getSameLenAnnotatedTypeFactory().getAnnotatedType(tree);
+        return sameLenType.getAnnotationInHierarchy(getSameLenAnnotatedTypeFactory().UNKNOWN);
     }
 
     /** Get the list of possible values from a value checker type. May return null. */
@@ -355,6 +347,15 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         String[] names = newValues.toArray(new String[0]);
         return names;
+    }
+
+    /**
+     * Returns true if type is either LTL or LTOM.
+     *
+     * @param type an annotated type mirror that represents an upperbound type.
+     */
+    private boolean isLTL(AnnotatedTypeMirror type) {
+        return type.hasAnnotation(LTLengthOf.class) || type.hasAnnotation(LTOMLengthOf.class);
     }
 
     /**
@@ -662,24 +663,61 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Integer maybeValRight = maybeValFromValueType(valueTypeRight);
             if (maybeValRight != null) {
                 AnnotatedTypeMirror leftType = getAnnotatedType(left);
-                addAnnotationForLiteralDivide(maybeValRight, leftType, type);
+                addAnnotationForLiteralDivide(maybeValRight, left, leftType, type);
             }
         }
 
+        /**
+         * Handles division when the right side is a compile-time constant.
+         *
+         * @param val the integer value of the right side
+         * @param leftTree the tree representing the left side
+         * @param leftType the upperbound type of the left side
+         * @param type the type of the whole division expression. Modified by this method.
+         */
         private void addAnnotationForLiteralDivide(
-                int val, AnnotatedTypeMirror nonLiteralType, AnnotatedTypeMirror type) {
-            if (nonLiteralType.hasAnnotation(LTLengthOf.class)
-                    || nonLiteralType.hasAnnotation(LTOMLengthOf.class)) {
+                int val,
+                ExpressionTree leftTree,
+                AnnotatedTypeMirror leftType,
+                AnnotatedTypeMirror type) {
+            if (isLTL(leftType)) {
                 if (val >= 1) {
-                    type.replaceAnnotation(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    type.replaceAnnotation(leftType.getAnnotationInHierarchy(UNKNOWN));
                 }
-            } else if (nonLiteralType.hasAnnotation(LTEqLengthOf.class)) {
+            } else if (leftType.hasAnnotation(LTEqLengthOf.class)) {
                 // FIXME: Is this unsafe? What if the length is zero?
                 if (val >= 2) {
-                    String[] names = getValue(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    String[] names = getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
                     type.replaceAnnotation(createLTLengthOfAnnotation(names));
                 } else if (val == 1) {
-                    type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    type.addAnnotation(leftType.getAnnotationInHierarchy(UNKNOWN));
+                }
+            } else if (val == 2) {
+                // The average of two LTL/LTOMs is LTL.
+
+                // Necessary because otherwise an expression in parentheses isn't a plus expression.
+                leftTree = TreeUtils.skipParens(leftTree);
+
+                if (leftTree.getKind() == Tree.Kind.PLUS) {
+                    BinaryTree leftBinTree = (BinaryTree) leftTree;
+                    AnnotatedTypeMirror leftLeftType =
+                            getAnnotatedType(leftBinTree.getLeftOperand());
+                    AnnotatedTypeMirror leftRightType =
+                            getAnnotatedType(leftBinTree.getRightOperand());
+
+                    if (isLTL(leftLeftType) && isLTL(leftRightType)) {
+                        AnnotationMirror leftLeftAnno =
+                                leftLeftType.getAnnotationInHierarchy(UNKNOWN);
+                        AnnotationMirror leftRightAnno =
+                                leftRightType.getAnnotationInHierarchy(UNKNOWN);
+                        String[] intersection = getIntersectingNames(leftLeftAnno, leftRightAnno);
+
+                        if (intersection.length != 0) {
+                            type.addAnnotation(createLTLengthOfAnnotation(intersection));
+                        } else {
+                            type.addAnnotation(UNKNOWN);
+                        }
+                    }
                 }
             }
         }

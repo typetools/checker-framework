@@ -420,6 +420,10 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return a new {@link DependentTypesHelper}
      */
     protected DependentTypesHelper createDependentTypesHelper() {
+        DependentTypesHelper helper = new DependentTypesHelper(this);
+        if (helper.hasDependentAnnotations()) {
+            return helper;
+        }
         return null;
     }
 
