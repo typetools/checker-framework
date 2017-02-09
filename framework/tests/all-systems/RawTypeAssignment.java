@@ -9,6 +9,8 @@ class Components extends ArrayList {}
 // is no error below.
 // class Components extends ArrayList<Component> {}
 
+@SuppressWarnings(
+        "list.access.unsafe.high") // The Index Checker correctly issues this warning here.
 public class RawTypeAssignment {
     static Components getComponents() {
         return new Components();

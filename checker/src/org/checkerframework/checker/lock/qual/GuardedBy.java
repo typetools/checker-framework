@@ -23,6 +23,7 @@ import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.JavaExpression;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
@@ -33,7 +34,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * <p>{@code @GuardedBy({})} is the default type qualifier.
  *
  * <p>The argument is a string or set of strings that indicates the expression(s) that must be held,
- * using the <a href="http://checker-framework.com/manual/#java-expressions-as-arguments">syntax of
+ * using the <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">syntax of
  * Java expressions</a> described in the manual. The expressions evaluate to an intrinsic (built-in,
  * synchronization) monitor or an explicit {@link java.util.concurrent.locks.Lock}. The expression
  * {@code "<self>"} is also permitted; the type {@code @GuardedBy("<self>") Object o} indicates that
@@ -73,8 +74,9 @@ public @interface GuardedBy {
     /**
      * The Java value expressions that need to be held.
      *
-     * @see <a href="http://checker-framework.com/manual/#java-expressions-as-arguments">Syntax of
+     * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">Syntax of
      *     Java expressions</a>
      */
+    @JavaExpression
     String[] value() default {};
 }

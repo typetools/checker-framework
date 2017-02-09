@@ -13,7 +13,10 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Log;
 import java.util.HashSet;
 import java.util.Set;
-import javax.annotation.processing.*;
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
@@ -27,7 +30,7 @@ import javax.lang.model.util.ElementFilter;
  *
  * <p>The tool infrastructure will interact with classes extending this abstract class as follows.
  *
- * <p>1-3 are Identical to the {@link Processor} life cycle. 4-5 are unique to {@code
+ * <p>1-3 are identical to the {@link Processor} life cycle. 4-5 are unique to {@code
  * AbstractTypeProcessor} subclasses.
  *
  * <ol>

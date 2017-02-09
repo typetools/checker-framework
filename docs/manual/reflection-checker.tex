@@ -8,7 +8,9 @@
 
 A call to
 \sunjavadoc{java/lang/reflect/Method.html\#invoke-java.lang.Object-java.lang.Object...-}{Method.invoke}
-might reflectively invoke any method, so the annotated JDK contains
+might reflectively invoke any method.  That method might place requirements
+on its formal parameters, and it might return any value.  To reflect these
+facts, the annotated JDK contains
 conservative annotations for \<Method.invoke>.
 These conservative library annotations often cause a checker to issue false
 positive warnings when type-checking code that uses reflection.
@@ -65,8 +67,7 @@ Value Checker (Section~\ref{constant-value-checker}) in that their
 annotations estimate the run-time value of an expression.
 
 In some cases, you may need to write annotations such as \<@ClassVal>,
-\<@MethodVal>, \<@StringVal> and \<@ArrayLen> (from the Constant Value Checker,
-Section~\ref{constant-value-checker}) to aid in reflection resolution.
+\<@MethodVal>, \refqualclass{common/value/qual}{StringVal}, and \refqualclass{common/value/qual}{ArrayLen} to aid in reflection resolution.
 Often, though, these annotations can be inferred
 (Section~\ref{methodval-and-classval-inference}).
 

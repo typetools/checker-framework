@@ -31,19 +31,19 @@ public class JCIPAnnotations {
         //:: error: (method.invocation.invalid)
         jcipGuardedField.methodWithUnguardedReceiver();
         jcipGuardedField.methodWithGuardedReceiver();
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         jcipGuardedField.methodWithGuardSatisfiedReceiver();
         //:: error: (method.invocation.invalid)
         javaxGuardedField.methodWithUnguardedReceiver();
         javaxGuardedField.methodWithGuardedReceiver();
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         javaxGuardedField.methodWithGuardSatisfiedReceiver();
     }
 
     void testDereferences() {
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         this.jcipGuardedField.field.toString();
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         this.javaxGuardedField.field.toString();
         synchronized (lock) {
             this.jcipGuardedField.field.toString();

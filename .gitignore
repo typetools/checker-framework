@@ -20,6 +20,8 @@ tags
 .externalToolBuilders
 .settings
 dot_files
+# Intellij files
+.idea
 
 Makefile.user
 local.properties

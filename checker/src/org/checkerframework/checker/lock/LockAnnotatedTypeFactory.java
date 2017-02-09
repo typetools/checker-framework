@@ -9,6 +9,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,20 +31,33 @@ import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
+import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
+import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -63,6 +77,9 @@ import org.checkerframework.javacutil.Pair;
  */
 public class LockAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<CFValue, LockStore, LockTransfer, LockAnalysis> {
+
+    /** dependent type annotation error message for when the expression is not effectively final. */
+    public static final String NOT_EFFECTIVELY_FINAL = "lock expression is not effectively final";
 
     /** Annotation constants */
     protected final AnnotationMirror LOCKHELD,
@@ -95,6 +112,106 @@ public class LockAnnotatedTypeFactory
         addAliasedDeclAnnotation(ReleasesNoLocks.class, SideEffectFree.class, SIDEEFFECTFREE);
 
         postInit();
+    }
+
+    @Override
+    protected DependentTypesHelper createDependentTypesHelper() {
+        return new DependentTypesHelper(this) {
+            @Override
+            protected void reportErrors(Tree errorTree, List<DependentTypesError> errors) {
+                // If the error message is NOT_EFFECTIVELY_FINAL, then report lock.expression.not
+                // .final instead of an expression.unparsable.type.invalid error.
+                List<DependentTypesError> superErrors = new ArrayList<>();
+                for (DependentTypesError error : errors) {
+                    if (error.error.equals(NOT_EFFECTIVELY_FINAL)) {
+                        checker.report(
+                                Result.failure("lock.expression.not.final", error.expression),
+                                errorTree);
+                    } else {
+                        superErrors.add(error);
+                    }
+                }
+                super.reportErrors(errorTree, superErrors);
+            }
+
+            @Override
+            protected String standardizeString(
+                    String expression,
+                    FlowExpressionContext context,
+                    TreePath localScope,
+                    boolean useLocalScope) {
+                if (DependentTypesError.isExpressionError(expression)) {
+                    return expression;
+                }
+
+                // Adds logic to parse <self> expression, which only the Lock Checker uses.
+                if (LockVisitor.selfReceiverPattern.matcher(expression).matches()) {
+                    return expression;
+                }
+
+                try {
+                    FlowExpressions.Receiver result =
+                            FlowExpressionParseUtil.parse(
+                                    expression, context, localScope, useLocalScope);
+                    if (result == null) {
+                        return new DependentTypesError(expression, " ").toString();
+                    }
+                    if (!isExpressionEffectivelyFinal(result)) {
+                        // If the expression isn't effectively final, then return the
+                        // NOT_EFFECTIVELY_FINAL error string.
+                        return new DependentTypesError(expression, NOT_EFFECTIVELY_FINAL)
+                                .toString();
+                    }
+                    return result.toString();
+                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                    return new DependentTypesError(expression, e).toString();
+                }
+            }
+        };
+    }
+
+    /**
+     * Returns whether or not the expression is effectively final.
+     *
+     * <p>This method returns true in the following cases when expr is:
+     *
+     * <p>1. a field access and the field is final and the field access expression is effectively
+     * final as specified by this method.
+     *
+     * <p>2. an effectively final local variable.
+     *
+     * <p>3. a deterministic method call whose arguments and receiver expression are effectively
+     * final as specified by this method.
+     *
+     * <p>4. a this reference or a class literal
+     *
+     * @param expr expression
+     * @return whether or not the expression is effectively final
+     */
+    boolean isExpressionEffectivelyFinal(Receiver expr) {
+        if (expr instanceof FieldAccess) {
+            FieldAccess fieldAccess = (FieldAccess) expr;
+            Receiver recv = fieldAccess.getReceiver();
+            // Don't call fieldAccess
+            return fieldAccess.isFinal() && isExpressionEffectivelyFinal(recv);
+        } else if (expr instanceof LocalVariable) {
+            return ElementUtils.isEffectivelyFinal(((LocalVariable) expr).getElement());
+        } else if (expr instanceof MethodCall) {
+            MethodCall methodCall = (MethodCall) expr;
+            for (Receiver param : methodCall.getParameters()) {
+                if (!isExpressionEffectivelyFinal(param)) {
+                    return false;
+                }
+            }
+            return PurityUtils.isDeterministic(this, methodCall.getElement())
+                    && isExpressionEffectivelyFinal(methodCall.getReceiver());
+        } else if (expr instanceof ThisReference || expr instanceof ClassName) {
+            // this is always final. "ClassName" is actually a class literal,(String.class), it's
+            // final too.
+            return true;
+        } else { // type of 'expr' is not supported in @GuardedBy(...) lock expressions
+            return false;
+        }
     }
 
     @Override
@@ -521,10 +638,7 @@ public class LockAnnotatedTypeFactory
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
-                new LockTreeAnnotator(this),
-                new PropagationTreeAnnotator(this),
-                new ImplicitsTreeAnnotator(this));
+        return new ListTreeAnnotator(new LockTreeAnnotator(this), super.createTreeAnnotator());
     }
 
     @Override

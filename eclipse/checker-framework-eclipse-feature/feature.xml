@@ -2,10 +2,10 @@
 <feature
       id="checker.framework.eclipse.feature"
       label="Checker Framework Feature"
-      version="2.1.7"
+      version="2.1.8"
       provider-name="Checker Framework Development Team">
 
-   <description url="http://checker-framework.com/eclipse">
+   <description url="https://checkerframework.org/eclipse">
       The Checker Framework plugin makes it easier to run a pluggable
       type-checker.  A pluggable type-checker finds bugs at compile time that
       would ordinarily manifest at run time.  If the pluggable type-checker
@@ -13,7 +13,7 @@
       occur at run time.
    </description>
 
-   <copyright url="http://checker-framework.com/">
+   <copyright url="https://checkerframework.org/">
       Copyright Checker Framework Development Team
    </copyright>
 
@@ -371,7 +371,7 @@ as provided by Sun in the LICENSE file that accompanied this code.&quot;
    </license>
 
    <url>
-      <update label="Checker Framework Eclipse Plugin" url="http://checker-framework.com/eclipse"/>
+      <update label="Checker Framework Eclipse Plugin" url="https://checkerframework.org/eclipse"/>
    </url>
 
    <requires>
@@ -390,6 +390,6 @@ as provided by Sun in the LICENSE file that accompanied this code.&quot;
          id="checker.framework.eclipse.plugin"
          download-size="0"
          install-size="0"
-         version="2.1.7"/>
+         version="2.1.8"/>
 
 </feature>

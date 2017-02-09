@@ -5,7 +5,7 @@
     <packaging>jar</packaging>
 
     <name>Dataflow</name>
-    <url>http://checker-framework.com</url>
+    <url>https://checkerframework.org</url>
     <description>
         Dataflow is a dataflow framework based on the javac compiler.
     </description>
@@ -31,14 +31,14 @@
         <dependency>
             <groupId>org.checkerframework</groupId>
             <artifactId>javacutil</artifactId>
-            <version><!-- checker-framework-version -->2.1.7<!-- /checker-framework-version --></version>
+            <version><!-- checker-framework-version -->2.1.8<!-- /checker-framework-version --></version>
             <type>jar</type>
         </dependency>
     </dependencies>
 
     <!-- The comments in the version number are used to do a text substitution. Don't remove them.
          See checker-framework/bin/poms/updateVersion.sh -->
-    <version><!-- checker-framework-version -->2.1.7<!-- /checker-framework-version --></version>
+    <version><!-- checker-framework-version -->2.1.8<!-- /checker-framework-version --></version>
 
     <scm>
         <url>https://github.com/typetools/checker-framework.git</url>

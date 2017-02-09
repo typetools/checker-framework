@@ -19,7 +19,8 @@ import java.lang.annotation.Target;
  * {@code @IgnoreInWholeProgramInference} include <a
  * href="https://docs.oracle.com/javaee/7/api/javax/inject/Inject.html">{@code @Inject}</a>, <a
  * href="https://docs.oracle.com/javaee/7/api/javax/inject/Singleton.html">{@code @Singleton}</a>,
- * and <a href="http://types.cs.washington.edu/plume-lib/api/plume/Option.html">{@code @Option}</a>.
+ * and <a
+ * href="https://types.cs.washington.edu/plume-lib/api/plume/Option.html">{@code @Option}</a>.
  *
  * <p>See {@link
  * org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes#updateInferredFieldType}
