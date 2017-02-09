@@ -40,7 +40,6 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     @Override
     public TransferResult<CFValue, CFStore> visitAssignment(
             AssignmentNode node, TransferInput<CFValue, CFStore> in) {
-        AnnotationMirror UNKNOWN = atypeFactory.UNKNOWN;
         TransferResult<CFValue, CFStore> result = super.visitAssignment(node, in);
 
         if (node.getExpression() instanceof ArrayCreationNode) {
@@ -80,6 +79,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * @param node subtraction node that is known to be equal to the length of the array referenced
      *     by arrayExp
      * @param arrayExp array expression
+     * @param in TransferInput
      * @param store location to store the refined type
      */
     private void knownToBeArrayLength(
@@ -104,8 +104,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * @param node addition node that is known to be equal to the length of the array referenced by
      *     arrayExp
      * @param arrayExp array expression
+     * @param in TransferInput
      * @param store location to store the refined types
-     * @param regularStore
      */
     private void knownToBeArrayLength(
             NumericalAdditionNode node,

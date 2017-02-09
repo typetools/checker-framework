@@ -354,8 +354,8 @@ public abstract class UBQualifier {
          * If any offset in other is a less than or equal to an offset in this, then that offset is
          * an offset for the array in lub.
          *
-         * @param other
-         * @return
+         * @param other to lub with this
+         * @return the lub
          */
         @Override
         public UBQualifier lub(UBQualifier other) {
@@ -517,8 +517,8 @@ public abstract class UBQualifier {
         /**
          * If divisor == 1, return this object.
          *
-         * <p>If divisor > 1, then return a copy of this object keeping only arrays and offsets
-         * where the offset is less than or equal to zero.
+         * <p>If divisor greater than 1, then return a copy of this object keeping only arrays and
+         * offsets where the offset is less than or equal to zero.
          *
          * <p>Otherwise, return UNKNOWN.
          *

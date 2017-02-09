@@ -471,8 +471,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * if numeratorTree is a + b and divisor > 1, and a and b are less than the length of some
-         * array, then (a + b) / divisor is less than the length of that array.
+         * if numeratorTree is a + b and divisor greater than 1, and a and b are less than the
+         * length of some array, then (a + b) / divisor is less than the length of that array.
          */
         private UBQualifier plusTreeDivideByVal(int divisor, ExpressionTree numeratorTree) {
             numeratorTree = TreeUtils.skipParens(numeratorTree);
