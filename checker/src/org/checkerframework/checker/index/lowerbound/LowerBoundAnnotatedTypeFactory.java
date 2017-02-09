@@ -106,8 +106,12 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
         AnnotationMirror anm = getLowerBoundAnnotationFromValueType(valueType);
         if (!type.isAnnotatedInHierarchy(UNKNOWN)) {
-            type.addAnnotation(anm);
-        } else if (qualHierarchy.isSubtype(anm, type.getAnnotationInHierarchy(UNKNOWN))) {
+            if (!AnnotationUtils.areSameByClass(anm, LowerBoundUnknown.class)) {
+                type.addAnnotation(anm);
+            }
+            return;
+        }
+        if (qualHierarchy.isSubtype(anm, type.getAnnotationInHierarchy(UNKNOWN))) {
             type.replaceAnnotation(anm);
         }
     }
