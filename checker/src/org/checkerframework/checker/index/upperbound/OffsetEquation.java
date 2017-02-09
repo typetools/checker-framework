@@ -11,7 +11,6 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
-import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -126,6 +125,7 @@ public class OffsetEquation {
      * @return a copy of this equation +/- other
      */
     public OffsetEquation copyAdd(char op, OffsetEquation other) {
+        assert op == '-' || op == '+';
         OffsetEquation copy = new OffsetEquation(this);
         if (op == '+') {
             copy.plus(other);
@@ -162,7 +162,7 @@ public class OffsetEquation {
      * @return whether or not this equation is known to be less than or equal to the other equation
      */
     public boolean lessThanOrEqual(OffsetEquation other) {
-        return isInt() && other.isInt() && intValue <= other.getInt();
+        return (isInt() && other.isInt() && intValue <= other.getInt()) || this.equals(other);
     }
 
     /**
@@ -247,8 +247,8 @@ public class OffsetEquation {
 
     /**
      * Adds the term to this equation. If string is an integer, then it is added or subtracted,
-     * depending on operator, from the int value of this equation. Otherwise, the term is places in
-     * the added or subtract terms set, depending on operator.
+     * depending on operator, from the int value of this equation. Otherwise, the term is placed in
+     * the added or subtracted terms set, depending on operator.
      *
      * @param operator '+' or '-'
      * @param term an int value or Java expression to add to this equation
@@ -388,82 +388,46 @@ public class OffsetEquation {
      */
     public static OffsetEquation createOffsetFromNode(
             Node node, UpperBoundAnnotatedTypeFactory factory, char op) {
+        assert op == '+' || op == '-';
         OffsetEquation eq = new OffsetEquation();
-        if (op == '-') {
-            parseRecurMinus(node, factory, eq);
-        } else {
-            parseRecurPlus(node, factory, eq);
-        }
+        createOffsetFromNode(node, factory, eq, op);
         return eq;
     }
 
-    private static void parseRecurPlus(
-            Node node, UpperBoundAnnotatedTypeFactory factory, OffsetEquation eq) {
+    private static void createOffsetFromNode(
+            Node node, UpperBoundAnnotatedTypeFactory factory, OffsetEquation eq, char op) {
         if (node.getTree() != null && TreeUtils.isExpressionTree(node.getTree())) {
-            Integer i = factory.valMinFromExpressionTree((ExpressionTree) node.getTree());
+            Integer i;
+            if (op == '+') {
+                i = factory.valMinFromExpressionTree((ExpressionTree) node.getTree());
+            } else {
+                i = factory.valMaxFromExpressionTree((ExpressionTree) node.getTree());
+                i = i == null ? null : -i;
+            }
             if (i != null) {
                 eq.addInt(i);
                 return;
             }
-        } else if (node instanceof ValueLiteralNode) {
-            if (((ValueLiteralNode) node).getValue() instanceof Number) {
-                Number n = (Number) ((ValueLiteralNode) node).getValue();
-                eq.addInt(n.intValue());
-            } else {
-                eq.error = node.toString();
-            }
-            return;
         }
 
         Receiver r = FlowExpressions.internalReprOf(factory, node);
         if (r instanceof Unknown || r == null) {
             if (node instanceof NumericalAdditionNode) {
-                parseRecurPlus(((NumericalAdditionNode) node).getLeftOperand(), factory, eq);
-                parseRecurPlus(((NumericalAdditionNode) node).getRightOperand(), factory, eq);
+                createOffsetFromNode(
+                        ((NumericalAdditionNode) node).getLeftOperand(), factory, eq, op);
+                createOffsetFromNode(
+                        ((NumericalAdditionNode) node).getRightOperand(), factory, eq, op);
             } else if (node instanceof NumericalSubtractionNode) {
-                parseRecurPlus(((NumericalSubtractionNode) node).getLeftOperand(), factory, eq);
-                parseRecurMinus(((NumericalSubtractionNode) node).getRightOperand(), factory, eq);
+                createOffsetFromNode(
+                        ((NumericalSubtractionNode) node).getLeftOperand(), factory, eq, op);
+                char other = op == '+' ? '-' : '+';
+                createOffsetFromNode(
+                        ((NumericalSubtractionNode) node).getRightOperand(), factory, eq, other);
             } else {
                 eq.error = node.toString();
             }
         } else {
-            eq.addTerm('+', r.toString());
-        }
-    }
-
-    private static void parseRecurMinus(
-            Node node, UpperBoundAnnotatedTypeFactory factory, OffsetEquation eq) {
-        if (node.getTree() != null && TreeUtils.isExpressionTree(node.getTree())) {
-            Integer i = factory.valMaxFromExpressionTree((ExpressionTree) node.getTree());
-            if (i != null) {
-                eq.addInt(-i);
-                return;
-            }
-        } else if (node instanceof ValueLiteralNode) {
-            if (((ValueLiteralNode) node).getValue() instanceof Number) {
-                Number n = (Number) ((ValueLiteralNode) node).getValue();
-                eq.addInt(-n.intValue());
-            } else {
-                eq.error = node.toString();
-            }
-            return;
-        }
-
-        Receiver r = FlowExpressions.internalReprOf(factory, node);
-        if (r instanceof Unknown || r == null) {
-            if (node instanceof NumericalAdditionNode) {
-                // - (left + right) => -left -right
-                parseRecurMinus(((NumericalAdditionNode) node).getLeftOperand(), factory, eq);
-                parseRecurMinus(((NumericalAdditionNode) node).getRightOperand(), factory, eq);
-            } else if (node instanceof NumericalSubtractionNode) {
-                // - (left - right) => -left +right
-                parseRecurMinus(((NumericalSubtractionNode) node).getLeftOperand(), factory, eq);
-                parseRecurPlus(((NumericalSubtractionNode) node).getRightOperand(), factory, eq);
-            } else {
-                eq.error = node.toString();
-            }
-        } else {
-            eq.addTerm('-', r.toString());
+            eq.addTerm(op, r.toString());
         }
     }
 }

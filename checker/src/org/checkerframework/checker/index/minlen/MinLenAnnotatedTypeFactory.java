@@ -32,6 +32,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
@@ -308,8 +309,14 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return min length of arrayExpression or 0
      */
     public int getMinLenFromString(String arrayExpression, Tree tree, TreePath currentPath) {
-        AnnotationMirror minLenAnno =
-                getAnnotationFromString(arrayExpression, tree, currentPath, MinLen.class);
+        AnnotationMirror minLenAnno = null;
+        try {
+            minLenAnno =
+                    getAnnotationFromJavaExpressionString(
+                            arrayExpression, tree, currentPath, MinLen.class);
+        } catch (FlowExpressionParseException e) {
+            // ignore parse errors
+        }
         if (minLenAnno == null) {
             // Could not find a more precise type, so return 0;
             return 0;

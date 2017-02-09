@@ -105,11 +105,34 @@ are some annotations that give multiple types of information:
   \refqualclass{checker/index/qual}{NonNegative} and
   \refqualclass{checker/index/qual}{LTEqLengthOf}.
 
+  For example, the
+  \sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-int-int-java.lang.Object-}{Arrays.binarySearch}
+   method is declared as
+
+  \begin{mysmall}
+  \begin{Verbatim}
+  class Arrays {
+    int binarySearch(Object[] a, @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex, Object key)
+  }
+  \end{Verbatim}
+  \end{mysmall}
+
  \item[\refqualclasswithparams{checker/index/qual}{IndexOrLow}{String[] names}]
    The value is -1 or is a valid index for
    each named array.  This type combines
   \refqualclass{checker/index/qual}{GTENegativeOne} and
   \refqualclass{checker/index/qual}{LTEqLengthOf}.
+
+  For example, the
+  \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf(String)}
+  method is declared as
+
+  \begin{Verbatim}
+  class String {
+    @IndexOrLow("this") int indexOf(String str) { ... }
+  }
+  \end{Verbatim}
+
 \end{description}
 
 \section{Lower bounds\label{index-lowerbound}}

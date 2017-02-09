@@ -69,7 +69,7 @@ public class OffsetExample {
             return false;
         }
         for (int i = 0; i < sub_len; i++) {
-            if (sub[i] == a[a_offset + i]) { // UBC warns here
+            if (sub[i] == a[a_offset + i]) {
                 return false;
             }
         }
@@ -81,7 +81,7 @@ public class OffsetExample {
         Object[] result = new Object[a.length + b_size];
         System.arraycopy(a, 0, result, 0, a.length);
         for (int i = 0; i < b_size; i++) {
-            result[i + a.length] = b.get(i); // UBC warns here
+            result[i + a.length] = b.get(i);
         }
     }
 }

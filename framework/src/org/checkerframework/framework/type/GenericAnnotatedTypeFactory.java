@@ -689,39 +689,46 @@ public abstract class GenericAnnotatedTypeFactory<
         return constructorReturnType;
     }
 
-    public AnnotationMirror getAnnotationFromString(
-            String expression, Tree tree, TreePath currentPath, Class<? extends Annotation> clazz) {
-        TypeMirror enclosingClass = InternalUtils.typeOf(TreeUtils.enclosingClass(currentPath));
+    /**
+     * Returns the primary annotation on expression if it were evaluated at path.
+     *
+     * @param expression Java expression
+     * @param tree current tree
+     * @param path location at which expression is evaluated
+     * @param clazz Class of the annotation
+     * @return the annotation on expression or null if one does not exist
+     * @throws FlowExpressionParseException
+     */
+    public AnnotationMirror getAnnotationFromJavaExpressionString(
+            String expression, Tree tree, TreePath path, Class<? extends Annotation> clazz)
+            throws FlowExpressionParseException {
+        TypeMirror enclosingClass = InternalUtils.typeOf(TreeUtils.enclosingClass(path));
 
         FlowExpressions.Receiver r =
-                FlowExpressions.internalRepOfPseudoReceiver(currentPath, enclosingClass);
+                FlowExpressions.internalRepOfPseudoReceiver(path, enclosingClass);
         FlowExpressionContext context =
                 new FlowExpressionContext(
                         r,
-                        FlowExpressions.getParametersOfEnclosingMethod(this, currentPath),
+                        FlowExpressions.getParametersOfEnclosingMethod(this, path),
                         this.getContext());
 
-        FlowExpressions.Receiver array;
-        try {
-            array = FlowExpressionParseUtil.parse(expression, context, currentPath, true);
-        } catch (FlowExpressionParseException ex) {
-            // ignore parse errors.
-            return null;
-        }
+        FlowExpressions.Receiver expressionObj =
+                FlowExpressionParseUtil.parse(expression, context, path, true);
+
         AnnotationMirror annotationMirror = null;
-        if (CFAbstractStore.canInsertReceiver(array)) {
-            Value value = getStoreBefore(tree).getValue(array);
+        if (CFAbstractStore.canInsertReceiver(expressionObj)) {
+            Value value = getStoreBefore(tree).getValue(expressionObj);
             if (value != null) {
                 annotationMirror =
                         AnnotationUtils.getAnnotationByClass(value.getAnnotations(), clazz);
             }
         }
         if (annotationMirror == null) {
-            if (array instanceof LocalVariable) {
-                Element ele = ((LocalVariable) array).getElement();
+            if (expressionObj instanceof LocalVariable) {
+                Element ele = ((LocalVariable) expressionObj).getElement();
                 annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
-            } else if (array instanceof FieldAccess) {
-                Element ele = ((FieldAccess) array).getField();
+            } else if (expressionObj instanceof FieldAccess) {
+                Element ele = ((FieldAccess) expressionObj).getField();
                 annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
             }
         }

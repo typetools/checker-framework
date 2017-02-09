@@ -99,7 +99,7 @@ public abstract class UBQualifier {
     /**
      * Add the node as an offset to a copy of this qualifier. If this qualifier is UNKNOWN or
      * BOTTOM, then UNKNOWN is returned. Otherwise, see {@link LessThanLengthOf#plusOffset(int)} for
-     * an explaintion of how node is added as an offset.
+     * an explanation of how node is added as an offset.
      *
      * @param node Node
      * @param factory AnnotatedTypeFactory
@@ -323,7 +323,7 @@ public abstract class UBQualifier {
             for (OffsetEquation superOffset : superOffsets) {
                 boolean oneIsSubtype = false;
                 for (OffsetEquation subOffset : subOffsets) {
-                    if (isSubtypeOffset(subOffset, superOffset)) {
+                    if (superOffset.lessThanOrEqual(subOffset)) {
                         oneIsSubtype = true;
                         break;
                     }
@@ -333,14 +333,6 @@ public abstract class UBQualifier {
                 }
             }
             return true;
-        }
-
-        /**
-         * An offset is a "subtype" of another if the two offset are equal or if the superOffset is
-         * less than or equal to the suboffset.
-         */
-        private boolean isSubtypeOffset(OffsetEquation subOffset, OffsetEquation superOffset) {
-            return subOffset.equals(superOffset) || superOffset.lessThanOrEqual(subOffset);
         }
 
         /**

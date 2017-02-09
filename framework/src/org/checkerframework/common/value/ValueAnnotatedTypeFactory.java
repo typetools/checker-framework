@@ -50,6 +50,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -972,10 +973,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public List<Long> getIntValuesFromExpression(
             String expression, Tree tree, TreePath currentPath) {
-        AnnotationMirror intValAnno =
-                getAnnotationFromString(expression, tree, currentPath, IntVal.class);
+        AnnotationMirror intValAnno = null;
+        try {
+            intValAnno =
+                    getAnnotationFromJavaExpressionString(
+                            expression, tree, currentPath, IntVal.class);
+        } catch (FlowExpressionParseException e) {
+            // ignore parse errors
+            return null;
+        }
         if (intValAnno == null) {
-            // Could not find a more precise type, so return 0;
             return null;
         }
 
