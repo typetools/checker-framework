@@ -250,16 +250,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        //        @Override
-        //        public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-        //            if (tree.getKind() == Tree.Kind.NULL_LITERAL) {
-        //                return super.visitLiteral(tree, type);
-        //            }
-        //            AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
-        //            type.addAnnotation(getLowerBoundAnnotationFromValueType(valueType));
-        //            return super.visitLiteral(tree, type);
-        //        }
-
         /** Call increment and decrement helper functions. */
         @Override
         public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror typeDst) {
@@ -346,15 +336,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 type.addAnnotation(UNKNOWN);
                 return super.visitBinary(tree, type);
             }
-
-            //            // Check if the Value Checker's information bounds the value within one of the
-            //            // lowerbound types.
-            //            AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
-            //            AnnotationMirror lowerBoundAnm = getLowerBoundAnnotationFromValueType(valueType);
-            //            if (lowerBoundAnm != UNKNOWN) {
-            //                type.replaceAnnotation(lowerBoundAnm);
-            //                return super.visitBinary(tree, type);
-            //            }
 
             // Dispatch according to the operation.
             ExpressionTree left = tree.getLeftOperand();
