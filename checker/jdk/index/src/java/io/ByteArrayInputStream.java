@@ -259,7 +259,7 @@ class ByteArrayInputStream extends InputStream {
      *
      * @since   JDK1.1
      */
-    public void mark(int readAheadLimit) {
+    public void mark(@NonNegative int readAheadLimit) {
         mark = pos;
     }
 

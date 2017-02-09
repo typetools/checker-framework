@@ -280,7 +280,7 @@ public class DeflaterInputStream extends FilterInputStream {
      *
      * @param limit maximum bytes that can be read before invalidating the position marker
      */
-    public void mark(int limit) {
+    public void mark(@NonNegative int limit) {
         // Operation not supported
     }
 

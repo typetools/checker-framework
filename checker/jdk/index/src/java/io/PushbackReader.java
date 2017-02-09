@@ -215,7 +215,7 @@ public class PushbackReader extends FilterReader {
      *
      * @exception  IOException  Always, since mark is not supported
      */
-    public void mark(int readAheadLimit) throws IOException {
+    public void mark(@NonNegative int readAheadLimit) throws IOException {
         throw new IOException("mark/reset not supported");
     }
 

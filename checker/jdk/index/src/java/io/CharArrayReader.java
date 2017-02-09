@@ -201,7 +201,7 @@ public class CharArrayReader extends Reader {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public void mark(int readAheadLimit) throws IOException {
+    public void mark(@NonNegative int readAheadLimit) throws IOException {
         synchronized (lock) {
             ensureOpen();
             markedPos = pos;

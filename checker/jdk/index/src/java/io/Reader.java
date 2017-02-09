@@ -229,7 +229,7 @@ public abstract class Reader implements Readable, Closeable {
      * @exception  IOException  If the stream does not support mark(),
      *                          or if some other I/O error occurs
      */
-    public void mark(int readAheadLimit) throws IOException {
+    public void mark(@NonNegative int readAheadLimit) throws IOException {
         throw new IOException("mark() not supported");
     }
 

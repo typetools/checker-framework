@@ -2313,7 +2313,7 @@ public final class String
      * @since 1.4
      * @spec JSR-51
      */
-    public String[] split(String regex, int limit) {
+    public String @MinLen(1) [] split(String regex, int limit) {
         /* fastpath if the regex is a
            (1)one-char String and this character is not one of the
               RegEx's meta characters ".$|()[{^?*+\\", or
