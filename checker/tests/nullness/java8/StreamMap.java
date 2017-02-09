@@ -1,3 +1,5 @@
+// @below-java8-jdk-skip-test
+
 import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.*;
 
