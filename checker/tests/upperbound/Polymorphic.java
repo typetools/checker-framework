@@ -1,8 +1,3 @@
-// This test checks the polymorphic qualifier for the index checker.
-// Because the UBC runs the rest of the checkers as subcheckers, it's
-// tested with the UBC. If that ever changes, this file should be propagated
-// appropriately.
-
 import org.checkerframework.checker.index.qual.*;
 
 class Polymorphic {
@@ -14,14 +9,12 @@ class Polymorphic {
     }
 
     int @PolySameLen [] samelen_identity(int @PolySameLen [] a) {
+        int @SameLen("a") [] x = a;
         return a;
     }
 
-    @PolyLowerBound int lbc_identity(@PolyLowerBound int a) {
-        return a;
-    }
-
-    @PolyUpperBound int ubc_identity(@PolyUpperBound int a) {
+    @PolyUpperBound
+    int ubc_identity(@PolyUpperBound int a) {
         return a;
     }
 
@@ -38,19 +31,6 @@ class Polymorphic {
         int @SameLen("a2") [] b = samelen_identity(a);
         //:: error: (assignment.type.incompatible)
         int @SameLen("banana") [] c = samelen_identity(b);
-    }
-
-    // LowerBound tests
-    void lbc_id(@NonNegative int n, @Positive int p, @GTENegativeOne int g) {
-        @NonNegative int an = lbc_identity(n);
-        //:: error: (assignment.type.incompatible)
-        @Positive int bn = lbc_identity(n);
-
-        @GTENegativeOne int ag = lbc_identity(g);
-        //:: error: (assignment.type.incompatible)
-        @NonNegative int bg = lbc_identity(g);
-
-        @Positive int ap = lbc_identity(p);
     }
 
     // UpperBound tests

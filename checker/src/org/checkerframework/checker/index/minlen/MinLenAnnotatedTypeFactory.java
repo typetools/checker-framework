@@ -18,6 +18,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.index.qual.MinLen;
 import org.checkerframework.checker.index.qual.MinLenBottom;
 import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.checker.index.qual.PolyMinLen;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -70,7 +71,8 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return new LinkedHashSet<>(Arrays.asList(MinLen.class, MinLenBottom.class));
+        return new LinkedHashSet<>(
+                Arrays.asList(MinLen.class, MinLenBottom.class, PolyMinLen.class));
     }
 
     @Override
@@ -152,10 +154,16 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
             // GLB of anything and bottom is bottom.
-            if (AnnotationUtils.areSameByClass(a1, MinLenBottom.class)) {
-                return a1;
-            } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
+            if (AnnotationUtils.areSameByClass(a1, MinLenBottom.class)
+                    || AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
+                return MIN_LEN_BOTTOM;
+            } else if (AnnotationUtils.areSame(a1, MIN_LEN_0)) {
                 return a2;
+            } else if (AnnotationUtils.areSame(a2, MIN_LEN_0)) {
+                return a1;
+            } else if (AnnotationUtils.areSameByClass(a1, PolyMinLen.class)
+                    || AnnotationUtils.areSameByClass(a2, PolyMinLen.class)) {
+                return MIN_LEN_BOTTOM;
             } else {
                 Integer a1Val = AnnotationUtils.getElementValue(a1, "value", Integer.class, true);
                 Integer a2Val = AnnotationUtils.getElementValue(a2, "value", Integer.class, true);
@@ -169,11 +177,17 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (AnnotationUtils.areSame(a1, MIN_LEN_0) || AnnotationUtils.areSame(a2, MIN_LEN_0)) {
+                return MIN_LEN_0;
+            }
             // One of these is bottom. LUB of anything and bottom is the anything.
             if (AnnotationUtils.areSameByClass(a1, MinLenBottom.class)) {
                 return a2;
             } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
                 return a1;
+            } else if (AnnotationUtils.areSameByClass(a1, PolyMinLen.class)
+                    || AnnotationUtils.areSameByClass(a2, PolyMinLen.class)) {
+                return MIN_LEN_BOTTOM;
             } else {
                 Integer a1Val = AnnotationUtils.getElementValue(a1, "value", Integer.class, true);
                 Integer a2Val = AnnotationUtils.getElementValue(a2, "value", Integer.class, true);
@@ -194,6 +208,11 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
+            if (AnnotationUtils.areSameByClass(lhs, PolyMinLen.class)) {
+                return AnnotationUtils.areSameByClass(rhs, PolyMinLen.class);
+            } else if (AnnotationUtils.areSameByClass(rhs, PolyMinLen.class)) {
+                return AnnotationUtils.areSame(lhs, MIN_LEN_0);
+            }
             if (AnnotationUtils.areSameByClass(rhs, MinLenBottom.class)) {
                 return true;
             } else if (AnnotationUtils.areSameByClass(lhs, MinLenBottom.class)) {

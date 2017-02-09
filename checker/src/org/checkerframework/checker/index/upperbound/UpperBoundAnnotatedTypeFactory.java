@@ -26,6 +26,7 @@ import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.MinLen;
+import org.checkerframework.checker.index.qual.PolyUpperBound;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
@@ -83,7 +84,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         LTEqLengthOf.class,
                         LTLengthOf.class,
                         LTOMLengthOf.class,
-                        UpperBoundBottom.class));
+                        UpperBoundBottom.class,
+                        PolyUpperBound.class));
     }
 
     /**
@@ -459,6 +461,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
+            if (AnnotationUtils.areSameByClass(lhs, PolyUpperBound.class)) {
+                return AnnotationUtils.areSameByClass(rhs, PolyUpperBound.class);
+            } else if (AnnotationUtils.areSameByClass(rhs, PolyUpperBound.class)) {
+                return AnnotationUtils.areSameByClass(lhs, UpperBoundUnknown.class);
+            }
 
             if (AnnotationUtils.areSameByClass(lhs, UpperBoundUnknown.class)) {
                 return true;

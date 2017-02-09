@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.index.qual.PolySameLen;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -30,14 +31,17 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
             AnnotatedTypeMirror valueType,
             Tree valueTree,
             /*@CompilerMessageKey*/ String errorKey) {
-        if (valueType.getKind() == TypeKind.ARRAY && TreeUtils.isExpressionTree(valueTree)) {
+        if (valueType.getKind() == TypeKind.ARRAY
+                && TreeUtils.isExpressionTree(valueTree)
+                && !(valueType.hasAnnotation(PolySameLen.class)
+                        && varType.hasAnnotation(PolySameLen.class))) {
+
             AnnotationMirror am = valueType.getAnnotation(SameLen.class);
             List<String> arraysInAnno =
                     am == null ? new ArrayList<String>() : SameLenUtils.getValue(am);
 
             Receiver rec = FlowExpressions.internalReprOf(atypeFactory, (ExpressionTree) valueTree);
             if (rec != null && !(rec instanceof Unknown)) {
-
                 List<String> itself = Collections.singletonList(rec.toString());
                 AnnotationMirror newSameLen = atypeFactory.getCombinedSameLen(arraysInAnno, itself);
                 valueType.replaceAnnotation(newSameLen);
