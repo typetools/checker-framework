@@ -4,6 +4,7 @@
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.MinLen;
 
+@SuppressWarnings("lowerbound")
 public class RefineLTE2 {
 
     protected int @MinLen(1) [] values;

@@ -2,12 +2,7 @@ package org.checkerframework.checker.index.upperbound;
 
 import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.*;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,17 +12,11 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
+import org.checkerframework.checker.index.lowerbound.LowerBoundAnnotatedTypeFactory;
+import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
 import org.checkerframework.checker.index.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.minlen.MinLenChecker;
-import org.checkerframework.checker.index.qual.IndexFor;
-import org.checkerframework.checker.index.qual.IndexOrHigh;
-import org.checkerframework.checker.index.qual.IndexOrLow;
-import org.checkerframework.checker.index.qual.LTEqLengthOf;
-import org.checkerframework.checker.index.qual.LTLengthOf;
-import org.checkerframework.checker.index.qual.LTOMLengthOf;
-import org.checkerframework.checker.index.qual.MinLen;
-import org.checkerframework.checker.index.qual.UpperBoundBottom;
-import org.checkerframework.checker.index.qual.UpperBoundUnknown;
+import org.checkerframework.checker.index.qual.*;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.samelen.SameLenChecker;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -119,6 +108,15 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private SameLenAnnotatedTypeFactory getSameLenAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(SameLenChecker.class);
+    }
+
+    /**
+     * Provides a way to query the Lower Bound Checker, which determines whether each integer in the
+     * program is non-negative or not, and checks that no possibly negative integers are used to
+     * access arrays.
+     */
+    private LowerBoundAnnotatedTypeFactory getLowerBoundAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(LowerBoundChecker.class);
     }
 
     @Override
@@ -302,6 +300,16 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         builder.setValue("value", names);
         return builder.build();
+    }
+
+    // For use in the refinement rules.
+    public boolean hasLowerBoundTypeByClass(
+            ExpressionTree tree, Class<? extends Annotation> classOfType) {
+        return AnnotationUtils.areSameByClass(
+                getLowerBoundAnnotatedTypeFactory()
+                        .getAnnotatedType(tree)
+                        .getAnnotationInHierarchy(getLowerBoundAnnotatedTypeFactory().UNKNOWN),
+                classOfType);
     }
 
     @Override
