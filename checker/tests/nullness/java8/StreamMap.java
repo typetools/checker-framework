@@ -18,13 +18,13 @@ class StreamMap {
         return arg.map(StreamMap::castStringToNonNull);
     }
 
-    Stream<@NonNull String> mapStringCast2(Stream<@Nullable String> arg) {
-        return arg.map(StreamMap::<String>castStringToNonNull);
-    }
-
     @SuppressWarnings("nullness")
     static <T> @NonNull T castTToNonNull(@Nullable T arg) {
         return (@NonNull T) arg;
+    }
+
+    Stream<@NonNull String> mapStringCast2(Stream<@Nullable String> arg) {
+        return arg.map(StreamMap::<String>castTToNonNull);
     }
 
     <T> Stream<@NonNull T> mapTCast(Stream<@Nullable T> arg) {
