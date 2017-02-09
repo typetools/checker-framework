@@ -1,7 +1,7 @@
 import java.util.Random;
 import org.checkerframework.checker.index.qual.NonNegative;
 
-public class RandomTest {
+public class RandomTestLBC {
     void test() {
         Random rand = new Random();
         int[] a = new int[8];

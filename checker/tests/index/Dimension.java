@@ -1,3 +1,4 @@
+@SuppressWarnings("lowerbound")
 public class Dimension {
     void test(int expr) {
         int[] array = new int[expr];

@@ -1,7 +1,7 @@
 import java.util.Date;
 
-@SuppressWarnings("array.access.unsafe.high")
-public class ArrayLength {
+@SuppressWarnings("upperbound")
+public class ArrayLengthLBC {
 
     public static Date[] add_date(Date[] dates, Date new_date) {
         Date[] new_dates = new Date[dates.length + 1];

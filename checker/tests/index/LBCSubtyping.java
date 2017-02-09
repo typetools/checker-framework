@@ -3,7 +3,7 @@ import org.checkerframework.checker.index.qual.LowerBoundUnknown;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 
-class Subtyping {
+class LBCSubtyping {
 
     void foo() {
 
