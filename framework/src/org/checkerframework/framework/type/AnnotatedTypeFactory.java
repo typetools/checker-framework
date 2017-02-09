@@ -158,7 +158,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Utility class for working with {@link TypeMirror}s. */
     protected final Types types;
 
-    /** The state of the visitor. * */
+    /** The state of the visitor. */
     protected final VisitorState visitorState;
 
     /**
@@ -169,7 +169,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *     constructor or method until after postInit is called
      */
 
-    /** Represent the annotation relations. * */
+    /** Represent the annotation relations. */
     protected QualifierHierarchy qualHierarchy;
 
     /** Represent the type relations. */
@@ -880,7 +880,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Factories for annotated types that account for implicit qualifiers
     // **********************************************************************
 
-    /** Mapping from a Tree to its TreePath * */
+    /** Mapping from a Tree to its TreePath */
     private final TreePathCacher treePathCache = new TreePathCacher();
 
     /**

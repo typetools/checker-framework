@@ -1,8 +1,6 @@
 import java.util.Random;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 
-// @skip-test until upperbound jdk annotations are done.
-
 public class RandomTest {
     void test() {
         Random rand = new Random();

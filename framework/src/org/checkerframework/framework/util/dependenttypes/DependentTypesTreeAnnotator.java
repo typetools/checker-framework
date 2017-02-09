@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util.expressionannotations;
+package org.checkerframework.framework.util.dependenttypes;
 
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -15,13 +15,13 @@ import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Standardizes Java expressions in annotations and also view points adapts field accesses. (Other
- * viewpoint adaption is handled in {@link ExpressionAnnotationHelper}
+ * viewpoint adaption is handled in {@link DependentTypesHelper}
  */
-public class ExpressionAnnotationTreeAnnotator extends TreeAnnotator {
-    private final ExpressionAnnotationHelper helper;
+public class DependentTypesTreeAnnotator extends TreeAnnotator {
+    private final DependentTypesHelper helper;
 
-    public ExpressionAnnotationTreeAnnotator(
-            AnnotatedTypeFactory atypeFactory, ExpressionAnnotationHelper helper) {
+    public DependentTypesTreeAnnotator(
+            AnnotatedTypeFactory atypeFactory, DependentTypesHelper helper) {
         super(atypeFactory);
         this.helper = helper;
     }

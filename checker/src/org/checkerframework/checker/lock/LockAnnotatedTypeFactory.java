@@ -44,8 +44,10 @@ import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.source.Result;
-import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -54,8 +56,8 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationError;
-import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationHelper;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -76,7 +78,7 @@ import org.checkerframework.javacutil.Pair;
 public class LockAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<CFValue, LockStore, LockTransfer, LockAnalysis> {
 
-    /** Expression annotation error message for when the expression is not effectively final. */
+    /** dependent type annotation error message for when the expression is not effectively final. */
     public static final String NOT_EFFECTIVELY_FINAL = "lock expression is not effectively final";
 
     /** Annotation constants */
@@ -113,14 +115,14 @@ public class LockAnnotatedTypeFactory
     }
 
     @Override
-    protected ExpressionAnnotationHelper createExpressionAnnotationHelper() {
-        return new ExpressionAnnotationHelper(this, GuardedBy.class) {
+    protected DependentTypesHelper createDependentTypesHelper() {
+        return new DependentTypesHelper(this) {
             @Override
-            protected void reportErrors(Tree errorTree, List<ExpressionAnnotationError> errors) {
+            protected void reportErrors(Tree errorTree, List<DependentTypesError> errors) {
                 // If the error message is NOT_EFFECTIVELY_FINAL, then report lock.expression.not
                 // .final instead of an expression.unparsable.type.invalid error.
-                List<ExpressionAnnotationError> superErrors = new ArrayList<>();
-                for (ExpressionAnnotationError error : errors) {
+                List<DependentTypesError> superErrors = new ArrayList<>();
+                for (DependentTypesError error : errors) {
                     if (error.error.equals(NOT_EFFECTIVELY_FINAL)) {
                         checker.report(
                                 Result.failure("lock.expression.not.final", error.expression),
@@ -138,7 +140,7 @@ public class LockAnnotatedTypeFactory
                     FlowExpressionContext context,
                     TreePath localScope,
                     boolean useLocalScope) {
-                if (ExpressionAnnotationError.isExpressionError(expression)) {
+                if (DependentTypesError.isExpressionError(expression)) {
                     return expression;
                 }
 
@@ -152,17 +154,17 @@ public class LockAnnotatedTypeFactory
                             FlowExpressionParseUtil.parse(
                                     expression, context, localScope, useLocalScope);
                     if (result == null) {
-                        return new ExpressionAnnotationError(expression, " ").toString();
+                        return new DependentTypesError(expression, " ").toString();
                     }
                     if (!isExpressionEffectivelyFinal(result)) {
                         // If the expression isn't effectively final, then return the
                         // NOT_EFFECTIVELY_FINAL error string.
-                        return new ExpressionAnnotationError(expression, NOT_EFFECTIVELY_FINAL)
+                        return new DependentTypesError(expression, NOT_EFFECTIVELY_FINAL)
                                 .toString();
                     }
                     return result.toString();
                 } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                    return new ExpressionAnnotationError(expression, e).toString();
+                    return new DependentTypesError(expression, e).toString();
                 }
             }
         };
