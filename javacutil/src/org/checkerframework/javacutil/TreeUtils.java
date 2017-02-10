@@ -312,7 +312,9 @@ public final class TreeUtils {
      */
     public static ExpressionTree skipParens(final ExpressionTree tree) {
         ExpressionTree t = tree;
-        while (t.getKind() == Tree.Kind.PARENTHESIZED) t = ((ParenthesizedTree) t).getExpression();
+        while (t.getKind() == Tree.Kind.PARENTHESIZED) {
+            t = ((ParenthesizedTree) t).getExpression();
+        }
         return t;
     }
 

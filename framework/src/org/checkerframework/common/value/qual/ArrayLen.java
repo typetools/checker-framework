@@ -11,6 +11,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * then at run time, the expression evaluates to an array whose length is one of the annotation's
  * arguments.
  *
+ * <p>For example, {@code String @ArrayLen(2) []} is the type for an array of two strings.
+ *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
 @SubtypeOf({UnknownVal.class})

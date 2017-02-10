@@ -1,6 +1,6 @@
 import org.checkerframework.checker.index.qual.MinLen;
 
-class LengthTransfer {
+class LengthTransferForMinLen {
     void exceptional_control_flow(int[] a) {
         if (a.length == 0) {
             throw new IllegalArgumentException();
