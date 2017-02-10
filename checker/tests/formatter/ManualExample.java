@@ -1,6 +1,7 @@
 // Example from the manual
 
-import static org.checkerframework.checker.formatter.qual.ConversionCategory.*;
+import static org.checkerframework.checker.formatter.qual.ConversionCategory.FLOAT;
+import static org.checkerframework.checker.formatter.qual.ConversionCategory.INT;
 
 import org.checkerframework.checker.formatter.qual.Format;
 

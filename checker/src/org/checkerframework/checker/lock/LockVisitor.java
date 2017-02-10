@@ -65,7 +65,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationError;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -1260,8 +1260,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             Receiver itself) {
 
         LockExpression lockExpression = new LockExpression(expression);
-        if (ExpressionAnnotationError.isExpressionError(expression)) {
-            lockExpression.error = new ExpressionAnnotationError(expression);
+        if (DependentTypesError.isExpressionError(expression)) {
+            lockExpression.error = new DependentTypesError(expression);
             return lockExpression;
         }
 
@@ -1309,7 +1309,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 return lockExpression;
             }
         } catch (FlowExpressionParseException ex) {
-            lockExpression.error = new ExpressionAnnotationError(expression, ex);
+            lockExpression.error = new DependentTypesError(expression, ex);
             return lockExpression;
         }
     }
@@ -1317,7 +1317,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     private class LockExpression {
         final String expressionString;
         Receiver lockExpression = null;
-        ExpressionAnnotationError error = null;
+        DependentTypesError error = null;
 
         LockExpression(String expression) {
             this.expressionString = expression;

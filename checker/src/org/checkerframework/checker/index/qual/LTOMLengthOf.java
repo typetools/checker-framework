@@ -1,7 +1,11 @@
 package org.checkerframework.checker.index.qual;
 
-import java.lang.annotation.*;
-import org.checkerframework.framework.qual.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.JavaExpression;
+import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * The annotated expression evaluates to an integer whose value is at least 2 less than the lengths
@@ -24,5 +28,6 @@ public @interface LTOMLengthOf {
      * Sequences, each of whose lengths is at least 1 larger than than the annotated expression's
      * value.
      */
+    @JavaExpression
     public String[] value();
 }

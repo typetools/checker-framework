@@ -1,4 +1,4 @@
-import org.checkerframework.checker.i18n.qual.*;
+import org.checkerframework.checker.i18n.qual.Localized;
 
 class LocalizedMessage {
     @Localized String localize(String s) {

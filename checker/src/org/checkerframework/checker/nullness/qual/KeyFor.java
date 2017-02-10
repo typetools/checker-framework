@@ -5,6 +5,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.JavaExpression;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
@@ -37,5 +38,6 @@ public @interface KeyFor {
      *
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
+    @JavaExpression
     public String[] value();
 }
