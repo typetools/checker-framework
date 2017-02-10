@@ -4,7 +4,6 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
@@ -14,6 +13,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * The SignednessVisitor enforces the Signedness Checker rules. These rules are described in detail
@@ -136,8 +136,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                         : maskExpr.getRightOperand();
 
         // Strip away the parentheses from the mask if any exist
-        while (mask.getKind() == Kind.PARENTHESIZED)
-            mask = ((ParenthesizedTree) mask).getExpression();
+        mask = TreeUtils.skipParens(mask);
 
         if (!isLiteral(shift) || !isLiteral(mask)) {
             return false;
