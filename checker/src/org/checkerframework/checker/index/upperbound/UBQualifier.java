@@ -20,6 +20,16 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+/**
+ * Abstraction for Upper Bound annotations.
+ *
+ * <p>{@link UpperBoundUnknown} is modeled as {@link UpperBoundUnknownQualifier} and {@link
+ * UpperBoundBottom} is modeled as {@link UpperBoundBottomQualifier}.
+ *
+ * <p>{@link LTLengthOf} is modeled by {@link LessThanLengthOf}. {@link LTEqLengthOf} is equivalent
+ * to @{@link LessThanLengthOf} with an offset of -1. {@link LTOMLengthOf} is equivalent to @{@link
+ * LessThanLengthOf} with an offset of 1.
+ */
 public abstract class UBQualifier {
 
     public static UBQualifier createUBQualifier(AnnotationMirror am) {
@@ -69,6 +79,15 @@ public abstract class UBQualifier {
         return createUBQualifier(type.getAnnotationInHierarchy(top));
     }
 
+    /**
+     * Creates an {@link UBQualifier} from the given arrays and offsets. The list of arrays may not
+     * be empty. If the offsets list is empty, then an offset of 0 is used for each array. If the
+     * offsets list is not empty, then it must be the same size as array.
+     *
+     * @param arrays Non-empty list of arrays
+     * @param offsets list of offset, if empty, an offset of 0 is used
+     * @return an {@link UBQualifier} for the arrays with the given offsets.
+     */
     public static UBQualifier createUBQualifier(List<String> arrays, List<String> offsets) {
         assert !arrays.isEmpty();
         Map<String, Set<OffsetEquation>> map = new HashMap<>();
@@ -167,6 +186,7 @@ public abstract class UBQualifier {
         return false;
     }
 
+    /** */
     static class LessThanLengthOf extends UBQualifier {
         private final Map<String, Set<OffsetEquation>> map;
 
@@ -175,6 +195,12 @@ public abstract class UBQualifier {
             this.map = map;
         }
 
+        /**
+         * Is a value with this type less than or equal to the length of array?
+         *
+         * @param array String array
+         * @return Is a value with this type less than or equal to the length of array?
+         */
         @Override
         public boolean isLessThanOrEqualTo(String array) {
             Set<OffsetEquation> offsets = map.get(array);
@@ -184,6 +210,12 @@ public abstract class UBQualifier {
             return offsets.contains(OffsetEquation.NEG_1);
         }
 
+        /**
+         * Is a value with this type less than the length of any of the arrays?
+         *
+         * @param array String array
+         * @return Is a value with this type less than the length of any of the arrays?
+         */
         @Override
         public boolean isLessThanLengthOfAny(List<String> arrays) {
             for (String array : arrays) {
@@ -193,7 +225,12 @@ public abstract class UBQualifier {
             }
             return false;
         }
-
+        /**
+         * Is a value with this type less than the length of the array?
+         *
+         * @param array String array
+         * @return Is a value with this type less than the length of the array?
+         */
         @Override
         public boolean isLessThanLengthOf(String array) {
             Set<OffsetEquation> offsets = map.get(array);
@@ -368,9 +405,9 @@ public abstract class UBQualifier {
                 Set<OffsetEquation> offsets2 = otherLtl.map.get(array);
                 for (OffsetEquation offset1 : offsets1) {
                     for (OffsetEquation offset2 : offsets2) {
-                        if (isSubtypeOffset(offset1, offset2)) {
+                        if (offset2.lessThanOrEqual(offset1)) {
                             lub.add(offset2);
-                        } else if (isSubtypeOffset(offset2, offset1)) {
+                        } else if (offset1.lessThanOrEqual(offset2)) {
                             lub.add(offset1);
                         }
                     }
