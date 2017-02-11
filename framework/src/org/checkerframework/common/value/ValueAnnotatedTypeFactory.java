@@ -318,6 +318,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     newValues.addAll(a1Values);
                     newValues.addAll(a2Values);
 
+                    // createAnnotation would return @UnknownVal if the list is longer than MAX_VALUE
                     return createAnnotation(a1.getAnnotationType().toString(), newValues);
                 }
             }
@@ -1072,12 +1073,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror createIntRangeAnnotation(Range range) {
         if (range.from > range.to || range.from == Long.MIN_VALUE && range.to == Long.MAX_VALUE) {
             return UNKNOWNVAL;
-        } else if (!range.isWiderThan(MAX_VALUES)) {
-            List<Long> values = new ArrayList<>();
-            for (long value = range.from; value <= range.to; value++) {
-                values.add(value);
-            }
-            return createIntValAnnotation(values);
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntRange.class);
             builder.setValue("from", range.from);
@@ -1092,7 +1087,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public static List<Long> getIntValuesFromRange(Range range) {
         List<Long> values = new ArrayList<>();
-        for (long value = range.from; value <= range.to; value++) {
+        for (Long value = range.from; value <= range.to; value++) {
             values.add(value);
         }
         return values;

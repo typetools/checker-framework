@@ -1,7 +1,6 @@
 package org.checkerframework.common.value;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -20,35 +19,39 @@ import java.util.List;
  */
 public class Range {
 
-    /** The value 'from' */
+    /** The value 'from'. */
     public final long from;
 
-    /** The value 'to' */
+    /** The value 'to'. */
     public final long to;
+
+    /** A range containing all possible values. */
+    public static final Range EVERYTHING = new Range(Long.MIN_VALUE, Long.MAX_VALUE);
+
+    /** The empty range. */
+    public static final Range NOTHING = new Range(true);
 
     /**
      * Constructs a range with its bounds specified by two parameters, "from" and "to".
-     *
-     * <p>Note that it is possible to construct a range with incorrect parameters, e.g. the value of
-     * "from" could be greater than the value to "to". This incorrectness would be caught by {@link
-     * org.checkerframework.common.value.ValueAnnotatedTypeFactory#createIntRangeAnnotation(Range)}
-     * when creating an annotation from range, which would then be replaced with @UnknownVal.
      *
      * @param from the lower bound (inclusive)
      * @param to the higher bound (inclusive)
      */
     public Range(long from, long to) {
+        if (!(from <= to)) {
+            throw new IllegalArgumentException(String.format("Invalid Range: %s %s", from, to));
+        }
         this.from = from;
         this.to = to;
     }
 
-    public Range(long value) {
-        this(value, value);
-    }
-
-    public Range() {
-        this.from = Long.MIN_VALUE;
-        this.to = Long.MAX_VALUE;
+    /** Creates the singleton empty range */
+    private Range(boolean isEmpty) {
+        if (!isEmpty) {
+            throw new IllegalArgumentException();
+        }
+        this.from = Long.MAX_VALUE;
+        this.to = Long.MIN_VALUE;
     }
 
     @Override
@@ -57,7 +60,7 @@ public class Range {
     }
 
     /** Returns true if the element is contained in this range. */
-    public boolean contains(int element) {
+    public boolean contains(long element) {
         return from <= element && element <= to;
     }
 
@@ -69,6 +72,9 @@ public class Range {
      * @return a range resulting from the union of the specified range and this range
      */
     public Range union(Range right) {
+        if (this == NOTHING || right == NOTHING) {
+            return NOTHING;
+        }
         long resultFrom = Math.min(from, right.from);
         long resultTo = Math.max(to, right.to);
         return new Range(resultFrom, resultTo);
@@ -76,17 +82,8 @@ public class Range {
 
     /**
      * Returns the smallest range that includes all values contained in both of the two ranges. We
-     * call this the intersection of two ranges.
-     *
-     * <p>Special case:
-     *
-     * <ul>
-     *   <li>If there is no overlap between two ranges, an incorrect range with from greater than to
-     *       would be returned. This incorrectness would be then caught by {@link
-     *       org.checkerframework.common.value.ValueAnnotatedTypeFactory#createIntRangeAnnotation(Range)}
-     *       when creating an annotation from range, which would then be replaced with
-     *       {@code @UnknownVal}.
-     * </ul>
+     * call this the intersection of two ranges. If there is no overlap between the two ranges, an
+     * empty range would be returned.
      *
      * @param right the range to intersect with this range
      * @return a range resulting from the intersection of the specified range and this range
@@ -192,18 +189,17 @@ public class Range {
      *     this range might not be the smallest range that includes all the possible values.
      */
     public Range remainder(Range right) {
-        ArrayList<Long> possibleValues =
-                new ArrayList<>(
-                        Arrays.asList(
-                                0L,
-                                Math.min(from, Math.abs(right.from) - 1),
-                                Math.min(from, Math.abs(right.to) - 1),
-                                Math.min(to, Math.abs(right.from) - 1),
-                                Math.min(to, Math.abs(right.to) - 1),
-                                Math.max(from, -Math.abs(right.from) + 1),
-                                Math.max(from, -Math.abs(right.to) + 1),
-                                Math.max(to, -Math.abs(right.from) + 1),
-                                Math.max(to, -Math.abs(right.to) + 1)));
+        List<Long> possibleValues =
+                Arrays.asList(
+                        0L,
+                        Math.min(from, Math.abs(right.from) - 1),
+                        Math.min(from, Math.abs(right.to) - 1),
+                        Math.min(to, Math.abs(right.from) - 1),
+                        Math.min(to, Math.abs(right.to) - 1),
+                        Math.max(from, -Math.abs(right.from) + 1),
+                        Math.max(from, -Math.abs(right.to) + 1),
+                        Math.max(to, -Math.abs(right.from) + 1),
+                        Math.max(to, -Math.abs(right.to) + 1));
         return new Range(Collections.min(possibleValues), Collections.max(possibleValues));
     }
 
@@ -412,7 +408,7 @@ public class Range {
      * @param value the value to compare with
      * @return true if wider than the given value
      */
-    public boolean isWiderThan(int value) {
+    public boolean isWiderThan(long value) {
         return numberOfPossibleValues().compareTo(BigInteger.valueOf(value)) == 1;
     }
 }
