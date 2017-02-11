@@ -152,6 +152,18 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         store.insertValue(rightRec, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
     }
 
+    /**
+     *
+     *
+     * <pre>left >= right</pre>
+     *
+     * The type of the right expression is the greatest lower bound of the previous type of right
+     * and the type of left.
+     *
+     * <pre>a.length >= b op c</pre>
+     *
+     * The type of b is @L
+     */
     @Override
     protected void refineGTE(
             Node left,
@@ -306,6 +318,16 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         return super.visitFieldAccess(n, in);
     }
 
+    /**
+     * Returns the UBQualifier for node. It does this by finding a {@link CFValue} for node. First
+     * it checks the store in the transfer input. If one isn't there, the analysis is checked. If
+     * the UNKNOWN qualifier is returned, then the AnnotatedTypeMirror from the type factory is
+     * used.
+     *
+     * @param n node
+     * @param in transfer input
+     * @return the UBQualifier for node
+     */
     private UBQualifier getUBQualifier(Node n, TransferInput<CFValue, CFStore> in) {
         QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
         Receiver rec = FlowExpressions.internalReprOf(atypeFactory, n);
@@ -318,6 +340,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         }
         UBQualifier qualifier = getUBQualifier(hierarchy, value);
         if (qualifier.isUnknown()) {
+            // The qualifier from the store or analysis might be UNKNOWN if there was some error.
+            //  For example,
+            // @LTLength("a") int i = 4;  // error
+            // The type of i in the store is @UpperBoundUnknown, but the type of i as computed by
+            // the type factory is @LTLength("a"), so use that type.
+
             CFValue valueFromFactory = getValueFromFactory(n.getTree(), n);
             return getUBQualifier(hierarchy, valueFromFactory);
         }
