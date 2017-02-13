@@ -12,59 +12,67 @@ public class RangeTest {
 
     // These sets of values may be excessively long; perhaps trim them down later.
 
-    int[] rangeBounds = {
+    long[] rangeBounds = {
+        Long.MIN_VALUE,
+        Long.MIN_VALUE + 1,
         Integer.MIN_VALUE,
-        Integer.MIN_VALUE + 1,
-        -1000,
-        -100,
-        -10,
-        -3,
-        -2,
-        -1,
-        0,
-        1,
-        2,
-        3,
-        10,
-        100,
-        1000,
+        Integer.MAX_VALUE + 1,
+        -1000L,
+        -100L,
+        -10L,
+        -3L,
+        -2L,
+        -1L,
+        0L,
+        1L,
+        2L,
+        3L,
+        10L,
+        100L,
+        1000L,
         Integer.MAX_VALUE - 1,
-        Integer.MAX_VALUE
+        Integer.MAX_VALUE,
+        Long.MAX_VALUE - 1,
+        Long.MAX_VALUE
     };
-    int[] values = {
+    long[] values = {
+        Long.MIN_VALUE,
+        Long.MIN_VALUE + 1,
         Integer.MIN_VALUE,
         Integer.MIN_VALUE + 1,
-        -1000,
-        -500,
-        -100,
-        -20,
-        -10,
-        -9,
-        -8,
-        -7,
-        -6,
-        -5,
-        -4,
-        -3,
-        -2,
-        -1,
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        20,
-        100,
-        500,
-        1000,
+        -1000L,
+        -500L,
+        -100L,
+        -20L,
+        -10L,
+        -9L,
+        -8L,
+        -7L,
+        -6L,
+        -5L,
+        -4L,
+        -3L,
+        -2L,
+        -1L,
+        0L,
+        1L,
+        2L,
+        3L,
+        4L,
+        5L,
+        6L,
+        7L,
+        8L,
+        9L,
+        10L,
+        20L,
+        100L,
+        500L,
+        1000L,
         Integer.MAX_VALUE - 1,
-        Integer.MAX_VALUE
+        Integer.MAX_VALUE,
+        Long.MAX_VALUE - 1,
+        Long.MAX_VALUE
     };
 
     Range[] ranges;
@@ -72,9 +80,9 @@ public class RangeTest {
     public RangeTest() {
         // Initialize the ranges list.
         List<Range> rangesList = new ArrayList<Range>();
-        for (int lowerbound : rangeBounds) {
-            for (int upperbound : rangeBounds) {
-                if (lowerbound < upperbound) {
+        for (long lowerbound : rangeBounds) {
+            for (long upperbound : rangeBounds) {
+                if (lowerbound <= upperbound) {
                     rangesList.add(new Range(lowerbound, upperbound));
                 }
             }
@@ -85,9 +93,9 @@ public class RangeTest {
     /** The element is a member of the range. */
     class RangeAndElement {
         Range range;
-        int element;
+        long element;
 
-        RangeAndElement(Range range, int element) {
+        RangeAndElement(Range range, long element) {
             if (!range.contains(element)) {
                 throw new IllegalArgumentException();
             }
@@ -98,8 +106,8 @@ public class RangeTest {
 
     class RangeAndTwoElements {
         Range range;
-        int a;
-        int b;
+        long a;
+        long b;
     }
 
     ValuesInRangeIterator valuesInRange(Range r) {
@@ -163,12 +171,12 @@ public class RangeTest {
         }
     }
 
-    class ValuesInRangeIterator implements Iterator<Integer>, Iterable<Integer> {
+    class ValuesInRangeIterator implements Iterator<Long>, Iterable<Long> {
 
         Range range;
         // This is the first index that has NOT been examined.  It is in [0..values.length].
         int i = 0;
-        int nextValue;
+        long nextValue;
         boolean nextValueValid = false;
 
         public ValuesInRangeIterator(Range range) {
@@ -176,7 +184,7 @@ public class RangeTest {
         }
 
         @Override
-        public Integer next() {
+        public Long next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
@@ -206,7 +214,7 @@ public class RangeTest {
         }
 
         @Override
-        public Iterator<Integer> iterator() {
+        public Iterator<Long> iterator() {
             return this;
         }
     }
@@ -215,13 +223,14 @@ public class RangeTest {
     public void testUnion() {
         for (Range range1 : ranges) {
             for (Range range2 : ranges) {
-                for (int value : values) {
+                for (long value : values) {
                     Range result = range1.union(range2);
-                    assert ((range1.contains(value) || range2.contains(value))
-                                    == (result.contains(value)))
-                            : String.format(
-                                    "Range.union failure: %s %s %s; witness = %s",
-                                    range1, range2, result, value);
+                    if (range1.contains(value) || range2.contains(value)) {
+                        assert result.contains(value)
+                                : String.format(
+                                        "Range.union failure: %s %s %s; witness = %s",
+                                        range1, range2, result, value);
+                    }
                 }
             }
         }
@@ -232,7 +241,7 @@ public class RangeTest {
         for (Range range1 : ranges) {
             for (Range range2 : ranges) {
                 Range result = range1.intersect(range2);
-                for (int value : values) {
+                for (long value : values) {
                     assert ((range1.contains(value) && range2.contains(value))
                                     == (result.contains(value)))
                             : String.format(
@@ -302,15 +311,11 @@ public class RangeTest {
         for (RangeAndElement re1 : rangeAndElements()) {
             for (RangeAndElement re2 : rangeAndElements()) {
                 Range result = re1.range.divide(re2.range);
-                assert result.contains(re1.element / re2.element)
+                Long witness = re2.element == 0 ? Long.MAX_VALUE : re1.element / re2.element;
+                assert result.contains(witness)
                         : String.format(
                                 "Range.divide failure: %s %s => %s; witnesses %s / %s => %s",
-                                re1.range,
-                                re2.range,
-                                result,
-                                re1.element,
-                                re2.element,
-                                re1.element / re2.element);
+                                re1.range, re2.range, result, re1.element, re2.element, witness);
             }
         }
     }
@@ -319,16 +324,12 @@ public class RangeTest {
     public void testRemainder() {
         for (RangeAndElement re1 : rangeAndElements()) {
             for (RangeAndElement re2 : rangeAndElements()) {
-                Range result = re1.range.divide(re2.range);
-                assert result.contains(re1.element % re2.element)
+                Range result = re1.range.remainder(re2.range);
+                Long witness = re2.element == 0 ? Long.MAX_VALUE : re1.element % re2.element;
+                assert result.contains(witness)
                         : String.format(
                                 "Range.divide failure: %s %s => %s; witnesses %s % %s => %s",
-                                re1.range,
-                                re2.range,
-                                result,
-                                re1.element,
-                                re2.element,
-                                re1.element % re2.element);
+                                re1.range, re2.range, result, re1.element, re2.element, witness);
             }
         }
     }
@@ -406,11 +407,13 @@ public class RangeTest {
     public void testLessThan() {
         for (Range range1 : ranges) {
             for (Range range2 : ranges) {
-                for (int value : values) {
-                    Range result = range1.lessThan(range2);
-                    assert (range1.contains(value) || !result.contains(value))
+                for (long value : values) {
+                    Range result = range1.refineLessThan(range2);
+                    assert (value >= range2.to
+                                    ? !result.contains(value)
+                                    : range1.contains(value) == result.contains(value))
                             : String.format(
-                                    "Range.lessThan failure: %s %s %s; witness = %s",
+                                    "Range.refineLessThan failure: %s %s %s; witness = %s",
                                     range1, range2, result, value);
                 }
             }
@@ -421,11 +424,13 @@ public class RangeTest {
     public void testLessThanEq() {
         for (Range range1 : ranges) {
             for (Range range2 : ranges) {
-                for (int value : values) {
-                    Range result = range1.lessThanEq(range2);
-                    assert (range1.contains(value) || !result.contains(value))
+                for (long value : values) {
+                    Range result = range1.refineLessThanEq(range2);
+                    assert (value > range2.to
+                                    ? !result.contains(value)
+                                    : range1.contains(value) == result.contains(value))
                             : String.format(
-                                    "Range.lessThanEq failure: %s %s %s; witness = %s",
+                                    "Range.refineLessThanEq failure: %s %s %s; witness = %s",
                                     range1, range2, result, value);
                 }
             }
@@ -436,11 +441,13 @@ public class RangeTest {
     public void testGreaterThan() {
         for (Range range1 : ranges) {
             for (Range range2 : ranges) {
-                for (int value : values) {
-                    Range result = range1.greaterThan(range2);
-                    assert (range1.contains(value) || !result.contains(value))
+                for (long value : values) {
+                    Range result = range1.refineGreaterThan(range2);
+                    assert (value <= range2.from
+                                    ? !result.contains(value)
+                                    : range1.contains(value) == result.contains(value))
                             : String.format(
-                                    "Range.greaterThan failure: %s %s %s; witness = %s",
+                                    "Range.refineGreaterThan failure: %s %s %s; witness = %s",
                                     range1, range2, result, value);
                 }
             }
@@ -451,11 +458,13 @@ public class RangeTest {
     public void testGreaterThanEq() {
         for (Range range1 : ranges) {
             for (Range range2 : ranges) {
-                for (int value : values) {
-                    Range result = range1.greaterThanEq(range2);
-                    assert (range1.contains(value) || !result.contains(value))
+                for (long value : values) {
+                    Range result = range1.refineGreaterThanEq(range2);
+                    assert (value < range2.from
+                                    ? !result.contains(value)
+                                    : range1.contains(value) == result.contains(value))
                             : String.format(
-                                    "Range.greaterThanEq failure: %s %s %s; witness = %s",
+                                    "Range.refineGreaterThanEq failure: %s %s %s; witness = %s",
                                     range1, range2, result, value);
                 }
             }
@@ -466,11 +475,13 @@ public class RangeTest {
     public void testEqualTo() {
         for (Range range1 : ranges) {
             for (Range range2 : ranges) {
-                for (int value : values) {
-                    Range result = range1.equalTo(range2);
-                    assert (range1.contains(value) || !result.contains(value))
+                for (long value : values) {
+                    Range result = range1.refineEqualTo(range2);
+                    assert (value < range2.from || value > range2.to
+                                    ? !result.contains(value)
+                                    : range1.contains(value) == result.contains(value))
                             : String.format(
-                                    "Range.equalTo failure: %s %s %s; witness = %s",
+                                    "Range.refineEqualTo failure: %s %s %s; witness = %s",
                                     range1, range2, result, value);
                 }
             }
