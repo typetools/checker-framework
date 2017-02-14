@@ -60,15 +60,22 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
             Receiver dimRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), dim);
             result.getRegularStore().insertValue(dimRec, newAnno);
-            if (dim instanceof NumericalAdditionNode) {
-                knownToBeArrayLength(
-                        (NumericalAdditionNode) dim, arrayString, in, result.getRegularStore());
-            } else if (dim instanceof NumericalSubtractionNode) {
-                knownToBeArrayLength(
-                        (NumericalSubtractionNode) dim, arrayString, in, result.getRegularStore());
-            }
+            knownToBeLessThanLengthOf(arrayString, dim, result.getRegularStore(), in);
         }
         return result;
+    }
+
+    /**
+     * Node is known to be less than the length of array. If the node is a plus or a minus then the
+     * types of the left and right operands can be refined to include offsets.
+     */
+    private void knownToBeLessThanLengthOf(
+            String array, Node node, CFStore store, TransferInput<CFValue, CFStore> in) {
+        if (node instanceof NumericalAdditionNode) {
+            knownToBeArrayLength((NumericalAdditionNode) node, array, in, store);
+        } else if (node instanceof NumericalSubtractionNode) {
+            knownToBeArrayLength((NumericalSubtractionNode) node, array, in, store);
+        }
     }
 
     /**
@@ -141,11 +148,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
         if (isArrayLengthFieldAccess(left)) {
             String array = ((FieldAccessNode) left).getReceiver().toString();
-            if (right instanceof NumericalAdditionNode) {
-                knownToBeArrayLength((NumericalAdditionNode) right, array, in, store);
-            } else if (right instanceof NumericalSubtractionNode) {
-                knownToBeArrayLength((NumericalSubtractionNode) right, array, in, store);
-            }
+            knownToBeLessThanLengthOf(array, right, store, in);
         }
 
         Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
@@ -157,12 +160,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      *
      * <pre>left >= right</pre>
      *
-     * The type of the right expression is the greatest lower bound of the previous type of right
+     * This method refines the type of the right expression to the glb the previous type of right
      * and the type of left.
      *
      * <pre>a.length >= b op c</pre>
      *
-     * The type of b is @L
+     * The type of b is @LTLengthOf("a", offset = "op)
      */
     @Override
     protected void refineGTE(
@@ -178,11 +181,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
         if (isArrayLengthFieldAccess(left)) {
             String array = ((FieldAccessNode) left).getReceiver().toString();
-            if (right instanceof NumericalAdditionNode) {
-                knownToBeArrayLength((NumericalAdditionNode) right, array, in, store);
-            } else if (right instanceof NumericalSubtractionNode) {
-                knownToBeArrayLength((NumericalSubtractionNode) right, array, in, store);
-            }
+            knownToBeLessThanLengthOf(array, right, store, in);
         }
 
         Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
