@@ -272,6 +272,7 @@ public class DependentTypesHelper {
                                         Arrays.asList(Kind.METHOD, Kind.LAMBDA_EXPRESSION)));
 
                 if (enclTree.getKind() == Kind.METHOD) {
+                    // If the most enclosing tree is a method, the parameter is a method parameter
                     MethodTree methodTree = (MethodTree) enclTree;
                     TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
                     FlowExpressionContext parameterContext =
@@ -279,7 +280,7 @@ public class DependentTypesHelper {
                                     methodTree, enclosingType, factory.getContext());
                     standardizeDoNotUseLocals(parameterContext, path, type);
                 } else {
-                    // If there is no enclosing method, then the parameter is a parameter to a lambda
+                    // Otherwise, the parameter is a lambda parameter
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclTree;
                     FlowExpressionContext parameterContext =
                             FlowExpressionContext.buildContextForLambda(
