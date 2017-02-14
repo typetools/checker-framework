@@ -4,6 +4,8 @@
 // Use  -J-XX:MaxJavaStackTraceDepth=1000000 as parameter
 // to javac to see a longer stacktrace.
 
+// @below-java8-jdk-skip-test
+
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
