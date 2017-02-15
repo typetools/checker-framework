@@ -2,7 +2,7 @@
 // test case for issue #67:
 // https://github.com/kelloggm/checker-framework/issues/67
 
-// @skip-test until issue is fixed
+import org.checkerframework.checker.index.qual.*;
 
 public class LiteralArray {
 
