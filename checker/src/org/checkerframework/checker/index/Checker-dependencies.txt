@@ -26,3 +26,8 @@ SameLen dependencies in the UBC:
 Lower Bound dependencies in UBC:
       - When an array is created with length equal to the sum of two quantities, if one of the quantities is non-negative, the other becomes LTEL of the new array. If one is positive, the other becomes LTL.
       - When a non-negative is subtracted from an LTL, it stays LTL.
+
+Proposed possible dependencies:
+
+The MinLen Checker would like to depend on the Lower Bound Checker. This would allow the following case:
+    - When an array is created with a positive length argument, the array has @MinLen(1).
