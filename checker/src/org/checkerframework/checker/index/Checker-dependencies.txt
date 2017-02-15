@@ -12,7 +12,7 @@ The MinLen Checker has no dependencies on the SameLen checker, so they may actua
 
 The Lower Bound Checker depends only on the MinLen Checker. It uses the MinLen checker to:
     - in a subtraction expression of the form `a.length - x`, if x is a compile time constant, the the LBC queries the MLC for the min length of a. If MinLen(a) > x, the resulting expression is non-negative.
-    - when typing an array length (i.e. `a.length`), if the MinLen is >= 1, then the type is @Positive; if it's MinLen is zero, then the type is @NonNegative.
+    - when typing an array length (i.e. `a.length`), if the MinLen is >= 1, then the type is @Positive; if its MinLen is zero, then the type is @NonNegative.
 
 The Upper Bound Checker depends on all three other checkers.
 
