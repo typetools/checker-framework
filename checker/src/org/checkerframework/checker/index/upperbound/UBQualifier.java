@@ -19,6 +19,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.Pair;
 
 /**
  * Abstraction for Upper Bound annotations.
@@ -377,11 +378,12 @@ public abstract class UBQualifier {
          *
          * <p>Otherwise lub is computed as follows:
          *
-         * <p>1. Create the intersection of the sets of arrays for this and other. 2. For each array
-         * in the intersection, get the offsets for this and other. If any offset in this is a less
-         * than or equal to an offset in other, then that offset is an offset for the array in lub.
-         * If any offset in other is a less than or equal to an offset in this, then that offset is
-         * an offset for the array in lub.
+         * <p>1. Create the intersection of the sets of arrays for this and other.
+         *
+         * <p>2. For each array in the intersection, get the offsets for this and other. If any
+         * offset in this is a less than or equal to an offset in other, then that offset is an
+         * offset for the array in lub. If any offset in other is a less than or equal to an offset
+         * in this, then that offset is an offset for the array in lub.
          *
          * @param other to lub with this
          * @return the lub
@@ -419,7 +421,61 @@ public abstract class UBQualifier {
             if (lubMap.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
+            boolean isMerge = detectMergePoint(otherLtl, lubMap);
+            if (lubMap.isEmpty()) {
+                return UpperBoundUnknownQualifier.UNKNOWN;
+            }
             return new LessThanLengthOf(lubMap);
+        }
+
+        /**
+         * If this and other are exactly the same except for an offset equation that is an int
+         * literal differs, then this is possible a merge point in dataflow after a loop. In that
+         * case, break the infinite loop by removing the int value offset if it is less than -10.
+         */
+        private boolean detectMergePoint(
+                LessThanLengthOf other, Map<String, Set<OffsetEquation>> lubMap) {
+            if (!(this.map.keySet().equals(lubMap.keySet())
+                    && other.map.keySet().equals(lubMap.keySet()))) {
+                return false;
+            }
+            List<Pair<String, OffsetEquation>> remove = new ArrayList<>();
+            for (Entry<String, Set<OffsetEquation>> entry : lubMap.entrySet()) {
+                String array = entry.getKey();
+                Set<OffsetEquation> lubOffsets = entry.getValue();
+                Set<OffsetEquation> thisOffsets = this.map.get(array);
+                Set<OffsetEquation> otherOffsets = other.map.get(array);
+                if (lubOffsets.size() != thisOffsets.size()
+                        || lubOffsets.size() != otherOffsets.size()) {
+                    return false;
+                }
+                for (OffsetEquation lubEq : lubOffsets) {
+                    if (lubEq.isInt()) {
+                        int thisInt = OffsetEquation.getIntOffsetEquation(thisOffsets).getInt();
+                        int otherInt = OffsetEquation.getIntOffsetEquation(otherOffsets).getInt();
+                        if (thisInt != otherInt) {
+                            int value = lubEq.getInt();
+                            if (value < -10) {
+                                remove.add(Pair.of(array, lubEq));
+                            }
+                        }
+
+                    } else if (thisOffsets.contains(lubEq) && otherOffsets.contains(lubEq)) {
+                        //                        continue;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+            for (Pair<String, OffsetEquation> pair : remove) {
+                Set<OffsetEquation> offsets = lubMap.get(pair.first);
+                offsets.remove(pair.second);
+                if (offsets.isEmpty()) {
+                    lubMap.remove(pair.first);
+                }
+            }
+
+            return !remove.isEmpty();
         }
 
         @Override

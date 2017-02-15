@@ -5,6 +5,7 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
@@ -281,6 +282,20 @@ public class OffsetEquation {
         intValue += value;
     }
 
+    /**
+     * Returns the offset equation that is an int value or null if there isn't one.
+     *
+     * @param equationSet Set of offset equations
+     * @return the offset equation that is an int value or null if there isn't one
+     */
+    public static OffsetEquation getIntOffsetEquation(Set<OffsetEquation> equationSet) {
+        for (OffsetEquation eq : equationSet) {
+            if (eq.isInt()) {
+                return eq;
+            }
+        }
+        return null;
+    }
     /**
      * Creates an offset equation that is only the int value specified.
      *
