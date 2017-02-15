@@ -3,6 +3,7 @@ import org.checkerframework.checker.index.qual.*;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.MinLen;
 
+@SuppressWarnings("lowerbound")
 public class OffsetExample {
     void example1(int @MinLen(2) [] a) {
         int j = 2;
@@ -79,7 +80,6 @@ public class OffsetExample {
     public void test2(int[] a, List<Object> b) {
         int b_size = b.size();
         Object[] result = new Object[a.length + b_size];
-        System.arraycopy(a, 0, result, 0, a.length);
         for (int i = 0; i < b_size; i++) {
             result[i + a.length] = b.get(i);
         }

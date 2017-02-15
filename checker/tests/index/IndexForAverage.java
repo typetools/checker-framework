@@ -9,8 +9,8 @@ public class IndexForAverage {
     }
 
     public static void bug2(int[] a, @IndexFor("#1") int i, @IndexFor("#1") int j) {
-        @IndexFor("a") int k = ((i - 1) + j) / 2;
+        @LTLengthOf("a") int k = ((i - 1) + j) / 2;
         //:: error: (assignment.type.incompatible)
-        @IndexFor("a") int h = ((i + 1) + j) / 2;
+        @LTLengthOf("a") int h = ((i + 1) + j) / 2;
     }
 }
