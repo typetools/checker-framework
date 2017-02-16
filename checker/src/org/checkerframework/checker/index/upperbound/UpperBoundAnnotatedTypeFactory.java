@@ -3,6 +3,7 @@ package org.checkerframework.checker.index.upperbound;
 import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
 
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -417,6 +418,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // Dataflow refines this type if possible
             type.addAnnotation(UNKNOWN);
             return super.visitUnary(node, type);
+        }
+
+        @Override
+        public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
+            // Dataflow refines this type if possible
+            type.addAnnotation(UNKNOWN);
+            return super.visitCompoundAssignment(node, type);
         }
 
         @Override

@@ -7,6 +7,7 @@ public final class Loops {
             offset++;
             //:: error: (compound.assignment.type.incompatible)
             offset += 1;
+            //:: error: (compound.assignment.type.incompatible)
             offset2 += offset;
         }
     }
@@ -28,6 +29,7 @@ public final class Loops {
     public void test3(boolean flag, @LTLengthOf("#1") int offset, @LTLengthOf("#1") int offset2) {
         while (flag) {
             offset--;
+            //:: error: (compound.assignment.type.incompatible)
             offset2 -= offset;
         }
     }
@@ -37,6 +39,7 @@ public final class Loops {
             offset++;
             //:: error: (compound.assignment.type.incompatible)
             offset += 1;
+            //:: error: (compound.assignment.type.incompatible)
             offset2 += offset;
         }
     }
