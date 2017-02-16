@@ -454,7 +454,7 @@ public abstract class UBQualifier {
          *
          *
          * <pre>@LTLengthOf("a") int i = ...;
-         * while(expr) {
+         * while (expr) {
          *   i++;
          * }</pre>
          *
