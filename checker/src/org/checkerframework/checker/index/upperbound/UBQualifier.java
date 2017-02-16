@@ -443,7 +443,7 @@ public abstract class UBQualifier {
             if (lubMap.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
-            boolean isMerge = detectMergePoint(otherLtl, lubMap);
+            widenLub(otherLtl, lubMap);
             if (lubMap.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
@@ -451,15 +451,38 @@ public abstract class UBQualifier {
         }
 
         /**
-         * If this and other are exactly the same except for an offset equation that is an int
-         * literal differs, then this is possible a merge point in dataflow after a loop. In that
-         * case, break the infinite loop by removing the int value offset if it is less than -10.
+         *
+         *
+         * <pre>@LTLengthOf("a") int i = ...;
+         * while(expr) {
+         *   i++;
+         * }</pre>
+         *
+         * <p>Dataflow never stops analyzing the above loop, because the type of i always changes
+         * after each analysis of the loop:
+         *
+         * <p>1. @LTLengthOf(value="a', offset="-1")
+         *
+         * <p>2. @LTLengthOf(value="a', offset="-2")
+         *
+         * <p>3. @LTLengthOf(value="a', offset="-3")
+         *
+         * <p>In order to prevent this, if both types passed to lub include all the same arrays with
+         * the same non-constant value offsets and if the constant value offsets are different and
+         * one is less than -10 (-10 is arbitrary, could be -5 or some other number) then remove
+         * that array-offset pair from lub.
+         *
+         * <p>For example:
+         *
+         * <p>LUB @LTLengthOf(value={"a", "b"}, offset={"0", "0") and @LTLengthOf(value={"a", "b"},
+         * offset={"-20", "0") is @LTLengthOf("b")
+         *
+         * <p>This widened lub should only be used in order to break dataflow analysis loops.
          */
-        private boolean detectMergePoint(
-                LessThanLengthOf other, Map<String, Set<OffsetEquation>> lubMap) {
+        private void widenLub(LessThanLengthOf other, Map<String, Set<OffsetEquation>> lubMap) {
             if (!containsSame(this.map.keySet(), lubMap.keySet())
                     || !containsSame(other.map.keySet(), lubMap.keySet())) {
-                return false;
+                return;
             }
             List<Pair<String, OffsetEquation>> remove = new ArrayList<>();
             for (Entry<String, Set<OffsetEquation>> entry : lubMap.entrySet()) {
@@ -469,7 +492,7 @@ public abstract class UBQualifier {
                 Set<OffsetEquation> otherOffsets = other.map.get(array);
                 if (lubOffsets.size() != thisOffsets.size()
                         || lubOffsets.size() != otherOffsets.size()) {
-                    return false;
+                    return;
                 }
                 for (OffsetEquation lubEq : lubOffsets) {
                     if (lubEq.isInt()) {
@@ -481,11 +504,10 @@ public abstract class UBQualifier {
                                 remove.add(Pair.of(array, lubEq));
                             }
                         }
-
                     } else if (thisOffsets.contains(lubEq) && otherOffsets.contains(lubEq)) {
-                        //                        continue;
+                        //  continue;
                     } else {
-                        return false;
+                        return;
                     }
                 }
             }
@@ -496,8 +518,6 @@ public abstract class UBQualifier {
                     lubMap.remove(pair.first);
                 }
             }
-
-            return !remove.isEmpty();
         }
 
         @Override
