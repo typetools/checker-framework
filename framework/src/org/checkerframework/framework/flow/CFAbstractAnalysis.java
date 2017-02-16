@@ -72,6 +72,11 @@ public abstract class CFAbstractAnalysis<
         this.checker = checker;
         this.transferFunction = createTransferFunction();
         this.fieldValues = fieldValues;
+        if (qualifierHierarchy.implementsWidening()) {
+            // 10 is just a nice low default value. Type systems may wish to use or compute a
+            // different value.
+            this.maxCountBeforeWidening = 10;
+        }
     }
 
     public List<Pair<VariableElement, V>> getFieldValues() {

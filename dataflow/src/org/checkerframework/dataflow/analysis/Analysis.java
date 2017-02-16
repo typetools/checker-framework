@@ -74,6 +74,18 @@ public class Analysis<
     protected IdentityHashMap<Block, S> elseStores;
 
     /**
+     * Number of times every block has been analyzed since the last time widening was applied. Null,
+     * if maxCountBeforeWidening is -1 which implies widing isn't using for this analysis. .
+     */
+    protected IdentityHashMap<Block, Integer> blockCount;
+
+    /**
+     * Number of times a block can be analyzed before the widening. -1 implies that widening
+     * shouldn't be used.
+     */
+    protected int maxCountBeforeWidening = -1;
+
+    /**
      * The transfer inputs before every basic block (assumed to be 'no information' if not present).
      */
     protected IdentityHashMap<Block, TransferInput<A, S>> inputs;
@@ -406,6 +418,7 @@ public class Analysis<
         this.cfg = cfg;
         thenStores = new IdentityHashMap<>();
         elseStores = new IdentityHashMap<>();
+        blockCount = maxCountBeforeWidening == -1 ? null : new IdentityHashMap<Block, Integer>();
         inputs = new IdentityHashMap<>();
         storesAtReturnStatements = new IdentityHashMap<>();
         worklist = new Worklist(cfg);
@@ -462,12 +475,24 @@ public class Analysis<
             Block b, Node node, S s, Store.Kind kind, boolean addBlockToWorklist) {
         S thenStore = getStoreBefore(b, Store.Kind.THEN);
         S elseStore = getStoreBefore(b, Store.Kind.ELSE);
+        boolean shouldWiden = false;
+        Integer count = null;
+        if (blockCount != null) {
+            count = blockCount.get(b);
+            count = count == null ? 0 : count;
+            shouldWiden = count >= maxCountBeforeWidening;
+        }
 
         switch (kind) {
             case THEN:
                 {
                     // Update the then store
-                    S newThenStore = (thenStore != null) ? thenStore.leastUpperBound(s) : s;
+                    S newThenStore;
+                    if (shouldWiden) {
+                        newThenStore = (thenStore != null) ? thenStore.widenUpperBound(s) : s;
+                    } else {
+                        newThenStore = (thenStore != null) ? thenStore.leastUpperBound(s) : s;
+                    }
                     if (!newThenStore.equals(thenStore)) {
                         thenStores.put(b, newThenStore);
                         if (elseStore != null) {
@@ -480,7 +505,12 @@ public class Analysis<
             case ELSE:
                 {
                     // Update the else store
-                    S newElseStore = (elseStore != null) ? elseStore.leastUpperBound(s) : s;
+                    S newElseStore;
+                    if (shouldWiden) {
+                        newElseStore = (elseStore != null) ? elseStore.widenUpperBound(s) : s;
+                    } else {
+                        newElseStore = (elseStore != null) ? elseStore.leastUpperBound(s) : s;
+                    }
                     if (!newElseStore.equals(elseStore)) {
                         elseStores.put(b, newElseStore);
                         if (thenStore != null) {
@@ -493,7 +523,12 @@ public class Analysis<
             case BOTH:
                 if (thenStore == elseStore) {
                     // Currently there is only one regular store
-                    S newStore = (thenStore != null) ? thenStore.leastUpperBound(s) : s;
+                    S newStore;
+                    if (shouldWiden) {
+                        newStore = (thenStore != null) ? thenStore.widenUpperBound(s) : s;
+                    } else {
+                        newStore = (thenStore != null) ? thenStore.leastUpperBound(s) : s;
+                    }
                     if (!newStore.equals(thenStore)) {
                         thenStores.put(b, newStore);
                         elseStores.put(b, newStore);
@@ -503,13 +538,23 @@ public class Analysis<
                 } else {
                     boolean storeChanged = false;
 
-                    S newThenStore = (thenStore != null) ? thenStore.leastUpperBound(s) : s;
+                    S newThenStore;
+                    if (shouldWiden) {
+                        newThenStore = (thenStore != null) ? thenStore.widenUpperBound(s) : s;
+                    } else {
+                        newThenStore = (thenStore != null) ? thenStore.leastUpperBound(s) : s;
+                    }
                     if (!newThenStore.equals(thenStore)) {
                         thenStores.put(b, newThenStore);
                         storeChanged = true;
                     }
 
-                    S newElseStore = (elseStore != null) ? elseStore.leastUpperBound(s) : s;
+                    S newElseStore;
+                    if (shouldWiden) {
+                        newElseStore = (elseStore != null) ? elseStore.widenUpperBound(s) : s;
+                    } else {
+                        newElseStore = (elseStore != null) ? elseStore.leastUpperBound(s) : s;
+                    }
                     if (!newElseStore.equals(elseStore)) {
                         elseStores.put(b, newElseStore);
                         storeChanged = true;
@@ -520,6 +565,13 @@ public class Analysis<
                         addBlockToWorklist = true;
                     }
                 }
+        }
+        if (blockCount != null) {
+            if (shouldWiden) {
+                blockCount.put(b, 0);
+            } else {
+                blockCount.put(b, count + 1);
+            }
         }
 
         if (addBlockToWorklist) {

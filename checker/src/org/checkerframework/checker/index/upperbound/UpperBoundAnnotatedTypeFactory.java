@@ -353,6 +353,19 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return convertUBQualifierToAnnotation(lub);
         }
 
+        @Override
+        public AnnotationMirror widenUpperBound(AnnotationMirror a, AnnotationMirror b) {
+            UBQualifier a1Obj = UBQualifier.createUBQualifier(a);
+            UBQualifier a2Obj = UBQualifier.createUBQualifier(b);
+            UBQualifier lub = a1Obj.widenUb(a2Obj);
+            return convertUBQualifierToAnnotation(lub);
+        }
+
+        @Override
+        public boolean implementsWidening() {
+            return true;
+        }
+
         /**
          * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
          * annotations are the same. In this case, rhs is a subtype of lhs iff rhs contains at least

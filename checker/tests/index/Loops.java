@@ -49,4 +49,21 @@ public final class Loops {
         int[] optoSft = new int[patternLength];
         for (int i = patternLength; i > 0; i--) {}
     }
+
+    public void test5(
+            boolean flag,
+            @LTLengthOf(value = "#1", offset = "-1000") int offset,
+            @LTLengthOf("#1") int offset2) {
+        int otherOffset = offset;
+        while (flag) {
+            otherOffset += 1;
+            offset++;
+            //:: error: (compound.assignment.type.incompatible)
+            offset += 1;
+            //:: error: (compound.assignment.type.incompatible)
+            offset2 += offset;
+        }
+        //:: error: (assignment.type.incompatible)
+        @LTLengthOf(value = "#1", offset = "-1000") int x = otherOffset;
+    }
 }
