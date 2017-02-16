@@ -40,4 +40,10 @@ public final class Loops {
             offset2 += offset;
         }
     }
+
+    public void test4(int[] src) {
+        int patternLength = src.length;
+        int[] optoSft = new int[patternLength];
+        for (int i = patternLength; i > 0; i--) {}
+    }
 }

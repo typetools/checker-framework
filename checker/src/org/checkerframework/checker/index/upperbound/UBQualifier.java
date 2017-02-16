@@ -254,21 +254,31 @@ public abstract class UBQualifier {
          * AnnotationMirrors using @{@link LTEqLengthOf} or @{@link LTOMLengthOf} are returned.
          * Otherwise, @{@link LTLengthOf} is used.
          *
+         * <p>The annotation is sorted by array and then offset. This is so that {@link
+         * AnnotationUtils#areSame(AnnotationMirror, AnnotationMirror)} returns true for equivalent
+         * annotations.
+         *
          * @param env ProcessingEnvironment
          * @return the AnnotationMirror that represents this qualifier
          */
         public AnnotationMirror convertToAnnotationMirror(ProcessingEnvironment env) {
+            List<String> sortedArrays = new ArrayList<>(map.keySet());
+            Collections.sort(sortedArrays);
             List<String> arrays = new ArrayList<>();
             List<String> offsets = new ArrayList<>();
             boolean isLTEq = true;
             boolean isLTOM = true;
-            for (Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
-                String array = entry.getKey();
-                for (OffsetEquation eq : entry.getValue()) {
+            for (String array : sortedArrays) {
+                List<String> sortOffsets = new ArrayList<>();
+                for (OffsetEquation eq : map.get(array)) {
                     isLTEq = isLTEq && eq.equals(OffsetEquation.NEG_1);
                     isLTOM = isLTOM && eq.equals(OffsetEquation.ONE);
+                    sortOffsets.add(eq.toString());
+                }
+                Collections.sort(sortOffsets);
+                for (String offset : sortOffsets) {
                     arrays.add(array);
-                    offsets.add(eq.toString());
+                    offsets.add(offset);
                 }
             }
             AnnotationBuilder builder;
@@ -283,7 +293,6 @@ public abstract class UBQualifier {
                 builder.setValue("value", arrays);
                 builder.setValue("offset", offsets);
             }
-
             return builder.build();
         }
 
@@ -297,8 +306,21 @@ public abstract class UBQualifier {
             }
 
             LessThanLengthOf qualifier = (LessThanLengthOf) o;
+            if (containsSame(map.keySet(), qualifier.map.keySet())) {
+                for (Map.Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
+                    Set<OffsetEquation> otherOffset = qualifier.map.get(entry.getKey());
+                    Set<OffsetEquation> thisOffset = entry.getValue();
+                    if (!containsSame(otherOffset, thisOffset)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
 
-            return map.equals(qualifier.map);
+        private static <T> boolean containsSame(Set<T> set1, Set<T> set2) {
+            return set1.containsAll(set2) && set2.containsAll(set1);
         }
 
         @Override
@@ -435,8 +457,8 @@ public abstract class UBQualifier {
          */
         private boolean detectMergePoint(
                 LessThanLengthOf other, Map<String, Set<OffsetEquation>> lubMap) {
-            if (!(this.map.keySet().equals(lubMap.keySet())
-                    && other.map.keySet().equals(lubMap.keySet()))) {
+            if (!containsSame(this.map.keySet(), lubMap.keySet())
+                    || !containsSame(other.map.keySet(), lubMap.keySet())) {
                 return false;
             }
             List<Pair<String, OffsetEquation>> remove = new ArrayList<>();
