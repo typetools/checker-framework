@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.samelen;
 
+import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,16 +9,21 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.SameLenBottom;
 import org.checkerframework.checker.index.qual.SameLenUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * The SameLen Checker is used to determine whether there are multiple arrays in a program that
@@ -108,7 +114,30 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             bValues.addAll(SameLenUtils.getValue(sl2));
         }
 
-        return getCombinedSameLen(aValues, bValues);
+        AnnotationMirror res = getCombinedSameLen(aValues, bValues);
+        return res;
+    }
+
+    public FlowExpressions.Receiver arrayReceiverFromString(
+            String arrayExpression, TreePath currentPath) {
+        TypeMirror enclosingClass = InternalUtils.typeOf(TreeUtils.enclosingClass(currentPath));
+
+        FlowExpressions.Receiver r =
+                FlowExpressions.internalRepOfPseudoReceiver(currentPath, enclosingClass);
+        FlowExpressionParseUtil.FlowExpressionContext context =
+                new FlowExpressionParseUtil.FlowExpressionContext(
+                        r,
+                        FlowExpressions.getParametersOfEnclosingMethod(this, currentPath),
+                        this.getContext());
+
+        FlowExpressions.Receiver array;
+        try {
+            array = FlowExpressionParseUtil.parse(arrayExpression, context, currentPath, true);
+        } catch (FlowExpressionParseUtil.FlowExpressionParseException ex) {
+            // ignore parse errors.
+            return null;
+        }
+        return array;
     }
 
     /**
