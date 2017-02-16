@@ -697,7 +697,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param path location at which expression is evaluated
      * @param clazz Class of the annotation
      * @return the annotation on expression or null if one does not exist
-     * @throws FlowExpressionParseException
+     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
      */
     public AnnotationMirror getAnnotationFromJavaExpressionString(
             String expression, Tree tree, TreePath path, Class<? extends Annotation> clazz)

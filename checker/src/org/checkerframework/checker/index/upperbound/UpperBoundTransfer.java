@@ -156,16 +156,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     *
-     *
-     * <pre>left >= right</pre>
-     *
      * This method refines the type of the right expression to the glb the previous type of right
      * and the type of left.
      *
-     * <pre>a.length >= b op c</pre>
-     *
-     * The type of b is @LTLengthOf("a", offset = "op)
+     * <p>Also, if the left expression is an array access, then the types of sub expressions of the
+     * right are refined.
      */
     @Override
     protected void refineGTE(

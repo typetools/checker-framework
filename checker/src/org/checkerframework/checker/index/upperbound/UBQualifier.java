@@ -214,7 +214,7 @@ public abstract class UBQualifier {
         /**
          * Is a value with this type less than the length of any of the arrays?
          *
-         * @param array String array
+         * @param arrays String array
          * @return Is a value with this type less than the length of any of the arrays?
          */
         @Override
@@ -629,7 +629,7 @@ public abstract class UBQualifier {
          *
          * <p>Otherwise, return UNKNOWN.
          *
-         * @param divisor
+         * @param divisor number to divide by
          * @return the result of dividing a value with this qualifier by divisor
          */
         public UBQualifier divide(int divisor) {
