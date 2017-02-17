@@ -63,15 +63,22 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
             Receiver dimRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), dim);
             result.getRegularStore().insertValue(dimRec, newAnno);
-            if (dim instanceof NumericalAdditionNode) {
-                knownToBeArrayLength(
-                        (NumericalAdditionNode) dim, arrayString, in, result.getRegularStore());
-            } else if (dim instanceof NumericalSubtractionNode) {
-                knownToBeArrayLength(
-                        (NumericalSubtractionNode) dim, arrayString, in, result.getRegularStore());
-            }
+            knownToBeLessThanLengthOf(arrayString, dim, result.getRegularStore(), in);
         }
         return result;
+    }
+
+    /**
+     * Node is known to be less than the length of array. If the node is a plus or a minus then the
+     * types of the left and right operands can be refined to include offsets.
+     */
+    private void knownToBeLessThanLengthOf(
+            String array, Node node, CFStore store, TransferInput<CFValue, CFStore> in) {
+        if (node instanceof NumericalAdditionNode) {
+            knownToBeArrayLength((NumericalAdditionNode) node, array, in, store);
+        } else if (node instanceof NumericalSubtractionNode) {
+            knownToBeArrayLength((NumericalSubtractionNode) node, array, in, store);
+        }
     }
 
     /**
@@ -164,17 +171,20 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
         if (isArrayLengthFieldAccess(left)) {
             String array = ((FieldAccessNode) left).getReceiver().toString();
-            if (right instanceof NumericalAdditionNode) {
-                knownToBeArrayLength((NumericalAdditionNode) right, array, in, store);
-            } else if (right instanceof NumericalSubtractionNode) {
-                knownToBeArrayLength((NumericalSubtractionNode) right, array, in, store);
-            }
+            knownToBeLessThanLengthOf(array, right, store, in);
         }
 
         Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
         store.insertValue(rightRec, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
     }
 
+    /**
+     * This method refines the type of the right expression to the glb the previous type of right
+     * and the type of left.
+     *
+     * <p>Also, if the left expression is an array access, then the types of sub expressions of the
+     * right are refined.
+     */
     @Override
     protected void refineGTE(
             Node left,
@@ -189,11 +199,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
         if (isArrayLengthFieldAccess(left)) {
             String array = ((FieldAccessNode) left).getReceiver().toString();
-            if (right instanceof NumericalAdditionNode) {
-                knownToBeArrayLength((NumericalAdditionNode) right, array, in, store);
-            } else if (right instanceof NumericalSubtractionNode) {
-                knownToBeArrayLength((NumericalSubtractionNode) right, array, in, store);
-            }
+            knownToBeLessThanLengthOf(array, right, store, in);
         }
 
         Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
@@ -329,6 +335,16 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         return super.visitFieldAccess(n, in);
     }
 
+    /**
+     * Returns the UBQualifier for node. It does this by finding a {@link CFValue} for node. First
+     * it checks the store in the transfer input. If one isn't there, the analysis is checked. If
+     * the UNKNOWN qualifier is returned, then the AnnotatedTypeMirror from the type factory is
+     * used.
+     *
+     * @param n node
+     * @param in transfer input
+     * @return the UBQualifier for node
+     */
     private UBQualifier getUBQualifier(Node n, TransferInput<CFValue, CFStore> in) {
         QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
         Receiver rec = FlowExpressions.internalReprOf(atypeFactory, n);
@@ -341,6 +357,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         }
         UBQualifier qualifier = getUBQualifier(hierarchy, value);
         if (qualifier.isUnknown()) {
+            // The qualifier from the store or analysis might be UNKNOWN if there was some error.
+            //  For example,
+            // @LTLength("a") int i = 4;  // error
+            // The type of i in the store is @UpperBoundUnknown, but the type of i as computed by
+            // the type factory is @LTLength("a"), so use that type.
             CFValue valueFromFactory = getValueFromFactory(n.getTree(), n);
             return getUBQualifier(hierarchy, valueFromFactory);
         }

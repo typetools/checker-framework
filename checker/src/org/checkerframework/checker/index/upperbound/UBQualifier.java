@@ -19,7 +19,18 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.Pair;
 
+/**
+ * Abstraction for Upper Bound annotations.
+ *
+ * <p>{@link UpperBoundUnknown} is modeled as {@link UpperBoundUnknownQualifier} and {@link
+ * UpperBoundBottom} is modeled as {@link UpperBoundBottomQualifier}.
+ *
+ * <p>{@link LTLengthOf} is modeled by {@link LessThanLengthOf}. {@link LTEqLengthOf} is equivalent
+ * to @{@link LessThanLengthOf} with an offset of -1. {@link LTOMLengthOf} is equivalent to @{@link
+ * LessThanLengthOf} with an offset of 1.
+ */
 public abstract class UBQualifier {
 
     public static UBQualifier createUBQualifier(AnnotationMirror am) {
@@ -69,6 +80,15 @@ public abstract class UBQualifier {
         return createUBQualifier(type.getAnnotationInHierarchy(top));
     }
 
+    /**
+     * Creates an {@link UBQualifier} from the given arrays and offsets. The list of arrays may not
+     * be empty. If the offsets list is empty, then an offset of 0 is used for each array. If the
+     * offsets list is not empty, then it must be the same size as array.
+     *
+     * @param arrays Non-empty list of arrays
+     * @param offsets list of offset, if empty, an offset of 0 is used
+     * @return an {@link UBQualifier} for the arrays with the given offsets.
+     */
     public static UBQualifier createUBQualifier(List<String> arrays, List<String> offsets) {
         assert !arrays.isEmpty();
         Map<String, Set<OffsetEquation>> map = new HashMap<>();
@@ -167,6 +187,7 @@ public abstract class UBQualifier {
         return false;
     }
 
+    /** */
     static class LessThanLengthOf extends UBQualifier {
         private final Map<String, Set<OffsetEquation>> map;
 
@@ -175,6 +196,12 @@ public abstract class UBQualifier {
             this.map = map;
         }
 
+        /**
+         * Is a value with this type less than or equal to the length of array?
+         *
+         * @param array String array
+         * @return Is a value with this type less than or equal to the length of array?
+         */
         @Override
         public boolean isLessThanOrEqualTo(String array) {
             Set<OffsetEquation> offsets = map.get(array);
@@ -184,6 +211,12 @@ public abstract class UBQualifier {
             return offsets.contains(OffsetEquation.NEG_1);
         }
 
+        /**
+         * Is a value with this type less than the length of any of the arrays?
+         *
+         * @param arrays String array
+         * @return Is a value with this type less than the length of any of the arrays?
+         */
         @Override
         public boolean isLessThanLengthOfAny(List<String> arrays) {
             for (String array : arrays) {
@@ -194,6 +227,12 @@ public abstract class UBQualifier {
             return false;
         }
 
+        /**
+         * Is a value with this type less than the length of the array?
+         *
+         * @param array String array
+         * @return Is a value with this type less than the length of the array?
+         */
         @Override
         public boolean isLessThanLengthOf(String array) {
             Set<OffsetEquation> offsets = map.get(array);
@@ -216,21 +255,31 @@ public abstract class UBQualifier {
          * AnnotationMirrors using @{@link LTEqLengthOf} or @{@link LTOMLengthOf} are returned.
          * Otherwise, @{@link LTLengthOf} is used.
          *
+         * <p>The annotation is sorted by array and then offset. This is so that {@link
+         * AnnotationUtils#areSame(AnnotationMirror, AnnotationMirror)} returns true for equivalent
+         * annotations.
+         *
          * @param env ProcessingEnvironment
          * @return the AnnotationMirror that represents this qualifier
          */
         public AnnotationMirror convertToAnnotationMirror(ProcessingEnvironment env) {
+            List<String> sortedArrays = new ArrayList<>(map.keySet());
+            Collections.sort(sortedArrays);
             List<String> arrays = new ArrayList<>();
             List<String> offsets = new ArrayList<>();
             boolean isLTEq = true;
             boolean isLTOM = true;
-            for (Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
-                String array = entry.getKey();
-                for (OffsetEquation eq : entry.getValue()) {
+            for (String array : sortedArrays) {
+                List<String> sortOffsets = new ArrayList<>();
+                for (OffsetEquation eq : map.get(array)) {
                     isLTEq = isLTEq && eq.equals(OffsetEquation.NEG_1);
                     isLTOM = isLTOM && eq.equals(OffsetEquation.ONE);
+                    sortOffsets.add(eq.toString());
+                }
+                Collections.sort(sortOffsets);
+                for (String offset : sortOffsets) {
                     arrays.add(array);
-                    offsets.add(eq.toString());
+                    offsets.add(offset);
                 }
             }
             AnnotationBuilder builder;
@@ -259,8 +308,21 @@ public abstract class UBQualifier {
             }
 
             LessThanLengthOf qualifier = (LessThanLengthOf) o;
+            if (containsSame(map.keySet(), qualifier.map.keySet())) {
+                for (Map.Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
+                    Set<OffsetEquation> otherOffset = qualifier.map.get(entry.getKey());
+                    Set<OffsetEquation> thisOffset = entry.getValue();
+                    if (!containsSame(otherOffset, thisOffset)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
 
-            return map.equals(qualifier.map);
+        private static <T> boolean containsSame(Set<T> set1, Set<T> set2) {
+            return set1.containsAll(set2) && set2.containsAll(set1);
         }
 
         @Override
@@ -314,10 +376,6 @@ public abstract class UBQualifier {
             return true;
         }
 
-        private boolean isSubtypeOffset(OffsetEquation subOffset, OffsetEquation superOffset) {
-            return superOffset.lessThanOrEqual(subOffset);
-        }
-
         /**
          * One set of offsets is a subtype of another if for every superOffsets, at least one
          * suboffset is greater than or equal to the superOffset.
@@ -344,11 +402,12 @@ public abstract class UBQualifier {
          *
          * <p>Otherwise lub is computed as follows:
          *
-         * <p>1. Create the intersection of the sets of arrays for this and other. 2. For each array
-         * in the intersection, get the offsets for this and other. If any offset in this is a less
-         * than or equal to an offset in other, then that offset is an offset for the array in lub.
-         * If any offset in other is a less than or equal to an offset in this, then that offset is
-         * an offset for the array in lub.
+         * <p>1. Create the intersection of the sets of arrays for this and other.
+         *
+         * <p>2. For each array in the intersection, get the offsets for this and other. If any
+         * offset in this is a less than or equal to an offset in other, then that offset is an
+         * offset for the array in lub. If any offset in other is a less than or equal to an offset
+         * in this, then that offset is an offset for the array in lub.
          *
          * @param other to lub with this
          * @return the lub
@@ -372,9 +431,9 @@ public abstract class UBQualifier {
                 Set<OffsetEquation> offsets2 = otherLtl.map.get(array);
                 for (OffsetEquation offset1 : offsets1) {
                     for (OffsetEquation offset2 : offsets2) {
-                        if (isSubtypeOffset(offset1, offset2)) {
+                        if (offset2.lessThanOrEqual(offset1)) {
                             lub.add(offset2);
-                        } else if (isSubtypeOffset(offset2, offset1)) {
+                        } else if (offset1.lessThanOrEqual(offset2)) {
                             lub.add(offset1);
                         }
                     }
@@ -386,7 +445,81 @@ public abstract class UBQualifier {
             if (lubMap.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
+            widenLub(otherLtl, lubMap);
+            if (lubMap.isEmpty()) {
+                return UpperBoundUnknownQualifier.UNKNOWN;
+            }
             return new LessThanLengthOf(lubMap);
+        }
+
+        /**
+         *
+         *
+         * <pre>@LTLengthOf("a") int i = ...;
+         * while (expr) {
+         *   i++;
+         * }</pre>
+         *
+         * <p>Dataflow never stops analyzing the above loop, because the type of i always changes
+         * after each analysis of the loop:
+         *
+         * <p>1. @LTLengthOf(value="a', offset="-1")
+         *
+         * <p>2. @LTLengthOf(value="a', offset="-2")
+         *
+         * <p>3. @LTLengthOf(value="a', offset="-3")
+         *
+         * <p>In order to prevent this, if both types passed to lub include all the same arrays with
+         * the same non-constant value offsets and if the constant value offsets are different and
+         * one is less than -10 (-10 is arbitrary, could be -5 or some other number) then remove
+         * that array-offset pair from lub.
+         *
+         * <p>For example:
+         *
+         * <p>LUB @LTLengthOf(value={"a", "b"}, offset={"0", "0") and @LTLengthOf(value={"a", "b"},
+         * offset={"-20", "0") is @LTLengthOf("b")
+         *
+         * <p>This widened lub should only be used in order to break dataflow analysis loops.
+         */
+        private void widenLub(LessThanLengthOf other, Map<String, Set<OffsetEquation>> lubMap) {
+            if (!containsSame(this.map.keySet(), lubMap.keySet())
+                    || !containsSame(other.map.keySet(), lubMap.keySet())) {
+                return;
+            }
+            List<Pair<String, OffsetEquation>> remove = new ArrayList<>();
+            for (Entry<String, Set<OffsetEquation>> entry : lubMap.entrySet()) {
+                String array = entry.getKey();
+                Set<OffsetEquation> lubOffsets = entry.getValue();
+                Set<OffsetEquation> thisOffsets = this.map.get(array);
+                Set<OffsetEquation> otherOffsets = other.map.get(array);
+                if (lubOffsets.size() != thisOffsets.size()
+                        || lubOffsets.size() != otherOffsets.size()) {
+                    return;
+                }
+                for (OffsetEquation lubEq : lubOffsets) {
+                    if (lubEq.isInt()) {
+                        int thisInt = OffsetEquation.getIntOffsetEquation(thisOffsets).getInt();
+                        int otherInt = OffsetEquation.getIntOffsetEquation(otherOffsets).getInt();
+                        if (thisInt != otherInt) {
+                            int value = lubEq.getInt();
+                            if (value < -10) {
+                                remove.add(Pair.of(array, lubEq));
+                            }
+                        }
+                    } else if (thisOffsets.contains(lubEq) && otherOffsets.contains(lubEq)) {
+                        //  continue;
+                    } else {
+                        return;
+                    }
+                }
+            }
+            for (Pair<String, OffsetEquation> pair : remove) {
+                Set<OffsetEquation> offsets = lubMap.get(pair.first);
+                offsets.remove(pair.second);
+                if (offsets.isEmpty()) {
+                    lubMap.remove(pair.first);
+                }
+            }
         }
 
         @Override
@@ -518,7 +651,7 @@ public abstract class UBQualifier {
          *
          * <p>Otherwise, return UNKNOWN.
          *
-         * @param divisor
+         * @param divisor number to divide by
          * @return the result of dividing a value with this qualifier by divisor
          */
         public UBQualifier divide(int divisor) {
