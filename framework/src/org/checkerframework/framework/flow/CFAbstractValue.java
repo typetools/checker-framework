@@ -361,13 +361,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
                 Set<AnnotationMirror> aSet,
                 Set<AnnotationMirror> bSet,
                 Set<AnnotationMirror> lubSet,
-                boolean widen) {
+                boolean shouldWiden) {
             super(result, aTypeMirror, bTypeMirror, aSet, bSet);
             this.lubSet = lubSet;
-            this.widen = widen;
+            this.widen = shouldWiden;
         }
 
-        private AnnotationMirror lub(AnnotationMirror a, AnnotationMirror b) {
+        private AnnotationMirror computeUpperBound(AnnotationMirror a, AnnotationMirror b) {
             QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
             if (widen) {
                 return hierarchy.widenUpperBound(a, b);
@@ -379,7 +379,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         @Override
         protected void visitAnnotationExistInBothSets(
                 AnnotationMirror a, AnnotationMirror b, AnnotationMirror top) {
-            lubSet.add(lub(a, b));
+            lubSet.add(computeUpperBound(a, b));
         }
 
         @Override
@@ -390,7 +390,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
             } else {
                 AnnotationMirror aUB = aAtv.getUpperBound().getEffectiveAnnotationInHierarchy(top);
                 AnnotationMirror bUB = bAtv.getUpperBound().getEffectiveAnnotationInHierarchy(top);
-                lubSet.add(lub(aUB, bUB));
+                lubSet.add(computeUpperBound(aUB, bUB));
             }
         }
 
@@ -401,13 +401,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
             AnnotationMirror upperBound =
                     atv.getUpperBound().getEffectiveAnnotationInHierarchy(top);
             if (!canBeMissingAnnotations(result)) {
-                lubSet.add(lub(anno, upperBound));
+                lubSet.add(computeUpperBound(anno, upperBound));
             } else {
                 Set<AnnotationMirror> lBSet =
                         AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, atv);
                 AnnotationMirror lowerBound = hierarchy.findAnnotationInHierarchy(lBSet, top);
                 if (!hierarchy.isSubtype(anno, lowerBound)) {
-                    lubSet.add(lub(anno, upperBound));
+                    lubSet.add(computeUpperBound(anno, upperBound));
                 }
             }
         }

@@ -357,7 +357,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public AnnotationMirror widenUpperBound(AnnotationMirror a, AnnotationMirror b) {
             UBQualifier a1Obj = UBQualifier.createUBQualifier(a);
             UBQualifier a2Obj = UBQualifier.createUBQualifier(b);
-            UBQualifier lub = a1Obj.widenUb(a2Obj);
+            UBQualifier lub = a1Obj.widenUpperBound(a2Obj);
             return convertUBQualifierToAnnotation(lub);
         }
 

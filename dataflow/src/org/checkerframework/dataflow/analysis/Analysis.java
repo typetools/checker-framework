@@ -75,7 +75,7 @@ public class Analysis<
 
     /**
      * Number of times every block has been analyzed since the last time widening was applied. Null,
-     * if maxCountBeforeWidening is -1 which implies widing isn't using for this analysis. .
+     * if maxCountBeforeWidening is -1 which implies widening isn't using for this analysis.
      */
     protected IdentityHashMap<Block, Integer> blockCount;
 
@@ -487,12 +487,7 @@ public class Analysis<
             case THEN:
                 {
                     // Update the then store
-                    S newThenStore;
-                    if (shouldWiden) {
-                        newThenStore = (thenStore != null) ? thenStore.widenUpperBound(s) : s;
-                    } else {
-                        newThenStore = (thenStore != null) ? thenStore.leastUpperBound(s) : s;
-                    }
+                    S newThenStore = mergeStores(s, thenStore, shouldWiden);
                     if (!newThenStore.equals(thenStore)) {
                         thenStores.put(b, newThenStore);
                         if (elseStore != null) {
@@ -505,12 +500,7 @@ public class Analysis<
             case ELSE:
                 {
                     // Update the else store
-                    S newElseStore;
-                    if (shouldWiden) {
-                        newElseStore = (elseStore != null) ? elseStore.widenUpperBound(s) : s;
-                    } else {
-                        newElseStore = (elseStore != null) ? elseStore.leastUpperBound(s) : s;
-                    }
+                    S newElseStore = mergeStores(s, elseStore, shouldWiden);
                     if (!newElseStore.equals(elseStore)) {
                         elseStores.put(b, newElseStore);
                         if (thenStore != null) {
@@ -523,12 +513,7 @@ public class Analysis<
             case BOTH:
                 if (thenStore == elseStore) {
                     // Currently there is only one regular store
-                    S newStore;
-                    if (shouldWiden) {
-                        newStore = (thenStore != null) ? thenStore.widenUpperBound(s) : s;
-                    } else {
-                        newStore = (thenStore != null) ? thenStore.leastUpperBound(s) : s;
-                    }
+                    S newStore = mergeStores(s, thenStore, shouldWiden);
                     if (!newStore.equals(thenStore)) {
                         thenStores.put(b, newStore);
                         elseStores.put(b, newStore);
@@ -538,23 +523,13 @@ public class Analysis<
                 } else {
                     boolean storeChanged = false;
 
-                    S newThenStore;
-                    if (shouldWiden) {
-                        newThenStore = (thenStore != null) ? thenStore.widenUpperBound(s) : s;
-                    } else {
-                        newThenStore = (thenStore != null) ? thenStore.leastUpperBound(s) : s;
-                    }
+                    S newThenStore = mergeStores(s, thenStore, shouldWiden);
                     if (!newThenStore.equals(thenStore)) {
                         thenStores.put(b, newThenStore);
                         storeChanged = true;
                     }
 
-                    S newElseStore;
-                    if (shouldWiden) {
-                        newElseStore = (elseStore != null) ? elseStore.widenUpperBound(s) : s;
-                    } else {
-                        newElseStore = (elseStore != null) ? elseStore.leastUpperBound(s) : s;
-                    }
+                    S newElseStore = mergeStores(s, elseStore, shouldWiden);
                     if (!newElseStore.equals(elseStore)) {
                         elseStores.put(b, newElseStore);
                         storeChanged = true;
@@ -577,6 +552,18 @@ public class Analysis<
         if (addBlockToWorklist) {
             addToWorklist(b);
         }
+    }
+
+    private S mergeStores(S previousStore, S newStore, boolean shouldWiden) {
+        S newThenStore;
+        if (shouldWiden) {
+            newThenStore =
+                    (newStore != null) ? newStore.widenUpperBound(previousStore) : previousStore;
+        } else {
+            newThenStore =
+                    (newStore != null) ? newStore.leastUpperBound(previousStore) : previousStore;
+        }
+        return newThenStore;
     }
 
     /**

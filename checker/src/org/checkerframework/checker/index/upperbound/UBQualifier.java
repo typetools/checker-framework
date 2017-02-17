@@ -153,7 +153,7 @@ public abstract class UBQualifier {
 
     public abstract UBQualifier lub(UBQualifier other);
 
-    public UBQualifier widenUb(UBQualifier obj) {
+    public UBQualifier widenUpperBound(UBQualifier obj) {
         return lub(obj);
     }
 
@@ -451,7 +451,7 @@ public abstract class UBQualifier {
         }
 
         @Override
-        public UBQualifier widenUb(UBQualifier obj) {
+        public UBQualifier widenUpperBound(UBQualifier obj) {
             UBQualifier lub = lub(obj);
             if (lub.isUnknownOrBottom() || obj.isUnknownOrBottom()) {
                 return lub;

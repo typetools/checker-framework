@@ -796,7 +796,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         return upperBound(other, false);
     }
 
-    public S upperBound(S other, boolean lub) {
+    private S upperBound(S other, boolean shouldWiden) {
         S newStore = analysis.createEmptyStore(sequentialSemantics);
 
         for (Entry<FlowExpressions.LocalVariable, V> e : other.localVariableValues.entrySet()) {
@@ -807,8 +807,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             if (localVariableValues.containsKey(localVar)) {
                 V otherVal = e.getValue();
                 V thisVal = localVariableValues.get(localVar);
-                V mergedVal =
-                        lub ? thisVal.leastUpperBound(otherVal) : thisVal.widenUpperBound(otherVal);
+                V mergedVal = upperBound(shouldWiden, otherVal, thisVal);
 
                 if (mergedVal != null) {
                     newStore.localVariableValues.put(localVar, mergedVal);
@@ -820,13 +819,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         {
             V otherVal = other.thisValue;
             V myVal = thisValue;
-            V mergedVal =
-                    myVal == null
-                            ? null
-                            : lub
-                                    ? myVal.leastUpperBound(otherVal)
-                                    : myVal.widenUpperBound(otherVal);
-            ;
+            V mergedVal = myVal == null ? null : upperBound(shouldWiden, otherVal, myVal);
             if (mergedVal != null) {
                 newStore.thisValue = mergedVal;
             }
@@ -840,8 +833,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             if (fieldValues.containsKey(el)) {
                 V otherVal = e.getValue();
                 V thisVal = fieldValues.get(el);
-                V mergedVal =
-                        lub ? thisVal.leastUpperBound(otherVal) : thisVal.widenUpperBound(otherVal);
+                V mergedVal = upperBound(shouldWiden, otherVal, thisVal);
                 if (mergedVal != null) {
                     newStore.fieldValues.put(el, mergedVal);
                 }
@@ -855,8 +847,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             if (arrayValues.containsKey(el)) {
                 V otherVal = e.getValue();
                 V thisVal = arrayValues.get(el);
-                V mergedVal =
-                        lub ? thisVal.leastUpperBound(otherVal) : thisVal.widenUpperBound(otherVal);
+                V mergedVal = upperBound(shouldWiden, otherVal, thisVal);
                 if (mergedVal != null) {
                     newStore.arrayValues.put(el, mergedVal);
                 }
@@ -870,8 +861,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             if (methodValues.containsKey(el)) {
                 V otherVal = e.getValue();
                 V thisVal = methodValues.get(el);
-                V mergedVal =
-                        lub ? thisVal.leastUpperBound(otherVal) : thisVal.widenUpperBound(otherVal);
+                V mergedVal = upperBound(shouldWiden, otherVal, thisVal);
                 if (mergedVal != null) {
                     newStore.methodValues.put(el, mergedVal);
                 }
@@ -882,14 +872,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             if (classValues.containsKey(el)) {
                 V otherVal = e.getValue();
                 V thisVal = classValues.get(el);
-                V mergedVal =
-                        lub ? thisVal.leastUpperBound(otherVal) : thisVal.widenUpperBound(otherVal);
+                V mergedVal = upperBound(shouldWiden, otherVal, thisVal);
                 if (mergedVal != null) {
                     newStore.classValues.put(el, mergedVal);
                 }
             }
         }
         return newStore;
+    }
+
+    private V upperBound(boolean shouldWiden, V otherVal, V thisVal) {
+        return shouldWiden ? thisVal.leastUpperBound(otherVal) : thisVal.widenUpperBound(otherVal);
     }
 
     /**
