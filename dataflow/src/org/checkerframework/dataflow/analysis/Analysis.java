@@ -80,8 +80,8 @@ public class Analysis<
     protected IdentityHashMap<Block, Integer> blockCount;
 
     /**
-     * Number of times a block can be analyzed before the widening. -1 implies that widening
-     * shouldn't be used.
+     * Number of times a block can be analyzed before widening. -1 implies that widening shouldn't
+     * be used.
      */
     protected int maxCountBeforeWidening = -1;
 
