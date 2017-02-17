@@ -57,7 +57,8 @@ public interface Store<S extends Store<S>> {
      * Compute an upper bound of two stores that is wider than the least upper bound of the two
      * stores.
      *
-     * <p>(This method is optional, if not required, implementations should call leastUpperBound.)
+     * <p>(This might not be require for an analysis, if not required, implementations should call
+     * leastUpperBound.)
      *
      * <p><em>Important</em>: This method must fulfill the following contract:
      *
