@@ -1,7 +1,8 @@
 import org.checkerframework.checker.index.qual.IndexFor;
+import org.checkerframework.checker.index.qual.MinLen;
 
 public class IndexForTest {
-    int[] array = {0};
+    int @MinLen(1) [] array = {0};
 
     void test1(@IndexFor("array") int i) {
         int x = array[i];
@@ -20,7 +21,6 @@ public class IndexForTest {
             test1(array.length - 1);
         }
 
-        //::  error: (argument.type.incompatible)
         test1(array.length - 1);
 
         //::  error: (argument.type.incompatible)
@@ -30,7 +30,6 @@ public class IndexForTest {
             test1(this.array.length - 1);
         }
 
-        //::  error: (argument.type.incompatible)
         test1(this.array.length - 1);
 
         if (this.array.length > x && x >= 0) {
@@ -60,7 +59,6 @@ public class IndexForTest {
             test2(array.length - 1);
         }
 
-        //::  error: (argument.type.incompatible)
         test2(array.length - 1);
 
         //::  error: (argument.type.incompatible)
@@ -70,7 +68,6 @@ public class IndexForTest {
             test2(this.array.length - 1);
         }
 
-        //::  error: (argument.type.incompatible)
         test2(this.array.length - 1);
 
         if (array.length == x && x >= 0) {
