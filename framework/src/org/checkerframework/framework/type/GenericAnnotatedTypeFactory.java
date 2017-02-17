@@ -91,7 +91,6 @@ import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotato
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
@@ -702,18 +701,9 @@ public abstract class GenericAnnotatedTypeFactory<
     public AnnotationMirror getAnnotationFromJavaExpressionString(
             String expression, Tree tree, TreePath path, Class<? extends Annotation> clazz)
             throws FlowExpressionParseException {
-        TypeMirror enclosingClass = InternalUtils.typeOf(TreeUtils.enclosingClass(path));
-
-        FlowExpressions.Receiver r =
-                FlowExpressions.internalRepOfPseudoReceiver(path, enclosingClass);
-        FlowExpressionContext context =
-                new FlowExpressionContext(
-                        r,
-                        FlowExpressions.getParametersOfEnclosingMethod(this, path),
-                        this.getContext());
 
         FlowExpressions.Receiver expressionObj =
-                FlowExpressionParseUtil.parse(expression, context, path, true);
+                getReceiverFromJavaExpressionString(expression, path);
 
         AnnotationMirror annotationMirror = null;
         if (CFAbstractStore.canInsertReceiver(expressionObj)) {
@@ -733,6 +723,35 @@ public abstract class GenericAnnotatedTypeFactory<
             }
         }
         return annotationMirror;
+    }
+
+    /**
+     * Produces the receiver associated with expression on currentPath.
+     *
+     * @param expression Java expression
+     * @param currentPath location at which expression is evaluated
+     * @return
+     */
+    public FlowExpressions.Receiver getReceiverFromJavaExpressionString(
+            String expression, TreePath currentPath) {
+        TypeMirror enclosingClass = InternalUtils.typeOf(TreeUtils.enclosingClass(currentPath));
+
+        FlowExpressions.Receiver r =
+                FlowExpressions.internalRepOfPseudoReceiver(currentPath, enclosingClass);
+        FlowExpressionParseUtil.FlowExpressionContext context =
+                new FlowExpressionParseUtil.FlowExpressionContext(
+                        r,
+                        FlowExpressions.getParametersOfEnclosingMethod(this, currentPath),
+                        this.getContext());
+
+        FlowExpressions.Receiver receiver;
+        try {
+            receiver = FlowExpressionParseUtil.parse(expression, context, currentPath, true);
+        } catch (FlowExpressionParseUtil.FlowExpressionParseException ex) {
+            // ignore parse errors.
+            return null;
+        }
+        return receiver;
     }
 
     /**

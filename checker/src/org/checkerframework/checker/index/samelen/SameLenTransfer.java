@@ -113,7 +113,8 @@ public class SameLenTransfer extends CFTransfer {
             AnnotationMirror combinedSameLen, Node node, CFStore store) {
         for (String s : SameLenUtils.getValue(combinedSameLen)) {
             Receiver recS =
-                    aTypeFactory.arrayReceiverFromString(s, aTypeFactory.getPath(node.getTree()));
+                    aTypeFactory.getReceiverFromJavaExpressionString(
+                            s, aTypeFactory.getPath(node.getTree()));
             if (recS != null) {
                 store.clearValue(recS);
                 store.insertValue(recS, combinedSameLen);
