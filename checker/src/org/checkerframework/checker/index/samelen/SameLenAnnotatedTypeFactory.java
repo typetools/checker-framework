@@ -94,14 +94,20 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * For the use of the transfer function; generates a SameLen that includes a and b, as well as
      * everything in sl1 and sl2, if they are SameLen annotations.
      *
-     * @param a the name of the first array
-     * @param b the name of the second array
+     * @param aRec receiver representing the first array
+     * @param bRec receiver representing the second array
      * @param sl1 the current annotation of the first array
      * @param sl2 the current annotation of the second array
      * @return a combined SameLen annotation
      */
     public AnnotationMirror createCombinedSameLen(
-            String a, String b, AnnotationMirror sl1, AnnotationMirror sl2) {
+            FlowExpressions.Receiver aRec,
+            FlowExpressions.Receiver bRec,
+            AnnotationMirror sl1,
+            AnnotationMirror sl2) {
+
+        String a = aRec.toString();
+        String b = bRec.toString();
 
         List<String> aValues = new ArrayList<String>();
         aValues.add(a);

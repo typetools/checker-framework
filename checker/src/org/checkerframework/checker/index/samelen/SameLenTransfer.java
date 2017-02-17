@@ -70,10 +70,7 @@ public class SameLenTransfer extends CFTransfer {
 
                 AnnotationMirror combinedSameLen =
                         aTypeFactory.createCombinedSameLen(
-                                targetRec.toString(),
-                                otherRec.toString(),
-                                UNKNOWN,
-                                arrayLengthNodeAnnotation);
+                                targetRec, otherRec, UNKNOWN, arrayLengthNodeAnnotation);
 
                 propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
             }
@@ -90,8 +87,10 @@ public class SameLenTransfer extends CFTransfer {
 
             AnnotationMirror combinedSameLen =
                     aTypeFactory.createCombinedSameLen(
-                            node.getTarget().toString(),
-                            node.getExpression().toString(),
+                            FlowExpressions.internalReprOf(
+                                    analysis.getTypeFactory(), node.getTarget()),
+                            FlowExpressions.internalReprOf(
+                                    analysis.getTypeFactory(), node.getExpression()),
                             UNKNOWN,
                             leftAnno);
 
@@ -101,10 +100,17 @@ public class SameLenTransfer extends CFTransfer {
         return result;
     }
 
+    /**
+     * Insert combinedSameLen into the store as the SameLen type of each array listed in
+     * combinedSameLen.
+     *
+     * @param combinedSameLen A Samelen annotation. Not just an annotation in the SameLen hierarchy;
+     *     this annotation MUST be @SameLen().
+     * @param node The node in the tree where the combination is happening. Used for context.
+     * @param store The store to modify
+     */
     private void propagateCombinedSameLen(
             AnnotationMirror combinedSameLen, Node node, CFStore store) {
-        // Get the value of the combined samelen type, and then
-        // insert that combined SameLen into the receiver for each.
         for (String s : SameLenUtils.getValue(combinedSameLen)) {
             Receiver recS =
                     aTypeFactory.arrayReceiverFromString(s, aTypeFactory.getPath(node.getTree()));
@@ -141,10 +147,7 @@ public class SameLenTransfer extends CFTransfer {
             AnnotationMirror rightReceiverAnno = getAnno(rightReceiverNode);
             AnnotationMirror combinedSameLen =
                     aTypeFactory.createCombinedSameLen(
-                            leftRec.toString(),
-                            rightRec.toString(),
-                            leftReceiverAnno,
-                            rightReceiverAnno);
+                            leftRec, rightRec, leftReceiverAnno, rightReceiverAnno);
 
             propagateCombinedSameLen(combinedSameLen, left, store);
         }
