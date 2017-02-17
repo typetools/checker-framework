@@ -226,7 +226,6 @@ public abstract class UBQualifier {
             }
             return false;
         }
-
         /**
          * Is a value with this type less than the length of the array?
          *
@@ -294,7 +293,6 @@ public abstract class UBQualifier {
                 builder.setValue("value", arrays);
                 builder.setValue("offset", offsets);
             }
-
             return builder.build();
         }
 

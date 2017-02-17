@@ -3,7 +3,6 @@ import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.index.qual.IndexOrLow;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 
-@SuppressWarnings("lowerbound")
 public class IndexOrLowTests {
     int[] array = {1, 2};
 
