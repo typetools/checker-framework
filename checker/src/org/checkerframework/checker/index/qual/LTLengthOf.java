@@ -24,4 +24,7 @@ public @interface LTLengthOf {
     /** Sequences, each of which is longer than the annotated expression's value. */
     @JavaExpression
     public String[] value();
+
+    @JavaExpression
+    String[] offset() default {};
 }

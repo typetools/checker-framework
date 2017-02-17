@@ -1,18 +1,18 @@
-// Test case for issue #57:
-// https://github.com/kelloggm/checker-framework/issues/57
-
-// @skip-test until the issue is fixed
-
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.MinLen;
 
 public class ZeroMinLen {
 
     int @MinLen(1) [] nums;
+    int[] nums2;
 
     @IndexFor("nums") int current_index;
 
+    @IndexFor("nums2") int current_index2;
+
     void test() {
         current_index = 0;
+        //:: error: (assignment.type.incompatible)
+        current_index2 = 0;
     }
 }
