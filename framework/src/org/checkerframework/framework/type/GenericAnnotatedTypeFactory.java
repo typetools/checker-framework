@@ -730,10 +730,10 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @param expression Java expression
      * @param currentPath location at which expression is evaluated
-     * @return
+     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
      */
     public FlowExpressions.Receiver getReceiverFromJavaExpressionString(
-            String expression, TreePath currentPath) {
+            String expression, TreePath currentPath) throws FlowExpressionParseException {
         TypeMirror enclosingClass = InternalUtils.typeOf(TreeUtils.enclosingClass(currentPath));
 
         FlowExpressions.Receiver r =
@@ -744,14 +744,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         FlowExpressions.getParametersOfEnclosingMethod(this, currentPath),
                         this.getContext());
 
-        FlowExpressions.Receiver receiver;
-        try {
-            receiver = FlowExpressionParseUtil.parse(expression, context, currentPath, true);
-        } catch (FlowExpressionParseUtil.FlowExpressionParseException ex) {
-            // ignore parse errors.
-            return null;
-        }
-        return receiver;
+        return FlowExpressionParseUtil.parse(expression, context, currentPath, true);
     }
 
     /**
