@@ -1221,6 +1221,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             // in GenericAnnotatedTypeFactory.addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)
             // for the following bug:
             // See Issue 867: https://github.com/typetools/checker-framework/issues/867
+            // This means could result in a false warning (false positive) in some cases and a lack
+            // of a warning in other cases (false negative).
             AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(node);
             commonAssignmentCheck(
                     varType, valueType, node, "compound.assignment.type.incompatible");
