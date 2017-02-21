@@ -56,7 +56,6 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             Receiver arrayRec =
                     FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getTarget());
             String arrayString = arrayRec.toString();
-
             UBQualifier newInfo = UBQualifier.createUBQualifier(arrayString, "-1");
             UBQualifier combined = previousQualifier.glb(newInfo);
             AnnotationMirror newAnno = atypeFactory.convertUBQualifierToAnnotation(combined);
@@ -143,14 +142,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         store.insertValue(rightRec, atypeFactory.convertUBQualifierToAnnotation(newRight));
     }
 
-    /** If the node is NN but not POS, add an LTEL to the qual. If POS, an LTL. */
+    /** If the node is NN, add an LTEL to the qual. If POS, an LTL. */
     private UBQualifier accountForLowerBoundAnnos(Node node, UBQualifier qual, String arrayExp) {
-        if (atypeFactory.hasLowerBoundTypeByClass(node, NonNegative.class)) {
-            if (atypeFactory.hasLowerBoundTypeByClass(node, Positive.class)) {
-                qual = qual.glb(UBQualifier.createUBQualifier(arrayExp, "0"));
-            } else {
-                qual = qual.glb(UBQualifier.createUBQualifier(arrayExp, "-1"));
-            }
+        if (atypeFactory.hasLowerBoundTypeByClass(node, Positive.class)) {
+            qual = qual.glb(UBQualifier.createUBQualifier(arrayExp, "0"));
+        } else if (atypeFactory.hasLowerBoundTypeByClass(node, NonNegative.class)) {
+            qual = qual.glb(UBQualifier.createUBQualifier(arrayExp, "-1"));
         }
         return qual;
     }
