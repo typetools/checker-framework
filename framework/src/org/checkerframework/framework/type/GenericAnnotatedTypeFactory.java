@@ -19,6 +19,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,8 +41,12 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.CFGBuilder;
@@ -85,12 +90,16 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -420,6 +429,10 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return a new {@link DependentTypesHelper}
      */
     protected DependentTypesHelper createDependentTypesHelper() {
+        DependentTypesHelper helper = new DependentTypesHelper(this);
+        if (helper.hasDependentAnnotations()) {
+            return helper;
+        }
         return null;
     }
 
@@ -674,6 +687,52 @@ public abstract class GenericAnnotatedTypeFactory<
         addComputedTypeAnnotations(
                 memberReferenceTree.getQualifierExpression(), constructorReturnType);
         return constructorReturnType;
+    }
+
+    /**
+     * Returns the primary annotation on expression if it were evaluated at path.
+     *
+     * @param expression Java expression
+     * @param tree current tree
+     * @param path location at which expression is evaluated
+     * @param clazz Class of the annotation
+     * @return the annotation on expression or null if one does not exist
+     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     */
+    public AnnotationMirror getAnnotationFromJavaExpressionString(
+            String expression, Tree tree, TreePath path, Class<? extends Annotation> clazz)
+            throws FlowExpressionParseException {
+        TypeMirror enclosingClass = InternalUtils.typeOf(TreeUtils.enclosingClass(path));
+
+        FlowExpressions.Receiver r =
+                FlowExpressions.internalRepOfPseudoReceiver(path, enclosingClass);
+        FlowExpressionContext context =
+                new FlowExpressionContext(
+                        r,
+                        FlowExpressions.getParametersOfEnclosingMethod(this, path),
+                        this.getContext());
+
+        FlowExpressions.Receiver expressionObj =
+                FlowExpressionParseUtil.parse(expression, context, path, true);
+
+        AnnotationMirror annotationMirror = null;
+        if (CFAbstractStore.canInsertReceiver(expressionObj)) {
+            Value value = getStoreBefore(tree).getValue(expressionObj);
+            if (value != null) {
+                annotationMirror =
+                        AnnotationUtils.getAnnotationByClass(value.getAnnotations(), clazz);
+            }
+        }
+        if (annotationMirror == null) {
+            if (expressionObj instanceof LocalVariable) {
+                Element ele = ((LocalVariable) expressionObj).getElement();
+                annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
+            } else if (expressionObj instanceof FieldAccess) {
+                Element ele = ((FieldAccess) expressionObj).getField();
+                annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
+            }
+        }
+        return annotationMirror;
     }
 
     /**

@@ -1,0 +1,33 @@
+2/14/17
+
+This document explains the dependencies between the Index Checker's various subcheckers. It describes the order the checkers are run, and then explains what each checker requests from the checkers that run before it. It is up-to-date as of the date at the top of the file.
+
+The checkers run in this order:
+
+SameLen Checker, MinLen Checker, Lower Bound Checker, Upper Bound Checker
+
+The SameLen Checker has no dependencies.
+
+The MinLen Checker has no dependencies on the SameLen checker, so they may actually be run in any order.
+
+The Lower Bound Checker depends only on the MinLen Checker. It uses the MinLen checker to:
+    - in a subtraction expression of the form `a.length - x`, if x is a compile time constant, the the LBC queries the MLC for the min length of a. If MinLen(a) > x, the resulting expression is non-negative.
+    - when typing an array length (i.e. `a.length`), if the MinLen is >= 1, then the type is @Positive; if its MinLen is zero, then the type is @NonNegative.
+
+The Upper Bound Checker depends on all three other checkers.
+
+MinLen dependencies in the UBC:
+       - The UBC has relaxed assignment rules: it allows assignments where the right hand side is a value known at compile time and the type of the left hand side is annotated with LT*LengthOf("a").  If the min length of a is in the correct relationship with the value on the right hand side, then the assignment is legal.
+       - When checking whether an array access is legal, the UBC first checks the upper bound type of the index. If that fails, it checks if the index is a compile time constant. If it is, then it queries the MinLen Checker to determine if the array is longer than the value of the constant. If it is, the access is safe.
+
+SameLen dependencies in the UBC:
+	- When checking whether an array access is legal, the UBC first checks the upper bound type. If it's an LTL (or LTOM/LTEL), then it collects, from the SameLen Checker, the list of arrays that are known to be the same length as the array being accessed. Then the annotation is checked to see if it is valid for any of the arrays in question.
+
+Lower Bound dependencies in UBC:
+      - When an array is created with length equal to the sum of two quantities, if one of the quantities is non-negative, the other becomes LTEL of the new array. If one is positive, the other becomes LTL.
+      - When a non-negative is subtracted from an LTL, it stays LTL.
+
+Proposed possible dependencies:
+
+The MinLen Checker would like to depend on the Lower Bound Checker. This would allow the following case:
+    - When an array is created with a positive length argument, the array has @MinLen(1).

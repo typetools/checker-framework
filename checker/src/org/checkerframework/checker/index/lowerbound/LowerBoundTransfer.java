@@ -9,6 +9,7 @@ import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAnalysis;
@@ -182,7 +183,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
             AnnotationMirror leftAnno,
             Node right,
             AnnotationMirror rightAnno,
-            CFStore store) {
+            CFStore store,
+            TransferInput<CFValue, CFStore> in) {
 
         if (rightAnno == null || leftAnno == null) {
             return;
@@ -215,7 +217,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
             AnnotationMirror leftAnno,
             Node right,
             AnnotationMirror rightAnno,
-            CFStore store) {
+            CFStore store,
+            TransferInput<CFValue, CFStore> in) {
 
         if (rightAnno == null || leftAnno == null) {
             return;

@@ -17,7 +17,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -27,7 +26,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    AnnotationMirror UNKNOWN;
+    public final AnnotationMirror UNKNOWN;
     private AnnotationMirror BOTTOM;
 
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -45,11 +44,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected DependentTypesHelper createDependentTypesHelper() {
-        return new DependentTypesHelper(this, SameLen.class);
-    }
-
-    @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new SameLenQualifierHierarchy(factory);
     }
@@ -60,7 +54,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * @param listA the first string list
      * @param listB the second string list
-     * @return true if there is the intersection is non-empty; false otherwise
+     * @return true if the intersection is non-empty; false otherwise
      */
     private boolean overlap(List<String> listA, List<String> listB) {
         for (String a : listA) {
@@ -85,7 +79,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         newValues.addAll(a1Names);
         newValues.addAll(a2Names);
-        String[] names = newValues.toArray(new String[0]);
+        String[] names = newValues.toArray(new String[newValues.size()]);
+        Arrays.sort(names);
         return createSameLen(names);
     }
 
@@ -102,20 +97,18 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror createCombinedSameLen(
             String a, String b, AnnotationMirror sl1, AnnotationMirror sl2) {
 
-        // The names of the arrays.
-        ArrayList<String> arrayNames = new ArrayList<>();
-        arrayNames.add(a);
-        arrayNames.add(b);
-
-        ArrayList<String> slStrings = new ArrayList<>();
+        List<String> aValues = new ArrayList<String>();
+        aValues.add(a);
         if (AnnotationUtils.areSameByClass(sl1, SameLen.class)) {
-            slStrings.addAll(SameLenUtils.getValue(sl1));
+            aValues.addAll(SameLenUtils.getValue(sl1));
         }
+        List<String> bValues = new ArrayList<String>();
+        bValues.add(b);
         if (AnnotationUtils.areSameByClass(sl2, SameLen.class)) {
-            slStrings.addAll(SameLenUtils.getValue(sl2));
+            bValues.addAll(SameLenUtils.getValue(sl2));
         }
 
-        return getCombinedSameLen(arrayNames, slStrings);
+        return getCombinedSameLen(aValues, bValues);
     }
 
     /**
@@ -209,6 +202,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /** Creates a @SameLen annotation whose values are the given strings. */
     public AnnotationMirror createSameLen(String... val) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
         builder.setValue("value", val);

@@ -444,7 +444,6 @@
             <arg line="-d ${checker-qual-classes-tmp}"/>
             <arg line="@${tmpdir}/srcfiles-checker.txt"/>
             <arg line="-version"/>
-            <arg line="-XDTA:noannotationsincomments"/>
             <arg line="-Xlint"/>
             <arg line="-Werror"/>
         </java>
@@ -509,7 +508,6 @@
             <arg value="-Xlint:-options"/>
             <arg line="-d ${java8-output}"/>
             <arg line="${checker.loc}/${src}/${checker.jdk8orhigher.sources}"/>
-            <arg line="-XDTA:noannotationsincomments"/>
             <arg line="-Xlint"/>
             <arg line="-Werror"/>
         </java>
@@ -825,46 +823,6 @@
             description="Run tests for the Index Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.IndexTest"/>
-        </antcall>
-        <antcall target="-run-tests">
-            <param name="param" value="tests.LowerBoundTest"/>
-        </antcall>
-        <antcall target="-run-tests">
-            <param name="param" value="tests.UpperBoundTest"/>
-        </antcall>
-        <antcall target="-run-tests">
-            <param name="param" value="tests.MinLenTest"/>
-        </antcall>
-        <antcall target="-run-tests">
-            <param name="param" value="tests.SameLenTest"/>
-        </antcall>
-    </target>
-
-    <target name="lowerbound-tests" depends="jar,build-tests"
-            description="Run tests for the Lower Bound Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.LowerBoundTest"/>
-        </antcall>
-    </target>
-
-    <target name="upperbound-tests" depends="jar,build-tests"
-            description="Run tests for the Upper Bound Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.UpperBoundTest"/>
-        </antcall>
-    </target>
-
-    <target name="minlen-tests" depends="jar,build-tests"
-            description="Run tests for the MinLen Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.MinLenTest"/>
-        </antcall>
-    </target>
-
-    <target name="samelen-tests" depends="jar,build-tests"
-            description="Run tests for the SameLen Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.SameLenTest"/>
         </antcall>
     </target>
 

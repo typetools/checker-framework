@@ -1042,12 +1042,15 @@ the programmer's intention that \code{null} never flows there.  If
 \code{null} does flow there, the program will not continue normally
 (whether or not it throws a NullPointerException).
 
-Therefore, you should mark such parameters as
+Therefore, you should specify such parameters as
 \refqualclass{checker/nullness/qual}{NonNull}, indicating
-the intended use of the method.  When you use the \code{@NonNull}
+the intended use of the method.  When you specify the parameter as the \code{@NonNull}
 annotation, the checker is able to issue compile-time warnings about
-possible run-time exceptions, which is its purpose.  Marking the parameter
+possible run-time exceptions, which is its purpose.  Specifying the parameter
 as \code{@Nullable} would suppress such warnings, which is undesirable.
+(Since \code{@NonNull} is the default, you don't have to write anything in
+the source code to specify the parameter as non-null.  You are allowed to
+write a redundant \code{@NonNull} annotation, but it is discouraged.)
 
 % This is only an issue for code with unchecked, trusted annotations such as
 % library methods; if the method is type-checked, then the type-checker
