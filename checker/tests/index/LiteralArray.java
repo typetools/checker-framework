@@ -14,7 +14,7 @@ public class LiteralArray {
         return format(1);
     }
 
-    public String format(/*@IndexFor("LiteralArray.timeFormat")*/ int digits) {
+    public String format(@IndexFor("LiteralArray.timeFormat") int digits) {
         return "";
     }
 }
