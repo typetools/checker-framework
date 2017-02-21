@@ -16,6 +16,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -112,9 +113,14 @@ public class SameLenTransfer extends CFTransfer {
     private void propagateCombinedSameLen(
             AnnotationMirror combinedSameLen, Node node, CFStore store) {
         for (String s : SameLenUtils.getValue(combinedSameLen)) {
-            Receiver recS =
-                    aTypeFactory.getReceiverFromJavaExpressionString(
-                            s, aTypeFactory.getPath(node.getTree()));
+            Receiver recS;
+            try {
+                recS =
+                        aTypeFactory.getReceiverFromJavaExpressionString(
+                                s, aTypeFactory.getPath(node.getTree()));
+            } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                recS = null;
+            }
             if (recS != null) {
                 store.clearValue(recS);
                 store.insertValue(recS, combinedSameLen);
