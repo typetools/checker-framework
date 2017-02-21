@@ -2027,7 +2027,8 @@ public abstract class AnnotatedTypeMirror {
         // argument inference and raw type handling is improved.
         private boolean uninferredTypeArgument = false;
 
-        /* package-scope */ void setUninferredTypeArgument() {
+        // This method should only be used within the framework
+        public void setUninferredTypeArgument() {
             uninferredTypeArgument = true;
         }
 
