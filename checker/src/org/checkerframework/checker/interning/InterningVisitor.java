@@ -213,6 +213,12 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      */
     @Override
     public Void visitClass(ClassTree node, Void p) {
+        if (checker.shouldSkipDefs(node)) {
+            // Not "return super.visitClass(node, p);" because that would
+            // recursively call visitors on subtrees; we want to skip the
+            // class entirely.
+            return null;
+        }
         // TODO: Should this method use the Javac types or some other utility to get
         // all direct supertypes instead, and should it verify that each does not
         // override .equals and that at least one of them is annotated with @UsesObjectEquals?

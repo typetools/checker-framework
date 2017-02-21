@@ -61,6 +61,12 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
         // Print types of classes, methods, and fields
         @Override
         public Void visitClass(ClassTree node, Void p) {
+            if (checker.shouldSkipDefs(node)) {
+                // Not "return super.visitClass(node, p);" because that would
+                // recursively call visitors on subtrees; we want to skip the
+                // class entirely.
+                return null;
+            }
             TypeElement element = TreeUtils.elementFromDeclaration(node);
             currentClass = element.getSimpleName().toString();
 

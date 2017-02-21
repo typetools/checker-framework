@@ -263,6 +263,12 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
     @Override
     public Void visitClass(ClassTree node, Void p) {
+        if (checker.shouldSkipDefs(node)) {
+            // Not "return super.visitClass(node, p);" because that would
+            // recursively call visitors on subtrees; we want to skip the
+            // class entirely.
+            return null;
+        }
         // TODO: Check constraints on this class decl vs. parent class decl., and interfaces
         // TODO: This has to wait for now: maybe this will be easier with the isValidUse on the TypeFactory
         // AnnotatedTypeMirror.AnnotatedDeclaredType atype = atypeFactory.fromClass(node);

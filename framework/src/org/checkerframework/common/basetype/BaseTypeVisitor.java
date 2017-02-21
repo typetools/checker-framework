@@ -260,50 +260,58 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return super.scan(tree, p);
     }
 
+    /**
+     * Type-check classTree. If a subclass overrides this method, if should first check if this
+     * class should be skipped by calling {@link BaseTypeChecker#shouldSkipDefs(ClassTree)}.
+     *
+     * @param classTree class to check
+     * @param p null
+     * @return null
+     */
     @Override
-    public Void visitClass(ClassTree node, Void p) {
-        if (checker.shouldSkipDefs(node)) {
-            // Not "return super.visitClass(node, p);" because that would
+    public Void visitClass(ClassTree classTree, Void p) {
+        if (checker.shouldSkipDefs(classTree)) {
+            // Not "return super.visitClass(classTree, p);" because that would
             // recursively call visitors on subtrees; we want to skip the
             // class entirely.
             return null;
         }
 
-        atypeFactory.preProcessClassTree(node);
+        atypeFactory.preProcessClassTree(classTree);
 
         AnnotatedDeclaredType preACT = visitorState.getClassType();
         ClassTree preCT = visitorState.getClassTree();
         AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
         MethodTree preMT = visitorState.getMethodTree();
         Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
-        visitorState.setClassType(atypeFactory.getAnnotatedType(node));
-        visitorState.setClassTree(node);
+        visitorState.setClassType(atypeFactory.getAnnotatedType(classTree));
+        visitorState.setClassTree(classTree);
         visitorState.setMethodReceiver(null);
         visitorState.setMethodTree(null);
         visitorState.setAssignmentContext(null);
 
         try {
-            if (!TreeUtils.hasExplicitConstructor(node)) {
-                checkDefaultConstructor(node);
+            if (!TreeUtils.hasExplicitConstructor(classTree)) {
+                checkDefaultConstructor(classTree);
             }
 
             /* Visit the extends and implements clauses.
              * The superclass also visits them, but only calls visitParameterizedType, which
              * loses a main modifier.
              */
-            Tree ext = node.getExtendsClause();
+            Tree ext = classTree.getExtendsClause();
             if (ext != null) {
                 validateTypeOf(ext);
             }
 
-            List<? extends Tree> impls = node.getImplementsClause();
+            List<? extends Tree> impls = classTree.getImplementsClause();
             if (impls != null) {
                 for (Tree im : impls) {
                     validateTypeOf(im);
                 }
             }
-            Void returnValue = super.visitClass(node, p);
-            atypeFactory.postProcessClassTree(node);
+            Void returnValue = super.visitClass(classTree, p);
+            atypeFactory.postProcessClassTree(classTree);
             return returnValue;
         } finally {
             this.visitorState.setClassType(preACT);

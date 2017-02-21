@@ -269,6 +269,12 @@ public class InitializationVisitor<
 
     @Override
     public Void visitClass(ClassTree node, Void p) {
+        if (checker.shouldSkipDefs(node)) {
+            // Not "return super.visitClass(node, p);" because that would
+            // recursively call visitors on subtrees; we want to skip the
+            // class entirely.
+            return null;
+        }
         // call the ATF with any node from this class to trigger the org.checkerframework.dataflow
         // analysis.
         atypeFactory.preProcessClassTree(node);
