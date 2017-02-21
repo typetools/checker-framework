@@ -6,17 +6,17 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The Range Class models an 64-bit 2 complement integral interval, such as all integers between 1
- * and 10, inclusive.
+ * The Range class models a 64-bit 2s-complement integral interval, such as all integers between 1
+ * and 10, inclusive. Ranges are immutable.
  *
  * @author JasonMrX
  */
 public class Range {
 
-    /** The value 'from'. */
+    /** The lower bound of the interval, inclusive. */
     public final long from;
 
-    /** The value 'to'. */
+    /** The upper bound of the interval, inclusive. */
     public final long to;
 
     /** A range containing all possible values. */
@@ -30,10 +30,10 @@ public class Range {
     public static final Range NOTHING = new Range(true);
 
     /**
-     * Constructs a range with its bounds specified by two parameters, "from" and "to".
+     * Constructs a range with its bounds specified by two parameters, {@code from} and {@code to}.
      *
      * @param from the lower bound (inclusive)
-     * @param to the higher bound (inclusive)
+     * @param to the upper bound (inclusive)
      */
     public Range(long from, long to) {
         if (!(from <= to)) {
@@ -43,7 +43,7 @@ public class Range {
         this.to = to;
     }
 
-    /** Creates the singleton empty range */
+    /** Creates the singleton empty range. */
     private Range(boolean isEmpty) {
         if (!isEmpty) {
             throw new IllegalArgumentException();
@@ -52,54 +52,57 @@ public class Range {
         this.to = Long.MIN_VALUE;
     }
 
+    /**
+     * Returns a range with its bounds specified by two parameters, {@code from} and {@code to}. If
+     * {@code from} is greater than {@code to}, returns {@link #NOTHING}.
+     *
+     * @param from the lower bound (inclusive)
+     * @param to the upper bound (inclusive)
+     */
+    private createRangeOrNothing(long from, long to) {
+        if (from <= resultTo) {
+            return new Range(from, to);
+        } else {
+            return NOTHING;
+        }
+    }
+
     @Override
     public String toString() {
         return String.format("[%s..%s]", from, to);
     }
 
-    /** Return true if this range contains everything. */
+    /** Return true if this range contains every {@code long} value. */
     public boolean isEverything() {
-        return this == EVERYTHING;
+        return from == Long.MIN_VALUE && to == Long.MAX_VALUE;
     }
 
-    /** Return true if this range contains nothing. */
+    /** Return true if this range contains no values. */
     public boolean isNothing() {
         return this == NOTHING;
     }
 
     /**
-     * Converts the elements in this range to int type as if they are overflow in the case of
-     * 32-bits int
+     * Creates a 32-bit integral range from this range. Returns INT_EVERYTHING if this range doesn't
+     * fit in 32-bit values.
      */
     public Range intRange() {
-        if (this.isWiderThan(Integer.MAX_VALUE - Integer.MIN_VALUE + 1)) {
+        if (from < Integer.MIN_VALUE || to > Integer.MAX_VALUE) {
             return INT_EVERYTHING;
         } else {
-            int intFrom = (int) this.from;
-            int intTo = (int) this.to;
-            if (intFrom <= intTo) {
-                return new Range(intFrom, intTo);
-            } else {
-                return INT_EVERYTHING;
-            }
+            return this;
         }
     }
 
     /**
-     * Converts the elements in this range to short type as if they are overflow in the case of
-     * 16-bits short int
+     * Creates a 16-bit short range from this range. Returns SHORT_EVERYTHING if this range doesn't
+     * fit in 16-bit values.
      */
     public Range shortRange() {
-        if (this.isWiderThan(Short.MAX_VALUE - Short.MIN_VALUE + 1)) {
-            return SHORT_EVERYTHING;
+        if (from < Short.MIN_VALUE || to > Short.MAX_VALUE) {
+            return INT_EVERYTHING;
         } else {
-            short shortFrom = (short) this.from;
-            short shortTo = (short) this.to;
-            if (shortFrom <= shortTo) {
-                return new Range(shortFrom, shortTo);
-            } else {
-                return SHORT_EVERYTHING;
-            }
+            return this;
         }
     }
 
@@ -116,8 +119,10 @@ public class Range {
      * @return a range resulting from the union of the specified range and this range
      */
     public Range union(Range right) {
-        if (this.isNothing() || right.isNothing()) {
-            return NOTHING;
+        if (this.isNothing()) {
+            return right;
+        } else if (right.isNothing()) {
+            return this;
         }
 
         long resultFrom = Math.min(from, right.from);
@@ -127,8 +132,8 @@ public class Range {
 
     /**
      * Returns the smallest range that includes all values contained in both of the two ranges. We
-     * call this the intersection of two ranges. If there is no overlap between the two ranges, an
-     * empty range would be returned.
+     * call this the intersection of two ranges. If there is no overlap between the two ranges,
+     * returns an empty range.
      *
      * @param right the range to intersect with this range
      * @return a range resulting from the intersection of the specified range and this range
@@ -140,11 +145,7 @@ public class Range {
 
         long resultFrom = Math.max(from, right.from);
         long resultTo = Math.min(to, right.to);
-        if (resultFrom <= resultTo) {
-            return new Range(resultFrom, resultTo);
-        } else {
-            return NOTHING;
-        }
+        return createRangeOrNothing(resultFrom, resultTo);
     }
 
     /**
@@ -244,32 +245,31 @@ public class Range {
             return EVERYTHING;
         }
 
+        // Special cases that involve overflow.
+        // The only overflow in integer division is Long.MIN_VALUE / -1 == Long.MIN_VALUE.
         if (from == Long.MIN_VALUE && right.contains(-1)) {
-            // Special cases that involve overflow.
-            // Here the values in the right range should all be negative.
+            // The values in the right range are all negative because right does not contain 0 but
+            // does contain 1.
             if (from != to) {
                 // Special case 1:
-                // This range should contain Long.MIN_VALUE and Long.MIN_VALUE + 1, which make the
-                // result range EVERYTHING because the right range contains -1.
+                // This range contains Long.MIN_VALUE and Long.MIN_VALUE + 1, which makes the
+                // result range EVERYTHING.
                 return EVERYTHING;
             } else if (right.from != right.to) {
                 // Special case 2:
-                // This range should contains Long.MIN_VALUE only, and the right range should
-                // contains at least -1 and -2. It is obvious that the result range in this case
-                // is from Long.MIN_VALUE to Long.MIN_VALUE / -2.
+                // This range contains only Long.MIN_VALUE, and the right range contains at least -1
+                // and -2. The result range is from Long.MIN_VALUE to Long.MIN_VALUE / -2.
                 return new Range(Long.MIN_VALUE, Long.MIN_VALUE / -2);
             } else {
                 // Special case 3:
-                // Both this range and the right range contain only one value, Long.MIN_VALUE and -1
-                // respectively. It means that the result range contains a single value
-                // Long.MIN_VALUE / -1 = Long.MIN_VALUE
+                // This range contains only Long.MIN_VALUE, and right contains only -1.
                 return new Range(Long.MIN_VALUE, Long.MIN_VALUE);
             }
         }
 
         long resultFrom;
         long resultTo;
-        // We shouldn't worry about the overflow issue starting from here.
+        // We needn't worry about the overflow issue starting from here.
         // To facilitate the calculation of the result range, we categorize all the scenarios into 9
         // different cases:
         // 1. this: po, right: nn
@@ -281,7 +281,7 @@ public class Range {
         // 7. this: us, right: nn
         // 8. this: us, right: np
         // 9. this: us, right: us
-        // (note: po=>position, ne=>negative, us:=>unknown sign, np=>non-position, nn=>non-negative)
+        // (note: po=>positive, ne=>negative, us:=>unknown sign, np=>non-positive, nn=>non-negative)
         // The categorization corresponds to the following control flow branches.
         // It's not difficult to verify the calculation of each case.
         if (from > 0 && right.from >= 0) {
@@ -361,12 +361,12 @@ public class Range {
         }
 
         if (this.isWithinInteger() && right.from >= 0 && right.to <= 31) {
-            // The long type can handle the cases with shift distance no longer than 31
+            // The long type can handle the cases with shift distance no longer than 31.
             long resultFrom = from << (from >= 0 ? right.from : right.to);
             long resultTo = to << (to >= 0 ? right.to : right.from);
             return new Range(resultFrom, resultTo);
         } else if (right.from >= 0 && right.to <= 63) {
-            // if the shift distance is within 0 to 63, the calculation can be handled by BigInteger
+            // If the shift distance is within 0 to 63, the calculation can be handled by BigInteger.
             BigInteger bigFrom =
                     BigInteger.valueOf(from)
                             .shiftLeft(from >= 0 ? (int) right.from : (int) right.to);
@@ -374,7 +374,7 @@ public class Range {
                     BigInteger.valueOf(to).shiftLeft(to >= 0 ? (int) right.to : (int) right.from);
             return bigRange2LongRange(bigFrom, bigTo);
         } else {
-            // In other cases, we give up the calculation and return EVERYTHING (rare in practice)
+            // In other cases, we give up the calculation and return EVERYTHING (rare in practice).
             return EVERYTHING;
         }
     }
@@ -398,7 +398,7 @@ public class Range {
             long resultTo = to >> (to >= 0 ? right.from : right.to);
             return new Range(resultFrom, resultTo);
         } else {
-            // Signed shift right operation for long type cannot be simulated with BigInteger
+            // Signed shift right operation for long type cannot be simulated with BigInteger.
             // Give up the calculation and return EVERYTHING instead.
             return EVERYTHING;
         }
@@ -448,26 +448,25 @@ public class Range {
     }
 
     /**
-     * Determines a refined range of a variable that fall within this {@code Range} under the
-     * condition that this variable is less than another variable that fall within the specified
-     * {@code Range}. This is used for calculating the control flow refined result of the &lt;
-     * operator. i.e.
+     * Refines this range to reflect that some value in it can be less than a value in the given
+     * range. This is used for calculating the control-flow-refined result of the &lt; operator. For
+     * example:
      *
      * <pre>
      * <code>
      *     {@literal @}IntRange(from = 0, to = 10) int a;
-     *     {@literal @}IntRange(from = 3, to = 5) int b;
+     *     {@literal @}IntRange(from = 3, to = 7) int b;
      *     ...
      *     if (a &lt; b) {
-     *         // range of <i>a</i> is now refined to [0, 4] because a value in range [5, 10]
-     *         // cannot be smaller than variable <i>b</i> with range [3, 5]
+     *         // range of <i>a</i> is now refined to [0, 6] because a value in range [7, 10]
+     *         // cannot be smaller than variable <i>b</i> with range [3, 7].
      *         ...
      *     }
      * </code>
      * </pre>
      *
-     * @param right the specified {@code Range} to compare with.
-     * @return the refined {@code Range}.
+     * @param right the specified {@code Range} to compare with
+     * @return the refined {@code Range}
      */
     public Range refineLessThan(Range right) {
         if (this.isNothing() || right.isNothing()) {
@@ -479,34 +478,29 @@ public class Range {
         }
 
         long resultTo = Math.min(to, right.to - 1);
-        if (from <= resultTo) {
-            return new Range(from, resultTo);
-        } else {
-            return NOTHING;
-        }
+        return createRangeOrNothing(from, resultTo);
     }
 
     /**
-     * Determines a refined range of a variable that fall within this {@code Range} under the
-     * condition that this variable is less than or equal to another variable that fall within the
-     * specified {@code Range}. This is used for calculating the control flow refined result of the
-     * &lt;= operator. i.e.
+     * Refines this range to reflect that some value in it can be less than or equal to a value in
+     * the given range. This is used for calculating the control-flow-refined result of the &lt;=
+     * operator. For example:
      *
      * <pre>
      * <code>
      *     {@literal @}IntRange(from = 0, to = 10) int a;
-     *     {@literal @}IntRange(from = 3, to = 5) int b;
+     *     {@literal @}IntRange(from = 3, to = 7) int b;
      *     ...
      *     if (a &lt;= b) {
-     *         // range of <i>a</i> is now refined to [0, 5] because a value in range [6, 10]
-     *         // cannot be less than or equal to variable <i>b</i> with range [3, 5]
+     *         // range of <i>a</i> is now refined to [0, 7] because a value in range [8, 10]
+     *         // cannot be less than or equal to variable <i>b</i> with range [3, 7].
      *         ...
      *     }
      * </code>
      * </pre>
      *
-     * @param right the specified {@code Range} to compare with.
-     * @return the refined {@code Range}.
+     * @param right the specified {@code Range} to compare with
+     * @return the refined {@code Range}
      */
     public Range refineLessThanEq(Range right) {
         if (this.isNothing() || right.isNothing()) {
@@ -514,34 +508,29 @@ public class Range {
         }
 
         long resultTo = Math.min(to, right.to);
-        if (from <= resultTo) {
-            return new Range(from, resultTo);
-        } else {
-            return NOTHING;
-        }
+        return createRangeOrNothing(from, resultTo);
     }
 
     /**
-     * Determines a refined range of a variable that fall within this {@code Range} under the
-     * condition that this variable is greater than another variable that fall within the specified
-     * {@code Range}. This is used for calculating the control flow refined result of the &gt;
-     * operator. i.e.
+     * Refines this range to reflect that some value in it can be greater than a value in the given
+     * range. This is used for calculating the control-flow-refined result of the &gt; operator. For
+     * example:
      *
      * <pre>
      * <code>
      *     {@literal @}IntRange(from = 0, to = 10) int a;
-     *     {@literal @}IntRange(from = 3, to = 5) int b;
+     *     {@literal @}IntRange(from = 3, to = 7) int b;
      *     ...
      *     if (a &gt; b) {
-     *         // range of <i>a</i> is now refined to [6, 10] because a value in range [0, 5]
-     *         // cannot be greater than variable <i>b</i> with range [3, 5]
+     *         // range of <i>a</i> is now refined to [8, 10] because a value in range [0, 7]
+     *         // cannot be greater than variable <i>b</i> with range [3, 7].
      *         ...
      *     }
      * </code>
      * </pre>
      *
-     * @param right the specified {@code Range} to compare with.
-     * @return the refined {@code Range}.
+     * @param right the specified {@code Range} to compare with
+     * @return the refined {@code Range}
      */
     public Range refineGreaterThan(Range right) {
         if (this.isNothing() || right.isNothing()) {
@@ -553,34 +542,29 @@ public class Range {
         }
 
         long resultFrom = Math.max(from, right.from + 1);
-        if (resultFrom <= to) {
-            return new Range(resultFrom, to);
-        } else {
-            return NOTHING;
-        }
+        return createRangeOrNothing(resultFrom, to);
     }
 
     /**
-     * Determines a refined range of a variable that fall within this {@code Range} under the
-     * condition that this variable is greater than or equal to another variable that fall within
-     * the specified {@code Range}. This is used for calculating the control flow refined result of
-     * the &gt;= operator. i.e.
+     * Refines this range to reflect that some value in it can be greater than or equal to a value
+     * in the given range. This is used for calculating the control-flow-refined result of the &gt;=
+     * operator. For example:
      *
      * <pre>
      * <code>
      *     {@literal @}IntRange(from = 0, to = 10) int a;
-     *     {@literal @}IntRange(from = 3, to = 5) int b;
+     *     {@literal @}IntRange(from = 3, to = 7) int b;
      *     ...
      *     if (a &gt;= b) {
-     *         // range of <i>a</i> is now refined to [5, 10] because a value in range [0, 4]
-     *         // cannot be greater than or equal to variable <i>b</i> with range [3, 5]
+     *         // range of <i>a</i> is now refined to [7, 10] because a value in range [0, 6]
+     *         // cannot be greater than or equal to variable <i>b</i> with range [3, 7].
      *         ...
      *     }
      * </code>
      * </pre>
      *
-     * @param right the specified {@code Range} to compare with.
-     * @return the refined {@code Range}.
+     * @param right the specified {@code Range} to compare with
+     * @return the refined {@code Range}
      */
     public Range refineGreaterThanEq(Range right) {
         if (this.isNothing() || right.isNothing()) {
@@ -588,18 +572,13 @@ public class Range {
         }
 
         long resultFrom = Math.max(from, right.from);
-        if (resultFrom <= to) {
-            return new Range(resultFrom, to);
-        } else {
-            return NOTHING;
-        }
+        return createRangeOrNothing(resultFrom, to);
     }
 
     /**
-     * Determines a refined range of a variable that fall within this {@code Range} under the
-     * condition that this variable is equal to another variable that fall within the specified
-     * {@code Range}. This is used for calculating the control flow refined result of the ==
-     * operator. i.e.
+     * Refines this range to reflect that some value in it can be equal to a value in the given
+     * range. This is used for calculating the control-flow-refined result of the == operator. For
+     * example:
      *
      * <pre>
      * <code>
@@ -607,15 +586,15 @@ public class Range {
      *     {@literal @}IntRange(from = 3, to = 15) int b;
      *     ...
      *     if (a == b) {
-     *         // range of <i>a</i> is now refined to [3. 10] because a value in range [0, 2]
-     *         // cannot be equal to variable <i>b</i> with range [3, 15]
+     *         // range of <i>a</i> is now refined to [3, 10] because a value in range [0, 2]
+     *         // cannot be equal to variable <i>b</i> with range [3, 15].
      *         ...
      *     }
      * </code>
      * </pre>
      *
-     * @param right the specified {@code Range} to compare with.
-     * @return the refined {@code Range}.
+     * @param right the specified {@code Range} to compare with
+     * @return the refined {@code Range}
      */
     public Range refineEqualTo(Range right) {
         if (this.isNothing() || right.isNothing()) {
@@ -624,16 +603,12 @@ public class Range {
 
         long resultFrom = Math.max(from, right.from);
         long resultTo = Math.min(to, right.to);
-        if (resultFrom <= resultTo) {
-            return new Range(resultFrom, resultTo);
-        } else {
-            return NOTHING;
-        }
+        return createRangeOrNothing(resultFrom, resultTo);
     }
 
     /**
      * Returns the number of possible values enclosed by this range. To prevent overflow, we use
-     * BigInteger for calculation and return a BitInteger.
+     * BigInteger for calculation and return a BigInteger.
      *
      * @return the number of possible values enclosed by this range
      */
@@ -655,29 +630,32 @@ public class Range {
     /**
      * Determines if this range is completely contained in the scope of the Integer type.
      *
-     * @return true if the range is completely contained in the scope of the Integer type.
+     * @return true if the range is completely contained in the scope of the Integer type
      */
     public boolean isWithinInteger() {
         return from >= Integer.MIN_VALUE && to <= Integer.MAX_VALUE;
     }
 
+    private static final BigInteger longPossibleValues =
+            BigInteger.valueOf(Long.MAX_VALUE - Long.MIN_VALUE + 1);
+
     /**
      * Converts a range with BigInteger type bounds to a range with Long type bounds.
      *
      * <p>If the BigInteger bounds are out of the Long type scope, convert the bounds to Long type
-     * as if it is overflow, e.g., Long.MAX_VALUE + 1 is converted to Long.MIN_VALUE
+     * in accordance with Java overflow rules, e.g., Long.MAX_VALUE + 1 is converted to
+     * Long.MIN_VALUE.
      *
-     * <p>If the BigInteger range is too wide, i.e., wider than the full range of Long class, return
-     * EVERYTHING
+     * <p>If the BigInteger range is too wide, i.e., wider than the full range of the Long class,
+     * return EVERYTHING.
      *
      * @param bigFrom the lower bound of the BigInteger range
      * @param bigTo the upper bound of the BigInteger range
      * @return a range with Long type bounds converted from the BigInteger range
      */
     private static Range bigRange2LongRange(BigInteger bigFrom, BigInteger bigTo) {
-        if (bigTo.subtract(bigFrom)
-                        .compareTo(BigInteger.valueOf(Long.MAX_VALUE - Long.MIN_VALUE + 1))
-                == 1) {
+        BigInteger numValues = bigTo.subtract(bigFrom);
+        if (numValues.compareTo(longPossibleValues) == 1) {
             return EVERYTHING;
         } else {
             long resultFrom = bigFrom.longValue();
