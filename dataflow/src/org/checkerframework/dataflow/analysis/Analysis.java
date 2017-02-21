@@ -555,15 +555,13 @@ public class Analysis<
     }
 
     private S mergeStores(S previousStore, S newStore, boolean shouldWiden) {
-        S newThenStore;
-        if (shouldWiden) {
-            newThenStore =
-                    (newStore != null) ? newStore.widenUpperBound(previousStore) : previousStore;
+        if (newStore == null) {
+            return previousStore;
+        } else if (shouldWiden) {
+            return newStore.widenUpperBound(previousStore);
         } else {
-            newThenStore =
-                    (newStore != null) ? newStore.leastUpperBound(previousStore) : previousStore;
+            return newStore.leastUpperBound(previousStore);
         }
-        return newThenStore;
     }
 
     /**

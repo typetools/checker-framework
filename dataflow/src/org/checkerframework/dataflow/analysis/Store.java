@@ -55,10 +55,11 @@ public interface Store<S extends Store<S>> {
 
     /**
      * Compute an upper bound of two stores that is wider than the least upper bound of the two
-     * stores.
+     * stores. Used to jump to a higher abstraction to allow faster termination of the fixed point
+     * computations in {@link Analysis}.
      *
-     * <p>(This might not be require for an analysis, if not required, implementations should call
-     * leastUpperBound.)
+     * <p>A particular analysis might not require widening and should implement this method by
+     * calling leastUpperBound)
      *
      * <p><em>Important</em>: This method must fulfill the following contract:
      *
