@@ -326,16 +326,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
-    // For use in the refinement rules.
     public boolean hasLowerBoundTypeByClass(Node node, Class<? extends Annotation> classOfType) {
-        return hasLowerBoundTypeByClass(node.getTree(), classOfType);
-    }
-
-    // For use in the refinement rules.
-    private boolean hasLowerBoundTypeByClass(Tree tree, Class<? extends Annotation> classOfType) {
         return AnnotationUtils.areSameByClass(
                 getLowerBoundAnnotatedTypeFactory()
-                        .getAnnotatedType(tree)
+                        .getAnnotatedType(node.getTree())
                         .getAnnotationInHierarchy(getLowerBoundAnnotatedTypeFactory().UNKNOWN),
                 classOfType);
     }
