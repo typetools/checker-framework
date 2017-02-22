@@ -257,9 +257,9 @@ error: [dereference.of.nullable] dereference of possibly-null reference currentL
 \begin{sloppypar}
 When reflection resolution is enabled, the MethodVal Checker infers that the \<@MethodVal> annotation for \<getCurrentLocationObj>  is:
 \end{sloppypar}
-\begin{center}
-\<@MethodVal(className="LocationInfo", methodName="getCurrentLocation", params=0)>
-\end{center}
+
+\quad \<@MethodVal(className="LocationInfo", methodName="getCurrentLocation", params=0)>
+
 Based on this \<@MethodVal> annotation, the reflection resolver determines that
 the reflective method call represents a call to \<getCurrentLocation> in class
 \<LocationInfo>.
