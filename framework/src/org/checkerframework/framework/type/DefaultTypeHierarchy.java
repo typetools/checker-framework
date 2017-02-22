@@ -548,18 +548,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             VisitHistory visited) {
 
         if (subtypeRaw || supertypeRaw) {
-            if (!rawnessComparer.isValidInHierarchy(subTypeArg, superTypeArg, currentTop, visited)
-                    && !isContainedBy(subTypeArg, superTypeArg, visited, this.covariantTypeArgs)) {
-                return false;
-            }
-
+            return rawnessComparer.isValidInHierarchy(subTypeArg, superTypeArg, currentTop, visited)
+                    || isContainedBy(subTypeArg, superTypeArg, visited, this.covariantTypeArgs);
         } else {
-            if (!isContainedBy(subTypeArg, superTypeArg, visited, this.covariantTypeArgs)) {
-                return false;
-            }
+            return isContainedBy(subTypeArg, superTypeArg, visited, this.covariantTypeArgs);
         }
-
-        return true;
     }
 
     @Override
