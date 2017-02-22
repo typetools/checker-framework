@@ -42,7 +42,7 @@ public class TransferSub {
 
         // decrements
 
-        //:: error: (compound.assignment.type.incompatible) :: error: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         @Positive int q = --k; // k = 0
 
         @NonNegative int r = k--; // after this k = -1
