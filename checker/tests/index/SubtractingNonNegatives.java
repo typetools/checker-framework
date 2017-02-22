@@ -13,6 +13,7 @@ public class SubtractingNonNegatives {
         }
     }
 
+    @SuppressWarnings("lowerbound")
     void test(int[] a, @Positive int y) {
         @LTLengthOf("a") int x = a.length - 1;
         @LTLengthOf(
@@ -23,6 +24,7 @@ public class SubtractingNonNegatives {
         a[z + y] = 0;
     }
 
+    @SuppressWarnings("lowerbound")
     void test2(int[] a, @Positive int y) {
         @LTLengthOf("a") int x = a.length - 1;
         int z = x - y;

@@ -31,8 +31,6 @@ import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.MinLen;
-import org.checkerframework.checker.index.qual.NonNegative;
-import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
@@ -467,14 +465,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             ExpressionTree right = tree.getRightOperand();
             switch (tree.getKind()) {
                 case PLUS:
+                case MINUS:
                     // Dataflow refines this type if possible
                     type.addAnnotation(UNKNOWN);
-                    break;
-                case MINUS:
-                    // Dataflow refines this type most of the time.
-                    // But when a NonNegative is subtracted from a LTL,
-                    // the result is still LTL without an offset.
-                    addAnnotationForMinus(left, right, type);
                     break;
                 case MULTIPLY:
                     addAnnotationForMultiply(left, right, type);
@@ -486,22 +479,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     break;
             }
             return super.visitBinary(tree, type);
-        }
-
-        private void addAnnotationForMinus(
-                ExpressionTree leftTree, ExpressionTree rightTree, AnnotatedTypeMirror resultType) {
-
-            if (hasLowerBoundTypeByClass(rightTree, NonNegative.class)
-                    || hasLowerBoundTypeByClass(rightTree, Positive.class)) {
-                AnnotatedTypeMirror leftType = getAnnotatedType(leftTree);
-                UBQualifier leftQual = UBQualifier.createUBQualifier(leftType, UNKNOWN);
-                if (!leftQual.isUnknownOrBottom()) {
-                    resultType.addAnnotation(convertUBQualifierToAnnotation(leftQual));
-                    return;
-                }
-            }
-            resultType.addAnnotation(UNKNOWN);
-            return;
         }
 
         private void addAnnotationForDivide(
