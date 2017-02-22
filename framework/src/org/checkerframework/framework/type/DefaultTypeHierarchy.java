@@ -116,8 +116,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     // passing annotations to qualifierHierarchy.
     protected AnnotationMirror currentTop;
 
-    // Whether to work around Issue 979
-    protected final boolean shouldWorkAroundIssue979;
+    /**
+     * Whether to ignore uninferred type arguments. This is a temporary flag to work around Issue
+     * 979.
+     */
+    protected final boolean ignoreUninferredTypeArguments;
 
     public DefaultTypeHierarchy(
             final BaseTypeChecker checker,
