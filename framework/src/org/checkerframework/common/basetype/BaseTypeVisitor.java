@@ -1216,8 +1216,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 || (node.getKind() == Tree.Kind.PREFIX_INCREMENT)
                 || (node.getKind() == Tree.Kind.POSTFIX_DECREMENT)
                 || (node.getKind() == Tree.Kind.POSTFIX_INCREMENT)) {
-            AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node.getExpression());
-            checkAssignability(type, node.getExpression());
+            AnnotatedTypeMirror varType = atypeFactory.getAnnotatedTypeLhs(node.getExpression());
+            // For postfix increments/decrements, the value type is incorrect due to the workaround
+            // in GenericAnnotatedTypeFactory.addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)
+            // for the following bug:
+            // See Issue 867: https://github.com/typetools/checker-framework/issues/867
+            // This means could result in a false warning (false positive) in some cases and a lack
+            // of a warning in other cases (false negative).
+            AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(node);
+            commonAssignmentCheck(
+                    varType, valueType, node, "compound.assignment.type.incompatible");
         }
         return super.visitUnary(node, p);
     }
