@@ -5,6 +5,8 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
+import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -108,6 +110,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * node is added to the left node. And this means that the right node is less than or equal to
      * the length of the array when the left node is added to the right node.
      *
+     * <p>In addition, if the right node is known to be NonNegative, then the left node on its own
+     * is less than or equal to the length of the array, and vice-versa. And, when the right node is
+     * Positive, the left node is less than the length of the array, and vice-versa.
+     *
      * @param node addition node that is known to be equal to the length of the array referenced by
      *     arrayExp
      * @param arrayExp array expression
@@ -124,12 +130,26 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
         UBQualifier newInfo = UBQualifier.createUBQualifier(arrayExp, "-1");
         UBQualifier newLeft = left.glb(newInfo.plusOffset(node.getRightOperand(), atypeFactory));
+        newLeft = accountForLowerBoundAnnos(node.getRightOperand(), newLeft, arrayExp);
+
         Receiver leftRec = FlowExpressions.internalReprOf(atypeFactory, node.getLeftOperand());
         store.insertValue(leftRec, atypeFactory.convertUBQualifierToAnnotation(newLeft));
 
         UBQualifier newRight = right.glb(newInfo.plusOffset(node.getLeftOperand(), atypeFactory));
+        newRight = accountForLowerBoundAnnos(node.getLeftOperand(), newRight, arrayExp);
+
         Receiver rightRec = FlowExpressions.internalReprOf(atypeFactory, node.getRightOperand());
         store.insertValue(rightRec, atypeFactory.convertUBQualifierToAnnotation(newRight));
+    }
+
+    /** If the node is NN, add an LTEL to the qual. If POS, an LTL. */
+    private UBQualifier accountForLowerBoundAnnos(Node node, UBQualifier qual, String arrayExp) {
+        if (atypeFactory.hasLowerBoundTypeByClass(node, Positive.class)) {
+            qual = qual.glb(UBQualifier.createUBQualifier(arrayExp, "0"));
+        } else if (atypeFactory.hasLowerBoundTypeByClass(node, NonNegative.class)) {
+            qual = qual.glb(UBQualifier.createUBQualifier(arrayExp, "-1"));
+        }
+        return qual;
     }
 
     @Override
@@ -339,7 +359,6 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             // @LTLength("a") int i = 4;  // error
             // The type of i in the store is @UpperBoundUnknown, but the type of i as computed by
             // the type factory is @LTLength("a"), so use that type.
-
             CFValue valueFromFactory = getValueFromFactory(n.getTree(), n);
             return getUBQualifier(hierarchy, valueFromFactory);
         }
