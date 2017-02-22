@@ -310,8 +310,11 @@ public class RangeTest {
     public void testDivide() {
         for (RangeAndElement re1 : rangeAndElements()) {
             for (RangeAndElement re2 : rangeAndElements()) {
+                if (re2.element == 0) {
+                    continue;
+                }
                 Range result = re1.range.divide(re2.range);
-                Long witness = re2.element == 0 ? Long.MAX_VALUE : re1.element / re2.element;
+                Long witness = re1.element / re2.element;
                 assert result.contains(witness)
                         : String.format(
                                 "Range.divide failure: %s %s => %s; witnesses %s / %s => %s",
@@ -324,8 +327,11 @@ public class RangeTest {
     public void testRemainder() {
         for (RangeAndElement re1 : rangeAndElements()) {
             for (RangeAndElement re2 : rangeAndElements()) {
+                if (re2.element == 0) {
+                    continue;
+                }
                 Range result = re1.range.remainder(re2.range);
-                Long witness = re2.element == 0 ? Long.MAX_VALUE : re1.element % re2.element;
+                Long witness = re1.element % re2.element;
                 assert result.contains(witness)
                         : String.format(
                                 "Range.divide failure: %s %s => %s; witnesses %s % %s => %s",
