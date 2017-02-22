@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
+import org.checkerframework.checker.index.lowerbound.LowerBoundAnnotatedTypeFactory;
+import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
 import org.checkerframework.checker.index.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.minlen.MinLenChecker;
 import org.checkerframework.checker.index.qual.IndexFor;
@@ -41,6 +43,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -127,6 +130,15 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private SameLenAnnotatedTypeFactory getSameLenAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(SameLenChecker.class);
+    }
+
+    /**
+     * Provides a way to query the Lower Bound Checker, which determines whether each integer in the
+     * program is non-negative or not, and checks that no possibly negative integers are used to
+     * access arrays.
+     */
+    private LowerBoundAnnotatedTypeFactory getLowerBoundAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(LowerBoundChecker.class);
     }
 
     @Override
@@ -312,6 +324,15 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         builder.setValue("value", names);
         return builder.build();
+    }
+
+    // For use in the refinement rules.
+    public boolean hasLowerBoundTypeByClass(Node node, Class<? extends Annotation> classOfType) {
+        return AnnotationUtils.areSameByClass(
+                getLowerBoundAnnotatedTypeFactory()
+                        .getAnnotatedType(node.getTree())
+                        .getAnnotationInHierarchy(getLowerBoundAnnotatedTypeFactory().UNKNOWN),
+                classOfType);
     }
 
     @Override
