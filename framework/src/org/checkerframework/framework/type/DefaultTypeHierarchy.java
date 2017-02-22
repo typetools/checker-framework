@@ -153,7 +153,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         this.invariantArrayComponents = invariantArrayComponents;
         this.covariantTypeArgs = covariantTypeArgs;
 
-        shouldWorkAroundIssue979 = !checker.hasOption("conservativeUninferredTypeArguments");
+        ignoreUninferredTypeArguments = !checker.hasOption("conservativeUninferredTypeArguments");
     }
 
     /**
@@ -409,7 +409,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             return true;
         }
 
-        if (shouldWorkAroundIssue979 && inside.getKind() == TypeKind.WILDCARD) {
+        if (ignoreUninferredTypeArguments && inside.getKind() == TypeKind.WILDCARD) {
             final AnnotatedWildcardType insideWc = (AnnotatedWildcardType) inside;
             if (insideWc.isUninferredTypeArgument()) {
                 return true;
