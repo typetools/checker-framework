@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.upperbound;
 
+import com.sun.source.tree.ExpressionTree;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -20,6 +21,7 @@ import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
+import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAnalysis;
@@ -77,6 +79,37 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             knownToBeArrayLength((NumericalAdditionNode) node, array, in, store);
         } else if (node instanceof NumericalSubtractionNode) {
             knownToBeArrayLength((NumericalSubtractionNode) node, array, in, store);
+        } else if (node instanceof NumericalMultiplicationNode) {
+            Node right = ((NumericalMultiplicationNode) node).getRightOperand();
+            Node left = ((NumericalMultiplicationNode) node).getLeftOperand();
+            knownToBeArrayLengthMultiplication(right, left, array, in, store);
+            knownToBeArrayLengthMultiplication(left, right, array, in, store);
+        }
+    }
+
+    /**
+     * The positive node times node is known to be exactly the length of arrayExp. If the positive
+     * node is really positive, then node is less than or equal to the length of arrayExp. If
+     * positive is greater than 1, then node is less than the length of arrayExp.
+     */
+    private void knownToBeArrayLengthMultiplication(
+            Node positive,
+            Node node,
+            String arrayExp,
+            TransferInput<CFValue, CFStore> in,
+            CFStore store) {
+        if (atypeFactory.hasLowerBoundTypeByClass(positive, Positive.class)) {
+            UBQualifier lessThan;
+            Integer x = atypeFactory.valMinFromExpressionTree((ExpressionTree) positive.getTree());
+            if (x != null && x > 1) {
+                lessThan = UBQualifier.createUBQualifier(arrayExp, "0");
+            } else {
+                lessThan = UBQualifier.createUBQualifier(arrayExp, "-1");
+            }
+            UBQualifier qual = getUBQualifier(node, in);
+            UBQualifier newQual = qual.glb(lessThan);
+            Receiver rec = FlowExpressions.internalReprOf(atypeFactory, node);
+            store.insertValue(rec, atypeFactory.convertUBQualifierToAnnotation(newQual));
         }
     }
 
