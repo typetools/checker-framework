@@ -59,8 +59,8 @@ public class Range {
      * @param from the lower bound (inclusive)
      * @param to the upper bound (inclusive)
      */
-    private createRangeOrNothing(long from, long to) {
-        if (from <= resultTo) {
+    private Range createRangeOrNothing(long from, long to) {
+        if (from <= to) {
             return new Range(from, to);
         } else {
             return NOTHING;
@@ -83,26 +83,50 @@ public class Range {
     }
 
     /**
-     * Creates a 32-bit integral range from this range. Returns INT_EVERYTHING if this range doesn't
-     * fit in 32-bit values.
+     * Converts a this range to a 32-bit integral range.
+     *
+     * <p>If the this range are out of the Integer type scope, convert the bounds to Integer type in
+     * accordance with Java overflow rules, e.g., Integer.MAX_VALUE + 1 is converted to
+     * Integer.MIN_VALUE.
+     *
+     * <p>If this range is too wide, i.e., wider than the full range of the Integer class, return
+     * INT_EVERYTHING.
      */
     public Range intRange() {
-        if (from < Integer.MIN_VALUE || to > Integer.MAX_VALUE) {
+        if (this.isWiderThan(Integer.MAX_VALUE - Integer.MIN_VALUE + 1)) {
             return INT_EVERYTHING;
         } else {
-            return this;
+            int intFrom = (int) this.from;
+            int intTo = (int) this.to;
+            if (intFrom <= intTo) {
+                return new Range(intFrom, intTo);
+            } else {
+                return INT_EVERYTHING;
+            }
         }
     }
 
     /**
-     * Creates a 16-bit short range from this range. Returns SHORT_EVERYTHING if this range doesn't
-     * fit in 16-bit values.
+     * Converts a this range to a 16-bit short range.
+     *
+     * <p>If the this range are out of the Short type scope, convert the bounds to Short type in
+     * accordance with Java overflow rules, e.g., Short.MAX_VALUE + 1 is converted to
+     * Short.MIN_VALUE.
+     *
+     * <p>If this range is too wide, i.e., wider than the full range of the Short class, return
+     * SHORT_EVERYTHING.
      */
     public Range shortRange() {
-        if (from < Short.MIN_VALUE || to > Short.MAX_VALUE) {
-            return INT_EVERYTHING;
+        if (this.isWiderThan(Short.MAX_VALUE - Short.MIN_VALUE + 1)) {
+            return SHORT_EVERYTHING;
         } else {
-            return this;
+            short shortFrom = (short) this.from;
+            short shortTo = (short) this.to;
+            if (shortFrom <= shortTo) {
+                return new Range(shortFrom, shortTo);
+            } else {
+                return SHORT_EVERYTHING;
+            }
         }
     }
 
@@ -168,7 +192,7 @@ public class Range {
         } else {
             BigInteger bigFrom = BigInteger.valueOf(from).add(BigInteger.valueOf(right.from));
             BigInteger bigTo = BigInteger.valueOf(to).add(BigInteger.valueOf(right.to));
-            return bigRange2LongRange(bigFrom, bigTo);
+            return bigRangeToLongRange(bigFrom, bigTo);
         }
     }
 
@@ -192,7 +216,7 @@ public class Range {
         } else {
             BigInteger bigFrom = BigInteger.valueOf(from).subtract(BigInteger.valueOf(right.to));
             BigInteger bigTo = BigInteger.valueOf(to).subtract(BigInteger.valueOf(right.from));
-            return bigRange2LongRange(bigFrom, bigTo);
+            return bigRangeToLongRange(bigFrom, bigTo);
         }
     }
 
@@ -223,7 +247,7 @@ public class Range {
                             BigInteger.valueOf(to).multiply(BigInteger.valueOf(right.to)));
             BigInteger bigFrom = Collections.min(bigPossibleValues);
             BigInteger bigTo = Collections.max(bigPossibleValues);
-            return bigRange2LongRange(bigFrom, bigTo);
+            return bigRangeToLongRange(bigFrom, bigTo);
         }
     }
 
@@ -238,11 +262,6 @@ public class Range {
     public Range divide(Range right) {
         if (this.isNothing() || right.isNothing()) {
             return NOTHING;
-        }
-
-        if (right.contains(0)) {
-            // Should warn division by zero
-            return EVERYTHING;
         }
 
         // Special cases that involve overflow.
@@ -272,43 +291,41 @@ public class Range {
         // We needn't worry about the overflow issue starting from here.
         // To facilitate the calculation of the result range, we categorize all the scenarios into 9
         // different cases:
-        // 1. this: po, right: nn
-        // 2. this: po, right: np
-        // 3. this: po, right: us
-        // 4. this: ne, right: nn
-        // 5. this: ne, right: np
-        // 6. this: ne, right: us
-        // 7. this: us, right: nn
-        // 8. this: us, right: np
-        // 9. this: us, right: us
         // (note: po=>positive, ne=>negative, us:=>unknown sign, np=>non-positive, nn=>non-negative)
-        // The categorization corresponds to the following control flow branches.
-        // It's not difficult to verify the calculation of each case.
         if (from > 0 && right.from >= 0) {
+            // 1. this: po, right: nn
             resultFrom = from / Math.max(right.to, 1);
             resultTo = to / Math.max(right.from, 1);
         } else if (from > 0 && right.to <= 0) {
+            // 2. this: po, right: np
             resultFrom = to / Math.min(right.to, -1);
             resultTo = from / Math.min(right.from, -1);
         } else if (from > 0) {
+            // 3. this: po, right: us
             resultFrom = -to;
             resultTo = to;
         } else if (to < 0 && right.from >= 0) {
+            // 4. this: ne, right: nn
             resultFrom = from / Math.max(right.from, 1);
             resultTo = to / Math.max(right.to, 1);
         } else if (to < 0 && right.to <= 0) {
+            // 5. this: ne, right: np
             resultFrom = to / Math.min(right.from, -1);
             resultTo = from / Math.min(right.to, -1);
         } else if (to < 0) {
+            // 6. this: ne, right: us
             resultFrom = from;
             resultTo = -from;
         } else if (right.from >= 0) {
+            // 7. this: us, right: nn
             resultFrom = from / Math.max(right.from, 1);
             resultTo = to / Math.max(right.from, 1);
         } else if (right.to <= 0) {
+            // 8. this: us, right: np
             resultFrom = to / Math.min(right.to, -1);
             resultTo = from / Math.min(right.to, -1);
         } else {
+            // 9. this: us, right: us
             resultFrom = Math.min(from, -to);
             resultTo = Math.max(-from, to);
         }
@@ -317,22 +334,20 @@ public class Range {
 
     /**
      * Returns a range that includes all possible values of the remainder of dividing an arbitrary
-     * value in this range by an arbitrary value in the specified range.
+     * value in this range by an arbitrary value in the specified range. Note that this range might
+     * not be the smallest range that includes all the possible values.
      *
      * @param right the specified range by which this range is divided
-     * @return the range of the remainder of dividing this range by the specified range. Note that
-     *     this range might not be the smallest range that includes all the possible values.
+     * @return the range of the remainder of dividing this range by the specified range
      */
     public Range remainder(Range right) {
         if (this.isNothing() || right.isNothing()) {
             return NOTHING;
         }
 
-        if (right.contains(0)) {
-            // should warn division by zero
-            return EVERYTHING;
-        }
-
+        // It is too complicated to provide a precise estimation of the result range of the remainder operation.
+        // Instead of provide the optimal estimation, which is the smallest range that contains all possible values,
+        // here we tried our best to provide a slightly looser but correct bound.
         List<Long> possibleValues =
                 Arrays.asList(
                         0L,
@@ -372,7 +387,7 @@ public class Range {
                             .shiftLeft(from >= 0 ? (int) right.from : (int) right.to);
             BigInteger bigTo =
                     BigInteger.valueOf(to).shiftLeft(to >= 0 ? (int) right.to : (int) right.from);
-            return bigRange2LongRange(bigFrom, bigTo);
+            return bigRangeToLongRange(bigFrom, bigTo);
         } else {
             // In other cases, we give up the calculation and return EVERYTHING (rare in practice).
             return EVERYTHING;
@@ -465,6 +480,9 @@ public class Range {
      * </code>
      * </pre>
      *
+     * Use the {@link #refineGreaterThanEq(Range)} method if you are also interested in refining the
+     * given range
+     *
      * @param right the specified {@code Range} to compare with
      * @return the refined {@code Range}
      */
@@ -499,6 +517,9 @@ public class Range {
      * </code>
      * </pre>
      *
+     * Use the {@link #refineGreaterThan(Range)} method if you are also interested in refining the
+     * given range
+     *
      * @param right the specified {@code Range} to compare with
      * @return the refined {@code Range}
      */
@@ -522,12 +543,15 @@ public class Range {
      *     {@literal @}IntRange(from = 3, to = 7) int b;
      *     ...
      *     if (a &gt; b) {
-     *         // range of <i>a</i> is now refined to [8, 10] because a value in range [0, 7]
+     *         // range of <i>a</i> is now refined to [4, 10] because a value in range [0, 3]
      *         // cannot be greater than variable <i>b</i> with range [3, 7].
      *         ...
      *     }
      * </code>
      * </pre>
+     *
+     * Use the {@link #refineLessThanEq(Range)} method if you are also interested in refining the
+     * given range
      *
      * @param right the specified {@code Range} to compare with
      * @return the refined {@code Range}
@@ -556,12 +580,15 @@ public class Range {
      *     {@literal @}IntRange(from = 3, to = 7) int b;
      *     ...
      *     if (a &gt;= b) {
-     *         // range of <i>a</i> is now refined to [7, 10] because a value in range [0, 6]
+     *         // range of <i>a</i> is now refined to [3, 10] because a value in range [0, 2]
      *         // cannot be greater than or equal to variable <i>b</i> with range [3, 7].
      *         ...
      *     }
      * </code>
      * </pre>
+     *
+     * Use the {@link #refineLessThan(Range)} method if you are also interested in refining the
+     * given range
      *
      * @param right the specified {@code Range} to compare with
      * @return the refined {@code Range}
@@ -607,16 +634,6 @@ public class Range {
     }
 
     /**
-     * Returns the number of possible values enclosed by this range. To prevent overflow, we use
-     * BigInteger for calculation and return a BigInteger.
-     *
-     * @return the number of possible values enclosed by this range
-     */
-    public BigInteger numberOfPossibleValues() {
-        return BigInteger.valueOf(to).subtract(BigInteger.valueOf(from)).add(BigInteger.valueOf(1));
-    }
-
-    /**
      * Determines if the range is wider than a given value, i.e., if the number of possible values
      * enclosed by this range is more than the given value.
      *
@@ -624,7 +641,11 @@ public class Range {
      * @return true if wider than the given value
      */
     public boolean isWiderThan(long value) {
-        return numberOfPossibleValues().compareTo(BigInteger.valueOf(value)) == 1;
+        return BigInteger.valueOf(to)
+                        .subtract(BigInteger.valueOf(from))
+                        .add(BigInteger.ONE)
+                        .compareTo(BigInteger.valueOf(value))
+                == 1;
     }
 
     /**
@@ -632,7 +653,7 @@ public class Range {
      *
      * @return true if the range is completely contained in the scope of the Integer type
      */
-    public boolean isWithinInteger() {
+    private boolean isWithinInteger() {
         return from >= Integer.MIN_VALUE && to <= Integer.MAX_VALUE;
     }
 
@@ -653,8 +674,8 @@ public class Range {
      * @param bigTo the upper bound of the BigInteger range
      * @return a range with Long type bounds converted from the BigInteger range
      */
-    private static Range bigRange2LongRange(BigInteger bigFrom, BigInteger bigTo) {
-        BigInteger numValues = bigTo.subtract(bigFrom);
+    private static Range bigRangeToLongRange(BigInteger bigFrom, BigInteger bigTo) {
+        BigInteger numValues = bigTo.subtract(bigFrom).add(BigInteger.ONE);
         if (numValues.compareTo(longPossibleValues) == 1) {
             return EVERYTHING;
         } else {
