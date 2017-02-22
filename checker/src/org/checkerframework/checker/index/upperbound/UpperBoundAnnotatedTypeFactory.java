@@ -326,6 +326,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
+    /**
+     * Returns true iff the given node has the passed Lower Bound qualifier according to the LBC.
+     * The last argument should be Positive.class, NonNegative.class, or GTENegativeOne.class.
+     */
     public boolean hasLowerBoundTypeByClass(Node node, Class<? extends Annotation> classOfType) {
         return AnnotationUtils.areSameByClass(
                 getLowerBoundAnnotatedTypeFactory()
