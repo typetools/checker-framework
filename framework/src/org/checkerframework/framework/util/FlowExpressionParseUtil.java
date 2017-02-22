@@ -100,9 +100,9 @@ public class FlowExpressionParseUtil {
     /** Matches a field access. Capturing groups 1 and 2 are the object and field. */
     protected static final Pattern memberselect = anchored("([^.]+)\\.(.+)");
     /** Matches integer literals */
-    protected static final Pattern intPattern = anchored("[-+]?[1-9][0-9]*");
+    protected static final Pattern intPattern = anchored("[-+]?[1-9]*[0-9]");
     /** Matches long literals */
-    protected static final Pattern longPattern = anchored("[-+]?[1-9][0-9]*L");
+    protected static final Pattern longPattern = anchored("[-+]?[1-9]*[0-9]L");
     /** Matches string literals */
     // Regex can be found at, for example, http://stackoverflow.com/a/481587/173852
     protected static final Pattern stringPattern = anchored("\"(?:[^\"\\\\]|\\\\.)*\"");
