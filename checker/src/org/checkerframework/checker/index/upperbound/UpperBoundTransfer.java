@@ -301,7 +301,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * If some Node a is known to be less than the length of some array, x, then, the type of a - b,
+     * If some Node a is known to be less than the length of some array x, then the type of a - b
      * is @LTLengthOf(value="x", offset="b"). If b is known to be less than the length of some other
      * array, this doesn't add any information about the type of a - b. But, if b is non-negative or
      * positive, then a - b should keep the types of a.
