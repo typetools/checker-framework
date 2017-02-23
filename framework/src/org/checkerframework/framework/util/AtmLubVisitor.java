@@ -223,6 +223,10 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
             AnnotatedWildcardType type1Wildcard = (AnnotatedWildcardType) type1AsLub;
             AnnotatedWildcardType type2Wildcard = (AnnotatedWildcardType) type2AsLub;
             AnnotatedWildcardType lubWildcard = (AnnotatedWildcardType) lub;
+            if (type1Wildcard.isUninferredTypeArgument()
+                    || type2Wildcard.isUninferredTypeArgument()) {
+                lubWildcard.setUninferredTypeArgument();
+            }
             lubWildcard(
                     type1Wildcard.getSuperBound(),
                     type1Wildcard.getExtendsBound(),
@@ -232,16 +236,16 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
                     lubWildcard.getExtendsBound());
         } else if (lub.getKind() == TypeKind.TYPEVAR
                 && InternalUtils.isCaptured((TypeVariable) lub.getUnderlyingType())) {
-            AnnotatedTypeVariable type1Wildcard = (AnnotatedTypeVariable) type1AsLub;
-            AnnotatedTypeVariable type2Wildcard = (AnnotatedTypeVariable) type2AsLub;
-            AnnotatedTypeVariable lubWildcard = (AnnotatedTypeVariable) lub;
+            AnnotatedTypeVariable type1typevar = (AnnotatedTypeVariable) type1AsLub;
+            AnnotatedTypeVariable type2typevar = (AnnotatedTypeVariable) type2AsLub;
+            AnnotatedTypeVariable lubTypevar = (AnnotatedTypeVariable) lub;
             lubWildcard(
-                    type1Wildcard.getLowerBound(),
-                    type1Wildcard.getUpperBound(),
-                    type2Wildcard.getLowerBound(),
-                    type2Wildcard.getUpperBound(),
-                    lubWildcard.getLowerBound(),
-                    lubWildcard.getUpperBound());
+                    type1typevar.getLowerBound(),
+                    type1typevar.getUpperBound(),
+                    type2typevar.getLowerBound(),
+                    type2typevar.getUpperBound(),
+                    lubTypevar.getLowerBound(),
+                    lubTypevar.getUpperBound());
         } else {
             visit(type1AsLub, type2AsLub, lub);
         }

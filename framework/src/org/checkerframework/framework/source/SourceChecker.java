@@ -163,6 +163,10 @@ import org.checkerframework.javacutil.TreeUtils;
     // org.checkerframework.framework.flow.CFAbstractTransfer.sequentialSemantics
     "concurrentSemantics",
 
+    // Whether to use a conservative value for type arguments that could not be inferred.
+    // See Issue 979.
+    "conservativeUninferredTypeArguments",
+
     ///
     /// Type-checking modes:  enable/disable functionality
     ///

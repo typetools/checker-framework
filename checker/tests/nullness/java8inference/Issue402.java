@@ -2,7 +2,9 @@
 // https://github.com/typetools/checker-framework/issues/979
 
 // @below-java8-jdk-skip-test
-// @skip-test until the bug is fixed
+
+// This test now seems to fail because of Issue 1006
+// @skip-test
 
 import java.util.Comparator;
 import javax.annotation.CheckForNull;
