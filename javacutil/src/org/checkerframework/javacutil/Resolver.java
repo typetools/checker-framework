@@ -123,6 +123,34 @@ public class Resolver {
     }
 
     /**
+     * Determine the environment for the given path.
+     *
+     * @param path the tree path to the local scope
+     * @return the corresponding attribution environment
+     */
+    public Env<AttrContext> getEnvForPath(TreePath path) {
+        TreePath iter = path;
+        JavacScope scope = null;
+        while (scope == null && iter != null) {
+            try {
+                scope = (JavacScope) trees.getScope(iter);
+            } catch (Throwable t) {
+                // Work around Issue #1059 by skipping through the TreePath until something
+                // doesn't crash. This probably returns the class scope, so users might not
+                // get the variables they expect. But that is better than crashing.
+                iter = iter.getParentPath();
+            }
+        }
+        if (scope != null) {
+            return scope.getEnv();
+        } else {
+            ErrorReporter.errorAbort(
+                    "Could not determine any possible scope for path: " + path.getLeaf());
+            return null;
+        }
+    }
+
+    /**
      * Finds the package with name {@code name}.
      *
      * @param name the name of the package
@@ -132,8 +160,7 @@ public class Resolver {
     public PackageSymbol findPackage(String name, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
-            JavacScope scope = (JavacScope) trees.getScope(path);
-            Env<AttrContext> env = scope.getEnv();
+            Env<AttrContext> env = getEnvForPath(path);
             Element res =
                     wrapInvocationOnResolveInstance(FIND_IDENT, env, names.fromString(name), PCK);
             // findIdent will return a PackageSymbol even for a symbol that is not a package,
@@ -164,8 +191,7 @@ public class Resolver {
     public VariableElement findField(String name, TypeMirror type, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
-            JavacScope scope = (JavacScope) trees.getScope(path);
-            Env<AttrContext> env = scope.getEnv();
+            Env<AttrContext> env = getEnvForPath(path);
             Element res =
                     wrapInvocationOnResolveInstance(
                             FIND_IDENT_IN_TYPE, env, type, names.fromString(name), VAR);
@@ -193,8 +219,7 @@ public class Resolver {
     public VariableElement findLocalVariableOrParameterOrField(String name, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
-            JavacScope scope = (JavacScope) trees.getScope(path);
-            Env<AttrContext> env = scope.getEnv();
+            Env<AttrContext> env = getEnvForPath(path);
             Element res = wrapInvocationOnResolveInstance(FIND_VAR, env, names.fromString(name));
             if (res.getKind() == ElementKind.LOCAL_VARIABLE
                     || res.getKind() == ElementKind.PARAMETER
@@ -222,8 +247,7 @@ public class Resolver {
     public Element findClass(String name, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
-            JavacScope scope = (JavacScope) trees.getScope(path);
-            Env<AttrContext> env = scope.getEnv();
+            Env<AttrContext> env = getEnvForPath(path);
             return wrapInvocationOnResolveInstance(FIND_TYPE, env, names.fromString(name));
         } finally {
             log.popDiagnosticHandler(discardDiagnosticHandler);
@@ -241,8 +265,7 @@ public class Resolver {
     public ClassSymbol findClassInPackage(String name, PackageSymbol pck, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
-            JavacScope scope = (JavacScope) trees.getScope(path);
-            Env<AttrContext> env = scope.getEnv();
+            Env<AttrContext> env = getEnvForPath(path);
             Element res =
                     wrapInvocationOnResolveInstance(
                             FIND_IDENT_IN_PACKAGE, env, pck, names.fromString(name), TYP);
@@ -274,8 +297,7 @@ public class Resolver {
             java.util.List<TypeMirror> argumentTypes) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
-            JavacScope scope = (JavacScope) trees.getScope(path);
-            Env<AttrContext> env = scope.getEnv();
+            Env<AttrContext> env = getEnvForPath(path);
 
             Type site = (Type) receiverType;
             Name name = names.fromString(methodName);
