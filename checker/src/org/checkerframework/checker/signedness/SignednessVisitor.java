@@ -3,6 +3,7 @@ package org.checkerframework.checker.signedness;
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -27,6 +28,24 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         Kind kind = node.getKind();
 
         return kind == Kind.AND || kind == Kind.OR;
+    }
+
+    /** @return true iff node is a primitive type cast */
+    private boolean isPrimitiveCast(Tree node) {
+        if (node.getKind() != Kind.TYPE_CAST) {
+            return false;
+        }
+
+        TypeCastTree cast = (TypeCastTree) node;
+        Tree castType = cast.getType();
+        if (castType.getKind() != Kind.ANNOTATED_TYPE) {
+            return false;
+        }
+
+        AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) castType;
+        ExpressionTree underlyingType = annotatedType.getUnderlyingType();
+
+        return underlyingType.getKind() == Kind.PRIMITIVE_TYPE;
     }
 
     /** @return true iff expr is a literal */
@@ -83,6 +102,21 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
             // This shouldn't be possible.
             throw new RuntimeException("Invalid Masking Operation");
         }
+    }
+
+    /**
+     * Given a casted shift of the form {@code (type)expr}, return true iff the cast results in the
+     * same output regardless of the value of the numBits most significant bits of expr. For
+     * example, if expr is an int, type is short, and numBits = 16, the function returns true.
+     *
+     * @param numBitsLit the LiteralTree whose value is numBits
+     * @param bitDiff the difference between the widths of the type of expr and type
+     * @return true iff numBits is less than or equal to bitDiff or numBits == 0
+     */
+    private boolean castIgnoresMSB(LiteralTree numBitsLit, long bitDiff) {
+        long numBits = getLong(numBitsLit.getValue());
+
+        return numBits <= bitDiff || numBits == 0;
     }
 
     /**
@@ -145,6 +179,103 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     }
 
     /**
+     * Determines if a right shift operation, {@code >>} or {@code >>>}, is type casted such that
+     * the cast renders the shift signedness ({@code >>} vs {@code >>>}) irrelevent by destroying
+     * the bits duplicated into the shift result. For example, the following pair of right shifts on
+     * {@code short s} both produce the same results under any input, because of type casting:
+     *
+     * <p>{@code (byte)(s >> 8) == (byte)(b >>> 8);}
+     *
+     * @param shiftExpr a right shift expression: {@code expr1 >> expr2} or {@code expr1 >>> expr2}
+     * @return true iff the right shift is type casted such that a signed or unsigned right shift
+     *     has the same effect
+     */
+    private boolean isCastedShift(BinaryTree shiftExpr) {
+        // enclosing is the operation or statement that immediately contains shiftExpr
+        Tree enclosing;
+        // enclosingChild is the top node in the chain of nodes from shiftExpr to parent
+        Tree enclosingChild;
+        {
+            TreePath parentPath = visitorState.getPath().getParentPath();
+            enclosing = parentPath.getLeaf();
+            enclosingChild = enclosing;
+            // Strip away all parentheses from the shift operation
+            while (enclosing.getKind() == Kind.PARENTHESIZED) {
+                parentPath = parentPath.getParentPath();
+                enclosingChild = enclosing;
+                enclosing = parentPath.getLeaf();
+            }
+        }
+
+        if (!isPrimitiveCast(enclosing)) {
+            return false;
+        }
+
+        TypeCastTree cast = (TypeCastTree) enclosing;
+
+        // Determine the type of the cast target
+        Tree castType = cast.getType();
+        if (castType.getKind() != Kind.ANNOTATED_TYPE) {
+            return false;
+        }
+        AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) castType;
+        ExpressionTree underlyingType = annotatedType.getUnderlyingType();
+        PrimitiveTypeTree castPrimitiveType = (PrimitiveTypeTree) underlyingType;
+        TypeKind castTypeKind = castPrimitiveType.getPrimitiveTypeKind();
+
+        // Determine the type of the shift result
+        TypeKind shiftTypeKind =
+                atypeFactory.getAnnotatedType(shiftExpr).getUnderlyingType().getKind();
+
+        // Determine number of bits in the shift type, note shifts upcast to int
+        long shiftBits = 0;
+        switch (shiftTypeKind) {
+            case INT:
+                shiftBits = 32;
+                break;
+            case LONG:
+                shiftBits = 64;
+                break;
+            default:
+                return false;
+        }
+
+        // Determine number of bits in the cast type
+        long castBits = 0;
+        switch (castTypeKind) {
+            case BYTE:
+                castBits = 8;
+                break;
+            case CHAR:
+                castBits = 8;
+                break;
+            case SHORT:
+                castBits = 16;
+                break;
+            case INT:
+                castBits = 32;
+                break;
+            case LONG:
+                castBits = 64;
+                break;
+            default:
+                return false;
+        }
+
+        // Determine the bit difference between the shift and cast
+        long bitDiff = shiftBits - castBits;
+
+        ExpressionTree shift = shiftExpr.getRightOperand();
+
+        if (!isLiteral(shift)) {
+            return false;
+        }
+
+        LiteralTree shiftLit = (LiteralTree) shift;
+        return castIgnoresMSB(shiftLit, bitDiff);
+    }
+
+    /**
      * Enforces the following rules on binary operations involving Unsigned and Signed types:
      *
      * <ul>
@@ -177,13 +308,17 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                 break;
 
             case RIGHT_SHIFT:
-                if (leftOpType.hasAnnotation(Unsigned.class) && !isMaskedShift(node)) {
+                if (leftOpType.hasAnnotation(Unsigned.class)
+                        && !isMaskedShift(node)
+                        && !isCastedShift(node)) {
                     checker.report(Result.failure("shift.signed", kind), leftOp);
                 }
                 break;
 
             case UNSIGNED_RIGHT_SHIFT:
-                if (leftOpType.hasAnnotation(Signed.class) && !isMaskedShift(node)) {
+                if (leftOpType.hasAnnotation(Signed.class)
+                        && !isMaskedShift(node)
+                        && !isCastedShift(node)) {
                     checker.report(Result.failure("shift.unsigned", kind), leftOp);
                 }
                 break;
