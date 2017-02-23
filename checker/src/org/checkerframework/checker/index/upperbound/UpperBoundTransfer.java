@@ -301,16 +301,25 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * If some Node a is known to be less than the length of some array, x, then, the type of a - b,
+     * If some Node a is known to be less than the length of some array x, then the type of a - b
      * is @LTLengthOf(value="x", offset="b"). If b is known to be less than the length of some other
-     * array, this doesn't add any information about the type of a - b.
+     * array, this doesn't add any information about the type of a - b. But, if b is non-negative or
+     * positive, then a - b should keep the types of a.
      */
     @Override
     public TransferResult<CFValue, CFStore> visitNumericalSubtraction(
             NumericalSubtractionNode n, TransferInput<CFValue, CFStore> in) {
         UBQualifier left = getUBQualifier(n.getLeftOperand(), in);
-        left = left.plusOffset(n.getRightOperand(), atypeFactory);
-        return createTransferResult(n, in, left);
+        UBQualifier leftWithOffset = left.plusOffset(n.getRightOperand(), atypeFactory);
+        if (atypeFactory.hasLowerBoundTypeByClass(n.getRightOperand(), NonNegative.class)
+                || atypeFactory.hasLowerBoundTypeByClass(n.getRightOperand(), Positive.class)) {
+            // If the right side of the expression is NN or POS, then all the left side's
+            // annotations should be kept.
+            if (!left.isUnknownOrBottom()) {
+                leftWithOffset = left.glb(leftWithOffset);
+            }
+        }
+        return createTransferResult(n, in, leftWithOffset);
     }
 
     /**
