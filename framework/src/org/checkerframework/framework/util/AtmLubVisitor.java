@@ -256,7 +256,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
                     lubTypevar.getUpperBound());
         } else {
             // Don't add to visit history because that will happen in visitTypevar_Typevar or
-            // visitWildcard_Wildcard in needed.
+            // visitWildcard_Wildcard if needed.
             visit(type1AsLub, type2AsLub, lub);
         }
     }
