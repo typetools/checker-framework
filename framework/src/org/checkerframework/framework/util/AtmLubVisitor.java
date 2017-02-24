@@ -220,6 +220,10 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         // (Note the lub of  Gen<@A ? super @A Object> and Gen<@A ? super @B Object> does not
         // exist, but Gen<@A ? super @B Object> is returned.)
         if (lub.getKind() == TypeKind.WILDCARD) {
+            if (visitHistory.contains(type1AsLub, type2AsLub)) {
+                return;
+            }
+            visitHistory.add(type1AsLub, type2AsLub);
             AnnotatedWildcardType type1Wildcard = (AnnotatedWildcardType) type1AsLub;
             AnnotatedWildcardType type2Wildcard = (AnnotatedWildcardType) type2AsLub;
             AnnotatedWildcardType lubWildcard = (AnnotatedWildcardType) lub;
@@ -236,6 +240,10 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
                     lubWildcard.getExtendsBound());
         } else if (lub.getKind() == TypeKind.TYPEVAR
                 && InternalUtils.isCaptured((TypeVariable) lub.getUnderlyingType())) {
+            if (visitHistory.contains(type1AsLub, type2AsLub)) {
+                return;
+            }
+            visitHistory.add(type1AsLub, type2AsLub);
             AnnotatedTypeVariable type1typevar = (AnnotatedTypeVariable) type1AsLub;
             AnnotatedTypeVariable type2typevar = (AnnotatedTypeVariable) type2AsLub;
             AnnotatedTypeVariable lubTypevar = (AnnotatedTypeVariable) lub;
@@ -247,6 +255,8 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
                     lubTypevar.getLowerBound(),
                     lubTypevar.getUpperBound());
         } else {
+            // Don't add to visit history because that will happen in visitTypevar_Typevar or
+            // visitWildcard_Wildcard if needed.
             visit(type1AsLub, type2AsLub, lub);
         }
     }
@@ -303,6 +313,10 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     @Override
     public Void visitWildcard_Wildcard(
             AnnotatedWildcardType type1, AnnotatedWildcardType type2, AnnotatedTypeMirror lub1) {
+        if (visitHistory.contains(type1, type2)) {
+            return null;
+        }
+        visitHistory.add(type1, type2);
         AnnotatedWildcardType lub = castLub(type1, lub1);
         visit(type1.getExtendsBound(), type2.getExtendsBound(), lub.getExtendsBound());
         visit(type1.getSuperBound(), type2.getSuperBound(), lub.getSuperBound());
