@@ -262,7 +262,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Type-check classTree and skips classes specified by the skipDef option. Subclasses should
-     * override {@link #visitClassOverride(ClassTree)} instead of this method.
+     * override {@link #processClassTree(ClassTree)} instead of this method.
      *
      * @param classTree class to check
      * @param p null
@@ -276,18 +276,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             // class entirely.
             return null;
         }
-        visitClassOverride(classTree);
-        return null;
-    }
-
-    /**
-     * Type-check classTree. Subclasses should override this method instead of {@link
-     * #visitClass(ClassTree, Void)}.
-     *
-     * @param classTree class to check
-     */
-    public void visitClassOverride(ClassTree classTree) {
-
         atypeFactory.preProcessClassTree(classTree);
 
         AnnotatedDeclaredType preACT = visitorState.getClassType();
@@ -300,28 +288,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         visitorState.setMethodReceiver(null);
         visitorState.setMethodTree(null);
         visitorState.setAssignmentContext(null);
-
         try {
-            if (!TreeUtils.hasExplicitConstructor(classTree)) {
-                checkDefaultConstructor(classTree);
-            }
-
-            /* Visit the extends and implements clauses.
-             * The superclass also visits them, but only calls visitParameterizedType, which
-             * loses a main modifier.
-             */
-            Tree ext = classTree.getExtendsClause();
-            if (ext != null) {
-                validateTypeOf(ext);
-            }
-
-            List<? extends Tree> impls = classTree.getImplementsClause();
-            if (impls != null) {
-                for (Tree im : impls) {
-                    validateTypeOf(im);
-                }
-            }
-            super.visitClass(classTree, null);
+            processClassTree(classTree);
             atypeFactory.postProcessClassTree(classTree);
         } finally {
             this.visitorState.setClassType(preACT);
@@ -330,6 +298,36 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             this.visitorState.setMethodTree(preMT);
             this.visitorState.setAssignmentContext(preAssCtxt);
         }
+        return null;
+    }
+
+    /**
+     * Type-check classTree. Subclasses should override this method instead of {@link
+     * #visitClass(ClassTree, Void)}.
+     *
+     * @param classTree class to check
+     */
+    public void processClassTree(ClassTree classTree) {
+        if (!TreeUtils.hasExplicitConstructor(classTree)) {
+            checkDefaultConstructor(classTree);
+        }
+
+        /* Visit the extends and implements clauses.
+         * The superclass also visits them, but only calls visitParameterizedType, which
+         * loses a main modifier.
+         */
+        Tree ext = classTree.getExtendsClause();
+        if (ext != null) {
+            validateTypeOf(ext);
+        }
+
+        List<? extends Tree> impls = classTree.getImplementsClause();
+        if (impls != null) {
+            for (Tree im : impls) {
+                validateTypeOf(im);
+            }
+        }
+        super.visitClass(classTree, null);
     }
 
     protected void checkDefaultConstructor(ClassTree node) {}

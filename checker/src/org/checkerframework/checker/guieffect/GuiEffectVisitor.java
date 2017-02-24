@@ -262,7 +262,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     }
 
     @Override
-    public void visitClassOverride(ClassTree node) {
+    public void processClassTree(ClassTree node) {
         // TODO: Check constraints on this class decl vs. parent class decl., and interfaces
         // TODO: This has to wait for now: maybe this will be easier with the isValidUse on the TypeFactory
         // AnnotatedTypeMirror.AnnotatedDeclaredType atype = atypeFactory.fromClass(node);
@@ -273,7 +273,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         // are implicitly moved into each constructor, which must then be @UI
         currentMethods.push(null);
         effStack.push(new Effect(UIEffect.class));
-        super.visitClassOverride(node);
+        super.processClassTree(node);
         currentMethods.pop();
         effStack.pop();
     }

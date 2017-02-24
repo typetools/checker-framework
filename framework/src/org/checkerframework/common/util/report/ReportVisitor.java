@@ -140,7 +140,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
     */
 
     @Override
-    public void visitClassOverride(ClassTree node) {
+    public void processClassTree(ClassTree node) {
         TypeElement member = TreeUtils.elementFromDeclaration(node);
         boolean report = false;
         // No need to check on the declaring class itself
@@ -155,7 +155,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
                         Result.failure("inherit", node, ElementUtils.getVerboseName(sup)), node);
             }
         }
-        super.visitClassOverride(node);
+        super.processClassTree(node);
     }
 
     @Override

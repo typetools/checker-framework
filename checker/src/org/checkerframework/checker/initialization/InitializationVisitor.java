@@ -268,7 +268,7 @@ public class InitializationVisitor<
     protected final List<VariableTree> initializedFields;
 
     @Override
-    public void visitClassOverride(ClassTree node) {
+    public void processClassTree(ClassTree node) {
         // call the ATF with any node from this class to trigger the org.checkerframework.dataflow
         // analysis.
         atypeFactory.preProcessClassTree(node);
@@ -292,7 +292,7 @@ public class InitializationVisitor<
             }
         }
 
-        super.visitClassOverride(node);
+        super.processClassTree(node);
 
         // Is there a static initializer block?
         boolean hasStaticInitializer = false;

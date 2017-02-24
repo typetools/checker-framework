@@ -212,7 +212,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      *     java.lang.Object)
      */
     @Override
-    public void visitClassOverride(ClassTree node) {
+    public void processClassTree(ClassTree node) {
         // TODO: Should this method use the Javac types or some other utility to get
         // all direct supertypes instead, and should it verify that each does not
         // override .equals and that at least one of them is annotated with @UsesObjectEquals?
@@ -252,7 +252,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             }
         }
 
-        super.visitClassOverride(node);
+        super.processClassTree(node);
     }
 
     // **********************************************************************
