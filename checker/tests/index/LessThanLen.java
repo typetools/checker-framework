@@ -1,8 +1,5 @@
 import org.checkerframework.checker.index.qual.*;
 
-//@skip-test until issue https://github.com/kelloggm/checker-framework/issues/88
-// is resolved.
-
 public class LessThanLen {
 
     public static void m1() {
@@ -25,5 +22,27 @@ public class LessThanLen {
         for (int i = 0; i < shorter.length; i++) {
             longer[i] = shorter[i];
         }
+    }
+
+    public static void m4(int[] shorter) {
+        int[] longer = new int[shorter.length * 1];
+        //:: error: (assignment.type.incompatible)
+        @LTLengthOf("longer") int x = shorter.length;
+        @LTEqLengthOf("longer") int y = shorter.length;
+    }
+
+    public static void m5(int[] shorter) {
+        //:: error: (array.length.negative)
+        int[] longer = new int[shorter.length * -1];
+        //:: error: (assignment.type.incompatible)
+        @LTLengthOf("longer") int x = shorter.length;
+        //:: error: (assignment.type.incompatible)
+        @LTEqLengthOf("longer") int y = shorter.length;
+    }
+
+    public static void m6(int[] shorter) {
+        int[] longer = new int[4 * shorter.length];
+        @LTLengthOf("longer") int x = shorter.length;
+        @LTEqLengthOf("longer") int y = shorter.length;
     }
 }
