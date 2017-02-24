@@ -261,21 +261,33 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Type-check classTree. If a subclass overrides this method, if should first check if this
-     * class should be skipped by calling {@link BaseTypeChecker#shouldSkipDefs(ClassTree)}.
+     * Type-check classTree and skips classes specified by the skipDef option. Subclasses should
+     * override {@link #visitClassOverride(ClassTree, Void)} instead of this method.
      *
      * @param classTree class to check
      * @param p null
      * @return null
      */
     @Override
-    public Void visitClass(ClassTree classTree, Void p) {
+    public final Void visitClass(ClassTree classTree, Void p) {
         if (checker.shouldSkipDefs(classTree)) {
             // Not "return super.visitClass(classTree, p);" because that would
             // recursively call visitors on subtrees; we want to skip the
             // class entirely.
             return null;
         }
+        return visitClass(classTree, p);
+    }
+
+    /**
+     * Type-check classTree. Subclasses should override this method instead of {@link
+     * #visitClass(ClassTree, Void)}.
+     *
+     * @param classTree class to check
+     * @param p null
+     * @return null
+     */
+    public Void visitClassOverride(ClassTree classTree, Void p) {
 
         atypeFactory.preProcessClassTree(classTree);
 

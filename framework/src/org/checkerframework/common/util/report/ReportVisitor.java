@@ -140,7 +140,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
     */
 
     @Override
-    public Void visitClass(ClassTree node, Void p) {
+    public Void visitClassOverride(ClassTree node, Void p) {
         if (checker.shouldSkipDefs(node)) {
             // Not "return super.visitClass(node, p);" because that would
             // recursively call visitors on subtrees; we want to skip the
