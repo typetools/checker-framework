@@ -105,18 +105,31 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     }
 
     /**
-     * Given a casted shift of the form {@code (type)expr}, return true iff the cast results in the
-     * same output regardless of the value of the numBits most significant bits of expr. For
-     * example, if expr is an int, type is short, and numBits = 16, the function returns true.
+     * Given a casted right shift of the form {@code (type) (baseExpr >> numBits)} or {@code (type)
+     * (baseExpr >>> numBits)}, return true iff the expression's value is the same regardless of the
+     * type of right shift (signed or unsigned). This is true if the cast ignores the numBits most
+     * significant bits of the shift result -- that is, if the cast ignores all the new bits that
+     * the right shift introduced on the left.
+     *
+     * <p>For example, the function returns true for
+     *
+     * <pre>(short) (myInt >> 16)</pre>
+     *
+     * and for
+     *
+     * <pre>(short) (myInt >>> 16)</pre>
+     *
+     * because these two expressions are guaranteed to have the same result.
      *
      * @param numBitsLit the LiteralTree whose value is numBits
-     * @param bitDiff the difference between the widths of the type of expr and type
-     * @return true iff numBits is less than or equal to bitDiff or numBits == 0
+     * @param bitDiff the difference between the widths of the type of the right shift (which is int
+     *     or long) and {@code type}; that is, 32 or 64 minus the width of {@code type}
+     * @return true iff numBits is less than or equal to bitDiff
      */
     private boolean castIgnoresMSB(LiteralTree numBitsLit, long bitDiff) {
         long numBits = getLong(numBitsLit.getValue());
 
-        return numBits <= bitDiff || numBits == 0;
+        return numBits <= bitDiff;
     }
 
     /**
@@ -192,20 +205,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      */
     private boolean isCastedShift(BinaryTree shiftExpr) {
         // enclosing is the operation or statement that immediately contains shiftExpr
-        Tree enclosing;
-        // enclosingChild is the top node in the chain of nodes from shiftExpr to parent
-        Tree enclosingChild;
-        {
-            TreePath parentPath = visitorState.getPath().getParentPath();
-            enclosing = parentPath.getLeaf();
-            enclosingChild = enclosing;
-            // Strip away all parentheses from the shift operation
-            while (enclosing.getKind() == Kind.PARENTHESIZED) {
-                parentPath = parentPath.getParentPath();
-                enclosingChild = enclosing;
-                enclosing = parentPath.getLeaf();
-            }
-        }
+        Tree enclosing = TreeUtils.skipParens(shiftExpr);
 
         if (!isPrimitiveCast(enclosing)) {
             return false;
