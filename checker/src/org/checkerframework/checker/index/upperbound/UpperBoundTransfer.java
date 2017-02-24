@@ -88,9 +88,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * {@code other} times {@code node} is known to be exactly the length of arrayExp. If {@code
-     * other} is positive, then {@code node} is less than or equal to the length of arrayExp. If
-     * {@code other} is greater than 1, then {@code node} is less than the length of arrayExp.
+     * {@code other} times {@code node} is known to be exactly the length of {@code arrayExp}.
+     *
+     * <p>This implies that if {@code other} is positive, then {@code node} is less than or equal to
+     * the length of arrayExp. If {@code other} is greater than 1, then {@code node} is less than
+     * the length of arrayExp.
      */
     private void knownToBeArrayLengthMultiplication(
             Node node,
@@ -114,9 +116,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * The subtraction node is known to be exactly the length of the array referenced by the
-     * arrayExp. This means that the left node is less than or equal to the length of the array when
-     * the right node is subtracted from the left node.
+     * The subtraction node, {@code node}, is known to be exactly the length of the array referenced
+     * by the arrayExp.
+     *
+     * <p>This means that the left node is less than or equal to the length of the array when the
+     * right node is subtracted from the left node.
      *
      * @param node subtraction node that is known to be equal to the length of the array referenced
      *     by arrayExp
@@ -139,9 +143,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     /**
      * The addition node is known to be exactly the length of the array referenced by the arrayExp.
-     * This means that the left node is less than or equal to the length of the array when the right
-     * node is added to the left node. And this means that the right node is less than or equal to
-     * the length of the array when the left node is added to the right node.
+     *
+     * <p>This means that the left node is less than or equal to the length of the array when the
+     * right node is added to the left node. And this means that the right node is less than or
+     * equal to the length of the array when the left node is added to the right node.
      *
      * <p>In addition, if the right node is known to be NonNegative, then the left node on its own
      * is less than or equal to the length of the array, and vice-versa. And, when the right node is
@@ -175,7 +180,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         store.insertValue(rightRec, atypeFactory.convertUBQualifierToAnnotation(newRight));
     }
 
-    /** If the node is NN, add an LTEL to the qual. If POS, an LTL. */
+    /** If the node is NN, add an LTEL to the qual. If POS, add an LTL. */
     private UBQualifier accountForLowerBoundAnnos(Node node, UBQualifier qual, String arrayExp) {
         if (atypeFactory.hasLowerBoundTypeByClass(node, Positive.class)) {
             qual = qual.glb(UBQualifier.createUBQualifier(arrayExp, "0"));
