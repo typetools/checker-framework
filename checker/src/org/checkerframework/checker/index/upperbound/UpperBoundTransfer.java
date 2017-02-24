@@ -82,25 +82,25 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         } else if (node instanceof NumericalMultiplicationNode) {
             Node right = ((NumericalMultiplicationNode) node).getRightOperand();
             Node left = ((NumericalMultiplicationNode) node).getLeftOperand();
-            knownToBeArrayLengthMultiplication(right, left, array, in, store);
             knownToBeArrayLengthMultiplication(left, right, array, in, store);
+            knownToBeArrayLengthMultiplication(right, left, array, in, store);
         }
     }
 
     /**
-     * The positive node times node is known to be exactly the length of arrayExp. If the positive
-     * node is really positive, then node is less than or equal to the length of arrayExp. If
-     * positive is greater than 1, then node is less than the length of arrayExp.
+     * {@code other} times {@code node} is known to be exactly the length of arrayExp. If {@code
+     * other} is positive, then {@code node} is less than or equal to the length of arrayExp. If
+     * {@code other} is greater than 1, then {@code node} is less than the length of arrayExp.
      */
     private void knownToBeArrayLengthMultiplication(
-            Node positive,
             Node node,
+            Node other,
             String arrayExp,
             TransferInput<CFValue, CFStore> in,
             CFStore store) {
-        if (atypeFactory.hasLowerBoundTypeByClass(positive, Positive.class)) {
+        if (atypeFactory.hasLowerBoundTypeByClass(other, Positive.class)) {
             UBQualifier lessThan;
-            Integer x = atypeFactory.valMinFromExpressionTree((ExpressionTree) positive.getTree());
+            Integer x = atypeFactory.valMinFromExpressionTree((ExpressionTree) other.getTree());
             if (x != null && x > 1) {
                 lessThan = UBQualifier.createUBQualifier(arrayExp, "0");
             } else {
