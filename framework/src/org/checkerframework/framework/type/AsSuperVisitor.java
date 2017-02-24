@@ -779,6 +779,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         boolean oldIsUninferredTypeArgument = isUninferredTypeAgrument;
         if (type.isUninferredTypeArgument()) {
             isUninferredTypeAgrument = true;
+            superType.setUninferredTypeArgument();
         }
         AnnotatedTypeMirror upperBound =
                 visit(type.getExtendsBound(), superType.getExtendsBound(), p);
