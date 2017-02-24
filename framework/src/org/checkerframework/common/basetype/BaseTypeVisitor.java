@@ -262,7 +262,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Type-check classTree and skips classes specified by the skipDef option. Subclasses should
-     * override {@link #visitClassOverride(ClassTree, Void)} instead of this method.
+     * override {@link #visitClassOverride(ClassTree)} instead of this method.
      *
      * @param classTree class to check
      * @param p null
@@ -276,7 +276,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             // class entirely.
             return null;
         }
-        return visitClass(classTree, p);
+        visitClassOverride(classTree);
+        return null;
     }
 
     /**
@@ -284,10 +285,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * #visitClass(ClassTree, Void)}.
      *
      * @param classTree class to check
-     * @param p null
-     * @return null
      */
-    public Void visitClassOverride(ClassTree classTree, Void p) {
+    public void visitClassOverride(ClassTree classTree) {
 
         atypeFactory.preProcessClassTree(classTree);
 
@@ -322,9 +321,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     validateTypeOf(im);
                 }
             }
-            Void returnValue = super.visitClass(classTree, p);
+            super.visitClass(classTree, null);
             atypeFactory.postProcessClassTree(classTree);
-            return returnValue;
         } finally {
             this.visitorState.setClassType(preACT);
             this.visitorState.setClassTree(preCT);

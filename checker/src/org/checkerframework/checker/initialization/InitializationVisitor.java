@@ -268,7 +268,7 @@ public class InitializationVisitor<
     protected final List<VariableTree> initializedFields;
 
     @Override
-    public Void visitClassOverride(ClassTree node, Void p) {
+    public void visitClassOverride(ClassTree node) {
         // call the ATF with any node from this class to trigger the org.checkerframework.dataflow
         // analysis.
         atypeFactory.preProcessClassTree(node);
@@ -292,7 +292,7 @@ public class InitializationVisitor<
             }
         }
 
-        Void result = super.visitClass(node, p);
+        super.visitClassOverride(node);
 
         // Is there a static initializer block?
         boolean hasStaticInitializer = false;
@@ -323,8 +323,6 @@ public class InitializationVisitor<
             List<AnnotationMirror> receiverAnnotations = Collections.emptyList();
             checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
         }
-
-        return result;
     }
 
     @Override

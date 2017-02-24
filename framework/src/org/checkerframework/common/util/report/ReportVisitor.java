@@ -140,13 +140,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
     */
 
     @Override
-    public Void visitClassOverride(ClassTree node, Void p) {
-        if (checker.shouldSkipDefs(node)) {
-            // Not "return super.visitClass(node, p);" because that would
-            // recursively call visitors on subtrees; we want to skip the
-            // class entirely.
-            return null;
-        }
+    public void visitClassOverride(ClassTree node) {
         TypeElement member = TreeUtils.elementFromDeclaration(node);
         boolean report = false;
         // No need to check on the declaring class itself
@@ -161,7 +155,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
                         Result.failure("inherit", node, ElementUtils.getVerboseName(sup)), node);
             }
         }
-        return super.visitClass(node, p);
+        super.visitClassOverride(node);
     }
 
     @Override
