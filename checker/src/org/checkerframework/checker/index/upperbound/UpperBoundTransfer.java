@@ -23,6 +23,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
 import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
+import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -46,8 +47,20 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             AssignmentNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitAssignment(node, in);
 
-        if (node.getExpression() instanceof ArrayCreationNode) {
-            ArrayCreationNode acNode = (ArrayCreationNode) node.getExpression();
+        Node expNode = node.getExpression();
+
+        ArrayCreationNode acNode =
+                expNode instanceof ArrayCreationNode ? (ArrayCreationNode) expNode : null;
+
+        if (expNode instanceof TypeCastNode) {
+            Node innerExpNode = ((TypeCastNode) expNode).getOperand();
+            acNode =
+                    innerExpNode instanceof ArrayCreationNode
+                            ? (ArrayCreationNode) innerExpNode
+                            : null;
+        }
+
+        if (acNode != null) {
             List<Node> nodeList = acNode.getDimensions();
             if (nodeList.size() < 1) {
                 return result;
