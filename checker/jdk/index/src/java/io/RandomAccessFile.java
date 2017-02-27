@@ -343,7 +343,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable {
      * <code>len</code> is negative, or <code>len</code> is greater than
      * <code>b.length - off</code>
      */
-    public @GTENegativeOne int read(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public @IndexOrLow("#1") int read(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         return readBytes(b, off, len);
     }
 
@@ -366,7 +366,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable {
      * some other I/O error occurs.
      * @exception  NullPointerException If <code>b</code> is <code>null</code>.
      */
-    public @GTENegativeOne int read(byte b[]) throws IOException {
+    public @IndexOrLow("#1") int read(byte b[]) throws IOException {
         return readBytes(b, 0, b.length);
     }
 
