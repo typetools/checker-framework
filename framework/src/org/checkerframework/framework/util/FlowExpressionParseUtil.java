@@ -352,6 +352,10 @@ public class FlowExpressionParseUtil {
         boolean originalReceiver = true;
         VariableElement fieldElem = null;
 
+        if (receiverType.getKind() == TypeKind.ARRAY && s.equals("length")) {
+            fieldElem = resolver.findField(s, receiverType, path);
+        }
+
         // Search for field in each enclosing class.
         while (receiverType.getKind() == TypeKind.DECLARED) {
             fieldElem = resolver.findField(s, receiverType, path);
@@ -469,6 +473,10 @@ public class FlowExpressionParseUtil {
             // try to find the correct method
             Resolver resolver = new Resolver(env);
             TypeMirror receiverType = context.receiver.getType();
+
+            if (receiverType.getKind() == TypeKind.ARRAY) {
+                element = resolver.findMethod(methodName, receiverType, path, parameterTypes);
+            }
 
             // Search for method in each enclosing class.
             while (receiverType.getKind() == TypeKind.DECLARED) {
