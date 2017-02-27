@@ -5,6 +5,7 @@
 
 import java.util.List;
 import java.util.function.Function;
+import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 
 class Issue1046 {
     interface EnumMarker {}
@@ -26,6 +27,6 @@ class Issue1046 {
             NS2Lists.transform(p, foo());
         }
 
-        abstract Function<? super EnumMarker, Number> foo();
+        abstract Function<? super @UnknownKeyFor EnumMarker, Number> foo();
     }
 }
