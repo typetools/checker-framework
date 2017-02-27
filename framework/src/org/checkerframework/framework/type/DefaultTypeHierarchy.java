@@ -1051,6 +1051,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         final Types types = subtype.atypeFactory.getProcessingEnv().getTypeUtils();
         final Elements elements = subtype.atypeFactory.getProcessingEnv().getElementUtils();
 
+        if (subtype.getKind() == TypeKind.NULL) {
+            T copy = (T) supertype.deepCopy();
+            copy.addAnnotations(subtype.getAnnotations());
+            return copy;
+        }
+
         final T asSuperType = AnnotatedTypes.asSuper(subtype.atypeFactory, subtype, supertype);
 
         fixUpRawTypes(subtype, asSuperType, supertype, types);

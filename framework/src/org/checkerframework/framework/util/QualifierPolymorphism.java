@@ -427,6 +427,8 @@ public class QualifierPolymorphism {
                             type.getUnderlyingType(),
                             wctype.getSuperBound().getUnderlyingType())) {
                         result = visit(type, wctype.getSuperBound());
+                    } else if (wctype.getSuperBound().getKind() == TypeKind.NULL) {
+                        result = Collections.emptyMap();
                     } else {
                         AnnotatedTypeMirror superBoundAsSuper =
                                 AnnotatedTypes.asSuper(atypeFactory, wctype.getSuperBound(), type);

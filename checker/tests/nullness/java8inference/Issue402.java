@@ -3,13 +3,14 @@
 
 // @below-java8-jdk-skip-test
 
-// This test now seems to fail because of Issue 1006
-// @skip-test
-
 import java.util.Comparator;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
+@SuppressWarnings({
+    "nullness",
+    "keyfor"
+}) // Type argument inference does not infer the correct types.
 public final class Issue402 {
     static final Comparator<Issue402> COMPARATOR =
             Comparator.comparing(
