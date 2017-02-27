@@ -23,6 +23,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
 import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
+import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -39,15 +40,26 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     // Refine the type of expressions used as an array dimension to be
-    // less than length of the array to which the new array is
-    // assigned.  For example int[] array = new int[expr]; the type of expr is @LTEqLength("array")
+    // less than length of the array to which the new array is assigned.
+    // For example, in "int[] array = new int[expr];", the type of expr is @LTEqLength("array").
     @Override
     public TransferResult<CFValue, CFStore> visitAssignment(
             AssignmentNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitAssignment(node, in);
 
-        if (node.getExpression() instanceof ArrayCreationNode) {
-            ArrayCreationNode acNode = (ArrayCreationNode) node.getExpression();
+        Node expNode = node.getExpression();
+
+        // strip off typecast if any
+        Node expNodeSansCast =
+                (expNode instanceof TypeCastNode) ? ((TypeCastNode) expNode).getOperand() : expNode;
+        // null if right-hand-side is not an array creation expression
+        ArrayCreationNode acNode =
+                (expNodeSansCast instanceof ArrayCreationNode)
+                        ? acNode = (ArrayCreationNode) expNodeSansCast
+                        : null;
+
+        if (acNode != null) {
+            // Right-hand side of assignment is an array creation expression
             List<Node> nodeList = acNode.getDimensions();
             if (nodeList.size() < 1) {
                 return result;
