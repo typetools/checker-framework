@@ -60,14 +60,14 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
         // Print types of classes, methods, and fields
         @Override
-        public Void visitClass(ClassTree node, Void p) {
+        public void processClassTree(ClassTree node) {
             TypeElement element = TreeUtils.elementFromDeclaration(node);
             currentClass = element.getSimpleName().toString();
 
             AnnotatedDeclaredType type = atypeFactory.getAnnotatedType(node);
             System.out.println(node.getSimpleName() + "\t" + type + "\t" + type.directSuperTypes());
 
-            return super.visitClass(node, p);
+            super.processClassTree(node);
         }
 
         @Override
