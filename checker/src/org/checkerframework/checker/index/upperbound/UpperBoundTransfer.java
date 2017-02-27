@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.upperbound;
 
+import com.sun.source.tree.ExpressionTree;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -20,6 +21,7 @@ import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
+import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAnalysis;
@@ -77,13 +79,48 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             knownToBeArrayLength((NumericalAdditionNode) node, array, in, store);
         } else if (node instanceof NumericalSubtractionNode) {
             knownToBeArrayLength((NumericalSubtractionNode) node, array, in, store);
+        } else if (node instanceof NumericalMultiplicationNode) {
+            Node right = ((NumericalMultiplicationNode) node).getRightOperand();
+            Node left = ((NumericalMultiplicationNode) node).getLeftOperand();
+            knownToBeArrayLengthMultiplication(left, right, array, in, store);
+            knownToBeArrayLengthMultiplication(right, left, array, in, store);
         }
     }
 
     /**
-     * The subtraction node is known to be exactly the length of the array referenced by the
-     * arrayExp. This means that the left node is less than or equal to the length of the array when
-     * the right node is subtracted from the left node.
+     * {@code other} times {@code node} is known to be exactly the length of {@code arrayExp}.
+     *
+     * <p>This implies that if {@code other} is positive, then {@code node} is less than or equal to
+     * the length of arrayExp. If {@code other} is greater than 1, then {@code node} is less than
+     * the length of arrayExp.
+     */
+    private void knownToBeArrayLengthMultiplication(
+            Node node,
+            Node other,
+            String arrayExp,
+            TransferInput<CFValue, CFStore> in,
+            CFStore store) {
+        if (atypeFactory.hasLowerBoundTypeByClass(other, Positive.class)) {
+            UBQualifier lessThan;
+            Integer x = atypeFactory.valMinFromExpressionTree((ExpressionTree) other.getTree());
+            if (x != null && x > 1) {
+                lessThan = UBQualifier.createUBQualifier(arrayExp, "0");
+            } else {
+                lessThan = UBQualifier.createUBQualifier(arrayExp, "-1");
+            }
+            UBQualifier qual = getUBQualifier(node, in);
+            UBQualifier newQual = qual.glb(lessThan);
+            Receiver rec = FlowExpressions.internalReprOf(atypeFactory, node);
+            store.insertValue(rec, atypeFactory.convertUBQualifierToAnnotation(newQual));
+        }
+    }
+
+    /**
+     * The subtraction node, {@code node}, is known to be exactly the length of the array referenced
+     * by the arrayExp.
+     *
+     * <p>This means that the left node is less than or equal to the length of the array when the
+     * right node is subtracted from the left node.
      *
      * @param node subtraction node that is known to be equal to the length of the array referenced
      *     by arrayExp
@@ -106,9 +143,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     /**
      * The addition node is known to be exactly the length of the array referenced by the arrayExp.
-     * This means that the left node is less than or equal to the length of the array when the right
-     * node is added to the left node. And this means that the right node is less than or equal to
-     * the length of the array when the left node is added to the right node.
+     *
+     * <p>This means that the left node is less than or equal to the length of the array when the
+     * right node is added to the left node. And this means that the right node is less than or
+     * equal to the length of the array when the left node is added to the right node.
      *
      * <p>In addition, if the right node is known to be NonNegative, then the left node on its own
      * is less than or equal to the length of the array, and vice-versa. And, when the right node is
@@ -142,7 +180,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         store.insertValue(rightRec, atypeFactory.convertUBQualifierToAnnotation(newRight));
     }
 
-    /** If the node is NN, add an LTEL to the qual. If POS, an LTL. */
+    /** If the node is NN, add an LTEL to the qual. If POS, add an LTL. */
     private UBQualifier accountForLowerBoundAnnos(Node node, UBQualifier qual, String arrayExp) {
         if (atypeFactory.hasLowerBoundTypeByClass(node, Positive.class)) {
             qual = qual.glb(UBQualifier.createUBQualifier(arrayExp, "0"));
@@ -301,16 +339,25 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * If some Node a is known to be less than the length of some array, x, then, the type of a - b,
+     * If some Node a is known to be less than the length of some array x, then the type of a - b
      * is @LTLengthOf(value="x", offset="b"). If b is known to be less than the length of some other
-     * array, this doesn't add any information about the type of a - b.
+     * array, this doesn't add any information about the type of a - b. But, if b is non-negative or
+     * positive, then a - b should keep the types of a.
      */
     @Override
     public TransferResult<CFValue, CFStore> visitNumericalSubtraction(
             NumericalSubtractionNode n, TransferInput<CFValue, CFStore> in) {
         UBQualifier left = getUBQualifier(n.getLeftOperand(), in);
-        left = left.plusOffset(n.getRightOperand(), atypeFactory);
-        return createTransferResult(n, in, left);
+        UBQualifier leftWithOffset = left.plusOffset(n.getRightOperand(), atypeFactory);
+        if (atypeFactory.hasLowerBoundTypeByClass(n.getRightOperand(), NonNegative.class)
+                || atypeFactory.hasLowerBoundTypeByClass(n.getRightOperand(), Positive.class)) {
+            // If the right side of the expression is NN or POS, then all the left side's
+            // annotations should be kept.
+            if (!left.isUnknownOrBottom()) {
+                leftWithOffset = left.glb(leftWithOffset);
+            }
+        }
+        return createTransferResult(n, in, leftWithOffset);
     }
 
     /**

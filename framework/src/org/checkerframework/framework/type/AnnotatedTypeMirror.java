@@ -2027,7 +2027,12 @@ public abstract class AnnotatedTypeMirror {
         // argument inference and raw type handling is improved.
         private boolean uninferredTypeArgument = false;
 
-        /* package-scope */ void setUninferredTypeArgument() {
+        /**
+         * Set that this wildcard is from an uninferred type argument. This method should only be
+         * used within the framework. Once issues that depend on this hack, in particular Issue 979,
+         * are fixed, this must be removed.
+         */
+        public void setUninferredTypeArgument() {
             uninferredTypeArgument = true;
         }
 
