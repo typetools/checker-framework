@@ -213,8 +213,13 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             lowerBound.replaceAnnotations(typeLowerBound);
             return lowerBound;
         }
-        lowerBound = visit(type, lowerBound, p);
-        return lowerBound;
+        if (areErasedJavaTypesEquivalent(type, lowerBound)) {
+            return visit(type, lowerBound, p);
+        }
+        // If type and lowerBound are not the same type, then lowerBound is a subtype of type,
+        // but there is no way to convert type to a subtype -- there is not an asSub method.  So,
+        // just copy the primary annotations.
+        return copyPrimaryAnnos(type, lowerBound);
     }
 
     private boolean isErasedJavaSubtype(
@@ -235,7 +240,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     }
 
     private boolean areErasedJavaTypesEquivalent(
-            AnnotatedDeclaredType typeA, AnnotatedDeclaredType typeB) {
+            AnnotatedTypeMirror typeA, AnnotatedTypeMirror typeB) {
         TypeMirror underlyingTypeA = types.erasure(typeA.getUnderlyingType());
         TypeMirror underlyingTypeB = types.erasure(typeB.getUnderlyingType());
         return types.isSameType(underlyingTypeA, underlyingTypeB);
