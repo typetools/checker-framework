@@ -381,6 +381,12 @@ public class EqualitiesSolver {
         dirty |= updateTargetsWithPartiallyInferredType(equalities, constraintMap, typeFactory);
         inferred = findEqualTarget(equalities, tops);
 
+        if (inferred == null && equalities.types.size() == 1) {
+            // Still could not find an inferred type in all hierarchies, so just use what type is
+            // known.
+            AnnotatedTypeMirror type = equalities.types.keySet().iterator().next();
+            return new InferredType(type);
+        }
         return inferred;
     }
 
