@@ -383,10 +383,37 @@ public class OffsetEquation {
     }
 
     /**
-     * Creates an offset equation from the Node.
-     *
-     * <p>If node is an int value known at compile time, then the return equation is just the int
+     * If node is an int value known at compile time, then the returned equation is just the int
      * value or if op is '-', the return equation is the negation of the int value.
+     *
+     * <p>Otherwise, null is returned.
+     *
+     * @param node Node from which to create offset equation
+     * @param factory AnnotationTypeFactory
+     * @param op '+' or '-'
+     * @return an offset equation from value of known or null if the value isn't known
+     */
+    public static OffsetEquation createOffsetFromNodesValue(
+            Node node, UpperBoundAnnotatedTypeFactory factory, char op) {
+        if (node.getTree() != null && TreeUtils.isExpressionTree(node.getTree())) {
+            Integer i;
+            if (op == '+') {
+                i = factory.valMinFromExpressionTree((ExpressionTree) node.getTree());
+            } else {
+                i = factory.valMaxFromExpressionTree((ExpressionTree) node.getTree());
+                i = i == null ? null : -i;
+            }
+            if (i != null) {
+                OffsetEquation eq = new OffsetEquation();
+                eq.addInt(i);
+                return eq;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Creates an offset equation from the Node.
      *
      * <p>If node is an addition or subtracted node, then this method is called recursively on the
      * left and right hand nodes and the two equations are added/subtracted to each other depending
@@ -411,20 +438,6 @@ public class OffsetEquation {
 
     private static void createOffsetFromNode(
             Node node, UpperBoundAnnotatedTypeFactory factory, OffsetEquation eq, char op) {
-        if (node.getTree() != null && TreeUtils.isExpressionTree(node.getTree())) {
-            Integer i;
-            if (op == '+') {
-                i = factory.valMinFromExpressionTree((ExpressionTree) node.getTree());
-            } else {
-                i = factory.valMaxFromExpressionTree((ExpressionTree) node.getTree());
-                i = i == null ? null : -i;
-            }
-            if (i != null) {
-                eq.addInt(i);
-                return;
-            }
-        }
-
         Receiver r = FlowExpressions.internalReprOf(factory, node);
         if (r instanceof Unknown || r == null) {
             if (node instanceof NumericalAdditionNode) {
