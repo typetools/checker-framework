@@ -1051,6 +1051,15 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         final Types types = subtype.atypeFactory.getProcessingEnv().getTypeUtils();
         final Elements elements = subtype.atypeFactory.getProcessingEnv().getElementUtils();
 
+        if (subtype.getKind() == TypeKind.NULL) {
+            // Make a copy of the supertype so that if supertype is a composite type, the
+            // returned type will be fully annotated.  (For example, if sub is @C null and super is
+            // @A List<@B String>, then the returned type is @C List<@B String>.)
+            T copy = (T) supertype.deepCopy();
+            copy.replaceAnnotations(subtype.getAnnotations());
+            return copy;
+        }
+
         final T asSuperType = AnnotatedTypes.asSuper(subtype.atypeFactory, subtype, supertype);
 
         fixUpRawTypes(subtype, asSuperType, supertype, types);
