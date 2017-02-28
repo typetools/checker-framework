@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 
 // Type argument inference does not infer the correct types.
 // Once Issue 979 is fixed, this suppression should be removed.
-@SuppressWarnings({"nullness", "keyfor"})
+@SuppressWarnings({"nullness", "keyfor"}) // Issue 979
 public final class Issue402 {
     static final Comparator<Issue402> COMPARATOR =
             Comparator.comparing(
