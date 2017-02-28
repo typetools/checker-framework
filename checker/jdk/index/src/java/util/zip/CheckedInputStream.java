@@ -79,7 +79,7 @@ class CheckedInputStream extends FilterInputStream {
      * <code>buf.length - off</code>
      * @exception IOException if an I/O error has occurred
      */
-    public @GTENegativeOne int read(byte[] buf, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public @IndexOrLow("#1") int read(byte[] buf, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         len = in.read(buf, off, len);
         if (len != -1) {
             cksum.update(buf, off, len);

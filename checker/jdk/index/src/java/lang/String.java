@@ -657,7 +657,7 @@ public final class String
      * @return  the length of the sequence of characters represented by this
      *          object.
      */
-    public /*@ IndexOrHigh("this")*/ int length() {
+    public @NonNegative /*@ IndexOrHigh("this")*/ int length() {
         return count;
     }
 

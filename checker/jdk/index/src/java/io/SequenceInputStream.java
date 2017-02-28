@@ -195,7 +195,7 @@ class SequenceInputStream extends InputStream {
      * <code>b.length - off</code>
      * @exception  IOException  if an I/O error occurs.
      */
-    public @GTENegativeOne int read(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public @IndexOrLow("#1") int read(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         if (in == null) {
             return -1;
         } else if (b == null) {
