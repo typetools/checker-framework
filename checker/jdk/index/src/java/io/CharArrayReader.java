@@ -118,7 +118,7 @@ public class CharArrayReader extends Reader {
      *
      * @exception   IOException  If an I/O error occurs
      */
-    public @GTENegativeOne int read(char b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public @IndexOrLow("#1") int read(char b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         synchronized (lock) {
             ensureOpen();
             if ((off < 0) || (off > b.length) || (len < 0) ||

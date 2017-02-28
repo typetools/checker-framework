@@ -97,7 +97,7 @@ class DataInputStream extends FilterInputStream implements DataInput {
      * @see        java.io.FilterInputStream#in
      * @see        java.io.InputStream#read(byte[], int, int)
      */
-    public final @GTENegativeOne int read(byte b[]) throws IOException {
+    public final @IndexOrLow("#1") int read(byte b[]) throws IOException {
         return in.read(b, 0, b.length);
     }
 
@@ -146,7 +146,7 @@ class DataInputStream extends FilterInputStream implements DataInput {
      * @see        java.io.FilterInputStream#in
      * @see        java.io.InputStream#read(byte[], int, int)
      */
-    public final @GTENegativeOne int read(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public final @IndexOrLow("#1") int read(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         return in.read(b, off, len);
     }
 

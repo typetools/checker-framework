@@ -852,7 +852,7 @@ public class ObjectInputStream
      * @throws  IOException If an I/O error has occurred.
      * @see java.io.DataInputStream#readFully(byte[],int,int)
      */
-    public @GTENegativeOne int read(byte[] buf, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public @IndexOrLow("#1") int read(byte[] buf, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         if (buf == null) {
             throw new NullPointerException();
         }
