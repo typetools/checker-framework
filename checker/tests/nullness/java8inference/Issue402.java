@@ -7,10 +7,9 @@ import java.util.Comparator;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
-@SuppressWarnings({
-    "nullness",
-    "keyfor"
-}) // Type argument inference does not infer the correct types.
+// Type argument inference does not infer the correct types.
+// Once Issue 979 is fixed, this suppression should be removed.
+@SuppressWarnings({"nullness", "keyfor"})
 public final class Issue402 {
     static final Comparator<Issue402> COMPARATOR =
             Comparator.comparing(
