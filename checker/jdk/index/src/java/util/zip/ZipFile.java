@@ -662,7 +662,7 @@ class ZipFile implements ZipConstants, Closeable {
             this.jzentry = jzentry;
         }
 
-        public @GTENegativeOne int read(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+       public @IndexOrLow("#1") int read(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
             if (rem == 0) {
                 return -1;
             }

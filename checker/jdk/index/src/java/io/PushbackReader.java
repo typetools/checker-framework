@@ -104,7 +104,7 @@ public class PushbackReader extends FilterReader {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public @GTENegativeOne int read(char cbuf[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public @IndexOrLow("#1") int read(char cbuf[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         synchronized (lock) {
             ensureOpen();
             try {
