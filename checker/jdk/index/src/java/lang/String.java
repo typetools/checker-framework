@@ -2403,7 +2403,7 @@ public final class String
      * @since 1.4
      * @spec JSR-51
      */
-    public String[] split(String regex) {
+    public String @MinLen(1) [] split(String regex) {
         return split(regex, 0);
     }
 
