@@ -7,6 +7,6 @@
  * {@link org.checkerframework.common.basetype} package provide subtype checking functionality.
  *
  * @see org.checkerframework.common.basetype
- * @checker_framework.manual #writing-a-checker Writing a Checker
+ * @checker_framework.manual #creating-a-checker Writing a Checker
  */
 package org.checkerframework.framework.source;

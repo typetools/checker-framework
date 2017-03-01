@@ -69,8 +69,13 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
 
     private AnnotatedTypeMirror lubWithNull(
             AnnotatedNullType nullType, AnnotatedTypeMirror otherType, AnnotatedTypeMirror lub) {
+        AnnotatedTypeMirror otherAsLub;
+        if (otherType.getKind() == TypeKind.NULL) {
+            otherAsLub = otherType.deepCopy();
+        } else {
+            otherAsLub = AnnotatedTypes.asSuper(atypeFactory, otherType, lub);
+        }
 
-        AnnotatedTypeMirror otherAsLub = AnnotatedTypes.asSuper(atypeFactory, otherType, lub);
         lub = otherAsLub.deepCopy();
 
         if (otherAsLub.getKind() != TypeKind.TYPEVAR && otherAsLub.getKind() != TypeKind.WILDCARD) {

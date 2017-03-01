@@ -1,13 +1,13 @@
-Version 2.1.9, xx March 2017
+Version 2.1.9, 1 March 2017
 
-By default, uninferred method type arguments, which can happen with
-Java 8 style target type contexts, are silently ignored, removing
-many false positives.
-The new option -AconservativeUninferredTypeArguments can be used to
-get the current conservative behavior
+By default, uninferred method type arguments, which can happen with Java 8
+style target type contexts, are silently ignored, removing many false
+positives.  The new option -AconservativeUninferredTypeArguments can be used to
+get the conservative behavior.
 
 Closed issues:
-1027, 1035, 1037, 1039
+1006, 1011, 1015, 1027, 1035, 1036, 1037, 1039, 1043, 1046, 1049, 1053, 1072,
+1084.
 
 ---------------------------------------------------------------------------
 
@@ -21,7 +21,7 @@ The documentation has been reorganized in the Checker Framework repository.
 The manual, tutorial, and webpages now appear under checker-framework/docs/.
 
 Closed issues:
-770, 1003, 1012;
+770, 1003, 1012.
 
 ---------------------------------------------------------------------------
 
