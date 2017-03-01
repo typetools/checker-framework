@@ -136,7 +136,7 @@ import org.checkerframework.javacutil.trees.DetachedVarSymbol;
  * AnnotatedTypeFactory#addComputedTypeAnnotations(Element, AnnotatedTypeMirror)} and {@link
  * #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}.
  *
- * @checker_framework.manual #writing-a-checker How to write a checker plug-in
+ * @checker_framework.manual #creating-a-checker How to write a checker plug-in
  */
 public class AnnotatedTypeFactory implements AnnotationProvider {
 
