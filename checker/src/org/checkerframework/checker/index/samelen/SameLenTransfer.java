@@ -86,15 +86,19 @@ public class SameLenTransfer extends CFTransfer {
         // If the left side of the assignment is an array, then have both the right and left side be SameLen
         // of each other.
 
+        Receiver targetRec =
+                FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getTarget());
+
+        Receiver exprRec =
+                FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getExpression());
+
         if (node.getTarget().getType().getKind() == TypeKind.ARRAY) {
+
+            AnnotationMirror rightAnnoOrUnknown = rightAnno == null ? UNKNOWN : rightAnno;
+
             AnnotationMirror combinedSameLen =
                     aTypeFactory.createCombinedSameLen(
-                            FlowExpressions.internalReprOf(
-                                    analysis.getTypeFactory(), node.getTarget()),
-                            FlowExpressions.internalReprOf(
-                                    analysis.getTypeFactory(), node.getExpression()),
-                            UNKNOWN,
-                            rightAnno == null ? UNKNOWN : rightAnno);
+                            targetRec, exprRec, UNKNOWN, rightAnnoOrUnknown);
 
             propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
         }
@@ -104,13 +108,7 @@ public class SameLenTransfer extends CFTransfer {
         if (rightAnno != null && AnnotationUtils.areSameByClass(rightAnno, SameLen.class)) {
 
             AnnotationMirror combinedSameLen =
-                    aTypeFactory.createCombinedSameLen(
-                            FlowExpressions.internalReprOf(
-                                    analysis.getTypeFactory(), node.getTarget()),
-                            FlowExpressions.internalReprOf(
-                                    analysis.getTypeFactory(), node.getExpression()),
-                            UNKNOWN,
-                            rightAnno);
+                    aTypeFactory.createCombinedSameLen(targetRec, exprRec, UNKNOWN, rightAnno);
 
             propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
         }
