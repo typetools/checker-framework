@@ -2980,7 +2980,7 @@ public final class String
      *          <code>"true"</code> is returned; otherwise, a string equal to
      *          <code>"false"</code> is returned.
      */
-    public static @MinLen(4) String valueOf(boolean b) {
+    public static /*@ MinLen(4)*/ String valueOf(boolean b) {
         return b ? "true" : "false";
     }
 
