@@ -1205,7 +1205,7 @@ helper routine that is called by constructor.  For example:
 
     // A helper routine that initializes all the fields other than field1.
     @EnsuresNonNull({"field2", "field3"})
-    private void init_other_fields(@UnderInitialization(MyClass.class) MyClass this) {
+    private void init_other_fields(@UnderInitialization(Object.class) MyClass this) {
       field2 = new Object();
       field3 = new Object();
     }
@@ -1215,7 +1215,7 @@ helper routine that is called by constructor.  For example:
 For compatibility with Java 6 and 7, you can write the receiver
 parameter in comments (see Section~\ref{annotations-in-comments}):
 \begin{Verbatim}
-    private void init_other_fields(/*>>>@UnderInitialization(MyClass.class) MyClass this*/) {
+    private void init_other_fields(/*>>>@UnderInitialization(Object.class) MyClass this*/) {
 \end{Verbatim}
 
 % Most readers can
@@ -1341,10 +1341,12 @@ class C {
 Within the constructor,
 \code{this} starts out with \refqualclass{checker/initialization/qual}{UnderInitialization} type.
 As soon as all of the \refqualclass{checker/nullness/qual}{NonNull} fields
-have been initialized, then \code{this} is treated as initialized.
-(See
-Section~\ref{becoming-initialized-clarification} for a slight clarification of
-this rule.)
+in class $C$ have been initialized, then \code{this} is treated as
+\refqualclass{checker/initialization/qual}{UnderInitialization}\code{(\emph{C})}.
+This means that \code{this} is still being initialized, but all
+initialization of $C$'s fields is complete, including all fields of supertypes.
+Eventually, when all constructors complete, the type is 
+\refqualclass{checker/initialization/qual}{Initialized}.
 
 The Initialization Checker issues an error if the constructor fails to initialize
 any \code{@NonNull} field.  This ensures that the object is in a legal (initialized)
@@ -1442,16 +1444,6 @@ indicates the first class that is known to be fully initialized.
 When you write \refqualclass{checker/initialization/qual}{UnderInitialization}\code{(OtherClass.class) MyClass x;}, that
 means that variable \<x> is initialized for \<OtherClass> and its
 superclasses, and \<x> is (possibly) uninitialized for \<MyClass> and all subclasses.
-
-\label{becoming-initialized-clarification}
-
-We can now state a clarification of Section~\ref{becoming-initialized}'s rule
-for an object becoming initialized.
-As soon as all of the \refqualclass{checker/nullness/qual}{NonNull} fields
-in class $C$ have been initialized, then \code{this} is treated as
-\refqualclass{checker/initialization/qual}{UnderInitialization}\code{(\emph{C})}, rather than
-treated as simply
-\refqualclass{checker/initialization/qual}{Initialized}.
 
 The example above lists 4 moments during construction.  At those moments,
 the type of the object being constructed is:
@@ -2122,10 +2114,12 @@ class C {
 Within the constructor,
 \code{this} starts out with \refqualclass{checker/nullness/qual}{Raw} type.
 As soon as all of the \refqualclass{checker/nullness/qual}{NonNull} fields
-have been initialized, then \code{this} is treated as non-raw.
-% TODO:  (See
-% Section~\ref{becoming-non-raw-clarification} for a slight clarification of
-% this rule.)
+in class $C$ have been initialized, then \code{this} is treated as
+\refqualclass{checker/initialization/qual}{NonRaw}\code{(\emph{C})}.
+This means that \code{this} is still being initialized, but all
+initialization of $C$'s fields is complete, including all fields of supertypes.
+Eventually, when all constructors complete, the type is simply
+\refqualclass{checker/initialization/qual}{NonRaw}.
 
 The Nullness Checker issues an error if the constructor fails to initialize
 any \code{@NonNull} field.  This ensures that the object is in a legal (non-raw)
@@ -2244,16 +2238,6 @@ Neither one is the same as \<@NonRaw A x;>, which indicates that, whatever
 the actual class of the object that \<x> refers to, that object is fully
 initialized.  Since \<@NonRaw> (with no argument) is the default, you will
 rarely see it written.
-
-\label{becoming-non-raw-clarification}
-
-We can now state a clarification of Section~\ref{becoming-non-raw}'s rule
-for an object becoming non-raw.
-As soon as all of the \refqualclass{checker/nullness/qual}{NonNull} fields
-have been initialized, then \code{this} is treated as
-\refqualclass{checker/nullness/qual}{NonRaw}\code{(\emph{typeofthis})}, rather than
-treated as simply
-\refqualclass{checker/nullness/qual}{NonRaw}.
 
 The example above lists 4 moments during construction.  At those moments,
 the type of the object being constructed is:
