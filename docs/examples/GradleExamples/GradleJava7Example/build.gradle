@@ -29,7 +29,7 @@ configurations {
 }
 
 dependencies {
-    ext.checkerFrameworkVersion = '2.1.8'
+    ext.checkerFrameworkVersion = '2.1.9'
     ext.jdkVersion = JavaVersion.current().isJava7() ? 'jdk7' : 'jdk8'
     checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
 
