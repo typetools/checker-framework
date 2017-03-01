@@ -698,10 +698,14 @@ To run a checker within IntelliJ:
   \<\$CHECKERFRAMEWORK/checker/dist/checker.jar> into the field to the right
   of it. To add a checker to be run during compilation, click on the green
   ``+'' in the ``Processor FQ Name'' section and write that checker's
-  fully-qualified name
-  (\<org.checkerframework.checker.\emph{CHECKER}.\emph{CHECKER}Checker>) in
+  fully-qualified name in
   the resulting text field, and press the ``ENTER'' key.
   % Without the ENTER key, the setting won't be saved.
+  (The fully-qualified name is usually an instantiation of
+  \<org.checkerframework.checker.\emph{CHECKER}.\emph{CHECKER}Checker>,
+  replacing \emph{CHECKER} by the checker you
+  want to run; an example would be
+  \<org.checkerframework.checker.nullness.NullnessChecker>.)
 
 \end{enumerate}
 
