@@ -119,22 +119,19 @@ public class SameLenTransfer extends CFTransfer {
      */
     private void propagateCombinedSameLen(
             AnnotationMirror combinedSameLen, Node node, CFStore store) {
+        TreePath currentPath = aTypeFactory.getPath(node.getTree());
+        if (currentPath == null) {
+            return;
+        }
         for (String s : SameLenUtils.getValue(combinedSameLen)) {
             Receiver recS;
             try {
-                TreePath currentPath = aTypeFactory.getPath(node.getTree());
-                if (currentPath != null) {
-                    recS = aTypeFactory.getReceiverFromJavaExpressionString(s, currentPath);
-                } else {
-                    return;
-                }
+                recS = aTypeFactory.getReceiverFromJavaExpressionString(s, currentPath);
             } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                recS = null;
+                continue;
             }
-            if (recS != null) {
-                store.clearValue(recS);
-                store.insertValue(recS, combinedSameLen);
-            }
+            store.clearValue(recS);
+            store.insertValue(recS, combinedSameLen);
         }
     }
 
