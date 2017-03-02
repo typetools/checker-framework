@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.samelen;
 
+import com.sun.source.util.TreePath;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.qual.SameLen;
@@ -77,23 +78,29 @@ public class SameLenTransfer extends CFTransfer {
             }
         }
 
-        // If the left side of the assignment has a SameLen type, propogate the right side to the arrays listed there.
-
-        AnnotationMirror leftAnno =
+        AnnotationMirror rightAnno =
                 aTypeFactory
                         .getAnnotatedType(node.getExpression().getTree())
                         .getAnnotationInHierarchy(UNKNOWN);
 
-        if (leftAnno != null && AnnotationUtils.areSameByClass(leftAnno, SameLen.class)) {
+        // If the left side of the assignment is an array, then have both the right and left side be SameLen
+        // of each other.
+
+        Receiver targetRec =
+                FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getTarget());
+
+        Receiver exprRec =
+                FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getExpression());
+
+        if (node.getTarget().getType().getKind() == TypeKind.ARRAY
+                || (rightAnno != null
+                        && AnnotationUtils.areSameByClass(rightAnno, SameLen.class))) {
+
+            AnnotationMirror rightAnnoOrUnknown = rightAnno == null ? UNKNOWN : rightAnno;
 
             AnnotationMirror combinedSameLen =
                     aTypeFactory.createCombinedSameLen(
-                            FlowExpressions.internalReprOf(
-                                    analysis.getTypeFactory(), node.getTarget()),
-                            FlowExpressions.internalReprOf(
-                                    analysis.getTypeFactory(), node.getExpression()),
-                            UNKNOWN,
-                            leftAnno);
+                            targetRec, exprRec, UNKNOWN, rightAnnoOrUnknown);
 
             propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
         }
@@ -112,19 +119,19 @@ public class SameLenTransfer extends CFTransfer {
      */
     private void propagateCombinedSameLen(
             AnnotationMirror combinedSameLen, Node node, CFStore store) {
+        TreePath currentPath = aTypeFactory.getPath(node.getTree());
+        if (currentPath == null) {
+            return;
+        }
         for (String s : SameLenUtils.getValue(combinedSameLen)) {
             Receiver recS;
             try {
-                recS =
-                        aTypeFactory.getReceiverFromJavaExpressionString(
-                                s, aTypeFactory.getPath(node.getTree()));
+                recS = aTypeFactory.getReceiverFromJavaExpressionString(s, currentPath);
             } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                recS = null;
+                continue;
             }
-            if (recS != null) {
-                store.clearValue(recS);
-                store.insertValue(recS, combinedSameLen);
-            }
+            store.clearValue(recS);
+            store.insertValue(recS, combinedSameLen);
         }
     }
 
