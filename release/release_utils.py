@@ -825,18 +825,6 @@ def mvn_install(pluginDir):
 def pluginDirToPom(pluginDir):
     return os.path.join(pluginDir, 'pom.xml')
 
-def find_mvn_plugin_jar(pluginDir, version, suffix=None):
-    if suffix is None:
-        name = "%s/target/checkerframework-maven-plugin-%s.jar" % (pluginDir, version)
-    else:
-        name = "%s/target/checkerframework-maven-plugin-%s-%s.jar" % (pluginDir, version, suffix)
-
-    return name
-
-def mvn_deploy_mvn_plugin(pluginDir, pom, version, mavenRepo):
-    jarFile = find_mvn_plugin_jar(pluginDir, version)
-    return mvn_deploy(jarFile, pom, mavenRepo)
-
 def mvn_sign_and_deploy(url, repo_id, pom_file, file_property, classifier, pgp_user, pgp_passphrase):
     cmd = "mvn gpg:sign-and-deploy-file -Durl=%s -DrepositoryId=%s -DpomFile=%s -Dfile=%s" % (url, repo_id, pom_file, file_property)
     if classifier is not None:

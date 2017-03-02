@@ -151,11 +151,10 @@ AFU_MANUAL = os.path.join(ANNO_FILE_UTILITIES, 'annotation-file-utilities.html')
 PLUME_LIB = os.path.join(BUILD_DIR, 'plume-lib')
 PLUME_BIB = os.path.join(BUILD_DIR, 'plume-bib')
 
-MAVEN_PLUGIN_DIR = os.path.join(CHECKER_FRAMEWORK, 'maven-plugin')
-MAVEN_PLUGIN_POM = os.path.join(MAVEN_PLUGIN_DIR, 'pom.xml')
+MAVEN_ARTIFACTS_DIR = os.path.join(CHECKER_FRAMEWORK, 'maven-artifacts')
 MAVEN_DEV_REPO = 'file:///cse/www2/types/dev/m2-repo'
 
-MAVEN_POMS_DIR = os.path.join(MAVEN_PLUGIN_DIR, 'poms')
+MAVEN_POMS_DIR = os.path.join(MAVEN_ARTIFACTS_DIR, 'poms')
 CHECKER_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'checkerPom.xml')
 CHECKER_QUAL_POM = os.path.join(MAVEN_POMS_DIR, 'checkerQualPom.xml')
 CHECKER_COMPAT_QUAL_POM = os.path.join(MAVEN_POMS_DIR, 'checkerCompatQualPom.xml')
@@ -164,7 +163,7 @@ JAVAC_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'compilerPom.xml')
 JDK7_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'jdk7Pom.xml')
 JDK8_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'jdk8Pom.xml')
 
-MAVEN_RELEASE_DIR = os.path.join(MAVEN_PLUGIN_DIR, 'release')
+MAVEN_RELEASE_DIR = os.path.join(MAVEN_ARTIFACTS_DIR, 'release')
 CHECKER_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerReleasePom.xml')
 CHECKER_QUAL_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerQualReleasePom.xml')
 CHECKER_COMPAT_QUAL_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerCompatQualReleasePom.xml')
@@ -172,7 +171,6 @@ CHECKER_COMPAT_QUAL_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerCompat
 JAVAC_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'compilerReleasePom.xml')
 JDK7_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'jdk7ReleasePom.xml')
 JDK8_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'jdk8ReleasePom.xml')
-MAVEN_PLUGIN_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'mavenPluginReleasePom.xml')
 JAVACUTIL_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'javacutilReleasePom.xml')
 DATAFLOW_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'dataflowReleasePom.xml')
 
