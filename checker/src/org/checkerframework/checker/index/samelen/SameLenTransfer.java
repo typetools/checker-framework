@@ -92,23 +92,15 @@ public class SameLenTransfer extends CFTransfer {
         Receiver exprRec =
                 FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getExpression());
 
-        if (node.getTarget().getType().getKind() == TypeKind.ARRAY) {
+        if (node.getTarget().getType().getKind() == TypeKind.ARRAY
+                || (rightAnno != null
+                        && AnnotationUtils.areSameByClass(rightAnno, SameLen.class))) {
 
             AnnotationMirror rightAnnoOrUnknown = rightAnno == null ? UNKNOWN : rightAnno;
 
             AnnotationMirror combinedSameLen =
                     aTypeFactory.createCombinedSameLen(
                             targetRec, exprRec, UNKNOWN, rightAnnoOrUnknown);
-
-            propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
-        }
-
-        // If the right side of the assignment has a SameLen type, propogate the right side to the arrays listed there.
-
-        if (rightAnno != null && AnnotationUtils.areSameByClass(rightAnno, SameLen.class)) {
-
-            AnnotationMirror combinedSameLen =
-                    aTypeFactory.createCombinedSameLen(targetRec, exprRec, UNKNOWN, rightAnno);
 
             propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
         }
