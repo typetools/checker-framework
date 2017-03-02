@@ -395,6 +395,7 @@ public class OffsetEquation {
      */
     public static OffsetEquation createOffsetFromNodesValue(
             Node node, UpperBoundAnnotatedTypeFactory factory, char op) {
+        assert op == '+' || op == '-';
         if (node.getTree() != null && TreeUtils.isExpressionTree(node.getTree())) {
             Integer i;
             if (op == '+') {
