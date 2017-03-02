@@ -32,13 +32,16 @@ The programmer is also permitted to write type annotations.  This is only necess
 locations where the Constant Value Checker does not infer annotations:  on fields
 and method signatures.
 
-The type annotations are
+The main type annotations are
 \refqualclass{common/value/qual}{BoolVal},
 \refqualclass{common/value/qual}{IntVal},
 \refqualclass{common/value/qual}{DoubleVal}, and
 \refqualclass{common/value/qual}{StringVal}.
+An additional type annotation is
+\refqualclass{common/value/qual}{ArrayLen}.
 
-Each type annotation takes as an argument a set of values, and its meaning
+Each type annotation takes as an argument a set of values.
+The main annotations mean
 is that at run time, the expression evaluates to one of the values.  For
 example, an expression of type
 \<\refqualclass{common/value/qual}{StringVal}("a", "b")> evaluates to
@@ -46,6 +49,8 @@ one of the values \<"a">, \<"b">, or \<null>.
 The set is limited to 10 entries; if a variable
 could be more than 10 different values, its type becomes
 \refqualclass{common/value/qual}{UnknownVal} instead.
+The \<@ArrayLen> annotation means that at run time, the expression
+evaluates to an array whose length is one of the annotation's arguments.
 
 % \refqualclass{checker/value/qual}{BottomVal}, meaning that the expression
 % is dead or always has the value \<null>.

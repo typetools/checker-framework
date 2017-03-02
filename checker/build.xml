@@ -383,7 +383,7 @@
             <manifest>
                 <attribute name="Main-Class" value="org.checkerframework.framework.util.CheckerMain"/>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checker-framework.com/"/>
+                <attribute name="Implementation-URL" value="https://checkerframework.org/"/>
             </manifest>
         </jar>
     </target>
@@ -444,7 +444,6 @@
             <arg line="-d ${checker-qual-classes-tmp}"/>
             <arg line="@${tmpdir}/srcfiles-checker.txt"/>
             <arg line="-version"/>
-            <arg line="-XDTA:noannotationsincomments"/>
             <arg line="-Xlint"/>
             <arg line="-Werror"/>
         </java>
@@ -464,14 +463,14 @@
         <jar destfile="${checker.qual.lib}" basedir="${checker-qual-classes-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checker-framework.com/"/>
+                <attribute name="Implementation-URL" value="https://checkerframework.org/"/>
             </manifest>
         </jar>
 
         <jar destfile="${checker.qual.sources.lib}" basedir="${checker-qual-sources-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checker-framework.com/"/>
+                <attribute name="Implementation-URL" value="https://checkerframework.org/"/>
             </manifest>
         </jar>
         <delete dir="${checker-qual-sources-tmp}" failonerror="false"/>
@@ -509,7 +508,6 @@
             <arg value="-Xlint:-options"/>
             <arg line="-d ${java8-output}"/>
             <arg line="${checker.loc}/${src}/${checker.jdk8orhigher.sources}"/>
-            <arg line="-XDTA:noannotationsincomments"/>
             <arg line="-Xlint"/>
             <arg line="-Werror"/>
         </java>
@@ -568,7 +566,7 @@
         <jar destfile="${checker.compat.qual.lib}" basedir="${checker-compat-qual-classes-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checker-framework.com/"/>
+                <attribute name="Implementation-URL" value="https://checkerframework.org/"/>
             </manifest>
         </jar>
 
@@ -576,7 +574,7 @@
              basedir="${checker-compat-qual-sources-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checker-framework.com/"/>
+                <attribute name="Implementation-URL" value="https://checkerframework.org/"/>
             </manifest>
         </jar>
         <delete dir="${checker-compat-qual-sources-tmp}" failonerror="false"/>
@@ -821,6 +819,13 @@
         </antcall>
     </target>
 
+    <target name="index-tests" depends="jar,build-tests"
+            description="Run tests for the Index Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.IndexTest"/>
+        </antcall>
+    </target>
+
     <target name="interning-tests" depends="jar,build-tests"
             description="Run tests for the Interning Checker">
         <antcall target="-run-tests">
@@ -1062,42 +1067,6 @@
         </antcall>
     </target>
 
-    <target name="fenum-extension-tests" depends="jar,build-tests"
-            description="Run tests for the Fenum Checker extension capabilities">
-        <exec executable="chmod" failonerror="true">
-            <arg line="+x ${basedir}/bin/javac"/>
-        </exec>
-
-        <exec executable="make" failonerror="${halt.on.test.failure}">
-            <env key="JAVAC" value="${basedir}/bin/javac"/>
-            <arg line="-C tests/fenum-extension/"/>
-        </exec>
-    </target>
-
-    <target name="subtyping-extension-tests" depends="jar,build-tests"
-            description="Run tests for the Subtyping Checker extension capabilities">
-        <exec executable="chmod" failonerror="true">
-            <arg line="+x ${basedir}/bin/javac"/>
-        </exec>
-
-        <exec executable="make" failonerror="${halt.on.test.failure}">
-            <env key="JAVAC" value="${basedir}/bin/javac"/>
-            <arg line="-C tests/subtyping-extension/"/>
-        </exec>
-    </target>
-
-    <target name="units-extension-tests" depends="jar,build-tests"
-            description="Run tests for the Units Checker extension capabilities">
-        <exec executable="chmod" failonerror="true">
-            <arg line="+x ${basedir}/bin/javac"/>
-        </exec>
-
-        <exec executable="make" failonerror="${halt.on.test.failure}">
-            <env key="JAVAC" value="${basedir}/bin/javac"/>
-            <arg line="-C tests/units-extension/"/>
-        </exec>
-    </target>
-
     <target name="guieffect-tests" depends="jar,build-tests"
             description="Run tests for the GUI Effect Checker">
         <antcall target="-run-tests">
@@ -1147,7 +1116,7 @@ but it expired from the cloudbees Jenkins server in early June 2016.
 So, use our own archived version.
       -->
       <get
-        src="http://types.cs.washington.edu/jtreg-4.2.0-for-jdk7.tar.gz"
+        src="https://types.cs.washington.edu/jtreg-4.2.0-for-jdk7.tar.gz"
         dest="${jtreg.home}/.." />
       <untar src="${jtreg.home}/../jtreg-4.2.0-for-jdk7.tar.gz"
         dest="${jtreg.home}/../"
@@ -1340,7 +1309,7 @@ So, use our own archived version.
         <antcall target="-run-checker">
             <param name="checker-name" value="org.checkerframework.checker.compilermsgs.CompilerMessagesChecker"/>
 
-            <param name="checker-args" value="-Apropfiles=${framework.loc}/src/org/checkerframework/framework/source/messages.properties:${framework.loc}/src/org/checkerframework/common/aliasing/messages.properties:${framework.loc}/src/org/checkerframework/common/basetype/messages.properties:./src/org/checkerframework/checker/lock/messages.properties:./src/org/checkerframework/checker/interning/messages.properties:./src/org/checkerframework/checker/nullness/messages.properties:./src/org/checkerframework/checker/initialization/messages.properties:./src/org/checkerframework/checker/linear/messages.properties:./src/org/checkerframework/checker/signedness/messages.properties:./src/org/checkerframework/checker/regex/messages.properties:${framework.loc}/src/org/checkerframework/common/util/report/messages.properties:./src/org/checkerframework/checker/formatter/messages.properties:./src/org/checkerframework/checker/i18nformatter/messages.properties:${framework.loc}/src/org/checkerframework/common/value/messages.properties:./src/org/checkerframework/checker/guieffect/messages.properties:${framework.loc}/src/org/checkerframework/common/reflection/messages.properties"/>
+            <param name="checker-args" value="-Apropfiles=${framework.loc}/src/org/checkerframework/framework/source/messages.properties:${framework.loc}/src/org/checkerframework/common/aliasing/messages.properties:${framework.loc}/src/org/checkerframework/common/basetype/messages.properties:./src/org/checkerframework/checker/lock/messages.properties:./src/org/checkerframework/checker/interning/messages.properties:./src/org/checkerframework/checker/index/lowerbound/messages.properties:./src/org/checkerframework/checker/nullness/messages.properties:./src/org/checkerframework/checker/initialization/messages.properties:./src/org/checkerframework/checker/linear/messages.properties:./src/org/checkerframework/checker/signedness/messages.properties:./src/org/checkerframework/checker/regex/messages.properties:${framework.loc}/src/org/checkerframework/common/util/report/messages.properties:./src/org/checkerframework/checker/formatter/messages.properties:./src/org/checkerframework/checker/i18nformatter/messages.properties:${framework.loc}/src/org/checkerframework/common/value/messages.properties:./src/org/checkerframework/checker/guieffect/messages.properties:${framework.loc}/src/org/checkerframework/common/reflection/messages.properties:./src/org/checkerframework/checker/index/upperbound/messages.properties"/>
         </antcall>
     </target>
 
@@ -1484,7 +1453,7 @@ So, use our own archived version.
             description="Create the instrumented jdkX.jar using the JDK specified by JAVA_HOME">
       <property name="annotation-file-utilities.jar" value="${annotation.tools}/annotation-file-utilities/annotation-file-utilities.jar"/>
       <available property="annotation-file-utilities.exist" file="${annotation-file-utilities.jar}" />
-      <fail unless="annotation-file-utilities.exist" message="Could not find annotation-file-utilities.jar: ${annotation-file-utilities.jar}.  You must build Annotation Tools; see http://checker-framework.com/manual/#build-source" />
+      <fail unless="annotation-file-utilities.exist" message="Could not find annotation-file-utilities.jar: ${annotation-file-utilities.jar}.  You must build Annotation Tools; see https://checkerframework.org/manual/#build-source" />
 
       <exec executable="make" failonerror="true">
          <arg value="LANGTOOLS=${jsr308.langtools}"/>

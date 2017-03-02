@@ -1,6 +1,6 @@
 \htmlhr
 \chapter{How to create a new checker\label{creating-a-checker}}
-\label{writing-a-checker} % to handle links that use old name
+\label{writing-a-checker} % for old links; don't use any more!
 
 \newcommand{\TreeAPIBase}{https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/com/sun/source}
 \newcommand{\refTreeclass}[2]{\href{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
@@ -63,7 +63,7 @@ the Checker Framework.  You can even create your checker by modifying one
 of those.
 The Javadoc documentation of the framework and the checkers is in the
 distribution and is also available online at
-\myurl{http://checker-framework.com/api/}.
+\myurl{https://checkerframework.org/api/}.
 
 If you write a new checker and wish to advertise it to the world, let us
 know so we can mention it in the Checker Framework Manual, link to
@@ -104,10 +104,10 @@ Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
 Other \par tools
 \\ \hline
 \multicolumn{6}{|p{6\bw}|}{\centering Checker Framework \par (enables creation of pluggable type-checkers)} &
-\multicolumn{2}{p{3\bw}|}{\centering \href{http://checker-framework.com/annotation-file-utilities/}{Annotation File Utilities} \par (\code{.java} $\leftrightarrow$ \code{.class} files)}
+\multicolumn{2}{p{3\bw}|}{\centering \href{https://checkerframework.org/annotation-file-utilities/}{Annotation File Utilities} \par (\code{.java} $\leftrightarrow$ \code{.class} files)}
 \\ \hline
 \multicolumn{8}{|p{8.5\bw}|}{\centering
-  \href{http://checker-framework.com/jsr308/}{Type Annotations} syntax
+  \href{https://checkerframework.org/jsr308/}{Type Annotations} syntax
   and classfile format (``JSR 308'') \par \centering (no built-in semantics)} \\ \hline
 \end{tabular}
 \end{center}
@@ -609,7 +609,7 @@ then the default would apply to every
 type system that uses \<@Unqualified>, which is unlikely to be desired.
 
 
-\subsection{Annotations whose argument is a Java expression (``expression annotations'')\label{expression-annotations}}
+\subsection{Annotations whose argument is a Java expression (``dependent type annotations'')\label{expression-annotations}}
 
 Sometimes, an annotation needs to refer to a Java expression.
 Section~\ref{java-expressions-as-arguments} gives examples of such
@@ -619,8 +619,8 @@ referred to.
 This section explains the Checker Framework's functionality to support such
 annotations.
 
-An ``expression annotation'' (for type qualifiers, also known as a
-``dependent type'') must have one attribute, \<value>, that is an
+A ``dependent type annotation''
+must have one attribute, \<value>, that is an
 array of strings.  The Checker Framework verifies that the annotation's
 arguments are valid expressions according to the rules of
 Section~\ref{java-expressions-as-arguments}.  If
@@ -647,14 +647,16 @@ class MyClass {
 and assuming the variable \<myClass> is of type \<MyClass>, then the type of
 \<myClass.field> is viewpoint-adapted to \<@Anno("myClass.field")>.
 
-To use this built-in functionality, your checker implementation should override
-\refmethod{framework/type}{GenericAnnotatedTypeFactory}{createExpressionAnnotationHelper}{--}
-to return a new \<ExpressionAnnotationHelper> that has been initialized with the
-checker's expression annotations.
+To use this built-in functionality, add a \refqualclass{framework/qual}{JavaExpression} annotation
+to any annotation element that should be interpreted as a Java expression.  The type of the
+element must be an array of Strings.  If your checker requires special handling of Java expressions,
+your checker implementation should override
+\refmethod{framework/type}{GenericAnnotatedTypeFactory}{createDependentTypesHelper}{--}
+to return a subclass of \<DependentTypesHelper>.
 
 Given a specific expression in the program (of type Tree or Node), a
 checker may need to obtain its canonical string representation.  This
-enables the checker to create an expression annotation that refers to
+enables the checker to create an dependent type annotation that refers to
 it, or to compare to the string expression of an existing expression
 annotation.
 To obtain the string, first create a
@@ -899,7 +901,7 @@ run-time tests are applicable to your type system.
 The Checker Framework's type refinement is implemented with a dataflow algorithm
 which can be customized to enhance the built-in type refinement. The next
 sections detail dataflow customization.  It would also be helpful to read the
-\href{http://checker-framework.com/checker-framework-dataflow-manual.pdf}
+\href{https://checkerframework.org/manual/checker-framework-dataflow-manual.pdf}
 {Dataflow Manual}, which gives a more in-depth description of the Checker
 Framework's dataflow framework.
 

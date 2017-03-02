@@ -19,6 +19,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,8 +41,12 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.CFGBuilder;
@@ -85,12 +90,15 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
-import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationHelper;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -127,8 +135,8 @@ public abstract class GenericAnnotatedTypeFactory<
     /** to handle defaults specified by the user */
     protected QualifierDefaults defaults;
 
-    /** to handle expression annotations */
-    protected ExpressionAnnotationHelper expressionAnnotationHelper;
+    /** to handle dependent type annotations */
+    protected DependentTypesHelper dependentTypesHelper;
 
     // Flow related fields
 
@@ -193,7 +201,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected void postInit() {
         super.postInit();
 
-        this.expressionAnnotationHelper = createExpressionAnnotationHelper();
+        this.dependentTypesHelper = createDependentTypesHelper();
         this.defaults = createQualifierDefaults();
         this.treeAnnotator = createTreeAnnotator();
         this.typeAnnotator = createTypeAnnotator();
@@ -281,9 +289,8 @@ public abstract class GenericAnnotatedTypeFactory<
         List<TreeAnnotator> treeAnnotators = new ArrayList<>();
         treeAnnotators.add(new PropagationTreeAnnotator(this));
         treeAnnotators.add(new ImplicitsTreeAnnotator(this));
-        if (expressionAnnotationHelper != null) {
-            treeAnnotators.add(
-                    expressionAnnotationHelper.createExpressionAnnotationTreeAnnotator(this));
+        if (dependentTypesHelper != null) {
+            treeAnnotators.add(dependentTypesHelper.createDependentTypesTreeAnnotator(this));
         }
         return new ListTreeAnnotator(treeAnnotators);
     }
@@ -416,23 +423,27 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Creates an {@link ExpressionAnnotationHelper} and returns it.
+     * Creates an {@link DependentTypesHelper} and returns it.
      *
-     * @return a new {@link ExpressionAnnotationHelper}
+     * @return a new {@link DependentTypesHelper}
      */
-    protected ExpressionAnnotationHelper createExpressionAnnotationHelper() {
+    protected DependentTypesHelper createDependentTypesHelper() {
+        DependentTypesHelper helper = new DependentTypesHelper(this);
+        if (helper.hasDependentAnnotations()) {
+            return helper;
+        }
         return null;
     }
 
-    public ExpressionAnnotationHelper getExpressionAnnotationHelper() {
-        return expressionAnnotationHelper;
+    public DependentTypesHelper getDependentTypesHelper() {
+        return dependentTypesHelper;
     }
 
     @Override
     public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
         AnnotatedDeclaredType superResult = super.fromNewClass(newClassTree);
-        if (expressionAnnotationHelper != null) {
-            expressionAnnotationHelper.standardizeNewClassTree(newClassTree, superResult);
+        if (dependentTypesHelper != null) {
+            dependentTypesHelper.standardizeNewClassTree(newClassTree, superResult);
         }
         return superResult;
     }
@@ -675,6 +686,65 @@ public abstract class GenericAnnotatedTypeFactory<
         addComputedTypeAnnotations(
                 memberReferenceTree.getQualifierExpression(), constructorReturnType);
         return constructorReturnType;
+    }
+
+    /**
+     * Returns the primary annotation on expression if it were evaluated at path.
+     *
+     * @param expression Java expression
+     * @param tree current tree
+     * @param path location at which expression is evaluated
+     * @param clazz Class of the annotation
+     * @return the annotation on expression or null if one does not exist
+     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     */
+    public AnnotationMirror getAnnotationFromJavaExpressionString(
+            String expression, Tree tree, TreePath path, Class<? extends Annotation> clazz)
+            throws FlowExpressionParseException {
+
+        FlowExpressions.Receiver expressionObj =
+                getReceiverFromJavaExpressionString(expression, path);
+
+        AnnotationMirror annotationMirror = null;
+        if (CFAbstractStore.canInsertReceiver(expressionObj)) {
+            Value value = getStoreBefore(tree).getValue(expressionObj);
+            if (value != null) {
+                annotationMirror =
+                        AnnotationUtils.getAnnotationByClass(value.getAnnotations(), clazz);
+            }
+        }
+        if (annotationMirror == null) {
+            if (expressionObj instanceof LocalVariable) {
+                Element ele = ((LocalVariable) expressionObj).getElement();
+                annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
+            } else if (expressionObj instanceof FieldAccess) {
+                Element ele = ((FieldAccess) expressionObj).getField();
+                annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
+            }
+        }
+        return annotationMirror;
+    }
+
+    /**
+     * Produces the receiver associated with expression on currentPath.
+     *
+     * @param expression Java expression
+     * @param currentPath location at which expression is evaluated
+     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     */
+    public FlowExpressions.Receiver getReceiverFromJavaExpressionString(
+            String expression, TreePath currentPath) throws FlowExpressionParseException {
+        TypeMirror enclosingClass = InternalUtils.typeOf(TreeUtils.enclosingClass(currentPath));
+
+        FlowExpressions.Receiver r =
+                FlowExpressions.internalRepOfPseudoReceiver(currentPath, enclosingClass);
+        FlowExpressionParseUtil.FlowExpressionContext context =
+                new FlowExpressionParseUtil.FlowExpressionContext(
+                        r,
+                        FlowExpressions.getParametersOfEnclosingMethod(this, currentPath),
+                        this.getContext());
+
+        return FlowExpressionParseUtil.parse(expression, context, currentPath, true);
     }
 
     /**
@@ -1150,8 +1220,8 @@ public abstract class GenericAnnotatedTypeFactory<
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
                 super.constructorFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
-        if (expressionAnnotationHelper != null) {
-            expressionAnnotationHelper.viewpointAdaptConstructor(tree, method);
+        if (dependentTypesHelper != null) {
+            dependentTypesHelper.viewpointAdaptConstructor(tree, method);
         }
         poly.annotate(tree, method);
         return mfuPair;
@@ -1160,8 +1230,8 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m) {
         AnnotatedTypeMirror returnType = super.getMethodReturnType(m);
-        if (expressionAnnotationHelper != null) {
-            expressionAnnotationHelper.standardizeReturnType(m, returnType);
+        if (dependentTypesHelper != null) {
+            dependentTypesHelper.standardizeReturnType(m, returnType);
         }
         return returnType;
     }
@@ -1169,8 +1239,8 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
         AnnotatedTypeMirror returnType = super.getMethodReturnType(m, r);
-        if (expressionAnnotationHelper != null) {
-            expressionAnnotationHelper.standardizeReturnType(m, returnType);
+        if (dependentTypesHelper != null) {
+            dependentTypesHelper.standardizeReturnType(m, returnType);
         }
         return returnType;
     }
@@ -1279,8 +1349,8 @@ public abstract class GenericAnnotatedTypeFactory<
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         typeAnnotator.visit(type, null);
         defaults.annotate(elt, type);
-        if (expressionAnnotationHelper != null) {
-            expressionAnnotationHelper.standardizeVariable(type, elt);
+        if (dependentTypesHelper != null) {
+            dependentTypesHelper.standardizeVariable(type, elt);
         }
     }
 
@@ -1290,8 +1360,8 @@ public abstract class GenericAnnotatedTypeFactory<
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
                 super.methodFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
-        if (expressionAnnotationHelper != null) {
-            expressionAnnotationHelper.viewpointAdaptMethod(tree, method);
+        if (dependentTypesHelper != null) {
+            dependentTypesHelper.viewpointAdaptMethod(tree, method);
         }
         poly.annotate(tree, method);
         return mfuPair;
@@ -1301,8 +1371,8 @@ public abstract class GenericAnnotatedTypeFactory<
     public List<AnnotatedTypeParameterBounds> typeVariablesFromUse(
             AnnotatedDeclaredType type, TypeElement element) {
         List<AnnotatedTypeParameterBounds> f = super.typeVariablesFromUse(type, element);
-        if (expressionAnnotationHelper != null) {
-            expressionAnnotationHelper.viewpointAdaptTypeVariableBounds(
+        if (dependentTypesHelper != null) {
+            dependentTypesHelper.viewpointAdaptTypeVariableBounds(
                     element, f, visitorState.getPath());
         }
         return f;
@@ -1312,10 +1382,25 @@ public abstract class GenericAnnotatedTypeFactory<
         return emptyStore;
     }
 
-    /** @see BaseTypeChecker#getTypeFactoryOfSubchecker(Class) */
+    /**
+     * Returns the AnnotatedTypeFactory of the subchecker and copies the current visitor state to
+     * the sub-factory so that the types are computed properly. Because the visitor state is copied,
+     * call this method each time a subfactory is needed rather than store the returned factory in a
+     * field.
+     *
+     * @see BaseTypeChecker#getTypeFactoryOfSubchecker(Class)
+     */
     public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker>
             T getTypeFactoryOfSubchecker(Class<U> checkerClass) {
-        return checker.getTypeFactoryOfSubchecker(checkerClass);
+        T subFactory = checker.getTypeFactoryOfSubchecker(checkerClass);
+        if (subFactory != null && subFactory.getVisitorState() != null) {
+            // Copy the visitor state so that the types are computed properly.
+            VisitorState subFactoryVisitorState = subFactory.getVisitorState();
+            subFactoryVisitorState.setPath(visitorState.getPath());
+            subFactoryVisitorState.setClassTree(visitorState.getClassTree());
+            subFactoryVisitorState.setMethodTree(visitorState.getMethodTree());
+        }
+        return subFactory;
     }
 
     /**

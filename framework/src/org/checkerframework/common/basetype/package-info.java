@@ -5,6 +5,6 @@
  * <p>Most type-checker implementations will want to use the classes in this package as the base of
  * their own type-checkers.
  *
- * @checker_framework.manual #writing-a-checker Writing a checker
+ * @checker_framework.manual #creating-a-checker Writing a checker
  */
 package org.checkerframework.common.basetype;

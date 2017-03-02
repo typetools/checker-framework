@@ -7,11 +7,10 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationHelper;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import testlib.flowexpression.qual.FEBot;
 import testlib.flowexpression.qual.FETop;
-import testlib.flowexpression.qual.FlowExp;
 
 public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private AnnotationMirror TOP, BOTTOM;
@@ -24,8 +23,8 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
 
     @Override
-    protected ExpressionAnnotationHelper createExpressionAnnotationHelper() {
-        return new ExpressionAnnotationHelper(this, FlowExp.class);
+    protected DependentTypesHelper createDependentTypesHelper() {
+        return new DependentTypesHelper(this);
     }
 
     @Override

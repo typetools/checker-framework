@@ -5,7 +5,7 @@
     <packaging>jar</packaging>
 
     <name>Type Annotations Compiler</name>
-    <url>http://checker-framework.com/jsr308/</url>
+    <url>https://checkerframework.org/jsr308/</url>
     <description>
         The Type Annotations Compiler is a fully backwards compatible customization
         of the Open JDK javac compiler with additional support for type annotations.
@@ -24,7 +24,7 @@
 
     <!-- The comments in the version number are used to do a text substitution. Don't remove them.
          See checker-framework/bin/poms/updateVersion.sh -->
-    <version><!-- checker-framework-version -->2.1.7<!-- /checker-framework-version --></version>
+    <version><!-- checker-framework-version -->2.1.9<!-- /checker-framework-version --></version>
 
     <scm>
         <url>https://bitbucket.org/typetools/jsr308-langtools/</url>

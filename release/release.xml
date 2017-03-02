@@ -428,10 +428,7 @@
         <copy todir="${dest.dir}" file="${langtools.doc}/jsr308-faq.html"      />
         <copy todir="${dest.dir}" file="${langtools.doc}/Makefile-jsr308-install" />
         <copy todir="${dest.dir}" file="${langtools.doc}/changelog-jsr308.txt"    />
-
-        <symlink overwrite="true" link="${web.root}/index.html" resource="current/jsr308-webpage.html"/>
-        <symlink overwrite="true"
-                 link="${web.root}/favicon-jsr308.png" resource="current/favicon-jsr308.png"/>
+        <copy tofile="${dest.dir}/index.html" file="${langtools.doc}/jsr308-webpage.html"    />
 
     </target>
 
@@ -462,6 +459,7 @@
 	<mkdir dir="${dest.dir.manual}" />
 
         <copy file="${checker.manual}/manual.html" tofile="${dest.dir.manual}/${manual.name}.html"/>
+        <symlink link="${dest.dir.manual}/index.html" resource="${manual.name}.html" />
         <copy file="${checker.manual}/manual.pdf"  tofile="${dest.dir.manual}/${manual.name}.pdf"/>
 
         <copy file="${dataflow.manual}/dataflow.pdf"  tofile="${dest.dir.manual}/${dataflow.manual.name}.pdf" failonerror="false"/>
@@ -475,6 +473,7 @@
 
         <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${web.root}/CFLogo.png" />
         <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${checker.manual}/CFLogo.png" />
+        <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${dest.dir.manual}/CFLogo.png" />
         <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${dest.dir}/docs/tutorial/CFLogo.png" />
         <copy file="${checker.logo}/Logo/CFLogo.png" tofile="${dest.dir}/docs/tutorial/webpages/CFLogo.png" />
 
@@ -482,7 +481,7 @@
         <copy file="${checker.logo}/Checkmark/CFCheckmark_favicon.png" tofile="${dest.dir.manual}/favicon-checkerframework.png" />
         <copy file="${checker.logo}/Checkmark/CFCheckmark_favicon.png" tofile="${web.root}/favicon-checkerframework.png" />
 
-        <copy todir="${dest.dir}/docs/tutorial" >
+        <copy todir="${dest.dir}/tutorial" >
             <fileset dir="${checker.tutorial}" includes="**"/>
         </copy>
 

@@ -1,6 +1,6 @@
 package org.checkerframework.framework.qual;
 
-import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.ElementType.FIELD;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;

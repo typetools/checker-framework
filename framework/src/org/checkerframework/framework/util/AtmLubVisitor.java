@@ -20,6 +20,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.type.visitor.VisitHistory;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 
@@ -34,6 +35,8 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     private final AnnotatedTypeFactory atypeFactory;
     private final QualifierHierarchy qualifierHierarchy;
     private final VisitHistory visitHistory = new VisitHistory();
+
+    private boolean visitingUninferedWildcard = false;
 
     AtmLubVisitor(AnnotatedTypeFactory atypeFactory) {
         this.atypeFactory = atypeFactory;
@@ -66,8 +69,13 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
 
     private AnnotatedTypeMirror lubWithNull(
             AnnotatedNullType nullType, AnnotatedTypeMirror otherType, AnnotatedTypeMirror lub) {
+        AnnotatedTypeMirror otherAsLub;
+        if (otherType.getKind() == TypeKind.NULL) {
+            otherAsLub = otherType.deepCopy();
+        } else {
+            otherAsLub = AnnotatedTypes.asSuper(atypeFactory, otherType, lub);
+        }
 
-        AnnotatedTypeMirror otherAsLub = AnnotatedTypes.asSuper(atypeFactory, otherType, lub);
         lub = otherAsLub.deepCopy();
 
         if (otherAsLub.getKind() != TypeKind.TYPEVAR && otherAsLub.getKind() != TypeKind.WILDCARD) {
@@ -106,9 +114,35 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
      */
     private void lubPrimaryAnnotations(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, AnnotatedTypeMirror lub) {
-        Set<? extends AnnotationMirror> lubSet =
-                qualifierHierarchy.leastUpperBounds(type1.getAnnotations(), type2.getAnnotations());
+        Set<? extends AnnotationMirror> lubSet;
+        if (visitingUninferedWildcard
+                        && type1.getAnnotations().size() != type1.getAnnotations().size()
+                || type1.getAnnotations().isEmpty()) {
+            if (type1.getAnnotations().size() > type2.getAnnotations().size()) {
+                lubSet = partialQualifierLub(type1.getAnnotations(), type2.getAnnotations());
+            } else {
+                lubSet = partialQualifierLub(type2.getAnnotations(), type1.getAnnotations());
+            }
+        } else {
+            lubSet =
+                    qualifierHierarchy.leastUpperBounds(
+                            type1.getAnnotations(), type2.getAnnotations());
+        }
         lub.replaceAnnotations(lubSet);
+    }
+
+    private Set<AnnotationMirror> partialQualifierLub(
+            Set<AnnotationMirror> bigger, Set<AnnotationMirror> smaller) {
+        Set<AnnotationMirror> lub = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror anno : bigger) {
+            AnnotationMirror same = qualifierHierarchy.findAnnotationInSameHierarchy(smaller, anno);
+            if (same != null) {
+                lub.add(qualifierHierarchy.leastUpperBound(anno, same));
+            } else {
+                lub.add(anno);
+            }
+        }
+        return lub;
     }
 
     /** Casts lub to the type of type and issues an error if type and lub are not the same kind. */
@@ -146,6 +180,8 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     public Void visitDeclared_Declared(
             AnnotatedDeclaredType type1, AnnotatedDeclaredType type2, AnnotatedTypeMirror lub) {
         AnnotatedDeclaredType castedLub = castLub(type1, lub);
+        boolean oldVisitingUninferedWildcard = visitingUninferedWildcard;
+        visitingUninferedWildcard = visitingUninferedWildcard || type1.wasRaw() || type2.wasRaw();
 
         lubPrimaryAnnotations(type1, type2, lub);
         List<AnnotatedTypeMirror> lubTypArgs = new ArrayList<>();
@@ -169,6 +205,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         if (lubTypArgs.size() > 0) {
             castedLub.setTypeArguments(lubTypArgs);
         }
+        visitingUninferedWildcard = oldVisitingUninferedWildcard;
         return null;
     }
 
@@ -188,9 +225,17 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         // (Note the lub of  Gen<@A ? super @A Object> and Gen<@A ? super @B Object> does not
         // exist, but Gen<@A ? super @B Object> is returned.)
         if (lub.getKind() == TypeKind.WILDCARD) {
+            if (visitHistory.contains(type1AsLub, type2AsLub)) {
+                return;
+            }
+            visitHistory.add(type1AsLub, type2AsLub);
             AnnotatedWildcardType type1Wildcard = (AnnotatedWildcardType) type1AsLub;
             AnnotatedWildcardType type2Wildcard = (AnnotatedWildcardType) type2AsLub;
             AnnotatedWildcardType lubWildcard = (AnnotatedWildcardType) lub;
+            if (type1Wildcard.isUninferredTypeArgument()
+                    || type2Wildcard.isUninferredTypeArgument()) {
+                lubWildcard.setUninferredTypeArgument();
+            }
             lubWildcard(
                     type1Wildcard.getSuperBound(),
                     type1Wildcard.getExtendsBound(),
@@ -200,17 +245,23 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
                     lubWildcard.getExtendsBound());
         } else if (lub.getKind() == TypeKind.TYPEVAR
                 && InternalUtils.isCaptured((TypeVariable) lub.getUnderlyingType())) {
-            AnnotatedTypeVariable type1Wildcard = (AnnotatedTypeVariable) type1AsLub;
-            AnnotatedTypeVariable type2Wildcard = (AnnotatedTypeVariable) type2AsLub;
-            AnnotatedTypeVariable lubWildcard = (AnnotatedTypeVariable) lub;
+            if (visitHistory.contains(type1AsLub, type2AsLub)) {
+                return;
+            }
+            visitHistory.add(type1AsLub, type2AsLub);
+            AnnotatedTypeVariable type1typevar = (AnnotatedTypeVariable) type1AsLub;
+            AnnotatedTypeVariable type2typevar = (AnnotatedTypeVariable) type2AsLub;
+            AnnotatedTypeVariable lubTypevar = (AnnotatedTypeVariable) lub;
             lubWildcard(
-                    type1Wildcard.getLowerBound(),
-                    type1Wildcard.getUpperBound(),
-                    type2Wildcard.getLowerBound(),
-                    type2Wildcard.getUpperBound(),
-                    lubWildcard.getLowerBound(),
-                    lubWildcard.getUpperBound());
+                    type1typevar.getLowerBound(),
+                    type1typevar.getUpperBound(),
+                    type2typevar.getLowerBound(),
+                    type2typevar.getUpperBound(),
+                    lubTypevar.getLowerBound(),
+                    lubTypevar.getUpperBound());
         } else {
+            // Don't add to visit history because that will happen in visitTypevar_Typevar or
+            // visitWildcard_Wildcard if needed.
             visit(type1AsLub, type2AsLub, lub);
         }
     }
@@ -267,6 +318,10 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     @Override
     public Void visitWildcard_Wildcard(
             AnnotatedWildcardType type1, AnnotatedWildcardType type2, AnnotatedTypeMirror lub1) {
+        if (visitHistory.contains(type1, type2)) {
+            return null;
+        }
+        visitHistory.add(type1, type2);
         AnnotatedWildcardType lub = castLub(type1, lub1);
         visit(type1.getExtendsBound(), type2.getExtendsBound(), lub.getExtendsBound());
         visit(type1.getSuperBound(), type2.getSuperBound(), lub.getSuperBound());

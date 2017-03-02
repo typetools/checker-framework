@@ -28,6 +28,9 @@ The Checker Framework comes with checkers for specific types of errors:
 \item
   \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
   (see \chapterpageref{lock-checker})
+%\item
+%  \ahrefloc{index-checker}{Index Checker} for array accesses
+%  (see \chapterpageref{index-checker})
 \item
   \ahrefloc{fenum-checker}{Fake Enum Checker} to allow type-safe fake enum
   patterns and type aliases or typedefs (see \chapterpageref{fenum-checker})
@@ -102,7 +105,7 @@ These checkers are easy to use and are invoked as arguments to \<javac>.
 
 
 The Checker Framework also enables you to write new checkers of your
-own; see Chapters~\ref{subtyping-checker} and~\ref{writing-a-checker}.
+own; see Chapters~\ref{subtyping-checker} and~\ref{creating-a-checker}.
 
 
 \section{How to read this manual\label{how-to-read-this-manual}}
@@ -122,7 +125,7 @@ above, then the most effective way to read this manual is:
   use of a type system
   (Chapters~\ref{polymorphism}--\ref{troubleshooting}), so that you will
   know what is available and can find it later.  Skip
-  Chapter~\ref{writing-a-checker} on creating a new checker.
+  Chapter~\ref{creating-a-checker} on creating a new checker.
 \end{itemize}
 
 
@@ -162,8 +165,8 @@ evaluate and deploy their type systems.
 %   (Chapter~\ref{subtyping-checker}) checkers.
 % \item Chapter~\ref{annotating-libraries} describes an approach for \ahrefloc{annotating-libraries}{annotating external
 % libraries}.
-% \item Chapter~\ref{writing-a-checker} describes how to
-%   \ahrefloc{writing-a-checker}{write a new checker} using the Checker Framework.
+% \item Chapter~\ref{creating-a-checker} describes how to
+%   \ahrefloc{creating-a-checker}{write a new checker} using the Checker Framework.
 % \end{itemize}
 
 
@@ -181,7 +184,7 @@ synonyms.
 This section describes how to install the Checker Framework.
 (If you wish to use the Checker Framework from Eclipse, see the Checker
 Framework Eclipse Plugin webpage instead:
-\url{http://checker-framework.com/eclipse/}.)
+\url{https://checkerframework.org/eclipse/}.)
 (If you wish to try the Checker Framework without installing it, use the
 \href{http://eisop.uwaterloo.ca/live/}{Checker Framework Live Demo} webpage.)
 \end{sloppypar}
@@ -205,7 +208,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{http://checker-framework.com/checker-framework-2.1.7.zip}
+  \url{https://checkerframework.org/checker-framework-2.1.9.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -232,7 +235,7 @@ tIDE (Section~\ref{tide}).
 That's all there is to it!  Now you are ready to start using the checkers.
 
 We recommend that you work through the
-\ahreforurl{http://checker-framework.com/tutorial/}{Checker
+\ahreforurl{https://checkerframework.org/tutorial/}{Checker
 Framework tutorial}, which walks you through how to use the Checker
 Framework in Eclipse or on
 the command line.
@@ -248,7 +251,7 @@ instructions for using a checker appear in Chapter~\ref{using-a-checker}.
 \section{Example use:  detecting a null pointer bug\label{example-use}}
 
 This section gives a very simple example of running the Checker Framework.
-There is also a \ahreforurl{http://checker-framework.com/tutorial/}{tutorial}
+There is also a \ahreforurl{https://checkerframework.org/tutorial/}{tutorial}
 that gives more extensive instructions for using the Checker Framework in
 Eclipse or on the command line,
 and a
@@ -429,13 +432,13 @@ Additional topics that apply to all checkers are covered later in the manual:
 \item Chapter~\ref{suppressing-warnings}: Suppressing warnings
 \item Chapter~\ref{legacy-code}: Handling legacy code
 \item Chapter~\ref{annotating-libraries}: Annotating libraries
-\item Chapter~\ref{writing-a-checker}: How to create a new checker
+\item Chapter~\ref{creating-a-checker}: How to create a new checker
 \item Chapter~\ref{external-tools}: Integration with external tools
 \end{itemize}
 
 
 Finally, there is a
-\ahreforurl{http://checker-framework.com/tutorial/}{tutorial}
+\ahreforurl{https://checkerframework.org/tutorial/}{tutorial}
 that walks you through using the Checker Framework in Eclipse or on the
 command line, and a separate
 \ahreforurl{https://github.com/glts/safer-spring-petclinic/wiki}{Nullness Checker tutorial}.
@@ -449,7 +452,7 @@ command line, and a separate
 
 The syntax of type annotations in Java is specified by
 the Java Language Specification (Java SE 8 edition).
-% \href{http://checker-framework.com/jsr308/}{JSR 308}~\cite{JSR308-2008-09-12}.
+% \href{https://checkerframework.org/jsr308/}{JSR 308}~\cite{JSR308-2008-09-12}.
 
 Java 5 defines declaration annotations such as \<@Deprecated>, which apply
 to a class, method, or field, but do not apply to the method's return type
@@ -627,7 +630,7 @@ More sound (strict) checking: enable errors that are disabled by default
   to differ, just as Java does.  See Section~\ref{covariant-type-parameters}
   and Section~\ref{invariant-arrays}.
 \item \<-AuseDefaultsForUncheckedCode>
-  Enables/disables unchecked code defualts.  Takes arguments ``source,bytecode''.
+  Enables/disables unchecked code defaults.  Takes arguments ``source,bytecode''.
   ``-source,-bytecode'' is the (unsound) default setting.
   ``bytecode'' specifies
   whether the checker should apply unchecked code defaults to
@@ -640,6 +643,14 @@ More sound (strict) checking: enable errors that are disabled by default
 \item \<-AconcurrentSemantics>
   Whether to assume concurrent semantics (field values may change at any
   time) or sequential semantics; see Section~\ref{faq-concurrency}.
+\item \<-AconservativeUninferredTypeArguments>
+  Whether method type arguments that could not be inferred should use
+  conservative defaults.
+  By default, such type arguments are (largely) ignored in later
+  checks.
+  Passing this option uses a conservative value instead.
+  See \href{https://github.com/typetools/checker-framework/issues/979}{Issue
+  979}.
 \end{itemize}
 
 Type-checking modes:  enable/disable functionality
@@ -1039,12 +1050,15 @@ the programmer's intention that \code{null} never flows there.  If
 \code{null} does flow there, the program will not continue normally
 (whether or not it throws a NullPointerException).
 
-Therefore, you should mark such parameters as
+Therefore, you should specify such parameters as
 \refqualclass{checker/nullness/qual}{NonNull}, indicating
-the intended use of the method.  When you use the \code{@NonNull}
+the intended use of the method.  When you specify the parameter as the \code{@NonNull}
 annotation, the checker is able to issue compile-time warnings about
-possible run-time exceptions, which is its purpose.  Marking the parameter
+possible run-time exceptions, which is its purpose.  Specifying the parameter
 as \code{@Nullable} would suppress such warnings, which is undesirable.
+(Since \code{@NonNull} is the default, you don't have to write anything in
+the source code to specify the parameter as non-null.  You are allowed to
+write a redundant \code{@NonNull} annotation, but it is discouraged.)
 
 % This is only an issue for code with unchecked, trusted annotations such as
 % library methods; if the method is type-checked, then the type-checker

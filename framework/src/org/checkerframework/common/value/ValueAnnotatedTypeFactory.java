@@ -9,6 +9,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
+import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,6 +50,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -487,7 +489,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (allLiterals) {
                 return new String(bytes);
             }
-            // If any part of the initialize isn't know,
+            // If any part of the initializer isn't known,
             // the stringval isn't known.
             return null;
         }
@@ -600,8 +602,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Simple method to take a MemberSelectTree representing a method call and determine if the
-         * method's return is annotated with {@code @StaticallyExecutable}.
+         * Given a MemberSelectTree representing a method call, return true if the method's
+         * declaration is annotated with {@code @StaticallyExecutable}.
          */
         private boolean methodIsStaticallyExecutable(Element method) {
             return getDeclAnnotation(method, StaticallyExecutable.class) != null;
@@ -967,5 +969,23 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
         return new ArrayList<>();
+    }
+
+    public List<Long> getIntValuesFromExpression(
+            String expression, Tree tree, TreePath currentPath) {
+        AnnotationMirror intValAnno = null;
+        try {
+            intValAnno =
+                    getAnnotationFromJavaExpressionString(
+                            expression, tree, currentPath, IntVal.class);
+        } catch (FlowExpressionParseException e) {
+            // ignore parse errors
+            return null;
+        }
+        if (intValAnno == null) {
+            return null;
+        }
+
+        return getIntValues(intValAnno);
     }
 }

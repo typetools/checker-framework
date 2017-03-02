@@ -69,7 +69,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     /**
      * @return true if interning should be verified for the input expression. By default, all
      *     classes are checked for interning unless {@code -Acheckclass} is specified.
-     * @see <a href="http://checker-framework.com/manual/#interning-checks">What the Interning
+     * @see <a href="https://checkerframework.org/manual/#interning-checks">What the Interning
      *     Checker checks</a>
      */
     private boolean shouldCheckExpression(ExpressionTree tree) {
@@ -212,7 +212,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      *     java.lang.Object)
      */
     @Override
-    public Void visitClass(ClassTree node, Void p) {
+    public void processClassTree(ClassTree node) {
         // TODO: Should this method use the Javac types or some other utility to get
         // all direct supertypes instead, and should it verify that each does not
         // override .equals and that at least one of them is annotated with @UsesObjectEquals?
@@ -252,7 +252,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             }
         }
 
-        return super.visitClass(node, p);
+        super.processClassTree(node);
     }
 
     // **********************************************************************

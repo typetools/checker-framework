@@ -179,8 +179,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                         : maskExpr.getRightOperand();
 
         // Strip away the parentheses from the mask if any exist
-        while (mask.getKind() == Kind.PARENTHESIZED)
-            mask = ((ParenthesizedTree) mask).getExpression();
+        mask = TreeUtils.skipParens(mask);
 
         if (!isLiteral(shift) || !isLiteral(mask)) {
             return false;
@@ -206,7 +205,16 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      */
     private boolean isCastedShift(BinaryTree shiftExpr) {
         // enclosing is the operation or statement that immediately contains shiftExpr
-        Tree enclosing = TreeUtils.skipParens(shiftExpr);
+        Tree enclosing;
+        {
+            TreePath parentPath = visitorState.getPath().getParentPath();
+            enclosing = parentPath.getLeaf();
+            // Strip away all parentheses from the shift operation
+            while (enclosing.getKind() == Kind.PARENTHESIZED) {
+                parentPath = parentPath.getParentPath();
+                enclosing = parentPath.getLeaf();
+            }
+        }
 
         if (!isPrimitiveCast(enclosing)) {
             return false;

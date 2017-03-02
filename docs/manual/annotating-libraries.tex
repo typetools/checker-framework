@@ -92,7 +92,7 @@ Given the library annotations, you have two options:
   % library.  You would express the annotations textually, typically as an
   % annotation index file, and
   % then insert them in the library by using the Annotation File Utilities
-  % (\myurl{http://checker-framework.com/annotation-file-utilities/}).
+  % (\myurl{https://checkerframework.org/annotation-file-utilities/}).
   % See the Annotation File Utilities documentation for full details.
 
   With this compilation approach, the syntax of the library annotations is
@@ -699,6 +699,25 @@ If these limitations are a problem, then you should insert annotations
 in the library's \<.class> files instead.
 
 
+\section{Library annotations should reflect the specification, not the implementation\label{libraries-specification}}
+
+When you write library annotations, you should base them on the library
+documentation, typically the method's Javadoc.
+
+If a fact is not mentioned in the documentation, then it is an
+implementation detail.  Clients should not depend on such implementation
+details, which are prone to change without notice.
+
+If there is a fact that you think should be in the library's documentation
+but was unintentionally omitted by its authors, then please submit a bug
+report asking them to update the documentation to reflect this fact.  If
+they do, then you can also express the fact as an annotation.
+
+If you wish to depend on your assumption that the behavior will never
+change, then you can create a local stub file as a workaround while you
+wait for the library documentation to be updated.
+
+
 \section{Troubleshooting/debugging annotated libraries\label{libraries-troubleshooting}}
 
 Sometimes, it may seem that a checker is treating a library as unannotated
@@ -729,5 +748,5 @@ read whether the library's annotations are parsed.
 %%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs bcel mkdir
 %%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1 cd
 %%  LocalWords:  TypeSystem2 TypeSystem3 AuseDefaultsForUncheckedCode ln
-%  LocalWords:  mychecker DIRS README TypeSystem un debugJSR
+%  LocalWords:  mychecker DIRS README TypeSystem un debugJSR org
 %  LocalWords:  AstubWarnIfOverwritesBytecode

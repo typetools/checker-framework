@@ -157,13 +157,13 @@ stripDefs() {
 COMMENTS=0  # non-zero to enable
 if [ ${COMMENTS} -ne 0 ] ; then
 # download patch
-[ -r annotated-jdk-comment-patch.jaif ] || wget https://checker-framework.com/annotated-jdk-comment-patch.jaif || exit $?
+[ -r annotated-jdk-comment-patch.jaif ] || wget https://checkerframework.org/annotated-jdk-comment-patch.jaif || exit $?
 (cd "${JDK}" && patch -p1 < annotated-jdk-comment-patch.jaif)
 fi
 
 # download annotation definitions
 [ -r annotation-defs.jaif ]\
- || wget https://checker-framework.com/annotation-defs.jaif\
+ || wget https://checkerframework.org/annotation-defs.jaif\
  || exit $?
 
 
