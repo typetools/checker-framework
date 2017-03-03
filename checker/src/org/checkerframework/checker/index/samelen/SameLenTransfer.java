@@ -179,16 +179,16 @@ public class SameLenTransfer extends CFTransfer {
             CFValue firstValue,
             CFValue secondValue,
             boolean notEqualTo) {
-        CFStore equal = notEqualTo ? result.getElseStore() : result.getThenStore();
+        CFStore equalStore = notEqualTo ? result.getElseStore() : result.getThenStore();
         if (isArrayLengthAccess(firstNode) && isArrayLengthAccess(secondNode)) {
             // Refinement in the else store if this is a.length == b.length.
             refineEq(
                     ((FieldAccessNode) firstNode).getReceiver(),
                     ((FieldAccessNode) secondNode).getReceiver(),
-                    equal);
+                    equalStore);
         } else if (firstNode.getType().getKind() == TypeKind.ARRAY
                 || secondNode.getType().getKind() == TypeKind.ARRAY) {
-            refineEq(firstNode, secondNode, equal);
+            refineEq(firstNode, secondNode, equalStore);
         }
 
         return new ConditionalTransferResult<>(
