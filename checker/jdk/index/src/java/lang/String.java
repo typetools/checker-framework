@@ -657,7 +657,7 @@ public final class String
      * @return  the length of the sequence of characters represented by this
      *          object.
      */
-    public /*@ IndexOrHigh("this")*/ int length() {
+    public @NonNegative /*@ IndexOrHigh("this")*/ int length() {
         return count;
     }
 
@@ -2403,7 +2403,7 @@ public final class String
      * @since 1.4
      * @spec JSR-51
      */
-    public String[] split(String regex) {
+    public String @MinLen(1) [] split(String regex) {
         return split(regex, 0);
     }
 
@@ -2980,7 +2980,7 @@ public final class String
      *          <code>"true"</code> is returned; otherwise, a string equal to
      *          <code>"false"</code> is returned.
      */
-    public static @MinLen(4) String valueOf(boolean b) {
+    public static /*@ MinLen(4)*/ String valueOf(boolean b) {
         return b ? "true" : "false";
     }
 

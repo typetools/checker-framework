@@ -57,8 +57,6 @@ public class OffsetExample {
         }
 
         if (end > start) {
-            // If the UBC knew that start is @NonNeg, then it would known that end - start -1 is a valid index.
-            //::error: (array.access.unsafe.high)
             a[end - start - 1] = 0;
         }
     }

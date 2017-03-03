@@ -188,7 +188,7 @@ or \code{@LTOMLengthOf({"arr"})}.
 
 \begin{description}
 
-\item[\refqualclasswithparams{checker/index/qual}{LTLengthOf}{String[] names}]
+\item[\refqualclasswithparams{checker/index/qual}{LTLengthOf}{String[] names, String[] offset}]
   An expression with this type
   has value less than the length of each sequence listed in \<names>.
   The expression may be used as an index into any of those sequences,
@@ -198,6 +198,14 @@ or \code{@LTOMLengthOf({"arr"})}.
   The type \code{@LTLengthOf({"a", "b"})} is a subtype of both
   \code{@LTLengthOf("a")} and \code{@LTLengthOf("b")}.
   (``\<LT>'' stands for ``Less Than''.)
+
+  \<@LTLengthOf> takes an optional \<offset> element, meaning that the
+  annotated expression plus the offset is less than the length of the given
+  array.  For example, suppose expression \<e> has type \<@LTLengthOf(value
+  = {"a", "b"}, offset = {"-1", "x"})>. Then \<e - 1> is less than
+  \<a.length>, and \<e + x> is less than \<b.length>.  This helps to make
+  the checker more precise.  Programmers rarely need to write the \<offset>
+  element.
 
 \item[\refqualclasswithparams{checker/index/qual}{LTEqLengthOf}{String[] names}]
   An expression with this type

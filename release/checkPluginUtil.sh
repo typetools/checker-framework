@@ -16,7 +16,5 @@ esac
 FRAMEWORK_DIR=$myDir"/.."
 MASTER=$FRAMEWORK_DIR"/framework/src/org/checkerframework/framework/util/PluginUtil.java"
 ECLIPSE=$FRAMEWORK_DIR"/eclipse/checker-framework-eclipse-plugin/src/org/checkerframework/eclipse/util/PluginUtil.java"
-MAVEN=$FRAMEWORK_DIR"/maven-plugin/src/main/java/org/checkerframework/mavenplugin/PluginUtil.java"
 
 diff -q <(tail -n +2 $MASTER) <(tail -n +2 $ECLIPSE) >& /dev/null || (echo -e "Files differ:\n  $MASTER\n  $ECLIPSE" && false)
-diff -q <(tail -n +2 $MASTER) <(tail -n +2 $MAVEN) >& /dev/null || (echo -e "Files differ:\n  $MASTER\n  $MAVEN" && false)

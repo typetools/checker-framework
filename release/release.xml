@@ -104,18 +104,18 @@
         <fail unless="afu.release.date"    message="afu.release.date property is not set!"/>
         <fail unless="afu.version"    message="afu.version not set"/>
 
-        <property name="cf.docs"             value="${checker}/../docs"                       />
+        <property name="cf.docs"             value="${checker}/../docs"                      />
         <property name="checker.manual"      value="${cf.docs}/manual"                       />
         <property name="cf.docs.examples"    value="${cf.docs}/examples"                     />
         <property name="checker.eclipse"     value="${checker}/../eclipse"                   />
-        <property name="checker.tutorial"    value="${cf.docs}/tutorial"                  />
+        <property name="checker.tutorial"    value="${cf.docs}/tutorial"                     />
         <property name="checker.release"     value="${checker}/../release"                   />
         <property name="checkerWebPage"      value="${cf.docs}/checker-framework-webpage.html" />
         <property name="checkerQuickStartPage" value="${checker.manual}/checker-framework-quick-start.html" />
-        <property name="maven.plugin"         value="${checker}/../maven-plugin"             />
-        <property name="checker.binary.poms"  value="${maven.plugin}/poms"                   />
-        <property name="checker.release.poms" value="${maven.plugin}/release/"               />
-        <property name="release.version.regexp" value="\d\.\d\.\d+(?:\.\d)"                   />
+        <property name="maven.artifacts"      value="${checker}/../maven-artifacts" />
+        <property name="checker.binary.poms"  value="${maven.artifacts}/poms" />
+        <property name="checker.release.poms" value="${maven.artifacts}/release/" />
+        <property name="release.version.regexp" value="\d\.\d\.\d+(?:\.\d)" />
 
         <!-- for afu.date.0 and afu.date.1 -->
         <loadproperties srcFile="${afu.properties}"/>
@@ -250,11 +250,7 @@
                 with="${release.ver}"/>
 
         <!-- compiler plugin -->
-        <update file="${maven.plugin}/pom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <update file="${checker.release.poms}/mavenPluginReleasePom.xml"
+        <update file="${maven.artifacts}/pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
@@ -398,10 +394,10 @@
              This is the recommended way of handling this
              situation.  See: https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide -->
 
-        <fail unless="maven.plugin.dir" message="maven.plugin.dir property is not set!"  />
+        <fail unless="maven.artifacts.dir" message="maven.artifacts.dir property is not set!"  />
         <fail unless="dest.dir"         message="dest.dir property is not set!" />
 
-        <property name="maven.release.dir" value="${maven.plugin.dir}/release"/>
+        <property name="maven.release.dir" value="${maven.artifacts.dir}/release"/>
 
         <jar destfile="${dest.dir}/compiler-source.jar"  basedir="${maven.release.dir}" includes="README-compiler"/>
         <jar destfile="${dest.dir}/compiler-javadoc.jar" basedir="${maven.release.dir}" includes="README-compiler"/>
@@ -411,8 +407,6 @@
 
         <jar destfile="${dest.dir}/jdk8-source.jar"  basedir="${maven.release.dir}" includes="README-jdk"/>
         <jar destfile="${dest.dir}/jdk8-javadoc.jar" basedir="${maven.release.dir}" includes="README-jdk"/>
-
-        <jar destfile="${dest.dir}/checkerframework-maven-plugin-javadoc.jar" basedir="${maven.release.dir}" includes="README-plugin"/>
 
     </target>
 

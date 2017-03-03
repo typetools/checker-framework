@@ -15,6 +15,14 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * a.length} and {@code b.length}. The sequences {@code a} and {@code b} might have different
  * lengths.
  *
+ * <p>The {@code @LTLengthOf} annotation takes an optional {@code offset} element. If it is
+ * nonempty, then the annotated expression plus the expression in {@code offset[i]} is less than the
+ * length of the sequence specified by {@code value[i]}.
+ *
+ * <p>For example, suppose expression {@code e} has type {@code @LTLengthOf(value = {"a", "b"},
+ * offset = {"-1", "x"})}. Then {@code e - 1} is less than {@code a.length}, and {@code e + x} is
+ * less than {@code b.length}.
+ *
  * @checker_framework.manual #index-checker Index Checker
  */
 @SubtypeOf(LTEqLengthOf.class)
@@ -25,6 +33,13 @@ public @interface LTLengthOf {
     @JavaExpression
     public String[] value();
 
+    /**
+     * This expression plus the annotated expression is less than the length of the sequence. The
+     * {@code offset} element must ether be empty or the same length as {@code value}.
+     *
+     * <p>The expressions in {@code offset} may be addition/subtraction of any number of Java
+     * expressions. For example, {@code @LessThanLengthOf(value = "a", offset = "x + y + 2"}}.
+     */
     @JavaExpression
     String[] offset() default {};
 }

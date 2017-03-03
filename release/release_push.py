@@ -98,11 +98,11 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
     pgp_user = "checker-framework-dev@googlegroups.com"
     pgp_passphrase = read_first_line(PGP_PASSPHRASE_FILE)
 
-    mvn_dist = os.path.join(MAVEN_PLUGIN_DIR, "dist")
+    mvn_dist = os.path.join(MAVEN_ARTIFACTS_DIR, "dist")
     execute("mkdir -p " + mvn_dist)
 
     # build Jar files with only readmes for artifacts that don't have sources/javadocs
-    ant_cmd = "ant -f release.xml -Ddest.dir=%s -Dmaven.plugin.dir=%s jar-maven-extras" % (mvn_dist, MAVEN_PLUGIN_DIR)
+    ant_cmd = "ant -f release.xml -Ddest.dir=%s -Dmaven.artifacts.dir=%s jar-maven-extras" % (mvn_dist, MAVEN_ARTIFACTS_DIR)
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # At the moment, checker.jar is the only artifact with legitimate accompanying source/javadoc jars
@@ -145,13 +145,6 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, DATAFLOW_BINARY_RELEASE_POM, DATAFLOW_BINARY,
                             DATAFLOW_SOURCE_JAR, DATAFLOW_JAVADOC_JAR,
                             pgp_user, pgp_passphrase)
-
-    plugin_jar = find_mvn_plugin_jar(MAVEN_PLUGIN_DIR, new_checker_version)
-    plugin_source_jar = find_mvn_plugin_jar(MAVEN_PLUGIN_DIR, new_checker_version, "sources")
-    plugin_javadoc_jar = os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checkerframework-maven-plugin-javadoc.jar")
-
-    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, MAVEN_PLUGIN_RELEASE_POM, plugin_jar,
-                            plugin_source_jar, plugin_javadoc_jar, pgp_user, pgp_passphrase)
 
     delete_path(mvn_dist)
 

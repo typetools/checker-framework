@@ -100,9 +100,9 @@ public class FlowExpressionParseUtil {
     /** Matches a field access. Capturing groups 1 and 2 are the object and field. */
     protected static final Pattern memberselect = anchored("([^.]+)\\.(.+)");
     /** Matches integer literals */
-    protected static final Pattern intPattern = anchored("[-+]?[1-9][0-9]*");
+    protected static final Pattern intPattern = anchored("[-+]?[0-9]+");
     /** Matches long literals */
-    protected static final Pattern longPattern = anchored("[-+]?[1-9][0-9]*L");
+    protected static final Pattern longPattern = anchored("[-+]?[0-9]+[Ll]");
     /** Matches string literals */
     // Regex can be found at, for example, http://stackoverflow.com/a/481587/173852
     protected static final Pattern stringPattern = anchored("\"(?:[^\"\\\\]|\\\\.)*\"");
@@ -352,6 +352,10 @@ public class FlowExpressionParseUtil {
         boolean originalReceiver = true;
         VariableElement fieldElem = null;
 
+        if (receiverType.getKind() == TypeKind.ARRAY && s.equals("length")) {
+            fieldElem = resolver.findField(s, receiverType, path);
+        }
+
         // Search for field in each enclosing class.
         while (receiverType.getKind() == TypeKind.DECLARED) {
             fieldElem = resolver.findField(s, receiverType, path);
@@ -469,6 +473,10 @@ public class FlowExpressionParseUtil {
             // try to find the correct method
             Resolver resolver = new Resolver(env);
             TypeMirror receiverType = context.receiver.getType();
+
+            if (receiverType.getKind() == TypeKind.ARRAY) {
+                element = resolver.findMethod(methodName, receiverType, path, parameterTypes);
+            }
 
             // Search for method in each enclosing class.
             while (receiverType.getKind() == TypeKind.DECLARED) {

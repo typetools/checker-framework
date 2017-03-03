@@ -588,11 +588,52 @@ public abstract class UBQualifier {
          */
         @Override
         public UBQualifier plusOffset(Node node, UpperBoundAnnotatedTypeFactory factory) {
-            OffsetEquation newOffset = OffsetEquation.createOffsetFromNode(node, factory, '+');
-            if (newOffset.hasError()) {
-                return UpperBoundUnknownQualifier.UNKNOWN;
+            return pluseOrMinusOffset(node, factory, '+');
+        }
+
+        /**
+         * Adds node as a negative offset to a copy of this qualifier. This is done by creating a
+         * negative offset equation for node and then adding that equation to every offset equation
+         * in a copy of this object.
+         *
+         * @param node Node
+         * @param factory AnnotatedTypeFactory
+         * @return a copy of this qualifier with node add as an offset
+         */
+        @Override
+        public UBQualifier minusOffset(Node node, UpperBoundAnnotatedTypeFactory factory) {
+            return pluseOrMinusOffset(node, factory, '-');
+        }
+
+        private UBQualifier pluseOrMinusOffset(
+                Node node, UpperBoundAnnotatedTypeFactory factory, char op) {
+            assert op == '-' || op == '+';
+            OffsetEquation newOffset = OffsetEquation.createOffsetFromNode(node, factory, op);
+            LessThanLengthOf nodeOffsetQualifier = null;
+            if (!newOffset.hasError()) {
+                nodeOffsetQualifier = addOffset(newOffset);
             }
-            return addOffset(newOffset);
+
+            OffsetEquation valueOffset =
+                    OffsetEquation.createOffsetFromNodesValue(node, factory, op);
+            LessThanLengthOf valueOffsetQualifier = null;
+            if (valueOffset != null && !valueOffset.hasError()) {
+                valueOffsetQualifier = addOffset(valueOffset);
+            }
+
+            if (valueOffsetQualifier == null) {
+                if (nodeOffsetQualifier == null) {
+                    return UpperBoundUnknownQualifier.UNKNOWN;
+                } else {
+                    return nodeOffsetQualifier;
+                }
+            } else {
+                if (nodeOffsetQualifier == null) {
+                    return valueOffsetQualifier;
+                } else {
+                    return nodeOffsetQualifier.glb(valueOffsetQualifier);
+                }
+            }
         }
 
         /**
@@ -609,24 +650,6 @@ public abstract class UBQualifier {
         }
 
         /**
-         * Adds node as a negative offset to a copy of this qualifier. This is done by creating a
-         * negative offset equation for node and then adding that equation to every offset equation
-         * in a copy of this object.
-         *
-         * @param node Node
-         * @param factory AnnotatedTypeFactory
-         * @return a copy of this qualifier with node add as an offset
-         */
-        @Override
-        public UBQualifier minusOffset(Node node, UpperBoundAnnotatedTypeFactory factory) {
-            OffsetEquation newOffset = OffsetEquation.createOffsetFromNode(node, factory, '-');
-            if (newOffset.hasError()) {
-                return UpperBoundUnknownQualifier.UNKNOWN;
-            }
-            return addOffset(newOffset);
-        }
-
-        /**
          * Adds the negation of value as an offset to a copy of this qualifier. This is done by
          * adding the negation of value value to every offset equation in a copy of this object.
          *
@@ -639,7 +662,7 @@ public abstract class UBQualifier {
             return addOffset(newOffset);
         }
 
-        private UBQualifier addOffset(OffsetEquation newOffset) {
+        private LessThanLengthOf addOffset(OffsetEquation newOffset) {
             Map<String, Set<OffsetEquation>> plusMap = new HashMap<>(map.size());
             for (Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
                 Set<OffsetEquation> plus = new HashSet<>(entry.getValue().size());
