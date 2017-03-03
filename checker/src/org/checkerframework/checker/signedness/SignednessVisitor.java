@@ -130,7 +130,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     private boolean castIgnoresMSB(LiteralTree numBitsLit, long bitDiff) {
         long numBits = getLong(numBitsLit.getValue());
 
-        return numBits <= bitDiff;
+        return numBits <= bitDiff || numBits == 0;
     }
 
     /**

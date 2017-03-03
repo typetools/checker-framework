@@ -28,6 +28,12 @@ public class CastedShifts {
         byteRes = (@Signed byte) (signed >>> 25);
         byteRes = (@Signed byte) (signed >> 25);
 
+        // Shifting right by zero should behave as assignment
+        byteRes = (@Unsigned byte) (unsigned >>> 0);
+        byteRes = (@Unsigned byte) (unsigned >> 0);
+        byteRes = (@Signed byte) (signed >>> 0);
+        byteRes = (@Signed byte) (signed >> 0);
+
         // Cast to char.
         @UnknownSignedness char charRes;
 
@@ -52,6 +58,12 @@ public class CastedShifts {
         //:: error: (shift.unsigned)
         charRes = (@Signed char) (signed >>> 25);
         charRes = (@Signed char) (signed >> 25);
+
+        // Shifting right by zero should behave as assignment
+        charRes = (@Unsigned char) (unsigned >>> 0);
+        charRes = (@Unsigned char) (unsigned >> 0);
+        charRes = (@Signed char) (signed >>> 0);
+        charRes = (@Signed char) (signed >> 0);
 
         // Cast to short.
         @UnknownSignedness short shortRes;
@@ -78,6 +90,12 @@ public class CastedShifts {
         shortRes = (@Signed short) (signed >>> 17);
         shortRes = (@Signed short) (signed >> 17);
 
+        // Shifting right by zero should behave as assignment
+        shortRes = (@Unsigned short) (unsigned >>> 0);
+        shortRes = (@Unsigned short) (unsigned >> 0);
+        shortRes = (@Signed short) (signed >>> 0);
+        shortRes = (@Signed short) (signed >> 0);
+
         // Cast to int.
         @UnknownSignedness int intRes;
 
@@ -91,6 +109,12 @@ public class CastedShifts {
         intRes = (@Signed int) (signed >>> 1);
         intRes = (@Signed int) (signed >> 1);
 
+        // Shifting right by zero should behave as assignment
+        intRes = (@Unsigned int) (unsigned >>> 0);
+        intRes = (@Unsigned int) (unsigned >> 0);
+        intRes = (@Signed int) (signed >>> 0);
+        intRes = (@Signed int) (signed >> 0);
+
         // Cast to long.
         @UnknownSignedness long longRes;
 
@@ -103,6 +127,12 @@ public class CastedShifts {
         //:: error: (shift.unsigned)
         longRes = (@Signed long) (signed >>> 1);
         longRes = (@Signed long) (signed >> 1);
+
+        // Shifting right by zero should behave as assignment
+        longRes = (@Unsigned long) (unsigned >>> 0);
+        longRes = (@Unsigned long) (unsigned >> 0);
+        longRes = (@Signed long) (signed >>> 0);
+        longRes = (@Signed long) (signed >> 0);
 
         // Tests with double parenthesis (only byte and int)
 
@@ -129,6 +159,12 @@ public class CastedShifts {
         byteRes = (@Signed byte) ((signed >>> 25));
         byteRes = (@Signed byte) ((signed >> 25));
 
+        // Shifting right by zero should behave as assignment
+        byteRes = (@Unsigned byte) ((unsigned >>> 0));
+        byteRes = (@Unsigned byte) ((unsigned >> 0));
+        byteRes = (@Signed byte) ((signed >>> 0));
+        byteRes = (@Signed byte) ((signed >> 0));
+
         // Cast to int.
         // Now shift signedness matters again
         intRes = (@Unsigned int) ((unsigned >>> 1));
@@ -139,6 +175,12 @@ public class CastedShifts {
         //:: error: (shift.unsigned)
         intRes = (@Signed int) ((signed >>> 1));
         intRes = (@Signed int) ((signed >> 1));
+
+        // Shifting right by zero should behave as assignment
+        intRes = (@Unsigned int) ((unsigned >>> 0));
+        intRes = (@Unsigned int) ((unsigned >> 0));
+        intRes = (@Signed int) ((signed >>> 0));
+        intRes = (@Signed int) ((signed >> 0));
     }
 
     public void CastedLongShifts(@Unsigned long unsigned, @Signed long signed) {
@@ -167,6 +209,12 @@ public class CastedShifts {
         byteRes = (@Signed byte) (signed >>> 57);
         byteRes = (@Signed byte) (signed >> 57);
 
+        // Shifting right by zero should behave as assignment
+        byteRes = (@Unsigned byte) (unsigned >>> 0);
+        byteRes = (@Unsigned byte) (unsigned >> 0);
+        byteRes = (@Signed byte) (signed >>> 0);
+        byteRes = (@Signed byte) (signed >> 0);
+
         // Cast to char.
         @UnknownSignedness char charRes;
 
@@ -191,6 +239,12 @@ public class CastedShifts {
         //:: error: (shift.unsigned)
         charRes = (@Signed char) (signed >>> 57);
         charRes = (@Signed char) (signed >> 57);
+
+        // Shifting right by zero should behave as assignment
+        charRes = (@Unsigned char) (unsigned >>> 0);
+        charRes = (@Unsigned char) (unsigned >> 0);
+        charRes = (@Signed char) (signed >>> 0);
+        charRes = (@Signed char) (signed >> 0);
 
         // Cast to short.
         @UnknownSignedness short shortRes;
@@ -217,6 +271,12 @@ public class CastedShifts {
         shortRes = (@Signed short) (signed >>> 49);
         shortRes = (@Signed short) (signed >> 49);
 
+        // Shifting right by zero should behave as assignment
+        shortRes = (@Unsigned short) (unsigned >>> 0);
+        shortRes = (@Unsigned short) (unsigned >> 0);
+        shortRes = (@Signed short) (signed >>> 0);
+        shortRes = (@Signed short) (signed >> 0);
+
         // Cast to int.
         @UnknownSignedness int intRes;
 
@@ -242,6 +302,12 @@ public class CastedShifts {
         intRes = (@Signed int) (signed >>> 33);
         intRes = (@Signed int) (signed >> 33);
 
+        // Shifting right by zero should behave as assignment
+        intRes = (@Unsigned int) (unsigned >>> 0);
+        intRes = (@Unsigned int) (unsigned >> 0);
+        intRes = (@Signed int) (signed >>> 0);
+        intRes = (@Signed int) (signed >> 0);
+
         // Cast to long.
         @UnknownSignedness long longRes;
 
@@ -254,6 +320,12 @@ public class CastedShifts {
         //:: error: (shift.unsigned)
         longRes = (@Signed long) (signed >>> 1);
         longRes = (@Signed long) (signed >> 1);
+
+        // Shifting right by zero should behave as assignment
+        longRes = (@Unsigned long) (unsigned >>> 0);
+        longRes = (@Unsigned long) (unsigned >> 0);
+        longRes = (@Signed long) (signed >>> 0);
+        longRes = (@Signed long) (signed >> 0);
 
         // Tests with double parenthesis (only byte and long)
 
@@ -280,6 +352,12 @@ public class CastedShifts {
         byteRes = (@Signed byte) ((signed >>> 57));
         byteRes = (@Signed byte) ((signed >> 57));
 
+        // Shifting right by zero should behave as assignment
+        byteRes = (@Unsigned byte) ((unsigned >>> 0));
+        byteRes = (@Unsigned byte) ((unsigned >> 0));
+        byteRes = (@Signed byte) ((signed >>> 0));
+        byteRes = (@Signed byte) ((signed >> 0));
+
         // Cast to long.
         // Now shift signedness matters again
         longRes = (@Unsigned long) ((unsigned >>> 1));
@@ -290,5 +368,11 @@ public class CastedShifts {
         //:: error: (shift.unsigned)
         longRes = (@Signed long) ((signed >>> 1));
         longRes = (@Signed long) ((signed >> 1));
+
+        // Shifting right by zero should behave as assignment
+        longRes = (@Unsigned long) ((unsigned >>> 0));
+        longRes = (@Unsigned long) ((unsigned >> 0));
+        longRes = (@Signed long) ((signed >>> 0));
+        longRes = (@Signed long) ((signed >> 0));
     }
 }
