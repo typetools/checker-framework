@@ -143,4 +143,10 @@ class RequiresNonNullTest {
     void test() {
         o = null;
     }
+
+    // Test case for Issue 1051
+    // https://github.com/typetools/checker-framework/issues/1051
+    //:: error: (flowexpr.parse.error)
+    @RequiresNonNull("thisShouldIssue1Error")
+    void testIssue1051() {}
 }
