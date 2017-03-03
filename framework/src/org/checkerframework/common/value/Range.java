@@ -93,7 +93,7 @@ public class Range {
      * INT_EVERYTHING.
      */
     public Range intRange() {
-        if (this.isWiderThan(Integer.MAX_VALUE - Integer.MIN_VALUE + 1)) {
+        if (this.isWiderThan((long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1)) {
             return INT_EVERYTHING;
         } else {
             int intFrom = (int) this.from;
@@ -118,6 +118,7 @@ public class Range {
      */
     public Range shortRange() {
         if (this.isWiderThan(Short.MAX_VALUE - Short.MIN_VALUE + 1)) {
+            // short is be promoted to int before the operation so no need for explicit casting
             return SHORT_EVERYTHING;
         } else {
             short shortFrom = (short) this.from;
@@ -658,7 +659,9 @@ public class Range {
     }
 
     private static final BigInteger longPossibleValues =
-            BigInteger.valueOf(Long.MAX_VALUE - Long.MIN_VALUE + 1);
+            BigInteger.valueOf(Long.MAX_VALUE)
+                    .subtract(BigInteger.valueOf(Long.MIN_VALUE))
+                    .add(BigInteger.ONE);
 
     /**
      * Converts a range with BigInteger type bounds to a range with Long type bounds.

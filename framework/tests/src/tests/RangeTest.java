@@ -15,67 +15,65 @@ public class RangeTest {
     long[] rangeBounds = {
         Long.MIN_VALUE,
         Long.MIN_VALUE + 1,
+        Integer.MIN_VALUE - 1000L,
+        Integer.MIN_VALUE - 10L,
         Integer.MIN_VALUE,
-        Integer.MAX_VALUE + 1,
-        -1000L,
-        -100L,
+        Integer.MIN_VALUE + 1L,
+        Short.MIN_VALUE - 1000L,
+        Short.MIN_VALUE - 10L,
+        Short.MIN_VALUE,
+        Short.MIN_VALUE + 1L,
         -10L,
-        -3L,
-        -2L,
         -1L,
         0L,
         1L,
-        2L,
-        3L,
         10L,
-        100L,
-        1000L,
+        Short.MAX_VALUE - 1L,
+        Short.MAX_VALUE,
+        Short.MAX_VALUE + 10L,
+        Short.MAX_VALUE + 1000L,
         Integer.MAX_VALUE - 1,
         Integer.MAX_VALUE,
+        Integer.MAX_VALUE + 10L,
+        Integer.MAX_VALUE + 1000L,
         Long.MAX_VALUE - 1,
         Long.MAX_VALUE
     };
     long[] values = {
         Long.MIN_VALUE,
-        Long.MIN_VALUE + 1,
+        Long.MIN_VALUE + 1L,
         Integer.MIN_VALUE,
-        Integer.MIN_VALUE + 1,
+        Integer.MIN_VALUE + 1L,
+        Short.MIN_VALUE,
+        Short.MIN_VALUE + 1L,
         -1000L,
         -500L,
-        -100L,
-        -20L,
         -10L,
-        -9L,
         -8L,
-        -7L,
-        -6L,
-        -5L,
         -4L,
-        -3L,
         -2L,
         -1L,
         0L,
         1L,
         2L,
-        3L,
         4L,
-        5L,
-        6L,
-        7L,
         8L,
-        9L,
         10L,
-        20L,
-        100L,
         500L,
         1000L,
-        Integer.MAX_VALUE - 1,
+        Short.MAX_VALUE - 1L,
+        Short.MAX_VALUE,
+        Integer.MAX_VALUE - 1L,
         Integer.MAX_VALUE,
-        Long.MAX_VALUE - 1,
+        Long.MAX_VALUE - 1L,
         Long.MAX_VALUE
     };
 
     Range[] ranges;
+
+    static final long intPossibleValues = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1;
+
+    static final long shortPossibleValues = (short) Short.MAX_VALUE - (short) Short.MIN_VALUE + 1;
 
     public RangeTest() {
         // Initialize the ranges list.
@@ -220,11 +218,53 @@ public class RangeTest {
     }
 
     @Test
+    public void testIntRange() {
+        for (Range range : ranges) {
+            Range result = range.intRange();
+            for (long value : values) {
+                if (value < range.from + intPossibleValues
+                        && value > range.to - intPossibleValues
+                        && (Math.abs(range.from) - 1) / Integer.MIN_VALUE
+                                == (Math.abs(range.to) - 1) / Integer.MIN_VALUE) {
+                    // filter out test data that would cause Range.intRange to return INT_EVERYTHING
+                    int intValue = (int) value;
+                    assert range.contains(value) && result.contains(intValue)
+                                    || !range.contains(value) && !result.contains(intValue)
+                            : String.format(
+                                    "Range.intRange failure: %s => %s; witness = %s",
+                                    range, result, intValue);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testShortRange() {
+        for (Range range : ranges) {
+            Range result = range.shortRange();
+            for (long value : values) {
+                if (value < range.from + shortPossibleValues
+                        && value > range.to - shortPossibleValues
+                        && (Math.abs(range.from) - 1) / Short.MIN_VALUE
+                                == (Math.abs(range.to) - 1) / Short.MIN_VALUE) {
+                    // filter out test data that would cause Range.shortRange to return SHORT_EVERYTHING
+                    short shortValue = (short) value;
+                    assert range.contains(value) && result.contains(shortValue)
+                                    || !range.contains(value) && !result.contains(shortValue)
+                            : String.format(
+                                    "Range.shortRange failure: %s => %s; witness = %s",
+                                    range, result, shortValue);
+                }
+            }
+        }
+    }
+
+    @Test
     public void testUnion() {
         for (Range range1 : ranges) {
             for (Range range2 : ranges) {
+                Range result = range1.union(range2);
                 for (long value : values) {
-                    Range result = range1.union(range2);
                     if (range1.contains(value) || range2.contains(value)) {
                         assert result.contains(value)
                                 : String.format(
