@@ -4,8 +4,7 @@ import testlib.util.*;
 // Test case for Issue 134:
 // https://github.com/typetools/checker-framework/issues/134
 // Handling of generics from different enclosing classes.
-// TODO: revisit with nested types in 1.3.
-// @skip-test
+
 class GenericTest4 {
     public interface Foo {}
 
@@ -45,7 +44,12 @@ class GenericTest4 {
                 foo = setter2(s);
             }
 
-            void testWow(Map<Foo, String> p) {
+            void testWow(Map<Foo, @Odd String> p) {
+                p = wow(p);
+            }
+
+            void testWow2(Map<Foo, String> p) {
+                //:: error: (assignment.type.incompatible) :: error: (argument.type.incompatible)
                 p = wow(p);
             }
         }
