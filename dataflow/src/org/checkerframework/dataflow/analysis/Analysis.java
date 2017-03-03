@@ -75,7 +75,7 @@ public class Analysis<
 
     /**
      * Number of times every block has been analyzed since the last time widening was applied. Null,
-     * if maxCountBeforeWidening is -1 which implies widening isn't using for this analysis.
+     * if maxCountBeforeWidening is -1 which implies widening isn't used for this analysis.
      */
     protected IdentityHashMap<Block, Integer> blockCount;
 
@@ -83,7 +83,7 @@ public class Analysis<
      * Number of times a block can be analyzed before widening. -1 implies that widening shouldn't
      * be used.
      */
-    protected int maxCountBeforeWidening = -1;
+    protected final int maxCountBeforeWidening;
 
     /**
      * The transfer inputs before every basic block (assumed to be 'no information' if not present).
@@ -134,8 +134,7 @@ public class Analysis<
      * flow graph. The transfer function is set later using {@code setTransferFunction}.
      */
     public Analysis(ProcessingEnvironment env) {
-        this.env = env;
-        types = env.getTypeUtils();
+        this(env, null, -1);
     }
 
     /**
@@ -143,7 +142,18 @@ public class Analysis<
      * flow graph, given a transfer function.
      */
     public Analysis(ProcessingEnvironment env, T transfer) {
-        this(env);
+        this(env, transfer, -1);
+    }
+
+    /**
+     * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
+     * flow graph, given a transfer function.
+     */
+    public Analysis(ProcessingEnvironment env, T transfer, int maxCountBeforeWidening) {
+        this.env = env;
+        types = env.getTypeUtils();
+        this.transferFunction = transfer;
+        this.maxCountBeforeWidening = maxCountBeforeWidening;
         this.transferFunction = transfer;
     }
 
@@ -479,7 +489,9 @@ public class Analysis<
         Integer count = null;
         if (blockCount != null) {
             count = blockCount.get(b);
-            count = count == null ? 0 : count;
+            if (count == null) {
+                count = 0;
+            }
             shouldWiden = count >= maxCountBeforeWidening;
         }
 

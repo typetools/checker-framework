@@ -134,7 +134,8 @@ public abstract class QualifierHierarchy {
      *
      * @param a1 annotation
      * @param a2 annotation
-     * @return an upper bound that is wider than the least upper bound of a1 and a2
+     * @return an upper bound that is wider than the least upper bound of a1 and a2 (or the lub if
+     *     the type hierarchy does not require this)
      */
     public AnnotationMirror widenUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
         return leastUpperBound(a1, a2);
