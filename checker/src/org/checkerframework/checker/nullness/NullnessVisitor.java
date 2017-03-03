@@ -203,6 +203,24 @@ public class NullnessVisitor
         atypeFactory.replacePolyQualifier(varType, valueExp);
         super.commonAssignmentCheck(varType, valueExp, errorKey);
     }
+
+    @Override
+    protected void commonAssignmentCheck(
+            AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType,
+            Tree valueTree,
+            String errorKey) {
+        if (TypesUtils.isPrimitive(varType.getUnderlyingType())
+                && !TypesUtils.isPrimitive(valueType.getUnderlyingType())) {
+            boolean succeed = checkForNullability(valueType, valueTree, UNBOXING_OF_NULLABLE);
+            if (!succeed) {
+                // Only issue the unboxing of nullable error.
+                return;
+            }
+        }
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+    }
+
     /** Case 1: Check for null dereferencing */
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
@@ -424,16 +442,33 @@ public class NullnessVisitor
     // ///////////// Utility methods //////////////////////////////
 
     /**
-     * Issues a 'dereference.of.nullable' if the type is not of a {@link NonNull} type.
+     * Issues the error message if the type is not of a {@link NonNull} type.
      *
      * @param tree the tree where the error is to reported
      * @param errMsg the error message (must be {@link CompilerMessageKey})
+     * @return whether or not the check succeeded
      */
-    private void checkForNullability(ExpressionTree tree, /*@CompilerMessageKey*/ String errMsg) {
+    private boolean checkForNullability(
+            ExpressionTree tree, /*@CompilerMessageKey*/ String errMsg) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
+        return checkForNullability(type, tree, errMsg);
+    }
+
+    /**
+     * Issues a 'dereference.of.nullable' if the type is not of a {@link NonNull} type.
+     *
+     * @param type annotated type
+     * @param tree the tree where the error is to reported
+     * @param errMsg the error message (must be {@link CompilerMessageKey})
+     * @return whether or not the check succeeded
+     */
+    private boolean checkForNullability(
+            AnnotatedTypeMirror type, Tree tree, /*@CompilerMessageKey*/ String errMsg) {
         if (!type.hasEffectiveAnnotation(NONNULL)) {
             checker.report(Result.failure(errMsg, tree), tree);
+            return false;
         }
+        return true;
     }
 
     @Override
