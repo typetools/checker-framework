@@ -159,6 +159,17 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     public abstract AnnotationMirror getFieldInvariantAnnotation();
 
+    /**
+     * Returns whether or not field has the invariant annotation.
+     *
+     * <p>If the field is a type variable, this method return false if any possible instantiation of
+     * the type parameter could have the invariant annotation.
+     *
+     * @param field field that might have invariant annotation
+     * @return whether or not field has the invariant annotation
+     */
+    protected abstract boolean hasInvariantAnnotation(VariableTree field);
+
     /** Returns a {@link UnderInitialization} annotation with a given type frame. */
     public AnnotationMirror createFreeAnnotation(TypeMirror typeFrame) {
         assert typeFrame != null;
@@ -452,7 +463,6 @@ public abstract class InitializationAnnotatedTypeFactory<
         ClassTree currentClass = TreeUtils.enclosingClass(path);
         List<VariableTree> fields = InitializationChecker.getAllFields(currentClass);
         List<VariableTree> violatingFields = new ArrayList<>();
-        AnnotationMirror invariant = getFieldInvariantAnnotation();
         for (VariableTree field : fields) {
             if (isUnused(field, receiverAnnotations)) {
                 continue; // don't consider unused fields
@@ -460,7 +470,7 @@ public abstract class InitializationAnnotatedTypeFactory<
             VariableElement fieldElem = TreeUtils.elementFromDeclaration(field);
             if (ElementUtils.isStatic(fieldElem) == isStatic) {
                 // Does this field need to satisfy the invariant?
-                if (getAnnotatedType(field).hasEffectiveAnnotation(invariant)) {
+                if (hasInvariantAnnotation(field)) {
                     // Has the field been initialized?
                     if (!store.isFieldInitialized(fieldElem)) {
                         violatingFields.add(field);
@@ -481,12 +491,11 @@ public abstract class InitializationAnnotatedTypeFactory<
         ClassTree currentClass = TreeUtils.enclosingClass(path);
         List<VariableTree> fields = InitializationChecker.getAllFields(currentClass);
         List<VariableTree> initializedFields = new ArrayList<>();
-        AnnotationMirror invariant = getFieldInvariantAnnotation();
         for (VariableTree field : fields) {
             VariableElement fieldElem = TreeUtils.elementFromDeclaration(field);
             if (!ElementUtils.isStatic(fieldElem)) {
                 // Does this field need to satisfy the invariant?
-                if (getAnnotatedType(field).hasEffectiveAnnotation(invariant)) {
+                if (hasInvariantAnnotation(field)) {
                     // Has the field been initialized?
                     if (store.isFieldInitialized(fieldElem)) {
                         initializedFields.add(field);
