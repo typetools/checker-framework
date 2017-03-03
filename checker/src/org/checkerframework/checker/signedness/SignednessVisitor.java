@@ -114,11 +114,11 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      *
      * <p>For example, the function returns true for
      *
-     * <pre>(short) (myInt >> 16)</pre>
+     * <pre>{@code (short) (myInt >> 16)}</pre>
      *
      * and for
      *
-     * <pre>(short) (myInt >>> 16)</pre>
+     * <pre>{@code (short) (myInt >>> 16)}</pre>
      *
      * because these two expressions are guaranteed to have the same result.
      *
