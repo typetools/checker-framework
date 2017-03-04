@@ -58,7 +58,7 @@ public class AnnotationUtils {
 
     /** Caching for annotation creation. */
     private static final Map<CharSequence, AnnotationMirror> annotationsFromNames =
-            new HashMap<CharSequence, AnnotationMirror>();
+            Collections.synchronizedMap(new HashMap<CharSequence, AnnotationMirror>());
 
     private static final int ANNOTATION_CACHE_SIZE = 500;
 
@@ -67,21 +67,27 @@ public class AnnotationUtils {
      * so they can be compared with ==.
      */
     private static final Map<AnnotationMirror, /*@Interned*/ String> annotationMirrorNames =
-            CollectionUtils.createLRUCache(ANNOTATION_CACHE_SIZE);
+            Collections.synchronizedMap(
+                    CollectionUtils.<AnnotationMirror, /*@Interned*/ String>createLRUCache(
+                            ANNOTATION_CACHE_SIZE));
 
     /**
      * Cache simple names of AnnotationMirrors for faster access. Values in the map are interned
      * Strings, so they can be compared with ==.
      */
     private static final Map<AnnotationMirror, /*@Interned*/ String> annotationMirrorSimpleNames =
-            CollectionUtils.createLRUCache(ANNOTATION_CACHE_SIZE);
+            Collections.synchronizedMap(
+                    CollectionUtils.<AnnotationMirror, /*@Interned*/ String>createLRUCache(
+                            ANNOTATION_CACHE_SIZE));
 
     /**
      * Cache names of classes representing AnnotationMirrors for faster access. Values in the map
      * are interned Strings, so they can be compared with ==.
      */
     private static final Map<Class<? extends Annotation>, /*@Interned*/ String>
-            annotationClassNames = new HashMap<Class<? extends Annotation>, /*@Interned*/ String>();
+            annotationClassNames =
+                    Collections.synchronizedMap(
+                            new HashMap<Class<? extends Annotation>, /*@Interned*/ String>());
 
     /**
      * Creates an {@link AnnotationMirror} given by a particular fully-qualified name.
@@ -92,8 +98,10 @@ public class AnnotationUtils {
      * @return an {@link AnnotationMirror} of type {@code} name
      */
     public static AnnotationMirror fromName(Elements elements, CharSequence name) {
-        if (annotationsFromNames.containsKey(name)) {
-            return annotationsFromNames.get(name);
+        synchronized (annotationsFromNames) {
+            if (annotationsFromNames.containsKey(name)) {
+                return annotationsFromNames.get(name);
+            }
         }
         final DeclaredType annoType = typeFromName(elements, name);
         if (annoType == null) {
@@ -163,10 +171,11 @@ public class AnnotationUtils {
 
     /** @return the fully-qualified name of an annotation as a String */
     public static final /*@Interned*/ String annotationName(AnnotationMirror annotation) {
-        if (annotationMirrorNames.containsKey(annotation)) {
-            return annotationMirrorNames.get(annotation);
+        synchronized (annotationMirrorNames) {
+            if (annotationMirrorNames.containsKey(annotation)) {
+                return annotationMirrorNames.get(annotation);
+            }
         }
-
         final DeclaredType annoType = annotation.getAnnotationType();
         final TypeElement elm = (TypeElement) annoType.asElement();
         /*@Interned*/ String name = elm.getQualifiedName().toString().intern();
@@ -176,10 +185,11 @@ public class AnnotationUtils {
 
     /** @return the simple name of an annotation as a String */
     public static String annotationSimpleName(AnnotationMirror annotation) {
-        if (annotationMirrorSimpleNames.containsKey(annotation)) {
-            return annotationMirrorSimpleNames.get(annotation);
+        synchronized (annotationMirrorSimpleNames) {
+            if (annotationMirrorSimpleNames.containsKey(annotation)) {
+                return annotationMirrorSimpleNames.get(annotation);
+            }
         }
-
         final DeclaredType annoType = annotation.getAnnotationType();
         final TypeElement elm = (TypeElement) annoType.asElement();
         /*@Interned*/ String name = elm.getSimpleName().toString().intern();
@@ -235,10 +245,13 @@ public class AnnotationUtils {
 
     /** Checks that the annotation {@code am} has the name of {@code anno}. Values are ignored. */
     public static boolean areSameByClass(AnnotationMirror am, Class<? extends Annotation> anno) {
-        /*@Interned*/ String canonicalName;
-        if (annotationClassNames.containsKey(anno)) {
-            canonicalName = annotationClassNames.get(anno);
-        } else {
+        /*@Interned*/ String canonicalName = null;
+        synchronized (annotationClassNames) {
+            if (annotationClassNames.containsKey(anno)) {
+                canonicalName = annotationClassNames.get(anno);
+            }
+        }
+        if (canonicalName == null) {
             canonicalName = anno.getCanonicalName().intern();
             annotationClassNames.put(anno, canonicalName);
         }
