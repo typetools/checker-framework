@@ -191,14 +191,14 @@ warning: (argument.type.incompatible) incompatible types in argument.
         </p>
 
         <p>
-        You need to make two changes to RegexExample.java
+        You need to make two changes to <code>RegexExample.java</code>
         to correctly handle invalid user input.  At the top of the file, add</p>
         <pre>
 import org.checkerframework.checker.regex.RegexUtil;
 </pre>
         <p>
         After variable <code>regex</code> is defined but before it is
-        used, add</p>
+        used (that is, before <code>Pattern pat = Pattern.compile(regex);</code>), add</p>
 <pre>
     if (!RegexUtil.isRegex(regex, 1)) {
         System.out.println("Input is not a regular expression \"" + regex
