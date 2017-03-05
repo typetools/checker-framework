@@ -163,7 +163,9 @@ call stack.  For more details, see the Javadoc for
 
 A potential disadvantage of using the \<RegexUtil> class is that your code becomes
 dependent on the Checker Framework at run time as well as at compile time.
-You can avoid this by adding the Checker Framework to your project, or by
+That is, the \<checker.jar> or \<checker-qual.jar> file
+must be on the classpath at run time.
+You can avoid this by
 copying the \<RegexUtil> class into
 your own code.
 
