@@ -757,7 +757,7 @@ run the Ant target by executing the following steps
 \label{eclipse-plug-in}         % previous label for this section
 \subsection{Eclipse plugin for the Checker Framework\label{eclipse-plugin}}
 
-The Checker framework Eclipse Plugin enables the use of the Checker
+The Checker Framework Eclipse Plugin enables the use of the Checker
 Framework within the Eclipse IDE\@.
 Its website (\myurl{https://checkerframework.org/eclipse/}).
 The website contains instructions for installing and using the plugin.
@@ -795,10 +795,10 @@ You can download it from \myurl{https://sourceforge.net/projects/tide/}.
 
 \section{NetBeans\label{netbeans}}
 
-There are two approaches to running a checker in Netbeans:  via modifying the project properties, or via a custom ant target.
+There are three approaches to running a checker in Netbeans: via modifying the project properties, via a custom ant target, or using the Netbeans Checker Framework plugin.
 
 
-\subsection{Adding a checker via the project properties\label{netbeans-project-properties}}
+\subsection{Adding a checker via the Project Properties window\label{netbeans-project-properties}}
 
 \begin{enumerate}
 \item
@@ -941,6 +941,28 @@ now appear in the build console. However, annotation processor output
 will not appear in the editor.
 
 \end{enumerate}
+
+
+\subsection {Adding a checker using the Checker Framework Plugin\label{netbeans-plugin}}
+
+In order to run a checker using the Netbeans plugin, you should first
+install the plugin. To do so, select ``Tools'' and then ``Plugins''.
+In the Plugins window, click on the ``Settings'' tab, and then ``Add''.
+In the popup that appears, enter ``Checker Framework'' under ``Name'' and
+the URL where the Checker Framework plugin is hosted under ``URL''.
+
+Currently, the Checker Framework plugin is kept at \url{https://twlogger.github.io/catalog.xml}.
+
+After adding the Checker Framework plugin Update Center, go to the
+``Available Plugins'' tab, and search for ``Checker Framework'', select
+the checkbox, and click ``Install''.
+
+Once the Checker Framework is installed, right click on the project
+that you wish to run the checker on, and click ``Properties''. Then,
+select the checkboxes of the checkers that you wish to run, and press
+``Ok'' to apply the changes. If ``Compile on save'' is enabled (this can
+also be set in the Project Properties window), the results of the checker
+should appear automatically in the editor.
 
 
 \section{Type inference tools\label{type-inference-varieties}}
