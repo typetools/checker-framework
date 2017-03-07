@@ -511,11 +511,9 @@ public class NullnessAnnotatedTypeFactory
     }
 
     /**
-     * Returns whether or not field has the invariant annotation.
+     * {@inheritDoc}
      *
-     * <p>If the field is a type variable, this method return false if any possible instantiation of
-     * the type parameter could have the invariant annotation. In other words, is the lower
-     * bound @NonNull?
+     * <p>In other words, is the lower bound @NonNull?
      *
      * @param field field that might have invariant annotation
      * @return whether or not field has the invariant annotation
