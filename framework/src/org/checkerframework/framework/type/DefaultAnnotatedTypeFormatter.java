@@ -191,6 +191,10 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             if (type.isDeclaration() && currentPrintInvisibleSetting) {
                 sb.append("/*DECL*/ ");
             }
+            if (type.getEnclosingType() != null) {
+                sb.append(this.visit(type.getEnclosingType(), visiting));
+                sb.append('.');
+            }
             final Element typeElt = type.getUnderlyingType().asElement();
             String smpl = typeElt.getSimpleName().toString();
             if (smpl.isEmpty()) {
@@ -205,13 +209,15 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
 
             if (type.typeArgs != null) {
                 // getTypeArguments sets the field if it does not already exist.
-                final List<AnnotatedTypeMirror> typeArgs = type.getTypeArguments();
+                final List<AnnotatedTypeMirror> typeArgs = type.typeArgs;
                 if (!typeArgs.isEmpty()) {
                     sb.append("<");
 
                     boolean isFirst = true;
                     for (AnnotatedTypeMirror typeArg : typeArgs) {
-                        if (!isFirst) sb.append(", ");
+                        if (!isFirst) {
+                            sb.append(", ");
+                        }
                         sb.append(visit(typeArg, visiting));
                         isFirst = false;
                     }

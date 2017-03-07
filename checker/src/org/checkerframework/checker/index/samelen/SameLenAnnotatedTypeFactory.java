@@ -14,6 +14,7 @@ import org.checkerframework.checker.index.qual.SameLenUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
@@ -100,23 +101,28 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             FlowExpressions.Receiver bRec,
             AnnotationMirror sl1,
             AnnotationMirror sl2) {
-
-        String a = aRec.toString();
-        String b = bRec.toString();
-
         List<String> aValues = new ArrayList<String>();
-        aValues.add(a);
-        if (AnnotationUtils.areSameByClass(sl1, SameLen.class)) {
-            aValues.addAll(SameLenUtils.getValue(sl1));
-        }
         List<String> bValues = new ArrayList<String>();
-        bValues.add(b);
-        if (AnnotationUtils.areSameByClass(sl2, SameLen.class)) {
-            bValues.addAll(SameLenUtils.getValue(sl2));
+
+        if (isReceiverToStringParsable(aRec)) {
+            aValues.add(aRec.toString());
+            if (AnnotationUtils.areSameByClass(sl1, SameLen.class)) {
+                aValues.addAll(SameLenUtils.getValue(sl1));
+            }
+        }
+        if (isReceiverToStringParsable(bRec)) {
+            bValues.add(bRec.toString());
+            if (AnnotationUtils.areSameByClass(sl2, SameLen.class)) {
+                bValues.addAll(SameLenUtils.getValue(sl2));
+            }
         }
 
         AnnotationMirror res = getCombinedSameLen(aValues, bValues);
         return res;
+    }
+
+    public static boolean isReceiverToStringParsable(Receiver receiver) {
+        return !receiver.containsUnknown() && !(receiver instanceof FlowExpressions.ArrayCreation);
     }
 
     /**
