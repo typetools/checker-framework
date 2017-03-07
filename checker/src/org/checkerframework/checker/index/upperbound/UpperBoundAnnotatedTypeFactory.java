@@ -68,7 +68,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    public final AnnotationMirror UNKNOWN, BOTTOM;
+    public final AnnotationMirror UNKNOWN, BOTTOM, POLY;
 
     private final IndexMethodIdentifier imf;
 
@@ -76,6 +76,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker);
         UNKNOWN = AnnotationUtils.fromClass(elements, UpperBoundUnknown.class);
         BOTTOM = AnnotationUtils.fromClass(elements, UpperBoundBottom.class);
+        POLY = AnnotationUtils.fromClass(elements, PolyUpperBound.class);
 
         addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(IndexOrLow.class, createLTLengthOfAnnotation());
@@ -497,7 +498,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             UBQualifier result = UpperBoundUnknownQualifier.UNKNOWN;
             UBQualifier numerator =
                     UBQualifier.createUBQualifier(getAnnotatedType(numeratorTree), UNKNOWN);
-            if (!numerator.isUnknownOrBottom()) {
+            if (numerator.isLessThanLengthQualifier()) {
                 result = ((LessThanLengthOf) numerator).divide(divisor);
             }
             result = result.glb(plusTreeDivideByVal(divisor, numeratorTree));
@@ -520,7 +521,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             UBQualifier right =
                     UBQualifier.createUBQualifier(
                             getAnnotatedType(plusTree.getRightOperand()), UNKNOWN);
-            if (!(left.isUnknownOrBottom() || right.isUnknownOrBottom())) {
+            if (left.isLessThanLengthQualifier() && right.isLessThanLengthQualifier()) {
                 LessThanLengthOf leftLTL = (LessThanLengthOf) left;
                 LessThanLengthOf rightLTL = (LessThanLengthOf) right;
                 List<String> arrays = new ArrayList<>();
@@ -578,6 +579,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return UNKNOWN;
         } else if (qualifier.isBottom()) {
             return BOTTOM;
+        } else if (qualifier.isPoly()) {
+            return POLY;
         }
 
         LessThanLengthOf ltlQualifier = (LessThanLengthOf) qualifier;

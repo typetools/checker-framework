@@ -365,7 +365,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                 || atypeFactory.hasLowerBoundTypeByClass(n.getRightOperand(), Positive.class)) {
             // If the right side of the expression is NN or POS, then all the left side's
             // annotations should be kept.
-            if (!left.isUnknownOrBottom()) {
+            if (left.isLessThanLengthQualifier()) {
                 leftWithOffset = left.glb(leftWithOffset);
             }
         }
