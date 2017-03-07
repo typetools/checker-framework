@@ -6,6 +6,9 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree;
+import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.qual.SameLen;
@@ -84,18 +87,49 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             ExpressionTree valueExp,
             /*@CompilerMessageKey*/ String errorKey) {
 
+        System.out.println("-----");
+        System.out.println(valueExp);
+        System.out.println(valueExp.getKind());
+
         // Slightly relaxes the usual assignment rules by allowing assignments where the right
         // hand side is a value known at compile time and the type of the left hand side is
         // annotated with LT*LengthOf("a").  If the min length of a is in the correct
         // relationship with the value on the right hand side, then the assignment is legal.
+        List<Integer> rhsValues = new ArrayList<>();
+        UBQualifier qualifier = UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN);
         Integer rhsValue = atypeFactory.valMaxFromExpressionTree(valueExp);
-        if (rhsValue == null) {
+        if (rhsValue != null) {
+            rhsValues.add(rhsValue);
+        } else if (valueExp.getKind() == Tree.Kind.NEW_ARRAY) {
+            // Check for a new array initializer; if there is one, check each of its elements.
+            NewArrayTree newArrayTree = (NewArrayTree) valueExp;
+            System.out.println(newArrayTree.getInitializers());
+            if (newArrayTree.getInitializers() != null) {
+                for (ExpressionTree exp : newArrayTree.getInitializers()) {
+                    Integer val = atypeFactory.valMaxFromExpressionTree(exp);
+                    System.out.println(exp);
+                    System.out.println(val);
+                    if (val == null) {
+                        super.commonAssignmentCheck(varType, valueExp, errorKey);
+                        return;
+                    } else {
+                        rhsValues.add(val);
+                    }
+                }
+            } else {
+                System.out.println("getInit is null");
+                super.commonAssignmentCheck(varType, valueExp, errorKey);
+                return;
+            }
+        } else {
+            System.out.println("not an int, not an array");
             super.commonAssignmentCheck(varType, valueExp, errorKey);
             return;
         }
 
-        UBQualifier qualifier = UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN);
+        System.out.println(qualifier);
         if (qualifier.isUnknownOrBottom()) {
+            System.out.println("not an interesting qualifier");
             super.commonAssignmentCheck(varType, valueExp, errorKey);
             return;
         }
@@ -107,9 +141,12 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                     atypeFactory
                             .getMinLenAnnotatedTypeFactory()
                             .getMinLenFromString(arrayName, valueExp, getCurrentPath());
-
-            boolean minLenOk = ltl.isValuePlusOffsetLessThanMinLen(arrayName, rhsValue, minLen);
-            if (!minLenOk) {
+            boolean minLenOk = true;
+            for (Integer value : rhsValues) {
+                minLenOk = ltl.isValuePlusOffsetLessThanMinLen(arrayName, value, minLen);
+            }
+            if (!minLenOk) { //|| rhsValues.size() == 0) {
+                System.out.println("All minlens weren't okay");
                 super.commonAssignmentCheck(varType, valueExp, errorKey);
                 return;
             }
