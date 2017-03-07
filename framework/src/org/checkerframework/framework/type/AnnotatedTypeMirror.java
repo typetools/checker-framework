@@ -839,7 +839,10 @@ public abstract class AnnotatedTypeMirror {
 
             TypeMirror encl = type.getEnclosingType();
             if (encl.getKind() == TypeKind.DECLARED) {
-                this.enclosingType = (AnnotatedDeclaredType) createType(encl, atypeFactory, true);
+                this.enclosingType =
+                        (AnnotatedDeclaredType) createType(encl, atypeFactory, declaration);
+                // Force instantiation of type arguments of enclosing type.
+                this.enclosingType.getTypeArguments();
             } else if (encl.getKind() != TypeKind.NONE) {
                 ErrorReporter.errorAbort(
                         "AnnotatedDeclaredType: unsupported enclosing type: "
