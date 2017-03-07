@@ -442,7 +442,7 @@ public class NullnessVisitor
     // ///////////// Utility methods //////////////////////////////
 
     /**
-     * Issues the error message if the type is not of a {@link NonNull} type.
+     * Issues the error message if the type of the tree is not of a {@link NonNull} type.
      *
      * @param tree the tree where the error is to reported
      * @param errMsg the error message (must be {@link CompilerMessageKey})
@@ -455,7 +455,7 @@ public class NullnessVisitor
     }
 
     /**
-     * Issues a 'dereference.of.nullable' if the type is not of a {@link NonNull} type.
+     * Issues the error message if an expression with this type may be null.
      *
      * @param type annotated type
      * @param tree the tree where the error is to reported
