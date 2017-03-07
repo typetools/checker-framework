@@ -160,15 +160,15 @@ public abstract class InitializationAnnotatedTypeFactory<
     public abstract AnnotationMirror getFieldInvariantAnnotation();
 
     /**
-     * Returns whether or not field has the invariant annotation.
+     * Returns whether or not {@code field} has the invariant annotation.
      *
-     * <p>If the field is a type variable, this method return false if any possible instantiation of
-     * the type parameter could have the invariant annotation.
+     * <p>If the {@code field} is a type variable, this method returns false if any possible
+     * instantiation of the type parameter could have the invariant annotation.
      *
      * @param field field that might have invariant annotation
      * @return whether or not field has the invariant annotation
      */
-    protected abstract boolean hasInvariantAnnotation(VariableTree field);
+    protected abstract boolean hasFieldInvariantAnnotation(VariableTree field);
 
     /** Returns a {@link UnderInitialization} annotation with a given type frame. */
     public AnnotationMirror createFreeAnnotation(TypeMirror typeFrame) {
@@ -470,7 +470,7 @@ public abstract class InitializationAnnotatedTypeFactory<
             VariableElement fieldElem = TreeUtils.elementFromDeclaration(field);
             if (ElementUtils.isStatic(fieldElem) == isStatic) {
                 // Does this field need to satisfy the invariant?
-                if (hasInvariantAnnotation(field)) {
+                if (hasFieldInvariantAnnotation(field)) {
                     // Has the field been initialized?
                     if (!store.isFieldInitialized(fieldElem)) {
                         violatingFields.add(field);
@@ -495,7 +495,7 @@ public abstract class InitializationAnnotatedTypeFactory<
             VariableElement fieldElem = TreeUtils.elementFromDeclaration(field);
             if (!ElementUtils.isStatic(fieldElem)) {
                 // Does this field need to satisfy the invariant?
-                if (hasInvariantAnnotation(field)) {
+                if (hasFieldInvariantAnnotation(field)) {
                     // Has the field been initialized?
                     if (store.isFieldInitialized(fieldElem)) {
                         initializedFields.add(field);

@@ -8,6 +8,7 @@ public class Issue1044 {
     static class Inner1<V> {
         V f;
     }
+
     //:: error: (initialization.fields.uninitialized)
     static class Inner2<@Nullable T extends @Nullable Object> {
         @NonNull T f;
@@ -43,5 +44,26 @@ public class Issue1044 {
         T f;
 
         Inner8() {}
+    }
+
+    //:: error: (initialization.fields.uninitialized)
+    static class Inner9<V extends Object> {
+        V f;
+    }
+
+    static class Inner10<V extends Object> {
+        V f;
+        //:: error: (initialization.fields.uninitialized)
+        Inner10() {}
+    }
+
+    static class Inner11<V extends Object> {
+        @Nullable V f;
+    }
+
+    static class Inner12<V extends Object> {
+        @Nullable V f;
+
+        Inner12() {}
     }
 }

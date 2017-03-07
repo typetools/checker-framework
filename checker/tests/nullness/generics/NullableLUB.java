@@ -4,6 +4,7 @@ import org.checkerframework.checker.nullness.qual.*;
  * type variables with non-type variables. The error did not previously
  * get raised, leading to a missed NPE.
  */
+//:: error: (initialization.fields.uninitialized)
 public class NullableLUB<T extends @Nullable Object> {
     T t;
     @Nullable T nt;

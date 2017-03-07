@@ -521,7 +521,7 @@ public class NullnessAnnotatedTypeFactory
      * @return whether or not field has the invariant annotation
      */
     @Override
-    protected boolean hasInvariantAnnotation(VariableTree field) {
+    protected boolean hasFieldInvariantAnnotation(VariableTree field) {
         AnnotationMirror invariant = getFieldInvariantAnnotation();
         AnnotatedTypeMirror type = getAnnotatedType(field);
         Set<AnnotationMirror> lowerBounds =
