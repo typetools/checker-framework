@@ -681,13 +681,14 @@ public abstract class UBQualifier {
             if (arrays.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
-            return computeNewOffsets(
+            OffsetEquationFunction removeArrayLengthsFunc =
                     new OffsetEquationFunction() {
                         @Override
                         public OffsetEquation compute(OffsetEquation eq) {
                             return eq.removeArrayLengths(arrays);
                         }
-                    });
+                    };
+            return computeNewOffsets(removeArrayLengthsFunc);
         }
         /**
          * Returns a copy of this qualifier with array-offset pairs where in the original the offset
@@ -701,7 +702,7 @@ public abstract class UBQualifier {
             if (arrays.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
-            return computeNewOffsets(
+            OffsetEquationFunction removeArrayLenFunc =
                     new OffsetEquationFunction() {
                         @Override
                         public OffsetEquation compute(OffsetEquation eq) {
@@ -714,17 +715,19 @@ public abstract class UBQualifier {
                             }
                             return newEq;
                         }
-                    });
+                    };
+            return computeNewOffsets(removeArrayLenFunc);
         }
 
         private UBQualifier addOffset(final OffsetEquation newOffset) {
-            return computeNewOffsets(
+            OffsetEquationFunction addOffsetFunc =
                     new OffsetEquationFunction() {
                         @Override
                         public OffsetEquation compute(OffsetEquation eq) {
                             return eq.copyAdd('+', newOffset);
                         }
-                    });
+                    };
+            return computeNewOffsets(addOffsetFunc);
         }
 
         /**
@@ -742,7 +745,7 @@ public abstract class UBQualifier {
             if (divisor == 1) {
                 return this;
             } else if (divisor > 1) {
-                return computeNewOffsets(
+                OffsetEquationFunction divideFunc =
                         new OffsetEquationFunction() {
                             @Override
                             public OffsetEquation compute(OffsetEquation eq) {
@@ -751,7 +754,8 @@ public abstract class UBQualifier {
                                 }
                                 return null;
                             }
-                        });
+                        };
+                return computeNewOffsets(divideFunc);
             }
             return UpperBoundUnknownQualifier.UNKNOWN;
         }
