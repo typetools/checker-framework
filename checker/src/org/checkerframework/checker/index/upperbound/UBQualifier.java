@@ -671,7 +671,8 @@ public abstract class UBQualifier {
         /**
          * Returns a copy of this qualifier with array-offset pairs where in the original the offset
          * contains an access of an array length in arrays. The array length access has been removed
-         * from the offset.
+         * from the offset. If the original qualifier has no array length offsets, then UNKNOWN is
+         * returned.
          *
          * @param arrays access of the length of these arrays are removed
          * @return Returns a copy of this qualifier with some offsets removed
@@ -795,8 +796,8 @@ public abstract class UBQualifier {
          * applied to each offset.
          *
          * <p>If the {@link OffsetEquationFunction} returns null, it's not added as an offset. If
-         * after all functions have been applied, an array as no offsets, then that array is not
-         * added to the returned qualifier. If no arrays are added to the returned qualifier, the
+         * after all functions have been applied, an array has no offsets, then that array is not
+         * added to the returned qualifier. If no arrays are added to the returned qualifier, then
          * UNKNOWN is returned.
          *
          * @param f function to apply

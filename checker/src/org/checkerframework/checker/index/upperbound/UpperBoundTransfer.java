@@ -366,16 +366,16 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * Return the result of adding i to j,when expression i has type @LTLengthOf(value = "f2",
+     * Return the result of adding i to j, when expression i has type @LTLengthOf(value = "f2",
      * offset = "f1.length") int and expression j is less than or equal to the length of f1, then
      * the type of i + j is @LTLengthOf("f2").
      *
-     * <p>Return the result of adding i to j,when expression i has type @LTLengthOf(value = "f2",
-     * offset = "f1.length - 1") int and expression j is less than the length of f1, then the type
-     * of i + j is @LTLengthOf("f2").
+     * <p>Similarly, return the result of adding i to j,when expression i has type @LTLengthOf
+     * (value = "f2", offset = "f1.length - 1") int and expression j is less than the length of f1,
+     * then the type of i + j is @LTLengthOf("f2").
      *
-     * @param i expression added to j
-     * @param j expression added to i
+     * @param i the type of the expression added to j
+     * @param j the type of the expression added to i
      * @return the type of i + j
      */
     private UBQualifier removeArrayLengths(LessThanLengthOf i, LessThanLengthOf j) {

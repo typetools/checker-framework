@@ -2,9 +2,8 @@ import org.checkerframework.checker.index.qual.LTLengthOf;
 
 @SuppressWarnings("lowerbound")
 public class UpperBoundRefinement {
-    /*If expression i has type @LTLengthOf(value = "f2", offset = "f1.length") int and expression
-    j is less than or equal to the length of f1, then the type of i + j is @LTLengthOf("f2")
-     */
+    // If expression i has type @LTLengthOf(value = "f2", offset = "f1.length") int and expression
+    // j is less than or equal to the length of f1, then the type of i + j is @LTLengthOf("f2")
     void test(int[] f1, int[] f2) {
         @LTLengthOf(value = "f2", offset = "f1.length") int i = (f2.length - 1) - f1.length;
         @LTLengthOf("f1") int j = f1.length - 1;
@@ -22,7 +21,7 @@ public class UpperBoundRefinement {
         for (int i = 0; i < f2.length - f1.length; i++) {
             //fill up f1 with elements of f2
             for (int j = 0; j < f1.length; j++) {
-                f1[j] = f2[i + j]; // Index checker warns here
+                f1[j] = f2[i + j];
             }
         }
     }
