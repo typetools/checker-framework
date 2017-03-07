@@ -2,12 +2,14 @@
 // https://github.com/typetools/checker-framework/issues/979
 
 // @below-java8-jdk-skip-test
-// @skip-test until the bug is fixed
 
 import java.util.Comparator;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
+// Type argument inference does not infer the correct types.
+// Once Issue 979 is fixed, this suppression should be removed.
+@SuppressWarnings({"nullness", "keyfor"}) // Issue 979
 public final class Issue402 {
     static final Comparator<Issue402> COMPARATOR =
             Comparator.comparing(

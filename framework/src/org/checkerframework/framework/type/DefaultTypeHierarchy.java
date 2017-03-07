@@ -116,6 +116,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     // passing annotations to qualifierHierarchy.
     protected AnnotationMirror currentTop;
 
+    /**
+     * Whether to ignore uninferred type arguments. This is a temporary flag to work around Issue
+     * 979.
+     */
+    protected final boolean ignoreUninferredTypeArguments;
+
     public DefaultTypeHierarchy(
             final BaseTypeChecker checker,
             final QualifierHierarchy qualifierHierarchy,
@@ -146,6 +152,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         this.ignoreRawTypes = ignoreRawTypes;
         this.invariantArrayComponents = invariantArrayComponents;
         this.covariantTypeArgs = covariantTypeArgs;
+
+        ignoreUninferredTypeArguments = !checker.hasOption("conservativeUninferredTypeArguments");
     }
 
     /**
@@ -401,6 +409,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             return true;
         }
 
+        if (ignoreUninferredTypeArguments && inside.getKind() == TypeKind.WILDCARD) {
+            final AnnotatedWildcardType insideWc = (AnnotatedWildcardType) inside;
+            if (insideWc.isUninferredTypeArgument()) {
+                return true;
+            }
+        }
+
         if (outside.getKind() == TypeKind.WILDCARD) {
 
             final AnnotatedWildcardType outsideWc = (AnnotatedWildcardType) outside;
@@ -548,18 +563,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             VisitHistory visited) {
 
         if (subtypeRaw || supertypeRaw) {
-            if (!rawnessComparer.isValidInHierarchy(subTypeArg, superTypeArg, currentTop, visited)
-                    && !isContainedBy(subTypeArg, superTypeArg, visited, this.covariantTypeArgs)) {
-                return false;
-            }
-
+            return rawnessComparer.isValidInHierarchy(subTypeArg, superTypeArg, currentTop, visited)
+                    || isContainedBy(subTypeArg, superTypeArg, visited, this.covariantTypeArgs);
         } else {
-            if (!isContainedBy(subTypeArg, superTypeArg, visited, this.covariantTypeArgs)) {
-                return false;
-            }
+            return isContainedBy(subTypeArg, superTypeArg, visited, this.covariantTypeArgs);
         }
-
-        return true;
     }
 
     @Override
@@ -1042,6 +1050,15 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             final AnnotatedTypeMirror subtype, final T supertype) {
         final Types types = subtype.atypeFactory.getProcessingEnv().getTypeUtils();
         final Elements elements = subtype.atypeFactory.getProcessingEnv().getElementUtils();
+
+        if (subtype.getKind() == TypeKind.NULL) {
+            // Make a copy of the supertype so that if supertype is a composite type, the
+            // returned type will be fully annotated.  (For example, if sub is @C null and super is
+            // @A List<@B String>, then the returned type is @C List<@B String>.)
+            T copy = (T) supertype.deepCopy();
+            copy.replaceAnnotations(subtype.getAnnotations());
+            return copy;
+        }
 
         final T asSuperType = AnnotatedTypes.asSuper(subtype.atypeFactory, subtype, supertype);
 

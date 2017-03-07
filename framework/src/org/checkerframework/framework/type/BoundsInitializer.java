@@ -1,5 +1,8 @@
 package org.checkerframework.framework.type;
 
+import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -605,9 +608,16 @@ public class BoundsInitializer {
     }
 
     private static AnnotatedTypeMirror createAndSetLowerBound(final AnnotatedTypeVariable typeVar) {
+        TypeMirror lb = typeVar.getUnderlyingType().getLowerBound();
+        if (lb == null) {
+            // Use bottom type to ensure there is a lower bound.
+            Context context =
+                    ((JavacProcessingEnvironment) typeVar.atypeFactory.processingEnv).getContext();
+            Symtab syms = Symtab.instance(context);
+            lb = syms.botType;
+        }
         final AnnotatedTypeMirror lowerBound =
-                AnnotatedTypeMirror.createType(
-                        typeVar.getUnderlyingType().getLowerBound(), typeVar.atypeFactory, false);
+                AnnotatedTypeMirror.createType(lb, typeVar.atypeFactory, false);
         typeVar.setLowerBoundField(lowerBound);
         return lowerBound;
     }

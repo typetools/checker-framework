@@ -1,6 +1,7 @@
 package org.checkerframework.framework.type;
 
 import com.sun.tools.javac.code.Type;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
+import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 
 /**
@@ -189,6 +191,10 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             if (type.isDeclaration() && currentPrintInvisibleSetting) {
                 sb.append("/*DECL*/ ");
             }
+            if (type.getEnclosingType() != null) {
+                sb.append(this.visit(type.getEnclosingType(), visiting));
+                sb.append('.');
+            }
             final Element typeElt = type.getUnderlyingType().asElement();
             String smpl = typeElt.getSimpleName().toString();
             if (smpl.isEmpty()) {
@@ -203,13 +209,15 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
 
             if (type.typeArgs != null) {
                 // getTypeArguments sets the field if it does not already exist.
-                final List<AnnotatedTypeMirror> typeArgs = type.getTypeArguments();
+                final List<AnnotatedTypeMirror> typeArgs = type.typeArgs;
                 if (!typeArgs.isEmpty()) {
                     sb.append("<");
 
                     boolean isFirst = true;
                     for (AnnotatedTypeMirror typeArg : typeArgs) {
-                        if (!isFirst) sb.append(", ");
+                        if (!isFirst) {
+                            sb.append(", ");
+                        }
                         sb.append(visit(typeArg, visiting));
                         isFirst = false;
                     }
@@ -252,9 +260,11 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             StringBuilder sb = new StringBuilder();
             if (!type.getTypeVariables().isEmpty()) {
                 sb.append('<');
+                List<String> typeVars = new ArrayList<>(type.getTypeVariables().size());
                 for (AnnotatedTypeVariable atv : type.getTypeVariables()) {
-                    sb.append(visit(atv, visiting));
+                    typeVars.add(visit(atv, visiting));
                 }
+                sb.append(PluginUtil.join(", ", typeVars));
                 sb.append("> ");
             }
             if (type.getReturnType() != null) {

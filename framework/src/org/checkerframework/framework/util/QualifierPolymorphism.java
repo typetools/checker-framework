@@ -183,12 +183,16 @@ public class QualifierPolymorphism {
      * @param type the type to annotate
      */
     public void annotate(MethodInvocationTree tree, AnnotatedExecutableType type) {
-        if (polyQuals.isEmpty()) return;
+        if (polyQuals.isEmpty()) {
+            return;
+        }
         // javac produces enum super calls with zero arguments even though the
         // method element requires two.
         // See also BaseTypeVisitor.visitMethodInvocation and
         // CFGBuilder.CFGTranslationPhaseOne.visitMethodInvocation
-        if (TreeUtils.isEnumSuper(tree)) return;
+        if (TreeUtils.isEnumSuper(tree)) {
+            return;
+        }
         List<AnnotatedTypeMirror> requiredArgs =
                 AnnotatedTypes.expandVarArgs(atypeFactory, type, tree.getArguments());
         List<AnnotatedTypeMirror> arguments =
@@ -218,7 +222,9 @@ public class QualifierPolymorphism {
     }
 
     public void annotate(NewClassTree tree, AnnotatedExecutableType type) {
-        if (polyQuals.isEmpty()) return;
+        if (polyQuals.isEmpty()) {
+            return;
+        }
         List<AnnotatedTypeMirror> requiredArgs =
                 AnnotatedTypes.expandVarArgs(atypeFactory, type, tree.getArguments());
         List<AnnotatedTypeMirror> arguments =
@@ -427,6 +433,10 @@ public class QualifierPolymorphism {
                             type.getUnderlyingType(),
                             wctype.getSuperBound().getUnderlyingType())) {
                         result = visit(type, wctype.getSuperBound());
+                    } else if (wctype.getSuperBound().getKind() == TypeKind.NULL) {
+                        //TODO: poly annotation on wildcards need to be reviewed.  This prevents
+                        // a crash in asSuper.
+                        result = Collections.emptyMap();
                     } else {
                         AnnotatedTypeMirror superBoundAsSuper =
                                 AnnotatedTypes.asSuper(atypeFactory, wctype.getSuperBound(), type);

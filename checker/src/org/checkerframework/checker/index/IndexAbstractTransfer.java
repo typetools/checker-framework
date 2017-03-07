@@ -34,10 +34,10 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
             return result;
         }
         // Refine the then branch.
-        refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore);
+        refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore, in);
 
         // Refine the else branch, which is the inverse of the then branch.
-        refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore);
+        refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
 
         return rfi.newResult;
     }
@@ -53,10 +53,10 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
         }
 
         // Refine the then branch.
-        refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore);
+        refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore, in);
 
         // Refine the else branch.
-        refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore);
+        refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
 
         return rfi.newResult;
     }
@@ -72,10 +72,10 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
         }
 
         // Refine the then branch. A <= is just a flipped >=.
-        refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.thenStore);
+        refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.thenStore, in);
 
         // Refine the else branch.
-        refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore);
+        refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
         return rfi.newResult;
     }
 
@@ -90,10 +90,10 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
         }
 
         // Refine the then branch. A < is just a flipped >.
-        refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.thenStore);
+        refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.thenStore, in);
 
         // Refine the else branch.
-        refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore);
+        refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
         return rfi.newResult;
     }
 
@@ -102,14 +102,16 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
             AnnotationMirror leftAnno,
             Node right,
             AnnotationMirror rightAnno,
-            CFStore store);
+            CFStore store,
+            TransferInput<CFValue, CFStore> in);
 
     protected abstract void refineGTE(
             Node left,
             AnnotationMirror leftAnno,
             Node right,
             AnnotationMirror rightAnno,
-            CFStore store);
+            CFStore store,
+            TransferInput<CFValue, CFStore> in);
 
     protected boolean isArrayLengthFieldAccess(Node node) {
         if (!(node instanceof FieldAccessNode)) {

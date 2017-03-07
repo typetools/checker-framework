@@ -22,9 +22,6 @@ import java.util.regex.Pattern;
  * <p>NOTE: There are multiple copies of this file in the following projects/locations:
  *
  * <pre>
- * maven-plugin/
- *     org.checkerframework.mavenplugin.PluginUtil
- *
  * checker-framework-eclipse-plugin/
  *     org.checkerframework.eclipse.util.PluginUtil
  *
