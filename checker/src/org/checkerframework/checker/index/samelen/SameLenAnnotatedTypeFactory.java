@@ -16,6 +16,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
@@ -30,12 +31,16 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public final AnnotationMirror UNKNOWN;
-    private AnnotationMirror BOTTOM;
+    private final AnnotationMirror BOTTOM;
+    private final AnnotationMirror POLY;
 
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         UNKNOWN = AnnotationUtils.fromClass(elements, SameLenUnknown.class);
         BOTTOM = AnnotationUtils.fromClass(elements, SameLenBottom.class);
+        POLY = AnnotationUtils.fromClass(elements, PolySameLen.class);
+        addAliasedAnnotation(PolyAll.class, POLY);
+
         this.postInit();
     }
 
@@ -193,6 +198,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (AnnotationUtils.areSameByClass(a1, SameLenBottom.class)) {
                     return a2;
                 } else if (AnnotationUtils.areSameByClass(a2, SameLenBottom.class)) {
+                    return a1;
+                } else if (AnnotationUtils.areSameByClass(a1, PolySameLen.class)
+                        && AnnotationUtils.areSameByClass(a2, PolySameLen.class)) {
                     return a1;
                 } else {
                     return UNKNOWN;

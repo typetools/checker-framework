@@ -32,6 +32,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
@@ -71,6 +72,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The canonical @{@link LowerBoundUnknown} annotation. */
     public final AnnotationMirror UNKNOWN =
             AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);
+    /** The canonical @{@link PolyLowerBound} annotation. */
+    public final AnnotationMirror POLY = AnnotationUtils.fromClass(elements, PolyLowerBound.class);
 
     private final IndexMethodIdentifier imf;
 
@@ -79,6 +82,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(IndexFor.class, NN);
         addAliasedAnnotation(IndexOrLow.class, GTEN1);
         addAliasedAnnotation(IndexOrHigh.class, NN);
+        addAliasedAnnotation(PolyAll.class, POLY);
 
         imf = new IndexMethodIdentifier(processingEnv);
 
