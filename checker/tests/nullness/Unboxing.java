@@ -35,7 +35,9 @@ class Unboxing {
     }
 
     <T extends @Nullable Integer> int barT(T in) {
+        //:: error: (unboxing.of.nullable)
         int q = in;
+        //:: error: (unboxing.of.nullable)
         return in;
     }
 }
