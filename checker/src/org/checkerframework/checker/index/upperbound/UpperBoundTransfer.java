@@ -388,7 +388,13 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                 lessThanOrEqaul.add(array);
             }
         }
+        // Creates a qualifier that is the same a j with the array.length offsets removed. If
+        // an offset doesn't have an array.length, then the offset/array pair is removed. If
+        // there are no such pairs, Unknown is returned.
         UBQualifier lessThanEqQ = j.removeArrayLengthAccess(lessThanOrEqaul);
+        // Creates a qualifier that is the same a j with the array.length - 1 offsets removed. If
+        // an offset doesn't have an array.length, then the offset/array pair is removed. If
+        // there are no such pairs, Unknown is returned.
         UBQualifier lessThanQ = j.removeArrayLengthAccessAndNeg1(lessThan);
 
         return lessThanEqQ.glb(lessThanQ);
