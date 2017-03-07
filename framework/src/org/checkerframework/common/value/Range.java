@@ -264,7 +264,6 @@ public class Range {
         if (this.isNothing() || right.isNothing()) {
             return NOTHING;
         }
-
         // Special cases that involve overflow.
         // The only overflow in integer division is Long.MIN_VALUE / -1 == Long.MIN_VALUE.
         if (from == Long.MIN_VALUE && right.contains(-1)) {
@@ -286,13 +285,11 @@ public class Range {
                 return new Range(Long.MIN_VALUE, Long.MIN_VALUE);
             }
         }
-
         long resultFrom;
         long resultTo;
         // We needn't worry about the overflow issue starting from here.
         // To facilitate the calculation of the result range, we categorize all the scenarios into 9
         // different cases:
-        // (note: po=>positive, ne=>negative, us:=>unknown sign, np=>non-positive, nn=>non-negative)
         if (from > 0 && right.from >= 0) {
             // 1. this: po, right: nn
             resultFrom = from / Math.max(right.to, 1);
@@ -330,6 +327,7 @@ public class Range {
             resultFrom = Math.min(from, -to);
             resultTo = Math.max(-from, to);
         }
+        // (note: po=>positive, ne=>negative, us:=>unknown sign, np=>non-positive, nn=>non-negative)
         return new Range(resultFrom, resultTo);
     }
 
@@ -345,22 +343,51 @@ public class Range {
         if (this.isNothing() || right.isNothing()) {
             return NOTHING;
         }
-
-        // It is too complicated to provide a precise estimation of the result range of the remainder operation.
-        // Instead of provide the optimal estimation, which is the smallest range that contains all possible values,
-        // here we tried our best to provide a slightly looser but correct bound.
-        List<Long> possibleValues =
-                Arrays.asList(
-                        0L,
-                        Math.min(from, Math.abs(right.from) - 1),
-                        Math.min(from, Math.abs(right.to) - 1),
-                        Math.min(to, Math.abs(right.from) - 1),
-                        Math.min(to, Math.abs(right.to) - 1),
-                        Math.max(from, -Math.abs(right.from) + 1),
-                        Math.max(from, -Math.abs(right.to) + 1),
-                        Math.max(to, -Math.abs(right.from) + 1),
-                        Math.max(to, -Math.abs(right.to) + 1));
-        return new Range(Collections.min(possibleValues), Collections.max(possibleValues));
+        // Special cases that would cause overflow if we use the general method below
+        if (right.from == Long.MIN_VALUE) {
+            Range range;
+            // The value Long.MIN_VALUE as a divider needs special handling as follows:
+            if (from > Long.MIN_VALUE) {
+                // When this range doesn't contain Long.MIN_VALUE, the remainder of each value
+                // in this range divided by Long.MIN_VALUE is this value itself. Therefore the
+                // result range is this range itself.
+                range = new Range(from, to);
+            } else if (from == Long.MIN_VALUE && to > Long.MIN_VALUE) {
+                // When this range contains Long.MIN_VALUE, which would have a remainder of 0 if
+                // divided by Long.MIN_VALUE, the result range is {0} union with [from + 1, to]
+                range = (new Range(from + 1, to)).union(new Range(0, 0));
+            } else {
+                // When this range only contains Long.MIN_VALUE, the result range is {0}
+                range = new Range(0, 0);
+            }
+            // If right.to > Long.MIN_VALUE, union the previous result with the result of range
+            // [right.from + 1, right.to] divided by this range, which can be calculated using
+            // the general method (see below)
+            if (right.to > Long.MIN_VALUE) {
+                Range rangeAdditional = this.remainder(new Range(right.from + 1, right.to));
+                range = range.union(rangeAdditional);
+            }
+            return range;
+        }
+        // General method:
+        // Calculate range1: the result range of this range divided by EVERYTHING. For example,
+        // if this range is [3, 5], then the result range would be [0, 5]. If this range is [-3, 4],
+        // then the result range would be [-3, 4]. In general, the result range is {0} union with
+        // this range excluding the value Long.MIN_VALUE.
+        Range range1 =
+                (new Range(Math.max(Long.MIN_VALUE + 1, from), Math.max(Long.MIN_VALUE + 1, to)))
+                        .union(new Range(0, 0));
+        // Calculate range2: the result range of range EVERYTHING divided by the right range. For
+        // example, if the right range is [-5, 3], then the result range would be [-4, 4]. If the
+        // right range is [3, 6], then the result range would be [-5, 5]. In general, the result
+        // range is calculated as following:
+        Range range2 =
+                Math.abs(right.from) > Math.abs(right.to)
+                        ? new Range(-Math.abs(right.from) + 1, Math.abs(right.from) - 1)
+                        : new Range(-Math.abs(right.to) + 1, Math.abs(right.to) - 1);
+        // Since range1 and range2 are both super sets of the minimal result range, we return the
+        // intersect of range1 and range2, which is correct (super set) and precise enough.
+        return range1.intersect(range2);
     }
 
     /**

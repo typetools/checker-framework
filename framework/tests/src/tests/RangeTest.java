@@ -374,7 +374,7 @@ public class RangeTest {
                 Long witness = re1.element % re2.element;
                 assert result.contains(witness)
                         : String.format(
-                                "Range.divide failure: %s %s => %s; witnesses %s % %s => %s",
+                                "Range.divide failure: %s %s => %s; witnesses %s %% %s => %s",
                                 re1.range, re2.range, result, re1.element, re2.element, witness);
             }
         }
