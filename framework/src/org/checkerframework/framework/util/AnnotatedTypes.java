@@ -308,7 +308,7 @@ public class AnnotatedTypes {
         }
 
         if (!mappings.isEmpty()) {
-            return atypeFactory.getTypeVarSubstitutor().substitute(mappings, memberType);
+            memberType = atypeFactory.getTypeVarSubstitutor().substitute(mappings, memberType);
         }
 
         return memberType;
@@ -326,13 +326,6 @@ public class AnnotatedTypes {
         AnnotatedDeclaredType enclosingType = atypeFactory.getAnnotatedType(enclosingClassOfElem);
         AnnotatedDeclaredType base =
                 (AnnotatedDeclaredType) asOuterSuper(types, atypeFactory, t, enclosingType);
-
-        if (base == null) {
-            // asSuper should not return null, but currently does in some cases.
-            // See Issue 717
-            // https://github.com/typetools/checker-framework/issues/717
-            return;
-        }
 
         final List<AnnotatedTypeVariable> ownerParams =
                 new ArrayList<>(enclosingType.getTypeArguments().size());

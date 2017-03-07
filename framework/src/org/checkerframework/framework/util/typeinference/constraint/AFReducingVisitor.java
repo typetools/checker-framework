@@ -94,7 +94,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             Set<AFConstraint> constraints) {
         return "Unexpected "
                 + reducerType.getSimpleName()
-                + " + Combination:\b"
+                + " + Combination:\n"
                 + "subtype="
                 + subtype
                 + "\n"
