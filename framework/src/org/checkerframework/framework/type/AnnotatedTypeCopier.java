@@ -117,7 +117,7 @@ public class AnnotatedTypeCopier
             copy.setWasRaw();
         }
 
-        if (copy.enclosingType != null) {
+        if (original.enclosingType != null) {
             copy.enclosingType =
                     (AnnotatedDeclaredType) visit(original.enclosingType, originalToCopy);
         }
