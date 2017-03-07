@@ -280,18 +280,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitUnary(tree, typeDst);
         }
 
-        /** Special handling for min and max from Math. Min is LUB, max is GLB. */
+        /** Special handling for Math.max. The return is the GLB of the arguments. */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
-
-            if (imf.isMathMin(tree, processingEnv)) {
-                ExpressionTree left = tree.getArguments().get(0);
-                ExpressionTree right = tree.getArguments().get(1);
-                type.replaceAnnotation(
-                        qualHierarchy.leastUpperBound(
-                                getAnnotatedType(left).getAnnotationInHierarchy(POS),
-                                getAnnotatedType(right).getAnnotationInHierarchy(POS)));
-            }
             if (imf.isMathMax(tree, processingEnv)) {
                 ExpressionTree left = tree.getArguments().get(0);
                 ExpressionTree right = tree.getArguments().get(1);
