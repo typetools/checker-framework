@@ -147,13 +147,11 @@ public class ElementAnnotationUtil {
      * <@A ? extends Object> -- @A is placed on the super bound (Void)
      * <@B ? super CharSequence> -- @B is placed on the extends bound (probably Object)
      * }</pre>
-     *
      *   <li>b) If an Annotation is on a bound, it applies to that bound. E.g.
      *       <pre>{@code
      * <? extends @A Object> -- @A is placed on the extends bound (Object)
      * <? super @B CharSequence> -- @B is placed on the super bound (CharSequence)
      * }</pre>
-     *
      *   <li>c) If an Annotation is on an unbounded wildcard there are two subcases.
      *       <ul>
      *         <li>c.1 The user wrote the annotation explicitly -- these annotations apply to both
@@ -169,7 +167,6 @@ public class ElementAnnotationUtil {
      *          This case is treated just like annotations in cases a/b.
      * }</pre>
      *       </ul>
-     *
      * </ul>
      */
     private static final class WildcardBoundAnnos {

@@ -1081,7 +1081,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * than @GuardedBy({}).
      */
     @Override
-    public Void visitClass(ClassTree node, Void p) {
+    public void processClassTree(ClassTree node) {
         List<AnnotationMirror> annos =
                 InternalUtils.annotationsFromTypeAnnotationTrees(
                         node.getModifiers().getAnnotations());
@@ -1099,7 +1099,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             }
         }
 
-        return super.visitClass(node, p);
+        super.processClassTree(node);
     }
 
     @Override

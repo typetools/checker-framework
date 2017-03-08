@@ -23,6 +23,7 @@ import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.JavaExpression;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
@@ -76,5 +77,6 @@ public @interface GuardedBy {
      * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">Syntax of
      *     Java expressions</a>
      */
+    @JavaExpression
     String[] value() default {};
 }

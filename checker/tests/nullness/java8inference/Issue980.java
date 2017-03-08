@@ -2,7 +2,6 @@
 // https://github.com/typetools/checker-framework/issues/979
 
 // @below-java8-jdk-skip-test
-// @skip-test until the bug is fixed
 
 import java.util.List;
 import java.util.stream.Collectors;

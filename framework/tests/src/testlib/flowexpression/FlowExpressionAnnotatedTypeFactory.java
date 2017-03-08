@@ -11,7 +11,6 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import testlib.flowexpression.qual.FEBot;
 import testlib.flowexpression.qual.FETop;
-import testlib.flowexpression.qual.FlowExp;
 
 public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private AnnotationMirror TOP, BOTTOM;
@@ -25,7 +24,7 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
     @Override
     protected DependentTypesHelper createDependentTypesHelper() {
-        return new DependentTypesHelper(this, FlowExp.class);
+        return new DependentTypesHelper(this);
     }
 
     @Override

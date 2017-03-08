@@ -10,6 +10,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -312,7 +313,9 @@ public final class TreeUtils {
      */
     public static ExpressionTree skipParens(final ExpressionTree tree) {
         ExpressionTree t = tree;
-        while (t.getKind() == Tree.Kind.PARENTHESIZED) t = ((ParenthesizedTree) t).getExpression();
+        while (t.getKind() == Tree.Kind.PARENTHESIZED) {
+            t = ((ParenthesizedTree) t).getExpression();
+        }
         return t;
     }
 
@@ -320,8 +323,8 @@ public final class TreeUtils {
      * Returns the tree with the assignment context for the treePath leaf node. (Does not handle
      * pseudo-assignment of an argument to a parameter or a receiver expression to a receiver.)
      *
-     * <p>The assignment context for the {@code treePath} is the leaf of its parent, if the leaf is
-     * one of the following trees:
+     * <p>The assignment context for the {@code treePath} is the leaf of its parent, if the parent
+     * is one of the following trees:
      *
      * <ul>
      *   <li>AssignmentTree
@@ -333,7 +336,12 @@ public final class TreeUtils {
      *   <li>VariableTree
      * </ul>
      *
-     * If the leaf is a ConditionalExpressionTree or ParenthesizedTree, then recur on the leaf.
+     * If the parent is a ConditionalExpressionTree we need to distinguish two cases: If the leaf is
+     * either the then or else branch of the ConditionalExpressionTree, then recurse on the parent.
+     * If the leaf is the condition of the ConditionalExpressionTree, then return null to not
+     * consider this assignment context.
+     *
+     * <p>If the leaf is a ParenthesizedTree, then recurse on the parent.
      *
      * <p>Otherwise, null is returned.
      *
@@ -349,7 +357,15 @@ public final class TreeUtils {
         Tree parent = parentPath.getLeaf();
         switch (parent.getKind()) {
             case PARENTHESIZED:
+                return getAssignmentContext(parentPath);
             case CONDITIONAL_EXPRESSION:
+                ConditionalExpressionTree cet = (ConditionalExpressionTree) parent;
+                if (cet.getCondition() == treePath.getLeaf()) {
+                    // The assignment context for the condition is simply boolean.
+                    // No point in going on.
+                    return null;
+                }
+                // Otherwise use the context of the ConditionalExpressionTree.
                 return getAssignmentContext(parentPath);
             case ASSIGNMENT:
             case METHOD_INVOCATION:

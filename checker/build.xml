@@ -48,6 +48,8 @@
         <mkdir dir="${tests.build}/testclasses"/>
         <mkdir dir="${api.doc}" />
 
+        <symlink link="${checkerframework}/docs/api" resource="../checker/${api.doc}" overwrite="true"/>
+
         <available property="framework.project"
                    file="${framework.loc}/build.xml"/>
         <antcall target="-prep-framework-compile"/>
@@ -444,7 +446,6 @@
             <arg line="-d ${checker-qual-classes-tmp}"/>
             <arg line="@${tmpdir}/srcfiles-checker.txt"/>
             <arg line="-version"/>
-            <arg line="-XDTA:noannotationsincomments"/>
             <arg line="-Xlint"/>
             <arg line="-Werror"/>
         </java>
@@ -509,7 +510,6 @@
             <arg value="-Xlint:-options"/>
             <arg line="-d ${java8-output}"/>
             <arg line="${checker.loc}/${src}/${checker.jdk8orhigher.sources}"/>
-            <arg line="-XDTA:noannotationsincomments"/>
             <arg line="-Xlint"/>
             <arg line="-Werror"/>
         </java>
@@ -826,46 +826,6 @@
         <antcall target="-run-tests">
             <param name="param" value="tests.IndexTest"/>
         </antcall>
-        <antcall target="-run-tests">
-            <param name="param" value="tests.LowerBoundTest"/>
-        </antcall>
-        <antcall target="-run-tests">
-            <param name="param" value="tests.UpperBoundTest"/>
-        </antcall>
-        <antcall target="-run-tests">
-            <param name="param" value="tests.MinLenTest"/>
-        </antcall>
-        <antcall target="-run-tests">
-            <param name="param" value="tests.SameLenTest"/>
-        </antcall>
-    </target>
-
-    <target name="lowerbound-tests" depends="jar,build-tests"
-            description="Run tests for the Lower Bound Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.LowerBoundTest"/>
-        </antcall>
-    </target>
-
-    <target name="upperbound-tests" depends="jar,build-tests"
-            description="Run tests for the Upper Bound Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.UpperBoundTest"/>
-        </antcall>
-    </target>
-
-    <target name="minlen-tests" depends="jar,build-tests"
-            description="Run tests for the MinLen Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.MinLenTest"/>
-        </antcall>
-    </target>
-
-    <target name="samelen-tests" depends="jar,build-tests"
-            description="Run tests for the SameLen Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.SameLenTest"/>
-        </antcall>
     </target>
 
     <target name="interning-tests" depends="jar,build-tests"
@@ -1107,42 +1067,6 @@
         <antcall target="-run-tests">
             <param name="param" value="tests.UnitsTest"/>
         </antcall>
-    </target>
-
-    <target name="fenum-extension-tests" depends="jar,build-tests"
-            description="Run tests for the Fenum Checker extension capabilities">
-        <exec executable="chmod" failonerror="true">
-            <arg line="+x ${basedir}/bin/javac"/>
-        </exec>
-
-        <exec executable="make" failonerror="${halt.on.test.failure}">
-            <env key="JAVAC" value="${basedir}/bin/javac"/>
-            <arg line="-C tests/fenum-extension/"/>
-        </exec>
-    </target>
-
-    <target name="subtyping-extension-tests" depends="jar,build-tests"
-            description="Run tests for the Subtyping Checker extension capabilities">
-        <exec executable="chmod" failonerror="true">
-            <arg line="+x ${basedir}/bin/javac"/>
-        </exec>
-
-        <exec executable="make" failonerror="${halt.on.test.failure}">
-            <env key="JAVAC" value="${basedir}/bin/javac"/>
-            <arg line="-C tests/subtyping-extension/"/>
-        </exec>
-    </target>
-
-    <target name="units-extension-tests" depends="jar,build-tests"
-            description="Run tests for the Units Checker extension capabilities">
-        <exec executable="chmod" failonerror="true">
-            <arg line="+x ${basedir}/bin/javac"/>
-        </exec>
-
-        <exec executable="make" failonerror="${halt.on.test.failure}">
-            <env key="JAVAC" value="${basedir}/bin/javac"/>
-            <arg line="-C tests/units-extension/"/>
-        </exec>
     </target>
 
     <target name="guieffect-tests" depends="jar,build-tests"

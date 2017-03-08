@@ -4,7 +4,7 @@
 // @skip-test
 import java.util.HashMap;
 import java.util.Map;
-import org.checkerframework.checker.interning.qual.*;
+import org.checkerframework.checker.interning.qual.Interned;
 
 public class DontCrash {
 

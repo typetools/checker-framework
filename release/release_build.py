@@ -212,10 +212,6 @@ def build_and_locally_deploy_maven(version):
 
     execute("mkdir -p " + maven_dev_repo_without_protocol)
 
-    # Build and then deploy the maven plugin
-    mvn_install(MAVEN_PLUGIN_DIR)
-    mvn_deploy_mvn_plugin(MAVEN_PLUGIN_DIR, MAVEN_PLUGIN_POM, version, MAVEN_DEV_REPO)
-
     # Deploy jsr308 and checker-qual jars to maven repo
     mvn_deploy(CHECKER_BINARY, CHECKER_BINARY_POM, MAVEN_DEV_REPO)
     mvn_deploy(CHECKER_QUAL, CHECKER_QUAL_POM, MAVEN_DEV_REPO)

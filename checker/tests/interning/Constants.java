@@ -1,4 +1,4 @@
-import org.checkerframework.checker.interning.qual.*;
+import org.checkerframework.checker.interning.qual.Interned;
 
 public class Constants {
 

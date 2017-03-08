@@ -28,6 +28,7 @@ package java.util.zip;
 import java.util.Date;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 /**
  * This class is used to represent a ZIP file entry.
@@ -235,6 +236,7 @@ class ZipEntry implements ZipConstants, Cloneable {
      * @return the extra field data for the entry, or null if none
      * @see #setExtra(byte[])
      */
+    @Pure
     public byte @Nullable [] getExtra() {
         return extra;
     }

@@ -133,12 +133,12 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>This implementation does the following checks:
  *
  * <ol>
- *   <li> <b>Assignment and Pseudo-Assignment Check</b>: It verifies that any assignment
- *       type-checks, using {@code TypeHierarchy.isSubtype} method. This includes method invocation
- *       and method overriding checks.
- *   <li> <b>Type Validity Check</b>: It verifies that any user-supplied type is a valid type, using
+ *   <li><b>Assignment and Pseudo-Assignment Check</b>: It verifies that any assignment type-checks,
+ *       using {@code TypeHierarchy.isSubtype} method. This includes method invocation and method
+ *       overriding checks.
+ *   <li><b>Type Validity Check</b>: It verifies that any user-supplied type is a valid type, using
  *       {@code isValidUse} method.
- *   <li> <b>(Re-)Assignability Check</b>: It verifies that any assignment is valid, using {@code
+ *   <li><b>(Re-)Assignability Check</b>: It verifies that any assignment is valid, using {@code
  *       Checker.isAssignable} method.
  * </ol>
  *
@@ -260,51 +260,37 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return super.scan(tree, p);
     }
 
+    /**
+     * Type-check classTree and skips classes specified by the skipDef option. Subclasses should
+     * override {@link #processClassTree(ClassTree)} instead of this method.
+     *
+     * @param classTree class to check
+     * @param p null
+     * @return null
+     */
     @Override
-    public Void visitClass(ClassTree node, Void p) {
-        if (checker.shouldSkipDefs(node)) {
-            // Not "return super.visitClass(node, p);" because that would
+    public final Void visitClass(ClassTree classTree, Void p) {
+        if (checker.shouldSkipDefs(classTree)) {
+            // Not "return super.visitClass(classTree, p);" because that would
             // recursively call visitors on subtrees; we want to skip the
             // class entirely.
             return null;
         }
-
-        atypeFactory.preProcessClassTree(node);
+        atypeFactory.preProcessClassTree(classTree);
 
         AnnotatedDeclaredType preACT = visitorState.getClassType();
         ClassTree preCT = visitorState.getClassTree();
         AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
         MethodTree preMT = visitorState.getMethodTree();
         Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
-        visitorState.setClassType(atypeFactory.getAnnotatedType(node));
-        visitorState.setClassTree(node);
+        visitorState.setClassType(atypeFactory.getAnnotatedType(classTree));
+        visitorState.setClassTree(classTree);
         visitorState.setMethodReceiver(null);
         visitorState.setMethodTree(null);
         visitorState.setAssignmentContext(null);
-
         try {
-            if (!TreeUtils.hasExplicitConstructor(node)) {
-                checkDefaultConstructor(node);
-            }
-
-            /* Visit the extends and implements clauses.
-             * The superclass also visits them, but only calls visitParameterizedType, which
-             * loses a main modifier.
-             */
-            Tree ext = node.getExtendsClause();
-            if (ext != null) {
-                validateTypeOf(ext);
-            }
-
-            List<? extends Tree> impls = node.getImplementsClause();
-            if (impls != null) {
-                for (Tree im : impls) {
-                    validateTypeOf(im);
-                }
-            }
-            Void returnValue = super.visitClass(node, p);
-            atypeFactory.postProcessClassTree(node);
-            return returnValue;
+            processClassTree(classTree);
+            atypeFactory.postProcessClassTree(classTree);
         } finally {
             this.visitorState.setClassType(preACT);
             this.visitorState.setClassTree(preCT);
@@ -312,6 +298,36 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             this.visitorState.setMethodTree(preMT);
             this.visitorState.setAssignmentContext(preAssCtxt);
         }
+        return null;
+    }
+
+    /**
+     * Type-check classTree. Subclasses should override this method instead of {@link
+     * #visitClass(ClassTree, Void)}.
+     *
+     * @param classTree class to check
+     */
+    public void processClassTree(ClassTree classTree) {
+        if (!TreeUtils.hasExplicitConstructor(classTree)) {
+            checkDefaultConstructor(classTree);
+        }
+
+        /* Visit the extends and implements clauses.
+         * The superclass also visits them, but only calls visitParameterizedType, which
+         * loses a main modifier.
+         */
+        Tree ext = classTree.getExtendsClause();
+        if (ext != null) {
+            validateTypeOf(ext);
+        }
+
+        List<? extends Tree> impls = classTree.getImplementsClause();
+        if (impls != null) {
+            for (Tree im : impls) {
+                validateTypeOf(im);
+            }
+        }
+        super.visitClass(classTree, null);
     }
 
     protected void checkDefaultConstructor(ClassTree node) {}
@@ -323,9 +339,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * <p>The override rule specifies that a method, m1, may override a method m2 only if:
      *
      * <ul>
-     *   <li> m1 return type is a subtype of m2
-     *   <li> m1 receiver type is a supertype of m2
-     *   <li> m1 parameters are supertypes of corresponding m2 parameters
+     *   <li>m1 return type is a subtype of m2
+     *   <li>m1 receiver type is a supertype of m2
+     *   <li>m1 parameters are supertypes of corresponding m2 parameters
      * </ul>
      *
      * Also, it issues a "missing.this" error for static method annotated receivers.
@@ -767,9 +783,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * <p>An invocation of a method, m, on the receiver, r is valid only if:
      *
      * <ul>
-     *   <li> passed arguments are subtypes of corresponding m parameters
-     *   <li> r is a subtype of m receiver type
-     *   <li> if m is generic, passed type arguments are subtypes of m type variables
+     *   <li>passed arguments are subtypes of corresponding m parameters
+     *   <li>r is a subtype of m receiver type
+     *   <li>if m is generic, passed type arguments are subtypes of m type variables
      * </ul>
      */
     @Override
@@ -954,8 +970,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * <p>An invocation of a constructor, c, is valid only if:
      *
      * <ul>
-     *   <li> passed arguments are subtypes of corresponding c parameters
-     *   <li> if c is generic, passed type arguments are subtypes of c type variables
+     *   <li>passed arguments are subtypes of corresponding c parameters
+     *   <li>if c is generic, passed type arguments are subtypes of c type variables
      * </ul>
      */
     @Override
@@ -1216,8 +1232,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 || (node.getKind() == Tree.Kind.PREFIX_INCREMENT)
                 || (node.getKind() == Tree.Kind.POSTFIX_DECREMENT)
                 || (node.getKind() == Tree.Kind.POSTFIX_INCREMENT)) {
-            AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node.getExpression());
-            checkAssignability(type, node.getExpression());
+            AnnotatedTypeMirror varType = atypeFactory.getAnnotatedTypeLhs(node.getExpression());
+            // For postfix increments/decrements, the value type is incorrect due to the workaround
+            // in GenericAnnotatedTypeFactory.addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)
+            // for the following bug:
+            // See Issue 867: https://github.com/typetools/checker-framework/issues/867
+            // This means could result in a false warning (false positive) in some cases and a lack
+            // of a warning in other cases (false negative).
+            AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(node);
+            commonAssignmentCheck(
+                    varType, valueType, node, "compound.assignment.type.incompatible");
         }
         return super.visitUnary(node, p);
     }

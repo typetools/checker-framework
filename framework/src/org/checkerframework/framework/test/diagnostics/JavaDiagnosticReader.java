@@ -16,10 +16,10 @@ import javax.tools.JavaFileObject;
  * TestDiagnosticLines or TestDiagnostics. This file might either:
  *
  * <ul>
- *   <li> a Java file, which is read by creating a {@code JavaDiagnosticReader} with the {@link
+ *   <li>a Java file, which is read by creating a {@code JavaDiagnosticReader} with the {@link
  *       #JAVA_COMMENT_CODEC}
- *   <li> a "Diagnostic" file, which is read by creating a {@code JavaDiagnosticReader} with a
- *       {@link #DIAGNOSTIC_FILE_CODEC}
+ *   <li>a "Diagnostic" file, which is read by creating a {@code JavaDiagnosticReader} with a {@link
+ *       #DIAGNOSTIC_FILE_CODEC}
  * </ul>
  */
 public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {

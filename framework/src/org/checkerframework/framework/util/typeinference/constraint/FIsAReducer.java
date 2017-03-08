@@ -55,8 +55,8 @@ public class FIsAReducer implements AFReducer {
      * <p>The visit method will determine if the given constraint should either:
      *
      * <ul>
-     *   <li> be discarded -- in this case, the visitor just returns
-     *   <li> reduced to a simpler constraint or set of constraints -- in this case, the new
+     *   <li>be discarded -- in this case, the visitor just returns
+     *   <li>reduced to a simpler constraint or set of constraints -- in this case, the new
      *       constraint or set of constraints is added to newConstraints
      * </ul>
      *
