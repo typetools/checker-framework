@@ -278,8 +278,8 @@ public abstract class GenericAnnotatedTypeFactory<
      * The default tree annotator is a {@link ListTreeAnnotator} of the following:
      *
      * <ol>
-     *   <li> {@link PropagationTreeAnnotator}: Propagates annotations from subtrees.
-     *   <li> {@link ImplicitsTreeAnnotator}: Adds annotations based on {@link ImplicitFor}
+     *   <li>{@link PropagationTreeAnnotator}: Propagates annotations from subtrees.
+     *   <li>{@link ImplicitsTreeAnnotator}: Adds annotations based on {@link ImplicitFor}
      *       meta-annotations
      * </ol>
      *
@@ -303,10 +303,10 @@ public abstract class GenericAnnotatedTypeFactory<
      * ListTypeAnnotator} of the following:
      *
      * <ol>
-     *   <li> {@link IrrelevantTypeAnnotator}: Adds top to types not listed in the {@link
+     *   <li>{@link IrrelevantTypeAnnotator}: Adds top to types not listed in the {@link
      *       RelevantJavaTypes} annotation on the checker
-     *   <li> {@link PropagationTypeAnnotator}: Propagates annotation onto wildcards
-     *   <li> {@link ImplicitsTypeAnnotator}: Adds annotations based on {@link ImplicitFor}
+     *   <li>{@link PropagationTypeAnnotator}: Propagates annotation onto wildcards
+     *   <li>{@link ImplicitsTypeAnnotator}: Adds annotations based on {@link ImplicitFor}
      *       meta-annotations
      * </ol>
      *

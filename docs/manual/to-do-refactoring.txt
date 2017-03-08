@@ -100,7 +100,7 @@ By the way, the second option will work with both the jsr308 and Java8
 compilers as the --checkers could be translated by CheckerMain into the first
 form.  [I don't see how a Java 8 compiler could handle the --checkers
 option; it will only work with a non-standard javac binary.  But maybe the
-proposal is to always require that (e.g., via "java -jar checkers.jar") and
+proposal is to always require that (e.g., via "java -jar checker.jar") and
 never support direct use of javac.]
 [This feels low-priority to Mike.]
 
