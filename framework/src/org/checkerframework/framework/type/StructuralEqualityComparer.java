@@ -200,8 +200,8 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      * Two arrays are equal if:
      *
      * <ol>
-     *   <li> Their sets of primary annotations are equal, and
-     *   <li> Their component types are equal
+     *   <li>Their sets of primary annotations are equal, and
+     *   <li>Their component types are equal
      * </ol>
      */
     @Override
@@ -220,9 +220,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      * Two declared types are equal if:
      *
      * <ol>
-     *   <li> The types are of the same class/interfaces
-     *   <li> Their sets of primary annotations are equal
-     *   <li> Their sets of type arguments are equal or one type is raw
+     *   <li>The types are of the same class/interfaces
+     *   <li>Their sets of primary annotations are equal
+     *   <li>Their sets of type arguments are equal or one type is raw
      * </ol>
      */
     @Override
@@ -277,8 +277,8 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      * types are equal if:
      *
      * <ul>
-     *   <li> Their sets of primary annotations are equal
-     *   <li> Their sets of bounds (the types being intersected) are equal
+     *   <li>Their sets of primary annotations are equal
+     *   <li>Their sets of bounds (the types being intersected) are equal
      * </ul>
      */
     @Override
@@ -298,7 +298,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      * Two null types are equal if:
      *
      * <ul>
-     *   <li> Their sets of primary annotations are equal
+     *   <li>Their sets of primary annotations are equal
      * </ul>
      */
     @Override
@@ -313,7 +313,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      * Two primitive types are equal if:
      *
      * <ul>
-     *   <li> Their sets of primary annotations are equal
+     *   <li>Their sets of primary annotations are equal
      * </ul>
      */
     @Override
@@ -328,7 +328,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      * Two type variables are equal if:
      *
      * <ul>
-     *   <li> Their bounds are equal
+     *   <li>Their bounds are equal
      * </ul>
      *
      * Note: Primary annotations will be taken into account when the bounds are retrieved
@@ -426,7 +426,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      * Two wildcards are equal if:
      *
      * <ul>
-     *   <li> Their bounds are equal
+     *   <li>Their bounds are equal
      * </ul>
      *
      * Note: Primary annotations will be taken into account when the bounds are retrieved
@@ -481,7 +481,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      * <p>A wildcard is equal tyo a type variable if:
      *
      * <ul>
-     *   <li> The wildcard's bounds are equal to the type variable's bounds
+     *   <li>The wildcard's bounds are equal to the type variable's bounds
      * </ul>
      */
     @Override

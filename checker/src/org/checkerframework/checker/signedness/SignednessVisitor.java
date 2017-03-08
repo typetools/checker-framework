@@ -152,12 +152,12 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      * Enforces the following rules on binary operations involving Unsigned and Signed types:
      *
      * <ul>
-     *   <li> Do not allow any Unsigned types in {@literal {/, %}} operations.
-     *   <li> Do not allow signed right shift {@literal {>>}} on an Unsigned type.
-     *   <li> Do not allow unsigned right shift {@literal {>>>}} on a Signed type.
-     *   <li> Allow any left shift {@literal {<<}}.
-     *   <li> Do not allow non-equality comparisons {@literal {<, <=, >, >=}} on Unsigned types.
-     *   <li> Do not allow the mixing of Signed and Unsigned types.
+     *   <li>Do not allow any Unsigned types in {@literal {/, %}} operations.
+     *   <li>Do not allow signed right shift {@literal {>>}} on an Unsigned type.
+     *   <li>Do not allow unsigned right shift {@literal {>>>}} on a Signed type.
+     *   <li>Allow any left shift {@literal {<<}}.
+     *   <li>Do not allow non-equality comparisons {@literal {<, <=, >, >=}} on Unsigned types.
+     *   <li>Do not allow the mixing of Signed and Unsigned types.
      * </ul>
      */
     @Override
@@ -244,11 +244,11 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      * Enforces the following rules on compound assignments involving Unsigned and Signed types:
      *
      * <ul>
-     *   <li> Do not allow any Unsigned types in {@literal {/=, %=}} assignments.
-     *   <li> Do not allow signed right shift {@literal {>>=}} to assign to an Unsigned type.
-     *   <li> Do not allow unsigned right shift {@literal {>>>=}} to assign to a Signed type.
-     *   <li> Allow any left shift {@literal {<<=}} assignment.
-     *   <li> Do not allow mixing of Signed and Unsigned types.
+     *   <li>Do not allow any Unsigned types in {@literal {/=, %=}} assignments.
+     *   <li>Do not allow signed right shift {@literal {>>=}} to assign to an Unsigned type.
+     *   <li>Do not allow unsigned right shift {@literal {>>>=}} to assign to a Signed type.
+     *   <li>Allow any left shift {@literal {<<=}} assignment.
+     *   <li>Do not allow mixing of Signed and Unsigned types.
      * </ul>
      */
     @Override

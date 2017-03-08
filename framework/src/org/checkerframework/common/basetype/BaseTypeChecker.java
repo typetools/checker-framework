@@ -52,13 +52,13 @@ import org.checkerframework.javacutil.ErrorReporter;
  * related the type system, mainly:
  *
  * <ul>
- *   <li> {@link QualifierHierarchy}: to represent the supported qualifiers in addition to their
+ *   <li>{@link QualifierHierarchy}: to represent the supported qualifiers in addition to their
  *       hierarchy, mainly, subtyping rules
- *   <li> {@link TypeHierarchy}: to check subtyping rules between <b>annotated types</b> rather than
+ *   <li>{@link TypeHierarchy}: to check subtyping rules between <b>annotated types</b> rather than
  *       qualifiers
- *   <li> {@link AnnotatedTypeFactory}: to construct qualified types enriched with implicit
+ *   <li>{@link AnnotatedTypeFactory}: to construct qualified types enriched with implicit
  *       qualifiers according to the type system rules
- *   <li> {@link BaseTypeVisitor}: to visit the compiled Java files and check for violations of the
+ *   <li>{@link BaseTypeVisitor}: to visit the compiled Java files and check for violations of the
  *       type system rules
  * </ul>
  *
