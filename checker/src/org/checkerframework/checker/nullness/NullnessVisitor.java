@@ -209,7 +209,7 @@ public class NullnessVisitor
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            String errorKey) {
+            /*@CompilerMessageKey*/ String errorKey) {
         if (TypesUtils.isPrimitive(varType.getUnderlyingType())
                 && !TypesUtils.isPrimitive(valueType.getUnderlyingType())) {
             boolean succeed = checkForNullability(valueType, valueTree, UNBOXING_OF_NULLABLE);
