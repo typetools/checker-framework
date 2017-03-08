@@ -6,8 +6,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The Range class models a 64-bit 2s-complement integral interval, such as all integers between 1
- * and 10, inclusive. Ranges are immutable.
+ * The Range class models a 64-bit two's-complement integral interval, such as all integers between
+ * 1 and 10, inclusive. Ranges are immutable.
  *
  * @author JasonMrX
  */
@@ -19,11 +19,13 @@ public class Range {
     /** The upper bound of the interval, inclusive. */
     public final long to;
 
-    /** A range containing all possible values. */
+    /** A range containing all possible 64-bit values. */
     public static final Range EVERYTHING = new Range(Long.MIN_VALUE, Long.MAX_VALUE);
 
+    /** A range containing all possible 32-bit values values. */
     public static final Range INT_EVERYTHING = new Range(Integer.MIN_VALUE, Integer.MAX_VALUE);
 
+    /** A range containing all possible 16-bit values values. */
     public static final Range SHORT_EVERYTHING = new Range(Short.MIN_VALUE, Short.MAX_VALUE);
 
     /** The empty range. */
@@ -69,7 +71,11 @@ public class Range {
 
     @Override
     public String toString() {
-        return String.format("[%s..%s]", from, to);
+        if (this.isNothing()) {
+            return "[]";
+        } else {
+            return String.format("[%s..%s]", from, to);
+        }
     }
 
     /** Return true if this range contains every {@code long} value. */
@@ -82,18 +88,21 @@ public class Range {
         return this == NOTHING;
     }
 
+    /** The number of values representable in 32 bits: 2^32 or 1&lt;&lt;32. */
+    private static long integerWidth = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1;
+
     /**
      * Converts a this range to a 32-bit integral range.
      *
-     * <p>If the this range are out of the Integer type scope, convert the bounds to Integer type in
-     * accordance with Java overflow rules, e.g., Integer.MAX_VALUE + 1 is converted to
-     * Integer.MIN_VALUE.
-     *
      * <p>If this range is too wide, i.e., wider than the full range of the Integer class, return
      * INT_EVERYTHING.
+     *
+     * <p>If the bounds of this range are not representable as 32-bit integers, convert the bounds
+     * to Integer type in accordance with Java overflow rules, e.g., Integer.MAX_VALUE + 1 is
+     * converted to Integer.MIN_VALUE.
      */
     public Range intRange() {
-        if (this.isWiderThan((long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1)) {
+        if (this.isWiderThan(integerWidth)) {
             return INT_EVERYTHING;
         } else {
             int intFrom = (int) this.from;
@@ -106,18 +115,21 @@ public class Range {
         }
     }
 
+    /** The number of values representable in 16 bits: 2^16 or 1&lt;&lt;16. */
+    private static long shortWidth = Short.MAX_VALUE - Short.MIN_VALUE + 1;
+
     /**
      * Converts a this range to a 16-bit short range.
      *
-     * <p>If the this range are out of the Short type scope, convert the bounds to Short type in
-     * accordance with Java overflow rules, e.g., Short.MAX_VALUE + 1 is converted to
-     * Short.MIN_VALUE.
-     *
      * <p>If this range is too wide, i.e., wider than the full range of the Short class, return
      * SHORT_EVERYTHING.
+     *
+     * <p>If the bounds of this range are not representable as 16-bit integers, convert the bounds
+     * to Integer type in accordance with Java overflow rules, e.g., Short.MAX_VALUE + 1 is
+     * converted to Short.MIN_VALUE.
      */
     public Range shortRange() {
-        if (this.isWiderThan(Short.MAX_VALUE - Short.MIN_VALUE + 1)) {
+        if (this.isWiderThan(shortWidth)) {
             // short is be promoted to int before the operation so no need for explicit casting
             return SHORT_EVERYTHING;
         } else {
@@ -186,6 +198,7 @@ public class Range {
             return NOTHING;
         }
 
+        // could safely increase these bounds for additional efficiency
         if (this.isWithinInteger() && right.isWithinInteger()) {
             long resultFrom = from + right.from;
             long resultTo = to + right.to;
@@ -210,6 +223,7 @@ public class Range {
             return NOTHING;
         }
 
+        // could safely increase these bounds for additional efficiency
         if (this.isWithinInteger() && right.isWithinInteger()) {
             long resultFrom = from - right.to;
             long resultTo = to - right.from;
@@ -234,6 +248,7 @@ public class Range {
             return NOTHING;
         }
 
+        // These bounds are adequate:  Integer.MAX_VALUE^2 is still a bit less than Long.MAX_VALUE.
         if (this.isWithinInteger() && right.isWithinInteger()) {
             List<Long> possibleValues =
                     Arrays.asList(
@@ -290,44 +305,50 @@ public class Range {
         // We needn't worry about the overflow issue starting from here.
         // To facilitate the calculation of the result range, we categorize all the scenarios into 9
         // different cases:
-        if (from > 0 && right.from >= 0) {
-            // 1. this: po, right: nn
-            resultFrom = from / Math.max(right.to, 1);
-            resultTo = to / Math.max(right.from, 1);
-        } else if (from > 0 && right.to <= 0) {
-            // 2. this: po, right: np
-            resultFrom = to / Math.min(right.to, -1);
-            resultTo = from / Math.min(right.from, -1);
-        } else if (from > 0) {
-            // 3. this: po, right: us
-            resultFrom = -to;
-            resultTo = to;
-        } else if (to < 0 && right.from >= 0) {
-            // 4. this: ne, right: nn
-            resultFrom = from / Math.max(right.from, 1);
-            resultTo = to / Math.max(right.to, 1);
-        } else if (to < 0 && right.to <= 0) {
-            // 5. this: ne, right: np
-            resultFrom = to / Math.min(right.from, -1);
-            resultTo = from / Math.min(right.to, -1);
-        } else if (to < 0) {
-            // 6. this: ne, right: us
-            resultFrom = from;
-            resultTo = -from;
-        } else if (right.from >= 0) {
-            // 7. this: us, right: nn
-            resultFrom = from / Math.max(right.from, 1);
-            resultTo = to / Math.max(right.from, 1);
-        } else if (right.to <= 0) {
-            // 8. this: us, right: np
-            resultFrom = to / Math.min(right.to, -1);
-            resultTo = from / Math.min(right.to, -1);
-        } else {
-            // 9. this: us, right: us
-            resultFrom = Math.min(from, -to);
-            resultTo = Math.max(-from, to);
+        // (note: pos=positive, neg=negative, unk=unknown sign, np=non-positive, nn=non-negative)
+        if (from > 0) { // this is positive
+            if (right.from >= 0) {
+                // 1. right: nn
+                resultFrom = from / Math.max(right.to, 1);
+                resultTo = to / Math.max(right.from, 1);
+            } else if (right.to <= 0) {
+                // 2. right: np
+                resultFrom = to / Math.min(right.to, -1);
+                resultTo = from / Math.min(right.from, -1);
+            } else {
+                // 3. right: unk
+                resultFrom = -to;
+                resultTo = to;
+            }
+        } else if (to < 0) { // this is negative
+            if (right.from >= 0) {
+                // 4. right: nn
+                resultFrom = from / Math.max(right.from, 1);
+                resultTo = to / Math.max(right.to, 1);
+            } else if (right.to <= 0) {
+                // 5. right: np
+                resultFrom = to / Math.min(right.from, -1);
+                resultTo = from / Math.min(right.to, -1);
+            } else {
+                // 6. right: unk
+                resultFrom = from;
+                resultTo = -from;
+            }
+        } else { // this is of unknown sign
+            if (right.from >= 0) {
+                // 7. right: nn
+                resultFrom = from / Math.max(right.from, 1);
+                resultTo = to / Math.max(right.from, 1);
+            } else if (right.to <= 0) {
+                // 8. right: np
+                resultFrom = to / Math.min(right.to, -1);
+                resultTo = from / Math.min(right.to, -1);
+            } else {
+                // 9. right: unk
+                resultFrom = Math.min(from, -to);
+                resultTo = Math.max(-from, to);
+            }
         }
-        // (note: po=>positive, ne=>negative, us:=>unknown sign, np=>non-positive, nn=>non-negative)
         return new Range(resultFrom, resultTo);
     }
 
