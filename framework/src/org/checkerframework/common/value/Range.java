@@ -279,6 +279,9 @@ public class Range {
         if (this.isNothing() || right.isNothing()) {
             return NOTHING;
         }
+        if (right.from == 0 && right.to == 0) {
+            return NOTHING;
+        }
         // Special cases that involve overflow.
         // The only overflow in integer division is Long.MIN_VALUE / -1 == Long.MIN_VALUE.
         if (from == Long.MIN_VALUE && right.contains(-1)) {
@@ -303,9 +306,6 @@ public class Range {
         long resultFrom;
         long resultTo;
         // We needn't worry about the overflow issue starting from here.
-        if (right.from == 0 && right.to == 0) {
-            return NOTHING;
-        }
         // There are 9 different cases:
         // (note: pos=positive, neg=negative, unk=unknown sign, np=non-positive, nn=non-negative)
         if (from > 0) { // this range is positive
