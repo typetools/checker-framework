@@ -303,9 +303,9 @@ public class Range {
                 return new Range(Long.MIN_VALUE, Long.MIN_VALUE);
             }
         }
+        // We needn't worry about the overflow issue starting from here.
         long resultFrom;
         long resultTo;
-        // We needn't worry about the overflow issue starting from here.
         // There are 9 different cases:
         // (note: pos=positive, neg=negative, unk=unknown sign, np=non-positive, nn=non-negative)
         if (from > 0) { // this range is positive
