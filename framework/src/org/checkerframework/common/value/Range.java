@@ -354,7 +354,9 @@ public class Range {
 
     /**
      * Returns a range that includes all possible values of the remainder of dividing an arbitrary
-     * value in this range by an arbitrary value in the specified range. Note that this range might
+     * value in this range by an arbitrary value in the specified range.
+
+     * <p>In the current implementtation, the result might
      * not be the smallest range that includes all the possible values.
      *
      * @param right the specified range by which this range is divided
@@ -367,19 +369,21 @@ public class Range {
         // Special cases that would cause overflow if we use the general method below
         if (right.from == Long.MIN_VALUE) {
             Range range;
-            // The value Long.MIN_VALUE as a divider needs special handling as follows:
-            if (from > Long.MIN_VALUE) {
+            // The value Long.MIN_VALUE as a divisor needs special handling as follows:
+            if (from == Long.MIN_VALUE) {
+                if (to == Long.MIN_VALUE) {
+                    // This range only contains Long.MIN_VALUE, so the result range is {0}.
+                    range = new Range(0, 0);
+                } else { // (to > Long.MIN_VALUE)
+                    // When this range contains Long.MIN_VALUE, which would have a remainder of 0 if
+                    // divided by Long.MIN_VALUE, the result range is {0} unioned with [from + 1, to]
+                    range = (new Range(from + 1, to)).union(new Range(0, 0));
+                }
+            } else { // (from > Long.MIN_VALUE)
                 // When this range doesn't contain Long.MIN_VALUE, the remainder of each value
                 // in this range divided by Long.MIN_VALUE is this value itself. Therefore the
                 // result range is this range itself.
-                range = new Range(from, to);
-            } else if (from == Long.MIN_VALUE && to > Long.MIN_VALUE) {
-                // When this range contains Long.MIN_VALUE, which would have a remainder of 0 if
-                // divided by Long.MIN_VALUE, the result range is {0} union with [from + 1, to]
-                range = (new Range(from + 1, to)).union(new Range(0, 0));
-            } else {
-                // When this range only contains Long.MIN_VALUE, the result range is {0}
-                range = new Range(0, 0);
+                range = this;
             }
             // If right.to > Long.MIN_VALUE, union the previous result with the result of range
             // [right.from + 1, right.to] divided by this range, which can be calculated using
@@ -402,19 +406,17 @@ public class Range {
         // example, if the right range is [-5, 3], then the result range would be [-4, 4]. If the
         // right range is [3, 6], then the result range would be [-5, 5]. In general, the result
         // range is calculated as following:
-        Range range2 =
-                Math.abs(right.from) > Math.abs(right.to)
-                        ? new Range(-Math.abs(right.from) + 1, Math.abs(right.from) - 1)
-                        : new Range(-Math.abs(right.to) + 1, Math.abs(right.to) - 1);
+        long maxAbsolute = Math.max(Math.abs(right.from), Math.abs(right.to));
+        Range range2 = new Range(-maxAbsolute + 1, maxAbsolute - 1);
         // Since range1 and range2 are both super sets of the minimal result range, we return the
-        // intersect of range1 and range2, which is correct (super set) and precise enough.
+        // intersection of range1 and range2, which is correct (super set) and precise enough.
         return range1.intersect(range2);
     }
 
     /**
      * Returns a range that includes all possible values resulting from left shifting an arbitrary
      * value in this range by an arbitrary number of bits in the specified range. We call this the
-     * left shift operation of a range.
+     * left shift of a range.
      *
      * @param right the range of bits by which this range is left shifted
      * @return the range resulting from left shifting this range by the specified range
@@ -425,7 +427,8 @@ public class Range {
         }
 
         if (this.isWithinInteger() && right.from >= 0 && right.to <= 31) {
-            // The long type can handle the cases with shift distance no longer than 31.
+            // The long type can handle the cases with non-negative shift distance no greater than
+            // 31, because there is no possible overflow.
             long resultFrom = from << (from >= 0 ? right.from : right.to);
             long resultTo = to << (to >= 0 ? right.to : right.from);
             return new Range(resultFrom, resultTo);
@@ -438,7 +441,7 @@ public class Range {
                     BigInteger.valueOf(to).shiftLeft(to >= 0 ? (int) right.to : (int) right.from);
             return bigRangeToLongRange(bigFrom, bigTo);
         } else {
-            // In other cases, we give up the calculation and return EVERYTHING (rare in practice).
+            // In other cases, we give up on the calculation and return EVERYTHING (rare in practice).
             return EVERYTHING;
         }
     }
@@ -463,7 +466,7 @@ public class Range {
             return new Range(resultFrom, resultTo);
         } else {
             // Signed shift right operation for long type cannot be simulated with BigInteger.
-            // Give up the calculation and return EVERYTHING instead.
+            // Give up on the calculation and return EVERYTHING instead.
             return EVERYTHING;
         }
     }
@@ -479,7 +482,7 @@ public class Range {
     }
 
     /**
-     * Returns the range of a variable that falls within this range after applying unary minus
+     * Returns the range of a variable that falls within this range after applying the unary minus
      * operation.
      *
      * @return the resulted range of applying unary minus on an arbitrary value in this range
@@ -498,10 +501,11 @@ public class Range {
     }
 
     /**
-     * Returns the range of a variable that falls within this range after applying bitwise
+     * Returns the range of a variable that falls within this range after applying the bitwise
      * complement operation.
      *
-     * @return the resulted range of applying bitwise complement on an arbitrary value in this range
+     * @return the resulting range of applying bitwise complement on an arbitrary value in this
+     * range
      */
     public Range bitwiseComplement() {
         if (this.isNothing()) {
@@ -530,7 +534,7 @@ public class Range {
      * </pre>
      *
      * Use the {@link #refineGreaterThanEq(Range)} method if you are also interested in refining the
-     * given range
+     * range of {@code b} in the code above.
      *
      * @param right the specified {@code Range} to compare with
      * @return the refined {@code Range}
@@ -567,7 +571,7 @@ public class Range {
      * </pre>
      *
      * Use the {@link #refineGreaterThan(Range)} method if you are also interested in refining the
-     * given range
+     * range of {@code b} in the code above.
      *
      * @param right the specified {@code Range} to compare with
      * @return the refined {@code Range}
@@ -600,7 +604,7 @@ public class Range {
      * </pre>
      *
      * Use the {@link #refineLessThanEq(Range)} method if you are also interested in refining the
-     * given range
+     * range of {@code b} in the code above.
      *
      * @param right the specified {@code Range} to compare with
      * @return the refined {@code Range}
@@ -637,7 +641,7 @@ public class Range {
      * </pre>
      *
      * Use the {@link #refineLessThan(Range)} method if you are also interested in refining the
-     * given range
+     * range of {@code b} in the code above.
      *
      * @param right the specified {@code Range} to compare with
      * @return the refined {@code Range}
@@ -673,13 +677,7 @@ public class Range {
      * @return the refined {@code Range}
      */
     public Range refineEqualTo(Range right) {
-        if (this.isNothing() || right.isNothing()) {
-            return NOTHING;
-        }
-
-        long resultFrom = Math.max(from, right.from);
-        long resultTo = Math.min(to, right.to);
-        return createRangeOrNothing(resultFrom, resultTo);
+        return this.intersect(right);
     }
 
     /**
@@ -714,12 +712,12 @@ public class Range {
     /**
      * Converts a range with BigInteger type bounds to a range with Long type bounds.
      *
+     * <p>If the BigInteger range is too wide, i.e., wider than the full range of the Long class,
+     * return EVERYTHING.
+     *
      * <p>If the BigInteger bounds are out of the Long type scope, convert the bounds to Long type
      * in accordance with Java overflow rules, e.g., Long.MAX_VALUE + 1 is converted to
      * Long.MIN_VALUE.
-     *
-     * <p>If the BigInteger range is too wide, i.e., wider than the full range of the Long class,
-     * return EVERYTHING.
      *
      * @param bigFrom the lower bound of the BigInteger range
      * @param bigTo the upper bound of the BigInteger range
