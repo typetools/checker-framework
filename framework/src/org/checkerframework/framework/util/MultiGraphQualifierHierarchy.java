@@ -811,8 +811,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     private Map<AnnotationPair, AnnotationMirror> calculateGlbs() {
         Map<AnnotationPair, AnnotationMirror> newglbs =
                 new HashMap<AnnotationPair, AnnotationMirror>();
-        for (AnnotationMirror a1 : supertypesGraph.keySet()) {
-            for (AnnotationMirror a2 : supertypesGraph.keySet()) {
+        for (AnnotationMirror a1 : supertypesMap.keySet()) {
+            for (AnnotationMirror a2 : supertypesMap.keySet()) {
                 if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
                     continue;
                 }
