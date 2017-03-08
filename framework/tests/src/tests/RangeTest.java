@@ -348,6 +348,7 @@ public class RangeTest {
 
     @Test
     public void testDivide() {
+        assert new Range(1, 2).divide(new Range(0, 0)) == Range.NOTHING;
         for (RangeAndElement re1 : rangeAndElements()) {
             for (RangeAndElement re2 : rangeAndElements()) {
                 if (re2.element == 0) {
@@ -365,6 +366,7 @@ public class RangeTest {
 
     @Test
     public void testRemainder() {
+        assert new Range(1, 2).remainder(new Range(0, 0)) == Range.NOTHING;
         for (RangeAndElement re1 : rangeAndElements()) {
             for (RangeAndElement re2 : rangeAndElements()) {
                 if (re2.element == 0) {

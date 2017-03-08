@@ -303,10 +303,12 @@ public class Range {
         long resultFrom;
         long resultTo;
         // We needn't worry about the overflow issue starting from here.
-        // To facilitate the calculation of the result range, we categorize all the scenarios into 9
-        // different cases:
+        if (right.from == 0 && right.to == 0) {
+            return NOTHING;
+        }
+        // There are 9 different cases:
         // (note: pos=positive, neg=negative, unk=unknown sign, np=non-positive, nn=non-negative)
-        if (from > 0) { // this is positive
+        if (from > 0) { // this range is positive
             if (right.from >= 0) {
                 // 1. right: nn
                 resultFrom = from / Math.max(right.to, 1);
@@ -320,7 +322,7 @@ public class Range {
                 resultFrom = -to;
                 resultTo = to;
             }
-        } else if (to < 0) { // this is negative
+        } else if (to < 0) { // this range is negative
             if (right.from >= 0) {
                 // 4. right: nn
                 resultFrom = from / Math.max(right.from, 1);
@@ -334,7 +336,7 @@ public class Range {
                 resultFrom = from;
                 resultTo = -from;
             }
-        } else { // this is of unknown sign
+        } else { // this range spans both signs
             if (right.from >= 0) {
                 // 7. right: nn
                 resultFrom = from / Math.max(right.from, 1);
@@ -364,6 +366,9 @@ public class Range {
      */
     public Range remainder(Range right) {
         if (this.isNothing() || right.isNothing()) {
+            return NOTHING;
+        }
+        if (right.from == 0 && right.to == 0) {
             return NOTHING;
         }
         // Special cases that would cause overflow if we use the general method below
