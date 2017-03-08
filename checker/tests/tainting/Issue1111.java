@@ -8,8 +8,9 @@ public class Issue1111 {
     void foo(Box<? super @Tainted Integer> box, List<Integer> list) {
         bar(box, list);
     }
-    //:: error: (argument.type.incompatible)
+
     void foo2(Box<? super Integer> box, List<Integer> list) {
+        //:: error: (argument.type.incompatible)
         bar(box, list);
     }
 
