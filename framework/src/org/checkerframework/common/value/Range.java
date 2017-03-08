@@ -304,10 +304,11 @@ public class Range {
             }
         }
         // We needn't worry about the overflow issue starting from here.
-        long resultFrom;
-        long resultTo;
+
         // There are 9 different cases:
         // (note: pos=positive, neg=negative, unk=unknown sign, np=non-positive, nn=non-negative)
+        long resultFrom;
+        long resultTo;
         if (from > 0) { // this range is positive
             if (right.from >= 0) {
                 // 1. right: nn
@@ -318,7 +319,7 @@ public class Range {
                 resultFrom = to / Math.min(right.to, -1);
                 resultTo = from / Math.min(right.from, -1);
             } else {
-                // 3. right: unk
+                // 3. right: unk; values include -1 and 1
                 resultFrom = -to;
                 resultTo = to;
             }
@@ -332,7 +333,7 @@ public class Range {
                 resultFrom = to / Math.min(right.from, -1);
                 resultTo = from / Math.min(right.to, -1);
             } else {
-                // 6. right: unk
+                // 6. right: unk; values include -1 and 1
                 resultFrom = from;
                 resultTo = -from;
             }
@@ -346,7 +347,7 @@ public class Range {
                 resultFrom = to / Math.min(right.to, -1);
                 resultTo = from / Math.min(right.to, -1);
             } else {
-                // 9. right: unk
+                // 9. right: unk; values include -1 and 1
                 resultFrom = Math.min(from, -to);
                 resultTo = Math.max(-from, to);
             }
