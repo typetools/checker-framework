@@ -173,6 +173,9 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     /** @see MultiGraphQualifierHierarchy.MultiGraphFactory#polyQualifiers */
     protected final Map<AnnotationMirror, AnnotationMirror> polyQualifiers;
 
+    /** All qualifiers, including polymorphic qualifiers. */
+    private final Set<AnnotationMirror> typeQualifiers;
+
     public MultiGraphQualifierHierarchy(MultiGraphFactory f) {
         this(f, (Object[]) null);
     }
@@ -205,6 +208,9 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         // TODO: make polyQualifiers immutable also?
 
         this.supertypesMap = Collections.unmodifiableMap(fullMap);
+        Set<AnnotationMirror> typeQualifiers = AnnotationUtils.createAnnotationSet();
+        typeQualifiers.addAll(supertypesMap.keySet());
+        this.typeQualifiers = Collections.unmodifiableSet(typeQualifiers);
         // System.out.println("MGH: " + this);
     }
 
@@ -383,11 +389,9 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return true;
     }
 
-    protected Set</*@Interned*/ String> typeQualifiers = null;
-
     @Override
     public Set<? extends AnnotationMirror> getTypeQualifiers() {
-        return Collections.unmodifiableSet(supertypesMap.keySet());
+        return typeQualifiers;
     }
 
     // For caching results of lubs
@@ -674,8 +678,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     private Map<AnnotationPair, AnnotationMirror> calculateLubs() {
         Map<AnnotationPair, AnnotationMirror> newlubs =
                 new HashMap<AnnotationPair, AnnotationMirror>();
-        for (AnnotationMirror a1 : supertypesGraph.keySet()) {
-            for (AnnotationMirror a2 : supertypesGraph.keySet()) {
+        for (AnnotationMirror a1 : typeQualifiers) {
+            for (AnnotationMirror a2 : typeQualifiers) {
                 if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
                     continue;
                 }
@@ -811,8 +815,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     private Map<AnnotationPair, AnnotationMirror> calculateGlbs() {
         Map<AnnotationPair, AnnotationMirror> newglbs =
                 new HashMap<AnnotationPair, AnnotationMirror>();
-        for (AnnotationMirror a1 : supertypesMap.keySet()) {
-            for (AnnotationMirror a2 : supertypesMap.keySet()) {
+        for (AnnotationMirror a1 : typeQualifiers) {
+            for (AnnotationMirror a2 : typeQualifiers) {
                 if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
                     continue;
                 }
