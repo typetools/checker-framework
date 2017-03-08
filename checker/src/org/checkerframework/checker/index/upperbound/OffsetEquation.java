@@ -117,6 +117,27 @@ public class OffsetEquation {
     }
 
     /**
+     * Makes a copy of this offset and removes any added terms that are accesses to the length of
+     * the listed arrays. If any terms were removed, then the copy is returned. Otherwise, null is
+     * returned.
+     *
+     * @param arrays List of arrays
+     * @return a copy of this equation with array.length removed or null if no array.lengths could
+     *     be removed
+     */
+    public OffsetEquation removeArrayLengths(List<String> arrays) {
+        OffsetEquation copy = new OffsetEquation(this);
+        boolean simplified = false;
+        for (String array : arrays) {
+            String arrayLen = array + ".length";
+            if (addedTerms.contains(arrayLen)) {
+                copy.addedTerms.remove(arrayLen);
+                simplified = true;
+            }
+        }
+        return simplified ? copy : null;
+    }
+    /**
      * Adds or subtracts the other equation to a copy of this one.
      *
      * <p>If subtraction is specified, then every term in other is subtracted.
