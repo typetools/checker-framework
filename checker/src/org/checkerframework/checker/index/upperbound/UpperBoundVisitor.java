@@ -81,61 +81,68 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName), indexTree);
     }
 
+    /**
+     * Slightly relaxes the usual assignment rules by allowing assignments where the right hand side
+     * is a value known at compile time and the type of the left hand side is annotated with
+     * LT*LengthOf("a"). If the min length of a is in the correct relationship with the value on the
+     * right hand side, then the assignment is legal. Both constant integers and constant arrays of
+     * integers are handled.
+     */
     @Override
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             ExpressionTree valueExp,
             /*@CompilerMessageKey*/ String errorKey) {
 
-        System.out.println("-----");
-        System.out.println(valueExp);
-        System.out.println(valueExp.getKind());
-
-        // Slightly relaxes the usual assignment rules by allowing assignments where the right
-        // hand side is a value known at compile time and the type of the left hand side is
-        // annotated with LT*LengthOf("a").  If the min length of a is in the correct
-        // relationship with the value on the right hand side, then the assignment is legal.
-        List<Integer> rhsValues = new ArrayList<>();
-        UBQualifier qualifier = UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN);
+        // Null if the right side is not an integer.
         Integer rhsValue = atypeFactory.valMaxFromExpressionTree(valueExp);
-        if (rhsValue != null) {
-            rhsValues.add(rhsValue);
-        } else if (valueExp.getKind() == Tree.Kind.NEW_ARRAY) {
-            // Check for a new array initializer; if there is one, check each of its elements.
-            NewArrayTree newArrayTree = (NewArrayTree) valueExp;
-            System.out.println(newArrayTree.getInitializers());
-            if (newArrayTree.getInitializers() != null) {
-                for (ExpressionTree exp : newArrayTree.getInitializers()) {
-                    Integer val = atypeFactory.valMaxFromExpressionTree(exp);
-                    System.out.println(exp);
-                    System.out.println(val);
-                    if (val == null) {
-                        super.commonAssignmentCheck(varType, valueExp, errorKey);
-                        return;
-                    } else {
-                        rhsValues.add(val);
-                    }
-                }
-            } else {
-                System.out.println("getInit is null");
-                super.commonAssignmentCheck(varType, valueExp, errorKey);
-                return;
+
+        // Null if the right side is not a new array.
+        NewArrayTree newArrayTree =
+                valueExp.getKind() == Tree.Kind.NEW_ARRAY ? (NewArrayTree) valueExp : null;
+
+        // Find the appropriate qualifier to try to conform to.
+        UBQualifier qualifier = null;
+        if (varType.isAnnotatedInHierarchy(atypeFactory.UNKNOWN)) {
+            if (newArrayTree == null) {
+                qualifier = UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN);
+            } else if (varType instanceof AnnotatedTypeMirror.AnnotatedArrayType) {
+                // The qualifier we need for an array is in the component type, not varType.
+                AnnotatedTypeMirror componentType =
+                        ((AnnotatedTypeMirror.AnnotatedArrayType) varType).getComponentType();
+                qualifier = UBQualifier.createUBQualifier(componentType, atypeFactory.UNKNOWN);
             }
-        } else {
-            System.out.println("not an int, not an array");
+        }
+
+        // If the qualifier is uninteresting or the type is unannotated, do nothing else.
+        if (qualifier == null || qualifier.isUnknownOrBottom()) { // TODO after merge
             super.commonAssignmentCheck(varType, valueExp, errorKey);
             return;
         }
-
-        System.out.println(qualifier);
-        if (qualifier.isUnknownOrBottom()) {
-            System.out.println("not an interesting qualifier");
-            super.commonAssignmentCheck(varType, valueExp, errorKey);
-            return;
-        }
-
         LessThanLengthOf ltl = (LessThanLengthOf) qualifier;
 
+        // Either a singleton list of the single integer on the right,
+        // or a list containing all the values in a constant array.
+        List<Integer> rhsValues = new ArrayList<>();
+        if (rhsValue != null) {
+            rhsValues.add(rhsValue);
+        } else if (newArrayTree != null && newArrayTree.getInitializers() != null) {
+            // All the values in the initializer expression must be compile-time constants.
+            for (ExpressionTree exp : newArrayTree.getInitializers()) {
+                Integer val = atypeFactory.valMaxFromExpressionTree(exp);
+                if (val == null) {
+                    super.commonAssignmentCheck(varType, valueExp, errorKey);
+                    return;
+                } else {
+                    rhsValues.add(val);
+                }
+            }
+        } else {
+            super.commonAssignmentCheck(varType, valueExp, errorKey);
+            return;
+        }
+
+        // Actually check that every integer in rhsValues is less than the minlen of each array.
         for (String arrayName : ltl.getArrays()) {
             int minLen =
                     atypeFactory
@@ -145,8 +152,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             for (Integer value : rhsValues) {
                 minLenOk = ltl.isValuePlusOffsetLessThanMinLen(arrayName, value, minLen);
             }
-            if (!minLenOk) { //|| rhsValues.size() == 0) {
-                System.out.println("All minlens weren't okay");
+            if (!minLenOk) {
                 super.commonAssignmentCheck(varType, valueExp, errorKey);
                 return;
             }
