@@ -581,7 +581,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *   <li value="2">Remove any abstract values for field accesses <em>b.g</em> where {@code
      *       fieldAccess} might alias any expression in the receiver <em>b</em>.
      *   <li value="3">Remove any information about method calls.
-     *   <li value="4">Remove any abstract values an arrary access <em>b[i]</em> where {@code
+     *   <li value="4">Remove any abstract values an array access <em>b[i]</em> where {@code
      *       fieldAccess} might alias any expression in the receiver <em>a</em> or index <em>i</em>.
      * </ol>
      *
