@@ -48,6 +48,8 @@
         <mkdir dir="${tests.build}/testclasses"/>
         <mkdir dir="${api.doc}" />
 
+        <symlink link="${checkerframework}/docs/api" resource="../checker/${api.doc}" overwrite="true"/>
+
         <available property="framework.project"
                    file="${framework.loc}/build.xml"/>
         <antcall target="-prep-framework-compile"/>

@@ -104,7 +104,7 @@ use the last one.
    run checker.jar via \<java> (not \<javac>) as in:
 
 \begin{Verbatim}
-  java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar ...
+  java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar" ...
 \end{Verbatim}
 
     You can simplify the above command by introducing an alias.  Then,
@@ -114,11 +114,11 @@ use the last one.
 \begin{Verbatim}
   # Unix
   export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.9
-  alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
+  alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
   set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.1.9\
-  doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
+  doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
    \noindent

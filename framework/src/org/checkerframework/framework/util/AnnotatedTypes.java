@@ -102,15 +102,15 @@ public class AnnotatedTypes {
      * same type) of the underlying type of {@code superType}. Except for these cases:
      *
      * <ul>
-     *   <li> If {@code type} is a primitive, then the boxed type of {@code type} must be subtype of
+     *   <li>If {@code type} is a primitive, then the boxed type of {@code type} must be subtype of
      *       {@code superType}.
-     *   <li> If {@code superType} is a primitive, then {@code type} must be convertible to {@code
+     *   <li>If {@code superType} is a primitive, then {@code type} must be convertible to {@code
      *       superType}.
-     *   <li> If {@code superType} is a type variable or wildcard without a lower bound, then {@code
+     *   <li>If {@code superType} is a type variable or wildcard without a lower bound, then {@code
      *       type} must be a subtype of the upper bound of {@code superType}. (This relaxed rule is
      *       used during type argument inference where the type variable or wildcard is the type
      *       argument that was inferred.)
-     *   <li> If {@code superType} is a wildcard with a lower bound, then {@code type} must be a
+     *   <li>If {@code superType} is a wildcard with a lower bound, then {@code type} must be a
      *       subtype of the lower bound of {@code superType}.
      * </ul>
      *

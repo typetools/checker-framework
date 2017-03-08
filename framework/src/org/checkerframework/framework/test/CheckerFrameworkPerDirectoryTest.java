@@ -20,9 +20,9 @@ import org.junit.runner.RunWith;
  * class. The new class must do the following:
  *
  * <ol>
- *   <li> Declare a constructor taking 1 parameter of type {@code java.util.List<java.io.File>}.
- *       This is a list of the files that will be compiled.
- *   <li> Declare the following method:
+ *   <li>Declare a constructor taking 1 parameter of type {@code java.util.List<java.io.File>}. This
+ *       is a list of the files that will be compiled.
+ *   <li>Declare the following method:
  *       <pre>{@code @Parameters public static String [] getTestDirs()}</pre>
  *       <p>getTestDir must return an array of directories that exist in the test folder. The
  *       directories can contain more path information (e.g., "myTestDir/moreTests") but note, the

@@ -697,11 +697,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>In total, there are 5 ways to indicate annotations that are supported by a checker:
      *
      * <ol>
-     *   <li> Only support annotations located in a checker's {@literal qual} directory, and {@link
+     *   <li>Only support annotations located in a checker's {@literal qual} directory, and {@link
      *       PolyAll}:
      *       <p>This is the default behavior. Simply place those annotations within the {@literal
      *       qual} directory.
-     *   <li> Support annotations located in a checker's {@literal qual} directory, but without
+     *   <li>Support annotations located in a checker's {@literal qual} directory, but without
      *       {@link PolyAll}:
      *       <p>Place those annotations within the {@literal qual} directory, and override {@link
      *       #createSupportedTypeQualifiers()} by calling {@link
@@ -712,8 +712,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *      return getBundledTypeQualifiersWithoutPolyAll();
      *  } }
      * </pre>
-     *
-     *   <li> Support annotations located in a checker's {@literal qual} directory, {@link PolyAll},
+     *   <li>Support annotations located in a checker's {@literal qual} directory, {@link PolyAll},
      *       and a list of other annotations:
      *       <p>Place those annotations within the {@literal qual} directory, and override {@link
      *       #createSupportedTypeQualifiers()} by calling {@link
@@ -724,8 +723,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *      return getBundledTypeQualifiersWithPolyAll(Regex.class, PartialRegex.class, RegexBottom.class, UnknownRegex.class);
      *  } }
      * </pre>
-     *
-     *   <li> Support annotations located in a checker's {@literal qual} directory and a list of
+     *   <li>Support annotations located in a checker's {@literal qual} directory and a list of
      *       other annotations, but without supporting {@link PolyAll}:
      *       <p>Place those annotations within the {@literal qual} directory, and override {@link
      *       #createSupportedTypeQualifiers()} by calling {@link
@@ -736,8 +734,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *      return getBundledTypeQualifiersWithoutPolyAll(UnknownFormat.class, FormatBottom.class);
      *  } }
      * </pre>
-     *
-     *   <li> Supporting only annotations that are explicitly listed: Override {@link
+     *   <li>Supporting only annotations that are explicitly listed: Override {@link
      *       #createSupportedTypeQualifiers()} and return a mutable set of the supported
      *       annotations. Code example:
      *       <pre>
@@ -1742,10 +1739,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>The only trees that could potentially have a receiver are:
      *
      * <ul>
-     *   <li> Array Access
-     *   <li> Identifiers (whose receivers are usually self type)
-     *   <li> Method Invocation Trees
-     *   <li> Member Select Trees
+     *   <li>Array Access
+     *   <li>Identifiers (whose receivers are usually self type)
+     *   <li>Method Invocation Trees
+     *   <li>Member Select Trees
      * </ul>
      *
      * @param expression the expression for which to determine the receiver type
@@ -2598,14 +2595,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Parses the stub files in the following order: <br>
      *
      * <ol>
-     *   <li> jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option
+     *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option
      *       is not supplied <br>
-     *   <li> flow.astub in the same directory as BaseTypeChecker <br>
-     *   <li> Stub files listed in @Stubfiles annotation on the checker; must be in same directory
-     *       as the checker<br>
-     *   <li> Stub files provide via stubs system property <br>
-     *   <li> Stub files provide via stubs environment variable <br>
-     *   <li> Stub files provide via stubs compiler option
+     *   <li>flow.astub in the same directory as BaseTypeChecker <br>
+     *   <li>Stub files listed in @Stubfiles annotation on the checker; must be in same directory as
+     *       the checker<br>
+     *   <li>Stub files provide via stubs system property <br>
+     *   <li>Stub files provide via stubs environment variable <br>
+     *   <li>Stub files provide via stubs compiler option
      * </ol>
      *
      * <p>If a type is annotated with a qualifier from the same hierarchy in more than one stub

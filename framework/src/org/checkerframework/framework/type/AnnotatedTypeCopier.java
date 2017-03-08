@@ -60,10 +60,10 @@ public class AnnotatedTypeCopier
      * AnnotatedTypeCopier provides two major properties in its copies:
      *
      * <ol>
-     *   <li> Structure preservation -- the exact structure of the original AnnotatedTypeMirror is
+     *   <li>Structure preservation -- the exact structure of the original AnnotatedTypeMirror is
      *       preserved in the copy including all component types.
-     *   <li> Annotation preservation -- All of the annotations from the original
-     *       AnnotatedTypeMirror and its components have been copied to the new type.
+     *   <li>Annotation preservation -- All of the annotations from the original AnnotatedTypeMirror
+     *       and its components have been copied to the new type.
      * </ol>
      *
      * If copyAnnotations is set to false, the second property, annotation preservation, is removed.

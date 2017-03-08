@@ -59,14 +59,14 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>Note, there are some deviations JLS 7 for the following cases:
  *
  * <ul>
- *   <li> Places where the JLS is vague. For these cases, first the OpenJDK implementation was
+ *   <li>Places where the JLS is vague. For these cases, first the OpenJDK implementation was
  *       consulted and then we favored the behavior we desire rather than the implied behavior of
  *       the JLS or JDK implementation.
- *   <li> The fact that any given type variable type may or may not have annotations for multiple
+ *   <li>The fact that any given type variable type may or may not have annotations for multiple
  *       hierarchies means that constraints are more complicated than their Java equivalents. Every
  *       constraint must identify the hierarchies to which they apply. This makes solving the
  *       constraint sets more complicated.
- *   <li> If an argument to a method is null, then the JLS says that it does not constrain the type
+ *   <li>If an argument to a method is null, then the JLS says that it does not constrain the type
  *       argument. However, null may constrain the qualifiers on the type argument, so it is
  *       included in the constraints but is not used as the underlying type of the type argument.
  * </ul>
@@ -75,9 +75,9 @@ import org.checkerframework.javacutil.TypesUtils;
  * the time to handle them:
  *
  * <ul>
- *   <li> The GlbUtil does not correctly handled wildcards/typevars when the glb result should be a
+ *   <li>The GlbUtil does not correctly handled wildcards/typevars when the glb result should be a
  *       wildcard or typevar
- *   <li> Interdependent Method Invocations -- Currently we do not correctly handle the case where
+ *   <li>Interdependent Method Invocations -- Currently we do not correctly handle the case where
  *       two methods need to have their arguments inferred and one is the argument to the other.
  *       E.g.
  *       <pre>{@code
@@ -567,8 +567,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      * <p>This method creates constraints:
      *
      * <ul>
-     *   <li> between the bounds of types that are already inferred and their inferred arguments
-     *   <li> between the assignment context and the return type of the method (with the previously
+     *   <li>between the bounds of types that are already inferred and their inferred arguments
+     *   <li>between the assignment context and the return type of the method (with the previously
      *       inferred arguments substituted into these constraints)
      * </ul>
      */
