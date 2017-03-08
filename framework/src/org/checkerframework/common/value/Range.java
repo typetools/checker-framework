@@ -355,9 +355,9 @@ public class Range {
     /**
      * Returns a range that includes all possible values of the remainder of dividing an arbitrary
      * value in this range by an arbitrary value in the specified range.
-
-     * <p>In the current implementtation, the result might
-     * not be the smallest range that includes all the possible values.
+     *
+     * <p>In the current implementtation, the result might not be the smallest range that includes
+     * all the possible values.
      *
      * @param right the specified range by which this range is divided
      * @return the range of the remainder of dividing this range by the specified range
@@ -505,7 +505,7 @@ public class Range {
      * complement operation.
      *
      * @return the resulting range of applying bitwise complement on an arbitrary value in this
-     * range
+     *     range
      */
     public Range bitwiseComplement() {
         if (this.isNothing()) {
