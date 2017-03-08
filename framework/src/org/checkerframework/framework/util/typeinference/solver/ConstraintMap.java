@@ -20,9 +20,9 @@ import org.checkerframework.framework.util.typeinference.solver.TargetConstraint
  * <p>This really consists of these things:
  *
  * <ol>
- *   <li> a Map({@code target &rArr; constraints for target})
- *   <li> Methods to easily build up the constraints in the map
- *   <li> A getter for the constraints of individual targets.
+ *   <li>a Map({@code target &rArr; constraints for target})
+ *   <li>Methods to easily build up the constraints in the map
+ *   <li>A getter for the constraints of individual targets.
  * </ol>
  *
  * Note: This class, along with TargetConstraints, uses a lot of mutable state and few

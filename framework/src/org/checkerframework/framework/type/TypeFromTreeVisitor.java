@@ -9,9 +9,9 @@ import org.checkerframework.javacutil.ErrorReporter;
  * properties to subclasses:
  *
  * <ol>
- *   <li> It implements SimpleTreeVisitor with the appropriate type parameters
- *   <li> It provides a defaultAction that causes all visit methods to abort if the subclass does
- *       not override them
+ *   <li>It implements SimpleTreeVisitor with the appropriate type parameters
+ *   <li>It provides a defaultAction that causes all visit methods to abort if the subclass does not
+ *       override them
  * </ol>
  *
  * @see org.checkerframework.framework.type.TypeFromTree

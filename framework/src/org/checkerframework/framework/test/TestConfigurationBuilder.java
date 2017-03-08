@@ -183,10 +183,10 @@ public class TestConfigurationBuilder {
      * Ensures that the minimum requirements for running a test are met. These requirements are:
      *
      * <ul>
-     *   <li> There is at least one source file
-     *   <li> There is at least one processor (if requireProcessors has been set to true)
-     *   <li> There is an output directory specified for class files
-     *   <li> There is no {@code -processor} option in the optionMap (it should be added by
+     *   <li>There is at least one source file
+     *   <li>There is at least one processor (if requireProcessors has been set to true)
+     *   <li>There is an output directory specified for class files
+     *   <li>There is no {@code -processor} option in the optionMap (it should be added by
      *       addProcessor instead)
      * </ul>
      *
