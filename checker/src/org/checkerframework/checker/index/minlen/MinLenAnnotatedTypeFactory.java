@@ -233,7 +233,9 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (valueType.hasAnnotation(ArrayLen.class)) {
             AnnotationMirror anm = valueType.getAnnotation(ArrayLen.class);
             Integer val = Collections.min(ValueAnnotatedTypeFactory.getArrayLength(anm));
-            type.replaceAnnotation(createMinLen(val));
+            type.replaceAnnotation(
+                    qualHierarchy.greatestLowerBound(
+                            createMinLen(val), type.getAnnotationInHierarchy(MIN_LEN_0)));
         }
     }
 

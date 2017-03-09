@@ -164,6 +164,10 @@ public abstract class UBQualifier {
 
     public abstract UBQualifier lub(UBQualifier other);
 
+    public UBQualifier widenUpperBound(UBQualifier obj) {
+        return lub(obj);
+    }
+
     public abstract UBQualifier glb(UBQualifier other);
 
     /**
@@ -464,7 +468,17 @@ public abstract class UBQualifier {
             if (lubMap.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
-            widenLub(otherLtl, lubMap);
+            return new LessThanLengthOf(lubMap);
+        }
+
+        @Override
+        public UBQualifier widenUpperBound(UBQualifier obj) {
+            UBQualifier lub = lub(obj);
+            if (lub.isUnknownOrBottom() || obj.isUnknownOrBottom()) {
+                return lub;
+            }
+            Map<String, Set<OffsetEquation>> lubMap = ((LessThanLengthOf) lub).map;
+            widenLub((LessThanLengthOf) obj, lubMap);
             if (lubMap.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
@@ -489,9 +503,8 @@ public abstract class UBQualifier {
          * <p>3. @LTLengthOf(value="a', offset="-3")
          *
          * <p>In order to prevent this, if both types passed to lub include all the same arrays with
-         * the same non-constant value offsets and if the constant value offsets are different and
-         * one is less than -10 (-10 is arbitrary, could be -5 or some other number) then remove
-         * that array-offset pair from lub.
+         * the same non-constant value offsets and if the constant value offsets are different then
+         * remove that array-offset pair from lub.
          *
          * <p>For example:
          *
@@ -520,10 +533,7 @@ public abstract class UBQualifier {
                         int thisInt = OffsetEquation.getIntOffsetEquation(thisOffsets).getInt();
                         int otherInt = OffsetEquation.getIntOffsetEquation(otherOffsets).getInt();
                         if (thisInt != otherInt) {
-                            int value = lubEq.getInt();
-                            if (value < -10) {
-                                remove.add(Pair.of(array, lubEq));
-                            }
+                            remove.add(Pair.of(array, lubEq));
                         }
                     } else if (thisOffsets.contains(lubEq) && otherOffsets.contains(lubEq)) {
                         //  continue;

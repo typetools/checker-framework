@@ -2992,7 +2992,7 @@ public final class String
      * @return  a string of length <code>1</code> containing
      *          as its single character the argument <code>c</code>.
      */
-    public static @MinLen(1) String valueOf(char c) {
+    public static /*@ MinLen(1)*/ String valueOf(char c) {
         char data[] = {c};
         return new String(0, 1, data);
     }
@@ -3007,7 +3007,7 @@ public final class String
      * @return  a string representation of the <code>int</code> argument.
      * @see     java.lang.Integer#toString(int, int)
      */
-    public static @MinLen(1) String valueOf(int i) {
+    public static /*@ MinLen(1)*/ String valueOf(int i) {
         return Integer.toString(i);
     }
 
@@ -3021,7 +3021,7 @@ public final class String
      * @return  a string representation of the <code>long</code> argument.
      * @see     java.lang.Long#toString(long)
      */
-    public static @MinLen(1) String valueOf(long l) {
+    public static /*@ MinLen(1)*/ String valueOf(long l) {
         return Long.toString(l);
     }
 
@@ -3035,7 +3035,7 @@ public final class String
      * @return  a string representation of the <code>float</code> argument.
      * @see     java.lang.Float#toString(float)
      */
-    public static @MinLen(1) String valueOf(float f) {
+    public static /*@ MinLen(1)*/ String valueOf(float f) {
         return Float.toString(f);
     }
 
@@ -3049,7 +3049,7 @@ public final class String
      * @return  a  string representation of the <code>double</code> argument.
      * @see     java.lang.Double#toString(double)
      */
-    public static @MinLen(1) String valueOf(double d) {
+    public static /*@ MinLen(1)*/ String valueOf(double d) {
         return Double.toString(d);
     }
 
