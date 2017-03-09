@@ -119,7 +119,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
 
         // If the qualifier is uninteresting or the type is unannotated, do nothing else.
-        if (qualifier == null || qualifier.isUnknownOrBottom()) { // TODO after merge
+        if (qualifier == null || !qualifier.isLessThanLengthQualifier()) {
             super.commonAssignmentCheck(varType, valueExp, errorKey);
             return;
         }
