@@ -108,16 +108,14 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
 
         // Find the appropriate qualifier to try to conform to.
-        UBQualifier qualifier = null;
-        if (varType.isAnnotatedInHierarchy(atypeFactory.UNKNOWN)) {
-            if (varType instanceof AnnotatedTypeMirror.AnnotatedArrayType) {
-                // The qualifier we need for an array is in the component type, not varType.
-                AnnotatedTypeMirror componentType =
-                        ((AnnotatedTypeMirror.AnnotatedArrayType) varType).getComponentType();
-                qualifier = UBQualifier.createUBQualifier(componentType, atypeFactory.UNKNOWN);
-            } else {
-                qualifier = UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN);
-            }
+        UBQualifier qualifier;
+        if (varType instanceof AnnotatedTypeMirror.AnnotatedArrayType) {
+            // The qualifier we need for an array is in the component type, not varType.
+            AnnotatedTypeMirror componentType =
+                    ((AnnotatedTypeMirror.AnnotatedArrayType) varType).getComponentType();
+            qualifier = UBQualifier.createUBQualifier(componentType, atypeFactory.UNKNOWN);
+        } else {
+            qualifier = UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN);
         }
 
         // If the qualifier is uninteresting or the type is unannotated, do nothing else.
