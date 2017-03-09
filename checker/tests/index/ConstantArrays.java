@@ -23,11 +23,11 @@ class ConstantArrays {
         )
         int[] a = {2, 3, 0};
 
-        //:: error: (array.initializer.type.incompatible)::error: (assignment.type.incompatible)
         @LTLengthOf(
             value = {"b", "b2"},
             offset = {"-2", "5"}
         )
+        //:: error: (array.initializer.type.incompatible)::error: (assignment.type.incompatible)
         int[] a2 = {2, 3, 5};
 
         // Non-constant offsets don't work correctly. See kelloggm#120.
