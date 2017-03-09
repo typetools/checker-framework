@@ -501,6 +501,15 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
         return null;
     }
 
+    @Override
+    public Void visitTypevar_Intersection(
+            AnnotatedTypeVariable subtype,
+            AnnotatedIntersectionType supertype,
+            Set<AFConstraint> constraints) {
+        addConstraint(subtype.getUpperBound(), supertype, constraints);
+        return null;
+    }
+
     //------------------------------------------------------------------------
     // wildcard as subtype
     @Override
