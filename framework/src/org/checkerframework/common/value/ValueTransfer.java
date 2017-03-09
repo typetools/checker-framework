@@ -135,6 +135,37 @@ public class ValueTransfer extends CFTransfer {
         return NumberUtils.castNumbers(subNode.getType(), values);
     }
 
+    private Range getIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
+        CFValue value = p.getValueOfSubNode(subNode);
+        AnnotationMirror anno;
+
+        anno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
+        if (anno != null) {
+            return ValueAnnotatedTypeFactory.getIntRange(anno);
+        }
+
+        anno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
+        if (anno != null) {
+            List<Long> values =
+                    AnnotationUtils.getElementValueArray(anno, "value", Long.class, true);
+            return ValueCheckerUtils.getRangeFromValues(values);
+        }
+
+        anno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), DoubleVal.class);
+        if (anno != null) {
+            List<Double> values =
+                    AnnotationUtils.getElementValueArray(anno, "value", Double.class, true);
+            return ValueCheckerUtils.getRangeFromValues(values);
+        }
+
+        anno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
+        if (anno != null) {
+            return Range.NOTHING;
+        }
+
+        return Range.EVERYTHING;
+    }
+
     private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         return AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class) != null;
@@ -169,6 +200,11 @@ public class ValueTransfer extends CFTransfer {
         throw new UnsupportedOperationException();
     }
 
+    private AnnotationMirror createRangeAnnotationMirror(Range range) {
+        // leave space for Double Range in the future.
+        return ((ValueAnnotatedTypeFactory) atypefactory).createIntRangeAnnotation(range);
+    }
+
     private AnnotationMirror createBooleanAnnotationMirror(List<Boolean> values) {
         if (values.isEmpty()) {
             return ((ValueAnnotatedTypeFactory) atypefactory).UNKNOWNVAL;
@@ -182,6 +218,14 @@ public class ValueTransfer extends CFTransfer {
         CFValue newResultValue =
                 analysis.createSingleAnnotationValue(
                         stringVal, result.getResultValue().getUnderlyingType());
+        return new RegularTransferResult<>(newResultValue, result.getRegularStore());
+    }
+
+    private TransferResult<CFValue, CFStore> createNewResult(
+            TransferResult<CFValue, CFStore> result, AnnotationMirror resultAnno) {
+        CFValue newResultValue =
+                analysis.createSingleAnnotationValue(
+                        resultAnno, result.getResultValue().getUnderlyingType());
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
     }
 
@@ -232,7 +276,7 @@ public class ValueTransfer extends CFTransfer {
         SUBTRACTION,
         DIVISION,
         REMAINDER,
-        MULPLICATION,
+        MULTIPLICATION,
         SHIFT_LEFT,
         SIGNED_SHIFT_RIGHT,
         UNSIGNED_SHIFT_RIGHT,
@@ -241,55 +285,107 @@ public class ValueTransfer extends CFTransfer {
         BITWISE_XOR;
     }
 
-    private List<Number> calculateNumericalBinaryOp(
+    private AnnotationMirror calculateNumericalBinaryOp(
+            Node leftNode,
+            Node rightNode,
+            NumericalBinaryOps op,
+            TransferInput<CFValue, CFStore> p) {
+        if (!isIntRange(leftNode, p) && !isIntRange(rightNode, p)) {
+            List<Number> resultValues = calculateValuesBinaryOp(leftNode, rightNode, op, p);
+            return createNumberAnnotationMirror(resultValues);
+        } else {
+            Range resultRange = calculateRangeBinaryOp(leftNode, rightNode, op, p);
+            return createRangeAnnotationMirror(resultRange);
+        }
+    }
+
+    private Range calculateRangeBinaryOp(
+            Node leftNode,
+            Node rightNode,
+            NumericalBinaryOps op,
+            TransferInput<CFValue, CFStore> p) {
+        if (TypesUtils.isIntegral(leftNode.getType())
+                && TypesUtils.isIntegral(rightNode.getType())) {
+            Range leftRange = getIntRange(leftNode, p);
+            Range rightRange = getIntRange(rightNode, p);
+            switch (op) {
+                case ADDITION:
+                    return leftRange.plus(rightRange);
+                case SUBTRACTION:
+                    return leftRange.minus(rightRange);
+                case MULTIPLICATION:
+                    return leftRange.times(rightRange);
+                case DIVISION:
+                    return leftRange.divide(rightRange);
+                case REMAINDER:
+                    return leftRange.remainder(rightRange);
+                case SHIFT_LEFT:
+                    return leftRange.shiftLeft(rightRange);
+                case SIGNED_SHIFT_RIGHT:
+                    return leftRange.signedShiftRight(rightRange);
+                case UNSIGNED_SHIFT_RIGHT:
+                    return leftRange.unsignedShiftRight(rightRange);
+                case BITWISE_AND:
+                    return leftRange.bitwiseAnd(rightRange);
+                case BITWISE_OR:
+                    return leftRange.bitwiseOr(rightRange);
+                case BITWISE_XOR:
+                    return leftRange.bitwiseXor(rightRange);
+                default:
+                    throw new UnsupportedOperationException();
+            }
+        } else {
+            return Range.EVERYTHING;
+        }
+    }
+
+    private List<Number> calculateValuesBinaryOp(
             Node leftNode,
             Node rightNode,
             NumericalBinaryOps op,
             TransferInput<CFValue, CFStore> p) {
         List<Number> resultValues = new ArrayList<>();
-        if (!isIntRange(leftNode, p) && !isIntRange(rightNode, p)) {
-            List<? extends Number> lefts = getNumericalValues(leftNode, p);
-            List<? extends Number> rights = getNumericalValues(rightNode, p);
-            for (Number left : lefts) {
-                NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
-                for (Number right : rights) {
-                    switch (op) {
-                        case ADDITION:
-                            resultValues.add(nmLeft.plus(right));
-                            break;
-                        case DIVISION:
-                            resultValues.add(nmLeft.divide(right));
-                            break;
-                        case MULPLICATION:
-                            resultValues.add(nmLeft.times(right));
-                            break;
-                        case REMAINDER:
-                            resultValues.add(nmLeft.remainder(right));
-                            break;
-                        case SUBTRACTION:
-                            resultValues.add(nmLeft.minus(right));
-                            break;
-                        case SHIFT_LEFT:
-                            resultValues.add(nmLeft.shiftLeft(right));
-                            break;
-                        case SIGNED_SHIFT_RIGHT:
-                            resultValues.add(nmLeft.signedSiftRight(right));
-                            break;
-                        case UNSIGNED_SHIFT_RIGHT:
-                            resultValues.add(nmLeft.unsignedSiftRight(right));
-                            break;
-                        case BITWISE_AND:
-                            resultValues.add(nmLeft.bitwiseAnd(right));
-                            break;
-                        case BITWISE_OR:
-                            resultValues.add(nmLeft.bitwiseOr(right));
-                            break;
-                        case BITWISE_XOR:
-                            resultValues.add(nmLeft.bitwiseXor(right));
-                            break;
-                        default:
-                            throw new UnsupportedOperationException();
-                    }
+        List<? extends Number> lefts = getNumericalValues(leftNode, p);
+        List<? extends Number> rights = getNumericalValues(rightNode, p);
+        for (Number left : lefts) {
+            NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
+            for (Number right : rights) {
+                switch (op) {
+                    case ADDITION:
+                        resultValues.add(nmLeft.plus(right));
+                        break;
+                    case DIVISION:
+                        resultValues.add(nmLeft.divide(right));
+                        break;
+                    case MULTIPLICATION:
+                        resultValues.add(nmLeft.times(right));
+                        break;
+                    case REMAINDER:
+                        resultValues.add(nmLeft.remainder(right));
+                        break;
+                    case SUBTRACTION:
+                        resultValues.add(nmLeft.minus(right));
+                        break;
+                    case SHIFT_LEFT:
+                        resultValues.add(nmLeft.shiftLeft(right));
+                        break;
+                    case SIGNED_SHIFT_RIGHT:
+                        resultValues.add(nmLeft.signedSiftRight(right));
+                        break;
+                    case UNSIGNED_SHIFT_RIGHT:
+                        resultValues.add(nmLeft.unsignedSiftRight(right));
+                        break;
+                    case BITWISE_AND:
+                        resultValues.add(nmLeft.bitwiseAnd(right));
+                        break;
+                    case BITWISE_OR:
+                        resultValues.add(nmLeft.bitwiseOr(right));
+                        break;
+                    case BITWISE_XOR:
+                        resultValues.add(nmLeft.bitwiseXor(right));
+                        break;
+                    default:
+                        throw new UnsupportedOperationException();
                 }
             }
         }
@@ -300,7 +396,7 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitNumericalAddition(
             NumericalAdditionNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitNumericalAddition(n, p);
-        List<Number> resultValues =
+        AnnotationMirror resultValues =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.ADDITION, p);
         return createNewResult(transferResult, resultValues);
@@ -310,7 +406,7 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitNumericalSubtraction(
             NumericalSubtractionNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitNumericalSubtraction(n, p);
-        List<Number> resultValues =
+        AnnotationMirror resultValues =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.SUBTRACTION, p);
         return createNewResult(transferResult, resultValues);
@@ -320,11 +416,11 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitNumericalMultiplication(
             NumericalMultiplicationNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitNumericalMultiplication(n, p);
-        List<Number> resultValues =
+        AnnotationMirror resultValues =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(),
                         n.getRightOperand(),
-                        NumericalBinaryOps.MULPLICATION,
+                        NumericalBinaryOps.MULTIPLICATION,
                         p);
         return createNewResult(transferResult, resultValues);
     }
@@ -333,7 +429,7 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitIntegerDivision(
             IntegerDivisionNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitIntegerDivision(n, p);
-        List<Number> resultValues =
+        AnnotationMirror resultValues =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.DIVISION, p);
         return createNewResult(transferResult, resultValues);
@@ -343,7 +439,7 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitFloatingDivision(
             FloatingDivisionNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitFloatingDivision(n, p);
-        List<Number> resultValues =
+        AnnotationMirror resultValues =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.DIVISION, p);
         return createNewResult(transferResult, resultValues);
@@ -353,7 +449,7 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitIntegerRemainder(
             IntegerRemainderNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitIntegerRemainder(n, p);
-        List<Number> resultValues =
+        AnnotationMirror resultValues =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.REMAINDER, p);
         return createNewResult(transferResult, resultValues);
@@ -363,7 +459,7 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitFloatingRemainder(
             FloatingRemainderNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitFloatingRemainder(n, p);
-        List<Number> resultValues =
+        AnnotationMirror resultValues =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.REMAINDER, p);
         return createNewResult(transferResult, resultValues);
@@ -373,7 +469,7 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitLeftShift(
             LeftShiftNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitLeftShift(n, p);
-        List<Number> resultValues =
+        AnnotationMirror resultValues =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.SHIFT_LEFT, p);
         return createNewResult(transferResult, resultValues);
@@ -383,7 +479,7 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitSignedRightShift(
             SignedRightShiftNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitSignedRightShift(n, p);
-        List<Number> resultValues =
+        AnnotationMirror resultValues =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(),
                         n.getRightOperand(),
@@ -396,7 +492,7 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitUnsignedRightShift(
             UnsignedRightShiftNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitUnsignedRightShift(n, p);
-        List<Number> resultValues =
+        AnnotationMirror resultValues =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(),
                         n.getRightOperand(),
@@ -409,7 +505,7 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitBitwiseAnd(
             BitwiseAndNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitBitwiseAnd(n, p);
-        List<Number> resultValues =
+        AnnotationMirror resultValues =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.BITWISE_AND, p);
         return createNewResult(transferResult, resultValues);
@@ -419,7 +515,7 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitBitwiseOr(
             BitwiseOrNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitBitwiseOr(n, p);
-        List<Number> resultValues =
+        AnnotationMirror resultValues =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.BITWISE_OR, p);
         return createNewResult(transferResult, resultValues);
@@ -429,7 +525,7 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitBitwiseXor(
             BitwiseXorNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitBitwiseXor(n, p);
-        List<Number> resultValues =
+        AnnotationMirror resultValues =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.BITWISE_XOR, p);
         return createNewResult(transferResult, resultValues);

@@ -105,6 +105,49 @@ public class ValueCheckerUtils {
         return values;
     }
 
+    public static Range getRangeFromValues(List<? extends Number> values) {
+        List<Long> longValues = new ArrayList<>();
+        for (Number value : values) {
+            longValues.add(value.longValue());
+        }
+        return new Range(Collections.min(longValues), Collections.max(longValues));
+    }
+
+    /**
+     * Get all possible values from the given type and cast them into Long type or Double type
+     * accordingly. Only support casting to integral type and double type.
+     *
+     * @param range the given range
+     * @param expectedType the expected type
+     * @return
+     */
+    public static <T> List<T> getValuesFromRange(Range range, Class<T> expectedType) {
+        List<T> values = new ArrayList<>();
+        if (expectedType == Integer.class
+                || expectedType == int.class
+                || expectedType == Long.class
+                || expectedType == long.class
+                || expectedType == Short.class
+                || expectedType == short.class
+                || expectedType == Byte.class
+                || expectedType == byte.class) {
+            for (Long value = range.from; value <= range.to; value++) {
+                values.add(expectedType.cast(value.longValue()));
+            }
+        } else if (expectedType == Double.class
+                || expectedType == double.class
+                || expectedType == Float.class
+                || expectedType == float.class) {
+            for (Long value = range.from; value <= range.to; value++) {
+                values.add(expectedType.cast(value.doubleValue()));
+            }
+        } else {
+            throw new UnsupportedOperationException(
+                    "ValueCheckerUtils: unexpected class: " + expectedType);
+        }
+        return values;
+    }
+
     private static List<?> convertBottomVal(AnnotationMirror anno, Class<?> newClass) {
         if (newClass == String.class) {
             return Collections.singletonList("null");

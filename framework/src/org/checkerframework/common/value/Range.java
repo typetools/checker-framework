@@ -4,7 +4,6 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
@@ -79,7 +78,7 @@ public class Range {
             return String.format("[%s..%s]", from, to);
         }
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Range) {
@@ -88,7 +87,7 @@ public class Range {
         }
         return false;
     }
-    
+
     @Override
     public int hashCode() {
         return HashCodeUtils.hash(from, to);
@@ -470,7 +469,8 @@ public class Range {
                         BigInteger.valueOf(from)
                                 .shiftLeft(from >= 0 ? (int) right.from : (int) right.to);
                 BigInteger bigTo =
-                        BigInteger.valueOf(to).shiftLeft(to >= 0 ? (int) right.to : (int) right.from);
+                        BigInteger.valueOf(to)
+                                .shiftLeft(to >= 0 ? (int) right.to : (int) right.from);
                 return bigRangeToLongRange(bigFrom, bigTo);
             }
         } else {
@@ -503,12 +503,12 @@ public class Range {
             return EVERYTHING;
         }
     }
-    
+
     /** We give up the analysis for unsigned shift right operation */
     public Range unsignedShiftRight(Range right) {
         return EVERYTHING;
     }
-    
+
     /** We give up the analysis for bitwise AND operation */
     public Range bitwiseAnd(Range right) {
         return EVERYTHING;
@@ -754,13 +754,19 @@ public class Range {
                     == 1;
         }
     }
-    
-    /** Determines if this range is completely contained in the range specified by the given lower bound and upper bound. */
+
+    /**
+     * Determines if this range is completely contained in the range specified by the given lower
+     * bound and upper bound.
+     */
     private boolean isWithin(long lb, long ub) {
         return from >= lb && to <= ub;
     }
 
-    /** Determines if this range is completely contained in the range that is of half length of the Long type and centered with 0. */
+    /**
+     * Determines if this range is completely contained in the range that is of half length of the
+     * Long type and centered with 0.
+     */
     private boolean isWithinHalfLong() {
         return isWithin(Long.MIN_VALUE >> 1, Long.MAX_VALUE >> 1);
     }

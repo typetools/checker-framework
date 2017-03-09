@@ -366,10 +366,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 Range range = getIntRange(rangeAnno);
                 // range at this point may not be wider than 10
                 if (range.isWiderThan(MAX_VALUES)) {
-                    Range valueRange = getRangeFromValues(values);
+                    Range valueRange = ValueCheckerUtils.getRangeFromValues(values);
                     return createIntRangeAnnotation(range.union(valueRange));
                 } else {
-                    List<Long> rangeValues = getIntValuesFromRange(range);
+                    List<Long> rangeValues =
+                            ValueCheckerUtils.getValuesFromRange(range, Long.class);
                     for (Long rv : rangeValues) {
                         values.add(rv);
                     }
@@ -395,7 +396,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return UNKNOWNVAL;
                 } else {
                     List<Double> doubleVals = getDoubleValues(doubleAnno);
-                    List<Double> rangeVals = getDoubleValuesFromRange(range);
+                    List<Double> rangeVals =
+                            ValueCheckerUtils.getValuesFromRange(range, Double.class);
                     for (Double rv : rangeVals) {
                         doubleVals.add(rv);
                     }
@@ -472,7 +474,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (!rhsRange.isWiderThan(MAX_VALUES)) {
                     List<Double> lhsValues =
                             AnnotationUtils.getElementValueArray(lhs, "value", Double.class, true);
-                    List<Double> rhsValues = getDoubleValuesFromRange(rhsRange);
+                    List<Double> rhsValues =
+                            ValueCheckerUtils.getValuesFromRange(rhsRange, Double.class);
                     return lhsValues.containsAll(rhsValues);
                 } else {
                     return false;
@@ -483,7 +486,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (!rhsRange.isWiderThan(MAX_VALUES)) {
                     List<Long> lhsValues =
                             AnnotationUtils.getElementValueArray(lhs, "value", Long.class, true);
-                    List<Long> rhsValues = getIntValuesFromRange(rhsRange);
+                    List<Long> rhsValues =
+                            ValueCheckerUtils.getValuesFromRange(rhsRange, Long.class);
                     return lhsValues.containsAll(rhsValues);
                 } else {
                     return false;
@@ -1073,34 +1077,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public AnnotationMirror createIntRangeAnnotation(Range range) {
-        if (range.from > range.to || range.from == Long.MIN_VALUE && range.to == Long.MAX_VALUE) {
+        if (range.isEverything()) {
             return UNKNOWNVAL;
+        } else if (range.isNothing()) {
+            return BOTTOMVAL;
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntRange.class);
             builder.setValue("from", range.from);
             builder.setValue("to", range.to);
             return builder.build();
         }
-    }
-
-    public static Range getRangeFromValues(List<Long> values) {
-        return new Range(Collections.min(values), Collections.max(values));
-    }
-
-    public static List<Long> getIntValuesFromRange(Range range) {
-        List<Long> values = new ArrayList<>();
-        for (Long value = range.from; value <= range.to; value++) {
-            values.add(value);
-        }
-        return values;
-    }
-
-    public static List<Double> getDoubleValuesFromRange(Range range) {
-        List<Double> values = new ArrayList<>();
-        for (Long value = range.from; value <= range.to; value++) {
-            values.add(value.doubleValue());
-        }
-        return values;
     }
 
     /** The argument is an @IntRange annotation. */
