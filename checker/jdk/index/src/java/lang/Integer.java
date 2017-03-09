@@ -636,7 +636,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @return an {@code Integer} instance representing {@code i}.
      * @since  1.5
      */
-    public static /*@ PolyLowerBound @ PolyUpperBound*/ Integer valueOf(/*@ PolyLowerBound @ PolyUpperBound*/ int i) {
+    public static @PolyLowerBound @PolyUpperBound Integer valueOf(@PolyLowerBound @PolyUpperBound int i) {
         assert IntegerCache.high >= 127;
         if (i >= IntegerCache.low && i <= IntegerCache.high)
             return IntegerCache.cache[i + (-IntegerCache.low)];
@@ -657,7 +657,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @param   value   the value to be represented by the
      *                  {@code Integer} object.
      */
-    public /*@ PolyLowerBound @ PolyUpperBound*/ Integer(/*@ PolyLowerBound @ PolyUpperBound*/ int value) {
+    public @PolyLowerBound @PolyUpperBound Integer(@PolyLowerBound @PolyUpperBound int value) {
         this.value = value;
     }
 

@@ -682,7 +682,7 @@ public final class Long extends Number implements Comparable<Long> {
      * @param   value   the value to be represented by the
      *          {@code Long} object.
      */
-    public /*@ PolyLowerBound @ PolyUpperBound*/ Long(/*@ PolyLowerBound @ PolyUpperBound*/ long value) {
+    public @PolyLowerBound @PolyUpperBound Long(@PolyLowerBound @PolyUpperBound long value) {
         this.value = value;
     }
 

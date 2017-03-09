@@ -95,7 +95,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
 
         UBQualifier qualifier = UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN);
-        if (qualifier.isUnknownOrBottom()) {
+        if (!qualifier.isLessThanLengthQualifier()) {
             super.commonAssignmentCheck(varType, valueExp, errorKey);
             return;
         }

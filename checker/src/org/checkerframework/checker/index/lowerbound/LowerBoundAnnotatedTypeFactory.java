@@ -25,12 +25,14 @@ import org.checkerframework.checker.index.qual.IndexOrLow;
 import org.checkerframework.checker.index.qual.LowerBoundUnknown;
 import org.checkerframework.checker.index.qual.MinLen;
 import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.checker.index.qual.PolyLowerBound;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
@@ -70,6 +72,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The canonical @{@link LowerBoundUnknown} annotation. */
     public final AnnotationMirror UNKNOWN =
             AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);
+    /** The canonical @{@link PolyLowerBound} annotation. */
+    public final AnnotationMirror POLY = AnnotationUtils.fromClass(elements, PolyLowerBound.class);
 
     private final IndexMethodIdentifier imf;
 
@@ -78,6 +82,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(IndexFor.class, NN);
         addAliasedAnnotation(IndexOrLow.class, GTEN1);
         addAliasedAnnotation(IndexOrHigh.class, NN);
+        addAliasedAnnotation(PolyAll.class, POLY);
 
         imf = new IndexMethodIdentifier(processingEnv);
 
@@ -92,7 +97,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         Positive.class,
                         NonNegative.class,
                         GTENegativeOne.class,
-                        LowerBoundUnknown.class));
+                        LowerBoundUnknown.class,
+                        PolyLowerBound.class));
     }
 
     /**
@@ -278,18 +284,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitUnary(tree, typeDst);
         }
 
-        /** Special handling for min and max from Math. Min is LUB, max is GLB. */
+        /** Special handling for Math.max. The return is the GLB of the arguments. */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
-
-            if (imf.isMathMin(tree, processingEnv)) {
-                ExpressionTree left = tree.getArguments().get(0);
-                ExpressionTree right = tree.getArguments().get(1);
-                type.replaceAnnotation(
-                        qualHierarchy.leastUpperBound(
-                                getAnnotatedType(left).getAnnotationInHierarchy(POS),
-                                getAnnotatedType(right).getAnnotationInHierarchy(POS)));
-            }
             if (imf.isMathMax(tree, processingEnv)) {
                 ExpressionTree left = tree.getArguments().get(0);
                 ExpressionTree right = tree.getArguments().get(1);

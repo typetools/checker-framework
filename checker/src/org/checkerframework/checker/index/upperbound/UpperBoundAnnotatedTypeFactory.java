@@ -31,6 +31,7 @@ import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.MinLen;
+import org.checkerframework.checker.index.qual.PolyUpperBound;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
@@ -44,6 +45,7 @@ import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -67,7 +69,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    public final AnnotationMirror UNKNOWN, BOTTOM;
+    public final AnnotationMirror UNKNOWN, BOTTOM, POLY;
 
     private final IndexMethodIdentifier imf;
 
@@ -75,10 +77,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker);
         UNKNOWN = AnnotationUtils.fromClass(elements, UpperBoundUnknown.class);
         BOTTOM = AnnotationUtils.fromClass(elements, UpperBoundBottom.class);
+        POLY = AnnotationUtils.fromClass(elements, PolyUpperBound.class);
 
         addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(IndexOrLow.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(IndexOrHigh.class, createLTEqLengthOfAnnotation());
+        addAliasedAnnotation(PolyAll.class, POLY);
 
         imf = new IndexMethodIdentifier(processingEnv);
 
@@ -94,7 +98,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         LTEqLengthOf.class,
                         LTLengthOf.class,
                         LTOMLengthOf.class,
-                        UpperBoundBottom.class));
+                        UpperBoundBottom.class,
+                        PolyUpperBound.class));
     }
 
     /**
@@ -508,7 +513,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             UBQualifier result = UpperBoundUnknownQualifier.UNKNOWN;
             UBQualifier numerator =
                     UBQualifier.createUBQualifier(getAnnotatedType(numeratorTree), UNKNOWN);
-            if (!numerator.isUnknownOrBottom()) {
+            if (numerator.isLessThanLengthQualifier()) {
                 result = ((LessThanLengthOf) numerator).divide(divisor);
             }
             result = result.glb(plusTreeDivideByVal(divisor, numeratorTree));
@@ -531,7 +536,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             UBQualifier right =
                     UBQualifier.createUBQualifier(
                             getAnnotatedType(plusTree.getRightOperand()), UNKNOWN);
-            if (!(left.isUnknownOrBottom() || right.isUnknownOrBottom())) {
+            if (left.isLessThanLengthQualifier() && right.isLessThanLengthQualifier()) {
                 LessThanLengthOf leftLTL = (LessThanLengthOf) left;
                 LessThanLengthOf rightLTL = (LessThanLengthOf) right;
                 List<String> arrays = new ArrayList<>();
@@ -589,6 +594,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return UNKNOWN;
         } else if (qualifier.isBottom()) {
             return BOTTOM;
+        } else if (qualifier.isPoly()) {
+            return POLY;
         }
 
         LessThanLengthOf ltlQualifier = (LessThanLengthOf) qualifier;

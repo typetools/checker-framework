@@ -227,7 +227,7 @@ public final class Short extends Number implements Comparable<Short> {
      * @return a {@code Short} instance representing {@code s}.
      * @since  1.5
      */
-    public static /*@ PolyLowerBound @ PolyUpperBound*/ Short valueOf(/*@ PolyLowerBound @ PolyUpperBound*/ short s) {
+    public static @PolyLowerBound @PolyUpperBound Short valueOf(@PolyLowerBound @PolyUpperBound short s) {
         final int offset = 128;
         int sAsInt = s;
         if (sAsInt >= -128 && sAsInt <= 127) { // must cache
@@ -300,7 +300,7 @@ public final class Short extends Number implements Comparable<Short> {
      * @param value     the value to be represented by the
      *                  {@code Short}.
      */
-    public /*@ PolyLowerBound @ PolyUpperBound*/ Short(/*@ PolyLowerBound @ PolyUpperBound*/ short value) {
+    public @PolyLowerBound @PolyUpperBound Short(@PolyLowerBound @PolyUpperBound short value) {
         this.value = value;
     }
 

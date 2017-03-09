@@ -352,7 +352,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         UBQualifier S = right.minusOffset(n.getLeftOperand(), atypeFactory);
 
         UBQualifier glb = T.glb(S);
-        if (!(left.isUnknownOrBottom() || right.isUnknownOrBottom())) {
+        if (left.isLessThanLengthQualifier() && right.isLessThanLengthQualifier()) {
             // If expression i has type @LTLengthOf(value = "f2", offset = "f1.length") int and
             // expression j is less than or equal to the length of f1, then the type of i + j is
             // @LTLengthOf("f2").
@@ -415,7 +415,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                 || atypeFactory.hasLowerBoundTypeByClass(n.getRightOperand(), Positive.class)) {
             // If the right side of the expression is NN or POS, then all the left side's
             // annotations should be kept.
-            if (!left.isUnknownOrBottom()) {
+            if (left.isLessThanLengthQualifier()) {
                 leftWithOffset = left.glb(leftWithOffset);
             }
         }
