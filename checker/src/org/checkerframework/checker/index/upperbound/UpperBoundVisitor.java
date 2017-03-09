@@ -150,7 +150,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                             .getMinLenFromString(arrayName, valueExp, getCurrentPath());
             boolean minLenOk = true;
             for (Integer value : rhsValues) {
-                minLenOk = ltl.isValuePlusOffsetLessThanMinLen(arrayName, value, minLen);
+                minLenOk =
+                        minLenOk && ltl.isValuePlusOffsetLessThanMinLen(arrayName, value, minLen);
             }
             if (!minLenOk) {
                 super.commonAssignmentCheck(varType, valueExp, errorKey);
