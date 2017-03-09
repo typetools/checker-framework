@@ -7,8 +7,9 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.qual.SameLen;
@@ -94,23 +95,28 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             ExpressionTree valueExp,
             /*@CompilerMessageKey*/ String errorKey) {
 
-        // Null if the right side is not an integer.
-        Integer rhsValue = atypeFactory.valMaxFromExpressionTree(valueExp);
+        List<? extends ExpressionTree> expressions;
+        if (valueExp.getKind() == Kind.NEW_ARRAY) {
+            expressions = ((NewArrayTree) valueExp).getInitializers();
+        } else {
+            expressions = Collections.singletonList(valueExp);
+        }
 
-        // Null if the right side is not a new array.
-        NewArrayTree newArrayTree =
-                valueExp.getKind() == Tree.Kind.NEW_ARRAY ? (NewArrayTree) valueExp : null;
+        if (expressions == null || expressions.isEmpty()) {
+            super.commonAssignmentCheck(varType, valueExp, errorKey);
+            return;
+        }
 
         // Find the appropriate qualifier to try to conform to.
         UBQualifier qualifier = null;
         if (varType.isAnnotatedInHierarchy(atypeFactory.UNKNOWN)) {
-            if (newArrayTree == null) {
-                qualifier = UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN);
-            } else if (varType instanceof AnnotatedTypeMirror.AnnotatedArrayType) {
+            if (varType instanceof AnnotatedTypeMirror.AnnotatedArrayType) {
                 // The qualifier we need for an array is in the component type, not varType.
                 AnnotatedTypeMirror componentType =
                         ((AnnotatedTypeMirror.AnnotatedArrayType) varType).getComponentType();
                 qualifier = UBQualifier.createUBQualifier(componentType, atypeFactory.UNKNOWN);
+            } else {
+                qualifier = UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN);
             }
         }
 
@@ -124,22 +130,15 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         // Either a singleton list of the single integer on the right,
         // or a list containing all the values in a constant array.
         List<Integer> rhsValues = new ArrayList<>();
-        if (rhsValue != null) {
-            rhsValues.add(rhsValue);
-        } else if (newArrayTree != null && newArrayTree.getInitializers() != null) {
-            // All the values in the initializer expression must be compile-time constants.
-            for (ExpressionTree exp : newArrayTree.getInitializers()) {
-                Integer val = atypeFactory.valMaxFromExpressionTree(exp);
-                if (val == null) {
-                    super.commonAssignmentCheck(varType, valueExp, errorKey);
-                    return;
-                } else {
-                    rhsValues.add(val);
-                }
+        // All the values in the must be compile-time constants.
+        for (ExpressionTree exp : expressions) {
+            Integer val = atypeFactory.valMaxFromExpressionTree(exp);
+            if (val == null) {
+                super.commonAssignmentCheck(varType, valueExp, errorKey);
+                return;
+            } else {
+                rhsValues.add(val);
             }
-        } else {
-            super.commonAssignmentCheck(varType, valueExp, errorKey);
-            return;
         }
 
         // Actually check that every integer in rhsValues is less than the minlen of each array.
