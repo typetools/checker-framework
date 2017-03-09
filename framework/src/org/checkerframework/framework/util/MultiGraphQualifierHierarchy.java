@@ -726,6 +726,12 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                         + getTopAnnotation(a2)
                         + "]";
 
+        if (isPolymorphicQualifier(a1)) {
+            return findLubWithPoly(a1, a2);
+        } else if (isPolymorphicQualifier(a2)) {
+            return findLubWithPoly(a2, a1);
+        }
+
         Set<AnnotationMirror> outset = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror a1Super : supertypesGraph.get(a1)) {
             // TODO: we take the first of the smallest supertypes, maybe we would
@@ -771,6 +777,15 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                         + a2
                         + ". Please ensure that the checker knows about all type qualifiers.");
         return null;
+    }
+
+    private AnnotationMirror findLubWithPoly(AnnotationMirror poly, AnnotationMirror other) {
+        AnnotationMirror bottom = getBottomAnnotation(other);
+        if (AnnotationUtils.areSame(bottom, other)) {
+            return poly;
+        }
+
+        return getTopAnnotation(poly);
     }
 
     /** Sees if a particular annotation mirror is a polymorphic qualifier. */
