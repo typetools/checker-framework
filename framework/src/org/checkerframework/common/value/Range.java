@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.checkerframework.dataflow.util.HashCodeUtils;
+
 /**
  * The Range class models a 64-bit two's-complement integral interval, such as all integers between
  * 1 and 10, inclusive. Ranges are immutable.
@@ -76,6 +78,20 @@ public class Range {
         } else {
             return String.format("[%s..%s]", from, to);
         }
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Range) {
+            Range range = (Range) obj;
+            return from == range.from && to == range.to;
+        }
+        return false;
+    }
+    
+    @Override
+    public int hashCode() {
+        return HashCodeUtils.hash(from, to);
     }
 
     /** Return true if this range contains every {@code long} value. */
