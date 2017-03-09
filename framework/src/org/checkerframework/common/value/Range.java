@@ -198,8 +198,8 @@ public class Range {
             return NOTHING;
         }
 
-        // could safely increase these bounds for additional efficiency
-        if (this.isWithinInteger() && right.isWithinInteger()) {
+        if (this.isWithinHalfLong() && right.isWithinHalfLong()) {
+            // This bound is adequate to guarantee no overflow when using long to evaluate
             long resultFrom = from + right.from;
             long resultTo = to + right.to;
             return new Range(resultFrom, resultTo);
@@ -223,8 +223,8 @@ public class Range {
             return NOTHING;
         }
 
-        // could safely increase these bounds for additional efficiency
-        if (this.isWithinInteger() && right.isWithinInteger()) {
+        if (this.isWithinHalfLong() && right.isWithinHalfLong()) {
+            // This bound is adequate to guarantee no overflow when using long to evaluate
             long resultFrom = from - right.to;
             long resultTo = to - right.from;
             return new Range(resultFrom, resultTo);
@@ -432,20 +432,31 @@ public class Range {
             return NOTHING;
         }
 
-        if (this.isWithinInteger() && right.from >= 0 && right.to <= 31) {
-            // The long type can handle the cases with non-negative shift distance no greater than
-            // 31, because there is no possible overflow.
-            long resultFrom = from << (from >= 0 ? right.from : right.to);
-            long resultTo = to << (to >= 0 ? right.to : right.from);
-            return new Range(resultFrom, resultTo);
-        } else if (right.from >= 0 && right.to <= 63) {
-            // If the shift distance is within 0 to 63, the calculation can be handled by BigInteger.
-            BigInteger bigFrom =
-                    BigInteger.valueOf(from)
-                            .shiftLeft(from >= 0 ? (int) right.from : (int) right.to);
-            BigInteger bigTo =
-                    BigInteger.valueOf(to).shiftLeft(to >= 0 ? (int) right.to : (int) right.from);
-            return bigRangeToLongRange(bigFrom, bigTo);
+        // Shifting operations in Java depend on the type of the left-hand operand:
+        // If the left-hand operand is int  type, only the 5 lowest-order bits of the right-hand operand are used
+        // If the left-hand operand is long type, only the 6 lowest-order bits of the right-hand operand are used
+        // For example, while 1 << -1== 1 << 31, 1L << -1 == 1L << 63.
+        // For ths reason, we restrict the shift-bit to analysis in [0. 31] and give up the analysis when out of this range.
+        //
+        // Other possible solutions:
+        // 1. create different methods for int type and long type and use them accordingly
+        // 2. add an additional boolean parameter to indicate the type of the left-hand operand
+        //
+        // see http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.19 for more detail.
+        if (right.isWithin(0, 31)) {
+            if (this.isWithinInteger()) {
+                // This bound is adequate to guarantee no overflow when using long to evaluate
+                long resultFrom = from << (from >= 0 ? right.from : right.to);
+                long resultTo = to << (to >= 0 ? right.to : right.from);
+                return new Range(resultFrom, resultTo);
+            } else {
+                BigInteger bigFrom =
+                        BigInteger.valueOf(from)
+                                .shiftLeft(from >= 0 ? (int) right.from : (int) right.to);
+                BigInteger bigTo =
+                        BigInteger.valueOf(to).shiftLeft(to >= 0 ? (int) right.to : (int) right.from);
+                return bigRangeToLongRange(bigFrom, bigTo);
+            }
         } else {
             // In other cases, we give up on the calculation and return EVERYTHING (rare in practice).
             return EVERYTHING;
@@ -465,8 +476,8 @@ public class Range {
             return NOTHING;
         }
 
-        if (this.isWithinInteger() && right.from >= 0 && right.to <= 31) {
-            // The long type can handle the cases with shift distance no longer than 31
+        if (this.isWithinInteger() && right.isWithin(0, 31)) {
+            // This bound is adequate to guarantee no overflow when using long to evaluate
             long resultFrom = from >> (from >= 0 ? right.to : right.from);
             long resultTo = to >> (to >= 0 ? right.from : right.to);
             return new Range(resultFrom, resultTo);
@@ -475,6 +486,26 @@ public class Range {
             // Give up on the calculation and return EVERYTHING instead.
             return EVERYTHING;
         }
+    }
+    
+    /** We give up the analysis for unsigned shift right operation */
+    public Range unsignedShiftRight(Range right) {
+        return EVERYTHING;
+    }
+    
+    /** We give up the analysis for bitwise AND operation */
+    public Range bitwiseAnd(Range right) {
+        return EVERYTHING;
+    }
+
+    /** We give up the analysis for bitwise OR operation */
+    public Range bitwiseOr(Range right) {
+        return EVERYTHING;
+    }
+
+    /** We give up the analysis for bitwise XOR operation */
+    public Range bitwiseXor(Range right) {
+        return EVERYTHING;
     }
 
     /**
@@ -694,20 +725,33 @@ public class Range {
      * @return true if wider than the given value
      */
     public boolean isWiderThan(long value) {
-        return BigInteger.valueOf(to)
-                        .subtract(BigInteger.valueOf(from))
-                        .add(BigInteger.ONE)
-                        .compareTo(BigInteger.valueOf(value))
-                == 1;
+        if (this.isWithin(Long.MIN_VALUE >> 1 + 1, Long.MAX_VALUE >> 1)) {
+            // This bound is adequate to guarantee no overflow when using long to evaluate
+            // Long.MIN_VALUE >> 1 + 1 = -4611686018427387903
+            // Long.MAX_VALUE >> 1 = 4611686018427387903
+            return to - from + 1 > value;
+        } else {
+            return BigInteger.valueOf(to)
+                            .subtract(BigInteger.valueOf(from))
+                            .add(BigInteger.ONE)
+                            .compareTo(BigInteger.valueOf(value))
+                    == 1;
+        }
+    }
+    
+    /** Determines if this range is completely contained in the range specified by the given lower bound and upper bound. */
+    private boolean isWithin(long lb, long ub) {
+        return from >= lb && to <= ub;
     }
 
-    /**
-     * Determines if this range is completely contained in the scope of the Integer type.
-     *
-     * @return true if the range is completely contained in the scope of the Integer type
-     */
+    /** Determines if this range is completely contained in the range that is of half length of the Long type and centered with 0. */
+    private boolean isWithinHalfLong() {
+        return isWithin(Long.MIN_VALUE >> 1, Long.MAX_VALUE >> 1);
+    }
+
+    /** Determines if this range is completely contained in the scope of the Integer type. */
     private boolean isWithinInteger() {
-        return from >= Integer.MIN_VALUE && to <= Integer.MAX_VALUE;
+        return isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
     private static final BigInteger longPossibleValues =
