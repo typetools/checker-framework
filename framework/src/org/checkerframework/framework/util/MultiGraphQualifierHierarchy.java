@@ -173,6 +173,9 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     /** @see MultiGraphQualifierHierarchy.MultiGraphFactory#polyQualifiers */
     protected final Map<AnnotationMirror, AnnotationMirror> polyQualifiers;
 
+    /** All qualifiers, including polymorphic qualifiers. */
+    private final Set<AnnotationMirror> typeQualifiers;
+
     public MultiGraphQualifierHierarchy(MultiGraphFactory f) {
         this(f, (Object[]) null);
     }
@@ -205,6 +208,9 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         // TODO: make polyQualifiers immutable also?
 
         this.supertypesMap = Collections.unmodifiableMap(fullMap);
+        Set<AnnotationMirror> typeQualifiers = AnnotationUtils.createAnnotationSet();
+        typeQualifiers.addAll(supertypesMap.keySet());
+        this.typeQualifiers = Collections.unmodifiableSet(typeQualifiers);
         // System.out.println("MGH: " + this);
     }
 
@@ -383,11 +389,9 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return true;
     }
 
-    protected Set</*@Interned*/ String> typeQualifiers = null;
-
     @Override
     public Set<? extends AnnotationMirror> getTypeQualifiers() {
-        return Collections.unmodifiableSet(supertypesMap.keySet());
+        return typeQualifiers;
     }
 
     // For caching results of lubs
@@ -674,8 +678,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     private Map<AnnotationPair, AnnotationMirror> calculateLubs() {
         Map<AnnotationPair, AnnotationMirror> newlubs =
                 new HashMap<AnnotationPair, AnnotationMirror>();
-        for (AnnotationMirror a1 : supertypesGraph.keySet()) {
-            for (AnnotationMirror a2 : supertypesGraph.keySet()) {
+        for (AnnotationMirror a1 : typeQualifiers) {
+            for (AnnotationMirror a2 : typeQualifiers) {
                 if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
                     continue;
                 }
@@ -721,6 +725,12 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                         + " [top: "
                         + getTopAnnotation(a2)
                         + "]";
+
+        if (isPolymorphicQualifier(a1)) {
+            return findLubWithPoly(a1, a2);
+        } else if (isPolymorphicQualifier(a2)) {
+            return findLubWithPoly(a2, a1);
+        }
 
         Set<AnnotationMirror> outset = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror a1Super : supertypesGraph.get(a1)) {
@@ -769,6 +779,15 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return null;
     }
 
+    private AnnotationMirror findLubWithPoly(AnnotationMirror poly, AnnotationMirror other) {
+        AnnotationMirror bottom = getBottomAnnotation(other);
+        if (AnnotationUtils.areSame(bottom, other)) {
+            return poly;
+        }
+
+        return getTopAnnotation(poly);
+    }
+
     /** Sees if a particular annotation mirror is a polymorphic qualifier. */
     private boolean isPolymorphicQualifier(AnnotationMirror qual) {
         return AnnotationUtils.containsSame(polyQualifiers.values(), qual);
@@ -811,8 +830,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     private Map<AnnotationPair, AnnotationMirror> calculateGlbs() {
         Map<AnnotationPair, AnnotationMirror> newglbs =
                 new HashMap<AnnotationPair, AnnotationMirror>();
-        for (AnnotationMirror a1 : supertypesGraph.keySet()) {
-            for (AnnotationMirror a2 : supertypesGraph.keySet()) {
+        for (AnnotationMirror a1 : typeQualifiers) {
+            for (AnnotationMirror a2 : typeQualifiers) {
                 if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
                     continue;
                 }
@@ -850,6 +869,12 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                         + getTopAnnotation(a2)
                         + "]";
 
+        if (isPolymorphicQualifier(a1)) {
+            return findGlbWithPoly(a1, a2);
+        } else if (isPolymorphicQualifier(a2)) {
+            return findGlbWithPoly(a2, a1);
+        }
+
         Set<AnnotationMirror> outset = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror a1Sub : supertypesGraph.keySet()) {
             if (isSubtype(a1Sub, a1) && !a1Sub.equals(a1)) {
@@ -877,6 +902,15 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                         + a2
                         + ". Please ensure that the checker knows about all type qualifiers.");
         return null;
+    }
+
+    private AnnotationMirror findGlbWithPoly(AnnotationMirror poly, AnnotationMirror other) {
+        AnnotationMirror top = getTopAnnotation(other);
+        if (AnnotationUtils.areSame(top, other)) {
+            return poly;
+        }
+
+        return getBottomAnnotation(poly);
     }
 
     /** Remove all subtypes of elements contained in the set. */
