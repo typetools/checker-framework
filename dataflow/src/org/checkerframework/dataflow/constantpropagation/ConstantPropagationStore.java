@@ -84,6 +84,11 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
     }
 
     @Override
+    public ConstantPropagationStore widenUpperBound(ConstantPropagationStore other) {
+        return leastUpperBound(other);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (o == null) {
             return false;

@@ -114,6 +114,34 @@ public abstract class QualifierHierarchy {
     public abstract AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2);
 
     /**
+     * Returns whether or not this hierarchy implements {@link #widenUpperBound(AnnotationMirror,
+     * AnnotationMirror)}
+     *
+     * @return whether or not this hierarchy implements {@link #widenUpperBound(AnnotationMirror,
+     *     AnnotationMirror)}
+     */
+    public boolean implementsWidening() {
+        return false;
+    }
+
+    /**
+     * If the type hierarchy has an infinite ascending chain, then the dataflow analysis might never
+     * reach a fixed point. To prevent this, implement this method such that it returns an upper
+     * bound for the two qualifiers that is wider than the least upper bound. If this method is
+     * implemented, also override {@link #implementsWidening()} and return true.
+     *
+     * <p>Otherwise, returns the least upper bound of the two annotations.
+     *
+     * @param a1 annotation
+     * @param a2 annotation
+     * @return an upper bound that is wider than the least upper bound of a1 and a2 (or the lub if
+     *     the type hierarchy does not require this)
+     */
+    public AnnotationMirror widenUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+        return leastUpperBound(a1, a2);
+    }
+
+    /**
      * Returns the greatest lower bound for the qualifiers a1 and a2.
      *
      * <p>The two qualifiers have to be from the same qualifier hierarchy. Otherwise, null will be
