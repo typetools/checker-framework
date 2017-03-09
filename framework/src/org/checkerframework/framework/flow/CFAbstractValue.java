@@ -318,6 +318,14 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
     @Override
     public V leastUpperBound(/*@Nullable*/ V other) {
+        return upperBound(other, false);
+    }
+
+    public V widenUpperBound(/*@Nullable*/ V other) {
+        return upperBound(other, true);
+    }
+
+    private V upperBound(/*@Nullable*/ V other, boolean shouldWiden) {
         if (other == null) {
             @SuppressWarnings("unchecked")
             V v = (V) this;
@@ -336,14 +344,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
                         other.getUnderlyingType(),
                         this.getAnnotations(),
                         other.getAnnotations(),
-                        lub);
+                        lub,
+                        shouldWiden);
         lubVisitor.visit();
         return analysis.createAbstractValue(lub, lubTypeMirror);
     }
 
     class LubVisitor extends AnnotationSetAndTypeMirrorVisitor {
-
         Set<AnnotationMirror> lubSet;
+        boolean widen;
 
         public LubVisitor(
                 TypeMirror result,
@@ -351,28 +360,37 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
                 TypeMirror bTypeMirror,
                 Set<AnnotationMirror> aSet,
                 Set<AnnotationMirror> bSet,
-                Set<AnnotationMirror> lubSet) {
+                Set<AnnotationMirror> lubSet,
+                boolean shouldWiden) {
             super(result, aTypeMirror, bTypeMirror, aSet, bSet);
             this.lubSet = lubSet;
+            this.widen = shouldWiden;
+        }
+
+        private AnnotationMirror computeUpperBound(AnnotationMirror a, AnnotationMirror b) {
+            QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
+            if (widen) {
+                return hierarchy.widenUpperBound(a, b);
+            } else {
+                return hierarchy.leastUpperBound(a, b);
+            }
         }
 
         @Override
         protected void visitAnnotationExistInBothSets(
                 AnnotationMirror a, AnnotationMirror b, AnnotationMirror top) {
-            QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
-            lubSet.add(hierarchy.leastUpperBound(a, b));
+            lubSet.add(computeUpperBound(a, b));
         }
 
         @Override
         protected void visitNeitherAnnotationExistsInBothSets(
                 AnnotatedTypeVariable aAtv, AnnotatedTypeVariable bAtv, AnnotationMirror top) {
-            QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
             if (canBeMissingAnnotations(result)) {
                 // don't add an annotation
             } else {
                 AnnotationMirror aUB = aAtv.getUpperBound().getEffectiveAnnotationInHierarchy(top);
                 AnnotationMirror bUB = bAtv.getUpperBound().getEffectiveAnnotationInHierarchy(top);
-                lubSet.add(hierarchy.leastUpperBound(aUB, bUB));
+                lubSet.add(computeUpperBound(aUB, bUB));
             }
         }
 
@@ -383,13 +401,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
             AnnotationMirror upperBound =
                     atv.getUpperBound().getEffectiveAnnotationInHierarchy(top);
             if (!canBeMissingAnnotations(result)) {
-                lubSet.add(hierarchy.leastUpperBound(anno, upperBound));
+                lubSet.add(computeUpperBound(anno, upperBound));
             } else {
                 Set<AnnotationMirror> lBSet =
                         AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, atv);
                 AnnotationMirror lowerBound = hierarchy.findAnnotationInHierarchy(lBSet, top);
                 if (!hierarchy.isSubtype(anno, lowerBound)) {
-                    lubSet.add(hierarchy.leastUpperBound(anno, upperBound));
+                    lubSet.add(computeUpperBound(anno, upperBound));
                 }
             }
         }
