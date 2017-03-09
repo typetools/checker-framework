@@ -474,7 +474,7 @@ public abstract class UBQualifier {
         @Override
         public UBQualifier widenUpperBound(UBQualifier obj) {
             UBQualifier lub = lub(obj);
-            if (lub.isUnknownOrBottom() || obj.isUnknownOrBottom()) {
+            if (!lub.isLessThanLengthQualifier() || !obj.isLessThanLengthQualifier()) {
                 return lub;
             }
             Map<String, Set<OffsetEquation>> lubMap = ((LessThanLengthOf) lub).map;
