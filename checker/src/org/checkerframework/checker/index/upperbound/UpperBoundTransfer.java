@@ -1,6 +1,7 @@
 package org.checkerframework.checker.index.upperbound;
 
 import com.sun.source.tree.ExpressionTree;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -8,6 +9,7 @@ import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -311,7 +313,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                             atypeFactory, (FieldAccessNode) arrayLengthAccess);
             if (!fa.getReceiver().containsUnknown()) {
                 String array = fa.getReceiver().toString();
-                if (otherQualifier.isLessThanOrEqualTo(array)) {
+                if (otherQualifier.hasArrayWithOffsetNeg1(array)) {
                     otherQualifier = otherQualifier.glb(UBQualifier.createUBQualifier(array, "0"));
                     Receiver leftRec =
                             FlowExpressions.internalReprOf(analysis.getTypeFactory(), otherNode);
@@ -331,6 +333,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * to a (the type of a is @LTLengthOf(value="x", offset="o")), then the type of a + b
      * is @LTLengthOf(value="x",offset="o - b"). (Note, if "o - b" can be computed, then it is and
      * the result is used in the annotation.)
+     *
+     * <p>In addition, If expression i has type @LTLengthOf(value = "f2", offset = "f1.length") int
+     * and expression j is less than or equal to the length of f1, then the type of i + j is
+     * .@LTLengthOf("f2").
      */
     @Override
     public TransferResult<CFValue, CFStore> visitNumericalAddition(
@@ -346,8 +352,52 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         UBQualifier S = right.minusOffset(n.getLeftOperand(), atypeFactory);
 
         UBQualifier glb = T.glb(S);
+        if (!(left.isUnknownOrBottom() || right.isUnknownOrBottom())) {
+            // If expression i has type @LTLengthOf(value = "f2", offset = "f1.length") int and
+            // expression j is less than or equal to the length of f1, then the type of i + j is
+            // @LTLengthOf("f2").
+            UBQualifier r = removeArrayLengths((LessThanLengthOf) left, (LessThanLengthOf) right);
+            glb = glb.glb(r);
+            UBQualifier l = removeArrayLengths((LessThanLengthOf) right, (LessThanLengthOf) left);
+            glb = glb.glb(l);
+        }
 
         return createTransferResult(n, in, glb);
+    }
+
+    /**
+     * Return the result of adding i to j, when expression i has type @LTLengthOf(value = "f2",
+     * offset = "f1.length") int and expression j is less than or equal to the length of f1, then
+     * the type of i + j is @LTLengthOf("f2").
+     *
+     * <p>Similarly, return the result of adding i to j,when expression i has type @LTLengthOf
+     * (value = "f2", offset = "f1.length - 1") int and expression j is less than the length of f1,
+     * then the type of i + j is @LTLengthOf("f2").
+     *
+     * @param i the type of the expression added to j
+     * @param j the type of the expression added to i
+     * @return the type of i + j
+     */
+    private UBQualifier removeArrayLengths(LessThanLengthOf i, LessThanLengthOf j) {
+        List<String> lessThan = new ArrayList<>();
+        List<String> lessThanOrEqaul = new ArrayList<>();
+        for (String array : i.getArrays()) {
+            if (i.isLessThanLengthOf(array)) {
+                lessThan.add(array);
+            } else if (i.hasArrayWithOffsetNeg1(array)) {
+                lessThanOrEqaul.add(array);
+            }
+        }
+        // Creates a qualifier that is the same a j with the array.length offsets removed. If
+        // an offset doesn't have an array.length, then the offset/array pair is removed. If
+        // there are no such pairs, Unknown is returned.
+        UBQualifier lessThanEqQ = j.removeArrayLengthAccess(lessThanOrEqaul);
+        // Creates a qualifier that is the same a j with the array.length - 1 offsets removed. If
+        // an offset doesn't have an array.length, then the offset/array pair is removed. If
+        // there are no such pairs, Unknown is returned.
+        UBQualifier lessThanQ = j.removeArrayLengthAccessAndNeg1(lessThan);
+
+        return lessThanEqQ.glb(lessThanQ);
     }
 
     /**

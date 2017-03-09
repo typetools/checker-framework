@@ -74,6 +74,18 @@ public class Analysis<
     protected IdentityHashMap<Block, S> elseStores;
 
     /**
+     * Number of times every block has been analyzed since the last time widening was applied. Null,
+     * if maxCountBeforeWidening is -1 which implies widening isn't used for this analysis.
+     */
+    protected IdentityHashMap<Block, Integer> blockCount;
+
+    /**
+     * Number of times a block can be analyzed before widening. -1 implies that widening shouldn't
+     * be used.
+     */
+    protected final int maxCountBeforeWidening;
+
+    /**
      * The transfer inputs before every basic block (assumed to be 'no information' if not present).
      */
     protected IdentityHashMap<Block, TransferInput<A, S>> inputs;
@@ -122,8 +134,7 @@ public class Analysis<
      * flow graph. The transfer function is set later using {@code setTransferFunction}.
      */
     public Analysis(ProcessingEnvironment env) {
-        this.env = env;
-        types = env.getTypeUtils();
+        this(env, null, -1);
     }
 
     /**
@@ -131,7 +142,18 @@ public class Analysis<
      * flow graph, given a transfer function.
      */
     public Analysis(ProcessingEnvironment env, T transfer) {
-        this(env);
+        this(env, transfer, -1);
+    }
+
+    /**
+     * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
+     * flow graph, given a transfer function.
+     */
+    public Analysis(ProcessingEnvironment env, T transfer, int maxCountBeforeWidening) {
+        this.env = env;
+        types = env.getTypeUtils();
+        this.transferFunction = transfer;
+        this.maxCountBeforeWidening = maxCountBeforeWidening;
         this.transferFunction = transfer;
     }
 
@@ -406,6 +428,7 @@ public class Analysis<
         this.cfg = cfg;
         thenStores = new IdentityHashMap<>();
         elseStores = new IdentityHashMap<>();
+        blockCount = maxCountBeforeWidening == -1 ? null : new IdentityHashMap<Block, Integer>();
         inputs = new IdentityHashMap<>();
         storesAtReturnStatements = new IdentityHashMap<>();
         worklist = new Worklist(cfg);
@@ -462,12 +485,21 @@ public class Analysis<
             Block b, Node node, S s, Store.Kind kind, boolean addBlockToWorklist) {
         S thenStore = getStoreBefore(b, Store.Kind.THEN);
         S elseStore = getStoreBefore(b, Store.Kind.ELSE);
+        boolean shouldWiden = false;
+        Integer count = null;
+        if (blockCount != null) {
+            count = blockCount.get(b);
+            if (count == null) {
+                count = 0;
+            }
+            shouldWiden = count >= maxCountBeforeWidening;
+        }
 
         switch (kind) {
             case THEN:
                 {
                     // Update the then store
-                    S newThenStore = (thenStore != null) ? thenStore.leastUpperBound(s) : s;
+                    S newThenStore = mergeStores(s, thenStore, shouldWiden);
                     if (!newThenStore.equals(thenStore)) {
                         thenStores.put(b, newThenStore);
                         if (elseStore != null) {
@@ -480,7 +512,7 @@ public class Analysis<
             case ELSE:
                 {
                     // Update the else store
-                    S newElseStore = (elseStore != null) ? elseStore.leastUpperBound(s) : s;
+                    S newElseStore = mergeStores(s, elseStore, shouldWiden);
                     if (!newElseStore.equals(elseStore)) {
                         elseStores.put(b, newElseStore);
                         if (thenStore != null) {
@@ -493,7 +525,7 @@ public class Analysis<
             case BOTH:
                 if (thenStore == elseStore) {
                     // Currently there is only one regular store
-                    S newStore = (thenStore != null) ? thenStore.leastUpperBound(s) : s;
+                    S newStore = mergeStores(s, thenStore, shouldWiden);
                     if (!newStore.equals(thenStore)) {
                         thenStores.put(b, newStore);
                         elseStores.put(b, newStore);
@@ -503,13 +535,13 @@ public class Analysis<
                 } else {
                     boolean storeChanged = false;
 
-                    S newThenStore = (thenStore != null) ? thenStore.leastUpperBound(s) : s;
+                    S newThenStore = mergeStores(s, thenStore, shouldWiden);
                     if (!newThenStore.equals(thenStore)) {
                         thenStores.put(b, newThenStore);
                         storeChanged = true;
                     }
 
-                    S newElseStore = (elseStore != null) ? elseStore.leastUpperBound(s) : s;
+                    S newElseStore = mergeStores(s, elseStore, shouldWiden);
                     if (!newElseStore.equals(elseStore)) {
                         elseStores.put(b, newElseStore);
                         storeChanged = true;
@@ -521,9 +553,26 @@ public class Analysis<
                     }
                 }
         }
+        if (blockCount != null) {
+            if (shouldWiden) {
+                blockCount.put(b, 0);
+            } else {
+                blockCount.put(b, count + 1);
+            }
+        }
 
         if (addBlockToWorklist) {
             addToWorklist(b);
+        }
+    }
+
+    private S mergeStores(S previousStore, S newStore, boolean shouldWiden) {
+        if (newStore == null) {
+            return previousStore;
+        } else if (shouldWiden) {
+            return newStore.widenUpperBound(previousStore);
+        } else {
+            return newStore.leastUpperBound(previousStore);
         }
     }
 
