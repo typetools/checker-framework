@@ -391,7 +391,9 @@ public abstract class InitializationAnnotatedTypeFactory<
             if (store != null) {
                 List<AnnotationMirror> annos = Collections.emptyList();
                 if (getUninitializedInvariantFields(store, path, false, annos).size() == 0) {
-                    if (useFbc) {
+                    if (classType.isFinal()) {
+                        annotation = COMMITTED;
+                    } else if (useFbc) {
                         annotation = createFreeAnnotation(classType);
                     } else {
                         annotation = createUnclassifiedAnnotation(classType);
