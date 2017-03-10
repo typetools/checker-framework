@@ -52,7 +52,7 @@ use the last one.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
-    \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
+    \verb|~/.profile| (or alternately \verb|~/.bash_profile| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
   export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.9
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
@@ -813,7 +813,7 @@ You can download it from \myurl{https://sourceforge.net/projects/tide/}.
 \section{NetBeans\label{netbeans}}
 
 There are three approaches to running a checker in NetBeans: via modifying
-the project properties, via a custom ant target, or using the Netbeans
+the project properties, via a custom ant target, or using the NetBeans
 Checker Framework plugin.
 
 
@@ -923,8 +923,8 @@ In this example, a nullness checker is run:
                     source="${javac.source}" sourcepath="@{sourcepath}"
                     srcdir="@{srcdir}" target="${javac.target}"
                     tempdir="${java.io.tmpdir}">
-                <src>
-                    <dirset dir="@{gensrcdir}" erroronmissingdir="false">
+                <src> 
+                   <dirset dir="@{gensrcdir}" erroronmissingdir="false">
                         <include name="*"/>
                     </dirset>
                 </src>
@@ -964,7 +964,7 @@ will not appear in the editor.
 
 \subsection {Adding a checker using the Checker Framework Plugin\label{netbeans-plugin}}
 
-In order to run a checker using the Netbeans plugin, you should first
+In order to run a checker using the NetBeans plugin, you should first
 install the plugin. To do so, select ``Tools'' and then ``Plugins''.
 In the Plugins window, click on the ``Settings'' tab, and then ``Add''.
 In the popup that appears, enter ``Checker Framework'' under ``Name'' and
@@ -989,7 +989,7 @@ should appear automatically in the editor.
 There are two different tasks that are commonly called ``type inference''.
 You are probably interested in type inference to annotate a program's
 source code; see Section~\ref{type-inference-to-annotate}.  This section
-expalins the two different varieties of type inference.
+explains the two different varieties of type inference.
 
 \begin{enumerate}
 \item
@@ -1073,13 +1073,14 @@ inside the body of a method.
 
 
 % LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle
-% LocalWords:  IntelliJ Maia newdir classpath Unconfuse nullness Gradle
+% LocalWords:  IntelliJ Maia newdir classpath Unconfuse nullness Gradle FQ
 % LocalWords:  compilerArgs Xbootclasspath JSR308 jsr308 jsr308javac mvn
 %  LocalWords:  plugins proc procOnly DirectoryScanner setIncludes groupId
 %  LocalWords:  setExcludes checkerFrameworkVersion javacParams javaParams
-%%  LocalWords:  artifactId quals failOnError ejc CHECKERFRAMEWORK env
+%%  LocalWords:  artifactId quals failOnError ejc CHECKERFRAMEWORK env jdk
 %%  LocalWords:  javacheck checkerframework MavenExample org arg typecheck
 %%  LocalWords:  AoutputArgsToFile qual jdk7 jdk8 annotatedJdk Unhandled
 %%  LocalWords:  annotationProcessors annotationProcessor JavaCompile Ctrl
-%%  LocalWords:  typeAnnotationsJavac targetJavaVersion GradleExamples
-%%  LocalWords:  systemPath artifactID MacOS
+%%  LocalWords:  typeAnnotationsJavac targetJavaVersion GradleExamples Ok
+%%  LocalWords:  systemPath artifactID MacOS eclipsec init macrodef popup
+%  LocalWords:  checkbox checkboxes

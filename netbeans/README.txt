@@ -13,4 +13,4 @@ Go to the "Available Plugins" tab, and search and select "Checker Framework Plug
 
 In order to use the plugin, right click on a Java project in NetBeans, and click "Properties".
 Select the desired checkers to run, and then press "Ok" to apply the changes and close the Properties window.
-The checkers should be run and the results should appear in the IDE editor, if Netbeans is set to compile on save.
+The checkers should be run and the results should appear in the IDE editor, if NetBeans is set to compile on save.
