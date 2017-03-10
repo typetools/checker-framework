@@ -1032,9 +1032,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
                 // Two unannotated uses of reference-equal wildcard types are the same type
                 return true;
             } else {
+                // Otherwise just check that the upper bounds are in the correct relationship
                 AnnotatedWildcardType superWildcard = (AnnotatedWildcardType) supertype;
-                return isSubtype(subtype.getExtendsBound(), superWildcard.getExtendsBound())
-                        && isSubtype(subtype.getSuperBound(), superWildcard.getSuperBound());
+                return isSubtype(subtype.getExtendsBound(), superWildcard.getExtendsBound());
             }
         }
 
