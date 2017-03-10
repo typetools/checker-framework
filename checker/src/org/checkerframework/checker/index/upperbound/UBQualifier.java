@@ -77,7 +77,7 @@ public abstract class UBQualifier {
     }
 
     public static UBQualifier createUBQualifier(AnnotatedTypeMirror type, AnnotationMirror top) {
-        return createUBQualifier(type.getAnnotationInHierarchy(top));
+        return createUBQualifier(type.getEffectiveAnnotationInHierarchy(top));
     }
 
     /**
