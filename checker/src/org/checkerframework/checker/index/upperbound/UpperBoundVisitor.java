@@ -6,6 +6,10 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree.Kind;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.qual.SameLen;
@@ -78,37 +82,74 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName), indexTree);
     }
 
+    /**
+     * Slightly relaxes the usual assignment rules by allowing assignments where the right hand side
+     * is a value known at compile time and the type of the left hand side is annotated with
+     * LT*LengthOf("a"). If the min length of a is in the correct relationship with the value on the
+     * right hand side, then the assignment is legal. Both constant integers and constant arrays of
+     * integers are handled.
+     */
     @Override
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             ExpressionTree valueExp,
             /*@CompilerMessageKey*/ String errorKey) {
 
-        // Slightly relaxes the usual assignment rules by allowing assignments where the right
-        // hand side is a value known at compile time and the type of the left hand side is
-        // annotated with LT*LengthOf("a").  If the min length of a is in the correct
-        // relationship with the value on the right hand side, then the assignment is legal.
-        Integer rhsValue = atypeFactory.valMaxFromExpressionTree(valueExp);
-        if (rhsValue == null) {
+        List<? extends ExpressionTree> expressions;
+        if (valueExp.getKind() == Kind.NEW_ARRAY) {
+            expressions = ((NewArrayTree) valueExp).getInitializers();
+        } else {
+            expressions = Collections.singletonList(valueExp);
+        }
+
+        if (expressions == null || expressions.isEmpty()) {
             super.commonAssignmentCheck(varType, valueExp, errorKey);
             return;
         }
 
-        UBQualifier qualifier = UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN);
-        if (qualifier.isUnknownOrBottom()) {
+        // Find the appropriate qualifier to try to conform to.
+        UBQualifier qualifier;
+        if (varType instanceof AnnotatedTypeMirror.AnnotatedArrayType) {
+            // The qualifier we need for an array is in the component type, not varType.
+            AnnotatedTypeMirror componentType =
+                    ((AnnotatedTypeMirror.AnnotatedArrayType) varType).getComponentType();
+            qualifier = UBQualifier.createUBQualifier(componentType, atypeFactory.UNKNOWN);
+        } else {
+            qualifier = UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN);
+        }
+
+        // If the qualifier is uninteresting or the type is unannotated, do nothing else.
+        if (qualifier == null || qualifier.isUnknownOrBottom()) { // TODO after merge
             super.commonAssignmentCheck(varType, valueExp, errorKey);
             return;
         }
-
         LessThanLengthOf ltl = (LessThanLengthOf) qualifier;
 
+        // Either a singleton list of the single integer on the right,
+        // or a list containing all the values in a constant array.
+        List<Integer> rhsValues = new ArrayList<>();
+        // All the values in the must be compile-time constants.
+        for (ExpressionTree exp : expressions) {
+            Integer val = atypeFactory.valMaxFromExpressionTree(exp);
+            if (val == null) {
+                super.commonAssignmentCheck(varType, valueExp, errorKey);
+                return;
+            } else {
+                rhsValues.add(val);
+            }
+        }
+
+        // Actually check that every integer in rhsValues is less than the minlen of each array.
         for (String arrayName : ltl.getArrays()) {
             int minLen =
                     atypeFactory
                             .getMinLenAnnotatedTypeFactory()
                             .getMinLenFromString(arrayName, valueExp, getCurrentPath());
-
-            boolean minLenOk = ltl.isValuePlusOffsetLessThanMinLen(arrayName, rhsValue, minLen);
+            boolean minLenOk = true;
+            for (Integer value : rhsValues) {
+                minLenOk =
+                        minLenOk && ltl.isValuePlusOffsetLessThanMinLen(arrayName, value, minLen);
+            }
             if (!minLenOk) {
                 super.commonAssignmentCheck(varType, valueExp, errorKey);
                 return;

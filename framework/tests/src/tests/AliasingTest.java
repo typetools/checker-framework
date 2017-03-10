@@ -19,6 +19,6 @@ public class AliasingTest extends CheckerFrameworkPerDirectoryTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"aliasing"};
+        return new String[] {"aliasing", "all-systems"};
     }
 }
