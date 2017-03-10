@@ -980,6 +980,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public AnnotationMirror createIntValAnnotation(List<Long> intValues) {
+        if (intValues == null) {
+            return BOTTOMVAL;
+        }
         intValues = ValueCheckerUtils.removeDuplicates(intValues);
         if (intValues.isEmpty()) {
             return UNKNOWNVAL;
@@ -995,6 +998,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public AnnotationMirror createDoubleValAnnotation(List<Double> doubleValues) {
+        if (doubleValues == null) {
+            return BOTTOMVAL;
+        }
         doubleValues = ValueCheckerUtils.removeDuplicates(doubleValues);
         if (doubleValues.isEmpty() || doubleValues.size() > MAX_VALUES) {
             return UNKNOWNVAL;
@@ -1006,6 +1012,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public AnnotationMirror createStringAnnotation(List<String> values) {
+        if (values == null) {
+            return BOTTOMVAL;
+        }
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.isEmpty() || values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
@@ -1017,6 +1026,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public AnnotationMirror createArrayLenAnnotation(List<Integer> values) {
+        if (values == null) {
+            return BOTTOMVAL;
+        }
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.isEmpty() || values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
@@ -1028,6 +1040,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public AnnotationMirror createBooleanAnnotation(List<Boolean> values) {
+        if (values == null) {
+            return BOTTOMVAL;
+        }
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.isEmpty() || values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
@@ -1039,6 +1054,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public AnnotationMirror createCharAnnotation(List<Character> values) {
+        if (values == null) {
+            return BOTTOMVAL;
+        }
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.isEmpty()) {
             return UNKNOWNVAL;
@@ -1051,8 +1069,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    private AnnotationMirror createNumberAnnotationMirror(List<Number> values) {
-        if (values.isEmpty()) {
+    public AnnotationMirror createNumberAnnotationMirror(List<Number> values) {
+        if (values == null) {
+            return BOTTOMVAL;
+        } else if (values.isEmpty()) {
             return UNKNOWNVAL;
         }
         Number first = values.get(0);
@@ -1077,10 +1097,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public AnnotationMirror createIntRangeAnnotation(Range range) {
-        if (range.isEverything()) {
-            return UNKNOWNVAL;
-        } else if (range.isNothing()) {
+        if (range.isNothing()) {
             return BOTTOMVAL;
+        } else if (range.isEverything()) {
+            return UNKNOWNVAL;
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntRange.class);
             builder.setValue("from", range.from);
