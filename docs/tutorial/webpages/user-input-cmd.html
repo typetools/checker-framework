@@ -186,14 +186,14 @@ RegexExample.java:13: error: [argument.type.incompatible] incompatible types in 
         </p>
 
         <p>
-        You need to make two changes to RegexExample.java
+        You need to make two changes to <code>RegexExample.java</code>
         to correctly handle invalid user input.  At the top of the file, add</p>
         <pre>
 import org.checkerframework.checker.regex.RegexUtil;
 </pre>
         <p>
         After variable <code>regex</code> is defined but before it is
-        used, add</p>
+        used (that is, before <code>Pattern pat = Pattern.compile(regex);</code>), add</p>
 <pre>
     if (!RegexUtil.isRegex(regex, 1)) {
         System.out.println("Input is not a regular expression \"" + regex
@@ -217,10 +217,11 @@ $ <strong>javacheck -processor org.checkerframework.checker.regex.RegexChecker R
       <div id="runex2">
         <h4>6. Run the Example</h4>
 
-        <p>Run the program exactly as before to verify that the program
+        <p>Run the program as before (but adding <code>checker.jar</code> or <code>checker-qual.jar</code> to the classpath)
+        to verify that the program
         prints a user-friendly warning.</p>
         <pre>
-$ <strong>java -cp ".:$CHECKERFRAMEWORK/checker/dist/checker.jar" RegexExample '[01]?[\d-\([0123]?\d\)-\d{4}+' '01-24-2013'</strong>
+$ <strong>java -cp ".:$CHECKERFRAMEWORK/checker/dist/checker-qual.jar" RegexExample '[01]?[\d-\([0123]?\d\)-\d{4}+' '01-24-2013'</strong>
 Input is not a regular expression "[01]?[d-([0123]?d)-d{4}+": Illegal character range near index 24
 </pre>
 

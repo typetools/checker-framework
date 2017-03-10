@@ -17,6 +17,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * replaced by {@code @}{@code KeyFor}, for every possible combination of map arguments.
  *
  * @checker_framework.manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @Documented
 @PolymorphicQualifier(UnknownKeyFor.class)

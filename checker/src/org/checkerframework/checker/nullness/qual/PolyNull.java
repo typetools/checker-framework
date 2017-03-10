@@ -16,6 +16,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * PolyNull} has been replaced by {@link org.checkerframework.checker.nullness.qual.Nullable}.
  *
  * @checker_framework.manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @Documented
 @PolymorphicQualifier(Nullable.class)

@@ -16,8 +16,10 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -263,24 +265,30 @@ public class DependentTypesHelper {
         }
         switch (ele.getKind()) {
             case PARAMETER:
-                MethodTree methodTree = TreeUtils.enclosingMethod(path);
-                if (methodTree != null) {
+                Tree enclTree =
+                        TreeUtils.enclosingOfKind(
+                                path,
+                                new HashSet<Kind>(
+                                        Arrays.asList(Kind.METHOD, Kind.LAMBDA_EXPRESSION)));
+
+                if (enclTree.getKind() == Kind.METHOD) {
+                    // If the most enclosing tree is a method, the parameter is a method parameter
+                    MethodTree methodTree = (MethodTree) enclTree;
                     TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
                     FlowExpressionContext parameterContext =
                             FlowExpressionContext.buildContextForMethodDeclaration(
                                     methodTree, enclosingType, factory.getContext());
                     standardizeDoNotUseLocals(parameterContext, path, type);
-                    break;
+                } else {
+                    // Otherwise, the parameter is a lambda parameter
+                    LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclTree;
+                    FlowExpressionContext parameterContext =
+                            FlowExpressionContext.buildContextForLambda(
+                                    lambdaTree, path, factory.getContext());
+                    // TODO: test this.
+                    // TODO: use path.getParentPath to prevent a StackOverflowError, see Issue #1027.
+                    standardizeUseLocals(parameterContext, path.getParentPath(), type);
                 }
-                // If there is no enclosing method, then the parameter is a parameter to a lambda
-                LambdaExpressionTree lambdaTree =
-                        (LambdaExpressionTree)
-                                TreeUtils.enclosingOfKind(path, Tree.Kind.LAMBDA_EXPRESSION);
-                FlowExpressionContext parameterContext =
-                        FlowExpressionContext.buildContextForLambda(
-                                lambdaTree, path, factory.getContext());
-                // TODO: test this.
-                standardizeUseLocals(parameterContext, path, type);
                 break;
 
             case LOCAL_VARIABLE:

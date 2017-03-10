@@ -18,8 +18,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * necessary because of two properties of wildcards:
  *
  * <ol>
- *   <li> there are times when we encounter wildcards that have recursive bounds.
- *   <li> Since getEffectiveSuperBound and getEffectiveExtendsBound copy the bound before returning
+ *   <li>there are times when we encounter wildcards that have recursive bounds.
+ *   <li>Since getEffectiveSuperBound and getEffectiveExtendsBound copy the bound before returning
  *       it, two calls that should return the same bound will NOT return objects that are .equals to
  *       each other. E.g.
  *       <pre>{@code
@@ -29,7 +29,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * // because two wildcards are .equals only if they are also referentially (==) equal
  * // and each call to getEffectiveSuperBound returns a copy of the original bound
  * }</pre>
- *
  * </ol>
  *
  * When we encounter types with property 1, property 2 ensures we cannot stop recursively comparing

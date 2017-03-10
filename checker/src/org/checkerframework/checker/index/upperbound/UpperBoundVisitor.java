@@ -6,13 +6,14 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
-import java.util.HashSet;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree.Kind;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.index.qual.LTEqLengthOf;
-import org.checkerframework.checker.index.qual.LTLengthOf;
-import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.SameLen;
+import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -30,7 +31,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     /**
-     * When the visitor reachs an array access, it needs to check a couple of things. First, it
+     * When the visitor reaches an array access, it needs to check a couple of things. First, it
      * checks if the index has been assigned a reasonable UpperBound type: only an index with type
      * LTLengthOf(arr) is safe to access arr. If that fails, it checks if the access is still safe.
      * To do so, it checks if the MinLen checker knows the minimum length of arr by querying the
@@ -47,14 +48,25 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     private void visitAccess(ExpressionTree indexTree, ExpressionTree arrTree) {
-        String arrName = FlowExpressions.internalReprOf(this.atypeFactory, arrTree).toString();
         AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
+        String arrName = FlowExpressions.internalReprOf(this.atypeFactory, arrTree).toString();
+
+        UBQualifier qualifier = UBQualifier.createUBQualifier(indexType, atypeFactory.UNKNOWN);
+        if (qualifier.isLessThanLengthOf(arrName)) {
+            return;
+        }
 
         AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromExpressionTree(arrTree);
-        // Is indexType LTL/LTOM of a set containing arrName?
-        if (indexTypeContainsArray(arrName, indexType, sameLenAnno)) {
-            // If so, this is safe - get out of here.
-            return;
+        // Produce the full list of relevant names by checking the SameLen type.
+        if (sameLenAnno != null && AnnotationUtils.areSameByClass(sameLenAnno, SameLen.class)) {
+            if (AnnotationUtils.hasElementValue(sameLenAnno, "value")) {
+                List<String> slNames =
+                        AnnotationUtils.getElementValueArray(
+                                sameLenAnno, "value", String.class, true);
+                if (qualifier.isLessThanLengthOfAny(slNames)) {
+                    return;
+                }
+            }
         }
 
         // Find max because it's important to determine whether the index is less than the
@@ -66,100 +78,82 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return;
         }
 
-        // Unsafe, since neither the Upper bound or MinLen checks succeeded.
         checker.report(
                 Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName), indexTree);
     }
 
     /**
-     * Determines if the given string is a member of the LTL or LTOM annotation attached to ubType.
-     * Requires a SameLen annotation as well, so that it can compare the set of SameLen annotations
-     * attached to the array/list to the passed string.
+     * Slightly relaxes the usual assignment rules by allowing assignments where the right hand side
+     * is a value known at compile time and the type of the left hand side is annotated with
+     * LT*LengthOf("a"). If the min length of a is in the correct relationship with the value on the
+     * right hand side, then the assignment is legal. Both constant integers and constant arrays of
+     * integers are handled.
      */
-    private boolean indexTypeContainsArray(
-            String array, AnnotatedTypeMirror ubType, AnnotationMirror sameLenAnno) {
-
-        String[] arrayNamesFromUBAnno;
-        if (ubType.hasAnnotation(LTLengthOf.class)) {
-            arrayNamesFromUBAnno =
-                    UpperBoundAnnotatedTypeFactory.getValue(ubType.getAnnotation(LTLengthOf.class));
-        } else if (ubType.hasAnnotation(LTOMLengthOf.class)) {
-            arrayNamesFromUBAnno =
-                    UpperBoundAnnotatedTypeFactory.getValue(
-                            ubType.getAnnotation(LTOMLengthOf.class));
-        } else {
-            return false;
-        }
-
-        HashSet<String> arrays = new HashSet<>();
-        arrays.add(array);
-
-        // Produce the full list of relevant names by checking the SameLen type.
-        if (sameLenAnno != null && AnnotationUtils.areSameByClass(sameLenAnno, SameLen.class)) {
-            if (AnnotationUtils.hasElementValue(sameLenAnno, "value")) {
-                List<String> slNames =
-                        AnnotationUtils.getElementValueArray(
-                                sameLenAnno, "value", String.class, true);
-                arrays.addAll(slNames);
-            }
-        }
-
-        for (String st : arrayNamesFromUBAnno) {
-            if (arrays.contains(st)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     @Override
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             ExpressionTree valueExp,
             /*@CompilerMessageKey*/ String errorKey) {
 
-        // Slightly relaxes the usual assignment rules by allowing assignments where the right
-        // hand side is a value known at compile time and the type of the left hand side is
-        // annotated with LT*LengthOf("a").  If the min length of a is in the correct
-        // relationship with the value on the right hand side, then the assignment is legal.
-        Integer rhsValue = atypeFactory.valMaxFromExpressionTree(valueExp);
-        if (rhsValue == null) {
-            super.commonAssignmentCheck(varType, valueExp, errorKey);
-            return;
-        } else if (rhsValue == 0) {
-            // 0 is an index of all arrays
-            return;
+        List<? extends ExpressionTree> expressions;
+        if (valueExp.getKind() == Kind.NEW_ARRAY) {
+            expressions = ((NewArrayTree) valueExp).getInitializers();
+        } else {
+            expressions = Collections.singletonList(valueExp);
         }
-        AnnotationMirror upperBoundAnno = varType.getAnnotationInHierarchy(atypeFactory.UNKNOWN);
 
-        boolean minLenMatches = true;
-        String[] arrayNames = UpperBoundAnnotatedTypeFactory.getValue(upperBoundAnno);
-        if (arrayNames == null) {
+        if (expressions == null || expressions.isEmpty()) {
             super.commonAssignmentCheck(varType, valueExp, errorKey);
             return;
         }
-        for (String arrayName : arrayNames) {
+
+        // Find the appropriate qualifier to try to conform to.
+        UBQualifier qualifier;
+        if (varType instanceof AnnotatedTypeMirror.AnnotatedArrayType) {
+            // The qualifier we need for an array is in the component type, not varType.
+            AnnotatedTypeMirror componentType =
+                    ((AnnotatedTypeMirror.AnnotatedArrayType) varType).getComponentType();
+            qualifier = UBQualifier.createUBQualifier(componentType, atypeFactory.UNKNOWN);
+        } else {
+            qualifier = UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN);
+        }
+
+        // If the qualifier is uninteresting or the type is unannotated, do nothing else.
+        if (qualifier == null || qualifier.isUnknownOrBottom()) { // TODO after merge
+            super.commonAssignmentCheck(varType, valueExp, errorKey);
+            return;
+        }
+        LessThanLengthOf ltl = (LessThanLengthOf) qualifier;
+
+        // Either a singleton list of the single integer on the right,
+        // or a list containing all the values in a constant array.
+        List<Integer> rhsValues = new ArrayList<>();
+        // All the values in the must be compile-time constants.
+        for (ExpressionTree exp : expressions) {
+            Integer val = atypeFactory.valMaxFromExpressionTree(exp);
+            if (val == null) {
+                super.commonAssignmentCheck(varType, valueExp, errorKey);
+                return;
+            } else {
+                rhsValues.add(val);
+            }
+        }
+
+        // Actually check that every integer in rhsValues is less than the minlen of each array.
+        for (String arrayName : ltl.getArrays()) {
             int minLen =
                     atypeFactory
                             .getMinLenAnnotatedTypeFactory()
                             .getMinLenFromString(arrayName, valueExp, getCurrentPath());
-
-            if (AnnotationUtils.areSameByClass(upperBoundAnno, LTLengthOf.class)) {
-                if (!(minLen > rhsValue)) {
-                    minLenMatches = false;
-                }
-            } else if (AnnotationUtils.areSameByClass(upperBoundAnno, LTEqLengthOf.class)) {
-                if (!(minLen >= rhsValue)) {
-                    minLenMatches = false;
-                }
-            } else if (AnnotationUtils.areSameByClass(upperBoundAnno, LTOMLengthOf.class)) {
-                if (!(minLen - 1 > rhsValue)) {
-                    minLenMatches = false;
-                }
+            boolean minLenOk = true;
+            for (Integer value : rhsValues) {
+                minLenOk =
+                        minLenOk && ltl.isValuePlusOffsetLessThanMinLen(arrayName, value, minLen);
             }
-        }
-        if (!minLenMatches) {
-            super.commonAssignmentCheck(varType, valueExp, errorKey);
+            if (!minLenOk) {
+                super.commonAssignmentCheck(varType, valueExp, errorKey);
+                return;
+            }
         }
     }
 }

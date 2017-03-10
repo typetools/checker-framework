@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.index.qual.MinLen;
 import org.checkerframework.checker.index.qual.MinLenBottom;
 import org.checkerframework.checker.index.qual.NonNegative;
@@ -25,11 +24,6 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
-import org.checkerframework.framework.flow.CFAbstractStore;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -38,14 +32,11 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -215,7 +206,9 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (valueType.hasAnnotation(ArrayLen.class)) {
             AnnotationMirror anm = valueType.getAnnotation(ArrayLen.class);
             Integer val = Collections.min(ValueAnnotatedTypeFactory.getArrayLength(anm));
-            type.replaceAnnotation(createMinLen(val));
+            type.replaceAnnotation(
+                    qualHierarchy.greatestLowerBound(
+                            createMinLen(val), type.getAnnotationInHierarchy(MIN_LEN_0)));
         }
     }
 
@@ -318,39 +311,13 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return min length of arrayExpression or 0
      */
     public int getMinLenFromString(String arrayExpression, Tree tree, TreePath currentPath) {
-        TypeMirror enclosingClass = InternalUtils.typeOf(TreeUtils.enclosingClass(currentPath));
-
-        FlowExpressions.Receiver r =
-                FlowExpressions.internalRepOfPseudoReceiver(currentPath, enclosingClass);
-        FlowExpressionContext context =
-                new FlowExpressionContext(
-                        r,
-                        FlowExpressions.getParametersOfEnclosingMethod(this, currentPath),
-                        this.getContext());
-
-        FlowExpressions.Receiver array;
-        try {
-            array = FlowExpressionParseUtil.parse(arrayExpression, context, currentPath, true);
-        } catch (FlowExpressionParseException ex) {
-            // ignore parse errors.
-            return 0;
-        }
         AnnotationMirror minLenAnno = null;
-        if (CFAbstractStore.canInsertReceiver(array)) {
-            CFValue value = getStoreBefore(tree).getValue(array);
-            if (value != null) {
-                minLenAnno =
-                        AnnotationUtils.getAnnotationByClass(value.getAnnotations(), MinLen.class);
-            }
-        }
-        if (minLenAnno == null) {
-            if (array instanceof LocalVariable) {
-                Element ele = ((LocalVariable) array).getElement();
-                minLenAnno = getAnnotatedType(ele).getAnnotationInHierarchy(MIN_LEN_0);
-            } else if (array instanceof FieldAccess) {
-                Element ele = ((FieldAccess) array).getField();
-                minLenAnno = getAnnotatedType(ele).getAnnotationInHierarchy(MIN_LEN_0);
-            }
+        try {
+            minLenAnno =
+                    getAnnotationFromJavaExpressionString(
+                            arrayExpression, tree, currentPath, MinLen.class);
+        } catch (FlowExpressionParseException e) {
+            // ignore parse errors
         }
         if (minLenAnno == null) {
             // Could not find a more precise type, so return 0;

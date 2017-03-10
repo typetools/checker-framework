@@ -7,7 +7,7 @@ create a simple type-checker without writing any code beyond definitions of
 the type qualifier annotations.
 
 The Subtyping Checker can accommodate all of the type system enhancements that
-can be declaratively specified (see Chapter~\ref{writing-a-checker}).
+can be declaratively specified (see Chapter~\ref{creating-a-checker}).
 This includes type introduction rules (implicit
 annotations, e.g., literals are implicitly considered \refqualclass{checker/nullness/qual}{NonNull}) via
 the \refqualclass{framework/qual}{ImplicitFor} meta-annotation, and other features such as
@@ -27,7 +27,7 @@ See Section~\ref{faq-typestate} for a simpler alternative.
 
 For type systems that require special checks (e.g., warning about
 dereferences of possibly-null values), you will need to write code and
-extend the framework as discussed in Chapter~\ref{writing-a-checker}.
+extend the framework as discussed in Chapter~\ref{creating-a-checker}.
 
 
 \section{Using the Subtyping Checker\label{subtyping-using}}

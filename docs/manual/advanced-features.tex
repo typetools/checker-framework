@@ -885,19 +885,26 @@ Section~\ref{type-refinement-purity}.
 
 \subsection{Side effects, determinism, purity, and flow-sensitive analysis\label{type-refinement-purity}}
 
+Side effect analysis is important for helping a checker reason about the
+values of expressions.
+
 As described above, a checker can use a refined type for an expression from
 the time when the checker infers that the value has that refined type,
 until the checker can no longer support that inference.
 
-The refined type begins at a test (such as \<if (myvar != null) ...>) or
-an assignment.  If the assignment occurs within a method body,
-you can write a postcondition annotation such as
-\refqualclass{checker/nullness/qual}{EnsuresNonNull}.
-
-The refined type ends at an assignment or possible assignment.  Any method
-call has the potential to side-effect any field, so calling a method
-typically causes the checker to discard its knowledge of the refined type.
-This is undesirable if the method doesn't actually re-assign the field.
+\begin{itemize}
+\item
+  The refined type \emph{begins} at a test (such as \<if (myvar != null)
+  ...>) or an assignment.  If the assignment occurs within a method body,
+  you can write a postcondition annotation such as
+  \refqualclass{checker/nullness/qual}{EnsuresNonNull}.
+\item
+  The refined type \emph{ends} at an assignment or possible assignment.
+  Any method call has the potential to side-effect any field, so calling a
+  method typically causes the checker to discard its knowledge of the
+  refined type.  This is undesirable if the method doesn't actually
+  re-assign the field.
+\end{itemize}
 
 There are three annotations, collectively called purity annotations, that
 you can use to help express what effects a method call does not have.

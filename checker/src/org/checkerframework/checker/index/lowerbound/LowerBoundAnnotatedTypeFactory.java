@@ -2,7 +2,6 @@ package org.checkerframework.checker.index.lowerbound;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
@@ -15,6 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.minlen.MinLenChecker;
@@ -93,6 +93,49 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         NonNegative.class,
                         GTENegativeOne.class,
                         LowerBoundUnknown.class));
+    }
+
+    /**
+     * Takes a value type (only interesting if it's an IntVal), and converts it to a lower bound
+     * type. If the new lower bound type is more specific than type, convert type to that type.
+     *
+     * @param valueType the value checker's type
+     * @param type the current lower bound type of the expression being evaluated
+     */
+    private void addLowerBoundTypeFromValueType(
+            AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
+        AnnotationMirror anm = getLowerBoundAnnotationFromValueType(valueType);
+        if (!type.isAnnotatedInHierarchy(UNKNOWN)) {
+            if (!AnnotationUtils.areSameByClass(anm, LowerBoundUnknown.class)) {
+                type.addAnnotation(anm);
+            }
+            return;
+        }
+        if (qualHierarchy.isSubtype(anm, type.getAnnotationInHierarchy(UNKNOWN))) {
+            type.replaceAnnotation(anm);
+        }
+    }
+
+    @Override
+    public void addComputedTypeAnnotations(Element element, AnnotatedTypeMirror type) {
+        super.addComputedTypeAnnotations(element, type);
+        if (element != null) {
+            AnnotatedTypeMirror valueType =
+                    getValueAnnotatedTypeFactory().getAnnotatedType(element);
+            addLowerBoundTypeFromValueType(valueType, type);
+        }
+    }
+
+    @Override
+    public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+        super.addComputedTypeAnnotations(tree, type, iUseFlow);
+        // If dataflow shouldn't be used to compute this type, then do not use the result from
+        // the Value Checker, because dataflow is used to compute that type.  (Without this,
+        // "int i = 1; --i;" fails.)
+        if (iUseFlow && tree != null && TreeUtils.isExpressionTree(tree)) {
+            AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
+            addLowerBoundTypeFromValueType(valueType, type);
+        }
     }
 
     public ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
@@ -214,16 +257,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        @Override
-        public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            if (tree.getKind() == Tree.Kind.NULL_LITERAL) {
-                return super.visitLiteral(tree, type);
-            }
-            AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
-            type.addAnnotation(getLowerBoundAnnotationFromValueType(valueType));
-            return super.visitLiteral(tree, type);
-        }
-
         /** Call increment and decrement helper functions. */
         @Override
         public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror typeDst) {
@@ -308,15 +341,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // Check if this is a string concatenation. If so, bail.
             if (TreeUtils.isStringConcatenation(tree)) {
                 type.addAnnotation(UNKNOWN);
-                return super.visitBinary(tree, type);
-            }
-
-            // Check if the Value Checker's information bounds the value within one of the
-            // lowerbound types.
-            AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
-            AnnotationMirror lowerBoundAnm = getLowerBoundAnnotationFromValueType(valueType);
-            if (lowerBoundAnm != UNKNOWN) {
-                type.addAnnotation(lowerBoundAnm);
                 return super.visitBinary(tree, type);
             }
 

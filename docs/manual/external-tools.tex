@@ -47,14 +47,14 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-2.1.8/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-2.1.9/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.8
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.9
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -79,7 +79,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.8
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.9
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -87,7 +87,7 @@ use the last one.
     indicate:
 
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.8
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.9
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac -source 7 -target 7'
 \end{Verbatim}
 
@@ -104,7 +104,7 @@ use the last one.
    run checker.jar via \<java> (not \<javac>) as in:
 
 \begin{Verbatim}
-  java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar ...
+  java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar" ...
 \end{Verbatim}
 
     You can simplify the above command by introducing an alias.  Then,
@@ -113,12 +113,12 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.8
-  alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.9
+  alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.1.8\
-  doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.1.9\
+  doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
    \noindent
@@ -139,7 +139,7 @@ Framework \<javac> to your path).
 The output should be:
 
 \begin{Verbatim}
-  javac 1.8.0-jsr308-2.1.8
+  javac 1.8.0-jsr308-2.1.9
 \end{Verbatim}
 
 
@@ -371,6 +371,19 @@ checker as an annotation processor directly.
     </dependencies>
 \end{alltt}
 
+If you wish to use a local version of the Checker Framework (for example,
+one that you have built from source), then add two lines just before each
+occurrence of \code{</dependency>}:
+
+\begin{alltt}
+            <scope>system</scope>
+            <systemPath>\${env.CHECKERFRAMEWORK}/checker/dist/\emph{artifactID}.jar</systemPath>
+\end{alltt}
+
+\noindent
+where \emph{artifactID} is a jar file name, such as \<checker-qual>.
+
+
 \item Use Maven properties to hold the locations of the
   annotated JDK and (if using annotations in comments), the type annotations compiler.  Both were declared as Maven dependencies above.
 To set the value of these properties automatically, use the Maven Dependency plugin.
@@ -512,7 +525,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '2.1.8'
+    ext.checkerFrameworkVersion = '2.1.9'
     ext.jdkVersion = JavaVersion.current().isJava7() ? 'jdk7' : 'jdk8'
     checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
 
@@ -594,7 +607,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '2.1.8'
+    ext.checkerFrameworkVersion = '2.1.9'
     ext.jdkVersion = JavaVersion.current().isJava7() ? 'jdk7' : 'jdk8'
     checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
     checkerFrameworkJavac "org.checkerframework:compiler:${checkerFrameworkVersion}"
@@ -685,10 +698,14 @@ To run a checker within IntelliJ:
   \<\$CHECKERFRAMEWORK/checker/dist/checker.jar> into the field to the right
   of it. To add a checker to be run during compilation, click on the green
   ``+'' in the ``Processor FQ Name'' section and write that checker's
-  fully-qualified name
-  (\<org.checkerframework.checker.\emph{CHECKER}.\emph{CHECKER}Checker>) in
+  fully-qualified name in
   the resulting text field, and press the ``ENTER'' key.
   % Without the ENTER key, the setting won't be saved.
+  (The fully-qualified name is usually an instantiation of
+  \<org.checkerframework.checker.\emph{CHECKER}.\emph{CHECKER}Checker>,
+  replacing \emph{CHECKER} by the checker you
+  want to run; an example would be
+  \<org.checkerframework.checker.nullness.NullnessChecker>.)
 
 \end{enumerate}
 
@@ -795,7 +812,9 @@ You can download it from \myurl{https://sourceforge.net/projects/tide/}.
 
 \section{NetBeans\label{netbeans}}
 
-There are three approaches to running a checker in Netbeans: via modifying the project properties, via a custom ant target, or using the Netbeans Checker Framework plugin.
+There are three approaches to running a checker in NetBeans: via modifying
+the project properties, via a custom ant target, or using the Netbeans
+Checker Framework plugin.
 
 
 \subsection{Adding a checker via the Project Properties window\label{netbeans-project-properties}}
@@ -1058,8 +1077,9 @@ inside the body of a method.
 % LocalWords:  compilerArgs Xbootclasspath JSR308 jsr308 jsr308javac mvn
 %  LocalWords:  plugins proc procOnly DirectoryScanner setIncludes groupId
 %  LocalWords:  setExcludes checkerFrameworkVersion javacParams javaParams
-%%  LocalWords:  artifactId quals failOnError ejc CHECKERFRAMEWORK
-%%  LocalWords:  javacheck checkerframework MavenExample org arg
+%%  LocalWords:  artifactId quals failOnError ejc CHECKERFRAMEWORK env
+%%  LocalWords:  javacheck checkerframework MavenExample org arg typecheck
 %%  LocalWords:  AoutputArgsToFile qual jdk7 jdk8 annotatedJdk Unhandled
-%%  LocalWords:  annotationProcessors annotationProcessor JavaCompile
+%%  LocalWords:  annotationProcessors annotationProcessor JavaCompile Ctrl
 %%  LocalWords:  typeAnnotationsJavac targetJavaVersion GradleExamples
+%%  LocalWords:  systemPath artifactID MacOS

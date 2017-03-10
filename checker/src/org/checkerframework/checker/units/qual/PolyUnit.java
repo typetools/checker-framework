@@ -34,6 +34,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * </pre>
  *
  * @checker_framework.manual #units-checker Units Checker
+ * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @Documented
 @PolymorphicQualifier(UnknownUnits.class)

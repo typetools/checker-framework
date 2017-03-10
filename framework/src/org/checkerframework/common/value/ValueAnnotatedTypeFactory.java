@@ -9,6 +9,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
+import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,6 +50,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -967,5 +969,23 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
         return new ArrayList<>();
+    }
+
+    public List<Long> getIntValuesFromExpression(
+            String expression, Tree tree, TreePath currentPath) {
+        AnnotationMirror intValAnno = null;
+        try {
+            intValAnno =
+                    getAnnotationFromJavaExpressionString(
+                            expression, tree, currentPath, IntVal.class);
+        } catch (FlowExpressionParseException e) {
+            // ignore parse errors
+            return null;
+        }
+        if (intValAnno == null) {
+            return null;
+        }
+
+        return getIntValues(intValAnno);
     }
 }

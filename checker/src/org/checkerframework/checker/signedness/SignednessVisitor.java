@@ -4,7 +4,6 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
@@ -14,6 +13,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * The SignednessVisitor enforces the Signedness Checker rules. These rules are described in detail
@@ -136,8 +136,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                         : maskExpr.getRightOperand();
 
         // Strip away the parentheses from the mask if any exist
-        while (mask.getKind() == Kind.PARENTHESIZED)
-            mask = ((ParenthesizedTree) mask).getExpression();
+        mask = TreeUtils.skipParens(mask);
 
         if (!isLiteral(shift) || !isLiteral(mask)) {
             return false;
@@ -153,12 +152,12 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      * Enforces the following rules on binary operations involving Unsigned and Signed types:
      *
      * <ul>
-     *   <li> Do not allow any Unsigned types in {@literal {/, %}} operations.
-     *   <li> Do not allow signed right shift {@literal {>>}} on an Unsigned type.
-     *   <li> Do not allow unsigned right shift {@literal {>>>}} on a Signed type.
-     *   <li> Allow any left shift {@literal {<<}}.
-     *   <li> Do not allow non-equality comparisons {@literal {<, <=, >, >=}} on Unsigned types.
-     *   <li> Do not allow the mixing of Signed and Unsigned types.
+     *   <li>Do not allow any Unsigned types in {@literal {/, %}} operations.
+     *   <li>Do not allow signed right shift {@literal {>>}} on an Unsigned type.
+     *   <li>Do not allow unsigned right shift {@literal {>>>}} on a Signed type.
+     *   <li>Allow any left shift {@literal {<<}}.
+     *   <li>Do not allow non-equality comparisons {@literal {<, <=, >, >=}} on Unsigned types.
+     *   <li>Do not allow the mixing of Signed and Unsigned types.
      * </ul>
      */
     @Override
@@ -245,11 +244,11 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      * Enforces the following rules on compound assignments involving Unsigned and Signed types:
      *
      * <ul>
-     *   <li> Do not allow any Unsigned types in {@literal {/=, %=}} assignments.
-     *   <li> Do not allow signed right shift {@literal {>>=}} to assign to an Unsigned type.
-     *   <li> Do not allow unsigned right shift {@literal {>>>=}} to assign to a Signed type.
-     *   <li> Allow any left shift {@literal {<<=}} assignment.
-     *   <li> Do not allow mixing of Signed and Unsigned types.
+     *   <li>Do not allow any Unsigned types in {@literal {/=, %=}} assignments.
+     *   <li>Do not allow signed right shift {@literal {>>=}} to assign to an Unsigned type.
+     *   <li>Do not allow unsigned right shift {@literal {>>>=}} to assign to a Signed type.
+     *   <li>Allow any left shift {@literal {<<=}} assignment.
+     *   <li>Do not allow mixing of Signed and Unsigned types.
      * </ul>
      */
     @Override

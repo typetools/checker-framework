@@ -32,14 +32,12 @@ import org.checkerframework.javacutil.TreeUtils;
  * java -processor org.checkerframework.common.util.debug.TypeOutputtingChecker [source-file]
  *
  * }</pre>
- *
  *   <li>Run the Checker on the bytecode, by simply running the main and passing the qualified name,
  *       e.g.
  *       <pre>{@code
  * java org.checkerframework.common.util.debug.TypeOutputtingChecker [qualified-name]
  *
  * }</pre>
- *
  *   <li>Apply a simple diff on the two outputs
  * </ol>
  */
@@ -60,14 +58,14 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
         // Print types of classes, methods, and fields
         @Override
-        public Void visitClass(ClassTree node, Void p) {
+        public void processClassTree(ClassTree node) {
             TypeElement element = TreeUtils.elementFromDeclaration(node);
             currentClass = element.getSimpleName().toString();
 
             AnnotatedDeclaredType type = atypeFactory.getAnnotatedType(node);
             System.out.println(node.getSimpleName() + "\t" + type + "\t" + type.directSuperTypes());
 
-            return super.visitClass(node, p);
+            super.processClassTree(node);
         }
 
         @Override
