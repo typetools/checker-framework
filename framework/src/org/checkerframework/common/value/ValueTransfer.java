@@ -193,15 +193,6 @@ public class ValueTransfer extends CFTransfer {
     }
 
     private TransferResult<CFValue, CFStore> createNewResult(
-            TransferResult<CFValue, CFStore> result, List<Number> resultValues) {
-        AnnotationMirror stringVal = createNumberAnnotationMirror(resultValues);
-        CFValue newResultValue =
-                analysis.createSingleAnnotationValue(
-                        stringVal, result.getResultValue().getUnderlyingType());
-        return new RegularTransferResult<>(newResultValue, result.getRegularStore());
-    }
-
-    private TransferResult<CFValue, CFStore> createNewResult(
             TransferResult<CFValue, CFStore> result, AnnotationMirror resultAnno) {
         CFValue newResultValue =
                 analysis.createSingleAnnotationValue(
@@ -324,12 +315,12 @@ public class ValueTransfer extends CFTransfer {
             Node rightNode,
             NumericalBinaryOps op,
             TransferInput<CFValue, CFStore> p) {
-        List<Number> resultValues = new ArrayList<>();
         List<? extends Number> lefts = getNumericalValues(leftNode, p);
         List<? extends Number> rights = getNumericalValues(rightNode, p);
         if (lefts == null || rights == null) {
             return null;
         }
+        List<Number> resultValues = new ArrayList<>();
         for (Number left : lefts) {
             NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
             for (Number right : rights) {
@@ -379,139 +370,139 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitNumericalAddition(
             NumericalAdditionNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitNumericalAddition(n, p);
-        AnnotationMirror resultValues =
+        AnnotationMirror resultAnno =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.ADDITION, p);
-        return createNewResult(transferResult, resultValues);
+        return createNewResult(transferResult, resultAnno);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitNumericalSubtraction(
             NumericalSubtractionNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitNumericalSubtraction(n, p);
-        AnnotationMirror resultValues =
+        AnnotationMirror resultAnno =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.SUBTRACTION, p);
-        return createNewResult(transferResult, resultValues);
+        return createNewResult(transferResult, resultAnno);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitNumericalMultiplication(
             NumericalMultiplicationNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitNumericalMultiplication(n, p);
-        AnnotationMirror resultValues =
+        AnnotationMirror resultAnno =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(),
                         n.getRightOperand(),
                         NumericalBinaryOps.MULTIPLICATION,
                         p);
-        return createNewResult(transferResult, resultValues);
+        return createNewResult(transferResult, resultAnno);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitIntegerDivision(
             IntegerDivisionNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitIntegerDivision(n, p);
-        AnnotationMirror resultValues =
+        AnnotationMirror resultAnno =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.DIVISION, p);
-        return createNewResult(transferResult, resultValues);
+        return createNewResult(transferResult, resultAnno);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitFloatingDivision(
             FloatingDivisionNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitFloatingDivision(n, p);
-        AnnotationMirror resultValues =
+        AnnotationMirror resultAnno =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.DIVISION, p);
-        return createNewResult(transferResult, resultValues);
+        return createNewResult(transferResult, resultAnno);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitIntegerRemainder(
             IntegerRemainderNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitIntegerRemainder(n, p);
-        AnnotationMirror resultValues =
+        AnnotationMirror resultAnno =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.REMAINDER, p);
-        return createNewResult(transferResult, resultValues);
+        return createNewResult(transferResult, resultAnno);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitFloatingRemainder(
             FloatingRemainderNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitFloatingRemainder(n, p);
-        AnnotationMirror resultValues =
+        AnnotationMirror resultAnno =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.REMAINDER, p);
-        return createNewResult(transferResult, resultValues);
+        return createNewResult(transferResult, resultAnno);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitLeftShift(
             LeftShiftNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitLeftShift(n, p);
-        AnnotationMirror resultValues =
+        AnnotationMirror resultAnno =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.SHIFT_LEFT, p);
-        return createNewResult(transferResult, resultValues);
+        return createNewResult(transferResult, resultAnno);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitSignedRightShift(
             SignedRightShiftNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitSignedRightShift(n, p);
-        AnnotationMirror resultValues =
+        AnnotationMirror resultAnno =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(),
                         n.getRightOperand(),
                         NumericalBinaryOps.SIGNED_SHIFT_RIGHT,
                         p);
-        return createNewResult(transferResult, resultValues);
+        return createNewResult(transferResult, resultAnno);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitUnsignedRightShift(
             UnsignedRightShiftNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitUnsignedRightShift(n, p);
-        AnnotationMirror resultValues =
+        AnnotationMirror resultAnno =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(),
                         n.getRightOperand(),
                         NumericalBinaryOps.UNSIGNED_SHIFT_RIGHT,
                         p);
-        return createNewResult(transferResult, resultValues);
+        return createNewResult(transferResult, resultAnno);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitBitwiseAnd(
             BitwiseAndNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitBitwiseAnd(n, p);
-        AnnotationMirror resultValues =
+        AnnotationMirror resultAnno =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.BITWISE_AND, p);
-        return createNewResult(transferResult, resultValues);
+        return createNewResult(transferResult, resultAnno);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitBitwiseOr(
             BitwiseOrNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitBitwiseOr(n, p);
-        AnnotationMirror resultValues =
+        AnnotationMirror resultAnno =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.BITWISE_OR, p);
-        return createNewResult(transferResult, resultValues);
+        return createNewResult(transferResult, resultAnno);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitBitwiseXor(
             BitwiseXorNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitBitwiseXor(n, p);
-        AnnotationMirror resultValues =
+        AnnotationMirror resultAnno =
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.BITWISE_XOR, p);
-        return createNewResult(transferResult, resultValues);
+        return createNewResult(transferResult, resultAnno);
     }
 
     enum NumericalUnaryOps {
@@ -520,26 +511,57 @@ public class ValueTransfer extends CFTransfer {
         BITWISE_COMPLEMENT;
     }
 
-    private List<Number> calculateNumericalUnaryOp(
+    private AnnotationMirror calculateNumericalUnaryOp(
             Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
-        List<Number> resultValues = new ArrayList<>();
         if (!isIntRange(operand, p)) {
-            List<? extends Number> lefts = getNumericalValues(operand, p);
-            for (Number left : lefts) {
-                NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
-                switch (op) {
-                    case PLUS:
-                        resultValues.add(nmLeft.unaryPlus());
-                        break;
-                    case MINUS:
-                        resultValues.add(nmLeft.unaryMinus());
-                        break;
-                    case BITWISE_COMPLEMENT:
-                        resultValues.add(nmLeft.bitwiseComplement());
-                        break;
-                    default:
-                        throw new UnsupportedOperationException();
-                }
+            List<Number> resultValues = calculateValuesUnaryOp(operand, op, p);
+            return createNumberAnnotationMirror(resultValues);
+        } else {
+            Range resultRange = calculateRangeUnaryOp(operand, op, p);
+            return createRangeAnnotationMirror(resultRange);
+        }
+    }
+
+    private Range calculateRangeUnaryOp(
+            Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
+        if (TypesUtils.isIntegral(operand.getType())) {
+            Range range = getIntRange(operand, p);
+            switch (op) {
+                case PLUS:
+                    return range.unaryPlus();
+                case MINUS:
+                    return range.unaryMinus();
+                case BITWISE_COMPLEMENT:
+                    return range.bitwiseComplement();
+                default:
+                    throw new UnsupportedOperationException();
+            }
+        } else {
+            return Range.EVERYTHING;
+        }
+    }
+
+    private List<Number> calculateValuesUnaryOp(
+            Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
+        List<? extends Number> lefts = getNumericalValues(operand, p);
+        if (lefts == null) {
+            return null;
+        }
+        List<Number> resultValues = new ArrayList<>();
+        for (Number left : lefts) {
+            NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
+            switch (op) {
+                case PLUS:
+                    resultValues.add(nmLeft.unaryPlus());
+                    break;
+                case MINUS:
+                    resultValues.add(nmLeft.unaryMinus());
+                    break;
+                case BITWISE_COMPLEMENT:
+                    resultValues.add(nmLeft.bitwiseComplement());
+                    break;
+                default:
+                    throw new UnsupportedOperationException();
             }
         }
         return resultValues;
@@ -549,27 +571,27 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitNumericalMinus(
             NumericalMinusNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitNumericalMinus(n, p);
-        List<Number> resultValues =
+        AnnotationMirror resultAnno =
                 calculateNumericalUnaryOp(n.getOperand(), NumericalUnaryOps.MINUS, p);
-        return createNewResult(transferResult, resultValues);
+        return createNewResult(transferResult, resultAnno);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitNumericalPlus(
             NumericalPlusNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitNumericalPlus(n, p);
-        List<Number> resultValues =
+        AnnotationMirror resultAnno =
                 calculateNumericalUnaryOp(n.getOperand(), NumericalUnaryOps.PLUS, p);
-        return createNewResult(transferResult, resultValues);
+        return createNewResult(transferResult, resultAnno);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitBitwiseComplement(
             BitwiseComplementNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitBitwiseComplement(n, p);
-        List<Number> resultValues =
+        AnnotationMirror resultAnno =
                 calculateNumericalUnaryOp(n.getOperand(), NumericalUnaryOps.BITWISE_COMPLEMENT, p);
-        return createNewResult(transferResult, resultValues);
+        return createNewResult(transferResult, resultAnno);
     }
 
     enum ComparisonOperators {
