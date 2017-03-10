@@ -417,8 +417,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         }
 
         if (outside.getKind() == TypeKind.WILDCARD) {
-
             final AnnotatedWildcardType outsideWc = (AnnotatedWildcardType) outside;
+
+            if (!checkAndSubtype(outsideWc.getSuperBound(), inside, visited)) {
+                return false;
+            }
 
             AnnotatedTypeMirror outsideWcUB = outsideWc.getExtendsBound();
             if (inside.getKind() == TypeKind.WILDCARD) {
@@ -426,12 +429,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
                         checker.getTypeFactory()
                                 .widenToUpperBound(outsideWcUB, (AnnotatedWildcardType) inside);
             }
+            while (outsideWcUB.getKind() == TypeKind.WILDCARD) {
+                outsideWcUB = ((AnnotatedWildcardType) outsideWcUB).getExtendsBound();
+            }
 
-            boolean aboveSuperBound = checkAndSubtype(outsideWc.getSuperBound(), inside, visited);
             AnnotatedTypeMirror castedInside = castedAsSuper(inside, outsideWcUB);
-            boolean belowExtendsBound = checkAndSubtype(castedInside, outsideWcUB, visited);
-            return belowExtendsBound && aboveSuperBound;
-
+            return checkAndSubtype(castedInside, outsideWcUB, visited);
         } else { //TODO: IF WE NEED TO COMPARE A WILDCARD TO A CAPTURE OF A WILDCARD WE FAIL IN ARE_EQUAL -> DO CAPTURE CONVERSION
             return areEqualInHierarchy(inside, outside, currentTop);
         }
@@ -1031,10 +1034,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
                 // TODO: wildcard capture conversion
                 // Two unannotated uses of reference-equal wildcard types are the same type
                 return true;
-            } else {
-                // Otherwise just check that the upper bounds are in the correct relationship
-                AnnotatedWildcardType superWildcard = (AnnotatedWildcardType) supertype;
-                return isSubtype(subtype.getExtendsBound(), superWildcard.getExtendsBound());
             }
         }
 
