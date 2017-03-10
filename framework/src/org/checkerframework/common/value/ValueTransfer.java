@@ -353,10 +353,10 @@ public class ValueTransfer extends CFTransfer {
                         resultValues.add(nmLeft.shiftLeft(right));
                         break;
                     case SIGNED_SHIFT_RIGHT:
-                        resultValues.add(nmLeft.signedSiftRight(right));
+                        resultValues.add(nmLeft.signedShiftRight(right));
                         break;
                     case UNSIGNED_SHIFT_RIGHT:
-                        resultValues.add(nmLeft.unsignedSiftRight(right));
+                        resultValues.add(nmLeft.unsignedShiftRight(right));
                         break;
                     case BITWISE_AND:
                         resultValues.add(nmLeft.bitwiseAnd(right));

@@ -35,9 +35,9 @@ public abstract class NumberMath<T extends Number> {
 
     public abstract Number shiftLeft(Number right);
 
-    public abstract Number signedSiftRight(Number right);
+    public abstract Number signedShiftRight(Number right);
 
-    public abstract Number unsignedSiftRight(Number right);
+    public abstract Number unsignedShiftRight(Number right);
 
     public abstract Number bitwiseAnd(Number right);
 
