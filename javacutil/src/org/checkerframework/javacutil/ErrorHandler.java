@@ -11,7 +11,5 @@ public interface ErrorHandler {
      *
      * @param msg the error message to log
      */
-    public void errorAbort(String msg);
-
     public void errorAbort(String msg, Throwable cause);
 }
