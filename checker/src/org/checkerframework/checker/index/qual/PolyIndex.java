@@ -1,7 +1,7 @@
 package org.checkerframework.checker.index.qual;
 
 /**
- * A polymorphic qualifier for the Lower and Upper Bound type system.
+ * A polymorphic qualifier for the Lower Bound and Upper Bound type systems.
  *
  * <p>Writing {@code @PolyIndex} is equivalent to writing {@link PolyUpperBound @PolyUpperBound}
  * {@link PolyLowerBound @PolyLowerBound}, and that is how it is treated internally by the checker.

@@ -133,7 +133,7 @@ are some annotations that give multiple types of information:
   }
   \end{Verbatim}
 
- \item[\refqualclasswithparams{checker/index/qual}{PolyIndex}]
+ \item[\refqualclass{checker/index/qual}{PolyIndex}]
    indicates qualifier polymorphism.  This type combines
    \refqualclass{checker/index/qual}{PolyLowerBound} and
    \refqualclass{checker/index/qual}{PolyUpperBound}.
@@ -161,7 +161,7 @@ qualifiers:
 \item[\refqualclass{checker/index/qual}{LowerBoundUnknown}]
   There is no information about the value.
   It may not be used as an index for a sequence, because it might be too low.
-\item[\refqualclasswithparams{checker/index/qual}{PolyLowerBound}]
+\item[\refqualclass{checker/index/qual}{PolyLowerBound}]
   indicates qualifier polymorphism.
   For a description of qualifier polymorphism, see
   Section~\ref{qualifier-polymorphism}.
@@ -257,7 +257,7 @@ or \code{@LTOMLengthOf({"arr"})}.
   This is the bottom type for the upper bound type system. It should
   never need to be written by the programmer.
 
- \item[\refqualclasswithparams{checker/index/qual}{PolyUpperBound}]
+ \item[\refqualclass{checker/index/qual}{PolyUpperBound}]
    indicates qualifier polymorphism.
    For a description of qualifier polymorphism, see
    Section~\ref{qualifier-polymorphism}.
@@ -306,7 +306,7 @@ Array minimum lengths use the following type qualifiers
   This is the bottom type for the MinLen type system.
   Programmers should rarely need to write it.
   \code{null} has this type.
-\item[\refqualclasswithparams{checker/index/qual}{PolyMinLen}]
+\item[\refqualclass{checker/index/qual}{PolyMinLen}]
   indicates qualifier polymorphism.
   For a description of qualifier polymorphism, see
   Section~\ref{qualifier-polymorphism}.
@@ -363,7 +363,7 @@ When needed, you can specify which sequences have the same length using the foll
   This is the top type, and programmers should never need to write it.
 \item[\refqualclass{checker/index/qual}{SameLenBottom}]
   This is the bottom type, and programmers should rarely need to write it.
-\item[\refqualclasswithparams{checker/index/qual}{PolySameLen}]
+\item[\refqualclass{checker/index/qual}{PolySameLen}]
   indicates qualifier polymorphism.
   For a description of qualifier polymorphism, see
   Section~\ref{qualifier-polymorphism}.

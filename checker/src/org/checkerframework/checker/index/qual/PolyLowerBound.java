@@ -7,7 +7,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 /**
  * A polymorphic qualifier for the Lower Bound type system.
  *
- * <p>* @checker_framework.manual #index-checker Index Checker
+ * @checker_framework.manual #index-checker Index Checker
  */
 @PolymorphicQualifier(LowerBoundUnknown.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
