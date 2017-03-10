@@ -16,6 +16,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * String}.
  *
  * @checker_framework.manual #signature-checker Signature Checker
+ * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @Documented
 @PolymorphicQualifier
