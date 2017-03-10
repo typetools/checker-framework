@@ -1,5 +1,6 @@
 package org.checkerframework.common.aliasing;
 
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import java.lang.annotation.Annotation;
 import java.util.Map;
@@ -57,7 +58,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return ret;
     }
 
-    protected static class AliasingTreeAnnotator extends TreeAnnotator {
+    protected class AliasingTreeAnnotator extends TreeAnnotator {
 
         public AliasingTreeAnnotator(AliasingAnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
@@ -76,6 +77,12 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Set<AnnotationMirror> defaultedSet = defaulted.getAnnotations();
             p.replaceAnnotations(defaultedSet);
             return null;
+        }
+
+        @Override
+        public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
+            type.replaceAnnotation(UNIQUE);
+            return super.visitNewArray(node, type);
         }
     }
 
