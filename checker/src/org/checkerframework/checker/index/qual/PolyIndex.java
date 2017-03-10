@@ -9,6 +9,7 @@ package org.checkerframework.checker.index.qual;
  * {@code @PolyUpperBound} or {@code @PolyLowerBound}.
  *
  * @checker_framework.manual #index-checker Index Checker
+ * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  * @see PolyUpperBound
  * @see PolyLowerBound
  */
