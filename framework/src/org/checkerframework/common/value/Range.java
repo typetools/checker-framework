@@ -29,6 +29,9 @@ public class Range {
     /** A range containing all possible 16-bit values values. */
     public static final Range SHORT_EVERYTHING = new Range(Short.MIN_VALUE, Short.MAX_VALUE);
 
+    /** A range containing all possible 8-bit values values. */
+    public static final Range BYTE_EVERYTHING = new Range(Byte.MIN_VALUE, Byte.MAX_VALUE);
+
     /** The empty range. */
     public static final Range NOTHING = new Range(true);
 
@@ -154,6 +157,34 @@ public class Range {
                 return new Range(shortFrom, shortTo);
             } else {
                 return SHORT_EVERYTHING;
+            }
+        }
+    }
+
+    /** The number of values representable in 8 bits: 2^8 or 1&lt;&lt;8. */
+    private static long byteWidth = Byte.MAX_VALUE - Byte.MIN_VALUE + 1;
+
+    /**
+     * Converts a this range to a 8-bit byte range.
+     *
+     * <p>If this range is too wide, i.e., wider than the full range of the Byte class, return
+     * BYTE_EVERYTHING.
+     *
+     * <p>If the bounds of this range are not representable as 8-bit integers, convert the bounds to
+     * Integer type in accordance with Java overflow rules, e.g., Byte.MAX_VALUE + 1 is converted to
+     * Byte.MIN_VALUE.
+     */
+    public Range byteRange() {
+        if (this.isWiderThan(byteWidth)) {
+            // byte is be promoted to int before the operation so no need for explicit casting
+            return BYTE_EVERYTHING;
+        } else {
+            byte byteFrom = (byte) this.from;
+            byte byteTo = (byte) this.to;
+            if (byteFrom <= byteTo) {
+                return new Range(byteFrom, byteTo);
+            } else {
+                return BYTE_EVERYTHING;
             }
         }
     }
@@ -776,7 +807,7 @@ public class Range {
         return isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
-    private static final BigInteger longPossibleValues =
+    private static final BigInteger longWidth =
             BigInteger.valueOf(Long.MAX_VALUE)
                     .subtract(BigInteger.valueOf(Long.MIN_VALUE))
                     .add(BigInteger.ONE);
@@ -797,7 +828,7 @@ public class Range {
      */
     private static Range bigRangeToLongRange(BigInteger bigFrom, BigInteger bigTo) {
         BigInteger numValues = bigTo.subtract(bigFrom).add(BigInteger.ONE);
-        if (numValues.compareTo(longPossibleValues) == 1) {
+        if (numValues.compareTo(longWidth) == 1) {
             return EVERYTHING;
         } else {
             long resultFrom = bigFrom.longValue();

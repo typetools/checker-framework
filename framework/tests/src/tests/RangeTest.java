@@ -23,11 +23,15 @@ public class RangeTest {
         Short.MIN_VALUE - 10L,
         Short.MIN_VALUE,
         Short.MIN_VALUE + 1L,
-        -10L,
-        -1L,
+        Byte.MIN_VALUE - 1000L,
+        Byte.MIN_VALUE - 10L,
+        Byte.MIN_VALUE,
+        Byte.MIN_VALUE + 1L,
         0L,
-        1L,
-        10L,
+        Byte.MAX_VALUE - 1L,
+        Byte.MAX_VALUE,
+        Byte.MAX_VALUE + 10L,
+        Byte.MAX_VALUE + 1000L,
         Short.MAX_VALUE - 1L,
         Short.MAX_VALUE,
         Short.MAX_VALUE + 10L,
@@ -46,9 +50,8 @@ public class RangeTest {
         Integer.MIN_VALUE + 1L,
         Short.MIN_VALUE,
         Short.MIN_VALUE + 1L,
-        -1000L,
-        -500L,
-        -10L,
+        Byte.MIN_VALUE,
+        Byte.MIN_VALUE + 1L,
         -8L,
         -4L,
         -2L,
@@ -58,9 +61,8 @@ public class RangeTest {
         2L,
         4L,
         8L,
-        10L,
-        500L,
-        1000L,
+        Byte.MAX_VALUE - 1L,
+        Byte.MAX_VALUE,
         Short.MAX_VALUE - 1L,
         Short.MAX_VALUE,
         Integer.MAX_VALUE - 1L,
@@ -71,9 +73,11 @@ public class RangeTest {
 
     Range[] ranges;
 
-    static final long intPossibleValues = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1;
+    static final long intWidth = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1;
 
-    static final long shortPossibleValues = (short) Short.MAX_VALUE - (short) Short.MIN_VALUE + 1;
+    static final long shortWidth = Short.MAX_VALUE - Short.MIN_VALUE + 1;
+
+    static final long byteWidth = Byte.MAX_VALUE - Byte.MIN_VALUE + 1;
 
     public RangeTest() {
         // Initialize the ranges list.
@@ -222,8 +226,8 @@ public class RangeTest {
         for (Range range : ranges) {
             Range result = range.intRange();
             for (long value : values) {
-                if (value < range.from + intPossibleValues
-                        && value > range.to - intPossibleValues
+                if (value < range.from + intWidth
+                        && value > range.to - intWidth
                         && (Math.abs(range.from) - 1) / Integer.MIN_VALUE
                                 == (Math.abs(range.to) - 1) / Integer.MIN_VALUE) {
                     // filter out test data that would cause Range.intRange to return INT_EVERYTHING
@@ -243,8 +247,8 @@ public class RangeTest {
         for (Range range : ranges) {
             Range result = range.shortRange();
             for (long value : values) {
-                if (value < range.from + shortPossibleValues
-                        && value > range.to - shortPossibleValues
+                if (value < range.from + shortWidth
+                        && value > range.to - shortWidth
                         && (Math.abs(range.from) - 1) / Short.MIN_VALUE
                                 == (Math.abs(range.to) - 1) / Short.MIN_VALUE) {
                     // filter out test data that would cause Range.shortRange to return SHORT_EVERYTHING
@@ -254,6 +258,27 @@ public class RangeTest {
                             : String.format(
                                     "Range.shortRange failure: %s => %s; witness = %s",
                                     range, result, shortValue);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testByteRange() {
+        for (Range range : ranges) {
+            Range result = range.byteRange();
+            for (long value : values) {
+                if (value < range.from + byteWidth
+                        && value > range.to - byteWidth
+                        && (Math.abs(range.from) - 1) / Byte.MIN_VALUE
+                                == (Math.abs(range.to) - 1) / Byte.MIN_VALUE) {
+                    // filter out test data that would cause Range.ByteRange to return BYTE_EVERYTHING
+                    byte byteValue = (byte) value;
+                    assert range.contains(value) && result.contains(byteValue)
+                                    || !range.contains(value) && !result.contains(byteValue)
+                            : String.format(
+                                    "Range.byteRange failure: %s => %s; witness = %s",
+                                    range, result, byteValue);
                 }
             }
         }
