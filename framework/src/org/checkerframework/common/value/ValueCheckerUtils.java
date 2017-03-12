@@ -90,7 +90,16 @@ public class ValueCheckerUtils {
         if (AnnotationUtils.areSameByClass(anno, DoubleVal.class)) {
             values = convertDoubleVal(anno, castType, castTo);
         } else if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
-            values = convertIntVal(anno, castType, castTo);
+            List<Long> longs = ValueAnnotatedTypeFactory.getIntValues(anno);
+            values = convertIntVal(longs, castType, castTo);
+        } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
+            Range range = ValueAnnotatedTypeFactory.getIntRange(anno);
+            if (range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
+                values = new ArrayList<>();
+            } else {
+                List<Long> longs = getValuesFromRange(range, Long.class);
+                values = convertIntVal(longs, castType, castTo);
+            }
         } else if (AnnotationUtils.areSameByClass(anno, StringVal.class)) {
             values = convertStringVal(anno, castType);
         } else if (AnnotationUtils.areSameByClass(anno, BoolVal.class)) {
@@ -98,8 +107,7 @@ public class ValueCheckerUtils {
         } else if (AnnotationUtils.areSameByClass(anno, BottomVal.class)) {
             values = convertBottomVal(anno, castType);
         } else if (AnnotationUtils.areSameByClass(anno, UnknownVal.class)
-                || AnnotationUtils.areSameByClass(anno, ArrayLen.class)
-                || AnnotationUtils.areSameByClass(anno, IntRange.class)) {
+                || AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
             values = new ArrayList<>();
         }
         return values;
@@ -198,10 +206,7 @@ public class ValueCheckerUtils {
         return strings;
     }
 
-    private static List<?> convertIntVal(
-            AnnotationMirror anno, Class<?> newClass, TypeMirror newType) {
-        List<Long> longs = ValueAnnotatedTypeFactory.getIntValues(anno);
-
+    private static List<?> convertIntVal(List<Long> longs, Class<?> newClass, TypeMirror newType) {
         if (newClass == String.class) {
             return convertToStringVal(longs);
         } else if (newClass == Character.class || newClass == char.class) {

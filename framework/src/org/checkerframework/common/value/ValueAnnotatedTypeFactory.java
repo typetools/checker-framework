@@ -221,7 +221,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Void)} which issues warnings to users in these cases.
          *
          * <p>If any @IntRange annotation has incorrect parameters, e.g. the value "from" is
-         * specified to be greater than the value "to", replaces the annotation by @UnknownVal as
+         * specified to be greater than the value "to", replaces the annotation by @BOTTOMVAL as
          * well. The {@link
          * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
          * Void)} would raise error to users in this case.
@@ -230,12 +230,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationMirror anno = atm.getAnnotationInHierarchy(UNKNOWNVAL);
 
             if (anno != null && anno.getElementValues().size() > 0) {
-                if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
-                    Range range = getIntRange(anno);
-                    if (range.to < range.from) {
-                        atm.replaceAnnotation(UNKNOWNVAL);
-                    }
-                } else if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
+                if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
                     List<Long> values =
                             AnnotationUtils.getElementValueArray(anno, "value", Long.class, true);
                     if (values.size() > MAX_VALUES) {
@@ -243,6 +238,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         long annoMaxVal = Collections.max(values);
                         atm.replaceAnnotation(
                                 createIntRangeAnnotation(new Range(annoMinVal, annoMaxVal)));
+                    }
+                } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
+                    long from = AnnotationUtils.getElementValue(anno, "from", Long.class, true);
+                    long to = AnnotationUtils.getElementValue(anno, "to", Long.class, true);
+                    if (from > to) {
+                        atm.replaceAnnotation(BOTTOMVAL);
                     }
                 } else {
                     // In here the annotation is @*Val where (*) is not Int but other types (String, Double, etc).
@@ -279,12 +280,17 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Determines the least upper bound of a1 and a2. If a1 and a2 are both the same type of
-         * Value annotation, then the LUB is the result of taking all values from both a1 and a2 and
-         * removing duplicates. If a1 and a2 are not the same type of Value annotation they may
-         * still be mergeable because some values can be implicitly cast as others. If a1 and a2 are
-         * both in {DoubleVal, IntVal} then they will be converted upwards: IntVal &rarr; DoubleVal
-         * to arrive at a common annotation type.
+         * Determines the least upper bound of a1 and a2.
+         *
+         * <p>If a1 and a2 are both the same type of *Val annotation, then the LUB is the result of
+         * taking all values from both a1 and a2 and removing duplicates.
+         *
+         * <p>If a1 and a2 are both IntRange annotation, then the LUB is the union of the two ranges
+         *
+         * <p>If a1 and a2 are not the same type of Value annotation they may still be mergeable
+         * because some values can be implicitly cast as others. For example, if a1 and a2 are both
+         * in {DoubleVal, IntVal} then they will be converted upwards: IntVal &rarr; DoubleVal to
+         * arrive at a common annotation type.
          *
          * @return the least upper bound of a1 and a2
          */
@@ -1109,8 +1115,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** The argument is an @IntRange annotation. */
     public static Range getIntRange(AnnotationMirror rangeAnno) {
+        // Assume rangeAnno is well-formed, i.e., 'from' is less than or equal to 'to'.
         return new Range(
                 AnnotationUtils.getElementValue(rangeAnno, "from", Long.class, true),
                 AnnotationUtils.getElementValue(rangeAnno, "to", Long.class, true));

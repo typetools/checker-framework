@@ -239,14 +239,22 @@ class Basics {
         int d = a; // d is @IntRange(from=1, to=12), a is @IntVal({20});
     }
 
-    //    void fromGreaterThanTo() {
-    //        //:: error: (from.greater.than.to)
-    //        @IntRange(from = 2, to = 0)
-    //        int a;
-    //
-    //        a = 3; //should succeed since a is treated as @UnknownVal
-    //    }
-    //
+    void fromGreaterThanTo() {
+        //:: error: (from.greater.than.to)
+        @IntRange(from = 2, to = 0)
+        //:: error: (assignment.type.incompatible)
+        int a = 1; // a should be @BottomVal
+
+        @IntRange(from = 1)
+        int b = 2;
+
+        @IntRange(to = 2)
+        int c = 1;
+
+        @IntRange(to = 2, from = 0)
+        int d = 1;
+    }
+
     void tooManyValuesDouble() {
         //:: warning: (too.many.values.given)
         @DoubleVal({1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0}) double a = 8.0;

@@ -85,30 +85,23 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         Element element = TreeInfo.symbol((JCTree) node.getAnnotationType());
 
         if (element.toString().equals(IntRange.class.getName())) {
-            if (args.size() == 2
-                    && args.get(0).getKind() == Kind.ASSIGNMENT
-                    && args.get(1).getKind() == Kind.ASSIGNMENT) {
-                ExpressionTree expFrom;
-                ExpressionTree expTo;
-
-                if (((AssignmentTree) args.get(0)).getVariable().toString().equals("from")) {
-                    expFrom = ((AssignmentTree) args.get(0)).getExpression();
-                    expTo = ((AssignmentTree) args.get(1)).getExpression();
-                } else {
-                    expFrom = ((AssignmentTree) args.get(1)).getExpression();
-                    expTo = ((AssignmentTree) args.get(0)).getExpression();
+            // If there are 2 arguments, issue an error if from.greater.than.to.
+            // If there are less than 2 arguments, we needn't worry about this problem because the
+            // other argument would be defaulted to Long.MIN_VALUE or Long.MAX_VALUE accordingly.
+            if (args.size() == 2) {
+                int idxFrom = 0;
+                int idxTo = 1;
+                if (((AssignmentTree) args.get(0)).getVariable().toString().equals("to")) {
+                    idxFrom = 1;
+                    idxTo = 0;
                 }
+                ExpressionTree expFrom = ((AssignmentTree) args.get(idxFrom)).getExpression();
+                ExpressionTree expTo = ((AssignmentTree) args.get(idxTo)).getExpression();
 
                 if (isIntLiteral(expFrom.getKind()) && isIntLiteral(expTo.getKind())) {
-                    try {
-                        long valueFrom = getIntLiteralValue(expFrom);
-                        long valueTo = getIntLiteralValue(expTo);
-                        if (valueFrom > valueTo) {
-                            checker.report(Result.failure("from.greater.than.to"), node);
-                            return null;
-                        }
-                    } catch (IllegalArgumentException e) {
-                        e.printStackTrace(System.out);
+                    if (getIntLiteralValue(expFrom) > getIntLiteralValue(expTo)) {
+                        checker.report(Result.failure("from.greater.than.to"), node);
+                        return null;
                     }
                 }
             }
