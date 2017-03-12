@@ -15,6 +15,7 @@ import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
 import org.checkerframework.common.value.util.NumberMath;
 import org.checkerframework.common.value.util.NumberUtils;
+import org.checkerframework.common.value.util.Range;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -146,21 +147,24 @@ public class ValueTransfer extends CFTransfer {
 
         anno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
         if (anno != null) {
-            return ValueAnnotatedTypeFactory.getIntRange(anno);
+            Range range = ValueAnnotatedTypeFactory.getIntRange(anno);
+            return NumberUtils.castRange(subNode.getType(), range);
         }
 
         anno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
         if (anno != null) {
             List<Long> values =
                     AnnotationUtils.getElementValueArray(anno, "value", Long.class, true);
-            return ValueCheckerUtils.getRangeFromValues(values);
+            Range range = ValueCheckerUtils.getRangeFromValues(values);
+            return NumberUtils.castRange(subNode.getType(), range);
         }
 
         anno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), DoubleVal.class);
         if (anno != null) {
             List<Double> values =
                     AnnotationUtils.getElementValueArray(anno, "value", Double.class, true);
-            return ValueCheckerUtils.getRangeFromValues(values);
+            Range range = ValueCheckerUtils.getRangeFromValues(values);
+            return NumberUtils.castRange(subNode.getType(), range);
         }
 
         anno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);

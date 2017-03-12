@@ -18,6 +18,7 @@ import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
 import org.checkerframework.common.value.util.NumberUtils;
+import org.checkerframework.common.value.util.Range;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 

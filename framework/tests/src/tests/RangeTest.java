@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import org.checkerframework.common.value.Range;
+import org.checkerframework.common.value.util.Range;
 import org.junit.Test;
 
 /** This class tests the Range class, independent of the Value Checker. */
