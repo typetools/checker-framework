@@ -65,7 +65,6 @@ public class NumberUtils {
             case BYTE:
                 return range.byteRange();
             case LONG:
-            case CHAR:
                 return range;
             default:
                 throw new UnsupportedOperationException(typeKind.toString());

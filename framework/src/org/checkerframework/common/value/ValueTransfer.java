@@ -81,7 +81,7 @@ public class ValueTransfer extends CFTransfer {
             return Collections.singletonList("null");
         }
 
-        //@IntVal, @DoubleVal, @BoolVal (have to be converted to string)
+        //@IntVal, @IntRange, @DoubleVal, @BoolVal (have to be converted to string)
         List<? extends Object> values;
         numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BoolVal.class);
         if (numberAnno != null) {
@@ -90,6 +90,14 @@ public class ValueTransfer extends CFTransfer {
             values = getCharValues(subNode, p);
         } else if (subNode instanceof StringConversionNode) {
             return getStringValues(((StringConversionNode) subNode).getOperand(), p);
+        } else if (isIntRange(subNode, p)) {
+            Range range = getIntRange(subNode, p);
+            if (range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
+                values = new ArrayList<Number>();
+            } else {
+                List<Long> longValues = ValueCheckerUtils.getValuesFromRange(range, Long.class);
+                values = NumberUtils.castNumbers(subNode.getType(), longValues);
+            }
         } else {
             values = getNumericalValues(subNode, p);
         }
@@ -109,11 +117,30 @@ public class ValueTransfer extends CFTransfer {
 
     private List<Character> getCharValues(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
-        AnnotationMirror intAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
-        return ValueAnnotatedTypeFactory.getCharValues(intAnno);
+        AnnotationMirror intAnno;
+
+        intAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
+        if (intAnno != null) {
+            return ValueAnnotatedTypeFactory.getCharValues(intAnno);
+        }
+
+        intAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
+        if (intAnno != null) {
+            Range range = ValueAnnotatedTypeFactory.getIntRange(intAnno);
+            if (range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
+                return new ArrayList<Character>();
+            } else {
+                return ValueCheckerUtils.getValuesFromRange(range, Character.class);
+            }
+        }
+
+        return new ArrayList<Character>();
     }
 
+    /**
+     * Get possible numerical values from annotation and cast them to the underlying type. Return
+     * null if @BottomVal.
+     */
     private List<? extends Number> getNumericalValues(
             Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);

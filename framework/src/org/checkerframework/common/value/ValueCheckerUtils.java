@@ -123,14 +123,17 @@ public class ValueCheckerUtils {
     }
 
     /**
-     * Get all possible values from the given type and cast them into Long type or Double type
-     * accordingly. Only support casting to integral type and double type.
+     * Get all possible values from the given type and cast them into Long type, Double type or
+     * Character type accordingly. Only support casting to integral type and double type.
      *
      * @param range the given range
      * @param expectedType the expected type
      * @return
      */
     public static <T> List<T> getValuesFromRange(Range range, Class<T> expectedType) {
+        if (range.isNothing()) {
+            return null;
+        }
         List<T> values = new ArrayList<>();
         if (expectedType == Integer.class
                 || expectedType == int.class
@@ -149,6 +152,10 @@ public class ValueCheckerUtils {
                 || expectedType == float.class) {
             for (Long value = range.from; value <= range.to; value++) {
                 values.add(expectedType.cast(value.doubleValue()));
+            }
+        } else if (expectedType == Character.class || expectedType == char.class) {
+            for (Long value = range.from; value <= range.to; value++) {
+                values.add(expectedType.cast((char) value.intValue()));
             }
         } else {
             throw new UnsupportedOperationException(
