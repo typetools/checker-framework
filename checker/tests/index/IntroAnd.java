@@ -26,4 +26,9 @@ class IntroAnd {
             int u = a[m & k];
         }
     }
+
+    void two_arrays(int[] a, int[] b, @IndexFor("#1") int i, @IndexFor("#2") int j) {
+        int l = a[i & j];
+        l = b[i & j];
+    }
 }

@@ -509,20 +509,22 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror leftType = getAnnotatedType(left);
             AnnotatedTypeMirror leftLBType =
                     getLowerBoundAnnotatedTypeFactory().getAnnotatedType(left);
+            AnnotationMirror leftResultType = UNKNOWN;
             if (leftLBType.hasAnnotation(NonNegative.class)
                     || leftLBType.hasAnnotation(Positive.class)) {
-                type.addAnnotation(leftType.getAnnotationInHierarchy(UNKNOWN));
+                leftResultType = leftType.getAnnotationInHierarchy(UNKNOWN);
             }
 
             AnnotatedTypeMirror rightType = getAnnotatedType(right);
             AnnotatedTypeMirror rightLBType =
                     getLowerBoundAnnotatedTypeFactory().getAnnotatedType(right);
+            AnnotationMirror rightResultType = UNKNOWN;
             if (rightLBType.hasAnnotation(NonNegative.class)
                     || rightLBType.hasAnnotation(Positive.class)) {
-                type.addAnnotation(rightType.getAnnotationInHierarchy(UNKNOWN));
+                rightResultType = rightType.getAnnotationInHierarchy(UNKNOWN);
             }
 
-            type.addAnnotation(UNKNOWN);
+            type.addAnnotation(qualHierarchy.greatestLowerBound(leftResultType, rightResultType));
         }
 
         private void addAnnotationForDivide(
