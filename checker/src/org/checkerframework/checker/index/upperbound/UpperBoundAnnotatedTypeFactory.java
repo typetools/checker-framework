@@ -31,8 +31,10 @@ import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.MinLen;
+import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.PolyIndex;
 import org.checkerframework.checker.index.qual.PolyUpperBound;
+import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
@@ -493,10 +495,34 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case DIVIDE:
                     addAnnotationForDivide(left, right, type);
                     break;
+                case AND:
+                    addAnnotationForAnd(left, right, type);
+                    break;
                 default:
                     break;
             }
             return super.visitBinary(tree, type);
+        }
+
+        private void addAnnotationForAnd(
+                ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
+            AnnotatedTypeMirror leftType = getAnnotatedType(left);
+            AnnotatedTypeMirror leftLBType =
+                    getLowerBoundAnnotatedTypeFactory().getAnnotatedType(left);
+            if (leftLBType.hasAnnotation(NonNegative.class)
+                    || leftLBType.hasAnnotation(Positive.class)) {
+                type.addAnnotation(leftType.getAnnotationInHierarchy(UNKNOWN));
+            }
+
+            AnnotatedTypeMirror rightType = getAnnotatedType(right);
+            AnnotatedTypeMirror rightLBType =
+                    getLowerBoundAnnotatedTypeFactory().getAnnotatedType(right);
+            if (rightLBType.hasAnnotation(NonNegative.class)
+                    || rightLBType.hasAnnotation(Positive.class)) {
+                type.addAnnotation(rightType.getAnnotationInHierarchy(UNKNOWN));
+            }
+
+            type.addAnnotation(UNKNOWN);
         }
 
         private void addAnnotationForDivide(

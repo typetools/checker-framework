@@ -772,6 +772,12 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return;
         }
 
+        AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
+        if (leftType.hasAnnotation(NN) || leftType.hasAnnotation(POS)) {
+            type.addAnnotation(NN);
+            return;
+        }
+
         type.addAnnotation(UNKNOWN);
     }
 }
