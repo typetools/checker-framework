@@ -31,4 +31,9 @@ class IntroAnd {
         int l = a[i & j];
         l = b[i & j];
     }
+
+    void test_pos(@Positive int x, @Positive int y) {
+        //:: error: (assignment.type.incompatible)
+        @Positive int z = x & y;
+    }
 }
