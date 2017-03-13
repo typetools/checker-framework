@@ -385,13 +385,18 @@ public abstract class InitializationAnnotatedTypeFactory<
         AnnotationMirror annotation = null;
 
         // If all fields are committed-only, and they are all initialized,
-        // then it is save to switch to @UnderInitialization(CurrentClass).
+        // then:
+        // - if the class is final, this is @Initialized
+        // - otherwise, this is @UnderInitialization(CurrentClass) as
+        // there might still be subclasses that need initialization.
         if (areAllFieldsCommittedOnly(enclosingClass)) {
             Store store = getStoreBefore(tree);
             if (store != null) {
                 List<AnnotationMirror> annos = Collections.emptyList();
                 if (getUninitializedInvariantFields(store, path, false, annos).size() == 0) {
-                    if (useFbc) {
+                    if (classType.isFinal()) {
+                        annotation = COMMITTED;
+                    } else if (useFbc) {
                         annotation = createFreeAnnotation(classType);
                     } else {
                         annotation = createUnclassifiedAnnotation(classType);
