@@ -128,32 +128,80 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         // Either a singleton list of the single integer on the right,
         // or a list containing all the values in a constant array.
         List<Integer> rhsValues = new ArrayList<>();
-        // All the values in the must be compile-time constants.
+
+        boolean allValuesConstant = true;
+        // All the values must be compile-time constants to check against the minlen.
         for (ExpressionTree exp : expressions) {
             Integer val = atypeFactory.valMaxFromExpressionTree(exp);
             if (val == null) {
-                super.commonAssignmentCheck(varType, valueExp, errorKey);
-                return;
+                allValuesConstant = false;
             } else {
                 rhsValues.add(val);
             }
         }
 
-        // Actually check that every integer in rhsValues is less than the minlen of each array.
+        boolean conforms = true;
+        // Check whether the expressions are valid for each array listed. Set conforms to true if they aren't.
         for (String arrayName : ltl.getArrays()) {
-            int minLen =
+            // do the samelen check first. Look up all arrays in the SL type and
+            // check if it conforms to one. If so, skip this iteration.
+            List<String> sameLenArrays =
                     atypeFactory
-                            .getMinLenAnnotatedTypeFactory()
-                            .getMinLenFromString(arrayName, valueExp, getCurrentPath());
-            boolean minLenOk = true;
-            for (Integer value : rhsValues) {
-                minLenOk =
-                        minLenOk && ltl.isValuePlusOffsetLessThanMinLen(arrayName, value, minLen);
+                            .getSameLenAnnotatedTypeFactory()
+                            .getSameLensFromString(arrayName, valueExp, getCurrentPath());
+
+            if (sameLenArrays.size() == 0) {
+                if (!allValuesConstant) {
+                    conforms = false;
+                    break;
+                }
             }
-            if (!minLenOk) {
-                super.commonAssignmentCheck(varType, valueExp, errorKey);
-                return;
+
+            // SameLen checks
+            for (ExpressionTree exp : expressions) {
+                AnnotatedTypeMirror currentType = atypeFactory.getAnnotatedType(exp);
+                UBQualifier currentQual =
+                        UBQualifier.createUBQualifier(currentType, atypeFactory.UNKNOWN);
+                boolean matchesAny = false;
+                if (currentQual.isLessThanLengthQualifier()) {
+                    LessThanLengthOf currentLTL = (LessThanLengthOf) currentQual;
+                    for (String sameLenArrayName : sameLenArrays) {
+                        // Check whether replacing the value for any of the current type's offset results
+                        // in the type we're trying to match. If so, set matchesAny to true and break.
+                        if (ltl.isValidReplacement(arrayName, sameLenArrayName, currentLTL)) {
+                            matchesAny = true;
+                            break;
+                        }
+                    }
+                }
+                if (!matchesAny && !allValuesConstant) {
+                    // If none match and there's no chance for the minlen check to succeed, fail.
+                    conforms = false;
+                    break;
+                }
             }
+
+            // MinLen Checks
+            if (allValuesConstant) {
+                int minLen =
+                        atypeFactory
+                                .getMinLenAnnotatedTypeFactory()
+                                .getMinLenFromString(arrayName, valueExp, getCurrentPath());
+                boolean minLenOk = true;
+                for (Integer value : rhsValues) {
+                    minLenOk =
+                            minLenOk
+                                    && ltl.isValuePlusOffsetLessThanMinLen(
+                                            arrayName, value, minLen);
+                }
+                if (!minLenOk) {
+                    conforms = false;
+                }
+            }
+        }
+        if (!conforms) {
+            super.commonAssignmentCheck(varType, valueExp, errorKey);
+            return;
         }
     }
 }

@@ -135,7 +135,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Provides a way to query the SameLen (same length) Checker, which determines the relationships
      * among the lengths of arrays.
      */
-    private SameLenAnnotatedTypeFactory getSameLenAnnotatedTypeFactory() {
+    SameLenAnnotatedTypeFactory getSameLenAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(SameLenChecker.class);
     }
 

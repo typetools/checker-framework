@@ -789,6 +789,30 @@ public abstract class UBQualifier {
             return false;
         }
 
+        /**
+         * For checking whether a sameLen replacement is legitimate. Checks whether replacing array
+         * with replacementArray in this qualifier creates replacementArray's entry in other.
+         */
+        public boolean isValidReplacement(
+                String array, String replacementArray, LessThanLengthOf other) {
+            Set<OffsetEquation> offsets = map.get(array);
+            if (offsets == null) {
+                return false;
+            }
+            Set<OffsetEquation> otherOffsets = other.map.get(replacementArray);
+            if (otherOffsets == null) {
+                return false;
+            }
+            for (OffsetEquation offset : offsets) {
+                for (OffsetEquation otherOffset : otherOffsets) {
+                    if (offset.equals(otherOffset)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         @Override
         public String toString() {
             return "LessThanLengthOf{" + "map=" + map + '}';
