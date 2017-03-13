@@ -21,37 +21,37 @@ public interface TypeHierarchy {
      * <p>4 categories are converted in isSubtype:
      *
      * <ul>
-     *   <li> Boxing conversions: isSubtype calls {@link AnnotatedTypes#asSuper(Types,
+     *   <li>Boxing conversions: isSubtype calls {@link AnnotatedTypes#asSuper(Types,
      *       AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)} which calls {@link
      *       AnnotatedTypeFactory#getBoxedType}
-     *   <li> Unboxing conversions: isSubtype calls {@link AnnotatedTypes#asSuper(Types,
+     *   <li>Unboxing conversions: isSubtype calls {@link AnnotatedTypes#asSuper(Types,
      *       AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)} which calls {@link
      *       AnnotatedTypeFactory#getUnboxedType}
-     *   <li> Capture conversions: Wildcards are treated as though they were converted to type
+     *   <li>Capture conversions: Wildcards are treated as though they were converted to type
      *       variables
-     *   <li> String conversions: Any type to String. isSubtype calls {@link AnnotatedTypes#asSuper}
+     *   <li>String conversions: Any type to String. isSubtype calls {@link AnnotatedTypes#asSuper}
      *       which calls {@link AnnotatedTypeFactory#getStringType(AnnotatedTypeMirror)}
      * </ul>
      *
      * 1 happens elsewhere:
      *
      * <ul>
-     *   <li> Unchecked conversions: Generic type to raw type. Raw types are instantiated with
-     *       bounds in AnnotatedTypeFactory#fromTypeTree before is subtype is called
+     *   <li>Unchecked conversions: Generic type to raw type. Raw types are instantiated with bounds
+     *       in AnnotatedTypeFactory#fromTypeTree before is subtype is called
      * </ul>
      *
      * 7 are not explicitly converted and are treated as though the types are actually subtypes.
      *
      * <ul>
-     *   <li> Identity conversions: type to same type
-     *   <li> Widening primitive conversions: primitive to primitive (no loss of information, byte
-     *       to short for example)
-     *   <li> Narrowing primitive conversions: primitive to primitive (possibly loss of information,
+     *   <li>Identity conversions: type to same type
+     *   <li>Widening primitive conversions: primitive to primitive (no loss of information, byte to
+     *       short for example)
+     *   <li>Narrowing primitive conversions: primitive to primitive (possibly loss of information,
      *       short to byte for example)
-     *   <li> Widening and Narrowing Primitive Conversion: byte to char
-     *   <li> Widening reference conversions: Upcast
-     *   <li> Narrowing reference conversions: Downcast
-     *   <li> Value set conversions: floating-point value from one value set to another without
+     *   <li>Widening and Narrowing Primitive Conversion: byte to char
+     *   <li>Widening reference conversions: Upcast
+     *   <li>Narrowing reference conversions: Downcast
+     *   <li>Value set conversions: floating-point value from one value set to another without
      *       changing its type.
      * </ul>
      *

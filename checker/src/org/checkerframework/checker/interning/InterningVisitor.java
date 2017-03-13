@@ -318,11 +318,11 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      * an if statement that's the first statement in the method, and one of the following is true:
      *
      * <ol>
-     *   <li> the method overrides {@link Comparator#compare}, the "then" branch of the if statement
+     *   <li>the method overrides {@link Comparator#compare}, the "then" branch of the if statement
      *       returns zero, and the comparison tests equality of the method's two parameters
-     *   <li> the method overrides {@link Object#equals(Object)} and the comparison tests "this"
+     *   <li>the method overrides {@link Object#equals(Object)} and the comparison tests "this"
      *       against the method's parameter
-     *   <li> the method overrides {@link Comparable#compareTo(Object)}, the "then" branch of the if
+     *   <li>the method overrides {@link Comparable#compareTo(Object)}, the "then" branch of the if
      *       statement returns zero, and the comparison tests "this" against the method's parameter
      * </ol>
      *

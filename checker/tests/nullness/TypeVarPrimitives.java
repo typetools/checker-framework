@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class TypeVarPrimitives {
     <T extends @Nullable Long> void method(T tLong) {
-        //:: error: (assignment.type.incompatible)
+        //:: error: (unboxing.of.nullable)
         long l = tLong;
     }
 
@@ -21,7 +21,7 @@ public class TypeVarPrimitives {
     }
 
     <T extends @Nullable Long> void method3(@Nullable T tLong) {
-        //:: error: (assignment.type.incompatible)
+        //:: error: (unboxing.of.nullable)
         long l = tLong;
     }
 

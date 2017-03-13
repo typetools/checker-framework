@@ -15,8 +15,8 @@ import org.checkerframework.framework.util.AnnotationMirrorSet;
  * <p>There are subclasses to represent two cases:
  *
  * <ul>
- *   <li> The target was inferred to be an AnnotatedTypeMirror
- *   <li> The target was inferred to be equal to another target
+ *   <li>The target was inferred to be an AnnotatedTypeMirror
+ *   <li>The target was inferred to be equal to another target
  * </ul>
  */
 public class InferredValue {

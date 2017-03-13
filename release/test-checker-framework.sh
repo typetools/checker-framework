@@ -32,16 +32,16 @@ function cfruntest() {
   $CHECKERFRAMEWORK/checker/bin/javac -version
   if (($?)); then exit 6; fi
 
-  java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar -version
+  java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar" -version
   if (($?)); then exit 6; fi
 
-  $CHECKERFRAMEWORK/checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker \
-      $CHECKERFRAMEWORK/docs/examples/NullnessReleaseTests.java
+  "$CHECKERFRAMEWORK/checker/bin/javac" -processor org.checkerframework.checker.nullness.NullnessChecker \
+      "$CHECKERFRAMEWORK/docs/examples/NullnessReleaseTests.java"
   if (($?)); then exit 6; fi
 
-  java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar \
+  java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar" \
       -processor org.checkerframework.checker.nullness.NullnessChecker \
-      $CHECKERFRAMEWORK/docs/examples/NullnessReleaseTests.java
+      "$CHECKERFRAMEWORK/docs/examples/NullnessReleaseTests.java"
   if (($?)); then exit 6; fi
 }
 

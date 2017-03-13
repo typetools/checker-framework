@@ -32,14 +32,12 @@ import org.checkerframework.javacutil.TreeUtils;
  * java -processor org.checkerframework.common.util.debug.TypeOutputtingChecker [source-file]
  *
  * }</pre>
- *
  *   <li>Run the Checker on the bytecode, by simply running the main and passing the qualified name,
  *       e.g.
  *       <pre>{@code
  * java org.checkerframework.common.util.debug.TypeOutputtingChecker [qualified-name]
  *
  * }</pre>
- *
  *   <li>Apply a simple diff on the two outputs
  * </ol>
  */

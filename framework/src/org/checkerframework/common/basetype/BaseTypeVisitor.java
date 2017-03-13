@@ -133,12 +133,12 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>This implementation does the following checks:
  *
  * <ol>
- *   <li> <b>Assignment and Pseudo-Assignment Check</b>: It verifies that any assignment
- *       type-checks, using {@code TypeHierarchy.isSubtype} method. This includes method invocation
- *       and method overriding checks.
- *   <li> <b>Type Validity Check</b>: It verifies that any user-supplied type is a valid type, using
+ *   <li><b>Assignment and Pseudo-Assignment Check</b>: It verifies that any assignment type-checks,
+ *       using {@code TypeHierarchy.isSubtype} method. This includes method invocation and method
+ *       overriding checks.
+ *   <li><b>Type Validity Check</b>: It verifies that any user-supplied type is a valid type, using
  *       {@code isValidUse} method.
- *   <li> <b>(Re-)Assignability Check</b>: It verifies that any assignment is valid, using {@code
+ *   <li><b>(Re-)Assignability Check</b>: It verifies that any assignment is valid, using {@code
  *       Checker.isAssignable} method.
  * </ol>
  *
@@ -339,9 +339,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * <p>The override rule specifies that a method, m1, may override a method m2 only if:
      *
      * <ul>
-     *   <li> m1 return type is a subtype of m2
-     *   <li> m1 receiver type is a supertype of m2
-     *   <li> m1 parameters are supertypes of corresponding m2 parameters
+     *   <li>m1 return type is a subtype of m2
+     *   <li>m1 receiver type is a supertype of m2
+     *   <li>m1 parameters are supertypes of corresponding m2 parameters
      * </ul>
      *
      * Also, it issues a "missing.this" error for static method annotated receivers.
@@ -783,9 +783,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * <p>An invocation of a method, m, on the receiver, r is valid only if:
      *
      * <ul>
-     *   <li> passed arguments are subtypes of corresponding m parameters
-     *   <li> r is a subtype of m receiver type
-     *   <li> if m is generic, passed type arguments are subtypes of m type variables
+     *   <li>passed arguments are subtypes of corresponding m parameters
+     *   <li>r is a subtype of m receiver type
+     *   <li>if m is generic, passed type arguments are subtypes of m type variables
      * </ul>
      */
     @Override
@@ -970,8 +970,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * <p>An invocation of a constructor, c, is valid only if:
      *
      * <ul>
-     *   <li> passed arguments are subtypes of corresponding c parameters
-     *   <li> if c is generic, passed type arguments are subtypes of c type variables
+     *   <li>passed arguments are subtypes of corresponding c parameters
+     *   <li>if c is generic, passed type arguments are subtypes of c type variables
      * </ul>
      */
     @Override

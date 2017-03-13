@@ -63,15 +63,28 @@ public abstract class CFAbstractAnalysis<
     public CFAbstractAnalysis(
             BaseTypeChecker checker,
             GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
-            List<Pair<VariableElement, V>> fieldValues) {
-        super(checker.getProcessingEnvironment());
-
+            List<Pair<VariableElement, V>> fieldValues,
+            int maxCountBeforeWidening) {
+        super(checker.getProcessingEnvironment(), null, maxCountBeforeWidening);
         qualifierHierarchy = factory.getQualifierHierarchy();
         typeHierarchy = factory.getTypeHierarchy();
         this.atypeFactory = factory;
         this.checker = checker;
         this.transferFunction = createTransferFunction();
         this.fieldValues = fieldValues;
+    }
+
+    public CFAbstractAnalysis(
+            BaseTypeChecker checker,
+            GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
+            List<Pair<VariableElement, V>> fieldValues) {
+        this(
+                checker,
+                factory,
+                fieldValues,
+                // 10 is just a nice low default value. Type systems may wish to use or compute a
+                // different value.
+                factory.getQualifierHierarchy().implementsWidening() ? 10 : -1);
     }
 
     public List<Pair<VariableElement, V>> getFieldValues() {

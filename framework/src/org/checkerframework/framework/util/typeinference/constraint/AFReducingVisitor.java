@@ -25,9 +25,9 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>The visit method will determine if the given constraint should either:
  *
  * <ul>
- *   <li> be discarded - in this case, the visitor just returns
- *   <li> reduced to a simpler constraint or set of constraints - in this case, the new constraint
- *       or set of constraints is added to newConstraints
+ *   <li>be discarded - in this case, the visitor just returns
+ *   <li>reduced to a simpler constraint or set of constraints - in this case, the new constraint or
+ *       set of constraints is added to newConstraints
  * </ul>
  *
  * Sprinkled throughout this class are comments of the form:
@@ -498,6 +498,15 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedWildcardType supertype,
             Set<AFConstraint> constraints) {
         visitWildcardAsSuperType(subtype, supertype, constraints);
+        return null;
+    }
+
+    @Override
+    public Void visitTypevar_Intersection(
+            AnnotatedTypeVariable subtype,
+            AnnotatedIntersectionType supertype,
+            Set<AFConstraint> constraints) {
+        addConstraint(subtype.getUpperBound(), supertype, constraints);
         return null;
     }
 

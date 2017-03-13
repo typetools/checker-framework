@@ -40,9 +40,9 @@ public class ConstraintMapBuilder {
      * <p>Note, constraints come in 2 forms:
      *
      * <ul>
-     *   <li> between a target and a concrete AnnotatedTypeMirror. E.g., As seen above {@code
+     *   <li>between a target and a concrete AnnotatedTypeMirror. E.g., As seen above {@code
      *       (@NonNull Ti = @NonNull @Initialized String)}
-     *   <li> between two targets E.g., {@code (@NonNull Ti = Tj)}
+     *   <li>between two targets E.g., {@code (@NonNull Ti = Tj)}
      * </ul>
      */
     public ConstraintMap build(

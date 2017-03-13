@@ -115,28 +115,12 @@ public class NullnessExample {
         <h4>2. Run the Nullness Checker</h4>
 
         <p><b>Run the Nullness Checker</b> to see how it can warn you
-        about this error at compile time.</p>
+          about this error at compile time.  The
+          <a href="https://checkerframework.org/eclipse/#usage">Checker
+            Framework Eclipse plugin documentation</a>
+          tells you how to run a checker and where the warnings appear.</p>
 
-        <div class="well">
-          <div class="row">
-            <div class="span5">
-              <ol style="float: left">
-                <li>Right-click on NullnessExample.java.</li>
-
-                <li>Open the "Checker Framework" sub-menu.</li>
-
-                <li>Open the "Run Built-In Checker" sub-menu.</li>
-
-                <li>Select "Nullness Checker".</li>
-              </ol>
-            </div>
-
-            <div class="span6"><img style="display: relative;" src=
-            "images/select_nullness.png" alt="menu tree to run the Nullness Checker"></div>
-          </div>
-        </div>
-
-        <p>The following error will be produced.</p>
+        <p>The following warning will be produced.</p>
         <pre>
 dereference of possibly-null reference myObject
         System.out.println(myObject.toString());
