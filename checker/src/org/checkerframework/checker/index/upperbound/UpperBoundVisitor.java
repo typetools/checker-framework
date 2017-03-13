@@ -82,6 +82,56 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName), indexTree);
     }
 
+    private List<? extends ExpressionTree> getExpressionsFromValueExp(ExpressionTree valueExp) {
+        if (valueExp.getKind() == Kind.NEW_ARRAY) {
+            return ((NewArrayTree) valueExp).getInitializers();
+        } else {
+            return Collections.singletonList(valueExp);
+        }
+    }
+
+    private UBQualifier getQualifierFromVarType(AnnotatedTypeMirror varType) {
+        if (varType instanceof AnnotatedTypeMirror.AnnotatedArrayType) {
+            // The qualifier we need for an array is in the component type, not varType.
+            AnnotatedTypeMirror componentType =
+                    ((AnnotatedTypeMirror.AnnotatedArrayType) varType).getComponentType();
+            return UBQualifier.createUBQualifier(componentType, atypeFactory.UNKNOWN);
+        } else {
+            return UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN);
+        }
+    }
+
+    /**
+     * Checks whether one of the arrays in sameLenArrays is a valid replacement in ltl for the
+     * arrayName.
+     */
+    private boolean containsValidReplacement(
+            ExpressionTree exp,
+            String arrayName,
+            List<String> sameLenArrays,
+            LessThanLengthOf ltl) {
+
+        if (sameLenArrays.size() == 0) {
+            return false; // avoid the computation below
+        }
+
+        AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(exp);
+        UBQualifier expQual = UBQualifier.createUBQualifier(expType, atypeFactory.UNKNOWN);
+        boolean matchesAny = false;
+        if (expQual.isLessThanLengthQualifier()) {
+            LessThanLengthOf expLTL = (LessThanLengthOf) expQual;
+            for (String sameLenArrayName : sameLenArrays) {
+                // Check whether replacing the value for any of the current type's offset results
+                // in the type we're trying to match. If so, set matchesAny to true and break.
+                if (ltl.isValidReplacement(arrayName, sameLenArrayName, expLTL)) {
+                    matchesAny = true;
+                    break;
+                }
+            }
+        }
+        return matchesAny;
+    }
+
     /**
      * Slightly relaxes the usual assignment rules by allowing assignments where the right hand side
      * is a value known at compile time and the type of the left hand side is annotated with
@@ -95,12 +145,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             ExpressionTree valueExp,
             /*@CompilerMessageKey*/ String errorKey) {
 
-        List<? extends ExpressionTree> expressions;
-        if (valueExp.getKind() == Kind.NEW_ARRAY) {
-            expressions = ((NewArrayTree) valueExp).getInitializers();
-        } else {
-            expressions = Collections.singletonList(valueExp);
-        }
+        List<? extends ExpressionTree> expressions = getExpressionsFromValueExp(valueExp);
 
         if (expressions == null || expressions.isEmpty()) {
             super.commonAssignmentCheck(varType, valueExp, errorKey);
@@ -108,15 +153,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
 
         // Find the appropriate qualifier to try to conform to.
-        UBQualifier qualifier;
-        if (varType instanceof AnnotatedTypeMirror.AnnotatedArrayType) {
-            // The qualifier we need for an array is in the component type, not varType.
-            AnnotatedTypeMirror componentType =
-                    ((AnnotatedTypeMirror.AnnotatedArrayType) varType).getComponentType();
-            qualifier = UBQualifier.createUBQualifier(componentType, atypeFactory.UNKNOWN);
-        } else {
-            qualifier = UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN);
-        }
+        UBQualifier qualifier = getQualifierFromVarType(varType);
 
         // If the qualifier is uninteresting or the type is unannotated, do nothing else.
         if (qualifier == null || !qualifier.isLessThanLengthQualifier()) {
@@ -141,47 +178,27 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
 
         boolean conforms = true;
-        // Check whether the expressions are valid for each array listed. Set conforms to true if they aren't.
+        // Check whether each expression is valid for each array listed. Set conforms to false if one isn't.
         for (String arrayName : ltl.getArrays()) {
-            // do the samelen check first. Look up all arrays in the SL type and
-            // check if it conforms to one. If so, skip this iteration.
+
+            // Do the samelen check first. Look up all arrays in the SL type and
+            // check if it conforms to one.
             List<String> sameLenArrays =
                     atypeFactory
                             .getSameLenAnnotatedTypeFactory()
                             .getSameLensFromString(arrayName, valueExp, getCurrentPath());
 
-            if (sameLenArrays.size() == 0) {
-                if (!allValuesConstant) {
-                    conforms = false;
-                    break;
-                }
-            }
-
-            // SameLen checks
+            // SameLen checks.
             for (ExpressionTree exp : expressions) {
-                AnnotatedTypeMirror currentType = atypeFactory.getAnnotatedType(exp);
-                UBQualifier currentQual =
-                        UBQualifier.createUBQualifier(currentType, atypeFactory.UNKNOWN);
-                boolean matchesAny = false;
-                if (currentQual.isLessThanLengthQualifier()) {
-                    LessThanLengthOf currentLTL = (LessThanLengthOf) currentQual;
-                    for (String sameLenArrayName : sameLenArrays) {
-                        // Check whether replacing the value for any of the current type's offset results
-                        // in the type we're trying to match. If so, set matchesAny to true and break.
-                        if (ltl.isValidReplacement(arrayName, sameLenArrayName, currentLTL)) {
-                            matchesAny = true;
-                            break;
-                        }
+                if (!containsValidReplacement(exp, arrayName, sameLenArrays, ltl)) {
+                    if (!allValuesConstant) {
+                        conforms = false;
+                        break;
                     }
                 }
-                if (!matchesAny && !allValuesConstant) {
-                    // If none match and there's no chance for the minlen check to succeed, fail.
-                    conforms = false;
-                    break;
-                }
             }
 
-            // MinLen Checks
+            // MinLen checks only proceed if all right hand side values are constants.
             if (allValuesConstant) {
                 int minLen =
                         atypeFactory
@@ -189,13 +206,13 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                                 .getMinLenFromString(arrayName, valueExp, getCurrentPath());
                 boolean minLenOk = true;
                 for (Integer value : rhsValues) {
-                    minLenOk =
-                            minLenOk
-                                    && ltl.isValuePlusOffsetLessThanMinLen(
-                                            arrayName, value, minLen);
+                    if (!ltl.isValuePlusOffsetLessThanMinLen(arrayName, value, minLen)) {
+                        minLenOk = false;
+                    }
                 }
                 if (!minLenOk) {
                     conforms = false;
+                    break;
                 }
             }
         }
