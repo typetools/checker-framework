@@ -164,9 +164,8 @@ public abstract class InitializationAnnotatedTypeFactory<
      * Returns whether or not {@code field} has the invariant annotation.
      *
      * <p>If the {@code field} is a type variable, this method returns true if any possible
-     * instantiation of the type parameter could have the invariant annotation.  See
-     * {@link NullnessAnnotatedTypeFactory#hasFieldInvariantAnnotation(VariableTree)} for an
-     * example.
+     * instantiation of the type parameter could have the invariant annotation. See {@link
+     * NullnessAnnotatedTypeFactory#hasFieldInvariantAnnotation(VariableTree)} for an example.
      *
      * @param field field that might have invariant annotation
      * @return whether or not field has the invariant annotation
