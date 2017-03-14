@@ -3,7 +3,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class Issue400 {
-
+    //:: error: (initialization.fields.uninitialized)
     final class YYPair<T, V> {
         T first;
         V second;
