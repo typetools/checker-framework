@@ -9,11 +9,14 @@ if [[ "${GROUP}" == "" ]]; then
   export GROUP=all
 fi
 
-if [[ "${GROUP}" != "all" && "${GROUP}" != "junit" && "${GROUP}" != "nonjunit" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" ]]; then
+if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "junit" && "${GROUP}" != "nonjunit" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" ]]; then
   echo "Bad argument '${GROUP}'; should be omitted or one of: all, junit, nonjunit, downstream, misc."
   exit 1
 fi
 
+# Optional argument $2 is one of:
+#   jdk7, jdk8
+export JDKVER=$2
 
 # Fail the whole script if any command fails
 set -e
@@ -30,11 +33,15 @@ set -o xtrace
 export SHELLOPTS
 
 
-./.travis-build-without-test.sh
-# The above command builds the JDK, so there is no need for a subsequent
-# command to rebuild it again.
+./.travis-build-without-test.sh $JDKVER
+# The above command downloads the JDK, so there is no need for a subsequent
+# command to build it except to test building it.
 
 set -e
+
+if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
+  (cd checker && ant all-tests-nobuildjdk)
+fi
 
 if [[ "${GROUP}" == "junit" || "${GROUP}" == "all" ]]; then
   (cd checker && ant junit-tests-nojtreg-nobuild)
@@ -99,4 +106,9 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   # make -C ../jsr308-langtools/doc
   make -C ../jsr308-langtools/doc pdf
 
+fi
+
+
+if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then
+  cd checker; ant jdk.jar
 fi
