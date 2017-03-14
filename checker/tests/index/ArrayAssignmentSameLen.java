@@ -1,4 +1,4 @@
-import org.checkerframework.checker.index.qual.IndexFor;
+import org.checkerframework.checker.index.qual.*;
 
 public class ArrayAssignmentSameLen {
 
@@ -16,6 +16,7 @@ public class ArrayAssignmentSameLen {
             value = {"array", "b"},
             offset = {"0", "-3"}
         )
+        //:: error: (assignment.type.incompatible)
         int i = index;
     }
 
@@ -27,10 +28,10 @@ public class ArrayAssignmentSameLen {
     }
 
     void test3(int[] a, @LTLengthOf("#1") int i, @NonNegative int x) {
-        int[] c = a;
+        int[] c1 = a;
         // See useTest3 for an example of why this assignment should fail.
         @LTLengthOf(
-            value = {"c", "c"},
+            value = {"c1", "c1"},
             offset = {"0", "x"}
         )
         //:: error: (assignment.type.incompatible)

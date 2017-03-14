@@ -790,8 +790,8 @@ public abstract class UBQualifier {
         }
 
         /**
-         * For checking whether a sameLen replacement is legitimate. Checks whether replacing array
-         * with replacementArray in this qualifier creates replacementArray's entry in other.
+         * Checks whether replacing array with replacementArray in this qualifier creates
+         * replacementArray's entry in other.
          */
         public boolean isValidReplacement(
                 String array, String replacementArray, LessThanLengthOf other) {
@@ -803,14 +803,13 @@ public abstract class UBQualifier {
             if (otherOffsets == null) {
                 return false;
             }
+            boolean result = offsets.size() > 0 && otherOffsets.size() > 0;
             for (OffsetEquation offset : offsets) {
                 for (OffsetEquation otherOffset : otherOffsets) {
-                    if (offset.equals(otherOffset)) {
-                        return true;
-                    }
+                    result = result && offset.equals(otherOffset);
                 }
             }
-            return false;
+            return result;
         }
 
         @Override
