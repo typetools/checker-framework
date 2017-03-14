@@ -29,11 +29,11 @@ public class ArrayAssignmentSameLen {
     void test3(int[] a, @LTLengthOf("#1") int i, @NonNegative int x) {
         int[] c = a;
         // See useTest3 for an example of why this assignment should fail.
-        //:: error: (assignment.type.incompatible)
         @LTLengthOf(
             value = {"c", "c"},
             offset = {"0", "x"}
         )
+        //:: error: (assignment.type.incompatible)
         int z = i;
     }
 
