@@ -310,7 +310,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         getMinLenAnnotatedTypeFactory().getAnnotatedType(tree.getExpression());
                 AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
                 if (anm == null) {
-                    return null;
+                    return 0;
                 }
                 return AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
             }
