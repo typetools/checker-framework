@@ -529,8 +529,7 @@ public abstract class CFAbstractTransfer<
                                 false);
                 info.insertValue(expr, annotation);
             } catch (FlowExpressionParseException e) {
-                // report errors here
-                analysis.checker.report(e.getResult(), methodTree);
+                // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration()
             }
         }
     }
