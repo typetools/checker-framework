@@ -31,8 +31,10 @@ import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.MinLen;
+import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.PolyIndex;
 import org.checkerframework.checker.index.qual.PolyUpperBound;
+import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
@@ -493,10 +495,36 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case DIVIDE:
                     addAnnotationForDivide(left, right, type);
                     break;
+                case AND:
+                    addAnnotationForAnd(left, right, type);
+                    break;
                 default:
                     break;
             }
             return super.visitBinary(tree, type);
+        }
+
+        private void addAnnotationForAnd(
+                ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
+            AnnotatedTypeMirror leftType = getAnnotatedType(left);
+            AnnotatedTypeMirror leftLBType =
+                    getLowerBoundAnnotatedTypeFactory().getAnnotatedType(left);
+            AnnotationMirror leftResultType = UNKNOWN;
+            if (leftLBType.hasAnnotation(NonNegative.class)
+                    || leftLBType.hasAnnotation(Positive.class)) {
+                leftResultType = leftType.getAnnotationInHierarchy(UNKNOWN);
+            }
+
+            AnnotatedTypeMirror rightType = getAnnotatedType(right);
+            AnnotatedTypeMirror rightLBType =
+                    getLowerBoundAnnotatedTypeFactory().getAnnotatedType(right);
+            AnnotationMirror rightResultType = UNKNOWN;
+            if (rightLBType.hasAnnotation(NonNegative.class)
+                    || rightLBType.hasAnnotation(Positive.class)) {
+                rightResultType = rightType.getAnnotationInHierarchy(UNKNOWN);
+            }
+
+            type.addAnnotation(qualHierarchy.greatestLowerBound(leftResultType, rightResultType));
         }
 
         private void addAnnotationForDivide(
