@@ -38,6 +38,22 @@ public class ArrayAssignmentSameLen {
         int z = i;
     }
 
+    void test4(
+            int[] a,
+            @LTLengthOf(
+                        value = {"#1", "#1"},
+                        offset = {"0", "#3"}
+                    )
+                    int i,
+            @NonNegative int x) {
+        int[] c1 = a;
+        @LTLengthOf(
+            value = {"c1", "c1"},
+            offset = {"0", "x"}
+        )
+        int z = i;
+    }
+
     void useTest3() {
         int[] a = {1, 3};
         test3(a, 0, 10);

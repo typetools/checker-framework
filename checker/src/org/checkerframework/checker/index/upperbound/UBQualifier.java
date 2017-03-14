@@ -803,13 +803,7 @@ public abstract class UBQualifier {
             if (otherOffsets == null) {
                 return false;
             }
-            boolean result = offsets.size() > 0 && otherOffsets.size() > 0;
-            for (OffsetEquation offset : offsets) {
-                for (OffsetEquation otherOffset : otherOffsets) {
-                    result = result && offset.equals(otherOffset);
-                }
-            }
-            return result;
+            return containsSame(offsets, otherOffsets);
         }
 
         @Override
