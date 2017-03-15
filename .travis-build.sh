@@ -45,21 +45,12 @@ if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
   # using the following commands:
   # (cd checker && ant junit-tests-nojtreg-nobuild)
   # (cd checker && ant nonjunit-tests-nojtreg-nobuild jtreg-tests)
-
-  # It's cheaper to run the demos test here than to trigger the
-  # checker-framework-demos job, which has to build the whole Checker Framework.
-  (cd checker && ant check-demos)
-  # Here's a more verbose way to do the same thing as "ant check-demos":
-  # (cd .. && git clone --depth 1 https://github.com/typetools/checker-framework.demos.git)
-  # (cd ../checker-framework.demos && ant -Djsr308.home=$ROOT)
 fi
 
 if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   ## downstream tests:  projects that depend on the the Checker Framework.
   ## These are here so they can be run by pull requests.  (Pull requests
   ## currently don't trigger downstream jobs.)
-  ## Done in "nonjunit" above:
-  ##  * checker-framework.demos (takes 15 minutes)
   ## Not done in the Travis build, but triggered as a separate Travis project:
   ##  * daikon-typecheck: (takes 2 hours)
 
@@ -79,6 +70,13 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   # Travis hangs if enabled without Android installation).
   # (cd .. && git clone --depth 1 https://github.com/typetools/sparta.git)
   # (cd ../sparta && ant jar all-tests)
+
+  # It's cheaper to run the demos test here than to trigger the
+  # checker-framework-demos job, which has to build the whole Checker Framework.
+  (cd checker && ant check-demos)
+  # Here's a more verbose way to do the same thing as "ant check-demos":
+  # (cd .. && git clone --depth 1 https://github.com/typetools/checker-framework.demos.git)
+  # (cd ../checker-framework.demos && ant -Djsr308.home=$ROOT)
 fi
 
 if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
