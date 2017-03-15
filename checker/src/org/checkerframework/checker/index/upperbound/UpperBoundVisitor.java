@@ -8,17 +8,19 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree.Kind;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.index.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.qual.SameLen;
+import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /** Warns about array accesses that could be too high. */
@@ -82,143 +84,126 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName), indexTree);
     }
 
-    private List<? extends ExpressionTree> getExpressionsFromValueExp(ExpressionTree valueExp) {
-        if (valueExp.getKind() == Kind.NEW_ARRAY) {
-            return ((NewArrayTree) valueExp).getInitializers();
-        } else {
-            return Collections.singletonList(valueExp);
-        }
-    }
-
-    private UBQualifier getQualifierFromVarType(AnnotatedTypeMirror varType) {
-        if (varType instanceof AnnotatedTypeMirror.AnnotatedArrayType) {
-            // The qualifier we need for an array is in the component type, not varType.
-            AnnotatedTypeMirror componentType =
-                    ((AnnotatedTypeMirror.AnnotatedArrayType) varType).getComponentType();
-            return UBQualifier.createUBQualifier(componentType, atypeFactory.UNKNOWN);
-        } else {
-            return UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN);
-        }
-    }
-
-    /**
-     * Checks whether one of the arrays in sameLenArrays is a valid replacement in ltl for the
-     * arrayName.
-     */
-    private boolean containsValidReplacement(
-            ExpressionTree exp,
-            String arrayName,
-            List<String> sameLenArrays,
-            LessThanLengthOf ltl) {
-
-        if (sameLenArrays.size() == 0) {
-            return false; // avoid the computation below
-        }
-
-        AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(exp);
-        UBQualifier expQual = UBQualifier.createUBQualifier(expType, atypeFactory.UNKNOWN);
-        boolean matchesAny = false;
-        if (expQual.isLessThanLengthQualifier()) {
-            LessThanLengthOf expLTL = (LessThanLengthOf) expQual;
-            for (String sameLenArrayName : sameLenArrays) {
-                // Check whether replacing the value for any of the current type's offset results
-                // in the type we're trying to match. If so, set matchesAny to true and break.
-                if (ltl.isValidReplacement(arrayName, sameLenArrayName, expLTL)) {
-                    matchesAny = true;
-                    break;
-                }
-            }
-        }
-        return matchesAny;
-    }
-
-    /**
-     * Slightly relaxes the usual assignment rules by allowing assignments where the right hand side
-     * is a value known at compile time and the type of the left hand side is annotated with
-     * LT*LengthOf("a"). If the min length of a is in the correct relationship with the value on the
-     * right hand side, then the assignment is legal. Both constant integers and constant arrays of
-     * integers are handled.
-     */
     @Override
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             ExpressionTree valueExp,
             /*@CompilerMessageKey*/ String errorKey) {
-
-        List<? extends ExpressionTree> expressions = getExpressionsFromValueExp(valueExp);
-
-        if (expressions == null || expressions.isEmpty()) {
+        if (!relaxedCommonAssignment(varType, valueExp)) {
             super.commonAssignmentCheck(varType, valueExp, errorKey);
-            return;
         }
+    }
 
-        // Find the appropriate qualifier to try to conform to.
-        UBQualifier qualifier = getQualifierFromVarType(varType);
-
-        // If the qualifier is uninteresting or the type is unannotated, do nothing else.
-        if (qualifier == null || !qualifier.isLessThanLengthQualifier()) {
-            super.commonAssignmentCheck(varType, valueExp, errorKey);
-            return;
-        }
-        LessThanLengthOf ltl = (LessThanLengthOf) qualifier;
-
-        // Either a singleton list of the single integer on the right,
-        // or a list containing all the values in a constant array.
-        List<Integer> rhsValues = new ArrayList<>();
-
-        boolean allValuesConstant = true;
-        // All the values must be compile-time constants to check against the minlen.
-        for (ExpressionTree exp : expressions) {
-            Integer val = atypeFactory.valMaxFromExpressionTree(exp);
-            if (val == null) {
-                allValuesConstant = false;
-            } else {
-                rhsValues.add(val);
+    /**
+     * Returns whether the assignment is legal based on the relaxed assignment rules.
+     *
+     * <p>The relaxed assignment rules is the following: Assuming the varType (left-hand side) is
+     * less than the length of some array given some offset
+     *
+     * <p>1. If both the offset and the value expression (rhs) are ints known at compile time, and
+     * if the min length of the array is greater than offset + value, then the assignment is legal.
+     * (This method returns true.)
+     *
+     * <p>2. If the value expression (rhs) is less than the length of an array that is the same
+     * length as the array in the varType, and if the offsets are equal, then the assignment is
+     * legal. (This method returns true.)
+     *
+     * <p>3. Otherwise the assignment is only legal if the usual assignment rules are true, so this
+     * method returns false.
+     *
+     * <p>If the varType is less than the length of multiple arrays, then the this method only
+     * returns true if the relaxed rules above apply for each array.
+     *
+     * <p>If the varType is an array type and the value express is an array initializer, then the
+     * above rules are applied for expression in the initializer where the varType is the component
+     * type of the array.
+     */
+    private boolean relaxedCommonAssignment(AnnotatedTypeMirror varType, ExpressionTree valueExp) {
+        List<? extends ExpressionTree> expressions;
+        if (valueExp.getKind() == Kind.NEW_ARRAY && varType.getKind() == TypeKind.ARRAY) {
+            expressions = ((NewArrayTree) valueExp).getInitializers();
+            if (expressions == null || expressions.isEmpty()) {
+                return false;
             }
+            // The qualifier we need for an array is in the component type, not varType.
+            AnnotatedTypeMirror componentType = ((AnnotatedArrayType) varType).getComponentType();
+            UBQualifier qualifier =
+                    UBQualifier.createUBQualifier(componentType, atypeFactory.UNKNOWN);
+            if (!qualifier.isLessThanLengthQualifier()) {
+                return false;
+            }
+            for (ExpressionTree expressionTree : expressions) {
+                if (!relaxedCommonAssignmentCheck((LessThanLengthOf) qualifier, expressionTree)) {
+                    return false;
+                }
+            }
+            return true;
         }
 
-        boolean conforms = true;
-        // Check whether each expression is valid for each array listed. Set conforms to false if one isn't.
-        for (String arrayName : ltl.getArrays()) {
+        UBQualifier qualifier = UBQualifier.createUBQualifier(varType, atypeFactory.UNKNOWN);
+        return qualifier.isLessThanLengthQualifier()
+                && relaxedCommonAssignmentCheck((LessThanLengthOf) qualifier, valueExp);
+    }
 
-            // Do the samelen check first. Look up all arrays in the SL type and
-            // check if it conforms to one.
+    private boolean relaxedCommonAssignmentCheck(
+            LessThanLengthOf varLtlQual, ExpressionTree valueExp) {
+
+        AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(valueExp);
+        UBQualifier expQual = UBQualifier.createUBQualifier(expType, atypeFactory.UNKNOWN);
+
+        Integer value = atypeFactory.valMaxFromExpressionTree(valueExp);
+
+        if (value == null && !expQual.isLessThanLengthQualifier()) {
+            return false;
+        }
+
+        SameLenAnnotatedTypeFactory sameLenFactory = atypeFactory.getSameLenAnnotatedTypeFactory();
+        MinLenAnnotatedTypeFactory minLenFactory = atypeFactory.getMinLenAnnotatedTypeFactory();
+        for (String arrayName : varLtlQual.getArrays()) {
+
             List<String> sameLenArrays =
-                    atypeFactory
-                            .getSameLenAnnotatedTypeFactory()
-                            .getSameLensFromString(arrayName, valueExp, getCurrentPath());
-
-            // SameLen checks.
-            for (ExpressionTree exp : expressions) {
-                if (!containsValidReplacement(exp, arrayName, sameLenArrays, ltl)) {
-                    if (!allValuesConstant) {
-                        conforms = false;
-                        break;
-                    }
-                }
+                    sameLenFactory.getSameLensFromString(arrayName, valueExp, getCurrentPath());
+            if (testSameLen(expQual, varLtlQual, sameLenArrays, arrayName)) {
+                continue;
             }
 
-            // MinLen checks only proceed if all right hand side values are constants.
-            if (allValuesConstant) {
-                int minLen =
-                        atypeFactory
-                                .getMinLenAnnotatedTypeFactory()
-                                .getMinLenFromString(arrayName, valueExp, getCurrentPath());
-                boolean minLenOk = true;
-                for (Integer value : rhsValues) {
-                    if (!ltl.isValuePlusOffsetLessThanMinLen(arrayName, value, minLen)) {
-                        minLenOk = false;
-                    }
-                }
-                if (!minLenOk) {
-                    conforms = false;
-                    break;
-                }
+            int minLen = minLenFactory.getMinLenFromString(arrayName, valueExp, getCurrentPath());
+            if (testMinLen(value, minLen, arrayName, varLtlQual)) {
+                continue;
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean testSameLen(
+            UBQualifier expQual,
+            LessThanLengthOf varQual,
+            List<String> sameLenArrays,
+            String arrayName) {
+
+        if (!expQual.isLessThanLengthQualifier()) {
+            return false;
+        }
+
+        for (String sameLenArrayName : sameLenArrays) {
+            // Check whether replacing the value for any of the current type's offset results
+            // in the type we're trying to match.
+            if (varQual.isValidReplacement(
+                    arrayName, sameLenArrayName, (LessThanLengthOf) expQual)) {
+                return true;
             }
         }
-        if (!conforms) {
-            super.commonAssignmentCheck(varType, valueExp, errorKey);
-            return;
+        return false;
+    }
+
+    private boolean testMinLen(
+            Integer value, int minLen, String arrayName, LessThanLengthOf varQual) {
+        if (value == null) {
+            return false;
         }
+        return varQual.isValuePlusOffsetLessThanMinLen(arrayName, value, minLen);
     }
 }
