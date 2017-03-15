@@ -167,7 +167,7 @@ public class ValueCheckerUtils {
             return chars;
         } else if (newClass == Boolean.class) {
             throw new UnsupportedOperationException(
-                    "ValueAnnotatedTypeFactory: can't convert double to boolean");
+                    "ValueAnnotatedTypeFactory: can't convert int to boolean");
         }
         return NumberUtils.castNumbers(newType, longs);
     }
