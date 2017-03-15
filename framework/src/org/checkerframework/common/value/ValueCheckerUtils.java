@@ -95,12 +95,8 @@ public class ValueCheckerUtils {
             values = convertIntVal(longs, castType, castTo);
         } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
             Range range = ValueAnnotatedTypeFactory.getIntRange(anno);
-            if (range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
-                values = new ArrayList<>();
-            } else {
-                List<Long> longs = getValuesFromRange(range, Long.class);
-                values = convertIntVal(longs, castType, castTo);
-            }
+            List<Long> longs = getValuesFromRange(range, Long.class);
+            values = convertIntVal(longs, castType, castTo);
         } else if (AnnotationUtils.areSameByClass(anno, StringVal.class)) {
             values = convertStringVal(anno, castType);
         } else if (AnnotationUtils.areSameByClass(anno, BoolVal.class)) {
@@ -168,7 +164,7 @@ public class ValueCheckerUtils {
         if (newClass == String.class) {
             return Collections.singletonList("null");
         } else {
-            return new ArrayList<>();
+            return null;
         }
     }
 
@@ -225,7 +221,7 @@ public class ValueCheckerUtils {
             return chars;
         } else if (newClass == Boolean.class) {
             throw new UnsupportedOperationException(
-                    "ValueAnnotatedTypeFactory: can't convert double to boolean");
+                    "ValueAnnotatedTypeFactory: can't convert int to boolean");
         }
         return NumberUtils.castNumbers(newType, longs);
     }

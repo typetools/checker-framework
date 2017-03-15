@@ -35,6 +35,7 @@ import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
+import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -668,15 +669,35 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
-            if (isUnderlyingTypeAValue(type)) {
-                AnnotatedTypeMirror castedAnnotation = getAnnotatedType(tree.getExpression());
-                List<?> values = getValues(castedAnnotation, type.getUnderlyingType());
-                type.replaceAnnotation(
-                        resultAnnotationHandler(type.getUnderlyingType(), values, tree));
-            } else if (type.getKind() == TypeKind.ARRAY) {
+        public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror atm) {
+            if (isUnderlyingTypeAValue(atm)) {
+                AnnotationMirror oldAnno =
+                        getAnnotatedType(tree.getExpression()).getAnnotationInHierarchy(UNKNOWNVAL);
+                if (oldAnno != null) {
+                    TypeMirror newType = atm.getUnderlyingType();
+                    AnnotationMirror newAnno;
+                    Range range;
+                    if (AnnotationUtils.areSameByClass(oldAnno, IntRange.class)
+                            && (range = getIntRange(oldAnno)).isWiderThan(MAX_VALUES)) {
+                        Class<?> newClass = ValueCheckerUtils.getClassFromType(newType);
+                        if (newClass == String.class) {
+                            newAnno = UNKNOWNVAL;
+                        } else if (newClass == Boolean.class || newClass == boolean.class) {
+                            throw new UnsupportedOperationException(
+                                    "ValueAnnotatedTypeFactory: can't convert int to boolean");
+                        } else {
+                            newAnno =
+                                    createIntRangeAnnotation(NumberUtils.castRange(newType, range));
+                        }
+                    } else {
+                        List<?> values = ValueCheckerUtils.getValuesCastedToType(oldAnno, newType);
+                        newAnno = resultAnnotationHandler(newType, values, tree);
+                    }
+                    atm.replaceAnnotation(newAnno);
+                }
+            } else if (atm.getKind() == TypeKind.ARRAY) {
                 if (tree.getExpression().getKind() == Kind.NULL_LITERAL) {
-                    type.replaceAnnotation(BOTTOMVAL);
+                    atm.replaceAnnotation(BOTTOMVAL);
                 }
             }
             return null;
@@ -772,7 +793,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     for (ExpressionTree argument : arguments) {
                         AnnotatedTypeMirror argType = getAnnotatedType(argument);
                         List<?> values = getValues(argType, argType.getUnderlyingType());
-                        if (values.isEmpty()) {
+                        if (values == null || values.isEmpty()) {
                             // values aren't known, so don't try to evaluate the
                             // method
                             return null;
@@ -789,7 +810,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 if (receiver != null && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
                     receiverValues = getValues(receiver, receiver.getUnderlyingType());
-                    if (receiverValues.isEmpty()) {
+                    if (receiverValues == null || receiverValues.isEmpty()) {
                         // values aren't known, so don't try to evaluate the
                         // method
                         return null;
@@ -827,7 +848,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     for (ExpressionTree argument : arguments) {
                         AnnotatedTypeMirror argType = getAnnotatedType(argument);
                         List<?> values = getValues(argType, argType.getUnderlyingType());
-                        if (values.isEmpty()) {
+                        if (values == null || values.isEmpty()) {
                             // values aren't known, so don't try to evaluate the
                             // method
                             return null;
@@ -914,7 +935,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         private AnnotationMirror resultAnnotationHandler(
                 TypeMirror resultType, List<?> results, Tree tree) {
-
+            if (results == null) {
+                return BOTTOMVAL;
+            }
             Class<?> resultClass = ValueCheckerUtils.getClassFromType(resultType);
 
             // For some reason null is included in the list of values,
