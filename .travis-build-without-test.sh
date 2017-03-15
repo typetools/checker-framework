@@ -37,19 +37,15 @@ echo "Running:  (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 
 ## Compile
-#TODO: The docker images should be updated to have wget installed.
-apt-get update
-apt-get install wget
-
 if [[ "${JDKVER}" == "jdk7" || "${JDKVER}" == "" ]]; then
 wget https://checkerframework.org/dev-jdk/jdk7.jar -O checker/jdk/jdk7.jar
 # The implementation version listed in the Manifest is the hash of the commit of
 # the Checker Framework that created the jdk.jar.  Show it here to help debugging.
-jar -xvf checker/jdk/jdk7.jar  META-INF/MANIFEST.MF && cat META-INF/MANIFEST.MF
+jar -xvf checker/jdk/jdk7.jar META-INF/MANIFEST.MF && cat META-INF/MANIFEST.MF
 fi
 if [[ "${JDKVER}" == "jdk8" || "${JDKVER}" == "" ]]; then
 wget https://checkerframework.org/dev-jdk/jdk8.jar -O checker/jdk/jdk8.jar
-jar -xvf checker/jdk/jdk8.jar  META-INF/MANIFEST.MF && cat META-INF/MANIFEST.MF
+jar -xvf checker/jdk/jdk8.jar META-INF/MANIFEST.MF && cat META-INF/MANIFEST.MF
 fi
 
 echo "running \"ant dist-nobuildjdk\" for checker-framework"
