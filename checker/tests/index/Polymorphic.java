@@ -13,6 +13,11 @@ class Polymorphic {
         return a;
     }
 
+    public static String @PolyMinLen [] quantify2(String @PolyMinLen [] vars) {
+        String[] result = new String[vars.length];
+        return result;
+    }
+
     int @PolySameLen [] samelen_identity(int @PolySameLen [] a) {
         int @SameLen("a") [] x = a;
         return a;
