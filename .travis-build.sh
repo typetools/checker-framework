@@ -3,8 +3,12 @@
 # Optional argument $1 is one of:
 #   all, junit, nonjunit, downstream, misc
 # If it is omitted, this script does everything.
-
 export GROUP=$1
+
+# Optional argument $2 is one of:
+#   jdk7, jdk8, jdkany
+export JDKVER=$2
+
 if [[ "${GROUP}" == "" ]]; then
   export GROUP=all
 fi
@@ -13,10 +17,6 @@ if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar
   echo "Bad argument '${GROUP}'; should be omitted or one of: all, junit, nonjunit, downstream, misc."
   exit 1
 fi
-
-# Optional argument $2 is one of:
-#   jdk7, jdk8
-export JDKVER=$2
 
 # Fail the whole script if any command fails
 set -e

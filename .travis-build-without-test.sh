@@ -7,9 +7,9 @@ export SHELLOPTS
 
 SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
 
-# Optional argument $2 is one of:
+# Optional argument $1 is one of:
 #   jdk7, jdk8
-# If omited, then either jdk may be used.
+# If omited or "jdkany", then either jdk may be used.
 JDKVER=$1
 
 ## Build annotation-tools (Annotation File Utilities)
@@ -37,13 +37,13 @@ echo "Running:  (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 
 ## Compile
-if [[ "${JDKVER}" == "jdk7" || "${JDKVER}" == "" ]]; then
-wget https://checkerframework.org/dev-jdk/jdk7.jar -O checker/jdk/jdk7.jar
 # The implementation version listed in the Manifest is the hash of the commit of
 # the Checker Framework that created the jdk.jar.  Show it here to help debugging.
+if [[ "${JDKVER}" == "jdk7" || "${JDKVER}" == "" || "${JDKVER}" == "jdkany" ]]; then
+wget https://checkerframework.org/dev-jdk/jdk7.jar -O checker/jdk/jdk7.jar
 jar -xvf checker/jdk/jdk7.jar META-INF/MANIFEST.MF && cat META-INF/MANIFEST.MF
 fi
-if [[ "${JDKVER}" == "jdk8" || "${JDKVER}" == "" ]]; then
+if [[ "${JDKVER}" == "jdk8" || "${JDKVER}" == "" || "${JDKVER}" == "jdkany" ]]; then
 wget https://checkerframework.org/dev-jdk/jdk8.jar -O checker/jdk/jdk8.jar
 jar -xvf checker/jdk/jdk8.jar META-INF/MANIFEST.MF && cat META-INF/MANIFEST.MF
 fi
