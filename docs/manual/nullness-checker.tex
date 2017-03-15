@@ -433,17 +433,29 @@ More examples of the use of these annotations appear in the Javadoc for
 
 \subsection{Nullness and arrays\label{nullness-arrays}}
 
-The components of a newly created object of reference type are all
-null. Only after initialization can the array actually be considered
-to contain non-null components.
-Therefore, the following is not allowed:
+Suppose that you declare an array to contain non-null elements.
+Currently, the Nullness Checker does not verify that all the elements of the
+array are initialized to a non-null value.  This is an unsoundness in the
+checker.
+
+To make the Nullness Checker conservatively reject code that may leave a
+non-null value in an array, use the command-line option
+\code{-Alint=forbidnonnullarraycomponents}.  The opiton is currently disabled
+because it makes the checker issue many false positive errors.
+% TODO: flip the default after collecting more data.
+
+When the \code{-Alint=forbidnonnullarraycomponents} option is supplied,
+the following is not allowed:
 
 \begin{Verbatim}
-  @NonNull Object [] oa = new @NonNull Object[10]; // error
+  Object [] oa = new Object[10]; // error
 \end{Verbatim}
 
-Instead, one creates a nullable or lazy-nonnull array, initializes
-each component, and then assigns the result to a non-null array:
+\noindent
+(recall that \<Object> means the same thing as \<@NonNull Object>).
+
+Instead, your code needs to create a nullable or lazy-nonnull array, initialize
+each component, and then assign the result to a non-null array:
 
 \begin{Verbatim}
   @MonotonicNonNull Object [] temp = new @MonotonicNonNull Object[10];
@@ -461,11 +473,6 @@ then write a \<@SuppressWarnings> annotation.
 
 % TODO: explain more aspects, give more examples.
 
-You need to supply the \code{-Alint=forbidnonnullarraycomponents}
-command-line option to enable this behavior.
-For backwards-compatibility reasons, the default behavior is currently
-to unsoundly allow non-null array components.
-% TODO: flip the default after collecting more data.
 
 
 \subsection{Run-time checks for nullness\label{nullness-runtime-checks}}
