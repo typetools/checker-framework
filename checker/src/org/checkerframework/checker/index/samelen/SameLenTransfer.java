@@ -76,6 +76,7 @@ public class SameLenTransfer extends CFTransfer {
                                 targetRec, otherRec, UNKNOWN, arrayLengthNodeAnnotation);
 
                 propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
+                return result;
             }
         }
 

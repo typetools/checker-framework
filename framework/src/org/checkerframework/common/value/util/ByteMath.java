@@ -140,7 +140,7 @@ public class ByteMath extends NumberMath<Byte> {
     }
 
     @Override
-    public Number signedSiftRight(Number right) {
+    public Number signedShiftRight(Number right) {
         if (right instanceof Byte) {
             return number >> right.byteValue();
         }
@@ -157,7 +157,7 @@ public class ByteMath extends NumberMath<Byte> {
     }
 
     @Override
-    public Number unsignedSiftRight(Number right) {
+    public Number unsignedShiftRight(Number right) {
         if (right instanceof Byte) {
             return number >>> right.byteValue();
         }

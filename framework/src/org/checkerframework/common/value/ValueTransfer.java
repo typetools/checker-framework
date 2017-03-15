@@ -226,7 +226,7 @@ public class ValueTransfer extends CFTransfer {
         SUBTRACTION,
         DIVISION,
         REMAINDER,
-        MULPLICATION,
+        MULTIPLICATION,
         SHIFT_LEFT,
         SIGNED_SHIFT_RIGHT,
         UNSIGNED_SHIFT_RIGHT,
@@ -253,7 +253,7 @@ public class ValueTransfer extends CFTransfer {
                     case DIVISION:
                         resultValues.add(nmLeft.divide(right));
                         break;
-                    case MULPLICATION:
+                    case MULTIPLICATION:
                         resultValues.add(nmLeft.times(right));
                         break;
                     case REMAINDER:
@@ -266,10 +266,10 @@ public class ValueTransfer extends CFTransfer {
                         resultValues.add(nmLeft.shiftLeft(right));
                         break;
                     case SIGNED_SHIFT_RIGHT:
-                        resultValues.add(nmLeft.signedSiftRight(right));
+                        resultValues.add(nmLeft.signedShiftRight(right));
                         break;
                     case UNSIGNED_SHIFT_RIGHT:
-                        resultValues.add(nmLeft.unsignedSiftRight(right));
+                        resultValues.add(nmLeft.unsignedShiftRight(right));
                         break;
                     case BITWISE_AND:
                         resultValues.add(nmLeft.bitwiseAnd(right));
@@ -316,7 +316,7 @@ public class ValueTransfer extends CFTransfer {
                 calculateNumericalBinaryOp(
                         n.getLeftOperand(),
                         n.getRightOperand(),
-                        NumericalBinaryOps.MULPLICATION,
+                        NumericalBinaryOps.MULTIPLICATION,
                         p);
         return createNewResult(transferResult, resultValues);
     }
