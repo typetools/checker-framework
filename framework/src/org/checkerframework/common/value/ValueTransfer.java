@@ -81,7 +81,7 @@ public class ValueTransfer extends CFTransfer {
             return Collections.singletonList("null");
         }
 
-        //@IntVal, @DoubleVal, @BoolVal (have to be converted to string)
+        //@IntVal, @IntRange, @DoubleVal, @BoolVal (have to be converted to string)
         List<? extends Object> values;
         numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BoolVal.class);
         if (numberAnno != null) {
@@ -90,6 +90,14 @@ public class ValueTransfer extends CFTransfer {
             values = getCharValues(subNode, p);
         } else if (subNode instanceof StringConversionNode) {
             return getStringValues(((StringConversionNode) subNode).getOperand(), p);
+        } else if (isIntRange(subNode, p)) {
+            Range range = getIntRange(subNode, p);
+            if (range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
+                values = new ArrayList<Number>();
+            } else {
+                List<Long> longValues = ValueCheckerUtils.getValuesFromRange(range, Long.class);
+                values = NumberUtils.castNumbers(subNode.getType(), longValues);
+            }
         } else {
             values = getNumericalValues(subNode, p);
         }
@@ -109,11 +117,30 @@ public class ValueTransfer extends CFTransfer {
 
     private List<Character> getCharValues(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
-        AnnotationMirror intAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
-        return ValueAnnotatedTypeFactory.getCharValues(intAnno);
+        AnnotationMirror intAnno;
+
+        intAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
+        if (intAnno != null) {
+            return ValueAnnotatedTypeFactory.getCharValues(intAnno);
+        }
+
+        intAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
+        if (intAnno != null) {
+            Range range = ValueAnnotatedTypeFactory.getIntRange(intAnno);
+            if (range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
+                return new ArrayList<Character>();
+            } else {
+                return ValueCheckerUtils.getValuesFromRange(range, Character.class);
+            }
+        }
+
+        return new ArrayList<Character>();
     }
 
+    /**
+     * Get possible numerical values from annotation and cast them to the underlying type. Return
+     * null if @BottomVal.
+     */
     private List<? extends Number> getNumericalValues(
             Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
@@ -283,32 +310,49 @@ public class ValueTransfer extends CFTransfer {
                 && TypesUtils.isIntegral(rightNode.getType())) {
             Range leftRange = getIntRange(leftNode, p);
             Range rightRange = getIntRange(rightNode, p);
+            Range resultRange;
             switch (op) {
                 case ADDITION:
-                    return leftRange.plus(rightRange);
+                    resultRange = leftRange.plus(rightRange);
+                    break;
                 case SUBTRACTION:
-                    return leftRange.minus(rightRange);
+                    resultRange = leftRange.minus(rightRange);
+                    break;
                 case MULTIPLICATION:
-                    return leftRange.times(rightRange);
+                    resultRange = leftRange.times(rightRange);
+                    break;
                 case DIVISION:
-                    return leftRange.divide(rightRange);
+                    resultRange = leftRange.divide(rightRange);
+                    break;
                 case REMAINDER:
-                    return leftRange.remainder(rightRange);
+                    resultRange = leftRange.remainder(rightRange);
+                    break;
                 case SHIFT_LEFT:
-                    return leftRange.shiftLeft(rightRange);
+                    resultRange = leftRange.shiftLeft(rightRange);
+                    break;
                 case SIGNED_SHIFT_RIGHT:
-                    return leftRange.signedShiftRight(rightRange);
+                    resultRange = leftRange.signedShiftRight(rightRange);
+                    break;
                 case UNSIGNED_SHIFT_RIGHT:
-                    return leftRange.unsignedShiftRight(rightRange);
+                    resultRange = leftRange.unsignedShiftRight(rightRange);
+                    break;
                 case BITWISE_AND:
-                    return leftRange.bitwiseAnd(rightRange);
+                    resultRange = leftRange.bitwiseAnd(rightRange);
+                    break;
                 case BITWISE_OR:
-                    return leftRange.bitwiseOr(rightRange);
+                    resultRange = leftRange.bitwiseOr(rightRange);
+                    break;
                 case BITWISE_XOR:
-                    return leftRange.bitwiseXor(rightRange);
+                    resultRange = leftRange.bitwiseXor(rightRange);
+                    break;
                 default:
                     throw new UnsupportedOperationException();
             }
+            // Any integral type with less than 32 bits would be promoted to 32-bit int type during operations.
+            return leftNode.getType().getKind() == TypeKind.LONG
+                            || rightNode.getType().getKind() == TypeKind.LONG
+                    ? resultRange
+                    : resultRange.intRange();
         } else {
             return Range.EVERYTHING;
         }
@@ -530,16 +574,24 @@ public class ValueTransfer extends CFTransfer {
             Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
         if (TypesUtils.isIntegral(operand.getType())) {
             Range range = getIntRange(operand, p);
+            Range resultRange;
             switch (op) {
                 case PLUS:
-                    return range.unaryPlus();
+                    resultRange = range.unaryPlus();
+                    break;
                 case MINUS:
-                    return range.unaryMinus();
+                    resultRange = range.unaryMinus();
+                    break;
                 case BITWISE_COMPLEMENT:
-                    return range.bitwiseComplement();
+                    resultRange = range.bitwiseComplement();
+                    break;
                 default:
                     throw new UnsupportedOperationException();
             }
+            // Any integral type with less than 32 bits would be promoted to 32-bit int type during operations.
+            return operand.getType().getKind() == TypeKind.LONG
+                    ? resultRange
+                    : resultRange.intRange();
         } else {
             return Range.EVERYTHING;
         }

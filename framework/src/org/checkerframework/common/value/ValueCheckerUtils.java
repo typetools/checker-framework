@@ -95,12 +95,8 @@ public class ValueCheckerUtils {
             values = convertIntVal(longs, castType, castTo);
         } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
             Range range = ValueAnnotatedTypeFactory.getIntRange(anno);
-            if (range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
-                values = new ArrayList<>();
-            } else {
-                List<Long> longs = getValuesFromRange(range, Long.class);
-                values = convertIntVal(longs, castType, castTo);
-            }
+            List<Long> longs = getValuesFromRange(range, Long.class);
+            values = convertIntVal(longs, castType, castTo);
         } else if (AnnotationUtils.areSameByClass(anno, StringVal.class)) {
             values = convertStringVal(anno, castType);
         } else if (AnnotationUtils.areSameByClass(anno, BoolVal.class)) {
@@ -123,14 +119,17 @@ public class ValueCheckerUtils {
     }
 
     /**
-     * Get all possible values from the given type and cast them into Long type or Double type
-     * accordingly. Only support casting to integral type and double type.
+     * Get all possible values from the given type and cast them into Long type, Double type or
+     * Character type accordingly. Only support casting to integral type and double type.
      *
      * @param range the given range
      * @param expectedType the expected type
      * @return
      */
     public static <T> List<T> getValuesFromRange(Range range, Class<T> expectedType) {
+        if (range.isNothing()) {
+            return null;
+        }
         List<T> values = new ArrayList<>();
         if (expectedType == Integer.class
                 || expectedType == int.class
@@ -150,6 +149,10 @@ public class ValueCheckerUtils {
             for (Long value = range.from; value <= range.to; value++) {
                 values.add(expectedType.cast(value.doubleValue()));
             }
+        } else if (expectedType == Character.class || expectedType == char.class) {
+            for (Long value = range.from; value <= range.to; value++) {
+                values.add(expectedType.cast((char) value.intValue()));
+            }
         } else {
             throw new UnsupportedOperationException(
                     "ValueCheckerUtils: unexpected class: " + expectedType);
@@ -161,7 +164,7 @@ public class ValueCheckerUtils {
         if (newClass == String.class) {
             return Collections.singletonList("null");
         } else {
-            return new ArrayList<>();
+            return null;
         }
     }
 
@@ -218,7 +221,7 @@ public class ValueCheckerUtils {
             return chars;
         } else if (newClass == Boolean.class) {
             throw new UnsupportedOperationException(
-                    "ValueAnnotatedTypeFactory: can't convert double to boolean");
+                    "ValueAnnotatedTypeFactory: can't convert int to boolean");
         }
         return NumberUtils.castNumbers(newType, longs);
     }
