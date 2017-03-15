@@ -18,7 +18,7 @@ import org.openide.util.MutexException;
 public class CheckerFrameworkPanel extends JPanel {
 
     private final EditableProperties editableProperty;
-    private static Map<String, String> checkerStrings;
+    private final Map<String, String> checkerStrings;
     private final FileObject projectProperties;
     private final JCheckBox[] checkerList;
     private final String checkerPath;
@@ -52,8 +52,9 @@ public class CheckerFrameworkPanel extends JPanel {
             System.out.println("Failed to load netbeans project.properties file.");
         }
         editableProperty = tempProperty;
+        Map<String, String> tempCheckerStrings;
         try {
-            checkerStrings =
+            tempCheckerStrings =
                     loadProperties(
                             FileUtil.toFileObject(
                                     InstalledFileLocator.getDefault()
@@ -63,8 +64,9 @@ public class CheckerFrameworkPanel extends JPanel {
                                                     false)));
         } catch (IOException e) {
             System.out.println("Failed to load checker strings properties file.");
-            checkerStrings = new HashMap<>(); //create an empty hash map
+            tempCheckerStrings = new HashMap<>(); //create an empty hash map
         }
+        checkerStrings = tempCheckerStrings;
 
         checkerList = new JCheckBox[checkerStrings.size()];
         int i = 0;
