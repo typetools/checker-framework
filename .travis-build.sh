@@ -5,10 +5,6 @@
 # If it is omitted, this script does everything.
 export GROUP=$1
 
-# Optional argument $2 is one of:
-#   jdk7, jdk8, jdkany
-export JDKVER=$2
-
 if [[ "${GROUP}" == "" ]]; then
   export GROUP=all
 fi
@@ -33,7 +29,7 @@ set -o xtrace
 export SHELLOPTS
 
 
-./.travis-build-without-test.sh $JDKVER
+./.travis-build-without-test.sh
 # The above command downloads the JDK, so there is no need for a subsequent
 # command to build it except to test building it.
 
