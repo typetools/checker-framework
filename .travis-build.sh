@@ -13,8 +13,8 @@ if [[ "${GROUP}" == "" ]]; then
   export GROUP=all
 fi
 
-if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "junit" && "${GROUP}" != "nonjunit" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" ]]; then
-  echo "Bad argument '${GROUP}'; should be omitted or one of: all, junit, nonjunit, downstream, misc."
+if [[ "${GROUP}" != "all" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" ]]; then
+  echo "Bad argument '${GROUP}'; should be omitted or one of: all, all-tests, jdk.jar, downstream, misc."
   exit 1
 fi
 
@@ -41,14 +41,10 @@ set -e
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
   (cd checker && ant all-tests-nobuildjdk)
-fi
-
-if [[ "${GROUP}" == "junit" || "${GROUP}" == "all" ]]; then
-  (cd checker && ant junit-tests-nojtreg-nobuild)
-fi
-
-if [[ "${GROUP}" == "nonjunit" || "${GROUP}" == "all" ]]; then
-  (cd checker && ant nonjunit-tests-nojtreg-nobuild jtreg-tests)
+  # If the above commond ever exceeds the time limit on Travis, it can be split
+  # using the following commands:
+  # (cd checker && ant junit-tests-nojtreg-nobuild)
+  # (cd checker && ant nonjunit-tests-nojtreg-nobuild jtreg-tests)
 
   # It's cheaper to run the demos test here than to trigger the
   # checker-framework-demos job, which has to build the whole Checker Framework.
