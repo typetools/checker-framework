@@ -34,8 +34,3 @@ echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 ## Compile
 echo "running \"ant dist-downloadjdk\" for checker-framework"
 (cd checker && ant dist-downloadjdk)
-
-# The implementation version listed in the Manifest is the hash of the commit of
-# the Checker Framework that created the jdk.jar.  Show it here to help debugging.
-jar -xvf checker/jdk/jdk7.jar META-INF/MANIFEST.MF && cat META-INF/MANIFEST.MF
-

@@ -1434,6 +1434,24 @@ So, use our own archived version.
         <!-- Copy jars to dist. If dist doesn't exist then the copy task creates it.-->
         <copy file="jdk/jdk7.jar" tofile="dist/jdk7.jar"/>
         <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar"/>
+
+
+        <!--The implementation version listed in the Manifest is the hash of the commit of-->
+        <!--the Checker Framework that created the jdk.jar.  Show it here to help debugging.-->
+        <loadfile property="message">
+            <zipentry zipfile="jdk/jdk7.jar" name="META-INF/MANIFEST.MF"/>
+        </loadfile>
+        <echo>"Manifest file from jdk7.jar:"</echo>
+        <echo>"${message}"</echo>
+
+
+        <loadfile property="message">
+            <zipentry zipfile="jdk/jdk8.jar" name="META-INF/MANIFEST.MF"/>
+        </loadfile>
+        <echo>"Manifest file from jdk8.jar:"</echo>
+        <echo>"${message}"</echo>
+
+
     </target>
 
     <target name="all.jdks.jar" description="Build jdkX.jar using JAVA_X_HOME (with X in 7, 8, and 9)">
