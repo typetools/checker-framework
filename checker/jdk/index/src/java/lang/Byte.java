@@ -98,7 +98,7 @@ public final class Byte extends Number implements Comparable<Byte> {
      * @return a {@code Byte} instance representing {@code b}.
      * @since  1.5
      */
-    public static /*@ PolyLowerBound @ PolyUpperBound*/ Byte valueOf(/*@ PolyLowerBound @ PolyUpperBound*/ byte b) {
+    public static @PolyIndex Byte valueOf(@PolyIndex byte b) {
         final int offset = 128;
         return ByteCache.cache[(int)b + offset];
     }
@@ -295,7 +295,7 @@ public final class Byte extends Number implements Comparable<Byte> {
      * @param value     the value to be represented by the
      *                  {@code Byte}.
      */
-    public /*@ PolyLowerBound @ PolyUpperBound*/ Byte(/*@ PolyLowerBound @ PolyUpperBound*/ byte value) {
+    public @PolyIndex Byte(@PolyIndex byte value) {
         this.value = value;
     }
 

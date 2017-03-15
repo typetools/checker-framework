@@ -15,6 +15,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * which every instance of {@code @PolyRegex String} has been replaced by {@code String}.
  *
  * @checker_framework.manual #regex-checker Regex Checker
+ * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @Documented
 @PolymorphicQualifier

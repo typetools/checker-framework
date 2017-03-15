@@ -31,6 +31,10 @@ import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.MinLen;
+import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.checker.index.qual.PolyIndex;
+import org.checkerframework.checker.index.qual.PolyUpperBound;
+import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
@@ -44,6 +48,7 @@ import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -67,7 +72,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    public final AnnotationMirror UNKNOWN, BOTTOM;
+    public final AnnotationMirror UNKNOWN, BOTTOM, POLY;
 
     private final IndexMethodIdentifier imf;
 
@@ -75,10 +80,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker);
         UNKNOWN = AnnotationUtils.fromClass(elements, UpperBoundUnknown.class);
         BOTTOM = AnnotationUtils.fromClass(elements, UpperBoundBottom.class);
+        POLY = AnnotationUtils.fromClass(elements, PolyUpperBound.class);
 
         addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(IndexOrLow.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(IndexOrHigh.class, createLTEqLengthOfAnnotation());
+        addAliasedAnnotation(PolyAll.class, POLY);
+        addAliasedAnnotation(PolyIndex.class, POLY);
 
         imf = new IndexMethodIdentifier(processingEnv);
 
@@ -94,7 +102,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         LTEqLengthOf.class,
                         LTLengthOf.class,
                         LTOMLengthOf.class,
-                        UpperBoundBottom.class));
+                        UpperBoundBottom.class,
+                        PolyUpperBound.class));
     }
 
     /**
@@ -377,6 +386,19 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return convertUBQualifierToAnnotation(lub);
         }
 
+        @Override
+        public AnnotationMirror widenUpperBound(AnnotationMirror a, AnnotationMirror b) {
+            UBQualifier a1Obj = UBQualifier.createUBQualifier(a);
+            UBQualifier a2Obj = UBQualifier.createUBQualifier(b);
+            UBQualifier lub = a1Obj.widenUpperBound(a2Obj);
+            return convertUBQualifierToAnnotation(lub);
+        }
+
+        @Override
+        public boolean implementsWidening() {
+            return true;
+        }
+
         /**
          * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
          * annotations are the same. In this case, rhs is a subtype of lhs iff rhs contains at least
@@ -473,10 +495,36 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case DIVIDE:
                     addAnnotationForDivide(left, right, type);
                     break;
+                case AND:
+                    addAnnotationForAnd(left, right, type);
+                    break;
                 default:
                     break;
             }
             return super.visitBinary(tree, type);
+        }
+
+        private void addAnnotationForAnd(
+                ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
+            AnnotatedTypeMirror leftType = getAnnotatedType(left);
+            AnnotatedTypeMirror leftLBType =
+                    getLowerBoundAnnotatedTypeFactory().getAnnotatedType(left);
+            AnnotationMirror leftResultType = UNKNOWN;
+            if (leftLBType.hasAnnotation(NonNegative.class)
+                    || leftLBType.hasAnnotation(Positive.class)) {
+                leftResultType = leftType.getAnnotationInHierarchy(UNKNOWN);
+            }
+
+            AnnotatedTypeMirror rightType = getAnnotatedType(right);
+            AnnotatedTypeMirror rightLBType =
+                    getLowerBoundAnnotatedTypeFactory().getAnnotatedType(right);
+            AnnotationMirror rightResultType = UNKNOWN;
+            if (rightLBType.hasAnnotation(NonNegative.class)
+                    || rightLBType.hasAnnotation(Positive.class)) {
+                rightResultType = rightType.getAnnotationInHierarchy(UNKNOWN);
+            }
+
+            type.addAnnotation(qualHierarchy.greatestLowerBound(leftResultType, rightResultType));
         }
 
         private void addAnnotationForDivide(
@@ -495,7 +543,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             UBQualifier result = UpperBoundUnknownQualifier.UNKNOWN;
             UBQualifier numerator =
                     UBQualifier.createUBQualifier(getAnnotatedType(numeratorTree), UNKNOWN);
-            if (!numerator.isUnknownOrBottom()) {
+            if (numerator.isLessThanLengthQualifier()) {
                 result = ((LessThanLengthOf) numerator).divide(divisor);
             }
             result = result.glb(plusTreeDivideByVal(divisor, numeratorTree));
@@ -518,7 +566,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             UBQualifier right =
                     UBQualifier.createUBQualifier(
                             getAnnotatedType(plusTree.getRightOperand()), UNKNOWN);
-            if (!(left.isUnknownOrBottom() || right.isUnknownOrBottom())) {
+            if (left.isLessThanLengthQualifier() && right.isLessThanLengthQualifier()) {
                 LessThanLengthOf leftLTL = (LessThanLengthOf) left;
                 LessThanLengthOf rightLTL = (LessThanLengthOf) right;
                 List<String> arrays = new ArrayList<>();
@@ -576,6 +624,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return UNKNOWN;
         } else if (qualifier.isBottom()) {
             return BOTTOM;
+        } else if (qualifier.isPoly()) {
+            return POLY;
         }
 
         LessThanLengthOf ltlQualifier = (LessThanLengthOf) qualifier;

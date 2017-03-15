@@ -631,7 +631,9 @@ code:
 
   A potential disadvantage of using the \<castNonNull> method is that your
   code becomes dependent on the Checker Framework at run time as well as at
-  compile time.  You can avoid this by copying the implementation of
+  compile time:  you need to include \<checker-qual.jar>
+  or \<checker.jar> on your classpath at run time.
+  If this is a problem, you can copy the implementation of
   \<castNonNull> into your own code, and possibly renaming it if you do not
   like the name.  Be sure to retain the documentation that indicates that
   your copy is intended for use only to suppress warnings and not for
@@ -1527,16 +1529,20 @@ completed.
 Another solution is to change the declaration of \<process()>:
 
 \begin{Verbatim}
-  public final void process(@UnderInitialization(A.class) A this, int arg) { ... }
+  public void process(@UnderInitialization(A.class) A this, int arg) { ... }
 \end{Verbatim}
 
 If you choose this solution, you will need to rewrite the definition of
 \<B.process()> so that it is consistent with the declared receiver type.
 
 A non-solution is to prevent subclasses from overriding \<process()> by
-using final on the class or method.  This doesn't work because even if
+using \<final> on the method.  This doesn't work because even if
 \<process()> is not overridden, it might call other methods that are
 overridden.
+
+As final classes cannot have subclasses, they can be handled more
+flexibly: once all fields of the final class have been
+initialized, \<this> is fully initialized.
 
 % TODO: One could imagine having an annotation indicating that the routine
 % is "truly final":  it is final and it never calls, directly, or

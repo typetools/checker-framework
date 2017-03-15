@@ -15,6 +15,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * of @PolyInterned has been erased.
  *
  * @checker_framework.manual #interning-checker Interning Checker
+ * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @PolymorphicQualifier(UnknownInterned.class)
 @Documented

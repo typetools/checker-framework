@@ -8,6 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.index.qual.PolySameLen;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.SameLenBottom;
 import org.checkerframework.checker.index.qual.SameLenUnknown;
@@ -15,6 +16,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
@@ -29,12 +31,16 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public final AnnotationMirror UNKNOWN;
-    private AnnotationMirror BOTTOM;
+    private final AnnotationMirror BOTTOM;
+    private final AnnotationMirror POLY;
 
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         UNKNOWN = AnnotationUtils.fromClass(elements, SameLenUnknown.class);
         BOTTOM = AnnotationUtils.fromClass(elements, SameLenBottom.class);
+        POLY = AnnotationUtils.fromClass(elements, PolySameLen.class);
+        addAliasedAnnotation(PolyAll.class, POLY);
+
         this.postInit();
     }
 
@@ -42,7 +48,11 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         // Because the Index Checker is a subclass, the qualifiers have to be explicitly defined.
         return new LinkedHashSet<>(
-                Arrays.asList(SameLen.class, SameLenBottom.class, SameLenUnknown.class));
+                Arrays.asList(
+                        SameLen.class,
+                        SameLenBottom.class,
+                        SameLenUnknown.class,
+                        PolySameLen.class));
     }
 
     @Override
@@ -189,6 +199,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return a2;
                 } else if (AnnotationUtils.areSameByClass(a2, SameLenBottom.class)) {
                     return a1;
+                } else if (AnnotationUtils.areSameByClass(a1, PolySameLen.class)
+                        && AnnotationUtils.areSameByClass(a2, PolySameLen.class)) {
+                    return a1;
                 } else {
                     return UNKNOWN;
                 }
@@ -199,11 +212,11 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
             if (AnnotationUtils.areSameByClass(rhs, SameLenBottom.class)) {
                 return true;
-            }
-            if (AnnotationUtils.areSameByClass(lhs, SameLenUnknown.class)) {
+            } else if (AnnotationUtils.areSameByClass(lhs, SameLenUnknown.class)) {
                 return true;
-            }
-            if (AnnotationUtils.hasElementValue(rhs, "value")
+            } else if (AnnotationUtils.areSameByClass(rhs, PolySameLen.class)) {
+                return AnnotationUtils.areSameByClass(lhs, PolySameLen.class);
+            } else if (AnnotationUtils.hasElementValue(rhs, "value")
                     && AnnotationUtils.hasElementValue(lhs, "value")) {
                 List<String> a1Val = SameLenUtils.getValue(rhs);
                 List<String> a2Val = SameLenUtils.getValue(lhs);

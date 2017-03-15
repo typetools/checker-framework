@@ -682,7 +682,7 @@ To run a checker within IntelliJ:
   Go to the ``Settings'' menu via (File>Settings) or (Ctrl-Alt-S) and
   navigate to the ``Java Compiler'' sub-menu via (Build, Execution,
   Deployment>Compiler>Java Compiler).  Add the following to the field
-  ``Additional command line parameters'':
+  ``Additional command line parameters'': \\
   \<-Xbootclasspath/p:\$CHECKERFRAMEWORK/checker/dist/jdk8.jar>
 
 \item
@@ -715,6 +715,14 @@ It is necessary to manually inform the IDE via a plugin if an annotation
 system adds any dependencies beyond those that normally exist in Java.
 For information about the extension points, see
 \url{https://youtrack.jetbrains.com/issue/IDEA-159286}.
+
+
+\subsection{Android Studio\label{android-studio}}
+
+Some people have reported success running the Checker Framework with
+Android Studio, but others have had trouble.  We do not currently have
+instructions for using the Checker Framework with Android Studio.  If you
+are able to contribute such instructions, please do so.
 
 
 \section{Eclipse\label{eclipse}}

@@ -13,6 +13,7 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
+import org.checkerframework.checker.index.qual.PolyUpperBound;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -44,6 +45,8 @@ public abstract class UBQualifier {
             return parseLTEqLengthOf(am);
         } else if (AnnotationUtils.areSameByClass(am, LTOMLengthOf.class)) {
             return parseLTOMLengthOf(am);
+        } else if (AnnotationUtils.areSameByClass(am, PolyUpperBound.class)) {
+            return PolyQualifier.POLY;
         }
         assert false;
         return UpperBoundUnknownQualifier.UNKNOWN;
@@ -77,7 +80,7 @@ public abstract class UBQualifier {
     }
 
     public static UBQualifier createUBQualifier(AnnotatedTypeMirror type, AnnotationMirror top) {
-        return createUBQualifier(type.getAnnotationInHierarchy(top));
+        return createUBQualifier(type.getEffectiveAnnotationInHierarchy(top));
     }
 
     /**
@@ -141,17 +144,29 @@ public abstract class UBQualifier {
         return UpperBoundUnknownQualifier.UNKNOWN;
     }
 
-    public final boolean isUnknownOrBottom() {
-        return isBottom() || isUnknown();
+    public boolean isLessThanLengthQualifier() {
+        return false;
     }
 
-    public abstract boolean isUnknown();
+    public boolean isUnknown() {
+        return false;
+    }
 
-    public abstract boolean isBottom();
+    public boolean isBottom() {
+        return false;
+    }
+
+    public boolean isPoly() {
+        return false;
+    }
 
     public abstract boolean isSubtype(UBQualifier superType);
 
     public abstract UBQualifier lub(UBQualifier other);
+
+    public UBQualifier widenUpperBound(UBQualifier obj) {
+        return lub(obj);
+    }
 
     public abstract UBQualifier glb(UBQualifier other);
 
@@ -344,13 +359,8 @@ public abstract class UBQualifier {
         }
 
         @Override
-        public boolean isUnknown() {
-            return false;
-        }
-
-        @Override
-        public boolean isBottom() {
-            return false;
+        public boolean isLessThanLengthQualifier() {
+            return true;
         }
 
         /**
@@ -458,7 +468,17 @@ public abstract class UBQualifier {
             if (lubMap.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
-            widenLub(otherLtl, lubMap);
+            return new LessThanLengthOf(lubMap);
+        }
+
+        @Override
+        public UBQualifier widenUpperBound(UBQualifier obj) {
+            UBQualifier lub = lub(obj);
+            if (!lub.isLessThanLengthQualifier() || !obj.isLessThanLengthQualifier()) {
+                return lub;
+            }
+            Map<String, Set<OffsetEquation>> lubMap = ((LessThanLengthOf) lub).map;
+            widenLub((LessThanLengthOf) obj, lubMap);
             if (lubMap.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
@@ -483,9 +503,8 @@ public abstract class UBQualifier {
          * <p>3. @LTLengthOf(value="a', offset="-3")
          *
          * <p>In order to prevent this, if both types passed to lub include all the same arrays with
-         * the same non-constant value offsets and if the constant value offsets are different and
-         * one is less than -10 (-10 is arbitrary, could be -5 or some other number) then remove
-         * that array-offset pair from lub.
+         * the same non-constant value offsets and if the constant value offsets are different then
+         * remove that array-offset pair from lub.
          *
          * <p>For example:
          *
@@ -514,10 +533,7 @@ public abstract class UBQualifier {
                         int thisInt = OffsetEquation.getIntOffsetEquation(thisOffsets).getInt();
                         int otherInt = OffsetEquation.getIntOffsetEquation(otherOffsets).getInt();
                         if (thisInt != otherInt) {
-                            int value = lubEq.getInt();
-                            if (value < -10) {
-                                remove.add(Pair.of(array, lubEq));
-                            }
+                            remove.add(Pair.of(array, lubEq));
                         }
                     } else if (thisOffsets.contains(lubEq) && otherOffsets.contains(lubEq)) {
                         //  continue;
@@ -835,11 +851,6 @@ public abstract class UBQualifier {
         private UpperBoundUnknownQualifier() {}
 
         @Override
-        public boolean isBottom() {
-            return false;
-        }
-
-        @Override
         public boolean isSubtype(UBQualifier superType) {
             return superType.isUnknown();
         }
@@ -869,11 +880,6 @@ public abstract class UBQualifier {
         static final UBQualifier BOTTOM = new UpperBoundBottomQualifier();
 
         @Override
-        public boolean isUnknown() {
-            return false;
-        }
-
-        @Override
         public boolean isBottom() {
             return true;
         }
@@ -896,6 +902,36 @@ public abstract class UBQualifier {
         @Override
         public String toString() {
             return "BOTTOM";
+        }
+    }
+
+    private static class PolyQualifier extends UBQualifier {
+        static final UBQualifier POLY = new UpperBoundBottomQualifier();
+
+        @Override
+        public boolean isPoly() {
+            return true;
+        }
+
+        @Override
+        public boolean isSubtype(UBQualifier superType) {
+            return superType.isUnknown() || superType.isPoly();
+        }
+
+        @Override
+        public UBQualifier lub(UBQualifier other) {
+            if (other.isPoly() || other.isBottom()) {
+                return this;
+            }
+            return UpperBoundUnknownQualifier.UNKNOWN;
+        }
+
+        @Override
+        public UBQualifier glb(UBQualifier other) {
+            if (other.isPoly() || other.isUnknown()) {
+                return this;
+            }
+            return UpperBoundBottomQualifier.BOTTOM;
         }
     }
 }
