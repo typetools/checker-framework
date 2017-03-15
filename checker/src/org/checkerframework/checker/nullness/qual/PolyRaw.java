@@ -15,6 +15,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * replaced by @NonRaw.
  *
  * @checker_framework.manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @Documented
 @PolymorphicQualifier(Raw.class)

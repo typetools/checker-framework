@@ -255,7 +255,7 @@ public class Collections {
      *         with the elements of the list.
      */
     public static <T>
-    @GTENegativeOne int binarySearch(List<? extends Comparable<? super T>> list, T key) {
+    int binarySearch(List<? extends Comparable<? super T>> list, T key) {
         if (list instanceof RandomAccess || list.size()<BINARYSEARCH_THRESHOLD)
             return Collections.indexedBinarySearch(list, key);
         else
@@ -358,7 +358,7 @@ public class Collections {
      *         or the search key is not mutually comparable with the
      *         elements of the list using this comparator.
      */
-    public static <T> @GTENegativeOne int binarySearch(List<? extends T> list, T key, Comparator<? super T> c) {
+    public static <T> int binarySearch(List<? extends T> list, T key, Comparator<? super T> c) {
         if (c==null)
             return binarySearch((List) list, key);
 

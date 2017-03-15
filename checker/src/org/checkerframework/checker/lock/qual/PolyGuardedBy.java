@@ -30,6 +30,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  *
  * @see GuardedBy
  * @checker_framework.manual #lock-checker Lock Checker
+ * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 /*@PolymorphicQualifier(GuardedByUnknown.class)
    @Documented
