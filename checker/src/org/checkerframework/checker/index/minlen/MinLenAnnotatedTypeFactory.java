@@ -301,11 +301,13 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // addComputedTypeAnnotations.)
                 ExpressionTree dimExp = node.getDimensions().get(0);
                 if (TreeUtils.isArrayLengthAccess(dimExp)) {
-                    AnnotationMirror minLenAnno =
-                            getAnnotationMirror(
-                                    ((MemberSelectTree) dimExp).getExpression(), MinLen.class);
+                    ExpressionTree exp = ((MemberSelectTree) dimExp).getExpression();
+                    AnnotatedTypeMirror arrayType = getAnnotatedType(exp);
+                    AnnotationMirror minLenAnno = arrayType.getAnnotation(MinLen.class);
                     if (minLenAnno != null) {
                         type.addAnnotation(minLenAnno);
+                    } else if (arrayType.hasAnnotation(PolyMinLen.class)) {
+                        type.addAnnotation(POLY);
                     }
                 }
             }
@@ -314,7 +316,7 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     protected static Integer getMinLenValue(AnnotationMirror annotation) {
-        if (annotation == null || AnnotationUtils.areSameByClass(annotation, MinLenBottom.class)) {
+        if (annotation == null || !AnnotationUtils.areSameByClass(annotation, MinLen.class)) {
             return null;
         }
         return AnnotationUtils.getElementValue(annotation, "value", Integer.class, true);

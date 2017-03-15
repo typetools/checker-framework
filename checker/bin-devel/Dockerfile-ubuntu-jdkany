@@ -21,6 +21,7 @@ RUN apt-get -qqy update && apt-get -qqy install \
   make \
   mercurial \
   unzip \
+  wget \
   default-jdk \
 && apt-get -qqy install \
   dia \

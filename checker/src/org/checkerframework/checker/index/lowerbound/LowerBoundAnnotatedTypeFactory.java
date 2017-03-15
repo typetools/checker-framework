@@ -310,7 +310,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         getMinLenAnnotatedTypeFactory().getAnnotatedType(tree.getExpression());
                 AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
                 if (anm == null) {
-                    return null;
+                    return 0;
                 }
                 return AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
             }
@@ -768,6 +768,12 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
         AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
         if (rightType.hasAnnotation(NN) || rightType.hasAnnotation(POS)) {
+            type.addAnnotation(NN);
+            return;
+        }
+
+        AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
+        if (leftType.hasAnnotation(NN) || leftType.hasAnnotation(POS)) {
             type.addAnnotation(NN);
             return;
         }
