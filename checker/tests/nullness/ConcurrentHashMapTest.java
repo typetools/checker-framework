@@ -1,6 +1,12 @@
 
 // Test case for issue 1142: https://github.com/typetools/checker-framework/issues/1142
 
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 class Test{
 
 public static void main(String[] args){
@@ -8,18 +14,14 @@ public static void main(String[] args){
 Map<Integer,@Nullable Integer> myMap=new ConcurrentHashMap<>();
 
 myMap.put(1, 1);
-myMap.put(2, 2);
 myMap.put(3, 3);
 
-Iterator<Integer> it1 = myMap.keySet().iterator();
-while(it1.hasNext()) {
-Integer key = it1.next();
-System.out.println(key+" Map Value:"+myMap.get(key));
-if(key.equals(1)) {
 myMap.put(3, null);
+
 }
 }
-}
+
+
 
 /*
 Output without annotated ConcurrentHashMap.java: Nullness Checker passed!
