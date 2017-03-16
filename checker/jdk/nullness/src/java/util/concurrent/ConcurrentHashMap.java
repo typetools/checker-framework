@@ -932,7 +932,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      *
      * @throws NullPointerException if the specified key is null
      */
-    public V get(@Nullable Object key) {
+    public V get(@NonNull Object key) {
         Node<K,V>[] tab; Node<K,V> e, p; int n, eh; K ek;
         int h = spread(key.hashCode());
         if ((tab = table) != null && (n = tab.length) > 0 &&
@@ -961,7 +961,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      *         {@code equals} method; {@code false} otherwise
      * @throws NullPointerException if the specified key is null
      */
-    public boolean containsKey(@Nullable Object key) {
+    public boolean containsKey(@NonNull Object key) {
         return get(key) != null;
     }
 
@@ -975,7 +975,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      *         specified value
      * @throws NullPointerException if the specified value is null
      */
-    public boolean containsValue(@Nullable Object value) {
+    public boolean containsValue(@NonNull Object value) {
         if (value == null)
             throw new NullPointerException();
         Node<K,V>[] t;
