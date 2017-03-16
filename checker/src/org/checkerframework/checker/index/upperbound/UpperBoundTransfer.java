@@ -205,8 +205,13 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         return qual;
     }
 
+    /** Adds the offset node as a offset in the qualifier */
     private void propagateToSubterm(
-            Node target, Node offset, UBQualifier qualifier, CFStore store, boolean plusNode) {
+            Node target,
+            Node offset,
+            UBQualifier qualifier,
+            CFStore store,
+            boolean shouldAddOffset) {
         UBQualifier existingQual =
                 UBQualifier.createUBQualifier(
                         atypeFactory
@@ -215,7 +220,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
         UBQualifier newQual =
                 existingQual.glb(
-                        plusNode
+                        shouldAddOffset
                                 ? qualifier.plusOffset(offset, atypeFactory)
                                 : qualifier.minusOffset(offset, atypeFactory));
 
@@ -225,13 +230,17 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     private void propagateToSubterms(
             BinaryOperationNode node, UBQualifier qualifier, CFStore store) {
-        boolean plusNode = node instanceof NumericalAdditionNode;
-        // Otherwise this should be a numerical subtraction node.
+        boolean isCommutative = node instanceof NumericalAdditionNode;
+        // Assumes that this will be a numerical subtraction node if isCommutative is false.
 
         propagateToSubterm(
-                node.getRightOperand(), node.getLeftOperand(), qualifier, store, plusNode);
-        propagateToSubterm(
-                node.getLeftOperand(), node.getRightOperand(), qualifier, store, plusNode);
+                node.getLeftOperand(), node.getRightOperand(), qualifier, store, isCommutative);
+
+        // Only refine the right side of the binary operation if the operation is commutative.
+        if (isCommutative) {
+            propagateToSubterm(
+                    node.getRightOperand(), node.getLeftOperand(), qualifier, store, isCommutative);
+        }
     }
 
     @Override
