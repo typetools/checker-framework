@@ -20,6 +20,7 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
@@ -204,6 +205,35 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         return qual;
     }
 
+    private void propagateToSubterm(
+            Node target, Node offset, UBQualifier qualifier, CFStore store, boolean plusNode) {
+        UBQualifier existingQual =
+                UBQualifier.createUBQualifier(
+                        atypeFactory
+                                .getAnnotatedType(target.getTree())
+                                .getAnnotationInHierarchy(atypeFactory.UNKNOWN));
+
+        UBQualifier newQual =
+                existingQual.glb(
+                        plusNode
+                                ? qualifier.plusOffset(offset, atypeFactory)
+                                : qualifier.minusOffset(offset, atypeFactory));
+
+        Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), target);
+        store.insertValue(rightRec, atypeFactory.convertUBQualifierToAnnotation(newQual));
+    }
+
+    private void propagateToSubterms(
+            BinaryOperationNode node, UBQualifier qualifier, CFStore store) {
+        boolean plusNode = node instanceof NumericalAdditionNode;
+        // Otherwise this should be a numerical subtraction node.
+
+        propagateToSubterm(
+                node.getRightOperand(), node.getLeftOperand(), qualifier, store, plusNode);
+        propagateToSubterm(
+                node.getLeftOperand(), node.getRightOperand(), qualifier, store, plusNode);
+    }
+
     @Override
     protected void refineGT(
             Node left,
@@ -221,6 +251,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         if (isArrayLengthFieldAccess(left)) {
             String array = ((FieldAccessNode) left).getReceiver().toString();
             knownToBeLessThanLengthOf(array, right, store, in);
+        }
+
+        if (right instanceof NumericalAdditionNode || right instanceof NumericalSubtractionNode) {
+            propagateToSubterms((BinaryOperationNode) right, refinedRight, store);
         }
 
         Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
@@ -249,6 +283,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         if (isArrayLengthFieldAccess(left)) {
             String array = ((FieldAccessNode) left).getReceiver().toString();
             knownToBeLessThanLengthOf(array, right, store, in);
+        }
+
+        if (right instanceof NumericalAdditionNode || right instanceof NumericalSubtractionNode) {
+            propagateToSubterms((BinaryOperationNode) right, refinedRight, store);
         }
 
         Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
