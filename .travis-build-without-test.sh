@@ -32,5 +32,5 @@ echo "Running:  (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 
 ## Compile
-echo "running \"ant dist\" for checker-framework"
-ant dist
+echo "running \"ant dist-downloadjdk\" for checker-framework"
+(cd checker && ant dist-downloadjdk)
