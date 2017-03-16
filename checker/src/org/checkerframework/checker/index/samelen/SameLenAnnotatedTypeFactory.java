@@ -1,5 +1,7 @@
 package org.checkerframework.checker.index.samelen;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +21,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -234,5 +237,22 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
         builder.setValue("value", val);
         return builder.build();
+    }
+
+    public List<String> getSameLensFromString(
+            String arrayExpression, Tree tree, TreePath currentPath) {
+        AnnotationMirror sameLenAnno = null;
+        try {
+            sameLenAnno =
+                    getAnnotationFromJavaExpressionString(
+                            arrayExpression, tree, currentPath, SameLen.class);
+        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+            // ignore parse errors
+        }
+        if (sameLenAnno == null) {
+            // Could not find a more precise type, so return 0;
+            return new ArrayList<>();
+        }
+        return SameLenUtils.getValue(sameLenAnno);
     }
 }
