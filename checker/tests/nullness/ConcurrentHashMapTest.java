@@ -32,5 +32,5 @@ As per java docs ,
 https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ConcurrentHashMap.html
 The concurrent-hashmap raises NullpointerException if any of the key or value is null. 
 So here the Nullness Checker fails in catching the NullPointerException generated at the runtime.
-If bymistake any programmer annotes the value parameter to be @Nullable then the program will crash at the runtime.
+If bymistake any programmer annotates the value parameter to be @Nullable then the program will crash at the runtime.
 */
