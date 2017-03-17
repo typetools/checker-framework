@@ -1,17 +1,15 @@
-// Test case for issue 1142: https://github.com/typetools/checker-framework/issues/1142
-
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
-class issue1142{
+class Issue1142{
 
 void foo(){
 	
-Map<Integer,@Nullable Integer> myMap=new ConcurrentHashMap<>();
-myMap.put(1, 1);
-myMap.put(3, 3);
-myMap.put(3, null);
+ConcurrentHashMap<Integer,@Nullable Integer> chm = new ConcurrentHashMap();
+chm.put(1, 1);
+chm.put(3, 3);
+chm.put(4, null);
 
 }
 }
