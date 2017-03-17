@@ -3,10 +3,11 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import org.checkerframework.checker.nullness.qual.KeyFor;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class ConcurrentHashMap<K extends @NonNull Object, V extends @NonNull Object> extends AbstractMap<K, V>
-        implements ConcurrentMap<K, V>, Serializable {
+        implements ConcurrentMap<K, V>, java.io.Serializable {
 
     private static final long serialVersionUID = 0;
 
