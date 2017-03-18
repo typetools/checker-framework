@@ -108,7 +108,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         backingSet.add("short");
         backingSet.add("java.lang.Short");
         backingSet.add("byte[]");
-        coveredClassStrings = Collections.immutableSet(backingSet);
+        coveredClassStrings = Collections.unmodifiableSet(backingSet);
     }
 
     public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -382,7 +382,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 new ValueTreeAnnotator(this), new ImplicitsTreeAnnotator(this));
     }
 
-    /** The TreeAnnotator for this AnnotatedTypeFactory */
+    /** The TreeAnnotator for this AnnotatedTypeFactory. It adds/replaces annotations. */
     protected class ValueTreeAnnotator extends TreeAnnotator {
 
         public ValueTreeAnnotator(ValueAnnotatedTypeFactory factory) {
@@ -394,6 +394,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             List<? extends ExpressionTree> dimensions = tree.getDimensions();
             List<? extends ExpressionTree> initializers = tree.getInitializers();
+
+            // Array construction can provide dimensions or use an initializer.
 
             // Dimensions provided
             if (!dimensions.isEmpty()) {
@@ -492,11 +494,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
+        /** Convert a byte array to a String. */
         private String getByteArrayStringVal(List<? extends ExpressionTree> initializers) {
+            // True iff every element of the array is a literal.
             boolean allLiterals = true;
             byte[] bytes = new byte[initializers.size()];
-            int i = 0;
-            for (ExpressionTree e : initializers) {
+            for (int i = 0; i < initializers.size(); i++) {
+                ExpressionTree e = initializers.get(i);
                 if (e.getKind() == Tree.Kind.INT_LITERAL) {
                     bytes[i] = (byte) (((Integer) ((LiteralTree) e).getValue()).intValue());
                 } else if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
@@ -504,7 +508,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else {
                     allLiterals = false;
                 }
-                i++;
             }
             if (allLiterals) {
                 return new String(bytes);
@@ -514,31 +517,32 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
+        /** Convert a char array to a String. */
         private String getCharArrayStringVal(List<? extends ExpressionTree> initializers) {
             boolean allLiterals = true;
-            String stringVal = "";
+            StringBuilder stringVal = new StringBuilder();
             for (ExpressionTree e : initializers) {
                 if (e.getKind() == Tree.Kind.INT_LITERAL) {
                     char charVal = (char) (((Integer) ((LiteralTree) e).getValue()).intValue());
-                    stringVal += charVal;
+                    stringVal.append(charVal);
                 } else if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
                     char charVal = (((Character) ((LiteralTree) e).getValue()));
-                    stringVal += charVal;
+                    stringVal.append(charVal);
                 } else {
                     allLiterals = false;
                 }
             }
             if (allLiterals) {
-                return stringVal;
+                return stringVal.toString();
             }
-            // If any part of the initialize isn't know,
+            // If any part of the initializer isn't known,
             // the stringval isn't known.
             return null;
         }
 
         @Override
         public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
-            if (isUnderlyingTypeAValue(type)) {
+            if (handledByValueChecker(type)) {
                 AnnotatedTypeMirror castedAnnotation = getAnnotatedType(tree.getExpression());
                 List<?> values = getValues(castedAnnotation, type.getUnderlyingType());
                 type.replaceAnnotation(
@@ -551,12 +555,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
+        /** Get the "value" field of the given annotation, casted to the given type. */
         private List<?> getValues(AnnotatedTypeMirror type, TypeMirror castTo) {
             AnnotationMirror anno = type.getAnnotationInHierarchy(UNKNOWNVAL);
             if (anno == null) {
-                // if type is an AnnotatedTypeVariable (or other type without a primary annotation)
+                // If type is an AnnotatedTypeVariable (or other type without a primary annotation)
                 // then anno will be null. It would be safe to use the annotation on the upper bound;
-                //  however, unless the upper bound was explicitly annotated, it will be unknown.
+                // however, unless the upper bound was explicitly annotated, it will be unknown.
                 // AnnotatedTypes.findEffectiveAnnotationInHierarchy(, toSearch, top)
                 return new ArrayList<>();
             }
@@ -565,7 +570,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            if (isUnderlyingTypeAValue(type)) {
+            if (handledByValueChecker(type)) {
                 switch (tree.getKind()) {
                     case BOOLEAN_LITERAL:
                         AnnotationMirror boolAnno =
@@ -631,7 +636,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
-            if (isUnderlyingTypeAValue(type)
+            if (handledByValueChecker(type)
                     && methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree))) {
                 // Get argument values
                 List<? extends ExpressionTree> arguments = tree.getArguments();
@@ -669,7 +674,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 // Evaluate method
                 List<?> returnValues =
-                        evalutator.evaluteMethodCall(argValues, receiverValues, tree);
+                        evalutator.evaluateMethodCall(argValues, receiverValues, tree);
                 AnnotationMirror returnType =
                         resultAnnotationHandler(type.getUnderlyingType(), returnValues, tree);
                 type.replaceAnnotation(returnType);
@@ -686,7 +691,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                     type.getUnderlyingType(), "java.lang.String");
 
             if (wrapperClass
-                    || (isUnderlyingTypeAValue(type)
+                    || (handledByValueChecker(type)
                             && methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree)))) {
                 // get arugment values
                 List<? extends ExpressionTree> arguments = tree.getArguments();
@@ -719,11 +724,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
-            if (TreeUtils.isFieldAccess(tree) && isUnderlyingTypeAValue(type)) {
+            if (TreeUtils.isFieldAccess(tree) && handledByValueChecker(type)) {
                 VariableElement elem = (VariableElement) InternalUtils.symbol(tree);
                 Object value = elem.getConstantValue();
                 if (value != null) {
-                    // compile time constant
+                    // The field is a compile time constant.
                     type.replaceAnnotation(
                             resultAnnotationHandler(
                                     type.getUnderlyingType(),
@@ -732,6 +737,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return null;
                 }
                 if (ElementUtils.isStatic(elem) && ElementUtils.isFinal(elem)) {
+                    // The field is static and final.
                     Element e = InternalUtils.symbol(tree.getExpression());
                     if (e != null) {
                         String classname = ElementUtils.getQualifiedClassName(e).toString();
@@ -749,6 +755,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
 
                 if (tree.getIdentifier().toString().equals("length")) {
+                    // The field acces is "someArrayExpression.length"
                     AnnotatedTypeMirror receiverType = getAnnotatedType(tree.getExpression());
                     if (receiverType.getKind() == TypeKind.ARRAY) {
                         AnnotationMirror arrayAnno = receiverType.getAnnotation(ArrayLen.class);
@@ -766,19 +773,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
-        /**
-         * Overloaded method for convenience of dealing with AnnotatedTypeMirrors. See
-         * isClassCovered(TypeMirror type) below
-         */
-        private boolean isUnderlyingTypeAValue(AnnotatedTypeMirror type) {
+        /** Returns true iff the given type is in the domain of the Constant Value Checker. */
+        private boolean handledByValueChecker(AnnotatedTypeMirror type) {
             return coveredClassStrings.contains(type.getUnderlyingType().toString());
         }
 
         /**
-         * Overloaded version to accept an AnnotatedTypeMirror
-         *
-         * @param resultType is evaluated using getClass to derived a Class object for passing to
-         *     the other resultAnnotationHandler function
+         * @param resultType is evaluated using getClass to derive a Class object
          * @param tree location for error reporting
          */
         private AnnotationMirror resultAnnotationHandler(
@@ -919,6 +920,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
+    /** @param values must be a homogeneous list: every element of it has the same class. */
     private AnnotationMirror createNumberAnnotationMirror(List<Number> values) {
         if (values.isEmpty()) {
             return UNKNOWNVAL;
@@ -958,37 +960,37 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public static List<Character> getCharValues(AnnotationMirror intAnno) {
-        if (intAnno != null) {
-            List<Long> intValues =
-                    AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, true);
-            List<Character> charValues = new ArrayList<Character>();
-            for (Long i : intValues) {
-                charValues.add((char) i.intValue());
-            }
-            return charValues;
+        if (intAnno == null) {
+            return new ArrayList<>();
         }
-        return new ArrayList<>();
+        List<Long> intValues =
+                AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, true);
+        List<Character> charValues = new ArrayList<Character>();
+        for (Long i : intValues) {
+            charValues.add((char) i.intValue());
+        }
+        return charValues;
     }
 
     public static List<Boolean> getBooleanValues(AnnotationMirror boolAnno) {
-        if (boolAnno != null) {
-            List<Boolean> boolValues =
-                    AnnotationUtils.getElementValueArray(boolAnno, "value", Boolean.class, true);
-            Set<Boolean> boolSet = new TreeSet<>(boolValues);
-            if (boolSet.size() > 1) {
-                // boolSet={true,false};
-                return new ArrayList<>();
-            }
-            if (boolSet.size() == 0) {
-                // boolSet={};
-                return new ArrayList<>();
-            }
-            if (boolSet.size() == 1) {
-                // boolSet={true} or boolSet={false}
-                return new ArrayList<>(boolSet);
-            }
+        if (boolAnno == null) {
+            return new ArrayList<>();
         }
-        return new ArrayList<>();
+        List<Boolean> boolValues =
+                AnnotationUtils.getElementValueArray(boolAnno, "value", Boolean.class, true);
+        Set<Boolean> boolSet = new TreeSet<>(boolValues);
+        if (boolSet.size() > 1) {
+            // boolSet={true,false};
+            return new ArrayList<>();
+        }
+        if (boolSet.size() == 0) {
+            // boolSet={};
+            return new ArrayList<>();
+        }
+        if (boolSet.size() == 1) {
+            // boolSet={true} or boolSet={false}
+            return new ArrayList<>(boolSet);
+        }
     }
 
     public List<Long> getIntValuesFromExpression(
