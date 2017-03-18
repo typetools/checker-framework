@@ -194,6 +194,11 @@ public class Range {
         return from <= element && element <= to;
     }
 
+    /** Returns true if the element is contained in this range. */
+    public boolean contains(Range other) {
+        return from <= other.from && other.to <= to;
+    }
+
     /**
      * Returns the smallest range that includes all values contained in either of the two ranges. We
      * call this the union of two ranges.
