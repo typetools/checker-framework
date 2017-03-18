@@ -28,6 +28,7 @@ package java.lang.ref;
 import sun.misc.Cleaner;
 
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Abstract base class for reference objects.  This class defines the
@@ -186,7 +187,7 @@ public abstract class Reference<T> {
      * @return   The object to which this reference refers, or
      *           <code>null</code> if this reference object has been cleared
      */
-    @SideEffectFree public T get() {
+    @SideEffectFree public @Nullable T get() {
         return this.referent;
     }
 
