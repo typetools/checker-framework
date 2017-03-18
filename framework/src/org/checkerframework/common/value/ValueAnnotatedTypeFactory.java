@@ -68,17 +68,48 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    protected final AnnotationMirror UNKNOWNVAL, BOTTOMVAL;
     /** The maximum number of values allowed in an annotation's array */
     protected static final int MAX_VALUES = 10;
 
-    protected Set<String> coveredClassStrings;
+    /**
+     * The domain of the Constant Value Checker: the types for which it estimates possible values.
+     */
+    protected static final Set<String> coveredClassStrings;
 
-    /** should this type factory report warnings? */
+    /** The top type for this hierarchy. */
+    protected final AnnotationMirror UNKNOWNVAL;
+
+    /** The bottom type for this hierarchy. */
+    protected final AnnotationMirror BOTTOMVAL;
+
+    /** Should this type factory report warnings? */
     private final boolean reportEvalWarnings;
 
     /** Helper class that evaluates statically executable methods, constructors, and fields. */
     private final ReflectiveEvalutator evalutator;
+
+    static {
+        Set<String> backingSet = new HashSet<String>(18);
+        backingSet.add("int");
+        backingSet.add("java.lang.Integer");
+        backingSet.add("double");
+        backingSet.add("java.lang.Double");
+        backingSet.add("byte");
+        backingSet.add("java.lang.Byte");
+        backingSet.add("java.lang.String");
+        backingSet.add("char");
+        backingSet.add("java.lang.Character");
+        backingSet.add("float");
+        backingSet.add("java.lang.Float");
+        backingSet.add("boolean");
+        backingSet.add("java.lang.Boolean");
+        backingSet.add("long");
+        backingSet.add("java.lang.Long");
+        backingSet.add("short");
+        backingSet.add("java.lang.Short");
+        backingSet.add("byte[]");
+        coveredClassStrings = Collections.immutableSet(backingSet);
+    }
 
     public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -86,25 +117,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         BOTTOMVAL = AnnotationUtils.fromClass(elements, BottomVal.class);
         UNKNOWNVAL = AnnotationUtils.fromClass(elements, UnknownVal.class);
 
-        coveredClassStrings = new HashSet<String>(19);
-        coveredClassStrings.add("int");
-        coveredClassStrings.add("java.lang.Integer");
-        coveredClassStrings.add("double");
-        coveredClassStrings.add("java.lang.Double");
-        coveredClassStrings.add("byte");
-        coveredClassStrings.add("java.lang.Byte");
-        coveredClassStrings.add("java.lang.String");
-        coveredClassStrings.add("char");
-        coveredClassStrings.add("java.lang.Character");
-        coveredClassStrings.add("float");
-        coveredClassStrings.add("java.lang.Float");
-        coveredClassStrings.add("boolean");
-        coveredClassStrings.add("java.lang.Boolean");
-        coveredClassStrings.add("long");
-        coveredClassStrings.add("java.lang.Long");
-        coveredClassStrings.add("short");
-        coveredClassStrings.add("java.lang.Short");
-        coveredClassStrings.add("byte[]");
         reportEvalWarnings = checker.hasOption(ValueChecker.REPORT_EVAL_WARNS);
         evalutator = new ReflectiveEvalutator(checker, this, reportEvalWarnings);
 
