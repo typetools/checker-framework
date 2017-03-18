@@ -355,6 +355,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (intRangeAnno != null) {
                     intValAnno = convertIntRangeToIntVal(intRangeAnno);
                     intRangeAnno = null;
+                    if (intValAnno == UNKNOWNVAL) {
+                        intValAnno = null;
+                    }
                 }
                 if (intValAnno != null) {
                     // Convert intValAnno to a @DoubleVal AnnotationMirror
