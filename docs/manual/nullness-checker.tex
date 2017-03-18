@@ -1137,6 +1137,11 @@ but written for regular possibly-null Java references.
 
 \section{Initialization Checker\label{initialization-checker}}
 
+The Initialization Checker determines whether an object is initialized or
+not.  For any object that is not fully initialized, the Nullness Checker
+treats its fields as possibly-null --- even fields annotated as
+\<@NonNull>.
+
 Every object's fields start out as null.  By the time the constructor
 finishes executing, the \<@NonNull> fields have been set to a different
 value.  Your code can suffer a NullPointerException when using a
