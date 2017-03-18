@@ -328,7 +328,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     newValues.addAll(a1Values);
                     newValues.addAll(a2Values);
 
-                    // createAnnotation would return @UnknownVal if the list is longer than MAX_VALUE
+                    // createAnnotation returns @UnknownVal if the list is longer than MAX_VALUE
                     return createAnnotation(a1.getAnnotationType().toString(), newValues);
                 }
             }

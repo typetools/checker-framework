@@ -119,18 +119,18 @@ public class ValueCheckerUtils {
     }
 
     /**
-     * Get all possible values from the given type and cast them into Long type, Double type or
+     * Get all possible values from the given type and cast them into Long type, Double type, or
      * Character type accordingly. Only support casting to integral type and double type.
      *
      * @param range the given range
      * @param expectedType the expected type
-     * @return
+     * @return a list of all the values in the range
      */
     public static <T> List<T> getValuesFromRange(Range range, Class<T> expectedType) {
-        if (range.isNothing()) {
-            return null;
-        }
         List<T> values = new ArrayList<>();
+        if (range.isNothing()) {
+            return values;
+        }
         if (expectedType == Integer.class
                 || expectedType == int.class
                 || expectedType == Long.class
@@ -164,7 +164,7 @@ public class ValueCheckerUtils {
         if (newClass == String.class) {
             return Collections.singletonList("null");
         } else {
-            return null;
+            return new ArrayList<>();
         }
     }
 

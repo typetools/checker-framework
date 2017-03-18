@@ -81,7 +81,7 @@ public class ValueTransfer extends CFTransfer {
             return Collections.singletonList("null");
         }
 
-        //@IntVal, @IntRange, @DoubleVal, @BoolVal (have to be converted to string)
+        // @IntVal, @IntRange, @DoubleVal, @BoolVal (have to be converted to string)
         List<? extends Object> values;
         numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BoolVal.class);
         if (numberAnno != null) {
@@ -137,10 +137,7 @@ public class ValueTransfer extends CFTransfer {
         return new ArrayList<Character>();
     }
 
-    /**
-     * Get possible numerical values from annotation and cast them to the underlying type. Return
-     * null if @BottomVal.
-     */
+    /** Get possible numerical values from annotation and cast them to the underlying type. */
     private List<? extends Number> getNumericalValues(
             Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
@@ -162,7 +159,7 @@ public class ValueTransfer extends CFTransfer {
 
         numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
         if (numberAnno != null) {
-            return null;
+            return new ArrayList<Number>();
         }
 
         return new ArrayList<Number>();
@@ -365,10 +362,10 @@ public class ValueTransfer extends CFTransfer {
             TransferInput<CFValue, CFStore> p) {
         List<? extends Number> lefts = getNumericalValues(leftNode, p);
         List<? extends Number> rights = getNumericalValues(rightNode, p);
-        if (lefts == null || rights == null) {
-            return null;
-        }
         List<Number> resultValues = new ArrayList<>();
+        if (rights.isEmpty()) {
+            return resultValues; // optimization; same value is returned as if the for loop executes
+        }
         for (Number left : lefts) {
             NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
             for (Number right : rights) {
@@ -600,9 +597,6 @@ public class ValueTransfer extends CFTransfer {
     private List<Number> calculateValuesUnaryOp(
             Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
         List<? extends Number> lefts = getNumericalValues(operand, p);
-        if (lefts == null) {
-            return null;
-        }
         List<Number> resultValues = new ArrayList<>();
         for (Number left : lefts) {
             NumberMath<?> nmLeft = NumberMath.getNumberMath(left);

@@ -89,14 +89,17 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             // If there are less than 2 arguments, we needn't worry about this problem because the
             // other argument would be defaulted to Long.MIN_VALUE or Long.MAX_VALUE accordingly.
             if (args.size() == 2) {
-                int idxFrom = 0;
-                int idxTo = 1;
-                if (((AssignmentTree) args.get(0)).getVariable().toString().equals("to")) {
-                    idxFrom = 1;
-                    idxTo = 0;
+                ExpressionTree expFrom;
+                ExpressionTree expTo;
+                AssignmentTree arg0 = (AssignmentTree) args.get(0);
+                AssignmentTree arg1 = (AssignmentTree) args.get(1);
+                if (arg0.getVariable().toString().equals("from")) {
+                    expFrom = arg0.getExpression();
+                    expTo = arg1.getExpression();
+                } else {
+                    expTo = arg0.getExpression();
+                    expFrom = arg1.getExpression();
                 }
-                ExpressionTree expFrom = ((AssignmentTree) args.get(idxFrom)).getExpression();
-                ExpressionTree expTo = ((AssignmentTree) args.get(idxTo)).getExpression();
 
                 if (isIntLiteral(expFrom.getKind()) && isIntLiteral(expTo.getKind())) {
                     if (getIntLiteralValue(expFrom) > getIntLiteralValue(expTo)) {
