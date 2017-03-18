@@ -74,7 +74,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected Set<String> coveredClassStrings;
 
-    /** should this type factory report warnings? * */
+    /** should this type factory report warnings? */
     private final boolean reportEvalWarnings;
 
     /** Helper class that evaluates statically executable methods, constructors, and fields. */
