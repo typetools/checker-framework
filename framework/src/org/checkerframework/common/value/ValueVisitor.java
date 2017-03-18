@@ -10,9 +10,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.Element;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -30,17 +28,8 @@ import org.checkerframework.framework.source.Result;
  */
 public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
-    /** All integral literal kinds */
-    private static final Set<Kind> intLiteralKinds =
-            EnumSet.of(Kind.INT_LITERAL, Kind.LONG_LITERAL, Kind.CHAR_LITERAL);
-
     public ValueVisitor(BaseTypeChecker checker) {
         super(checker);
-    }
-
-    /** @return true if the given kind is an integral literal */
-    private static boolean isIntLiteral(Kind k) {
-        return intLiteralKinds.contains(k);
     }
 
     /**
@@ -48,13 +37,13 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      * @return {@code exp}'s literal value
      */
     private long getIntLiteralValue(ExpressionTree exp) {
+        Object orgValue = ((LiteralTree) exp).getValue();
         switch (exp.getKind()) {
             case INT_LITERAL:
-                return ((Number) ((LiteralTree) exp).getValue()).longValue();
             case LONG_LITERAL:
-                return (long) ((LiteralTree) exp).getValue();
+                return ((Number) orgValue).longValue();
             case CHAR_LITERAL:
-                return (long) ((Character) ((LiteralTree) exp).getValue());
+                return (long) ((Character) orgValue);
             default:
                 throw new IllegalArgumentException(
                         "exp is not an intergral literal (INT_LITERAL, LONG_LITERAL, CHAR_LITERAL)");
@@ -101,11 +90,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                     expFrom = arg1.getExpression();
                 }
 
-                if (isIntLiteral(expFrom.getKind()) && isIntLiteral(expTo.getKind())) {
-                    if (getIntLiteralValue(expFrom) > getIntLiteralValue(expTo)) {
-                        checker.report(Result.failure("from.greater.than.to"), node);
-                        return null;
-                    }
+                if (getIntLiteralValue(expFrom) > getIntLiteralValue(expTo)) {
+                    checker.report(Result.failure("from.greater.than.to"), node);
+                    return null;
                 }
             }
         } else if (element.toString().equals(ArrayLen.class.getName())
