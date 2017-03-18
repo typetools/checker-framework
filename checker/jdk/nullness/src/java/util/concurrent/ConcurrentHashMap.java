@@ -1,5 +1,6 @@
-package java.util;
+package java.util.concurrent;
 
+import java.util.AbstractMap;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
