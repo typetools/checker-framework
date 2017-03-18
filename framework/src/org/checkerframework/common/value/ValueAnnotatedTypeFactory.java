@@ -132,21 +132,25 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Creates an annotation of the name given with the set of values given. Issues a checker
-     * warning and return UNKNOWNVAL if values.size &gt; MAX_VALUES
+     * Creates an annotation of the given name with the given set of values.
+     *
+     * <p>If values.size &gt; MAX_VALUES, issues a checker warning and returns UNKNOWNVAL.
+     *
+     * <p>If values.size == 0, issues a checker warning and returns BOTTOMVAL.
      *
      * @return annotation given by name with values=values, or UNKNOWNVAL
      */
     private AnnotationMirror createAnnotation(String name, Set<?> values) {
-
-        if (values.size() > 0 && values.size() <= MAX_VALUES) {
-            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, name);
-            List<Object> valuesList = new ArrayList<Object>(values);
-            builder.setValue("value", valuesList);
-            return builder.build();
-        } else {
+        if (values.size() == 0) {
+            return BOTTOMVAL;
+        }
+        if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         }
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, name);
+        List<Object> valuesList = new ArrayList<Object>(values);
+        builder.setValue("value", valuesList);
+        return builder.build();
     }
 
     @Override
@@ -193,6 +197,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return superPair;
     }
 
+    /**
+     * Performs pre-processing on annotations written by users, replacing illegal annotations by
+     * legal ones.
+     */
     private class ValueTypeAnnotator extends TypeAnnotator {
 
         public ValueTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
