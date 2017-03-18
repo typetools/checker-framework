@@ -166,7 +166,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /*
          * Computes subtyping as per the subtyping in the qualifier hierarchy
          * structure unless both annotations are ClassVal. In this case, rhs is
-         * a subtype of lhs iff lhs contains at least every element of rhs
+         * a subtype of lhs iff lhs contains at least every element of rhs.
          */
         @Override
         public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {

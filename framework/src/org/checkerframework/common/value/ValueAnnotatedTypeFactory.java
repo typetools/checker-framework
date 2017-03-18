@@ -310,7 +310,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
          * annotations are Value. In this case, rhs is a subtype of lhs iff lhs contains at least
-         * every element of rhs
+         * every element of rhs.
          *
          * @return true if rhs is a subtype of lhs, false otherwise
          */
