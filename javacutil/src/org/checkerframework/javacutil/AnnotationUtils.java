@@ -98,10 +98,9 @@ public class AnnotationUtils {
      * @return an {@link AnnotationMirror} of type {@code} name
      */
     public static AnnotationMirror fromName(Elements elements, CharSequence name) {
-        synchronized (annotationsFromNames) {
-            if (annotationsFromNames.containsKey(name)) {
-                return annotationsFromNames.get(name);
-            }
+        AnnotationMirror res = annotationsFromNames.get(name);
+        if (res != null) {
+            return res;
         }
         final DeclaredType annoType = typeFromName(elements, name);
         if (annoType == null) {
@@ -171,10 +170,9 @@ public class AnnotationUtils {
 
     /** @return the fully-qualified name of an annotation as a String */
     public static final /*@Interned*/ String annotationName(AnnotationMirror annotation) {
-        synchronized (annotationMirrorNames) {
-            if (annotationMirrorNames.containsKey(annotation)) {
-                return annotationMirrorNames.get(annotation);
-            }
+        String res = annotationMirrorNames.get(annotation);
+        if (res != null) {
+            return res;
         }
         final DeclaredType annoType = annotation.getAnnotationType();
         final TypeElement elm = (TypeElement) annoType.asElement();
@@ -185,10 +183,9 @@ public class AnnotationUtils {
 
     /** @return the simple name of an annotation as a String */
     public static String annotationSimpleName(AnnotationMirror annotation) {
-        synchronized (annotationMirrorSimpleNames) {
-            if (annotationMirrorSimpleNames.containsKey(annotation)) {
-                return annotationMirrorSimpleNames.get(annotation);
-            }
+        String res = annotationMirrorSimpleNames.get(annotation);
+        if (res != null) {
+            return res;
         }
         final DeclaredType annoType = annotation.getAnnotationType();
         final TypeElement elm = (TypeElement) annoType.asElement();
@@ -245,12 +242,7 @@ public class AnnotationUtils {
 
     /** Checks that the annotation {@code am} has the name of {@code anno}. Values are ignored. */
     public static boolean areSameByClass(AnnotationMirror am, Class<? extends Annotation> anno) {
-        /*@Interned*/ String canonicalName = null;
-        synchronized (annotationClassNames) {
-            if (annotationClassNames.containsKey(anno)) {
-                canonicalName = annotationClassNames.get(anno);
-            }
-        }
+        /*@Interned*/ String canonicalName = annotationClassNames.get(anno);
         if (canonicalName == null) {
             canonicalName = anno.getCanonicalName().intern();
             annotationClassNames.put(anno, canonicalName);
