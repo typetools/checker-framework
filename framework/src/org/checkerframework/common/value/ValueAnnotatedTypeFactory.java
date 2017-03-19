@@ -294,17 +294,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             // Annotations are in this hierarchy, but they are not the same
             else {
-                // If either is UNKNOWNVAL, ARRAYLEN, STRINGVAL, or BOOLEAN then
-                // the LUB is
-                // UnknownVal
+                // If either is UNKNOWNVAL, ARRAYLEN, STRINGVAL, or BOOLEAN then the LUB is
+                // UnknownVal.
                 if (!((AnnotationUtils.areSameByClass(a1, IntVal.class)
                                 || AnnotationUtils.areSameByClass(a1, DoubleVal.class))
                         && (AnnotationUtils.areSameByClass(a2, IntVal.class)
                                 || AnnotationUtils.areSameByClass(a2, DoubleVal.class)))) {
                     return UNKNOWNVAL;
                 } else {
-                    // At this point one of them must be a DoubleVal and one an
-                    // IntVal
+                    // At this point one of them must be a DoubleVal and one an IntVal.
                     AnnotationMirror doubleAnno;
                     AnnotationMirror intAnno;
 
@@ -469,17 +467,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotatedTypeMirror componentType = getAnnotatedType(init);
                 int count = 0;
                 while (componentType.getKind() == TypeKind.ARRAY) {
-                    AnnotationMirror arrayLen = componentType.getAnnotation(ArrayLen.class);
-                    List<Integer> currentLengths;
-                    if (arrayLen != null) {
-                        currentLengths = getArrayLength(arrayLen);
-                    } else {
-                        currentLengths = (new ArrayList<Integer>());
-                    }
                     if (count == summarylengths.size()) {
                         summarylengths.add(new ArrayList<Integer>());
                     }
-                    summarylengths.get(count).addAll(currentLengths);
+                    AnnotationMirror arrayLen = componentType.getAnnotation(ArrayLen.class);
+                    if (arrayLen != null) {
+                        List<Integer> currentLengths = getArrayLength(arrayLen);
+                        summarylengths.get(count).addAll(currentLengths);
+                    }
                     count++;
                     componentType = ((AnnotatedArrayType) componentType).getComponentType();
                 }
@@ -555,7 +550,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
-        /** Get the "value" field of the given annotation, casted to the given type. */
+        /**
+         * Get the "value" field of the given annotation, casted to the given type. Empty list means
+         * no value is possible (dead code). Null means no information is known -- any value is
+         * possible.
+         */
         private List<?> getValues(AnnotatedTypeMirror type, TypeMirror castTo) {
             AnnotationMirror anno = type.getAnnotationInHierarchy(UNKNOWNVAL);
             if (anno == null) {
@@ -563,7 +562,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // then anno will be null. It would be safe to use the annotation on the upper bound;
                 // however, unless the upper bound was explicitly annotated, it will be unknown.
                 // AnnotatedTypes.findEffectiveAnnotationInHierarchy(, toSearch, top)
-                return new ArrayList<>();
+                return null;
             }
             return ValueCheckerUtils.getValuesCastedToType(anno, castTo);
         }
@@ -947,18 +946,47 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 "ValueAnnotatedTypeFactory: unexpected class: " + first.getClass());
     }
 
+    /**
+     * Returns the set of possible values. Returns the empty list if no values are possible (for
+     * dead code). Returns null if any value is possible -- that is, if no estimate can be made --
+     * and this includes when there is no constant-value annotation so the argument is null.
+     */
     public static List<Long> getIntValues(AnnotationMirror intAnno) {
+        if (intAnno == null) {
+            return null;
+        }
         return AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, true);
     }
 
+    /**
+     * Returns the set of possible values. Returns the empty list if no values are possible (for
+     * dead code). Returns null if any value is possible -- that is, if no estimate can be made --
+     * and this includes when there is no constant-value annotation so the argument is null.
+     */
     public static List<Double> getDoubleValues(AnnotationMirror doubleAnno) {
+        if (doubleAnno == null) {
+            return null;
+        }
         return AnnotationUtils.getElementValueArray(doubleAnno, "value", Double.class, true);
     }
 
+    /**
+     * Returns the set of possible array lengths. Returns the empty list if no values are possible
+     * (for dead code). Returns null if any value is possible -- that is, if no estimate can be made
+     * -- and this includes when there is no constant-value annotation so the argument is null.
+     */
     public static List<Integer> getArrayLength(AnnotationMirror arrayAnno) {
+        if (arrayAnno == null) {
+            return null;
+        }
         return AnnotationUtils.getElementValueArray(arrayAnno, "value", Integer.class, true);
     }
 
+    /**
+     * Returns the set of possible values. Returns the empty list if no values are possible (for
+     * dead code). Returns null if any value is possible -- that is, if no estimate can be made --
+     * and this includes when there is no constant-value annotation so the argument is null.
+     */
     public static List<Character> getCharValues(AnnotationMirror intAnno) {
         if (intAnno == null) {
             return new ArrayList<>();
@@ -972,6 +1000,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return charValues;
     }
 
+    /**
+     * Returns the set of possible values. Returns the empty list if no values are possible (for
+     * dead code). Returns null if any value is possible -- that is, if no estimate can be made --
+     * and this includes when there is no constant-value annotation so the argument is null.
+     */
     public static List<Boolean> getBooleanValues(AnnotationMirror boolAnno) {
         if (boolAnno == null) {
             return new ArrayList<>();
@@ -994,6 +1027,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ArrayList<>();
     }
 
+    /**
+     * Empty list means dead code -- no values are possible. Null means no information in available
+     * -- all values are possible.
+     */
     public List<Long> getIntValuesFromExpression(
             String expression, Tree tree, TreePath currentPath) {
         AnnotationMirror intValAnno = null;
@@ -1005,10 +1042,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // ignore parse errors
             return null;
         }
-        if (intValAnno == null) {
-            return null;
-        }
-
         return getIntValues(intValAnno);
     }
 }
