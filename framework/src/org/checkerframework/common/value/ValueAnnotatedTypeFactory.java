@@ -784,13 +784,17 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private AnnotationMirror resultAnnotationHandler(
                 TypeMirror resultType, List<?> results, Tree tree) {
 
+            if (results == null) {
+                return UNKNOWNVAL;
+            }
+
             Class<?> resultClass = ValueCheckerUtils.getClassFromType(resultType);
 
             // For some reason null is included in the list of values,
             // so remove it so that it does not cause a NPE elsewhere.
             results.remove(null);
             if (results.size() == 0) {
-                return UNKNOWNVAL;
+                return BOTTOMVAL;
             } else if (resultClass == Boolean.class || resultClass == boolean.class) {
                 HashSet<Boolean> boolVals = new HashSet<Boolean>(results.size());
                 for (Object o : results) {
