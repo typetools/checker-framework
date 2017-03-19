@@ -355,6 +355,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (intRangeAnno != null) {
                     intValAnno = convertIntRangeToIntVal(intRangeAnno);
                     intRangeAnno = null;
+                    if (intValAnno == UNKNOWNVAL) {
+                        intValAnno = null;
+                    }
                 }
                 if (intValAnno != null) {
                     // Convert intValAnno to a @DoubleVal AnnotationMirror
@@ -395,7 +398,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     // Special case for IntRange
                     Range lhsRange = getIntRange(lhs);
                     Range rhsRange = getIntRange(rhs);
-                    return lhsRange.from <= rhsRange.from && lhsRange.to >= rhsRange.to;
+                    return lhsRange.contains(rhsRange);
                 } else {
                     List<Object> lhsValues =
                             AnnotationUtils.getElementValueArray(lhs, "value", Object.class, true);
@@ -405,23 +408,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             } else if (AnnotationUtils.areSameByClass(lhs, DoubleVal.class)
                     && AnnotationUtils.areSameByClass(rhs, IntVal.class)) {
-                List<Long> rhsValues =
-                        AnnotationUtils.getElementValueArray(rhs, "value", Long.class, true);
+                List<Double> rhsValues =
+                        convertLongListToDoubleList(
+                                AnnotationUtils.getElementValueArray(
+                                        rhs, "value", Long.class, true));
                 List<Double> lhsValues =
                         AnnotationUtils.getElementValueArray(lhs, "value", Double.class, true);
-                boolean same = false;
-                for (Long rhsLong : rhsValues) {
-                    for (Double lhsDbl : lhsValues) {
-                        if (lhsDbl.doubleValue() == rhsLong.doubleValue()) {
-                            same = true;
-                            break;
-                        }
-                    }
-                    if (!same) {
-                        return false;
-                    }
-                }
-                return same;
+                return lhsValues.containsAll(rhsValues);
             } else if (AnnotationUtils.areSameByClass(lhs, IntRange.class)
                     && AnnotationUtils.areSameByClass(rhs, IntVal.class)) {
                 List<Long> rhsValues =
@@ -433,27 +426,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (AnnotationUtils.areSameByClass(lhs, DoubleVal.class)
                     && AnnotationUtils.areSameByClass(rhs, IntRange.class)) {
                 Range rhsRange = getIntRange(rhs);
-                if (!rhsRange.isWiderThan(MAX_VALUES)) {
-                    List<Double> lhsValues =
-                            AnnotationUtils.getElementValueArray(lhs, "value", Double.class, true);
-                    List<Double> rhsValues =
-                            ValueCheckerUtils.getValuesFromRange(rhsRange, Double.class);
-                    return lhsValues.containsAll(rhsValues);
-                } else {
+                if (rhsRange.isWiderThan(MAX_VALUES)) {
                     return false;
                 }
+                List<Double> lhsValues =
+                        AnnotationUtils.getElementValueArray(lhs, "value", Double.class, true);
+                List<Double> rhsValues =
+                        ValueCheckerUtils.getValuesFromRange(rhsRange, Double.class);
+                return lhsValues.containsAll(rhsValues);
             } else if (AnnotationUtils.areSameByClass(lhs, IntVal.class)
                     && AnnotationUtils.areSameByClass(rhs, IntRange.class)) {
                 Range rhsRange = getIntRange(rhs);
-                if (!rhsRange.isWiderThan(MAX_VALUES)) {
-                    List<Long> lhsValues =
-                            AnnotationUtils.getElementValueArray(lhs, "value", Long.class, true);
-                    List<Long> rhsValues =
-                            ValueCheckerUtils.getValuesFromRange(rhsRange, Long.class);
-                    return lhsValues.containsAll(rhsValues);
-                } else {
+                if (rhsRange.isWiderThan(MAX_VALUES)) {
                     return false;
                 }
+                List<Long> lhsValues =
+                        AnnotationUtils.getElementValueArray(lhs, "value", Long.class, true);
+                List<Long> rhsValues = ValueCheckerUtils.getValuesFromRange(rhsRange, Long.class);
+                return lhsValues.containsAll(rhsValues);
             } else {
                 return false;
             }
@@ -969,6 +959,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /**
+     * Create an {@code @IntVal} annotation from the given set of values. May return BOTTOMVAL or
+     * UNKNOWNVAL.
+     */
     public AnnotationMirror createIntValAnnotation(List<Long> intValues) {
         if (intValues == null) {
             return BOTTOMVAL;
@@ -987,6 +981,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /**
+     * Convert an {@code @IntRange} annotation to an {@code @IntVal} annotation, or to UNKNOWNVAL if
+     * the input is too wide to be represented as an {@code @IntVal}.
+     */
     public AnnotationMirror convertIntRangeToIntVal(AnnotationMirror intRangeAnno) {
         Range range = getIntRange(intRangeAnno);
         if (range.isWiderThan(MAX_VALUES)) {
@@ -997,6 +995,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /**
+     * Create a {@code @DoubleVal} annotation from the given set of values. May return BOTTOMVAL or
+     * UNKNOWNVAL.
+     */
     public AnnotationMirror createDoubleValAnnotation(List<Double> doubleValues) {
         if (doubleValues == null) {
             return BOTTOMVAL;
@@ -1011,15 +1013,25 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /** Convert an {@code @IntVal} annotation to a {@code @DoubleVal} annotation. */
     private AnnotationMirror convertIntValToDoubleVal(AnnotationMirror intValAnno) {
         List<Long> intValues = getIntValues(intValAnno);
+        return createDoubleValAnnotation(convertLongListToDoubleList(intValues));
+    }
+
+    /** Convert a {@code List&lt;Long&gt;} to a {@code List&lt;Double&gt;}. */
+    private List<Double> convertLongListToDoubleList(List<Long> intValues) {
         List<Double> doubleValues = new ArrayList<Double>(intValues.size());
         for (Long intValue : intValues) {
             doubleValues.add(intValue.doubleValue());
         }
-        return createDoubleValAnnotation(doubleValues);
+        return doubleValues;
     }
 
+    /**
+     * Create a {@code @StringVal} annotation from the given set of values. May return BOTTOMVAL or
+     * UNKNOWNVAL.
+     */
     public AnnotationMirror createStringAnnotation(List<String> values) {
         if (values == null) {
             return BOTTOMVAL;
@@ -1034,6 +1046,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /**
+     * Create an {@code @ArrayLen} annotation from the given set of values. May return BOTTOMVAL or
+     * UNKNOWNVAL.
+     */
     public AnnotationMirror createArrayLenAnnotation(List<Integer> values) {
         if (values == null) {
             return BOTTOMVAL;
@@ -1048,6 +1064,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /**
+     * Create a {@code @BoolVal} annotation from the given set of values. May return BOTTOMVAL or
+     * UNKNOWNVAL.
+     */
     public AnnotationMirror createBooleanAnnotation(List<Boolean> values) {
         if (values == null) {
             return BOTTOMVAL;
@@ -1062,6 +1082,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /**
+     * Create an {@code @IntVal} annotation from the given set of values. May return BOTTOMVAL or
+     * UNKNOWNVAL.
+     */
     public AnnotationMirror createCharAnnotation(List<Character> values) {
         if (values == null) {
             return BOTTOMVAL;
@@ -1105,6 +1129,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 "ValueAnnotatedTypeFactory: unexpected class: " + first.getClass());
     }
 
+    /**
+     * Create an {@code @IntRange} annotation from the {@code from} and {@code to} values, which
+     * must be valid ({@code from &le; to}).
+     */
     public AnnotationMirror createIntRangeAnnotation(long from, long to) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntRange.class);
         builder.setValue("from", from);
@@ -1112,6 +1140,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
+    /**
+     * Create an {@code @IntRange} annotation from the range. May return BOTTOMVAL or UNKNOWNVAL.
+     */
     public AnnotationMirror createIntRangeAnnotation(Range range) {
         if (range.isNothing()) {
             return BOTTOMVAL;
@@ -1122,6 +1153,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /** Converts an {@code @IntVal} annotation to an {@code @IntRange} annotation. */
     public AnnotationMirror convertIntValToIntRange(AnnotationMirror intValAnno) {
         List<Long> intValues = getIntValues(intValAnno);
         return createIntRangeAnnotation(Collections.min(intValues), Collections.max(intValues));
