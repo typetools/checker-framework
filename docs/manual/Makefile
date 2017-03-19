@@ -70,7 +70,7 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../docs/api
 # Add CSS styling, since \newstyle doesn't work for me.
 	sed -i -e "s%<style type=\"text/css\">%<style type=\"text/css\">\nimg { max-width: 100\%; max-height: 100\%; }%" manual.html
 
-../docs/api:
+../api:
 	cd .. && ln -s ../checker/api api
 
 CFLogo.png: ../logo/Logo/CFLogo.png
