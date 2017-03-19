@@ -698,9 +698,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     for (ExpressionTree argument : arguments) {
                         AnnotatedTypeMirror argType = getAnnotatedType(argument);
                         List<?> values = getValues(argType, argType.getUnderlyingType());
-                        if (values.isEmpty()) {
-                            // values aren't known, so don't try to evaluate the
-                            // method
+                        if (values == null || values.isEmpty()) {
+                            // Values aren't known, so don't try to evaluate the method.
                             return null;
                         }
                         argValues.add(values);
@@ -858,8 +857,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public AnnotationMirror createIntValAnnotation(List<Long> intValues) {
+        if (intValues == null) {
+            return UNKNOWNVAL;
+        }
         intValues = ValueCheckerUtils.removeDuplicates(intValues);
-        if (intValues.isEmpty() || intValues.size() > MAX_VALUES) {
+        if (intValues.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntVal.class);
@@ -868,8 +870,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public AnnotationMirror createDoubleValAnnotation(List<Double> doubleValues) {
+        if (doubleValues == null) {
+            return UNKNOWNVAL;
+        }
         doubleValues = ValueCheckerUtils.removeDuplicates(doubleValues);
-        if (doubleValues.isEmpty() || doubleValues.size() > MAX_VALUES) {
+        if (doubleValues.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DoubleVal.class);
@@ -878,8 +883,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public AnnotationMirror createStringAnnotation(List<String> values) {
+        if (values == null) {
+            return UNKNOWNVAL;
+        }
         values = ValueCheckerUtils.removeDuplicates(values);
-        if (values.isEmpty() || values.size() > MAX_VALUES) {
+        if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, StringVal.class);
@@ -888,8 +896,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public AnnotationMirror createArrayLenAnnotation(List<Integer> values) {
+        if (values == null) {
+            return UNKNOWNVAL;
+        }
         values = ValueCheckerUtils.removeDuplicates(values);
-        if (values.isEmpty() || values.size() > MAX_VALUES) {
+        if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, ArrayLen.class);
@@ -898,8 +909,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public AnnotationMirror createBooleanAnnotation(List<Boolean> values) {
+        if (values == null) {
+            return UNKNOWNVAL;
+        }
         values = ValueCheckerUtils.removeDuplicates(values);
-        if (values.isEmpty() || values.size() > MAX_VALUES) {
+        if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, BoolVal.class);
@@ -908,8 +922,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public AnnotationMirror createCharAnnotation(List<Character> values) {
+        if (values == null) {
+            return UNKNOWNVAL;
+        }
         values = ValueCheckerUtils.removeDuplicates(values);
-        if (values.isEmpty() || values.size() > MAX_VALUES) {
+        if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         }
         List<Long> longValues = new ArrayList<>();
