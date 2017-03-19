@@ -64,6 +64,7 @@ public class ValueTransfer extends CFTransfer {
         atypefactory = analysis.getTypeFactory();
     }
 
+    /** Get possible string values from annotation. */
     private List<String> getStringValues(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         // @StringVal, @BottomVal, @UnknownVal
@@ -108,6 +109,7 @@ public class ValueTransfer extends CFTransfer {
         return stringValues;
     }
 
+    /** Get possible boolean values from @BoolVal. */
     private List<Boolean> getBooleanValues(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         AnnotationMirror intAnno =
@@ -115,6 +117,7 @@ public class ValueTransfer extends CFTransfer {
         return ValueAnnotatedTypeFactory.getBooleanValues(intAnno);
     }
 
+    /** Get possible char values from annotation @IntRange or @IntVal. */
     private List<Character> getCharValues(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         AnnotationMirror intAnno;
@@ -165,6 +168,7 @@ public class ValueTransfer extends CFTransfer {
         return new ArrayList<Number>();
     }
 
+    /** Get possible integer range from annotation. */
     private Range getIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         AnnotationMirror anno;
@@ -199,27 +203,39 @@ public class ValueTransfer extends CFTransfer {
         return Range.EVERYTHING;
     }
 
+    /** a helper function to determine if this node is annotated with @IntRange */
     private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         return AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class) != null;
     }
 
+    /** a wrapper for {@link ValueAnnotatedTypeFactory#createStringAnnotation} */
     private AnnotationMirror createStringValAnnotationMirror(List<String> values) {
         return ((ValueAnnotatedTypeFactory) atypefactory).createStringAnnotation(values);
     }
 
+    /** a wrapper for {@link ValueAnnotatedTypeFactory#createNumberAnnotationMirror} */
     private AnnotationMirror createNumberAnnotationMirror(List<Number> values) {
         return ((ValueAnnotatedTypeFactory) atypefactory).createNumberAnnotationMirror(values);
     }
 
+    /** a wrapper for {@link ValueAnnotatedTypeFactory#createIntRangeAnnotation} */
     private AnnotationMirror createRangeAnnotationMirror(Range range) {
         return ((ValueAnnotatedTypeFactory) atypefactory).createIntRangeAnnotation(range);
     }
 
+    /** a wrapper for {@link ValueAnnotatedTypeFactory#createBooleanAnnotation} */
     private AnnotationMirror createBooleanAnnotationMirror(List<Boolean> values) {
         return ((ValueAnnotatedTypeFactory) atypefactory).createBooleanAnnotation(values);
     }
 
+    /**
+     * Create a new transfer result based on the original result and the new annotation.
+     *
+     * @param result the original result
+     * @param resultAnno the new annotation
+     * @return
+     */
     private TransferResult<CFValue, CFStore> createNewResult(
             TransferResult<CFValue, CFStore> result, AnnotationMirror resultAnno) {
         CFValue newResultValue =
@@ -228,13 +244,11 @@ public class ValueTransfer extends CFTransfer {
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
     }
 
+    /** Create a boolean transfer result. */
     private TransferResult<CFValue, CFStore> createNewResultBoolean(
             TransferResult<CFValue, CFStore> result, List<Boolean> resultValues) {
         AnnotationMirror stringVal = createBooleanAnnotationMirror(resultValues);
-        CFValue newResultValue =
-                analysis.createSingleAnnotationValue(
-                        stringVal, result.getResultValue().getUnderlyingType());
-        return new RegularTransferResult<>(newResultValue, result.getRegularStore());
+        return createNewResult(result, stringVal);
     }
 
     @Override
@@ -270,6 +284,7 @@ public class ValueTransfer extends CFTransfer {
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
     }
 
+    /** binary operations that are analyzed by the value checker */
     enum NumericalBinaryOps {
         ADDITION,
         SUBTRACTION,
@@ -284,6 +299,15 @@ public class ValueTransfer extends CFTransfer {
         BITWISE_XOR;
     }
 
+    /**
+     * Get the refined annotation after a numerical binary operation.
+     *
+     * @param leftNode the node that represents the left operand
+     * @param rightNode the node that represents the right operand
+     * @param op the operator type
+     * @param p the transfer input
+     * @return the result annotation mirror
+     */
     private AnnotationMirror calculateNumericalBinaryOp(
             Node leftNode,
             Node rightNode,
@@ -298,6 +322,7 @@ public class ValueTransfer extends CFTransfer {
         }
     }
 
+    /** Calculate the result range after a binary operation between two numerical type nodes */
     private Range calculateRangeBinaryOp(
             Node leftNode,
             Node rightNode,
@@ -355,6 +380,7 @@ public class ValueTransfer extends CFTransfer {
         }
     }
 
+    /** Calculate the possible values after a binary operation between two numerical type nodes */
     private List<Number> calculateValuesBinaryOp(
             Node leftNode,
             Node rightNode,
@@ -550,12 +576,22 @@ public class ValueTransfer extends CFTransfer {
         return createNewResult(transferResult, resultAnno);
     }
 
+    /** unary operations that are analyzed by the value checker */
     enum NumericalUnaryOps {
         PLUS,
         MINUS,
         BITWISE_COMPLEMENT;
     }
 
+    /**
+     * Get the refined annotation after a numerical unary operation.
+     *
+     * @param leftNode the node that represents the left operand
+     * @param rightNode the node that represents the right operand
+     * @param op the operator type
+     * @param p the transfer input
+     * @return the result annotation mirror
+     */
     private AnnotationMirror calculateNumericalUnaryOp(
             Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
         if (!isIntRange(operand, p)) {
@@ -567,6 +603,7 @@ public class ValueTransfer extends CFTransfer {
         }
     }
 
+    /** Calculate the result range after a unary operation of a numerical type node */
     private Range calculateRangeUnaryOp(
             Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
         if (TypesUtils.isIntegral(operand.getType())) {
@@ -594,6 +631,7 @@ public class ValueTransfer extends CFTransfer {
         }
     }
 
+    /** Calculate the possible values after a unary operation of a numerical type node */
     private List<Number> calculateValuesUnaryOp(
             Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
         List<? extends Number> lefts = getNumericalValues(operand, p);
