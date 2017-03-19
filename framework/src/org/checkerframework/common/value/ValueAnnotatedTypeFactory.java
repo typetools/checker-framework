@@ -979,7 +979,18 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<Boolean> boolValues =
                 AnnotationUtils.getElementValueArray(boolAnno, "value", Boolean.class, true);
         Set<Boolean> boolSet = new TreeSet<>(boolValues);
-        return new ArrayList<>(boolSet);
+        if (boolSet.size() > 1) {
+            // boolSet={true,false};
+            return new ArrayList<>();
+        }
+        if (boolSet.size() == 0) {
+            // boolSet={};
+            return new ArrayList<>();
+        }
+        if (boolSet.size() == 1) {
+            // boolSet={true} or boolSet={false}
+            return new ArrayList<>(boolSet);
+        }
     }
 
     public List<Long> getIntValuesFromExpression(
