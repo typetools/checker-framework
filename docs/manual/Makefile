@@ -53,7 +53,7 @@ manual.pdf: bib-update figures-all check-labels
 	while grep "Rerun to get" manual.log; do pdflatex manual.tex; done
 
 html: manual.html
-manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../docs/api
+manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 	hevea -fix -exec xxdate.exe manual.tex
 # I'm not sure why this is necessary; "hevea -fix" should run it automatically.
 # Also, you need ImageMagick 6.8.0-2 Beta or later to avoid a bug.
