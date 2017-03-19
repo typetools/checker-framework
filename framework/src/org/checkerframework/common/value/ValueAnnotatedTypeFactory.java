@@ -991,6 +991,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // boolSet={true} or boolSet={false}
             return new ArrayList<>(boolSet);
         }
+        return new ArrayList<>();
     }
 
     public List<Long> getIntValuesFromExpression(
