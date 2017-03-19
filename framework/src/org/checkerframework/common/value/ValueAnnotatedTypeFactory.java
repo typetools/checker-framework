@@ -1089,7 +1089,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return BOTTOMVAL;
         }
         values = ValueCheckerUtils.removeDuplicates(values);
-        if (values.isEmpty() || values.size() > MAX_VALUES) {
+        if (values.isEmpty()) {
             return UNKNOWNVAL;
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, BoolVal.class);
