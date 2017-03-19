@@ -645,9 +645,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     for (ExpressionTree argument : arguments) {
                         AnnotatedTypeMirror argType = getAnnotatedType(argument);
                         List<?> values = getValues(argType, argType.getUnderlyingType());
-                        if (values.isEmpty()) {
-                            // values aren't known, so don't try to evaluate the
-                            // method
+                        if (values == null || values.isEmpty()) {
+                            // Values aren't known, so don't try to evaluate the method.
                             return null;
                         }
                         argValues.add(values);
@@ -662,9 +661,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 if (receiver != null && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
                     receiverValues = getValues(receiver, receiver.getUnderlyingType());
-                    if (receiverValues.isEmpty()) {
-                        // values aren't known, so don't try to evaluate the
-                        // method
+                    if (receiverValues == null || receiverValues.isEmpty()) {
+                        // Values aren't known, so don't try to evaluate the method.
                         return null;
                     }
                 } else {
