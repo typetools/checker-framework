@@ -296,7 +296,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (isSubtype(a2, a1)) {
                 return a2;
             } else {
-                // If the two are unrelated, then bottom is the GLB.
+                // Simply return BOTTOMVAL if not related. Refine this if discover more use cases
+                // that need a more precision GLB.
                 return BOTTOMVAL;
             }
         }
@@ -644,24 +645,18 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (oldAnno != null) {
                     TypeMirror newType = atm.getUnderlyingType();
                     AnnotationMirror newAnno;
-                    if (AnnotationUtils.areSameByClass(oldAnno, IntRange.class)) {
-                        Range range = getIntRange(oldAnno);
-                        if (range.isWiderThan(MAX_VALUES)) {
-                            Class<?> newClass = ValueCheckerUtils.getClassFromType(newType);
-                            if (newClass == String.class) {
-                                newAnno = UNKNOWNVAL;
-                            } else if (newClass == Boolean.class || newClass == boolean.class) {
-                                throw new UnsupportedOperationException(
-                                        "ValueAnnotatedTypeFactory: can't convert int to boolean");
-                            } else {
-                                newAnno =
-                                        createIntRangeAnnotation(
-                                                NumberUtils.castRange(newType, range));
-                            }
+                    Range range;
+                    if (AnnotationUtils.areSameByClass(oldAnno, IntRange.class)
+                            && (range = getIntRange(oldAnno)).isWiderThan(MAX_VALUES)) {
+                        Class<?> newClass = ValueCheckerUtils.getClassFromType(newType);
+                        if (newClass == String.class) {
+                            newAnno = UNKNOWNVAL;
+                        } else if (newClass == Boolean.class || newClass == boolean.class) {
+                            throw new UnsupportedOperationException(
+                                    "ValueAnnotatedTypeFactory: can't convert int to boolean");
                         } else {
-                            List<?> values =
-                                    ValueCheckerUtils.getValuesCastedToType(oldAnno, newType);
-                            newAnno = resultAnnotationHandler(newType, values, tree);
+                            newAnno =
+                                    createIntRangeAnnotation(NumberUtils.castRange(newType, range));
                         }
                     } else {
                         List<?> values = ValueCheckerUtils.getValuesCastedToType(oldAnno, newType);
