@@ -1037,7 +1037,7 @@
             <param name="param" value="tests.I18nFormatterLubGlbCheckerTest"/>
         </antcall>
         <antcall target="-run-tests">
-            <param name="param" value="tests.I18nFormatterFormatterUncheckedDefaultsTest"/>
+            <param name="param" value="tests.I18nFormatterUncheckedDefaultsTest"/>
         </antcall>
     </target>
 
