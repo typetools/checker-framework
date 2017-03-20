@@ -182,10 +182,10 @@ public class ValueTransfer extends CFTransfer {
 
     private TransferResult<CFValue, CFStore> createNewResultBoolean(
             TransferResult<CFValue, CFStore> result, List<Boolean> resultValues) {
-        AnnotationMirror stringVal = createBooleanAnnotationMirror(resultValues);
+        AnnotationMirror boolVal = createBooleanAnnotationMirror(resultValues);
         CFValue newResultValue =
                 analysis.createSingleAnnotationValue(
-                        stringVal, result.getResultValue().getUnderlyingType());
+                        boolVal, result.getResultValue().getUnderlyingType());
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
     }
 

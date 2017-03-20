@@ -332,31 +332,32 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @return true if rhs is a subtype of lhs, false otherwise
          */
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
 
-            if (AnnotationUtils.areSameByClass(lhs, UnknownVal.class)
-                    || AnnotationUtils.areSameByClass(rhs, BottomVal.class)) {
+            if (AnnotationUtils.areSameByClass(superAnno, UnknownVal.class)
+                    || AnnotationUtils.areSameByClass(subAnno, BottomVal.class)) {
                 return true;
-            } else if (AnnotationUtils.areSameByClass(rhs, UnknownVal.class)
-                    || AnnotationUtils.areSameByClass(lhs, BottomVal.class)) {
+            } else if (AnnotationUtils.areSameByClass(subAnno, UnknownVal.class)
+                    || AnnotationUtils.areSameByClass(superAnno, BottomVal.class)) {
                 return false;
-            } else if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
+            } else if (AnnotationUtils.areSameIgnoringValues(superAnno, subAnno)) {
                 // Same type, so might be subtype
                 List<Object> lhsValues =
-                        AnnotationUtils.getElementValueArray(lhs, "value", Object.class, true);
+                        AnnotationUtils.getElementValueArray(
+                                superAnno, "value", Object.class, true);
                 List<Object> rhsValues =
-                        AnnotationUtils.getElementValueArray(rhs, "value", Object.class, true);
+                        AnnotationUtils.getElementValueArray(subAnno, "value", Object.class, true);
                 return lhsValues.containsAll(rhsValues);
-            } else if (AnnotationUtils.areSameByClass(lhs, DoubleVal.class)
-                    && AnnotationUtils.areSameByClass(rhs, IntVal.class)) {
-                List<Long> rhsValues = getIntValues(rhs);
-                List<Double> lhsValues = getDoubleValues(lhs);
-                if (rhsValues.size() < lhsValues.size()) {
+            } else if (AnnotationUtils.areSameByClass(superAnno, DoubleVal.class)
+                    && AnnotationUtils.areSameByClass(subAnno, IntVal.class)) {
+                List<Double> superValues = getDoubleValues(superAnno);
+                List<Long> subValues = getIntValues(subAnno);
+                if (subValues.size() < superValues.size()) {
                     return false;
                 }
-                for (int i = 0; i < lhsValues.size(); i++) {
-                    double lhsDbl = lhsValues.get(i);
-                    double rhsDbl = rhsValues.get(i).doubleValue();
+                for (int i = 0; i < superValues.size(); i++) {
+                    double lhsDbl = superValues.get(i);
+                    double rhsDbl = subValues.get(i).doubleValue();
                     if (lhsDbl != rhsDbl) {
                         return false;
                     }
@@ -498,7 +499,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        /** Convert a byte array to a String. */
+        /** Convert a byte array to a String. Return null if unable to convert. */
         private String getByteArrayStringVal(List<? extends ExpressionTree> initializers) {
             // True iff every element of the array is a literal.
             boolean allLiterals = true;
@@ -521,7 +522,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
-        /** Convert a char array to a String. */
+        /** Convert a char array to a String. Return null if unable to convert. */
         private String getCharArrayStringVal(List<? extends ExpressionTree> initializers) {
             boolean allLiterals = true;
             StringBuilder stringVal = new StringBuilder();
