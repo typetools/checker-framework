@@ -205,22 +205,24 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @return true if rhs is a subtype of lhs, false otherwise
          */
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameByClass(lhs, PolyMinLen.class)) {
-                return AnnotationUtils.areSameByClass(rhs, PolyMinLen.class);
-            } else if (AnnotationUtils.areSameByClass(rhs, PolyMinLen.class)) {
-                return AnnotationUtils.areSame(lhs, MIN_LEN_0);
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSameByClass(superAnno, PolyMinLen.class)) {
+                return AnnotationUtils.areSameByClass(subAnno, PolyMinLen.class);
+            } else if (AnnotationUtils.areSameByClass(subAnno, PolyMinLen.class)) {
+                return AnnotationUtils.areSame(superAnno, MIN_LEN_0);
             }
-            if (AnnotationUtils.areSameByClass(rhs, MinLenBottom.class)) {
+            if (AnnotationUtils.areSameByClass(subAnno, MinLenBottom.class)) {
                 return true;
-            } else if (AnnotationUtils.areSameByClass(lhs, MinLenBottom.class)) {
+            } else if (AnnotationUtils.areSameByClass(superAnno, MinLenBottom.class)) {
                 return false;
-            } else if (AnnotationUtils.areSameIgnoringValues(rhs, lhs)) {
+            } else if (AnnotationUtils.areSameIgnoringValues(subAnno, superAnno)) {
                 // Implies both are MinLen since that's the only other type.
                 // There is no need for a check to see if these values exist - they must.
 
-                Integer rhsVal = AnnotationUtils.getElementValue(rhs, "value", Integer.class, true);
-                Integer lhsVal = AnnotationUtils.getElementValue(lhs, "value", Integer.class, true);
+                Integer rhsVal =
+                        AnnotationUtils.getElementValue(subAnno, "value", Integer.class, true);
+                Integer lhsVal =
+                        AnnotationUtils.getElementValue(superAnno, "value", Integer.class, true);
                 return rhsVal >= lhsVal;
             }
             return false;

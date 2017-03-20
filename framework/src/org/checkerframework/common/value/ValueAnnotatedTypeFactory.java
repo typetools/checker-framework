@@ -333,27 +333,30 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @return true if rhs is a subtype of lhs, false otherwise
          */
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
 
-            if (AnnotationUtils.areSameByClass(lhs, UnknownVal.class)
-                    || AnnotationUtils.areSameByClass(rhs, BottomVal.class)) {
+            if (AnnotationUtils.areSameByClass(superAnno, UnknownVal.class)
+                    || AnnotationUtils.areSameByClass(subAnno, BottomVal.class)) {
                 return true;
-            } else if (AnnotationUtils.areSameByClass(rhs, UnknownVal.class)
-                    || AnnotationUtils.areSameByClass(lhs, BottomVal.class)) {
+            } else if (AnnotationUtils.areSameByClass(subAnno, UnknownVal.class)
+                    || AnnotationUtils.areSameByClass(superAnno, BottomVal.class)) {
                 return false;
-            } else if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
+            } else if (AnnotationUtils.areSameIgnoringValues(superAnno, subAnno)) {
                 // Same type, so might be subtype
                 List<Object> lhsValues =
-                        AnnotationUtils.getElementValueArray(lhs, "value", Object.class, true);
+                        AnnotationUtils.getElementValueArray(
+                                superAnno, "value", Object.class, true);
                 List<Object> rhsValues =
-                        AnnotationUtils.getElementValueArray(rhs, "value", Object.class, true);
+                        AnnotationUtils.getElementValueArray(subAnno, "value", Object.class, true);
                 return lhsValues.containsAll(rhsValues);
-            } else if (AnnotationUtils.areSameByClass(lhs, DoubleVal.class)
-                    && AnnotationUtils.areSameByClass(rhs, IntVal.class)) {
+            } else if (AnnotationUtils.areSameByClass(superAnno, DoubleVal.class)
+                    && AnnotationUtils.areSameByClass(subAnno, IntVal.class)) {
                 List<Long> rhsValues;
-                rhsValues = AnnotationUtils.getElementValueArray(rhs, "value", Long.class, true);
+                rhsValues =
+                        AnnotationUtils.getElementValueArray(subAnno, "value", Long.class, true);
                 List<Double> lhsValues =
-                        AnnotationUtils.getElementValueArray(lhs, "value", Double.class, true);
+                        AnnotationUtils.getElementValueArray(
+                                superAnno, "value", Double.class, true);
                 boolean same = false;
                 for (Long rhsLong : rhsValues) {
                     for (Double lhsDbl : lhsValues) {
