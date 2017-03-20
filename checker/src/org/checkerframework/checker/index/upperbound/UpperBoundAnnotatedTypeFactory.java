@@ -407,9 +407,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @return true if rhs is a subtype of lhs, false otherwise
          */
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            UBQualifier subtype = UBQualifier.createUBQualifier(rhs);
-            UBQualifier supertype = UBQualifier.createUBQualifier(lhs);
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            UBQualifier subtype = UBQualifier.createUBQualifier(subAnno);
+            UBQualifier supertype = UBQualifier.createUBQualifier(superAnno);
             return subtype.isSubtype(supertype);
         }
     }

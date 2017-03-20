@@ -377,11 +377,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
     @Override
     public boolean isSubtypeTypeVariable(
-            Collection<? extends AnnotationMirror> rhs,
-            Collection<? extends AnnotationMirror> lhs) {
+            Collection<? extends AnnotationMirror> subAnnos,
+            Collection<? extends AnnotationMirror> superAnnos) {
         for (AnnotationMirror top : getTopAnnotations()) {
-            AnnotationMirror rhsForTop = findAnnotationInHierarchy(rhs, top);
-            AnnotationMirror lhsForTop = findAnnotationInHierarchy(lhs, top);
+            AnnotationMirror rhsForTop = findAnnotationInHierarchy(subAnnos, top);
+            AnnotationMirror lhsForTop = findAnnotationInHierarchy(superAnnos, top);
             if (!isSubtypeTypeVariable(rhsForTop, lhsForTop)) {
                 return false;
             }
@@ -462,13 +462,13 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      * <p>When client specifies an annotation, a1, to be a subtype of annotation with values, a2,
      * then a1 is a subtype of all instances of a2 regardless of a2 values.
      *
-     * @param rhs the right-hand side, i.e. the sub qualifier
-     * @param lhs the left-hand side, i.e. the super qualifier
+     * @param subAnno the sub qualifier
+     * @param superAnno the super qualifier
      */
     @Override
-    public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-        checkAnnoInGraph(rhs);
-        checkAnnoInGraph(lhs);
+    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+        checkAnnoInGraph(subAnno);
+        checkAnnoInGraph(superAnno);
 
         /* TODO: this optimization leads to recursion
         for (AnnotationMirror top : tops) {
@@ -478,24 +478,24 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return true;
             }
         }*/
-        if (AnnotationUtils.areSameIgnoringValues(rhs, lhs)) {
-            return AnnotationUtils.areSame(rhs, lhs);
+        if (AnnotationUtils.areSameIgnoringValues(subAnno, superAnno)) {
+            return AnnotationUtils.areSame(subAnno, superAnno);
         }
-        Set<AnnotationMirror> supermap1 = this.supertypesMap.get(rhs);
-        return AnnotationUtils.containsSame(supermap1, lhs);
+        Set<AnnotationMirror> supermap1 = this.supertypesMap.get(subAnno);
+        return AnnotationUtils.containsSame(supermap1, superAnno);
     }
 
     @Override
-    public boolean isSubtypeTypeVariable(AnnotationMirror rhs, AnnotationMirror lhs) {
-        if (lhs == null) {
+    public boolean isSubtypeTypeVariable(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+        if (superAnno == null) {
             // [] is a supertype of any qualifier, and [] <: []
             return true;
         }
-        if (rhs == null) {
+        if (subAnno == null) {
             // [] is a subtype of no qualifier (only [])
             return false;
         }
-        return isSubtype(rhs, lhs);
+        return isSubtype(subAnno, superAnno);
     }
 
     private final void checkAnnoInGraph(AnnotationMirror a) {
