@@ -729,7 +729,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                 }
 
-                if (tree.getIdentifier().toString().equals("length")) {
+                if (TreeUtils.isArrayLengthAccess(tree)) {
                     // The field access is "someArrayExpression.length"
                     AnnotatedTypeMirror receiverType = getAnnotatedType(tree.getExpression());
                     if (receiverType.getKind() == TypeKind.ARRAY) {
