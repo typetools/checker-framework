@@ -285,8 +285,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
                 List<Object> a2Values =
                         AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
-                HashSet<Object> newValues = new HashSet<Object>(a1Values.size() + a2Values.size());
-
+                TreeSet<Object> newValues = new TreeSet<>();
                 newValues.addAll(a1Values);
                 newValues.addAll(a2Values);
 
@@ -350,23 +349,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return lhsValues.containsAll(rhsValues);
             } else if (AnnotationUtils.areSameByClass(lhs, DoubleVal.class)
                     && AnnotationUtils.areSameByClass(rhs, IntVal.class)) {
-                List<Long> rhsValues;
-                rhsValues = AnnotationUtils.getElementValueArray(rhs, "value", Long.class, true);
-                List<Double> lhsValues =
-                        AnnotationUtils.getElementValueArray(lhs, "value", Double.class, true);
-                boolean same = false;
-                for (Long rhsLong : rhsValues) {
-                    for (Double lhsDbl : lhsValues) {
-                        if (lhsDbl.doubleValue() == rhsLong.doubleValue()) {
-                            same = true;
-                            break;
-                        }
-                    }
-                    if (!same) {
+                List<Long> rhsValues = getIntValues(rhs);
+                List<Double> lhsValues = getDoubleValues(lhs);
+                if (rhsValues.size() < lhsValues.size()) {
+                    return false;
+                }
+                for (int i = 0; i < lhsValues.size(); i++) {
+                    double lhsDbl = lhsValues.get(i);
+                    double rhsDbl = rhsValues.get(i).doubleValue();
+                    if (lhsDbl != rhsDbl) {
                         return false;
                     }
                 }
-                return same;
+                return true;
             }
             return false;
         }
@@ -959,9 +954,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns the set of possible values. Returns the empty list if no values are possible (for
-     * dead code). Returns null if any value is possible -- that is, if no estimate can be made --
-     * and this includes when there is no constant-value annotation so the argument is null.
+     * Returns the set of possible values as a sorted listed with no duplicate values. Returns the
+     * empty list if no values are possible (for dead code). Returns null if any value is possible
+     * -- that is, if no estimate can be made -- and this includes when there is no constant-value
+     * annotation so the argument is null.
      *
      * <p>The method returns a list of {@code Long} but is named {@code getIntValues} because it
      * supports the {@code @IntVal} annotation.
@@ -972,13 +968,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (intAnno == null) {
             return null;
         }
-        return AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, true);
+        List<Long> list = AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, true);
+        ValueCheckerUtils.removeDuplicates(list);
+        return list;
     }
 
     /**
-     * Returns the set of possible values. Returns the empty list if no values are possible (for
-     * dead code). Returns null if any value is possible -- that is, if no estimate can be made --
-     * and this includes when there is no constant-value annotation so the argument is null.
+     * Returns the set of possible values as a sorted listed with no duplicate values. Returns the
+     * empty list if no values are possible (for dead code). Returns null if any value is possible
+     * -- that is, if no estimate can be made -- and this includes when there is no constant-value
+     * annotation so the argument is null.
      *
      * @param doubleAnno a {@code @DoubleVal} annotation, or null
      */
@@ -986,13 +985,17 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (doubleAnno == null) {
             return null;
         }
-        return AnnotationUtils.getElementValueArray(doubleAnno, "value", Double.class, true);
+        List<Double> list =
+                AnnotationUtils.getElementValueArray(doubleAnno, "value", Double.class, true);
+        ValueCheckerUtils.removeDuplicates(list);
+        return list;
     }
 
     /**
-     * Returns the set of possible array lengths. Returns the empty list if no values are possible
-     * (for dead code). Returns null if any value is possible -- that is, if no estimate can be made
-     * -- and this includes when there is no constant-value annotation so the argument is null.
+     * Returns the set of possible array lengths as a sorted listed with no duplicate values.
+     * Returns the empty list if no values are possible (for dead code). Returns null if any value
+     * is possible -- that is, if no estimate can be made -- and this includes when there is no
+     * constant-value annotation so the argument is null.
      *
      * @param arrayAnno an {@code @ArrayLen} annotation, or null
      */
@@ -1000,13 +1003,17 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (arrayAnno == null) {
             return null;
         }
-        return AnnotationUtils.getElementValueArray(arrayAnno, "value", Integer.class, true);
+        List<Integer> list =
+                AnnotationUtils.getElementValueArray(arrayAnno, "value", Integer.class, true);
+        ValueCheckerUtils.removeDuplicates(list);
+        return list;
     }
 
     /**
-     * Returns the set of possible values. Returns the empty list if no values are possible (for
-     * dead code). Returns null if any value is possible -- that is, if no estimate can be made --
-     * and this includes when there is no constant-value annotation so the argument is null.
+     * Returns the set of possible values as a sorted listed with no duplicate values. Returns the
+     * empty list if no values are possible (for dead code). Returns null if any value is possible
+     * -- that is, if no estimate can be made -- and this includes when there is no constant-value
+     * annotation so the argument is null.
      *
      * @param intAnno an {@code @IntVal} annotation, or null
      */
@@ -1016,17 +1023,18 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         List<Long> intValues =
                 AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, true);
-        List<Character> charValues = new ArrayList<Character>();
+        TreeSet<Character> charValues = new TreeSet<>();
         for (Long i : intValues) {
             charValues.add((char) i.intValue());
         }
-        return charValues;
+        return new ArrayList<>(charValues);
     }
 
     /**
-     * Returns the set of possible values. Returns the empty list if no values are possible (for
-     * dead code). Returns null if any value is possible -- that is, if no estimate can be made --
-     * and this includes when there is no constant-value annotation so the argument is null.
+     * Returns the set of possible values as a sorted listed with no duplicate values. Returns the
+     * empty list if no values are possible (for dead code). Returns null if any value is possible
+     * -- that is, if no estimate can be made -- and this includes when there is no constant-value
+     * annotation so the argument is null.
      *
      * @param boolAnno a {@code @BoolVal} annotation, or null
      */
