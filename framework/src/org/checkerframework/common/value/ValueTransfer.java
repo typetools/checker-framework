@@ -237,7 +237,7 @@ public class ValueTransfer extends CFTransfer {
      *
      * @param result the original result
      * @param resultAnno the new annotation
-     * @return
+     * @return the new transfer result
      */
     private TransferResult<CFValue, CFStore> createNewResult(
             TransferResult<CFValue, CFStore> result, AnnotationMirror resultAnno) {
@@ -594,8 +594,7 @@ public class ValueTransfer extends CFTransfer {
     /**
      * Get the refined annotation after a numerical unary operation.
      *
-     * @param leftNode the node that represents the left operand
-     * @param rightNode the node that represents the right operand
+     * @param operand the node that represents the operand
      * @param op the operator type
      * @param p the transfer input
      * @return the result annotation mirror
