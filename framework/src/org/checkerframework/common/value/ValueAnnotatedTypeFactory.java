@@ -540,8 +540,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (handledByValueChecker(type)) {
                 AnnotatedTypeMirror castedAnnotation = getAnnotatedType(tree.getExpression());
                 List<?> values = getValues(castedAnnotation, type.getUnderlyingType());
-                type.replaceAnnotation(
-                        resultAnnotationHandler(type.getUnderlyingType(), values, tree));
+                type.replaceAnnotation(createResultingAnnotation(type.getUnderlyingType(), values));
             } else if (type.getKind() == TypeKind.ARRAY) {
                 if (tree.getExpression().getKind() == Kind.NULL_LITERAL) {
                     type.replaceAnnotation(BOTTOMVAL);
@@ -673,7 +672,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<?> returnValues =
                         evalutator.evaluateMethodCall(argValues, receiverValues, tree);
                 AnnotationMirror returnType =
-                        resultAnnotationHandler(type.getUnderlyingType(), returnValues, tree);
+                        createResultingAnnotation(type.getUnderlyingType(), returnValues);
                 type.replaceAnnotation(returnType);
             }
 
@@ -711,7 +710,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<?> returnValues =
                         evalutator.evaluteConstrutorCall(argValues, tree, type.getUnderlyingType());
                 AnnotationMirror returnType =
-                        resultAnnotationHandler(type.getUnderlyingType(), returnValues, tree);
+                        createResultingAnnotation(type.getUnderlyingType(), returnValues);
                 type.replaceAnnotation(returnType);
             }
 
@@ -726,10 +725,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (value != null) {
                     // The field is a compile time constant.
                     type.replaceAnnotation(
-                            resultAnnotationHandler(
-                                    type.getUnderlyingType(),
-                                    Collections.singletonList(value),
-                                    tree));
+                            createResultingAnnotation(
+                                    type.getUnderlyingType(), Collections.singletonList(value)));
                     return null;
                 }
                 if (ElementUtils.isStatic(elem) && ElementUtils.isFinal(elem)) {
@@ -741,10 +738,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         value = evalutator.evaluateStaticFieldAccess(classname, fieldName, tree);
                         if (value != null) {
                             type.replaceAnnotation(
-                                    resultAnnotationHandler(
+                                    createResultingAnnotation(
                                             type.getUnderlyingType(),
-                                            Collections.singletonList(value),
-                                            tree));
+                                            Collections.singletonList(value)));
                         }
                         return null;
                     }
@@ -775,84 +771,90 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * @param resultType is evaluated using getClass to derive a Class object
-         * @param tree location for error reporting
+         * Returns a constant value annotation with the {@code values}. The class of the annotation
+         * reflects the {@code resultType} given.
+         *
+         * @param resultType used to selected which kind of value annotation is returned.
+         * @param values must be a homogeneous list: every element of it has the same class.
+         * @return a constant value annotation with the {@code values}
          */
-        private AnnotationMirror resultAnnotationHandler(
-                TypeMirror resultType, List<?> results, Tree tree) {
-
-            if (results == null) {
+        private AnnotationMirror createResultingAnnotation(TypeMirror resultType, List<?> values) {
+            if (values == null) {
                 return UNKNOWNVAL;
             }
-
-            Class<?> resultClass = ValueCheckerUtils.getClassFromType(resultType);
-
             // For some reason null is included in the list of values,
             // so remove it so that it does not cause a NPE elsewhere.
-            results.remove(null);
-            if (results.size() == 0) {
+            values.remove(null);
+            if (values.size() == 0) {
                 return BOTTOMVAL;
-            } else if (resultClass == Boolean.class || resultClass == boolean.class) {
-                HashSet<Boolean> boolVals = new HashSet<Boolean>(results.size());
-                for (Object o : results) {
-                    boolVals.add((Boolean) o);
-                }
-                return createBooleanAnnotation(new ArrayList<Boolean>(boolVals));
+            }
 
-            } else if (resultClass == Double.class
-                    || resultClass == double.class
-                    || resultClass == Float.class
-                    || resultClass == float.class
-                    || resultClass == Integer.class
-                    || resultClass == int.class
-                    || resultClass == Long.class
-                    || resultClass == long.class
-                    || resultClass == Short.class
-                    || resultClass == short.class
-                    || resultClass == Byte.class
-                    || resultClass == byte.class) {
-                HashSet<Number> numberVals = new HashSet<>(results.size());
-                List<Character> charVals = new ArrayList<>();
-                for (Object o : results) {
-                    if (o instanceof Character) {
-                        charVals.add((Character) o);
-                    } else {
-                        numberVals.add((Number) o);
-                    }
-                }
-                if (numberVals.isEmpty()) {
-                    return createCharAnnotation(charVals);
-                }
-                return createNumberAnnotationMirror(new ArrayList<Number>(numberVals));
-            } else if (resultClass == char.class || resultClass == Character.class) {
-                HashSet<Character> intVals = new HashSet<>(results.size());
-                for (Object o : results) {
-                    if (o instanceof Number) {
-                        intVals.add((char) ((Number) o).intValue());
-                    } else {
-                        intVals.add((char) o);
-                    }
-                }
-                return createCharAnnotation(new ArrayList<Character>(intVals));
-            } else if (resultClass == String.class) {
-                HashSet<String> stringVals = new HashSet<String>(results.size());
-                for (Object o : results) {
+            if (TypesUtils.isString(resultType)) {
+                List<String> stringVals = new ArrayList<>(values.size());
+                for (Object o : values) {
                     stringVals.add((String) o);
                 }
-                return createStringAnnotation(new ArrayList<String>(stringVals));
-            } else if (resultClass == byte[].class) {
-                HashSet<String> stringVals = new HashSet<String>(results.size());
-                for (Object o : results) {
+                return createStringAnnotation(stringVals);
+            } else if (ValueCheckerUtils.getClassFromType(resultType) == byte[].class) {
+                List<String> stringVals = new ArrayList<>(values.size());
+                for (Object o : values) {
                     if (o instanceof byte[]) {
                         stringVals.add(new String((byte[]) o));
                     } else {
                         stringVals.add(o.toString());
                     }
                 }
-                return createStringAnnotation(new ArrayList<String>(stringVals));
+                return createStringAnnotation(stringVals);
             }
 
-            return UNKNOWNVAL;
+            TypeKind primitiveKind;
+            if (TypesUtils.isPrimitive(resultType)) {
+                primitiveKind = resultType.getKind();
+            } else if (TypesUtils.isBoxedPrimitive(resultType)) {
+                primitiveKind = types.unboxedType(resultType).getKind();
+            } else {
+                return UNKNOWNVAL;
+            }
+
+            switch (primitiveKind) {
+                case BOOLEAN:
+                    List<Boolean> boolVals = new ArrayList<>(values.size());
+                    for (Object o : values) {
+                        boolVals.add((Boolean) o);
+                    }
+                    return createBooleanAnnotation(boolVals);
+                case DOUBLE:
+                case FLOAT:
+                case INT:
+                case LONG:
+                case SHORT:
+                case BYTE:
+                    List<Number> numberVals = new ArrayList<>(values.size());
+                    List<Character> characterVals = new ArrayList<>(values.size());
+                    for (Object o : values) {
+                        if (o instanceof Character) {
+                            characterVals.add((Character) o);
+                        } else {
+                            numberVals.add((Number) o);
+                        }
+                    }
+                    if (numberVals.isEmpty()) {
+                        return createCharAnnotation(characterVals);
+                    }
+                    return createNumberAnnotationMirror(new ArrayList<>(numberVals));
+                case CHAR:
+                    List<Character> charVals = new ArrayList<>(values.size());
+                    for (Object o : values) {
+                        if (o instanceof Number) {
+                            charVals.add((char) ((Number) o).intValue());
+                        } else {
+                            charVals.add((char) o);
+                        }
+                    }
+                    return createCharAnnotation(charVals);
+            }
+
+            throw new UnsupportedOperationException("Unexpected kind:" + resultType);
         }
     }
 
