@@ -1,8 +1,7 @@
-
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormat;
 
-public class ConversionCategory {
+public class ConversionCategoryTest {
 
     public static void main(String[] args) {
         @I18nFormat({I18nConversionCategory.GENERAL}) String s1 = "{0}";
