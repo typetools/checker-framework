@@ -223,8 +223,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * If any constant-value annotation has &gt; MAX_VALUES number of values provided, treats
-         * the value as UnknownVal. Works together with ValueVisitor.visitAnnotation, which issues a
-         * warning to the user in this case.
+         * the value as UnknownVal. Works together with {@link ValueVisitor#visitAnnotation}, which
+         * issues a warning to the user in this case.
          */
         private void replaceWithUnknownValIfTooManyValues(AnnotatedTypeMirror atm) {
             AnnotationMirror anno = atm.getAnnotationInHierarchy(UNKNOWNVAL);
@@ -969,6 +969,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns the set of possible values. Returns the empty list if no values are possible (for
      * dead code). Returns null if any value is possible -- that is, if no estimate can be made --
      * and this includes when there is no constant-value annotation so the argument is null.
+     *
+     * <p>The method returns a list of {@code Long} but is named {@code getIntValues} because it
+     * supports the {@code @IntVal} annotation.
+     *
+     * @param intAnno an {@code @IntVal} annotation, or null
      */
     public static List<Long> getIntValues(AnnotationMirror intAnno) {
         if (intAnno == null) {
@@ -981,6 +986,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns the set of possible values. Returns the empty list if no values are possible (for
      * dead code). Returns null if any value is possible -- that is, if no estimate can be made --
      * and this includes when there is no constant-value annotation so the argument is null.
+     *
+     * @param doubleAnno a {@code @DoubleVal} annotation, or null
      */
     public static List<Double> getDoubleValues(AnnotationMirror doubleAnno) {
         if (doubleAnno == null) {
@@ -993,6 +1000,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns the set of possible array lengths. Returns the empty list if no values are possible
      * (for dead code). Returns null if any value is possible -- that is, if no estimate can be made
      * -- and this includes when there is no constant-value annotation so the argument is null.
+     *
+     * @param arrayAnno an {@code @ArrayLen} annotation, or null
      */
     public static List<Integer> getArrayLength(AnnotationMirror arrayAnno) {
         if (arrayAnno == null) {
@@ -1005,6 +1014,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns the set of possible values. Returns the empty list if no values are possible (for
      * dead code). Returns null if any value is possible -- that is, if no estimate can be made --
      * and this includes when there is no constant-value annotation so the argument is null.
+     *
+     * @param intAnno an {@code @IntVal} annotation, or null
      */
     public static List<Character> getCharValues(AnnotationMirror intAnno) {
         if (intAnno == null) {
@@ -1023,6 +1034,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns the set of possible values. Returns the empty list if no values are possible (for
      * dead code). Returns null if any value is possible -- that is, if no estimate can be made --
      * and this includes when there is no constant-value annotation so the argument is null.
+     *
+     * @param boolAnno a {@code @BoolVal} annotation, or null
      */
     public static List<Boolean> getBooleanValues(AnnotationMirror boolAnno) {
         if (boolAnno == null) {
