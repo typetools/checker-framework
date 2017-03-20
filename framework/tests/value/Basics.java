@@ -109,7 +109,6 @@ class Basics {
         if (true) {
             a = x;
         }
-        @IntVal({0, 3, 4}) Integer test6 = a;
         @IntRange(from = 0, to = 4)
         Integer test7 = a;
 
@@ -153,7 +152,6 @@ class Basics {
         if (true) {
             a = x;
         }
-        @IntVal({0, 3, 4}) int test6 = a;
         @IntRange(from = 0, to = 4)
         int test7 = a;
 

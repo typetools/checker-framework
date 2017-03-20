@@ -2,7 +2,6 @@ package org.checkerframework.common.value;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -76,11 +75,11 @@ public class ValueTransfer extends CFTransfer {
         }
         numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), UnknownVal.class);
         if (numberAnno != null) {
-            return new ArrayList<String>();
+            return null;
         }
         numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
         if (numberAnno != null) {
-            return Collections.singletonList("null");
+            return new ArrayList<String>();
         }
 
         // @IntVal, @IntRange, @DoubleVal, @BoolVal (have to be converted to string)
@@ -95,7 +94,7 @@ public class ValueTransfer extends CFTransfer {
         } else if (isIntRange(subNode, p)) {
             Range range = getIntRange(subNode, p);
             if (range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
-                values = new ArrayList<Number>();
+                values = null;
             } else {
                 List<Long> longValues = ValueCheckerUtils.getValuesFromRange(range, Long.class);
                 values = NumberUtils.castNumbers(subNode.getType(), longValues);
@@ -135,7 +134,7 @@ public class ValueTransfer extends CFTransfer {
         if (intAnno != null) {
             Range range = ValueAnnotatedTypeFactory.getIntRange(intAnno);
             if (range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
-                return new ArrayList<Character>();
+                return null;
             } else {
                 return ValueCheckerUtils.getValuesFromRange(range, Character.class);
             }
@@ -276,13 +275,15 @@ public class ValueTransfer extends CFTransfer {
             TransferResult<CFValue, CFStore> result) {
         List<String> lefts = getStringValues(leftOperand, p);
         List<String> rights = getStringValues(rightOperand, p);
+        List<String> concat;
         if (lefts == null || rights == null) {
-            return null;
-        }
-        List<String> concat = new ArrayList<>();
-        for (String left : lefts) {
-            for (String right : rights) {
-                concat.add(left + right);
+            concat = null;
+        } else {
+            concat = new ArrayList<>();
+            for (String left : lefts) {
+                for (String right : rights) {
+                    concat.add(left + right);
+                }
             }
         }
         AnnotationMirror stringVal = createStringValAnnotationMirror(concat);
