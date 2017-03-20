@@ -14,6 +14,7 @@ import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
 import org.checkerframework.common.value.util.NumberMath;
 import org.checkerframework.common.value.util.NumberUtils;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -25,6 +26,7 @@ import org.checkerframework.dataflow.cfg.node.ConditionalAndNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
+import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.FloatingDivisionNode;
 import org.checkerframework.dataflow.cfg.node.FloatingRemainderNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
@@ -186,6 +188,34 @@ public class ValueTransfer extends CFTransfer {
                 analysis.createSingleAnnotationValue(
                         stringVal, result.getResultValue().getUnderlyingType());
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
+    }
+
+    @Override
+    public TransferResult<CFValue, CFStore> visitFieldAccess(
+            FieldAccessNode node, TransferInput<CFValue, CFStore> in) {
+        // If array.length is encountered, transform its @IntVal annotation into an @ArrayLen annotation for array.
+        if (node.getFieldName().equals("length")
+                && node.getReceiver().getType().getKind() == TypeKind.ARRAY) {
+
+            CFValue value = in.getValueOfSubNode(node);
+            if (value != null) {
+                AnnotationMirror lengthAnno =
+                        AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
+                if (lengthAnno != null) {
+                    List<Integer> lengthValues =
+                            AnnotationUtils.getElementValueArray(
+                                    lengthAnno, "value", Integer.class, true);
+                    AnnotationMirror newArrayAnno =
+                            ((ValueAnnotatedTypeFactory) atypefactory)
+                                    .createArrayLenAnnotation(lengthValues);
+                    FlowExpressions.Receiver arrayRec =
+                            FlowExpressions.internalReprOf(
+                                    analysis.getTypeFactory(), node.getReceiver());
+                    in.getRegularStore().insertValue(arrayRec, newArrayAnno);
+                }
+            }
+        }
+        return super.visitFieldAccess(node, in);
     }
 
     @Override
