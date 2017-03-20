@@ -56,7 +56,7 @@ public class NumberUtils {
     }
 
     public static Range castRange(TypeMirror type, Range range) {
-        TypeKind typeKind = unBoxPrimative(type);
+        TypeKind typeKind = unBoxPrimitive(type);
         switch (typeKind) {
             case INT:
                 return range.intRange();
@@ -74,7 +74,7 @@ public class NumberUtils {
         }
     }
 
-    private static TypeKind unBoxPrimative(TypeMirror type) {
+    private static TypeKind unBoxPrimitive(TypeMirror type) {
         if (type.getKind() == TypeKind.DECLARED) {
             String stringType = TypesUtils.getQualifiedName((DeclaredType) type).toString();
 

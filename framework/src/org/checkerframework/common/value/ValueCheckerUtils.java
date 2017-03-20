@@ -128,13 +128,10 @@ public class ValueCheckerUtils {
      * @return a list of all the values in the range
      */
     public static <T> List<T> getValuesFromRange(Range range, Class<T> expectedType) {
-        if (range == null) {
+        if (range == null || range.isNothing()) {
             return null;
         }
         List<T> values = new ArrayList<>();
-        if (range.isNothing()) {
-            return values;
-        }
         if (expectedType == Integer.class
                 || expectedType == int.class
                 || expectedType == Long.class
@@ -168,7 +165,7 @@ public class ValueCheckerUtils {
         if (newClass == String.class) {
             return Collections.singletonList("null");
         } else {
-            return new ArrayList<>();
+            return null;
         }
     }
 

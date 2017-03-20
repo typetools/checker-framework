@@ -141,7 +141,10 @@ public class ValueTransfer extends CFTransfer {
         return new ArrayList<Character>();
     }
 
-    /** Get possible numerical values from annotation and cast them to the underlying type. */
+    /**
+     * Get possible numerical values from annotation and cast them to the underlying type. Return
+     * null if @BottomVal.
+     */
     private List<? extends Number> getNumericalValues(
             Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
@@ -163,7 +166,7 @@ public class ValueTransfer extends CFTransfer {
 
         numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
         if (numberAnno != null) {
-            return new ArrayList<Number>();
+            return null;
         }
 
         return new ArrayList<Number>();
@@ -389,10 +392,10 @@ public class ValueTransfer extends CFTransfer {
             TransferInput<CFValue, CFStore> p) {
         List<? extends Number> lefts = getNumericalValues(leftNode, p);
         List<? extends Number> rights = getNumericalValues(rightNode, p);
-        List<Number> resultValues = new ArrayList<>();
-        if (rights.isEmpty()) {
-            return resultValues; // optimization; same value is returned as if the for loop executes
+        if (lefts == null || rights == null) {
+            return null;
         }
+        List<Number> resultValues = new ArrayList<>();
         for (Number left : lefts) {
             NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
             for (Number right : rights) {
@@ -636,6 +639,9 @@ public class ValueTransfer extends CFTransfer {
     private List<Number> calculateValuesUnaryOp(
             Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
         List<? extends Number> lefts = getNumericalValues(operand, p);
+        if (lefts == null) {
+            return null;
+        }
         List<Number> resultValues = new ArrayList<>();
         for (Number left : lefts) {
             NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
