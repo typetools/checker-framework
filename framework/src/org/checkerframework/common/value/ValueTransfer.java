@@ -205,29 +205,38 @@ public class ValueTransfer extends CFTransfer {
     @Override
     public TransferResult<CFValue, CFStore> visitFieldAccess(
             FieldAccessNode node, TransferInput<CFValue, CFStore> in) {
+
+        TransferResult<CFValue, CFStore> result = super.visitFieldAccess(node, in);
+
         // If array.length is encountered, transform its @IntVal annotation into an @ArrayLen annotation for array.
         if (node.getFieldName().equals("length")
                 && node.getReceiver().getType().getKind() == TypeKind.ARRAY) {
-
-            CFValue value = in.getValueOfSubNode(node);
+            CFValue value =
+                    result.getRegularStore()
+                            .getValue(
+                                    FlowExpressions.internalReprOf(
+                                            analysis.getTypeFactory(), node));
             if (value != null) {
                 AnnotationMirror lengthAnno =
                         AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
                 if (lengthAnno != null) {
-                    List<Integer> lengthValues =
-                            AnnotationUtils.getElementValueArray(
-                                    lengthAnno, "value", Integer.class, true);
+                    List<Long> lengthValues = ValueAnnotatedTypeFactory.getIntValues(lengthAnno);
+                    List<Integer> arrayLenValues = new ArrayList<>(lengthValues.size());
+                    for (Long l : lengthValues) {
+                        arrayLenValues.add(l.intValue());
+                    }
                     AnnotationMirror newArrayAnno =
                             ((ValueAnnotatedTypeFactory) atypefactory)
-                                    .createArrayLenAnnotation(lengthValues);
+                                    .createArrayLenAnnotation(arrayLenValues);
                     FlowExpressions.Receiver arrayRec =
                             FlowExpressions.internalReprOf(
                                     analysis.getTypeFactory(), node.getReceiver());
-                    in.getRegularStore().insertValue(arrayRec, newArrayAnno);
+                    result.getRegularStore().clearValue(arrayRec);
+                    result.getRegularStore().insertValue(arrayRec, newArrayAnno);
                 }
             }
         }
-        return super.visitFieldAccess(node, in);
+        return result;
     }
 
     @Override
