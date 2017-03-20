@@ -6,12 +6,12 @@ class Refinement {
         if (x == 1) {
             @IntVal({1}) int y = x;
 
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({2}) int z = x;
         } else {
             @IntVal({2}) int y = x;
 
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({1}) int z = x;
         }
 
@@ -22,9 +22,9 @@ class Refinement {
             // These two assignments are illegal because one of x or w could be 1,
             // while the other is not. So no refinement can be applied.
 
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({2}) int y = x;
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({5, 6}) int z = w;
         }
     }
@@ -33,22 +33,22 @@ class Refinement {
         if (x < 2) {
             @IntVal({1}) int y = x;
 
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({2}) int z = x;
         } else {
             @IntVal({2}) int y = x;
 
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({1}) int z = x;
         }
 
         if (x < w) {
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({1}) int y = x;
 
             @IntVal({5, 6}) int z = w;
         } else {
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({2}) int y = x;
             @IntVal({1}) int z = w;
         }
@@ -58,19 +58,19 @@ class Refinement {
         if (x <= 1) {
             @IntVal({1}) int y = x;
 
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({2}) int z = x;
         } else {
             @IntVal({2}) int y = x;
 
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({1}) int z = x;
         }
 
         if (x <= w) {
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({1}) int y = x;
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({5, 6}) int z = w;
         } else {
             @IntVal({2}) int y = x;
@@ -82,12 +82,12 @@ class Refinement {
         if (x != 1) {
             @IntVal({2}) int y = x;
 
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({1}) int z = x;
         } else {
             @IntVal({1}) int y = x;
 
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({2}) int z = x;
         }
 
@@ -95,9 +95,9 @@ class Refinement {
             // These two assignments are illegal because one of x or w could be 1,
             // while the other is not. So no refinement can be applied.
 
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({2}) int y = x;
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({5, 6}) int z = w;
         } else {
             @IntVal({1}) int y = x;
@@ -109,21 +109,21 @@ class Refinement {
         if (x >= 2) {
             @IntVal({2}) int y = x;
 
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({1}) int z = x;
         } else {
             @IntVal({1}) int y = x;
 
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({2}) int z = x;
         }
 
         if (x >= w) {
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({2}) int y = x;
             @IntVal({1}) int z = w;
         } else {
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({1}) int y = x;
 
             @IntVal({5, 6}) int z = w;
@@ -134,12 +134,12 @@ class Refinement {
         if (x > 1) {
             @IntVal({2}) int y = x;
 
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({1}) int z = x;
         } else {
             @IntVal({1}) int y = x;
 
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({2}) int z = x;
         }
 
@@ -147,9 +147,9 @@ class Refinement {
             @IntVal({2}) int y = x;
             @IntVal({1}) int z = w;
         } else {
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({1}) int y = x;
-            //:: error: (type.assignment.incompatible)
+            //:: error: (assignment.type.incompatible)
             @IntVal({5, 6}) int z = w;
         }
     }
