@@ -1,6 +1,7 @@
 package org.checkerframework.common.value;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -184,10 +185,10 @@ public class ValueTransfer extends CFTransfer {
 
     private TransferResult<CFValue, CFStore> createNewResultBoolean(
             TransferResult<CFValue, CFStore> result, List<Boolean> resultValues) {
-        AnnotationMirror stringVal = createBooleanAnnotationMirror(resultValues);
+        AnnotationMirror boolVal = createBooleanAnnotationMirror(resultValues);
         CFValue newResultValue =
                 analysis.createSingleAnnotationValue(
-                        stringVal, result.getResultValue().getUnderlyingType());
+                        boolVal, result.getResultValue().getUnderlyingType());
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
     }
 
@@ -775,16 +776,25 @@ public class ValueTransfer extends CFTransfer {
         AND;
     }
 
+    private static final List<Boolean> ALL_BOOLEANS =
+            Arrays.asList(new Boolean[] {Boolean.TRUE, Boolean.FALSE});
+
     private List<Boolean> calculateConditionalOperator(
             Node leftNode,
             Node rightNode,
             ConditionalOperators op,
             TransferInput<CFValue, CFStore> p) {
         List<Boolean> lefts = getBooleanValues(leftNode, p);
+        if (lefts == null) {
+            lefts = ALL_BOOLEANS;
+        }
         List<Boolean> resultValues = new ArrayList<>();
-        List<Boolean> rights = new ArrayList<Boolean>();
+        List<Boolean> rights = null;
         if (rightNode != null) {
             rights = getBooleanValues(rightNode, p);
+            if (rights == null) {
+                rights = ALL_BOOLEANS;
+            }
         }
         switch (op) {
             case NOT:
@@ -793,20 +803,6 @@ public class ValueTransfer extends CFTransfer {
                 }
                 return resultValues;
             case OR:
-                if (lefts.isEmpty() && rights.size() == 1) {
-                    if (rights.get(0)) {
-                        // unknown || true == true
-                        return rights;
-                    }
-                }
-
-                if (rights.isEmpty() && lefts.size() == 1) {
-                    if (lefts.get(0)) {
-                        // true || unknown == true
-                        return lefts;
-                    }
-                }
-
                 for (Boolean left : lefts) {
                     for (Boolean right : rights) {
                         resultValues.add(left || right);
@@ -814,20 +810,6 @@ public class ValueTransfer extends CFTransfer {
                 }
                 return resultValues;
             case AND:
-                if (lefts.isEmpty() && rights.size() == 1) {
-                    if (!rights.get(0)) {
-                        // unknown && false == false
-                        return rights;
-                    }
-                }
-
-                if (rights.isEmpty() && lefts.size() == 1) {
-                    if (!lefts.get(0)) {
-                        // false && unknown == false
-                        return lefts;
-                    }
-                }
-
                 for (Boolean left : lefts) {
                     for (Boolean right : rights) {
                         resultValues.add(left && right);
@@ -835,8 +817,7 @@ public class ValueTransfer extends CFTransfer {
                 }
                 return resultValues;
         }
-
-        return resultValues;
+        throw new RuntimeException("Unrecognized conditional operator " + op);
     }
 
     @Override

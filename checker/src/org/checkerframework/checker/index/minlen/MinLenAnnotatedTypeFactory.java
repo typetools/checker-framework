@@ -104,13 +104,12 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return min;
     }
 
-    /** Get the list of possible values from a Value Checker type. May return null. */
+    /**
+     * Get the list of possible values from a Value Checker type. Empty list means no possible
+     * values (dead code). Returns null if there is no estimate.
+     */
     private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
-        AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
-        if (anm == null) {
-            return null;
-        }
-        return ValueAnnotatedTypeFactory.getIntValues(anm);
+        return ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
     }
 
     @Override
@@ -243,9 +242,8 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
         if (valueType.hasAnnotation(StringVal.class)) {
             AnnotationMirror anm = valueType.getAnnotation(StringVal.class);
-            String[] values =
-                    AnnotationUtils.getElementValueArray(anm, "value", String.class, true)
-                            .toArray(new String[0]);
+            List<String> values =
+                    AnnotationUtils.getElementValueArray(anm, "value", String.class, true);
             ArrayList<Integer> lengths = new ArrayList<>();
             for (String value : values) {
                 lengths.add(value.length());
