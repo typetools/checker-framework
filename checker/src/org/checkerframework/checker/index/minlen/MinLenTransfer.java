@@ -14,6 +14,7 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
@@ -94,7 +95,7 @@ public class MinLenTransfer extends IndexAbstractTransfer {
         // Only the length matters. This will miss an expression which
         // include an array length (like "a.length + 1"), but that's okay
         // for now.
-        if (isArrayLengthFieldAccess(fiNode)) {
+        if (NodeUtils.isArrayLengthFieldAccess(fiNode)) {
             // At this point, MinLen needs to invoke the constant value checker
             // to find out if it knows anything about what the length is being
             // compared to.

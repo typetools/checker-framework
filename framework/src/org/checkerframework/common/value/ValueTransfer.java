@@ -50,6 +50,7 @@ import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -210,8 +211,7 @@ public class ValueTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> result = super.visitFieldAccess(node, in);
 
         // If array.length is encountered, transform its @IntVal annotation into an @ArrayLen annotation for array.
-        if (node.getFieldName().equals("length")
-                && node.getReceiver().getType().getKind() == TypeKind.ARRAY) {
+        if (NodeUtils.isArrayLengthFieldAccess(node)) {
             CFValue value =
                     result.getRegularStore()
                             .getValue(
