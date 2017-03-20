@@ -400,7 +400,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 handleDimensions(dimensions, (AnnotatedArrayType) type);
             } else {
                 // Initializer used
-                handleInitalizers(initializers, (AnnotatedArrayType) type);
+                handleInitializers(initializers, (AnnotatedArrayType) type);
 
                 AnnotationMirror newQual;
                 Class<?> clazz = ValueCheckerUtils.getClassFromType(type.getUnderlyingType());
@@ -450,40 +450,52 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        private void handleInitalizers(
+        /**
+         * Adds the ArrayLen annotation from the array initializers to {@code type}.
+         *
+         * <p>If type is a multi-dimensional array, the the initializers might also contain arrays,
+         * so this methods adds the annotations for those initializers, too.
+         *
+         * @param initializers initializers trees
+         * @param type array type to which annotations are added
+         */
+        private void handleInitializers(
                 List<? extends ExpressionTree> initializers, AnnotatedArrayType type) {
 
             List<Integer> array = new ArrayList<>();
             array.add(initializers.size());
             type.replaceAnnotation(createArrayLenAnnotation(array));
 
-            boolean singleDem = type.getComponentType().getKind() != TypeKind.ARRAY;
-            if (singleDem) {
+            if (type.getComponentType().getKind() != TypeKind.ARRAY) {
                 return;
             }
-            List<List<Integer>> summarylengths = new ArrayList<>();
 
+            // A list of arrayLens. arrayLenOfDimension.get(i) returns the array lengths for the
+            // ith dimension.
+            List<List<Integer>> arrayLenOfDimension = new ArrayList<>();
             for (ExpressionTree init : initializers) {
                 AnnotatedTypeMirror componentType = getAnnotatedType(init);
-                int count = 0;
+                int dimension = 0;
                 while (componentType.getKind() == TypeKind.ARRAY) {
-                    if (count == summarylengths.size()) {
-                        summarylengths.add(new ArrayList<Integer>());
+                    List<Integer> arrayLenForDimension = arrayLenOfDimension.get(dimension);
+                    if (arrayLenForDimension == null) {
+                        arrayLenForDimension = new ArrayList<>();
+                        arrayLenOfDimension.add(arrayLenForDimension);
                     }
                     AnnotationMirror arrayLen = componentType.getAnnotation(ArrayLen.class);
                     if (arrayLen != null) {
                         List<Integer> currentLengths = getArrayLength(arrayLen);
-                        summarylengths.get(count).addAll(currentLengths);
+                        arrayLenForDimension.addAll(currentLengths);
                     }
-                    count++;
+                    dimension++;
                     componentType = ((AnnotatedArrayType) componentType).getComponentType();
                 }
             }
 
             AnnotatedTypeMirror componentType = type.getComponentType();
             int i = 0;
-            while (componentType.getKind() == TypeKind.ARRAY && i < summarylengths.size()) {
-                componentType.addAnnotation(createArrayLenAnnotation(summarylengths.get(i)));
+            while (componentType.getKind() == TypeKind.ARRAY && i < arrayLenOfDimension.size()) {
+                componentType.addAnnotation(createArrayLenAnnotation(arrayLenOfDimension.get(i)));
                 componentType = ((AnnotatedArrayType) componentType).getComponentType();
                 i++;
             }
