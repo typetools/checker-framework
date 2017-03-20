@@ -10,7 +10,6 @@ class Issue1142 {
 
         ConcurrentHashMap<Integer, @Nullable Integer> chm2 = new ConcurrentHashMap<>();
 
-        //:: error: (assignment.type.incompatible)
         chm1.put(1, null);
         chm2.put(1, null);
     }
