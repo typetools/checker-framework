@@ -1,5 +1,7 @@
 package org.checkerframework.checker.index.minlen;
 
+import static org.checkerframework.checker.index.IndexUtils.possibleValuesFromValueType;
+
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
@@ -23,7 +25,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.ArrayLen;
-import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -102,14 +103,6 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // There must be at least one element in the list, because of the previous check.
         Integer min = Collections.min(possibleValues).intValue();
         return min;
-    }
-
-    /**
-     * Get the list of possible values from a Value Checker type. Empty list means no possible
-     * values (dead code). Returns null if there is no estimate.
-     */
-    private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
-        return ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
     }
 
     @Override

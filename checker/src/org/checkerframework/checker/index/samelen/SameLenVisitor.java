@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.index.IndexUtils;
 import org.checkerframework.checker.index.qual.PolySameLen;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -38,7 +39,7 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
 
             AnnotationMirror am = valueType.getAnnotation(SameLen.class);
             List<String> arraysInAnno =
-                    am == null ? new ArrayList<String>() : SameLenUtils.getValue(am);
+                    am == null ? new ArrayList<String>() : IndexUtils.getValue(am);
 
             Receiver rec = FlowExpressions.internalReprOf(atypeFactory, (ExpressionTree) valueTree);
             if (rec != null && !(rec instanceof Unknown)) {

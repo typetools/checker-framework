@@ -1,5 +1,8 @@
 package org.checkerframework.checker.index.lowerbound;
 
+import static org.checkerframework.checker.index.IndexUtils.getExactValueOrNullFromTree;
+import static org.checkerframework.checker.index.IndexUtils.possibleValuesFromValueType;
+
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -32,7 +35,6 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
-import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -148,34 +150,19 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /** Returns the value checker's annotated type factory. */
     public ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(ValueChecker.class);
     }
 
+    /** Returns the minlen checker's annotated type factory. */
     public MinLenAnnotatedTypeFactory getMinLenAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(MinLenChecker.class);
     }
 
-    /**
-     * Either returns the exact value of the given tree according to the Constant Value Checker, or
-     * null if the exact value is not known. This method should only be used by clients who need
-     * exactly one value -- such as the binary operator rules -- and not by those that need to know
-     * whether a valueType belongs to an LBC qualifier. Clients needing a qualifier should use
-     * getLowerBoundAnnotationFromValueType instead of this method.
-     */
-    public Long getExactValueOrNullFromTree(Tree tree) {
-        AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
-        List<Long> possibleValues = possibleValuesFromValueType(valueType);
-        if (possibleValues != null && possibleValues.size() == 1) {
-            return possibleValues.get(0);
-        } else {
-            return null;
-        }
-    }
-
     /** Returns the type in the lower bound hierarchy that a Value Checker type corresponds to. */
     private AnnotationMirror getLowerBoundAnnotationFromValueType(AnnotatedTypeMirror valueType) {
-        // In the code, AnnotationMirror is abbr. as anm.
+        // In this code, AnnotationMirror is abbr. as anm.
         List<Long> possibleValues = possibleValuesFromValueType(valueType);
         // possibleValues is null if the Value Checker does not have any estimate.
         if (possibleValues == null) {
@@ -202,14 +189,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         } else {
             return UNKNOWN;
         }
-    }
-
-    /**
-     * Get the list of possible values from a Value Checker type. Empty list means no possible
-     * values (dead code). Returns null if there is no estimate.
-     */
-    private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
-        return ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
     }
 
     @Override
@@ -437,7 +416,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             // Check if the right side's value is known at compile time.
 
-            Long valRightOrNull = getExactValueOrNullFromTree(rightExpr);
+            Long valRightOrNull =
+                    getExactValueOrNullFromTree(rightExpr, getValueAnnotatedTypeFactory());
             if (valRightOrNull != null) {
                 addAnnotationForLiteralPlus(valRightOrNull.intValue(), leftType, type);
                 return;
@@ -446,7 +426,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
             // Check if the left side's value is known at compile time.
 
-            Long valLeftOrNull = getExactValueOrNullFromTree(leftExpr);
+            Long valLeftOrNull =
+                    getExactValueOrNullFromTree(leftExpr, getValueAnnotatedTypeFactory());
             if (valLeftOrNull != null) {
                 addAnnotationForLiteralPlus(valLeftOrNull.intValue(), rightType, type);
                 return;
@@ -493,7 +474,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
 
             // Check if the right side's value is known at compile time.
-            Long valRightOrNull = getExactValueOrNullFromTree(rightExpr);
+            Long valRightOrNull =
+                    getExactValueOrNullFromTree(rightExpr, getValueAnnotatedTypeFactory());
             if (valRightOrNull != null) {
                 AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
                 // Instead of a separate method for subtraction, add the negative of a constant.
@@ -588,7 +570,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             // Check if the right side's value is known at compile time.
 
-            Long valRightOrNull = getExactValueOrNullFromTree(rightExpr);
+            Long valRightOrNull =
+                    getExactValueOrNullFromTree(rightExpr, getValueAnnotatedTypeFactory());
             if (valRightOrNull != null) {
                 addAnnotationForLiteralMultiply(valRightOrNull.intValue(), leftType, type);
                 return;
@@ -596,7 +579,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
             // Check if the left side's value is known at compile time.
-            Long valLeftOrNull = getExactValueOrNullFromTree(leftExpr);
+            Long valLeftOrNull =
+                    getExactValueOrNullFromTree(leftExpr, getValueAnnotatedTypeFactory());
             if (valLeftOrNull != null) {
                 addAnnotationForLiteralMultiply(valLeftOrNull.intValue(), rightType, type);
                 return;
@@ -678,7 +662,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             // Check if the right side's value is known at compile time.
 
-            Long valRightOrNull = getExactValueOrNullFromTree(rightExpr);
+            Long valRightOrNull =
+                    getExactValueOrNullFromTree(rightExpr, getValueAnnotatedTypeFactory());
             if (valRightOrNull != null) {
                 addAnnotationForLiteralDivideRight(valRightOrNull.intValue(), leftType, type);
                 return;
@@ -686,7 +671,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
             // Check if the left side's value is known at compile time.
-            Long valLeftOrNull = getExactValueOrNullFromTree(leftExpr);
+            Long valLeftOrNull =
+                    getExactValueOrNullFromTree(leftExpr, getValueAnnotatedTypeFactory());
             if (valLeftOrNull != null) {
                 addAnnotationForLiteralDivideLeft(valLeftOrNull.intValue(), leftType, type);
                 return;
@@ -726,7 +712,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
 
             // Check if the right side's value is known at compile time.
-            Long valRightOrNull = getExactValueOrNullFromTree(rightExpr);
+            Long valRightOrNull =
+                    getExactValueOrNullFromTree(rightExpr, getValueAnnotatedTypeFactory());
             if (valRightOrNull != null) {
                 addAnnotationForLiteralRemainder(valRightOrNull.intValue(), type);
             }

@@ -1,6 +1,6 @@
 package org.checkerframework.checker.index.upperbound;
 
-import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
+import static org.checkerframework.checker.index.IndexUtils.possibleValuesFromValueType;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
+import org.checkerframework.checker.index.IndexUtils;
 import org.checkerframework.checker.index.lowerbound.LowerBoundAnnotatedTypeFactory;
 import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
 import org.checkerframework.checker.index.minlen.MinLenAnnotatedTypeFactory;
@@ -46,7 +47,6 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
-import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -104,17 +104,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         LTOMLengthOf.class,
                         UpperBoundBottom.class,
                         PolyUpperBound.class));
-    }
-
-    /**
-     * Used to get the list of array names that an annotation applies to. Can return null if the
-     * list would be empty.
-     */
-    public static String[] getValue(AnnotationMirror anno) {
-        if (!AnnotationUtils.hasElementValue(anno, "value")) {
-            return null;
-        }
-        return getElementValueArray(anno, "value", String.class, true).toArray(new String[0]);
     }
 
     /**
@@ -253,37 +242,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return sameLenType.getAnnotation(SameLen.class);
     }
 
-    /**
-     * Get the list of possible values from a Value Checker type. Empty list means no possible
-     * values (dead code). Returns null if there is no estimate.
-     */
-    private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
-        return ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
-    }
-
-    /**
-     * If the argument valueType indicates that the Constant Value Checker knows the exact value of
-     * the annotated expression, returns that integer. Otherwise returns null. This method should
-     * only be used by clients who need exactly one value - such as the binary operator rules - and
-     * not by those that need to know whether a valueType belongs to a qualifier.
-     */
-    private Integer maybeValFromValueType(AnnotatedTypeMirror valueType) {
-        List<Long> possibleValues = possibleValuesFromValueType(valueType);
-        if (possibleValues != null && possibleValues.size() == 1) {
-            return possibleValues.get(0).intValue();
-        } else {
-            return null;
-        }
-    }
-
     /** Finds the maximum value in the set of values represented by a value checker annotation. */
     public Integer valMaxFromExpressionTree(ExpressionTree tree) {
-        /*  It's possible that possibleValues could be null (if
-         *  there was no value checker annotation, I guess, but this
-         *  definitely happens in practice) or empty (if the value
-         *  checker annotated it with its equivalent of our unknown
-         *  annotation.
-         */
         AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
         List<Long> possibleValues = possibleValuesFromValueType(valueType);
         if (possibleValues == null || possibleValues.size() == 0) {
@@ -531,9 +491,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 ExpressionTree divisorTree,
                 AnnotatedTypeMirror resultType) {
 
-            AnnotatedTypeMirror divisorType =
-                    getValueAnnotatedTypeFactory().getAnnotatedType(divisorTree);
-            Integer divisor = maybeValFromValueType(divisorType);
+            Long divisor =
+                    IndexUtils.getExactValueOrNullFromTree(
+                            divisorTree, getValueAnnotatedTypeFactory());
             if (divisor == null) {
                 resultType.addAnnotation(UNKNOWN);
                 return;
@@ -543,9 +503,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             UBQualifier numerator =
                     UBQualifier.createUBQualifier(getAnnotatedType(numeratorTree), UNKNOWN);
             if (numerator.isLessThanLengthQualifier()) {
-                result = ((LessThanLengthOf) numerator).divide(divisor);
+                result = ((LessThanLengthOf) numerator).divide(divisor.intValue());
             }
-            result = result.glb(plusTreeDivideByVal(divisor, numeratorTree));
+            result = result.glb(plusTreeDivideByVal(divisor.intValue(), numeratorTree));
             resultType.addAnnotation(convertUBQualifierToAnnotation(result));
         }
 

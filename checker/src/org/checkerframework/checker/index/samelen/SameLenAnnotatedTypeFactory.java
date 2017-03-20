@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.index.IndexUtils;
 import org.checkerframework.checker.index.qual.PolySameLen;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.SameLenBottom;
@@ -120,13 +121,13 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (isReceiverToStringParsable(aRec)) {
             aValues.add(aRec.toString());
             if (AnnotationUtils.areSameByClass(sl1, SameLen.class)) {
-                aValues.addAll(SameLenUtils.getValue(sl1));
+                aValues.addAll(IndexUtils.getValue(sl1));
             }
         }
         if (isReceiverToStringParsable(bRec)) {
             bValues.add(bRec.toString());
             if (AnnotationUtils.areSameByClass(sl2, SameLen.class)) {
-                bValues.addAll(SameLenUtils.getValue(sl2));
+                bValues.addAll(IndexUtils.getValue(sl2));
             }
         }
 
@@ -162,8 +163,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (AnnotationUtils.hasElementValue(a1, "value")
                     && AnnotationUtils.hasElementValue(a2, "value")) {
-                List<String> a1Val = SameLenUtils.getValue(a1);
-                List<String> a2Val = SameLenUtils.getValue(a2);
+                List<String> a1Val = IndexUtils.getValue(a1);
+                List<String> a2Val = IndexUtils.getValue(a2);
 
                 if (overlap(a1Val, a2Val)) {
                     return getCombinedSameLen(a1Val, a2Val);
@@ -187,8 +188,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (AnnotationUtils.hasElementValue(a1, "value")
                     && AnnotationUtils.hasElementValue(a2, "value")) {
-                List<String> a1Val = SameLenUtils.getValue(a1);
-                List<String> a2Val = SameLenUtils.getValue(a2);
+                List<String> a1Val = IndexUtils.getValue(a1);
+                List<String> a2Val = IndexUtils.getValue(a2);
 
                 if (overlap(a1Val, a2Val)) {
                     return getCombinedSameLen(a1Val, a2Val);
@@ -221,8 +222,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return AnnotationUtils.areSameByClass(superAnno, PolySameLen.class);
             } else if (AnnotationUtils.hasElementValue(subAnno, "value")
                     && AnnotationUtils.hasElementValue(superAnno, "value")) {
-                List<String> a1Val = SameLenUtils.getValue(subAnno);
-                List<String> a2Val = SameLenUtils.getValue(superAnno);
+                List<String> a1Val = IndexUtils.getValue(subAnno);
+                List<String> a2Val = IndexUtils.getValue(superAnno);
 
                 if (overlap(a1Val, a2Val)) {
                     return true;
@@ -253,6 +254,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // Could not find a more precise type, so return 0;
             return new ArrayList<>();
         }
-        return SameLenUtils.getValue(sameLenAnno);
+        return IndexUtils.getValue(sameLenAnno);
     }
 }

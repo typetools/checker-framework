@@ -3,6 +3,7 @@ package org.checkerframework.checker.index.lowerbound;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
+import org.checkerframework.checker.index.IndexUtils;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.index.qual.LowerBoundUnknown;
 import org.checkerframework.checker.index.qual.NonNegative;
@@ -123,7 +124,9 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     private void notEqualToValue(
             Node mLiteral, Node otherNode, AnnotationMirror otherAnno, CFStore store) {
 
-        Long integerLiteralOrNull = aTypeFactory.getExactValueOrNullFromTree(mLiteral.getTree());
+        Long integerLiteralOrNull =
+                IndexUtils.getExactValueOrNullFromTree(
+                        mLiteral.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
 
         if (integerLiteralOrNull == null) {
             return;
