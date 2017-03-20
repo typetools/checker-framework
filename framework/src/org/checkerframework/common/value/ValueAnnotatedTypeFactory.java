@@ -711,8 +711,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (value != null) {
                     // The field is a compile time constant.
                     type.replaceAnnotation(
-                            createResultingAnnotation(
-                                    type.getUnderlyingType(), Collections.singletonList(value)));
+                            createResultingAnnotation(type.getUnderlyingType(), value));
                     return null;
                 }
                 if (ElementUtils.isStatic(elem) && ElementUtils.isFinal(elem)) {
@@ -724,9 +723,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         value = evalutator.evaluateStaticFieldAccess(classname, fieldName, tree);
                         if (value != null) {
                             type.replaceAnnotation(
-                                    createResultingAnnotation(
-                                            type.getUnderlyingType(),
-                                            Collections.singletonList(value)));
+                                    createResultingAnnotation(type.getUnderlyingType(), value));
                         }
                         return null;
                     }
@@ -754,6 +751,18 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /** Returns true iff the given type is in the domain of the Constant Value Checker. */
         private boolean handledByValueChecker(AnnotatedTypeMirror type) {
             return coveredClassStrings.contains(type.getUnderlyingType().toString());
+        }
+
+        /**
+         * Returns a constant value annotation with the {@code value}. The class of the annotation
+         * reflects the {@code resultType} given.
+         *
+         * @param resultType used to selected which kind of value annotation is returned.
+         * @param value value to use
+         * @return a constant value annotation with the {@code value}
+         */
+        private AnnotationMirror createResultingAnnotation(TypeMirror resultType, Object value) {
+            return createResultingAnnotation(resultType, Collections.singletonList(value));
         }
 
         /**
