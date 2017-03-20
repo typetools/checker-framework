@@ -225,7 +225,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * returns false if {@code useFbc} is false.
      */
     public boolean isFree(AnnotationMirror anno) {
-        return useFbc && AnnotationUtils.areSameByClass(anno, UnderInitialization.class);
+        return useFbc && AnnotationUtils.hasClass(anno, UnderInitialization.class);
     }
 
     /**
@@ -234,7 +234,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     public boolean isUnclassified(AnnotationMirror anno) {
         Class<? extends Annotation> clazz = useFbc ? UnknownInitialization.class : Raw.class;
-        return AnnotationUtils.areSameByClass(anno, clazz);
+        return AnnotationUtils.hasClass(anno, clazz);
     }
 
     /** Is {@code anno} the bottom annotation? */

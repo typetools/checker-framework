@@ -95,8 +95,7 @@ public class SameLenTransfer extends CFTransfer {
                 FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getExpression());
 
         if (node.getTarget().getType().getKind() == TypeKind.ARRAY
-                || (rightAnno != null
-                        && AnnotationUtils.areSameByClass(rightAnno, SameLen.class))) {
+                || (rightAnno != null && AnnotationUtils.hasClass(rightAnno, SameLen.class))) {
 
             AnnotationMirror rightAnnoOrUnknown = rightAnno == null ? UNKNOWN : rightAnno;
 

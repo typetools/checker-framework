@@ -235,19 +235,21 @@ public class AnnotationUtils {
     }
 
     /** Checks that the annotation {@code am} has the name {@code aname}. Values are ignored. */
-    public static boolean areSameByName(AnnotationMirror am, /*@Interned*/ String aname) {
+    public static boolean hasName(AnnotationMirror am, /*@Interned*/ String aname) {
         // Both strings are interned.
         return annotationName(am) == aname;
     }
 
     /** Checks that the annotation {@code am} has the name of {@code anno}. Values are ignored. */
-    public static boolean areSameByClass(AnnotationMirror am, Class<? extends Annotation> anno) {
-        /*@Interned*/ String canonicalName = annotationClassNames.get(anno);
-        if (canonicalName == null) {
+    public static boolean hasClass(AnnotationMirror am, Class<? extends Annotation> anno) {
+        /*@Interned*/ String canonicalName;
+        if (annotationClassNames.containsKey(anno)) {
+            canonicalName = annotationClassNames.get(anno);
+        } else {
             canonicalName = anno.getCanonicalName().intern();
             annotationClassNames.put(anno, canonicalName);
         }
-        return areSameByName(am, canonicalName);
+        return hasName(am, canonicalName);
     }
 
     /**
@@ -314,23 +316,23 @@ public class AnnotationUtils {
      * Checks that the collection contains the annotation. Using Collection.contains does not always
      * work, because it does not use areSame for comparison.
      *
-     * @return true iff c contains anno, according to areSameByClass
+     * @return true iff c contains anno, according to hasClass
      */
-    public static boolean containsSameByClass(
+    public static boolean containsAnnotationWithClass(
             Collection<? extends AnnotationMirror> c, Class<? extends Annotation> anno) {
-        return getAnnotationByClass(c, anno) != null;
+        return getAnnotationWithClass(c, anno) != null;
     }
 
     /**
      * Returns the AnnotationMirror in {@code c} that has the same class as {@code anno}.
      *
      * @return AnnotationMirror with the same class as {@code anno} iff c contains anno, according
-     *     to areSameByClass; otherwise, {@code null}
+     *     to hasClass; otherwise, {@code null}
      */
-    public static AnnotationMirror getAnnotationByClass(
+    public static AnnotationMirror getAnnotationWithClass(
             Collection<? extends AnnotationMirror> c, Class<? extends Annotation> anno) {
         for (AnnotationMirror an : c) {
-            if (AnnotationUtils.areSameByClass(an, anno)) {
+            if (AnnotationUtils.hasClass(an, anno)) {
                 return an;
             }
         }

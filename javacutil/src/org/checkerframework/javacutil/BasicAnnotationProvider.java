@@ -14,7 +14,7 @@ public class BasicAnnotationProvider implements AnnotationProvider {
 
         // Then look at the real annotations.
         for (AnnotationMirror am : annotationMirrors) {
-            if (AnnotationUtils.areSameByClass(am, anno)) {
+            if (AnnotationUtils.hasClass(am, anno)) {
                 return am;
             }
         }

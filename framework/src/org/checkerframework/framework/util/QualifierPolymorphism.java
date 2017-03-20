@@ -153,7 +153,7 @@ public class QualifierPolymorphism {
     }
 
     public static boolean isPolyAll(AnnotationMirror qual) {
-        return AnnotationUtils.areSameByClass(qual, PolyAll.class);
+        return AnnotationUtils.hasClass(qual, PolyAll.class);
     }
 
     /**

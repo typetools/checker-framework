@@ -272,7 +272,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     private boolean isUnitsMultiple(AnnotationMirror metaAnno) {
-        return AnnotationUtils.areSameByClass(metaAnno, UnitsMultiple.class);
+        return AnnotationUtils.hasClass(metaAnno, UnitsMultiple.class);
     }
 
     /**
@@ -285,7 +285,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotationMirror am = AnnotationUtils.fromClass(elements, qual);
 
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors()) {
-            if (AnnotationUtils.areSameByClass(ama, unitsRelationsAnnoClass)) {
+            if (AnnotationUtils.hasClass(ama, unitsRelationsAnnoClass)) {
                 Class<? extends UnitsRelations> theclass;
                 try {
                     theclass =

@@ -95,16 +95,16 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
 
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if ((AnnotationUtils.areSameByClass(a1, Sibling1.class)
-                            && AnnotationUtils.areSameByClass(a2, Sibling2.class))
-                    || (AnnotationUtils.areSameByClass(a1, Sibling2.class)
-                            && AnnotationUtils.areSameByClass(a2, Sibling1.class))
-                    || (AnnotationUtils.areSameByClass(a1, Sibling1.class)
-                            && AnnotationUtils.areSameByClass(a2, SiblingWithFields.class))
-                    || (AnnotationUtils.areSameByClass(a1, SiblingWithFields.class)
-                            && AnnotationUtils.areSameByClass(a2, Sibling2.class))
-                    || (AnnotationUtils.areSameByClass(a1, Sibling2.class)
-                            && AnnotationUtils.areSameByClass(a2, SiblingWithFields.class))) {
+            if ((AnnotationUtils.hasClass(a1, Sibling1.class)
+                            && AnnotationUtils.hasClass(a2, Sibling2.class))
+                    || (AnnotationUtils.hasClass(a1, Sibling2.class)
+                            && AnnotationUtils.hasClass(a2, Sibling1.class))
+                    || (AnnotationUtils.hasClass(a1, Sibling1.class)
+                            && AnnotationUtils.hasClass(a2, SiblingWithFields.class))
+                    || (AnnotationUtils.hasClass(a1, SiblingWithFields.class)
+                            && AnnotationUtils.hasClass(a2, Sibling2.class))
+                    || (AnnotationUtils.hasClass(a1, Sibling2.class)
+                            && AnnotationUtils.hasClass(a2, SiblingWithFields.class))) {
                 return PARENT;
             }
             return super.leastUpperBound(a1, a2);
@@ -113,47 +113,47 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
         @Override
         public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
             if (AnnotationUtils.areSame(sub, sup)
-                    || AnnotationUtils.areSameByClass(sup, UnknownClass.class)
-                    || AnnotationUtils.areSameByClass(sub, WholeProgramInferenceBottom.class)
-                    || AnnotationUtils.areSameByClass(sup, Top.class)) {
+                    || AnnotationUtils.hasClass(sup, UnknownClass.class)
+                    || AnnotationUtils.hasClass(sub, WholeProgramInferenceBottom.class)
+                    || AnnotationUtils.hasClass(sup, Top.class)) {
                 return true;
             }
 
-            if (AnnotationUtils.areSameByClass(sub, UnknownClass.class)
-                    || AnnotationUtils.areSameByClass(sup, WholeProgramInferenceBottom.class)) {
+            if (AnnotationUtils.hasClass(sub, UnknownClass.class)
+                    || AnnotationUtils.hasClass(sup, WholeProgramInferenceBottom.class)) {
                 return false;
             }
 
-            if (AnnotationUtils.areSameByClass(sub, Top.class)) {
+            if (AnnotationUtils.hasClass(sub, Top.class)) {
                 return false;
             }
 
-            if (AnnotationUtils.areSameByClass(sub, ImplicitAnno.class)
-                    && (AnnotationUtils.areSameByClass(sup, Sibling1.class)
-                            || AnnotationUtils.areSameByClass(sup, Sibling2.class)
-                            || AnnotationUtils.areSameByClass(sup, SiblingWithFields.class))) {
+            if (AnnotationUtils.hasClass(sub, ImplicitAnno.class)
+                    && (AnnotationUtils.hasClass(sup, Sibling1.class)
+                            || AnnotationUtils.hasClass(sup, Sibling2.class)
+                            || AnnotationUtils.hasClass(sup, SiblingWithFields.class))) {
                 return true;
             }
 
-            if ((AnnotationUtils.areSameByClass(sub, Sibling1.class)
-                            || AnnotationUtils.areSameByClass(sub, Sibling2.class)
-                            || AnnotationUtils.areSameByClass(sub, ImplicitAnno.class)
-                            || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class))
-                    && AnnotationUtils.areSameByClass(sup, Parent.class)) {
+            if ((AnnotationUtils.hasClass(sub, Sibling1.class)
+                            || AnnotationUtils.hasClass(sub, Sibling2.class)
+                            || AnnotationUtils.hasClass(sub, ImplicitAnno.class)
+                            || AnnotationUtils.hasClass(sub, SiblingWithFields.class))
+                    && AnnotationUtils.hasClass(sup, Parent.class)) {
                 return true;
             }
 
-            if ((AnnotationUtils.areSameByClass(sub, Sibling1.class)
-                            || AnnotationUtils.areSameByClass(sub, Sibling2.class)
-                            || AnnotationUtils.areSameByClass(sub, ImplicitAnno.class)
-                            || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class)
-                            || AnnotationUtils.areSameByClass(sub, Parent.class))
-                    && AnnotationUtils.areSameByClass(sup, DefaultType.class)) {
+            if ((AnnotationUtils.hasClass(sub, Sibling1.class)
+                            || AnnotationUtils.hasClass(sub, Sibling2.class)
+                            || AnnotationUtils.hasClass(sub, ImplicitAnno.class)
+                            || AnnotationUtils.hasClass(sub, SiblingWithFields.class)
+                            || AnnotationUtils.hasClass(sub, Parent.class))
+                    && AnnotationUtils.hasClass(sup, DefaultType.class)) {
                 return true;
             }
 
-            if (AnnotationUtils.areSameByClass(sub, SiblingWithFields.class)
-                    && AnnotationUtils.areSameByClass(sup, SiblingWithFields.class)) {
+            if (AnnotationUtils.hasClass(sub, SiblingWithFields.class)
+                    && AnnotationUtils.hasClass(sup, SiblingWithFields.class)) {
                 List<String> subVal1 =
                         AnnotationUtils.getElementValueArray(sub, "value", String.class, true);
                 List<String> supVal1 =

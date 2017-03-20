@@ -86,19 +86,19 @@ public class ValueCheckerUtils {
         Class<?> castType = ValueCheckerUtils.getClassFromType(castTo);
         List<?> values = null;
 
-        if (AnnotationUtils.areSameByClass(anno, DoubleVal.class)) {
+        if (AnnotationUtils.hasClass(anno, DoubleVal.class)) {
             values = convertDoubleVal(anno, castType, castTo);
-        } else if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
+        } else if (AnnotationUtils.hasClass(anno, IntVal.class)) {
             values = convertIntVal(anno, castType, castTo);
-        } else if (AnnotationUtils.areSameByClass(anno, StringVal.class)) {
+        } else if (AnnotationUtils.hasClass(anno, StringVal.class)) {
             values = convertStringVal(anno, castType);
-        } else if (AnnotationUtils.areSameByClass(anno, BoolVal.class)) {
+        } else if (AnnotationUtils.hasClass(anno, BoolVal.class)) {
             values = convertBoolVal(anno, castType);
-        } else if (AnnotationUtils.areSameByClass(anno, BottomVal.class)) {
+        } else if (AnnotationUtils.hasClass(anno, BottomVal.class)) {
             values = convertBottomVal(anno, castType);
-        } else if (AnnotationUtils.areSameByClass(anno, UnknownVal.class)) {
+        } else if (AnnotationUtils.hasClass(anno, UnknownVal.class)) {
             values = null;
-        } else if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
+        } else if (AnnotationUtils.hasClass(anno, ArrayLen.class)) {
             values = new ArrayList<>();
         }
         return values;

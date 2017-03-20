@@ -212,17 +212,17 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
-        if (AnnotationUtils.areSameByClass(a, IndexFor.class)) {
+        if (AnnotationUtils.hasClass(a, IndexFor.class)) {
             List<String> stringList =
                     AnnotationUtils.getElementValueArray(a, "value", String.class, true);
             return createLTLengthOfAnnotation(stringList.toArray(new String[0]));
         }
-        if (AnnotationUtils.areSameByClass(a, IndexOrLow.class)) {
+        if (AnnotationUtils.hasClass(a, IndexOrLow.class)) {
             List<String> stringList =
                     AnnotationUtils.getElementValueArray(a, "value", String.class, true);
             return createLTLengthOfAnnotation(stringList.toArray(new String[0]));
         }
-        if (AnnotationUtils.areSameByClass(a, IndexOrHigh.class)) {
+        if (AnnotationUtils.hasClass(a, IndexOrHigh.class)) {
             List<String> stringList =
                     AnnotationUtils.getElementValueArray(a, "value", String.class, true);
             return createLTEqLengthOfAnnotation(stringList.toArray(new String[0]));
@@ -339,7 +339,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * The last argument should be Positive.class, NonNegative.class, or GTENegativeOne.class.
      */
     public boolean hasLowerBoundTypeByClass(Node node, Class<? extends Annotation> classOfType) {
-        return AnnotationUtils.areSameByClass(
+        return AnnotationUtils.hasClass(
                 getLowerBoundAnnotatedTypeFactory()
                         .getAnnotatedType(node.getTree())
                         .getAnnotationInHierarchy(getLowerBoundAnnotatedTypeFactory().UNKNOWN),

@@ -491,7 +491,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         boolean error = false;
         Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror aOnVar : type.getAnnotations()) {
-            if (AnnotationUtils.areSameByClass(aOnVar, PolyAll.class)) {
+            if (AnnotationUtils.hasClass(aOnVar, PolyAll.class)) {
                 continue;
             }
             AnnotationMirror top = atypeFactory.getQualifierHierarchy().getTopAnnotation(aOnVar);

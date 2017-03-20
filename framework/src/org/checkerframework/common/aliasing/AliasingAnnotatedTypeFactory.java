@@ -129,9 +129,9 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private boolean isLeakedQualifier(AnnotationMirror anno) {
-            return AnnotationUtils.areSameByClass(anno, MaybeLeaked.class)
-                    || AnnotationUtils.areSameByClass(anno, NonLeaked.class)
-                    || AnnotationUtils.areSameByClass(anno, LeakedToResult.class);
+            return AnnotationUtils.hasClass(anno, MaybeLeaked.class)
+                    || AnnotationUtils.hasClass(anno, NonLeaked.class)
+                    || AnnotationUtils.hasClass(anno, LeakedToResult.class);
         }
 
         @Override

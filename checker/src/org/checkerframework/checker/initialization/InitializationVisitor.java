@@ -147,7 +147,7 @@ public class InitializationVisitor<
             for (Class<? extends Annotation> c : atypeFactory.getInitializationAnnotations()) {
                 for (AnnotationMirror a : annotationMirrors) {
                     if (atypeFactory.isUnclassified(a)) continue; // unclassified is allowed
-                    if (AnnotationUtils.areSameByClass(a, c)) {
+                    if (AnnotationUtils.hasClass(a, c)) {
                         checker.report(Result.failure(COMMITMENT_INVALID_FIELD_TYPE, node), node);
                         break;
                     }
@@ -330,7 +330,7 @@ public class InitializationVisitor<
             for (Class<? extends Annotation> c :
                     atypeFactory.getInvalidConstructorReturnTypeAnnotations()) {
                 for (AnnotationMirror a : returnTypeAnnotations) {
-                    if (AnnotationUtils.areSameByClass(a, c)) {
+                    if (AnnotationUtils.hasClass(a, c)) {
                         checker.report(
                                 Result.failure(COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE, node),
                                 node);

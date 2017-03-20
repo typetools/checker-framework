@@ -130,12 +130,12 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         }
 
         if (integerLiteralOrNull == 0) {
-            if (AnnotationUtils.areSameByClass(otherAnno, NonNegative.class)) {
+            if (AnnotationUtils.hasClass(otherAnno, NonNegative.class)) {
                 Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
                 store.insertValue(rec, POS);
             }
         } else if (integerLiteralOrNull == -1) {
-            if (AnnotationUtils.areSameByClass(otherAnno, GTENegativeOne.class)) {
+            if (AnnotationUtils.hasClass(otherAnno, GTENegativeOne.class)) {
                 Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
                 store.insertValue(rec, NN);
             }

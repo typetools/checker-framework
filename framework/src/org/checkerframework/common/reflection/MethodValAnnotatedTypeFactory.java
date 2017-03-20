@@ -181,16 +181,16 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
             if (AnnotationUtils.areSame(sub, sup)
-                    || AnnotationUtils.areSameByClass(sup, UnknownMethod.class)
-                    || AnnotationUtils.areSameByClass(sub, MethodValBottom.class)) {
+                    || AnnotationUtils.hasClass(sup, UnknownMethod.class)
+                    || AnnotationUtils.hasClass(sub, MethodValBottom.class)) {
                 return true;
             }
-            if (AnnotationUtils.areSameByClass(sub, UnknownMethod.class)
-                    || AnnotationUtils.areSameByClass(sup, MethodValBottom.class)) {
+            if (AnnotationUtils.hasClass(sub, UnknownMethod.class)
+                    || AnnotationUtils.hasClass(sup, MethodValBottom.class)) {
                 return false;
             }
-            assert AnnotationUtils.areSameByClass(sub, MethodVal.class)
-                            && AnnotationUtils.areSameByClass(sup, MethodVal.class)
+            assert AnnotationUtils.hasClass(sub, MethodVal.class)
+                            && AnnotationUtils.hasClass(sup, MethodVal.class)
                     : "Unexpected annotation in MethodVal";
             List<MethodSignature> subSignatures = getListOfMethodSignatures(sub);
             List<MethodSignature> superSignatures = getListOfMethodSignatures(sup);

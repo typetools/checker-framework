@@ -39,12 +39,12 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
         @Override
         public boolean isSubtype(AnnotationMirror subtype, AnnotationMirror supertype) {
-            if (AnnotationUtils.areSameByClass(supertype, FETop.class)
-                    || AnnotationUtils.areSameByClass(subtype, FEBot.class)) {
+            if (AnnotationUtils.hasClass(supertype, FETop.class)
+                    || AnnotationUtils.hasClass(subtype, FEBot.class)) {
                 return true;
             }
-            if (AnnotationUtils.areSameByClass(subtype, FETop.class)
-                    || AnnotationUtils.areSameByClass(supertype, FEBot.class)) {
+            if (AnnotationUtils.hasClass(subtype, FETop.class)
+                    || AnnotationUtils.hasClass(supertype, FEBot.class)) {
                 return false;
             }
             List<String> subtypeExpressions =

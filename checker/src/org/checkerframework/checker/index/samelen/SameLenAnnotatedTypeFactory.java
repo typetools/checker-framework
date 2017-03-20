@@ -119,13 +119,13 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         if (isReceiverToStringParsable(aRec)) {
             aValues.add(aRec.toString());
-            if (AnnotationUtils.areSameByClass(sl1, SameLen.class)) {
+            if (AnnotationUtils.hasClass(sl1, SameLen.class)) {
                 aValues.addAll(SameLenUtils.getValue(sl1));
             }
         }
         if (isReceiverToStringParsable(bRec)) {
             bValues.add(bRec.toString());
-            if (AnnotationUtils.areSameByClass(sl2, SameLen.class)) {
+            if (AnnotationUtils.hasClass(sl2, SameLen.class)) {
                 bValues.addAll(SameLenUtils.getValue(sl2));
             }
         }
@@ -173,9 +173,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             } else {
                 // the glb is either one of the annotations (if the other is top), or bottom.
-                if (AnnotationUtils.areSameByClass(a1, SameLenUnknown.class)) {
+                if (AnnotationUtils.hasClass(a1, SameLenUnknown.class)) {
                     return a2;
-                } else if (AnnotationUtils.areSameByClass(a2, SameLenUnknown.class)) {
+                } else if (AnnotationUtils.hasClass(a2, SameLenUnknown.class)) {
                     return a1;
                 } else {
                     return BOTTOM;
@@ -198,12 +198,12 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             } else {
                 // the lub is either one of the annotations (if the other is bottom), or top.
-                if (AnnotationUtils.areSameByClass(a1, SameLenBottom.class)) {
+                if (AnnotationUtils.hasClass(a1, SameLenBottom.class)) {
                     return a2;
-                } else if (AnnotationUtils.areSameByClass(a2, SameLenBottom.class)) {
+                } else if (AnnotationUtils.hasClass(a2, SameLenBottom.class)) {
                     return a1;
-                } else if (AnnotationUtils.areSameByClass(a1, PolySameLen.class)
-                        && AnnotationUtils.areSameByClass(a2, PolySameLen.class)) {
+                } else if (AnnotationUtils.hasClass(a1, PolySameLen.class)
+                        && AnnotationUtils.hasClass(a2, PolySameLen.class)) {
                     return a1;
                 } else {
                     return UNKNOWN;
@@ -213,12 +213,12 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameByClass(rhs, SameLenBottom.class)) {
+            if (AnnotationUtils.hasClass(rhs, SameLenBottom.class)) {
                 return true;
-            } else if (AnnotationUtils.areSameByClass(lhs, SameLenUnknown.class)) {
+            } else if (AnnotationUtils.hasClass(lhs, SameLenUnknown.class)) {
                 return true;
-            } else if (AnnotationUtils.areSameByClass(rhs, PolySameLen.class)) {
-                return AnnotationUtils.areSameByClass(lhs, PolySameLen.class);
+            } else if (AnnotationUtils.hasClass(rhs, PolySameLen.class)) {
+                return AnnotationUtils.hasClass(lhs, PolySameLen.class);
             } else if (AnnotationUtils.hasElementValue(rhs, "value")
                     && AnnotationUtils.hasElementValue(lhs, "value")) {
                 List<String> a1Val = SameLenUtils.getValue(rhs);

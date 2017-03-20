@@ -67,22 +67,24 @@ public class ValueTransfer extends CFTransfer {
         CFValue value = p.getValueOfSubNode(subNode);
         // @StringVal, @BottomVal, @UnknownVal
         AnnotationMirror numberAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), StringVal.class);
+                AnnotationUtils.getAnnotationWithClass(value.getAnnotations(), StringVal.class);
         if (numberAnno != null) {
             return AnnotationUtils.getElementValueArray(numberAnno, "value", String.class, true);
         }
-        numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), UnknownVal.class);
+        numberAnno =
+                AnnotationUtils.getAnnotationWithClass(value.getAnnotations(), UnknownVal.class);
         if (numberAnno != null) {
             return new ArrayList<String>();
         }
-        numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
+        numberAnno =
+                AnnotationUtils.getAnnotationWithClass(value.getAnnotations(), BottomVal.class);
         if (numberAnno != null) {
             return Collections.singletonList("null");
         }
 
         //@IntVal, @DoubleVal, @BoolVal (have to be converted to string)
         List<? extends Object> values;
-        numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BoolVal.class);
+        numberAnno = AnnotationUtils.getAnnotationWithClass(value.getAnnotations(), BoolVal.class);
         if (numberAnno != null) {
             values = getBooleanValues(subNode, p);
         } else if (subNode.getType().getKind() == TypeKind.CHAR) {
@@ -102,14 +104,14 @@ public class ValueTransfer extends CFTransfer {
     private List<Boolean> getBooleanValues(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         AnnotationMirror intAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BoolVal.class);
+                AnnotationUtils.getAnnotationWithClass(value.getAnnotations(), BoolVal.class);
         return ValueAnnotatedTypeFactory.getBooleanValues(intAnno);
     }
 
     private List<Character> getCharValues(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         AnnotationMirror intAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
+                AnnotationUtils.getAnnotationWithClass(value.getAnnotations(), IntVal.class);
         return ValueAnnotatedTypeFactory.getCharValues(intAnno);
     }
 
@@ -117,11 +119,11 @@ public class ValueTransfer extends CFTransfer {
             Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         AnnotationMirror numberAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
+                AnnotationUtils.getAnnotationWithClass(value.getAnnotations(), IntVal.class);
         List<? extends Number> values;
         if (numberAnno == null) {
             numberAnno =
-                    AnnotationUtils.getAnnotationByClass(value.getAnnotations(), DoubleVal.class);
+                    AnnotationUtils.getAnnotationWithClass(value.getAnnotations(), DoubleVal.class);
             if (numberAnno != null) {
                 values =
                         AnnotationUtils.getElementValueArray(

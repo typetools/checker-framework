@@ -2799,7 +2799,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         Set<AnnotationMirror> declAnnos = getDeclAnnotations(elt);
 
         for (AnnotationMirror am : declAnnos) {
-            if (AnnotationUtils.areSameByName(am, annoName)) {
+            if (AnnotationUtils.hasName(am, annoName)) {
                 return am;
             }
         }
@@ -2893,7 +2893,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                 annotation);
                         continue;
                     }
-                    if (AnnotationUtils.containsSameByClass(
+                    if (AnnotationUtils.containsAnnotationWithClass(
                                     annotationsOnAnnotation, InheritedAnnotation.class)
                             || AnnotationUtils.containsSameIgnoringValues(
                                     inheritedAnnotations, annotation)) {
@@ -2965,7 +2965,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
             // First call copier, if exception, continue normal modula laws.
             for (AnnotationMirror a : annotationsOnAnnotation) {
-                if (AnnotationUtils.areSameByClass(a, metaAnnotation)) {
+                if (AnnotationUtils.hasClass(a, metaAnnotation)) {
                     result.add(Pair.of(annotation, a));
                 }
             }
@@ -2999,7 +2999,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             List<? extends AnnotationMirror> annotationsOnAnnotation =
                     annotation.getAnnotationType().asElement().getAnnotationMirrors();
             for (AnnotationMirror a : annotationsOnAnnotation) {
-                if (AnnotationUtils.areSameByClass(a, metaAnnotation)) {
+                if (AnnotationUtils.hasClass(a, metaAnnotation)) {
                     result.add(Pair.of(annotation, a));
                 }
             }

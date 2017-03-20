@@ -710,7 +710,7 @@ public abstract class GenericAnnotatedTypeFactory<
             Value value = getStoreBefore(tree).getValue(expressionObj);
             if (value != null) {
                 annotationMirror =
-                        AnnotationUtils.getAnnotationByClass(value.getAnnotations(), clazz);
+                        AnnotationUtils.getAnnotationWithClass(value.getAnnotations(), clazz);
             }
         }
         if (annotationMirror == null) {

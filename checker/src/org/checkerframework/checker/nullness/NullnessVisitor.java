@@ -167,7 +167,7 @@ public class NullnessVisitor
     private boolean containsSameIgnoringValues(
             Set<Class<? extends Annotation>> quals, AnnotationMirror anno) {
         for (Class<? extends Annotation> q : quals) {
-            if (AnnotationUtils.areSameByClass(anno, q)) {
+            if (AnnotationUtils.hasClass(anno, q)) {
                 return true;
             }
         }

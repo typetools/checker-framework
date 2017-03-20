@@ -296,17 +296,17 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             else {
                 // If either is UNKNOWNVAL, ARRAYLEN, STRINGVAL, or BOOLEAN then the LUB is
                 // UnknownVal.
-                if (!((AnnotationUtils.areSameByClass(a1, IntVal.class)
-                                || AnnotationUtils.areSameByClass(a1, DoubleVal.class))
-                        && (AnnotationUtils.areSameByClass(a2, IntVal.class)
-                                || AnnotationUtils.areSameByClass(a2, DoubleVal.class)))) {
+                if (!((AnnotationUtils.hasClass(a1, IntVal.class)
+                                || AnnotationUtils.hasClass(a1, DoubleVal.class))
+                        && (AnnotationUtils.hasClass(a2, IntVal.class)
+                                || AnnotationUtils.hasClass(a2, DoubleVal.class)))) {
                     return UNKNOWNVAL;
                 } else {
                     // At this point one of them must be a DoubleVal and one an IntVal.
                     AnnotationMirror doubleAnno;
                     AnnotationMirror intAnno;
 
-                    if (AnnotationUtils.areSameByClass(a2, DoubleVal.class)) {
+                    if (AnnotationUtils.hasClass(a2, DoubleVal.class)) {
                         doubleAnno = a2;
                         intAnno = a1;
                     } else {
@@ -335,11 +335,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
 
-            if (AnnotationUtils.areSameByClass(lhs, UnknownVal.class)
-                    || AnnotationUtils.areSameByClass(rhs, BottomVal.class)) {
+            if (AnnotationUtils.hasClass(lhs, UnknownVal.class)
+                    || AnnotationUtils.hasClass(rhs, BottomVal.class)) {
                 return true;
-            } else if (AnnotationUtils.areSameByClass(rhs, UnknownVal.class)
-                    || AnnotationUtils.areSameByClass(lhs, BottomVal.class)) {
+            } else if (AnnotationUtils.hasClass(rhs, UnknownVal.class)
+                    || AnnotationUtils.hasClass(lhs, BottomVal.class)) {
                 return false;
             } else if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
                 // Same type, so might be subtype
@@ -348,8 +348,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<Object> rhsValues =
                         AnnotationUtils.getElementValueArray(rhs, "value", Object.class, true);
                 return lhsValues.containsAll(rhsValues);
-            } else if (AnnotationUtils.areSameByClass(lhs, DoubleVal.class)
-                    && AnnotationUtils.areSameByClass(rhs, IntVal.class)) {
+            } else if (AnnotationUtils.hasClass(lhs, DoubleVal.class)
+                    && AnnotationUtils.hasClass(rhs, IntVal.class)) {
                 List<Long> rhsValues;
                 rhsValues = AnnotationUtils.getElementValueArray(rhs, "value", Long.class, true);
                 List<Double> lhsValues =

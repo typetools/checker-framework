@@ -150,15 +150,15 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
             // GLB of anything and bottom is bottom.
-            if (AnnotationUtils.areSameByClass(a1, MinLenBottom.class)
-                    || AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
+            if (AnnotationUtils.hasClass(a1, MinLenBottom.class)
+                    || AnnotationUtils.hasClass(a2, MinLenBottom.class)) {
                 return MIN_LEN_BOTTOM;
             } else if (AnnotationUtils.areSame(a1, MIN_LEN_0)) {
                 return a2;
             } else if (AnnotationUtils.areSame(a2, MIN_LEN_0)) {
                 return a1;
-            } else if (AnnotationUtils.areSameByClass(a1, PolyMinLen.class)
-                    || AnnotationUtils.areSameByClass(a2, PolyMinLen.class)) {
+            } else if (AnnotationUtils.hasClass(a1, PolyMinLen.class)
+                    || AnnotationUtils.hasClass(a2, PolyMinLen.class)) {
                 return MIN_LEN_BOTTOM;
             } else {
                 Integer a1Val = AnnotationUtils.getElementValue(a1, "value", Integer.class, true);
@@ -173,19 +173,19 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.areSameByClass(a1, PolyMinLen.class)
-                    && AnnotationUtils.areSameByClass(a2, PolyMinLen.class)) {
+            if (AnnotationUtils.hasClass(a1, PolyMinLen.class)
+                    && AnnotationUtils.hasClass(a2, PolyMinLen.class)) {
                 return a1;
             }
 
-            if (AnnotationUtils.areSameByClass(a1, MinLenBottom.class)) {
+            if (AnnotationUtils.hasClass(a1, MinLenBottom.class)) {
                 return a2;
-            } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
+            } else if (AnnotationUtils.hasClass(a2, MinLenBottom.class)) {
                 return a1;
             }
 
-            if (AnnotationUtils.areSameByClass(a1, MinLen.class)
-                    && AnnotationUtils.areSameByClass(a2, MinLen.class)) {
+            if (AnnotationUtils.hasClass(a1, MinLen.class)
+                    && AnnotationUtils.hasClass(a2, MinLen.class)) {
                 Integer a1Val = AnnotationUtils.getElementValue(a1, "value", Integer.class, true);
                 Integer a2Val = AnnotationUtils.getElementValue(a2, "value", Integer.class, true);
                 if (a1Val <= a2Val) {
@@ -206,14 +206,14 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameByClass(lhs, PolyMinLen.class)) {
-                return AnnotationUtils.areSameByClass(rhs, PolyMinLen.class);
-            } else if (AnnotationUtils.areSameByClass(rhs, PolyMinLen.class)) {
+            if (AnnotationUtils.hasClass(lhs, PolyMinLen.class)) {
+                return AnnotationUtils.hasClass(rhs, PolyMinLen.class);
+            } else if (AnnotationUtils.hasClass(rhs, PolyMinLen.class)) {
                 return AnnotationUtils.areSame(lhs, MIN_LEN_0);
             }
-            if (AnnotationUtils.areSameByClass(rhs, MinLenBottom.class)) {
+            if (AnnotationUtils.hasClass(rhs, MinLenBottom.class)) {
                 return true;
-            } else if (AnnotationUtils.areSameByClass(lhs, MinLenBottom.class)) {
+            } else if (AnnotationUtils.hasClass(lhs, MinLenBottom.class)) {
                 return false;
             } else if (AnnotationUtils.areSameIgnoringValues(rhs, lhs)) {
                 // Implies both are MinLen since that's the only other type.
@@ -315,7 +315,7 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     protected static Integer getMinLenValue(AnnotationMirror annotation) {
-        if (annotation == null || !AnnotationUtils.areSameByClass(annotation, MinLen.class)) {
+        if (annotation == null || !AnnotationUtils.hasClass(annotation, MinLen.class)) {
             return null;
         }
         return AnnotationUtils.getElementValue(annotation, "value", Integer.class, true);

@@ -37,7 +37,7 @@ public class UnitsAnnotationClassLoader extends AnnotationClassLoader {
 
             // if the annotation is a SI prefix multiple of some base unit, then return false
             // classic Units checker does not need to load the annotations of SI prefix multiples of base units
-            if (AnnotationUtils.areSameByClass(metaAnno, UnitsMultiple.class)) {
+            if (AnnotationUtils.hasClass(metaAnno, UnitsMultiple.class)) {
                 return false;
             }
         }

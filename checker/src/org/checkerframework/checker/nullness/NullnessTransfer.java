@@ -142,8 +142,8 @@ public class NullnessTransfer
                     secondValue != null
                             ? secondValue.getAnnotations()
                             : AnnotationUtils.createAnnotationSet();
-            if (AnnotationUtils.containsSameByClass(secondAnnos, PolyNull.class)
-                    || AnnotationUtils.containsSameByClass(secondAnnos, PolyAll.class)) {
+            if (AnnotationUtils.containsAnnotationWithClass(secondAnnos, PolyNull.class)
+                    || AnnotationUtils.containsAnnotationWithClass(secondAnnos, PolyAll.class)) {
                 thenStore = thenStore == null ? res.getThenStore() : thenStore;
                 elseStore = elseStore == null ? res.getElseStore() : elseStore;
                 thenStore.setPolyNullNull(true);

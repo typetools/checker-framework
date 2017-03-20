@@ -35,17 +35,17 @@ import org.checkerframework.javacutil.Pair;
 public abstract class UBQualifier {
 
     public static UBQualifier createUBQualifier(AnnotationMirror am) {
-        if (AnnotationUtils.areSameByClass(am, UpperBoundUnknown.class)) {
+        if (AnnotationUtils.hasClass(am, UpperBoundUnknown.class)) {
             return UpperBoundUnknownQualifier.UNKNOWN;
-        } else if (AnnotationUtils.areSameByClass(am, UpperBoundBottom.class)) {
+        } else if (AnnotationUtils.hasClass(am, UpperBoundBottom.class)) {
             return UpperBoundBottomQualifier.BOTTOM;
-        } else if (AnnotationUtils.areSameByClass(am, LTLengthOf.class)) {
+        } else if (AnnotationUtils.hasClass(am, LTLengthOf.class)) {
             return parseLTLengthOf(am);
-        } else if (AnnotationUtils.areSameByClass(am, LTEqLengthOf.class)) {
+        } else if (AnnotationUtils.hasClass(am, LTEqLengthOf.class)) {
             return parseLTEqLengthOf(am);
-        } else if (AnnotationUtils.areSameByClass(am, LTOMLengthOf.class)) {
+        } else if (AnnotationUtils.hasClass(am, LTOMLengthOf.class)) {
             return parseLTOMLengthOf(am);
-        } else if (AnnotationUtils.areSameByClass(am, PolyUpperBound.class)) {
+        } else if (AnnotationUtils.hasClass(am, PolyUpperBound.class)) {
             return PolyQualifier.POLY;
         }
         assert false;

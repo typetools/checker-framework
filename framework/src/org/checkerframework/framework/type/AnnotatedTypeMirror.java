@@ -349,7 +349,7 @@ public abstract class AnnotatedTypeMirror {
     public AnnotationMirror getAnnotation(/*@Interned*/ String annotationStr) {
         assert annotationStr != null : "Null annotationName in getAnnotation";
         for (AnnotationMirror anno : getAnnotations()) {
-            if (AnnotationUtils.areSameByName(anno, annotationStr)) {
+            if (AnnotationUtils.hasName(anno, annotationStr)) {
                 return anno;
             }
         }
@@ -365,7 +365,7 @@ public abstract class AnnotatedTypeMirror {
      */
     public AnnotationMirror getAnnotation(Class<? extends Annotation> annoClass) {
         for (AnnotationMirror annoMirror : getAnnotations()) {
-            if (AnnotationUtils.areSameByClass(annoMirror, annoClass)) {
+            if (AnnotationUtils.hasClass(annoMirror, annoClass)) {
                 return annoMirror;
             }
         }
@@ -457,7 +457,7 @@ public abstract class AnnotatedTypeMirror {
      */
     public AnnotationMirror getEffectiveAnnotation(Class<? extends Annotation> annoClass) {
         for (AnnotationMirror annoMirror : getEffectiveAnnotations()) {
-            if (AnnotationUtils.areSameByClass(annoMirror, annoClass)) {
+            if (AnnotationUtils.hasClass(annoMirror, annoClass)) {
                 return annoMirror;
             }
         }
@@ -587,7 +587,7 @@ public abstract class AnnotatedTypeMirror {
      * @param a the annotation to add
      */
     public void replaceAnnotation(AnnotationMirror a) {
-        if (!AnnotationUtils.areSameByClass(a, PolyAll.class)) {
+        if (!AnnotationUtils.hasClass(a, PolyAll.class)) {
             this.removeAnnotationInHierarchy(a);
         }
         this.addAnnotation(a);
