@@ -18,7 +18,8 @@ all: clean classes
 # jdk.jar only contains those classes with annotations, not every class from
 # the original JDK.
 jdk.jar:
-	echo Checker-Framework-Version: `git rev-parse --short HEAD` "\n" > manifest.txt
+	echo Checker-Framework-Version: `git rev-parse --short HEAD` > manifest.txt
+	echo Creation-Date: `date` >> manifest.txt
 	cd annotated; jar cfm ../jdk.jar ../manifest.txt .
 	rm manifest.txt
 
