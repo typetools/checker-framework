@@ -9,6 +9,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 public class NumberUtils {
 
+    /** Converts a {@code List<A>} to a {@code List<B>}, where A and B are numeric types. */
     public static List<? extends Number> castNumbers(
             TypeMirror type, List<? extends Number> numbers) {
         TypeKind typeKind = unBoxPrimitive(type);
@@ -19,7 +20,6 @@ public class NumberUtils {
                     bytes.add(l.byteValue());
                 }
                 return bytes;
-
             case DOUBLE:
                 List<Double> doubles = new ArrayList<>();
                 for (Number l : numbers) {

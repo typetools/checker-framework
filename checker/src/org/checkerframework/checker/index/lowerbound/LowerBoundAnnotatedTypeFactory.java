@@ -157,7 +157,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Either returns the exact value of the given tree according to the Constant Value Checker, or
      * null if the exact value is not known. This method should only be used by clients who need
-     * exactly one value - such as the binary operator rules - and not by those that need to know
+     * exactly one value -- such as the binary operator rules -- and not by those that need to know
      * whether a valueType belongs to an LBC qualifier. Clients needing a qualifier should use
      * getLowerBoundAnnotationFromValueType instead of this method.
      */
@@ -171,7 +171,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Returns the type in the lower bound hierarchy a Value Checker type corresponds to. */
+    /** Returns the type in the lower bound hierarchy that a Value Checker type corresponds to. */
     private AnnotationMirror getLowerBoundAnnotationFromValueType(AnnotatedTypeMirror valueType) {
         // In the code, AnnotationMirror is abbr. as anm.
         List<Long> possibleValues = possibleValuesFromValueType(valueType);
