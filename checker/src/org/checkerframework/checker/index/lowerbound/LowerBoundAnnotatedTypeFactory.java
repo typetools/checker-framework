@@ -70,6 +70,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public final AnnotationMirror NN = AnnotationUtils.fromClass(elements, NonNegative.class);
     /** The canonical @{@link Positive} annotation. */
     public final AnnotationMirror POS = AnnotationUtils.fromClass(elements, Positive.class);
+    /** The bottom annotation. */
+    public final AnnotationMirror BOTTOM = POS;
     /** The canonical @{@link LowerBoundUnknown} annotation. */
     public final AnnotationMirror UNKNOWN =
             AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);
@@ -157,7 +159,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Either returns the exact value of the given tree according to the Constant Value Checker, or
      * null if the exact value is not known. This method should only be used by clients who need
-     * exactly one value - such as the binary operator rules - and not by those that need to know
+     * exactly one value -- such as the binary operator rules -- and not by those that need to know
      * whether a valueType belongs to an LBC qualifier. Clients needing a qualifier should use
      * getLowerBoundAnnotationFromValueType instead of this method.
      */
@@ -171,13 +173,16 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Returns the type in the lower bound hierarchy a Value Checker type corresponds to. */
+    /** Returns the type in the lower bound hierarchy that a Value Checker type corresponds to. */
     private AnnotationMirror getLowerBoundAnnotationFromValueType(AnnotatedTypeMirror valueType) {
         // In the code, AnnotationMirror is abbr. as anm.
         List<Long> possibleValues = possibleValuesFromValueType(valueType);
         // possibleValues is null if the Value Checker does not have any estimate.
-        if (possibleValues == null || possibleValues.size() == 0) {
+        if (possibleValues == null) {
             return UNKNOWN;
+        }
+        if (possibleValues.size() == 0) {
+            return BOTTOM;
         }
         // The annotation of the whole list is the min of the list.
         long lvalMin = Collections.min(possibleValues);
@@ -199,14 +204,12 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Get the list of possible values from a Value Checker type. May return null. */
+    /**
+     * Get the list of possible values from a Value Checker type. Empty list means no possible
+     * values (dead code). Returns null if there is no estimate.
+     */
     private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
-        AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
-        // Anm can be null if the Value Checker didn't assign an IntVal annotation
-        if (anm == null) {
-            return null;
-        }
-        return ValueAnnotatedTypeFactory.getIntValues(anm);
+        return ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
     }
 
     @Override

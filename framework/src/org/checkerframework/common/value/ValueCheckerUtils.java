@@ -103,8 +103,9 @@ public class ValueCheckerUtils {
             values = convertBoolVal(anno, castType);
         } else if (AnnotationUtils.areSameByClass(anno, BottomVal.class)) {
             values = convertBottomVal(anno, castType);
-        } else if (AnnotationUtils.areSameByClass(anno, UnknownVal.class)
-                || AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
+        } else if (AnnotationUtils.areSameByClass(anno, UnknownVal.class)) {
+            values = null;
+        } else if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
             values = new ArrayList<>();
         }
         return values;
@@ -127,6 +128,9 @@ public class ValueCheckerUtils {
      * @return a list of all the values in the range
      */
     public static <T> List<T> getValuesFromRange(Range range, Class<T> expectedType) {
+        if (range == null) {
+            return null;
+        }
         List<T> values = new ArrayList<>();
         if (range.isNothing()) {
             return values;
@@ -169,6 +173,9 @@ public class ValueCheckerUtils {
     }
 
     private static List<?> convertToStringVal(List<?> origValues) {
+        if (origValues == null) {
+            return null;
+        }
         List<String> strings = new ArrayList<>();
         for (Object value : origValues) {
             strings.add(value.toString());
@@ -211,6 +218,9 @@ public class ValueCheckerUtils {
     }
 
     private static List<?> convertIntVal(List<Long> longs, Class<?> newClass, TypeMirror newType) {
+        if (longs == null) {
+            return null;
+        }
         if (newClass == String.class) {
             return convertToStringVal(longs);
         } else if (newClass == Character.class || newClass == char.class) {
@@ -229,6 +239,9 @@ public class ValueCheckerUtils {
     private static List<?> convertDoubleVal(
             AnnotationMirror anno, Class<?> newClass, TypeMirror newType) {
         List<Double> doubles = ValueAnnotatedTypeFactory.getDoubleValues(anno);
+        if (doubles == null) {
+            return null;
+        }
         if (newClass == String.class) {
             return convertToStringVal(doubles);
         } else if (newClass == Character.class || newClass == char.class) {
