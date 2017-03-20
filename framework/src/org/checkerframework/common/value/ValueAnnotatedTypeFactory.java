@@ -489,7 +489,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        /** Convert a byte array to a String. */
+        /** Convert a byte array to a String. Return null if unable to convert. */
         private String getByteArrayStringVal(List<? extends ExpressionTree> initializers) {
             // True iff every element of the array is a literal.
             boolean allLiterals = true;
@@ -512,7 +512,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
-        /** Convert a char array to a String. */
+        /** Convert a char array to a String. Return null if unable to convert. */
         private String getCharArrayStringVal(List<? extends ExpressionTree> initializers) {
             boolean allLiterals = true;
             StringBuilder stringVal = new StringBuilder();
