@@ -5,10 +5,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 class Issue1142 {
 
     void foo() {
-        //error expected on assignment compatibility
+        //:: error: (type.argument.type.incompatible)
         ConcurrentHashMap<Integer, @Nullable Integer> chm1 = new ConcurrentHashMap<>();
 
-        //error expected on assignment compatibility
+        //:: error: (argument.type.incompatible)
         chm1.put(1, null);
     }
 }
