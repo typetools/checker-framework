@@ -465,22 +465,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return;
             }
 
-            // A list of arrayLens. arrayLenOfDimension.get(i) returns the array lengths for the
+            // A list of arrayLens. arrayLenOfDimensions.get(i) returns the array lengths for the
             // ith dimension.
-            List<List<Integer>> arrayLenOfDimension = new ArrayList<>();
+            List<List<Integer>> arrayLenOfDimensions = new ArrayList<>();
             for (ExpressionTree init : initializers) {
                 AnnotatedTypeMirror componentType = getAnnotatedType(init);
                 int dimension = 0;
                 while (componentType.getKind() == TypeKind.ARRAY) {
-                    List<Integer> arrayLenForDimension = arrayLenOfDimension.get(dimension);
-                    if (arrayLenForDimension == null) {
-                        arrayLenForDimension = new ArrayList<>();
-                        arrayLenOfDimension.add(arrayLenForDimension);
+                    List<Integer> arrayLens;
+                    if (dimension == arrayLenOfDimensions.size()) {
+                        arrayLens = new ArrayList<>();
+                        arrayLenOfDimensions.add(arrayLens);
+                    } else {
+                        arrayLens = arrayLenOfDimensions.get(dimension);
                     }
                     AnnotationMirror arrayLen = componentType.getAnnotation(ArrayLen.class);
                     if (arrayLen != null) {
                         List<Integer> currentLengths = getArrayLength(arrayLen);
-                        arrayLenForDimension.addAll(currentLengths);
+                        arrayLens.addAll(currentLengths);
                     }
                     dimension++;
                     componentType = ((AnnotatedArrayType) componentType).getComponentType();
@@ -489,8 +491,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             AnnotatedTypeMirror componentType = type.getComponentType();
             int i = 0;
-            while (componentType.getKind() == TypeKind.ARRAY && i < arrayLenOfDimension.size()) {
-                componentType.addAnnotation(createArrayLenAnnotation(arrayLenOfDimension.get(i)));
+            while (componentType.getKind() == TypeKind.ARRAY && i < arrayLenOfDimensions.size()) {
+                componentType.addAnnotation(createArrayLenAnnotation(arrayLenOfDimensions.get(i)));
                 componentType = ((AnnotatedArrayType) componentType).getComponentType();
                 i++;
             }
@@ -675,7 +677,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (wrapperClass
                     || (handledByValueChecker(type)
                             && methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree)))) {
-                // get arugment values
+                // get argument values
                 List<? extends ExpressionTree> arguments = tree.getArguments();
                 ArrayList<List<?>> argValues;
                 if (arguments.size() > 0) {
