@@ -568,60 +568,39 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            if (handledByValueChecker(type)) {
-                switch (tree.getKind()) {
-                    case BOOLEAN_LITERAL:
-                        AnnotationMirror boolAnno =
-                                createBooleanAnnotation(
-                                        Collections.singletonList((Boolean) tree.getValue()));
-                        type.replaceAnnotation(boolAnno);
-                        return null;
-
-                    case CHAR_LITERAL:
-                        AnnotationMirror charAnno =
-                                createCharAnnotation(
-                                        Collections.singletonList((Character) tree.getValue()));
-                        type.replaceAnnotation(charAnno);
-                        return null;
-
-                    case DOUBLE_LITERAL:
-                        AnnotationMirror doubleAnno =
-                                createNumberAnnotationMirror(
-                                        Collections.<Number>singletonList(
-                                                (Double) tree.getValue()));
-                        type.replaceAnnotation(doubleAnno);
-                        return null;
-
-                    case FLOAT_LITERAL:
-                        AnnotationMirror floatAnno =
-                                createNumberAnnotationMirror(
-                                        Collections.<Number>singletonList((Float) tree.getValue()));
-                        type.replaceAnnotation(floatAnno);
-                        return null;
-                    case INT_LITERAL:
-                        AnnotationMirror intAnno =
-                                createNumberAnnotationMirror(
-                                        Collections.<Number>singletonList(
-                                                (Integer) tree.getValue()));
-                        type.replaceAnnotation(intAnno);
-                        return null;
-                    case LONG_LITERAL:
-                        AnnotationMirror longAnno =
-                                createNumberAnnotationMirror(
-                                        Collections.<Number>singletonList((Long) tree.getValue()));
-                        type.replaceAnnotation(longAnno);
-                        return null;
-                    case STRING_LITERAL:
-                        AnnotationMirror stringAnno =
-                                createStringAnnotation(
-                                        Collections.singletonList((String) tree.getValue()));
-                        type.replaceAnnotation(stringAnno);
-                        return null;
-                    default:
-                        return null;
-                }
+            if (!handledByValueChecker(type)) {
+                return null;
             }
-            return null;
+            Object value = tree.getValue();
+            switch (tree.getKind()) {
+                case BOOLEAN_LITERAL:
+                    AnnotationMirror boolAnno =
+                            createBooleanAnnotation(Collections.singletonList((Boolean) value));
+                    type.replaceAnnotation(boolAnno);
+                    return null;
+
+                case CHAR_LITERAL:
+                    AnnotationMirror charAnno =
+                            createCharAnnotation(Collections.singletonList((Character) value));
+                    type.replaceAnnotation(charAnno);
+                    return null;
+
+                case DOUBLE_LITERAL:
+                case FLOAT_LITERAL:
+                case INT_LITERAL:
+                case LONG_LITERAL:
+                    AnnotationMirror numberAnno =
+                            createNumberAnnotationMirror(Collections.singletonList((Number) value));
+                    type.replaceAnnotation(numberAnno);
+                    return null;
+                case STRING_LITERAL:
+                    AnnotationMirror stringAnno =
+                            createStringAnnotation(Collections.singletonList((String) value));
+                    type.replaceAnnotation(stringAnno);
+                    return null;
+                default:
+                    return null;
+            }
         }
 
         /**
