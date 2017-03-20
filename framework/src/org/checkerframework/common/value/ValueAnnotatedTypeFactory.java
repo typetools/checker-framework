@@ -855,32 +855,56 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    public AnnotationMirror createIntValAnnotation(List<Long> intValues) {
-        if (intValues == null) {
+    /**
+     * Returns a {@link IntVal} annotation using the values. If {@code values} is null, then
+     * UnknownVal is returns; if {@code values} is empty, then bottom is returned. The values are
+     * sorted and duplicates are removed before the annotation is created.
+     *
+     * @param values list of longs; duplicates are allowed and the values may be in any order.
+     * @return a {@link IntVal} annotation using the values
+     */
+    public AnnotationMirror createIntValAnnotation(List<Long> values) {
+        if (values == null) {
             return UNKNOWNVAL;
         }
-        intValues = ValueCheckerUtils.removeDuplicates(intValues);
-        if (intValues.size() > MAX_VALUES) {
+        values = ValueCheckerUtils.removeDuplicates(values);
+        if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntVal.class);
-        builder.setValue("value", intValues);
+        builder.setValue("value", values);
         return builder.build();
     }
 
-    public AnnotationMirror createDoubleValAnnotation(List<Double> doubleValues) {
-        if (doubleValues == null) {
+    /**
+     * Returns a {@link DoubleVal} annotation using the values. If {@code values} is null, then
+     * UnknownVal is returns; if {@code values} is empty, then bottom is returned. The values are
+     * sorted and duplicates are removed before the annotation is created.
+     *
+     * @param values list of doubles; duplicates are allowed and the values may be in any order.
+     * @return a {@link DoubleVal} annotation using the values
+     */
+    public AnnotationMirror createDoubleValAnnotation(List<Double> values) {
+        if (values == null) {
             return UNKNOWNVAL;
         }
-        doubleValues = ValueCheckerUtils.removeDuplicates(doubleValues);
-        if (doubleValues.size() > MAX_VALUES) {
+        values = ValueCheckerUtils.removeDuplicates(values);
+        if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DoubleVal.class);
-        builder.setValue("value", doubleValues);
+        builder.setValue("value", values);
         return builder.build();
     }
 
+    /**
+     * Returns a {@link StringVal} annotation using the values. If {@code values} is null, then
+     * UnknownVal is returns; if {@code values} is empty, then bottom is returned. The values are
+     * sorted and duplicates are removed before the annotation is created.
+     *
+     * @param values list of strings; duplicates are allowed and the values may be in any order.
+     * @return a {@link StringVal} annotation using the values
+     */
     public AnnotationMirror createStringAnnotation(List<String> values) {
         if (values == null) {
             return UNKNOWNVAL;
@@ -894,6 +918,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
+    /**
+     * Returns a {@link ArrayLen} annotation using the values. If {@code values} is null, then
+     * UnknownVal is returns; if {@code values} is empty, then bottom is returned. The values are
+     * sorted and duplicates are removed before the annotation is created.
+     *
+     * @param values list of integers; duplicates are allowed and the values may be in any order.
+     * @return a {@link ArrayLen} annotation using the values
+     */
     public AnnotationMirror createArrayLenAnnotation(List<Integer> values) {
         if (values == null) {
             return UNKNOWNVAL;
@@ -907,6 +939,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
+    /**
+     * Returns a {@link BoolVal} annotation using the values. If {@code values} is null, then
+     * UnknownVal is returns; if {@code values} is empty, then bottom is returned. The values are
+     * sorted and duplicates are removed before the annotation is created.
+     *
+     * @param values list of booleans; duplicates are allowed and the values may be in any order.
+     * @return a {@link BoolVal} annotation using the values
+     */
     public AnnotationMirror createBooleanAnnotation(List<Boolean> values) {
         if (values == null) {
             return UNKNOWNVAL;
@@ -920,6 +960,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
+    /**
+     * Returns a {@link IntVal} annotation using the values. If {@code values} is null, then
+     * UnknownVal is returns; if {@code values} is empty, then bottom is returned. The values are
+     * sorted and duplicates are removed before the annotation is created.
+     *
+     * @param values list of characters; duplicates are allowed and the values may be in any order.
+     * @return a {@link IntVal} annotation using the values
+     */
     public AnnotationMirror createCharAnnotation(List<Character> values) {
         if (values == null) {
             return UNKNOWNVAL;
