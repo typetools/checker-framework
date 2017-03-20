@@ -1131,9 +1131,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** @param values must be a homogeneous list: every element of it has the same class. */
     public AnnotationMirror createNumberAnnotationMirror(List<Number> values) {
         if (values == null) {
-            return BOTTOMVAL;
-        } else if (values.isEmpty()) {
             return UNKNOWNVAL;
+        } else if (values.isEmpty()) {
+            return BOTTOMVAL;
         }
         Number first = values.get(0);
         if (first instanceof Integer
