@@ -242,9 +242,8 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
         if (valueType.hasAnnotation(StringVal.class)) {
             AnnotationMirror anm = valueType.getAnnotation(StringVal.class);
-            String[] values =
-                    AnnotationUtils.getElementValueArray(anm, "value", String.class, true)
-                            .toArray(new String[0]);
+            List<String> values =
+                    AnnotationUtils.getElementValueArray(anm, "value", String.class, true);
             ArrayList<Integer> lengths = new ArrayList<>();
             for (String value : values) {
                 lengths.add(value.length());
