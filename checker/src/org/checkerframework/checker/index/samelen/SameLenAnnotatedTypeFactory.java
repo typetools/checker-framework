@@ -212,17 +212,17 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameByClass(rhs, SameLenBottom.class)) {
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSameByClass(subAnno, SameLenBottom.class)) {
                 return true;
-            } else if (AnnotationUtils.areSameByClass(lhs, SameLenUnknown.class)) {
+            } else if (AnnotationUtils.areSameByClass(superAnno, SameLenUnknown.class)) {
                 return true;
-            } else if (AnnotationUtils.areSameByClass(rhs, PolySameLen.class)) {
-                return AnnotationUtils.areSameByClass(lhs, PolySameLen.class);
-            } else if (AnnotationUtils.hasElementValue(rhs, "value")
-                    && AnnotationUtils.hasElementValue(lhs, "value")) {
-                List<String> a1Val = SameLenUtils.getValue(rhs);
-                List<String> a2Val = SameLenUtils.getValue(lhs);
+            } else if (AnnotationUtils.areSameByClass(subAnno, PolySameLen.class)) {
+                return AnnotationUtils.areSameByClass(superAnno, PolySameLen.class);
+            } else if (AnnotationUtils.hasElementValue(subAnno, "value")
+                    && AnnotationUtils.hasElementValue(superAnno, "value")) {
+                List<String> a1Val = SameLenUtils.getValue(subAnno);
+                List<String> a2Val = SameLenUtils.getValue(superAnno);
 
                 if (overlap(a1Val, a2Val)) {
                     return true;

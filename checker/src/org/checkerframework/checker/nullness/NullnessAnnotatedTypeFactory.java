@@ -539,11 +539,11 @@ public class NullnessAnnotatedTypeFactory
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (isInitializationAnnotation(rhs) || isInitializationAnnotation(lhs)) {
-                return this.isSubtypeInitialization(rhs, lhs);
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (isInitializationAnnotation(subAnno) || isInitializationAnnotation(superAnno)) {
+                return this.isSubtypeInitialization(subAnno, superAnno);
             }
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
 
         @Override
