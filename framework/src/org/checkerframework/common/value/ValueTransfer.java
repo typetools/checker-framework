@@ -2,7 +2,6 @@ package org.checkerframework.common.value;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -63,9 +62,14 @@ public class ValueTransfer extends CFTransfer {
         atypefactory = analysis.getTypeFactory();
     }
 
+    /**
+     * Returns a list of possible values for {@code subNode}, as casted to a String. Returns null if
+     * {@code subNode}'s type is top/unknown. Returns an empty list if {@code subNode}'s type is
+     * bottom.
+     */
     private List<String> getStringValues(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
-        // @StringVal, @BottomVal, @UnknownVal
+        // @StringVal, @UnknownVal, @BottomVal
         AnnotationMirror numberAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), StringVal.class);
         if (numberAnno != null) {
@@ -73,14 +77,14 @@ public class ValueTransfer extends CFTransfer {
         }
         numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), UnknownVal.class);
         if (numberAnno != null) {
-            return new ArrayList<String>();
+            return null;
         }
         numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
         if (numberAnno != null) {
-            return Collections.singletonList("null");
+            return new ArrayList<String>();
         }
 
-        //@IntVal, @DoubleVal, @BoolVal (have to be converted to string)
+        // @IntVal, @DoubleVal, @BoolVal (have to be converted to string)
         List<? extends Object> values;
         numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BoolVal.class);
         if (numberAnno != null) {
