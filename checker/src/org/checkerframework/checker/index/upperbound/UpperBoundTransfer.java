@@ -106,19 +106,22 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         } else if (node instanceof NumericalSubtractionNode) {
             propagateToSubtractionOperands(typeOfNode, (NumericalSubtractionNode) node, in, store);
         } else if (node instanceof NumericalMultiplicationNode) {
-            Node right = ((NumericalMultiplicationNode) node).getRightOperand();
-            Node left = ((NumericalMultiplicationNode) node).getLeftOperand();
-            propagateToMultiplicationOperand(left, right, in, store, typeOfNode);
-            propagateToMultiplicationOperand(right, left, in, store, typeOfNode);
+            if (atypeFactory.hasLowerBoundTypeByClass(node, NonNegative.class)
+                    || atypeFactory.hasLowerBoundTypeByClass(node, Positive.class)) {
+                Node right = ((NumericalMultiplicationNode) node).getRightOperand();
+                Node left = ((NumericalMultiplicationNode) node).getLeftOperand();
+                propagateToMultiplicationOperand(left, right, in, store, typeOfNode);
+                propagateToMultiplicationOperand(right, left, in, store, typeOfNode);
+            }
         }
     }
 
     /**
      * {@code other} times {@code node} is known to be {@code typeOfMultiplication}.
      *
-     * <p>This implies that if {@code other} is positive, then {@code node} is less than or equal to
-     * the length of arrayExp. If {@code other} is greater than 1, then {@code node} is less than
-     * the length of arrayExp.
+     * <p>This implies that if {@code other} is positive, then {@code node} is {@code
+     * typeOfMultiplication}. If {@code other} is greater than 1, then {@code node} is {@code
+     * typeOfMultiplication} plus 1.
      */
     private void propagateToMultiplicationOperand(
             Node node,
@@ -146,8 +149,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * right node is subtracted from the left node.
      *
      * @param typeOfSubtraction type of node
-     * @param node subtraction node that is known to be equal to the length of the array referenced
-     *     by arrayExp
+     * @param node subtraction node that has typeOfSubtraction
      * @param in TransferInput
      * @param store location to store the refined type
      */

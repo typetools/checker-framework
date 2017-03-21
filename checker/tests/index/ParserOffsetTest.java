@@ -1,4 +1,5 @@
 import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.common.value.qual.*;
 
 public class ParserOffsetTest {
 
@@ -68,6 +69,25 @@ public class ParserOffsetTest {
             @IndexFor("a") int k = i - j;
             //:: error: (assignment.type.incompatible)
             @IndexFor("a") int k1 = i;
+        }
+    }
+
+    public void multiplication1(String[] a, int i, @Positive int j) {
+        if ((i * j) < (a.length + j)) {
+            //:: error: (assignment.type.incompatible)
+            @IndexFor("a") int k = i;
+            //:: error: (assignment.type.incompatible)
+            @IndexFor("a") int k1 = j;
+        }
+    }
+
+    public void multiplication2(String @ArrayLen(5) [] a, @IntVal(-2) int i, @IntVal(20) int j) {
+        if ((i * j) < (a.length - 20)) {
+            @LTLengthOf("a") int k1 = i;
+            //:: error: (assignment.type.incompatible)
+            @LTLengthOf(value = "a", offset = "20") int k2 = i;
+            //:: error: (assignment.type.incompatible)
+            @LTLengthOf("a") int k3 = j;
         }
     }
 }
