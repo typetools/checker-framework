@@ -84,6 +84,13 @@ public class ValueCheckerUtils {
         }
     }
 
+    /**
+     * Get a list of values of annotation, and then cast them to a given type
+     *
+     * @param anno the annotation that contains values
+     * @param castTo the type that is casted to
+     * @return a list of values after the casting
+     */
     public static List<?> getValuesCastedToType(AnnotationMirror anno, TypeMirror castTo) {
         Class<?> castType = ValueCheckerUtils.getClassFromType(castTo);
         List<?> values = null;
@@ -111,7 +118,14 @@ public class ValueCheckerUtils {
         return values;
     }
 
+    /** Get the minimum and maximum of a list and return a range bounded by them. */
     public static Range getRangeFromValues(List<? extends Number> values) {
+        if (values == null) {
+            return null;
+        } else if (values.isEmpty()) {
+            return Range.NOTHING;
+        }
+        // The number elements in the values list should not exceed MAX_VALUES (10).
         List<Long> longValues = new ArrayList<>();
         for (Number value : values) {
             longValues.add(value.longValue());
@@ -128,10 +142,13 @@ public class ValueCheckerUtils {
      * @return a list of all the values in the range
      */
     public static <T> List<T> getValuesFromRange(Range range, Class<T> expectedType) {
-        if (range == null || range.isNothing()) {
+        if (range == null || range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
             return null;
         }
         List<T> values = new ArrayList<>();
+        if (range.isNothing()) {
+            return values;
+        }
         if (expectedType == Integer.class
                 || expectedType == int.class
                 || expectedType == Long.class
@@ -165,7 +182,7 @@ public class ValueCheckerUtils {
         if (newClass == String.class) {
             return Collections.singletonList("null");
         } else {
-            return null;
+            return new ArrayList<>();
         }
     }
 

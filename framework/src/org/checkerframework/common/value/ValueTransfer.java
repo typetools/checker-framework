@@ -94,12 +94,8 @@ public class ValueTransfer extends CFTransfer {
             return getStringValues(((StringConversionNode) subNode).getOperand(), p);
         } else if (isIntRange(subNode, p)) {
             Range range = getIntRange(subNode, p);
-            if (range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
-                values = null;
-            } else {
-                List<Long> longValues = ValueCheckerUtils.getValuesFromRange(range, Long.class);
-                values = NumberUtils.castNumbers(subNode.getType(), longValues);
-            }
+            List<Long> longValues = ValueCheckerUtils.getValuesFromRange(range, Long.class);
+            values = NumberUtils.castNumbers(subNode.getType(), longValues);
         } else {
             values = getNumericalValues(subNode, p);
         }
@@ -135,11 +131,7 @@ public class ValueTransfer extends CFTransfer {
         intAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
         if (intAnno != null) {
             Range range = ValueAnnotatedTypeFactory.getIntRange(intAnno);
-            if (range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
-                return null;
-            } else {
-                return ValueCheckerUtils.getValuesFromRange(range, Character.class);
-            }
+            return ValueCheckerUtils.getValuesFromRange(range, Character.class);
         }
 
         return new ArrayList<Character>();

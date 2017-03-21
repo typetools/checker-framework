@@ -983,12 +983,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns a {@link IntVal} annotation using the values. If {@code values} is null, then
-     * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
-     * sorted and duplicates are removed before the annotation is created.
+     * Returns a {@link IntVal} or {@link IntRange} annotation using the values. If {@code values}
+     * is null, then UnknownVal is returned; if {@code values} is empty, then bottom is returned. If
+     * the number of {@code values} is greater than MAX_VALUES, return an {@link IntRange}. In other
+     * cases, the values are sorted and duplicates are removed before an {@link IntVal} is created.
      *
      * @param values list of longs; duplicates are allowed and the values may be in any order
-     * @return a {@link IntVal} annotation using the values
+     * @return an annotation depends on the values
      */
     public AnnotationMirror createIntValAnnotation(List<Long> intValues) {
         if (intValues == null) {
@@ -1014,12 +1015,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public AnnotationMirror convertIntRangeToIntVal(AnnotationMirror intRangeAnno) {
         Range range = getIntRange(intRangeAnno);
-        if (range.isWiderThan(MAX_VALUES)) {
-            return UNKNOWNVAL;
-        } else {
-            List<Long> values = ValueCheckerUtils.getValuesFromRange(range, Long.class);
-            return createIntValAnnotation(values);
-        }
+        List<Long> values = ValueCheckerUtils.getValuesFromRange(range, Long.class);
+        return createIntValAnnotation(values);
     }
 
     /**
@@ -1218,6 +1215,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return createIntRangeAnnotation(Collections.min(intValues), Collections.max(intValues));
     }
 
+    /** Returns a {@code Range} bounded by the values specified in the given annotation. */
     public static Range getIntRange(AnnotationMirror rangeAnno) {
         if (rangeAnno == null) {
             return null;
