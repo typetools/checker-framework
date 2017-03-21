@@ -257,24 +257,25 @@ public class LockAnnotatedTypeFactory
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
 
-            boolean lhsIsGuardedBy = isGuardedBy(lhs);
-            boolean rhsIsGuardedBy = isGuardedBy(rhs);
+            boolean lhsIsGuardedBy = isGuardedBy(superAnno);
+            boolean rhsIsGuardedBy = isGuardedBy(subAnno);
 
             if (lhsIsGuardedBy && rhsIsGuardedBy) {
                 // Two @GuardedBy annotations are considered subtypes of each other if and only if their values match exactly.
 
                 List<String> lhsValues =
-                        AnnotationUtils.getElementValueArray(lhs, "value", String.class, true);
+                        AnnotationUtils.getElementValueArray(
+                                superAnno, "value", String.class, true);
                 List<String> rhsValues =
-                        AnnotationUtils.getElementValueArray(rhs, "value", String.class, true);
+                        AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
 
                 return rhsValues.containsAll(lhsValues) && lhsValues.containsAll(rhsValues);
             }
 
-            boolean lhsIsGuardSatisfied = isGuardSatisfied(lhs);
-            boolean rhsIsGuardSatisfied = isGuardSatisfied(rhs);
+            boolean lhsIsGuardSatisfied = isGuardSatisfied(superAnno);
+            boolean rhsIsGuardSatisfied = isGuardSatisfied(subAnno);
 
             if (lhsIsGuardSatisfied && rhsIsGuardSatisfied) {
                 // There are cases in which two expressions with identical @GuardSatisfied(...) annotations are not
@@ -291,24 +292,24 @@ public class LockAnnotatedTypeFactory
                 // to an actual receiver (see LockVisitor.skipReceiverSubtypeCheck) or a formal parameter to an
                 // actual parameter (see LockVisitor.commonAssignmentCheck for the details on this rule).
 
-                return AnnotationUtils.areSame(lhs, rhs);
+                return AnnotationUtils.areSame(superAnno, subAnno);
             }
 
             // Remove values from @GuardedBy annotations for further subtype checking. Remove indices from @GuardSatisfied annotations.
 
             if (lhsIsGuardedBy) {
-                lhs = GUARDEDBY;
+                superAnno = GUARDEDBY;
             } else if (lhsIsGuardSatisfied) {
-                lhs = GUARDSATISFIED;
+                superAnno = GUARDSATISFIED;
             }
 
             if (rhsIsGuardedBy) {
-                rhs = GUARDEDBY;
+                subAnno = GUARDEDBY;
             } else if (rhsIsGuardSatisfied) {
-                rhs = GUARDSATISFIED;
+                subAnno = GUARDSATISFIED;
             }
 
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
 
         @Override

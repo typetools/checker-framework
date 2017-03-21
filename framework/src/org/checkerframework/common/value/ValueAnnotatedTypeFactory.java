@@ -399,70 +399,74 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
-         * annotations are Value. In this case, rhs is a subtype of lhs iff lhs contains at least
-         * every element of rhs.
+         * annotations are Value. In this case, subAnno is a subtype of superAnno iff superAnno
+         * contains at least every element of subAnno.
          *
-         * @return true if rhs is a subtype of lhs, false otherwise
+         * @return true if subAnno is a subtype of superAnno, false otherwise
          */
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
 
-            if (AnnotationUtils.areSameByClass(lhs, UnknownVal.class)
-                    || AnnotationUtils.areSameByClass(rhs, BottomVal.class)) {
+            if (AnnotationUtils.areSameByClass(superAnno, UnknownVal.class)
+                    || AnnotationUtils.areSameByClass(subAnno, BottomVal.class)) {
                 return true;
-            } else if (AnnotationUtils.areSameByClass(rhs, UnknownVal.class)
-                    || AnnotationUtils.areSameByClass(lhs, BottomVal.class)) {
+            } else if (AnnotationUtils.areSameByClass(subAnno, UnknownVal.class)
+                    || AnnotationUtils.areSameByClass(superAnno, BottomVal.class)) {
                 return false;
-            } else if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
+            } else if (AnnotationUtils.areSameIgnoringValues(superAnno, subAnno)) {
                 // Same type, so might be subtype
-                if (AnnotationUtils.areSameByClass(rhs, IntRange.class)) {
+                if (AnnotationUtils.areSameByClass(subAnno, IntRange.class)) {
                     // Special case for IntRange
-                    Range lhsRange = getIntRange(lhs);
-                    Range rhsRange = getIntRange(rhs);
+                    Range lhsRange = getIntRange(superAnno);
+                    Range rhsRange = getIntRange(subAnno);
                     return lhsRange.contains(rhsRange);
                 } else {
                     List<Object> lhsValues =
-                            AnnotationUtils.getElementValueArray(lhs, "value", Object.class, true);
+                            AnnotationUtils.getElementValueArray(
+                                    superAnno, "value", Object.class, true);
                     List<Object> rhsValues =
-                            AnnotationUtils.getElementValueArray(rhs, "value", Object.class, true);
+                            AnnotationUtils.getElementValueArray(
+                                    subAnno, "value", Object.class, true);
                     return lhsValues.containsAll(rhsValues);
                 }
-            } else if (AnnotationUtils.areSameByClass(lhs, DoubleVal.class)
-                    && AnnotationUtils.areSameByClass(rhs, IntVal.class)) {
+            } else if (AnnotationUtils.areSameByClass(superAnno, DoubleVal.class)
+                    && AnnotationUtils.areSameByClass(subAnno, IntVal.class)) {
                 List<Double> rhsValues =
                         convertLongListToDoubleList(
                                 AnnotationUtils.getElementValueArray(
-                                        rhs, "value", Long.class, true));
+                                        subAnno, "value", Long.class, true));
                 List<Double> lhsValues =
-                        AnnotationUtils.getElementValueArray(lhs, "value", Double.class, true);
+                        AnnotationUtils.getElementValueArray(
+                                superAnno, "value", Double.class, true);
                 return lhsValues.containsAll(rhsValues);
-            } else if (AnnotationUtils.areSameByClass(lhs, IntRange.class)
-                    && AnnotationUtils.areSameByClass(rhs, IntVal.class)) {
+            } else if (AnnotationUtils.areSameByClass(superAnno, IntRange.class)
+                    && AnnotationUtils.areSameByClass(subAnno, IntVal.class)) {
                 List<Long> rhsValues =
-                        AnnotationUtils.getElementValueArray(rhs, "value", Long.class, true);
-                Range lhsRange = getIntRange(lhs);
+                        AnnotationUtils.getElementValueArray(subAnno, "value", Long.class, true);
+                Range lhsRange = getIntRange(superAnno);
                 long rhsMinVal = Collections.min(rhsValues);
                 long rhsMaxVal = Collections.max(rhsValues);
                 return rhsMinVal >= lhsRange.from && rhsMaxVal <= lhsRange.to;
-            } else if (AnnotationUtils.areSameByClass(lhs, DoubleVal.class)
-                    && AnnotationUtils.areSameByClass(rhs, IntRange.class)) {
-                Range rhsRange = getIntRange(rhs);
+            } else if (AnnotationUtils.areSameByClass(superAnno, DoubleVal.class)
+                    && AnnotationUtils.areSameByClass(subAnno, IntRange.class)) {
+                Range rhsRange = getIntRange(subAnno);
                 if (rhsRange.isWiderThan(MAX_VALUES)) {
                     return false;
                 }
                 List<Double> lhsValues =
-                        AnnotationUtils.getElementValueArray(lhs, "value", Double.class, true);
+                        AnnotationUtils.getElementValueArray(
+                                superAnno, "value", Double.class, true);
                 List<Double> rhsValues =
                         ValueCheckerUtils.getValuesFromRange(rhsRange, Double.class);
                 return lhsValues.containsAll(rhsValues);
-            } else if (AnnotationUtils.areSameByClass(lhs, IntVal.class)
-                    && AnnotationUtils.areSameByClass(rhs, IntRange.class)) {
-                Range rhsRange = getIntRange(rhs);
+            } else if (AnnotationUtils.areSameByClass(superAnno, IntVal.class)
+                    && AnnotationUtils.areSameByClass(subAnno, IntRange.class)) {
+                Range rhsRange = getIntRange(subAnno);
                 if (rhsRange.isWiderThan(MAX_VALUES)) {
                     return false;
                 }
                 List<Long> lhsValues =
-                        AnnotationUtils.getElementValueArray(lhs, "value", Long.class, true);
+                        AnnotationUtils.getElementValueArray(superAnno, "value", Long.class, true);
                 List<Long> rhsValues = ValueCheckerUtils.getValuesFromRange(rhsRange, Long.class);
                 return lhsValues.containsAll(rhsValues);
             } else {
@@ -588,7 +592,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        /** Convert a byte array to a String. */
+        /** Convert a byte array to a String. Return null if unable to convert. */
         private String getByteArrayStringVal(List<? extends ExpressionTree> initializers) {
             // True iff every element of the array is a literal.
             boolean allLiterals = true;
@@ -611,7 +615,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
-        /** Convert a char array to a String. */
+        /** Convert a char array to a String. Return null if unable to convert. */
         private String getCharArrayStringVal(List<? extends ExpressionTree> initializers) {
             boolean allLiterals = true;
             StringBuilder stringVal = new StringBuilder();

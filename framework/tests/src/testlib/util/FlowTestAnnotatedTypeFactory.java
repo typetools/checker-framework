@@ -64,18 +64,18 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameIgnoringValues(lhs, VALUE)
-                    && AnnotationUtils.areSameIgnoringValues(rhs, VALUE)) {
-                return AnnotationUtils.areSame(lhs, rhs);
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, VALUE)
+                    && AnnotationUtils.areSameIgnoringValues(subAnno, VALUE)) {
+                return AnnotationUtils.areSame(superAnno, subAnno);
             }
-            if (AnnotationUtils.areSameIgnoringValues(lhs, VALUE)) {
-                lhs = VALUE;
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, VALUE)) {
+                superAnno = VALUE;
             }
-            if (AnnotationUtils.areSameIgnoringValues(rhs, VALUE)) {
-                rhs = VALUE;
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, VALUE)) {
+                subAnno = VALUE;
             }
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
     }
 }

@@ -250,8 +250,8 @@ public class ValueTransfer extends CFTransfer {
     /** Create a boolean transfer result. */
     private TransferResult<CFValue, CFStore> createNewResultBoolean(
             TransferResult<CFValue, CFStore> result, List<Boolean> resultValues) {
-        AnnotationMirror stringVal = createBooleanAnnotationMirror(resultValues);
-        return createNewResult(result, stringVal);
+        AnnotationMirror boolVal = createBooleanAnnotationMirror(resultValues);
+        return createNewResult(result, boolVal);
     }
 
     @Override
