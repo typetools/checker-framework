@@ -2,6 +2,7 @@ package org.checkerframework.common.value;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -79,7 +80,7 @@ public class ValueTransfer extends CFTransfer {
         }
         numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
         if (numberAnno != null) {
-            return new ArrayList<String>();
+            return Collections.singletonList("null");
         }
 
         // @IntVal, @IntRange, @DoubleVal, @BoolVal (have to be converted to string)
@@ -109,7 +110,8 @@ public class ValueTransfer extends CFTransfer {
         for (Object o : values) {
             stringValues.add(o.toString());
         }
-        return stringValues;
+        // Empty list means bottom value
+        return stringValues.isEmpty() ? Collections.singletonList("null") : stringValues;
     }
 
     /** Get possible boolean values from @BoolVal. */

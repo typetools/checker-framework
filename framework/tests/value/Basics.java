@@ -1,5 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
+/** Test subtyping, LUB and annotation replacement in special cases */
 class Basics {
 
     public void boolTest() {
@@ -112,6 +113,7 @@ class Basics {
         @IntRange(from = 0, to = 4)
         Integer test7 = a;
 
+        /* IntRange (Wider than 10) + IntVal */
         a = new Integer(0);
         if (true) {
             a = y;
@@ -155,6 +157,7 @@ class Basics {
         @IntRange(from = 0, to = 4)
         int test7 = a;
 
+        /* IntRange (Wider than 10) + IntVal */
         a = 0;
         if (true) {
             a = y;
@@ -170,8 +173,7 @@ class Basics {
             @IntVal({0, 1}) int iv,
             @IntRange(from = 2, to = 3) int ir,
             @IntRange(from = 2, to = 20) int irw,
-            @DoubleVal({4.0, 5.0}) double dv1,
-            @DoubleVal({4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0}) double dv2) {
+            @DoubleVal({4.0, 5.0}) double dv1) {
         double a;
 
         /* IntVal + DoubleVal */
@@ -195,9 +197,10 @@ class Basics {
         test1 = a;
         test2 = a;
 
+        /* IntRange (Wider than 10) + DoubleVal */
         a = irw;
         if (true) {
-            a = dv2;
+            a = dv1;
         }
         //:: error: (assignment.type.incompatible)
         @DoubleVal({4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0}) double test5 = a;
@@ -223,18 +226,14 @@ class Basics {
 
     void tooManyValuesInt() {
         //:: warning: (too.many.values.given.int)
-        @IntVal({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 100}) int a = 8;
-
-        @UnknownVal int b = a; // This should always succeed
-
-        @UnknownVal int c = 20;
-
-        a = c; // This should succeed if a is treated as @IntRange(from=1, to=100)
+        @IntVal({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 100}) int a = 20; // This should succeed if a is treated as @IntRange(from=1, to=100)
 
         //:: warning: (too.many.values.given.int)
         @IntVal({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12})
         //:: error: (assignment.type.incompatible)
-        int d = a; // d is @IntRange(from=1, to=12), a is @IntVal({20});
+        int b = 20; // d is @IntRange(from=1, to=12)
+
+        @UnknownVal int c = a; // This should always succeed
     }
 
     void fromGreaterThanTo() {

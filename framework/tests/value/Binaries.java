@@ -17,6 +17,30 @@ class Binaries {
 
     void write(int t) {}
 
+    public void testIntRange(
+            @IntVal({1, 2}) int values,
+            @IntRange(from = 3, to = 4) int range1,
+            @IntRange(from = 5, to = 20) int range2,
+            @BottomVal int bottom,
+            @UnknownVal int top) {
+
+        /* IntRange + IntRange */
+        @IntRange(from = 8, to = 24)
+        int a = range1 + range2;
+
+        /* IntRange * IntVal */
+        @IntRange(from = 3, to = 8)
+        int b = values * range1;
+
+        /* IntRange * BottomVal */
+        int c = range1 * bottom;
+
+        /* IntRange * UnknownVal */
+        @IntRange(from = 0)
+        //:: error: (assignment.type.incompatible)
+        int d = range1 + top;
+    }
+
     public void add() {
         int a = 1;
         if (true) {

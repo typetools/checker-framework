@@ -36,8 +36,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      * @param exp an integral literal tree
      * @return {@code exp}'s literal value
      */
-    private long getIntLiteralValue(ExpressionTree exp) {
-        Object orgValue = ((LiteralTree) exp).getValue();
+    private long getIntLiteralValue(LiteralTree exp) {
+        Object orgValue = exp.getValue();
         switch (exp.getKind()) {
             case INT_LITERAL:
             case LONG_LITERAL:
@@ -90,9 +90,14 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                     expFrom = arg1.getExpression();
                 }
 
-                if (getIntLiteralValue(expFrom) > getIntLiteralValue(expTo)) {
-                    checker.report(Result.failure("from.greater.than.to"), node);
-                    return null;
+                if (expFrom instanceof LiteralTree && expTo instanceof LiteralTree) {
+                    // expression could be a VariableTree but we give up the checks in that case.
+                    LiteralTree literalFrom = (LiteralTree) expFrom;
+                    LiteralTree literalTo = (LiteralTree) expTo;
+                    if (getIntLiteralValue(literalFrom) > getIntLiteralValue(literalTo)) {
+                        checker.report(Result.failure("from.greater.than.to"), node);
+                        return null;
+                    }
                 }
             }
         } else if (element.toString().equals(ArrayLen.class.getName())
