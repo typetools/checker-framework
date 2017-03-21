@@ -285,7 +285,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
                 List<Object> a2Values =
                         AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
-                TreeSet<Object> newValues = new TreeSet<>();
+                Set<Object> newValues = new TreeSet<>();
                 newValues.addAll(a1Values);
                 newValues.addAll(a2Values);
 
@@ -450,9 +450,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Adds the ArrayLen annotation from the array initializers to {@code type}.
          *
          * <p>If type is a multi-dimensional array, the the initializers might also contain arrays,
-         * so this methods adds the annotations for those initializers, too.
+         * so this method adds the annotations for those initializers, too.
          *
-         * @param initializers initializers trees
+         * @param initializers initializer trees
          * @param type array type to which annotations are added
          */
         private void handleInitializers(
@@ -466,8 +466,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return;
             }
 
-            // A list of arrayLens. arrayLenOfDimensions.get(i) returns the array lengths for the
-            // ith dimension.
+            // A list of arrayLens.  arrayLenOfDimensions.get(i) is the array lengths for the ith
+            // dimension.
             List<List<Integer>> arrayLenOfDimensions = new ArrayList<>();
             for (ExpressionTree init : initializers) {
                 AnnotatedTypeMirror componentType = getAnnotatedType(init);
@@ -733,7 +733,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
 
                 if (TreeUtils.isArrayLengthAccess(tree)) {
-                    // The field access is "someArrayExpression.length"
+                    // The field access is to the length field, as in "someArrayExpression.length"
                     AnnotatedTypeMirror receiverType = getAnnotatedType(tree.getExpression());
                     if (receiverType.getKind() == TypeKind.ARRAY) {
                         AnnotationMirror arrayAnno = receiverType.getAnnotation(ArrayLen.class);
@@ -760,7 +760,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Returns a constant value annotation with the {@code value}. The class of the annotation
          * reflects the {@code resultType} given.
          *
-         * @param resultType used to selected which kind of value annotation is returned.
+         * @param resultType used to selecte which kind of value annotation is returned
          * @param value value to use
          * @return a constant value annotation with the {@code value}
          */
@@ -772,8 +772,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Returns a constant value annotation with the {@code values}. The class of the annotation
          * reflects the {@code resultType} given.
          *
-         * @param resultType used to selected which kind of value annotation is returned.
-         * @param values must be a homogeneous list: every element of it has the same class.
+         * @param resultType used to selected which kind of value annotation is returned
+         * @param values must be a homogeneous list: every element of it has the same class
          * @return a constant value annotation with the {@code values}
          */
         private AnnotationMirror createResultingAnnotation(TypeMirror resultType, List<?> values) {
@@ -858,10 +858,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Returns a {@link IntVal} annotation using the values. If {@code values} is null, then
-     * UnknownVal is returns; if {@code values} is empty, then bottom is returned. The values are
+     * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
      * sorted and duplicates are removed before the annotation is created.
      *
-     * @param values list of longs; duplicates are allowed and the values may be in any order.
+     * @param values list of longs; duplicates are allowed and the values may be in any order
      * @return a {@link IntVal} annotation using the values
      */
     public AnnotationMirror createIntValAnnotation(List<Long> values) {
@@ -879,10 +879,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Returns a {@link DoubleVal} annotation using the values. If {@code values} is null, then
-     * UnknownVal is returns; if {@code values} is empty, then bottom is returned. The values are
+     * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
      * sorted and duplicates are removed before the annotation is created.
      *
-     * @param values list of doubles; duplicates are allowed and the values may be in any order.
+     * @param values list of doubles; duplicates are allowed and the values may be in any order
      * @return a {@link DoubleVal} annotation using the values
      */
     public AnnotationMirror createDoubleValAnnotation(List<Double> values) {
@@ -900,10 +900,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Returns a {@link StringVal} annotation using the values. If {@code values} is null, then
-     * UnknownVal is returns; if {@code values} is empty, then bottom is returned. The values are
+     * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
      * sorted and duplicates are removed before the annotation is created.
      *
-     * @param values list of strings; duplicates are allowed and the values may be in any order.
+     * @param values list of strings; duplicates are allowed and the values may be in any order
      * @return a {@link StringVal} annotation using the values
      */
     public AnnotationMirror createStringAnnotation(List<String> values) {
@@ -921,10 +921,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Returns a {@link ArrayLen} annotation using the values. If {@code values} is null, then
-     * UnknownVal is returns; if {@code values} is empty, then bottom is returned. The values are
+     * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
      * sorted and duplicates are removed before the annotation is created.
      *
-     * @param values list of integers; duplicates are allowed and the values may be in any order.
+     * @param values list of integers; duplicates are allowed and the values may be in any order
      * @return a {@link ArrayLen} annotation using the values
      */
     public AnnotationMirror createArrayLenAnnotation(List<Integer> values) {
@@ -942,10 +942,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Returns a {@link BoolVal} annotation using the values. If {@code values} is null, then
-     * UnknownVal is returns; if {@code values} is empty, then bottom is returned. The values are
+     * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
      * sorted and duplicates are removed before the annotation is created.
      *
-     * @param values list of booleans; duplicates are allowed and the values may be in any order.
+     * @param values list of booleans; duplicates are allowed and the values may be in any order
      * @return a {@link BoolVal} annotation using the values
      */
     public AnnotationMirror createBooleanAnnotation(List<Boolean> values) {
@@ -963,10 +963,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Returns a {@link IntVal} annotation using the values. If {@code values} is null, then
-     * UnknownVal is returns; if {@code values} is empty, then bottom is returned. The values are
+     * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
      * sorted and duplicates are removed before the annotation is created.
      *
-     * @param values list of characters; duplicates are allowed and the values may be in any order.
+     * @param values list of characters; duplicates are allowed and the values may be in any order
      * @return a {@link IntVal} annotation using the values
      */
     public AnnotationMirror createCharAnnotation(List<Character> values) {
