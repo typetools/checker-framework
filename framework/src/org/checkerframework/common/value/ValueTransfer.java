@@ -630,14 +630,14 @@ public class ValueTransfer extends CFTransfer {
         CFStore elseStore = result.getElseStore();
 
         createAnnotationFromResultsAndAddToStore(
-                thenStore, thenLeftVals, leftUnderlyingType, leftNode, leftRec);
+                thenStore, thenLeftVals, leftUnderlyingType, leftRec);
         createAnnotationFromResultsAndAddToStore(
-                elseStore, elseLeftVals, leftUnderlyingType, leftNode, leftRec);
+                elseStore, elseLeftVals, leftUnderlyingType, leftRec);
 
         createAnnotationFromResultsAndAddToStore(
-                thenStore, thenRightVals, rightUnderlyingType, rightNode, rightRec);
+                thenStore, thenRightVals, rightUnderlyingType, rightRec);
         createAnnotationFromResultsAndAddToStore(
-                elseStore, elseRightVals, rightUnderlyingType, rightNode, rightRec);
+                elseStore, elseRightVals, rightUnderlyingType, rightRec);
 
         return resultValues;
     }
@@ -646,11 +646,10 @@ public class ValueTransfer extends CFTransfer {
             CFStore store,
             List<?> results,
             TypeMirror underlyingType,
-            Node node,
             FlowExpressions.Receiver rec) {
         AnnotationMirror anno =
                 ((ValueAnnotatedTypeFactory) atypefactory)
-                        .createAnnotationFromResults(underlyingType, results, node);
+                        .createResultingAnnotation(underlyingType, results);
         store.clearValue(rec);
         store.insertValue(rec, anno);
     }
