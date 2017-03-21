@@ -34,7 +34,6 @@ import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
-import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -777,97 +776,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private boolean handledByValueChecker(AnnotatedTypeMirror type) {
             return coveredClassStrings.contains(type.getUnderlyingType().toString());
         }
-    }
-
-    /**
-     * Used by the transfer function to create an annotation from a refined list of values.
-     *
-     * @see this.resultAnnotationHandler
-     */
-    public AnnotationMirror createAnnotationFromResults(
-            TypeMirror resultType, List<?> results, Node node) {
-        return resultAnnotationHandler(resultType, results, node.getTree());
-    }
-
-    /**
-     * @param resultType is evaluated using getClass to derive a Class object
-     * @param tree location for error reporting
-     */
-    private AnnotationMirror resultAnnotationHandler(
-            TypeMirror resultType, List<?> results, Tree tree) {
-
-        if (results == null) {
-            return UNKNOWNVAL;
-        }
-
-        Class<?> resultClass = ValueCheckerUtils.getClassFromType(resultType);
-
-        // For some reason null is included in the list of values,
-        // so remove it so that it does not cause a NPE elsewhere.
-        results.remove(null);
-        if (results.size() == 0) {
-            return BOTTOMVAL;
-        } else if (resultClass == Boolean.class || resultClass == boolean.class) {
-            HashSet<Boolean> boolVals = new HashSet<Boolean>(results.size());
-            for (Object o : results) {
-                boolVals.add((Boolean) o);
-            }
-            return createBooleanAnnotation(new ArrayList<Boolean>(boolVals));
-
-        } else if (resultClass == Double.class
-                || resultClass == double.class
-                || resultClass == Float.class
-                || resultClass == float.class
-                || resultClass == Integer.class
-                || resultClass == int.class
-                || resultClass == Long.class
-                || resultClass == long.class
-                || resultClass == Short.class
-                || resultClass == short.class
-                || resultClass == Byte.class
-                || resultClass == byte.class) {
-            HashSet<Number> numberVals = new HashSet<>(results.size());
-            List<Character> charVals = new ArrayList<>();
-            for (Object o : results) {
-                if (o instanceof Character) {
-                    charVals.add((Character) o);
-                } else {
-                    numberVals.add((Number) o);
-                }
-            }
-            if (numberVals.isEmpty()) {
-                return createCharAnnotation(charVals);
-            }
-            return createNumberAnnotationMirror(new ArrayList<Number>(numberVals));
-        } else if (resultClass == char.class || resultClass == Character.class) {
-            HashSet<Character> intVals = new HashSet<>(results.size());
-            for (Object o : results) {
-                if (o instanceof Number) {
-                    intVals.add((char) ((Number) o).intValue());
-                } else {
-                    intVals.add((char) o);
-                }
-            }
-            return createCharAnnotation(new ArrayList<Character>(intVals));
-        } else if (resultClass == String.class) {
-            HashSet<String> stringVals = new HashSet<String>(results.size());
-            for (Object o : results) {
-                stringVals.add((String) o);
-            }
-            return createStringAnnotation(new ArrayList<String>(stringVals));
-        } else if (resultClass == byte[].class) {
-            HashSet<String> stringVals = new HashSet<String>(results.size());
-            for (Object o : results) {
-                if (o instanceof byte[]) {
-                    stringVals.add(new String((byte[]) o));
-                } else {
-                    stringVals.add(o.toString());
-                }
-            }
-            return createStringAnnotation(new ArrayList<String>(stringVals));
-        }
-
-        return UNKNOWNVAL;
     }
 
     public AnnotationMirror createIntValAnnotation(List<Long> intValues) {
