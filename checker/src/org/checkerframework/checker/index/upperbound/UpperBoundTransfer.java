@@ -293,11 +293,17 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         UBQualifier glb = rightQualifier.glb(leftQualifier);
         AnnotationMirror glbAnno = atypeFactory.convertUBQualifierToAnnotation(glb);
 
-        Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-        store.insertValue(rightRec, glbAnno);
+        List<Node> internalsRight = splitAssignments(right);
+        for (Node internal : internalsRight) {
+            Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
+            store.insertValue(rightRec, glbAnno);
+        }
 
-        Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
-        store.insertValue(leftRec, glbAnno);
+        List<Node> internalsLeft = splitAssignments(left);
+        for (Node internal : internalsLeft) {
+            Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
+            store.insertValue(leftRec, glbAnno);
+        }
     }
 
     /**
@@ -315,10 +321,13 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                 String array = fa.getReceiver().toString();
                 if (otherQualifier.hasArrayWithOffsetNeg1(array)) {
                     otherQualifier = otherQualifier.glb(UBQualifier.createUBQualifier(array, "0"));
-                    Receiver leftRec =
-                            FlowExpressions.internalReprOf(analysis.getTypeFactory(), otherNode);
-                    store.insertValue(
-                            leftRec, atypeFactory.convertUBQualifierToAnnotation(otherQualifier));
+                    for (Node internal : splitAssignments(otherNode)) {
+                        Receiver leftRec =
+                                FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
+                        store.insertValue(
+                                leftRec,
+                                atypeFactory.convertUBQualifierToAnnotation(otherQualifier));
+                    }
                 }
             }
         }
