@@ -25,4 +25,18 @@ class Issue58Minimization {
             @Positive int y = x;
         }
     }
+
+    void ubc_test(int[] a, @LTEqLengthOf("#1") int x) {
+        int z;
+        if ((z = x) != a.length) {
+            @LTLengthOf("a") int y = z;
+        }
+    }
+
+    void minlen_test(int[] a, int[] c) {
+        int[] b;
+        if ((b = a) == c) {
+            int @SameLen({"a", "b", "c"}) [] d = b;
+        }
+    }
 }
