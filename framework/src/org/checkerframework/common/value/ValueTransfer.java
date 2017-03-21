@@ -590,8 +590,8 @@ public class ValueTransfer extends CFTransfer {
         // of elements in each list), we have to iterate through parts of the list at a time in order to find all
         // the results of comparisons involving a particular value in the left list.
         for (int i = 0; i < lefts.size(); i++) {
-            for (Boolean b : resultValues.subList(i, (1 + i) * rights.size())) {
-                if (b) {
+            for (int j = i; j < (1 + i) * rights.size(); j++) {
+                if (resultValues.get(j)) {
                     thenLeftVals.add(lefts.get(i));
                 } else {
                     elseLeftVals.add(lefts.get(i));
