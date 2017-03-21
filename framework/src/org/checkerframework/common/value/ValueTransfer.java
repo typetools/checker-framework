@@ -17,6 +17,7 @@ import org.checkerframework.common.value.util.NumberMath;
 import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -55,16 +56,15 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class ValueTransfer extends CFTransfer {
-    AnnotatedTypeFactory atypefactory;
+    private ValueAnnotatedTypeFactory atypefactory;
 
     public ValueTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
-        atypefactory = analysis.getTypeFactory();
+        atypefactory = (ValueAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 
     private List<String> getStringValues(Node subNode, TransferInput<CFValue, CFStore> p) {
@@ -141,14 +141,14 @@ public class ValueTransfer extends CFTransfer {
 
     private AnnotationMirror createStringValAnnotationMirror(List<String> values) {
         if (values.isEmpty()) {
-            return ((ValueAnnotatedTypeFactory) atypefactory).UNKNOWNVAL;
+            return atypefactory.UNKNOWNVAL;
         }
-        return ((ValueAnnotatedTypeFactory) atypefactory).createStringAnnotation(values);
+        return atypefactory.createStringAnnotation(values);
     }
 
     private AnnotationMirror createNumberAnnotationMirror(List<Number> values) {
         if (values.isEmpty()) {
-            return ((ValueAnnotatedTypeFactory) atypefactory).UNKNOWNVAL;
+            return atypefactory.UNKNOWNVAL;
         }
         Number first = values.get(0);
         if (first instanceof Integer || first instanceof Short || first instanceof Long) {
@@ -156,23 +156,23 @@ public class ValueTransfer extends CFTransfer {
             for (Number number : values) {
                 intValues.add(number.longValue());
             }
-            return ((ValueAnnotatedTypeFactory) atypefactory).createIntValAnnotation(intValues);
+            return atypefactory.createIntValAnnotation(intValues);
         }
         if (first instanceof Double || first instanceof Float) {
             List<Double> intValues = new ArrayList<>();
             for (Number number : values) {
                 intValues.add(number.doubleValue());
             }
-            return ((ValueAnnotatedTypeFactory) atypefactory).createDoubleValAnnotation(intValues);
+            return atypefactory.createDoubleValAnnotation(intValues);
         }
         throw new UnsupportedOperationException();
     }
 
     private AnnotationMirror createBooleanAnnotationMirror(List<Boolean> values) {
         if (values.isEmpty()) {
-            return ((ValueAnnotatedTypeFactory) atypefactory).UNKNOWNVAL;
+            return atypefactory.UNKNOWNVAL;
         }
-        return ((ValueAnnotatedTypeFactory) atypefactory).createBooleanAnnotation(values);
+        return atypefactory.createBooleanAnnotation(values);
     }
 
     private TransferResult<CFValue, CFStore> createNewResult(
@@ -200,7 +200,7 @@ public class ValueTransfer extends CFTransfer {
                 analysis.createSingleAnnotationValue(
                         stringVal, result.getResultValue().getUnderlyingType());
 
-        return new ConditionalTransferResult<CFValue, CFStore>(
+        return new ConditionalTransferResult<>(
                 newResultValue, result.getThenStore(), result.getElseStore(), true);
     }
 
@@ -227,9 +227,8 @@ public class ValueTransfer extends CFTransfer {
                         arrayLenValues.add(l.intValue());
                     }
                     AnnotationMirror newArrayAnno =
-                            ((ValueAnnotatedTypeFactory) atypefactory)
-                                    .createArrayLenAnnotation(arrayLenValues);
-                    FlowExpressions.Receiver arrayRec =
+                            atypefactory.createArrayLenAnnotation(arrayLenValues);
+                    Receiver arrayRec =
                             FlowExpressions.internalReprOf(
                                     analysis.getTypeFactory(), node.getReceiver());
                     result.getRegularStore().clearValue(arrayRec);
