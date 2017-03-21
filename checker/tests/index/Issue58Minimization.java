@@ -33,10 +33,24 @@ class Issue58Minimization {
         }
     }
 
-    void minlen_test(int[] a, int[] c) {
+    void samelen_test(int[] a, int[] c) {
         int[] b;
         if ((b = a) == c) {
             int @SameLen({"a", "b", "c"}) [] d = b;
+        }
+    }
+
+    void minlen_test(int[] a, int @MinLen(1) [] c) {
+        int[] b;
+        if ((b = a) == c) {
+            int @MinLen(1) [] d = b;
+        }
+    }
+
+    void minlen_test2(int[] a, int x) {
+        int one = 1;
+        if ((x = one) == a.length) {
+            int @MinLen(1) [] b = a;
         }
     }
 }
