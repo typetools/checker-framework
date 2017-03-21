@@ -489,14 +489,14 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
-                return AnnotationUtils.areSame(lhs, rhs);
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, subAnno)) {
+                return AnnotationUtils.areSame(superAnno, subAnno);
             }
-            lhs = removePrefix(lhs);
-            rhs = removePrefix(rhs);
+            superAnno = removePrefix(superAnno);
+            subAnno = removePrefix(subAnno);
 
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
 
         // Overriding leastUpperBound due to the fact that alias annotations are

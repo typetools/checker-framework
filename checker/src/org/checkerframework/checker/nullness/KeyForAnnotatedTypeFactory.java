@@ -274,41 +274,43 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameIgnoringValues(lhs, KEYFOR)
-                    && AnnotationUtils.areSameIgnoringValues(rhs, KEYFOR)) {
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, KEYFOR)
+                    && AnnotationUtils.areSameIgnoringValues(subAnno, KEYFOR)) {
                 List<String> lhsValues = null;
                 List<String> rhsValues = null;
 
                 Map<? extends ExecutableElement, ? extends AnnotationValue> valMap =
-                        lhs.getElementValues();
+                        superAnno.getElementValues();
 
                 if (valMap.isEmpty()) {
                     lhsValues = new ArrayList<String>();
                 } else {
                     lhsValues =
-                            AnnotationUtils.getElementValueArray(lhs, "value", String.class, true);
+                            AnnotationUtils.getElementValueArray(
+                                    superAnno, "value", String.class, true);
                 }
 
-                valMap = rhs.getElementValues();
+                valMap = subAnno.getElementValues();
 
                 if (valMap.isEmpty()) {
                     rhsValues = new ArrayList<String>();
                 } else {
                     rhsValues =
-                            AnnotationUtils.getElementValueArray(rhs, "value", String.class, true);
+                            AnnotationUtils.getElementValueArray(
+                                    subAnno, "value", String.class, true);
                 }
 
                 return rhsValues.containsAll(lhsValues);
             }
             // Ignore annotation values to ensure that annotation is in supertype map.
-            if (AnnotationUtils.areSameIgnoringValues(lhs, KEYFOR)) {
-                lhs = KEYFOR;
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, KEYFOR)) {
+                superAnno = KEYFOR;
             }
-            if (AnnotationUtils.areSameIgnoringValues(rhs, KEYFOR)) {
-                rhs = KEYFOR;
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, KEYFOR)) {
+                subAnno = KEYFOR;
             }
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
     }
 

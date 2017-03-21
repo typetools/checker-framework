@@ -108,7 +108,7 @@ class GeneralQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
     // Not needed - raises error.
     @Override
-    public boolean isSubtype(AnnotationMirror anno1, AnnotationMirror anno2) {
+    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
         ErrorReporter.errorAbort(
                 "GeneralQualifierHierarchy.isSubtype() was called! It shouldn't be called.");
         return false;
@@ -116,7 +116,7 @@ class GeneralQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
     // Not needed - raises error.
     @Override
-    public boolean isSubtypeTypeVariable(AnnotationMirror anno1, AnnotationMirror anno2) {
+    public boolean isSubtypeTypeVariable(AnnotationMirror subAnno, AnnotationMirror superAnno) {
         ErrorReporter.errorAbort(
                 "GeneralQualifierHierarchy.isSubtypeTypeVariable() was called! It shouldn't be called.");
         return false;
@@ -135,8 +135,8 @@ class GeneralQualifierHierarchy extends MultiGraphQualifierHierarchy {
     // Not needed - raises error.
     @Override
     public boolean isSubtypeTypeVariable(
-            Collection<? extends AnnotationMirror> rhs,
-            Collection<? extends AnnotationMirror> lhs) {
+            Collection<? extends AnnotationMirror> subAnnos,
+            Collection<? extends AnnotationMirror> superAnnos) {
         ErrorReporter.errorAbort(
                 "GeneralQualifierHierarchy.isSubtypeTypeVariable() was called! It shouldn't be called.");
         return false;
