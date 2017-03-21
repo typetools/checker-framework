@@ -218,9 +218,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Queries the SameLen Checker to return the type that the SameLen Checker associates with the
-     * given expression tree.
+     * given tree.
      */
-    public AnnotationMirror sameLenAnnotationFromExpressionTree(ExpressionTree tree) {
+    public AnnotationMirror sameLenAnnotationFromTree(Tree tree) {
         AnnotatedTypeMirror sameLenType = getSameLenAnnotatedTypeFactory().getAnnotatedType(tree);
         return sameLenType.getAnnotation(SameLen.class);
     }
