@@ -212,7 +212,6 @@ public abstract class UBQualifier {
         return false;
     }
 
-    /** */
     static class LessThanLengthOf extends UBQualifier {
         private final Map<String, Set<OffsetEquation>> map;
 

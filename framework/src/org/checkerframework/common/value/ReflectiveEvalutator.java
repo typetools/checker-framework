@@ -42,7 +42,7 @@ public class ReflectiveEvalutator {
      * @param tree location to report any errors
      * @return all possible values that the method may return
      */
-    public List<?> evaluteMethodCall(
+    public List<?> evaluateMethodCall(
             List<List<?>> allArgValues, List<?> receiverValues, MethodInvocationTree tree) {
         Method method = getMethodObject(tree);
         if (method == null) {
@@ -246,7 +246,7 @@ public class ReflectiveEvalutator {
             throws ClassNotFoundException, NoSuchMethodException {
         ExecutableElement ele = TreeUtils.elementFromUse(tree);
         List<Class<?>> paramClasses = getParameterClasses(tree, ele);
-        Class<?> recClass = boxPrimatives(ValueCheckerUtils.getClassFromType(typeToCreate));
+        Class<?> recClass = boxPrimitives(ValueCheckerUtils.getClassFromType(typeToCreate));
         Constructor<?> constructor = recClass.getConstructor(paramClasses.toArray(new Class<?>[0]));
         return constructor;
     }
@@ -254,7 +254,7 @@ public class ReflectiveEvalutator {
      * Returns the box primitive type if the passed type is an (unboxed) primitive. Otherwise it
      * returns the passed type
      */
-    private static Class<?> boxPrimatives(Class<?> type) {
+    private static Class<?> boxPrimitives(Class<?> type) {
         if (type == byte.class) {
             return Byte.class;
         } else if (type == short.class) {

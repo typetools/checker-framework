@@ -253,13 +253,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return sameLenType.getAnnotation(SameLen.class);
     }
 
-    /** Get the list of possible values from a value checker type. May return null. */
+    /**
+     * Get the list of possible values from a Value Checker type. Empty list means no possible
+     * values (dead code). Returns null if there is no estimate.
+     */
     private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
-        AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
-        if (anm == null) {
-            return null;
-        }
-        return ValueAnnotatedTypeFactory.getIntValues(anm);
+        return ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
     }
 
     /**
@@ -407,9 +406,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @return true if rhs is a subtype of lhs, false otherwise
          */
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            UBQualifier subtype = UBQualifier.createUBQualifier(rhs);
-            UBQualifier supertype = UBQualifier.createUBQualifier(lhs);
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            UBQualifier subtype = UBQualifier.createUBQualifier(subAnno);
+            UBQualifier supertype = UBQualifier.createUBQualifier(superAnno);
             return subtype.isSubtype(supertype);
         }
     }

@@ -179,21 +179,21 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
-            if (AnnotationUtils.areSame(sub, sup)
-                    || AnnotationUtils.areSameByClass(sup, UnknownMethod.class)
-                    || AnnotationUtils.areSameByClass(sub, MethodValBottom.class)) {
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSame(subAnno, superAnno)
+                    || AnnotationUtils.areSameByClass(superAnno, UnknownMethod.class)
+                    || AnnotationUtils.areSameByClass(subAnno, MethodValBottom.class)) {
                 return true;
             }
-            if (AnnotationUtils.areSameByClass(sub, UnknownMethod.class)
-                    || AnnotationUtils.areSameByClass(sup, MethodValBottom.class)) {
+            if (AnnotationUtils.areSameByClass(subAnno, UnknownMethod.class)
+                    || AnnotationUtils.areSameByClass(superAnno, MethodValBottom.class)) {
                 return false;
             }
-            assert AnnotationUtils.areSameByClass(sub, MethodVal.class)
-                            && AnnotationUtils.areSameByClass(sup, MethodVal.class)
+            assert AnnotationUtils.areSameByClass(subAnno, MethodVal.class)
+                            && AnnotationUtils.areSameByClass(superAnno, MethodVal.class)
                     : "Unexpected annotation in MethodVal";
-            List<MethodSignature> subSignatures = getListOfMethodSignatures(sub);
-            List<MethodSignature> superSignatures = getListOfMethodSignatures(sup);
+            List<MethodSignature> subSignatures = getListOfMethodSignatures(subAnno);
+            List<MethodSignature> superSignatures = getListOfMethodSignatures(superAnno);
             for (MethodSignature sig : subSignatures) {
                 if (!superSignatures.contains(sig)) {
                     return false;

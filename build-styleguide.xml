@@ -113,15 +113,37 @@
     <isset property="isMac"/>
   </condition>
 
+
+  <target name="-run-google-java-format.check">
+    <condition property="run-google-java-format.exists">
+      <available file="${checker.loc}/bin-devel/.run-google-java-format" type="dir"/>
+    </condition>
+  </target>
+
   <target name="-get-run-google-java-format"
-          description="Obtain or update run-google-java-format project">
-    <exec executable="/bin/sh">
-      <arg value="-c"/>
-      <arg value="cd ${checker.loc}/bin-devel &amp;&amp; ((cd .run-google-java-format &amp;&amp; git pull -q) || git clone -q https://github.com/plume-lib/run-google-java-format.git .run-google-java-format)"/>
+          description="Obtain the run-google-java-format project"
+          depends="-run-google-java-format.check"
+          unless="run-google-java-format.exists">
+    <exec executable="git"
+          dir="${checker.loc}/bin-devel">
+      <arg value="clone"/>
+      <arg value="-q"/>
+      <arg value="https://github.com/plume-lib/run-google-java-format.git"/>
+      <arg value=".run-google-java-format"/>
     </exec>
   </target>
 
-  <target name="reformat" depends="-get-run-google-java-format"
+  <target name="-update-run-google-java-format"
+          description="Update the run-google-java-format project"
+          depends="-get-run-google-java-format">
+    <exec executable="git"
+          dir="${checker.loc}/bin-devel/.run-google-java-format">
+      <arg value="pull"/>
+      <arg value="-q"/>
+    </exec>
+  </target>
+
+  <target name="reformat" depends="-update-run-google-java-format"
           description="Reformat Java code">
     <apply executable="python" parallel="true" maxparallel="${maxparallel}" failonerror="true">
       <arg value="${checker.loc}/bin-devel/.run-google-java-format/run-google-java-format.py"/>
@@ -130,7 +152,7 @@
     </apply>
   </target>
 
-  <target name="check-format" depends="-get-run-google-java-format"
+  <target name="check-format" depends="-update-run-google-java-format"
           description="Check Java code formatting">
     <apply executable="python" parallel="true" maxparallel="${maxparallel}" failonerror="true">
       <arg value="${checker.loc}/bin-devel/.run-google-java-format/check-google-java-format.py"/>

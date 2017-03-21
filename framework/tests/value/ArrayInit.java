@@ -56,8 +56,7 @@ class ArrayInit {
         // type of arg should be @UnknownValue int @BottomVal[]
         vargs((int[]) null);
 
-        // type of arg is, but maybe shouldn't be @UnknownVal byte @StringVal("null") []
-        //:: error: (argument.type.incompatible)
+        // type of arg should be @UnknownValue byte @BottomVal[]
         vargs((byte[]) null);
     }
 
