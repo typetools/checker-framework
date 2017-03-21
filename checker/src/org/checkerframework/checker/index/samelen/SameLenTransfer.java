@@ -126,7 +126,7 @@ public class SameLenTransfer extends CFTransfer {
         if (currentPath == null) {
             return;
         }
-        for (String s : IndexUtils.getValue(combinedSameLen)) {
+        for (String s : IndexUtils.getValueOfAnnotationWithStringArgument(combinedSameLen)) {
             Receiver recS;
             try {
                 recS = aTypeFactory.getReceiverFromJavaExpressionString(s, currentPath);

@@ -26,6 +26,10 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
         super(checker);
     }
 
+    /**
+     * Modifies the common assignment checks to ensure that SameLen annotations are always merged.
+     * The check is not relaxed in any way.
+     */
     @Override
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
@@ -39,7 +43,9 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
 
             AnnotationMirror am = valueType.getAnnotation(SameLen.class);
             List<String> arraysInAnno =
-                    am == null ? new ArrayList<String>() : IndexUtils.getValue(am);
+                    am == null
+                            ? new ArrayList<String>()
+                            : IndexUtils.getValueOfAnnotationWithStringArgument(am);
 
             Receiver rec = FlowExpressions.internalReprOf(atypeFactory, (ExpressionTree) valueTree);
             if (rec != null && !(rec instanceof Unknown)) {

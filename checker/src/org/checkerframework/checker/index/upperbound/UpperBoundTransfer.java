@@ -1,12 +1,12 @@
 package org.checkerframework.checker.index.upperbound;
 
-import com.sun.source.tree.ExpressionTree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
+import org.checkerframework.checker.index.IndexUtils;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
@@ -116,7 +116,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             CFStore store) {
         if (atypeFactory.hasLowerBoundTypeByClass(other, Positive.class)) {
             UBQualifier lessThan;
-            Integer x = atypeFactory.valMinFromExpressionTree((ExpressionTree) other.getTree());
+            Integer x =
+                    IndexUtils.getMinValueOrNullFromTree(
+                                    other.getTree(), atypeFactory.getValueAnnotatedTypeFactory())
+                            .intValue();
             if (x != null && x > 1) {
                 lessThan = UBQualifier.createUBQualifier(arrayExp, "0");
             } else {

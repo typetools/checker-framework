@@ -1,7 +1,5 @@
 package org.checkerframework.checker.index.minlen;
 
-import static org.checkerframework.checker.index.IndexUtils.possibleValuesFromValueType;
-
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
@@ -88,21 +86,6 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Returns the value type associated with the given ExpressionTree. */
     public AnnotatedTypeMirror valueTypeFromTree(Tree tree) {
         return getValueAnnotatedTypeFactory().getAnnotatedType(tree);
-    }
-
-    /**
-     * Finds the minimum value in a Value Checker type. If there is no information (such as when the
-     * list of possible values is empty or null), returns null. Otherwise, returns the smallest
-     * value in the list of possible values.
-     */
-    public Integer getMinLenFromValueType(AnnotatedTypeMirror valueType) {
-        List<Long> possibleValues = possibleValuesFromValueType(valueType);
-        if (possibleValues == null || possibleValues.size() == 0) {
-            return null;
-        }
-        // There must be at least one element in the list, because of the previous check.
-        Integer min = Collections.min(possibleValues).intValue();
-        return min;
     }
 
     @Override

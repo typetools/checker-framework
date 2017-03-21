@@ -1077,10 +1077,10 @@ public class IdentityHashMap<K,V>
      * <tt>Map.Entry</tt> objects.  A reference-equality based <tt>Map.Entry
      * e</tt> is equal to an object <tt>o</tt> if and only if <tt>o</tt> is a
      * <tt>Map.Entry</tt> and <tt>e.getKey()==o.getKey() &amp;&amp;
-     * e.getValue()==o.getValue()</tt>.  To accommodate these equals
+     * e.getValueOfAnnotationWithStringArgument()==o.getValueOfAnnotationWithStringArgument()</tt>.  To accommodate these equals
      * semantics, the <tt>hashCode</tt> method returns
      * <tt>System.identityHashCode(e.getKey()) ^
-     * System.identityHashCode(e.getValue())</tt>.
+     * System.identityHashCode(e.getValueOfAnnotationWithStringArgument())</tt>.
      *
      * <p><b>Owing to the reference-equality-based semantics of the
      * <tt>Map.Entry</tt> instances in the set returned by this method,

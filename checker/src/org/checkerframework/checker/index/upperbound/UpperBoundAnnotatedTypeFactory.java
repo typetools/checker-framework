@@ -1,7 +1,5 @@
 package org.checkerframework.checker.index.upperbound;
 
-import static org.checkerframework.checker.index.IndexUtils.possibleValuesFromValueType;
-
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
@@ -31,7 +29,6 @@ import org.checkerframework.checker.index.qual.IndexOrLow;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
-import org.checkerframework.checker.index.qual.MinLen;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.PolyIndex;
 import org.checkerframework.checker.index.qual.PolyUpperBound;
@@ -220,50 +217,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Queries the MinLen Checker to determine if there is a known minimum length for the array. If
-     * not, returns -1.
-     */
-    public int minLenFromExpressionTree(ExpressionTree tree) {
-        AnnotatedTypeMirror minLenType = getMinLenAnnotatedTypeFactory().getAnnotatedType(tree);
-        AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
-        if (anm == null) {
-            return -1;
-        }
-        int minLen = AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
-        return minLen;
-    }
-
-    /**
      * Queries the SameLen Checker to return the type that the SameLen Checker associates with the
      * given expression tree.
      */
     public AnnotationMirror sameLenAnnotationFromExpressionTree(ExpressionTree tree) {
         AnnotatedTypeMirror sameLenType = getSameLenAnnotatedTypeFactory().getAnnotatedType(tree);
         return sameLenType.getAnnotation(SameLen.class);
-    }
-
-    /** Finds the maximum value in the set of values represented by a value checker annotation. */
-    public Integer valMaxFromExpressionTree(ExpressionTree tree) {
-        AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
-        List<Long> possibleValues = possibleValuesFromValueType(valueType);
-        if (possibleValues == null || possibleValues.size() == 0) {
-            return null;
-        }
-        // The annotation of the whole list is the max of the list.
-        long valMax = Collections.max(possibleValues);
-        return new Integer((int) valMax);
-    }
-
-    /** Finds the minimum value in the set of values represented by a value checker annotation. */
-    public Integer valMinFromExpressionTree(ExpressionTree tree) {
-        AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
-        List<Long> possibleValues = possibleValuesFromValueType(valueType);
-        if (possibleValues == null || possibleValues.size() == 0) {
-            return null;
-        }
-        // The annotation of the whole list is the max of the list.
-        long valMax = Collections.min(possibleValues);
-        return (int) valMax;
     }
 
     // Wrapper methods for accessing the IndexMethodIdentifier.

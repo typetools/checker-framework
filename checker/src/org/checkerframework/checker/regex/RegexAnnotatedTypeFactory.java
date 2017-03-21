@@ -480,7 +480,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         //                for (int i = 0; allLiterals && i < initializers.size(); i++) {
         //                    ExpressionTree e = initializers.get(i);
         //                    if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
-        //                        charArray.append(((LiteralTree) e).getValue());
+        //                        charArray.append(((LiteralTree) e).getValueOfAnnotationWithStringArgument());
         //                    } else if (getAnnotatedType(e).hasAnnotation(Regex.class)) {
         //                        // if there's an @Regex char in the array then substitute
         //                        // it with a .

@@ -25,9 +25,9 @@ public class AssertNonNullIfNonNullTest {
         return value != null;
     }
 
-    @EnsuresNonNullIf(expression = "getValue()", result = true)
+    @EnsuresNonNullIf(expression = "getValueOfAnnotationWithStringArgument()", result = true)
     public boolean isValueNonNull2() {
-        // The @AssertNonNullIfNonNull annotation implies that if getValue() is
+        // The @AssertNonNullIfNonNull annotation implies that if getValueOfAnnotationWithStringArgument() is
         // non-null, then is non-null, then value is non-null, but not the
         // converse, so an error should be issued here.
         //:: error: contracts.conditional.postcondition.not.satisfied
@@ -40,7 +40,7 @@ public class AssertNonNullIfNonNullTest {
         return getValue() != null;
     }
 
-    @EnsuresNonNullIf(expression = "getValue()", result = true)
+    @EnsuresNonNullIf(expression = "getValueOfAnnotationWithStringArgument()", result = true)
     public boolean isValueNonNull4() {
         return getValue() != null;
     }
