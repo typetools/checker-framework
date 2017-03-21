@@ -646,9 +646,7 @@ public class ValueTransfer extends CFTransfer {
             List<?> results,
             TypeMirror underlyingType,
             FlowExpressions.Receiver rec) {
-        AnnotationMirror anno =
-                ((ValueAnnotatedTypeFactory) atypefactory)
-                        .createResultingAnnotation(underlyingType, results);
+        AnnotationMirror anno = atypefactory.createResultingAnnotation(underlyingType, results);
         store.clearValue(rec);
         store.insertValue(rec, anno);
     }
