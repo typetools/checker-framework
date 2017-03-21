@@ -116,10 +116,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             CFStore store) {
         if (atypeFactory.hasLowerBoundTypeByClass(other, Positive.class)) {
             UBQualifier lessThan;
-            Integer x =
+            Long x =
                     IndexUtils.getMinValueOrNullFromTree(
-                                    other.getTree(), atypeFactory.getValueAnnotatedTypeFactory())
-                            .intValue();
+                            other.getTree(), atypeFactory.getValueAnnotatedTypeFactory());
             if (x != null && x > 1) {
                 lessThan = UBQualifier.createUBQualifier(arrayExp, "0");
             } else {
