@@ -988,7 +988,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * the number of {@code values} is greater than MAX_VALUES, return an {@link IntRange}. In other
      * cases, the values are sorted and duplicates are removed before an {@link IntVal} is created.
      *
-     * @param values list of longs; duplicates are allowed and the values may be in any order
+     * @param intValues list of longs; duplicates are allowed and the values may be in any order
      * @return an annotation depends on the values
      */
     public AnnotationMirror createIntValAnnotation(List<Long> intValues) {
@@ -1024,7 +1024,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
      * sorted and duplicates are removed before the annotation is created.
      *
-     * @param values list of doubles; duplicates are allowed and the values may be in any order
+     * @param doubleValues list of doubles; duplicates are allowed and the values may be in any
+     *     order
      * @return a {@link DoubleVal} annotation using the values
      */
     public AnnotationMirror createDoubleValAnnotation(List<Double> doubleValues) {
