@@ -1,7 +1,7 @@
 import org.checkerframework.common.value.qual.*;
 
 public class ArrayLenTest {
-    public static String esc_quantify(String /*@ArrayLen({1,2})*/... vars) {
+    public static String esc_quantify(String @ArrayLen({1, 2}) ... vars) {
         if (vars.length == 1) {
             return vars[0];
         } else {
