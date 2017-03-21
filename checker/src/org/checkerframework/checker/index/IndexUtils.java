@@ -11,6 +11,7 @@ import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+/** A collection of utility functions used by several index checker subcheckers. */
 public class IndexUtils {
 
     /**

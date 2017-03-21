@@ -82,7 +82,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         Long valMax =
                 IndexUtils.getMaxValueOrNullFromTree(
                         indexTree, atypeFactory.getValueAnnotatedTypeFactory());
-        int minLen = atypeFactory.minLenFromExpressionTree(arrTree);
+        int minLen =
+                IndexUtils.getMinLenFromTree(arrTree, atypeFactory.getMinLenAnnotatedTypeFactory());
         if (valMax != null && minLen != -1 && valMax < minLen) {
             return;
         }
