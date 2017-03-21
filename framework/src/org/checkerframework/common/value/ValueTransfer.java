@@ -76,7 +76,7 @@ public class ValueTransfer extends CFTransfer {
         }
         numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), UnknownVal.class);
         if (numberAnno != null) {
-            return new ArrayList<String>();
+            return null;
         }
         numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
         if (numberAnno != null) {
@@ -95,7 +95,7 @@ public class ValueTransfer extends CFTransfer {
         } else if (isIntRange(subNode, p)) {
             Range range = getIntRange(subNode, p);
             if (range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
-                values = new ArrayList<Number>();
+                values = null;
             } else {
                 List<Long> longValues = ValueCheckerUtils.getValuesFromRange(range, Long.class);
                 values = NumberUtils.castNumbers(subNode.getType(), longValues);
@@ -103,11 +103,15 @@ public class ValueTransfer extends CFTransfer {
         } else {
             values = getNumericalValues(subNode, p);
         }
+        if (values == null) {
+            return null;
+        }
         List<String> stringValues = new ArrayList<String>();
         for (Object o : values) {
             stringValues.add(o.toString());
         }
-        return stringValues;
+        // Empty list means bottom value
+        return stringValues.isEmpty() ? Collections.singletonList("null") : stringValues;
     }
 
     /** Get possible boolean values from @BoolVal. */
@@ -132,7 +136,7 @@ public class ValueTransfer extends CFTransfer {
         if (intAnno != null) {
             Range range = ValueAnnotatedTypeFactory.getIntRange(intAnno);
             if (range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
-                return new ArrayList<Character>();
+                return null;
             } else {
                 return ValueCheckerUtils.getValuesFromRange(range, Character.class);
             }
@@ -169,7 +173,7 @@ public class ValueTransfer extends CFTransfer {
             return null;
         }
 
-        return new ArrayList<Number>();
+        return null;
     }
 
     /** Get possible integer range from annotation. */
@@ -238,7 +242,7 @@ public class ValueTransfer extends CFTransfer {
      *
      * @param result the original result
      * @param resultAnno the new annotation
-     * @return
+     * @return the new transfer result
      */
     private TransferResult<CFValue, CFStore> createNewResult(
             TransferResult<CFValue, CFStore> result, AnnotationMirror resultAnno) {
@@ -251,8 +255,8 @@ public class ValueTransfer extends CFTransfer {
     /** Create a boolean transfer result. */
     private TransferResult<CFValue, CFStore> createNewResultBoolean(
             TransferResult<CFValue, CFStore> result, List<Boolean> resultValues) {
-        AnnotationMirror stringVal = createBooleanAnnotationMirror(resultValues);
-        return createNewResult(result, stringVal);
+        AnnotationMirror boolVal = createBooleanAnnotationMirror(resultValues);
+        return createNewResult(result, boolVal);
     }
 
     @Override
@@ -276,10 +280,15 @@ public class ValueTransfer extends CFTransfer {
             TransferResult<CFValue, CFStore> result) {
         List<String> lefts = getStringValues(leftOperand, p);
         List<String> rights = getStringValues(rightOperand, p);
-        List<String> concat = new ArrayList<>();
-        for (String left : lefts) {
-            for (String right : rights) {
-                concat.add(left + right);
+        List<String> concat;
+        if (lefts == null || rights == null) {
+            concat = null;
+        } else {
+            concat = new ArrayList<>();
+            for (String left : lefts) {
+                for (String right : rights) {
+                    concat.add(left + right);
+                }
             }
         }
         AnnotationMirror stringVal = createStringValAnnotationMirror(concat);
@@ -590,8 +599,7 @@ public class ValueTransfer extends CFTransfer {
     /**
      * Get the refined annotation after a numerical unary operation.
      *
-     * @param leftNode the node that represents the left operand
-     * @param rightNode the node that represents the right operand
+     * @param operand the node that represents the operand
      * @param op the operator type
      * @param p the transfer input
      * @return the result annotation mirror
@@ -707,6 +715,9 @@ public class ValueTransfer extends CFTransfer {
         if (!isIntRange(leftNode, p) && !isIntRange(rightNode, p)) {
             List<? extends Number> lefts = getNumericalValues(leftNode, p);
             List<? extends Number> rights = getNumericalValues(rightNode, p);
+            if (lefts == null || rights == null) {
+                return null;
+            }
             for (Number left : lefts) {
                 NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
                 for (Number right : rights) {
