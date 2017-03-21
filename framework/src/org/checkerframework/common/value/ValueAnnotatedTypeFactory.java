@@ -434,7 +434,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             AnnotationMirror dimType =
                     getAnnotatedType(dimensions.get(0)).getAnnotationInHierarchy(UNKNOWNVAL);
-            if (!AnnotationUtils.areSameIgnoringValues(dimType, UNKNOWNVAL)) {
+            if (!AnnotationUtils.areSameIgnoringValues(dimType, UNKNOWNVAL)
+                    && !AnnotationUtils.areSameIgnoringValues(dimType, BOTTOMVAL)) {
                 List<Long> longLengths = getIntValues(dimType);
 
                 HashSet<Integer> lengths = new HashSet<Integer>(longLengths.size());
