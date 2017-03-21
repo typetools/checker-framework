@@ -209,7 +209,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      *
      * <p>This implementation iterates over <tt>entrySet()</tt> searching for an
      * entry with the specified key.  If such an entry is found, its value is
-     * obtained with its <tt>getValueOfAnnotationWithStringArgument</tt> operation, the entry is removed
+     * obtained with its <tt>getValue</tt> operation, the entry is removed
      * from the collection (and the backing map) with the iterator's
      * <tt>remove</tt> operation, and the saved value is returned.  If the
      * iteration terminates without finding such an entry, <tt>null</tt> is
@@ -639,9 +639,9 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
          *    e2.getKey()==null :
          *    e1.getKey().equals(e2.getKey()))
          *   &amp;&amp;
-         *   (e1.getValueOfAnnotationWithStringArgument()==null ?
-         *    e2.getValueOfAnnotationWithStringArgument()==null :
-         *    e1.getValueOfAnnotationWithStringArgument().equals(e2.getValueOfAnnotationWithStringArgument()))</pre>
+         *   (e1.getValue()==null ?
+         *    e2.getValue()==null :
+         *    e1.getValue().equals(e2.getValue()))</pre>
          * This ensures that the {@code equals} method works properly across
          * different implementations of the {@code Map.Entry} interface.
          *
@@ -661,7 +661,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
          * Returns the hash code value for this map entry.  The hash code
          * of a map entry {@code e} is defined to be: <pre>
          *   (e.getKey()==null   ? 0 : e.getKey().hashCode()) ^
-         *   (e.getValueOfAnnotationWithStringArgument()==null ? 0 : e.getValueOfAnnotationWithStringArgument().hashCode())</pre>
+         *   (e.getValue()==null ? 0 : e.getValue().hashCode())</pre>
          * This ensures that {@code e1.equals(e2)} implies that
          * {@code e1.hashCode()==e2.hashCode()} for any two Entries
          * {@code e1} and {@code e2}, as required by the general
@@ -770,9 +770,9 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
          *    e2.getKey()==null :
          *    e1.getKey().equals(e2.getKey()))
          *   &amp;&amp;
-         *   (e1.getValueOfAnnotationWithStringArgument()==null ?
-         *    e2.getValueOfAnnotationWithStringArgument()==null :
-         *    e1.getValueOfAnnotationWithStringArgument().equals(e2.getValueOfAnnotationWithStringArgument()))</pre>
+         *   (e1.getValue()==null ?
+         *    e2.getValue()==null :
+         *    e1.getValue().equals(e2.getValue()))</pre>
          * This ensures that the {@code equals} method works properly across
          * different implementations of the {@code Map.Entry} interface.
          *
@@ -792,7 +792,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
          * Returns the hash code value for this map entry.  The hash code
          * of a map entry {@code e} is defined to be: <pre>
          *   (e.getKey()==null   ? 0 : e.getKey().hashCode()) ^
-         *   (e.getValueOfAnnotationWithStringArgument()==null ? 0 : e.getValueOfAnnotationWithStringArgument().hashCode())</pre>
+         *   (e.getValue()==null ? 0 : e.getValue().hashCode())</pre>
          * This ensures that {@code e1.equals(e2)} implies that
          * {@code e1.hashCode()==e2.hashCode()} for any two Entries
          * {@code e1} and {@code e2}, as required by the general
