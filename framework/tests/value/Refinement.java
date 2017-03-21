@@ -153,4 +153,10 @@ class Refinement {
             @IntVal({5, 6}) int z = w;
         }
     }
+
+    void boolean_test(@IntVal({1, 2}) int x, @IntVal({1, 5, 6}) int w) {
+        @BoolVal({true}) boolean b = x >= 0;
+        @BoolVal({false}) boolean c = w == 3;
+        @BoolVal({true, false}) boolean d = x < w;
+    }
 }
