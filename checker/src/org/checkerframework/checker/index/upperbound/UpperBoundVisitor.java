@@ -156,7 +156,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     /**
      * Implements the actual check for the relaxed common assignment check. For what is permitted,
      *
-     * <p>see {@link this.relaxedCommonAssignment}
+     * <p>see {@link #relaxedCommonAssignment}
      */
     private boolean relaxedCommonAssignmentCheck(
             LessThanLengthOf varLtlQual, ExpressionTree valueExp) {
