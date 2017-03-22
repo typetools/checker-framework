@@ -12,6 +12,12 @@ class Refinement2 {
             return;
         }
 
+        if (x != 1) {
+            //:: error: (assignment.type.incompatible)
+            @IntVal({1}) int y = x;
+            @IntVal({2}) int z = x;
+        }
+
         if (x == 1) {
 
             @IntVal({1}) int y = x;
@@ -40,12 +46,7 @@ class Refinement2 {
     }
 
     void testDeadCode(int x) {
-        if (x == 1) {
-            //:: error: (assignment.type.incompatible)
-            @BottomVal int q = x;
-
-        } else if (x == 2) {
-        } else {
+        if (x != 1 || x != 2) {
             return;
         }
 
@@ -67,6 +68,13 @@ class Refinement2 {
 
         if (a.length != 1) {
             int @ArrayLen(2) [] b = a;
+        }
+
+        if (a.length == 3) {
+            // Dead code
+            int @ArrayLen(3) [] b = a;
+            //:: error: (assignment.type.incompatible)
+            int @BottomVal [] b = a;
         }
     }
 }
