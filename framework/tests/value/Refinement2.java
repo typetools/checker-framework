@@ -74,7 +74,7 @@ class Refinement2 {
             // Dead code
             int @ArrayLen(3) [] b = a;
             //:: error: (assignment.type.incompatible)
-            int @BottomVal [] b = a;
+            int @BottomVal [] bot = a;
         }
     }
 }

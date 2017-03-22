@@ -237,7 +237,11 @@ public class ValueTransfer extends CFTransfer {
                     AnnotationMirror combinedAnno =
                             atypefactory
                                     .getQualifierHierarchy()
-                                    .greatestLowerBound(oldArrayAnno, newArrayAnno);
+                                    .greatestLowerBound(
+                                            oldArrayAnno != null
+                                                    ? oldArrayAnno
+                                                    : atypefactory.UNKNOWNVAL,
+                                            newArrayAnno);
 
                     Receiver arrayRec =
                             FlowExpressions.internalReprOf(
