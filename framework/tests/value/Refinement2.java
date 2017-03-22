@@ -39,6 +39,22 @@ class Refinement2 {
         }
     }
 
+    void testDeadCode(int x) {
+        if (x == 1) {
+            //:: error: (assignment.type.incompatible)
+            @BottomVal int q = x;
+
+        } else if (x == 2) {
+        } else {
+            return;
+        }
+
+        if (x == 3) {
+            // This is actually dead code, but this assignment should pass.
+            @IntVal(3) int y = x;
+        }
+    }
+
     void testArrayLen(boolean flag) {
         int[] a;
         if (flag) {
