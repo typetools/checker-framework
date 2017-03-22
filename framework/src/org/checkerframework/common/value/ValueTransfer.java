@@ -186,18 +186,16 @@ public class ValueTransfer extends CFTransfer {
     }
 
     private TransferResult<CFValue, CFStore> createNewResultBoolean(
-            TransferResult<CFValue, CFStore> result,
+            CFStore thenStore,
+            CFStore elseStore,
             List<Boolean> resultValues,
-            boolean isConditional) {
+            TypeMirror underlyingType) {
         AnnotationMirror boolVal = createBooleanAnnotationMirror(resultValues);
-        CFValue newResultValue =
-                analysis.createSingleAnnotationValue(
-                        boolVal, result.getResultValue().getUnderlyingType());
-        if (isConditional) {
-            return new ConditionalTransferResult<>(
-                    newResultValue, result.getThenStore(), result.getElseStore(), true);
+        CFValue newResultValue = analysis.createSingleAnnotationValue(boolVal, underlyingType);
+        if (elseStore != null) {
+            return new ConditionalTransferResult<>(newResultValue, thenStore, elseStore);
         } else {
-            return new RegularTransferResult<>(newResultValue, result.getRegularStore());
+            return new RegularTransferResult<>(newResultValue, thenStore);
         }
     }
 
@@ -562,7 +560,8 @@ public class ValueTransfer extends CFTransfer {
             Node rightNode,
             ComparisonOperators op,
             TransferInput<CFValue, CFStore> p,
-            TransferResult<CFValue, CFStore> result) {
+            CFStore thenStore,
+            CFStore elseStore) {
         List<? extends Number> lefts = getNumericalValues(leftNode, p);
         List<? extends Number> rights = getNumericalValues(rightNode, p);
         List<Boolean> resultValues = new ArrayList<>();
@@ -617,9 +616,6 @@ public class ValueTransfer extends CFTransfer {
             }
         }
 
-        CFStore thenStore = result.getThenStore();
-        CFStore elseStore = result.getElseStore();
-
         createAnnotationFromResultsAndAddToStore(thenStore, thenLeftVals, leftNode);
         createAnnotationFromResultsAndAddToStore(elseStore, elseLeftVals, leftNode);
 
@@ -652,76 +648,72 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitLessThan(
             LessThanNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitLessThan(n, p);
-        ConditionalTransferResult<CFValue, CFStore> newResult =
-                new ConditionalTransferResult<CFValue, CFStore>(
-                        transferResult.getResultValue(),
-                        transferResult.getThenStore(),
-                        transferResult.getElseStore());
+        CFStore thenStore = transferResult.getThenStore();
+        CFStore elseStore = transferResult.getElseStore();
         List<Boolean> resultValues =
                 calculateBinaryComparison(
                         n.getLeftOperand(),
                         n.getRightOperand(),
                         ComparisonOperators.LESS_THAN,
                         p,
-                        newResult);
-        return createNewResultBoolean(newResult, resultValues, true);
+                        thenStore,
+                        elseStore);
+        TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
+        return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitLessThanOrEqual(
             LessThanOrEqualNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitLessThanOrEqual(n, p);
-        ConditionalTransferResult<CFValue, CFStore> newResult =
-                new ConditionalTransferResult<CFValue, CFStore>(
-                        transferResult.getResultValue(),
-                        transferResult.getThenStore(),
-                        transferResult.getElseStore());
+        CFStore thenStore = transferResult.getThenStore();
+        CFStore elseStore = transferResult.getElseStore();
         List<Boolean> resultValues =
                 calculateBinaryComparison(
                         n.getLeftOperand(),
                         n.getRightOperand(),
                         ComparisonOperators.LESS_THAN_EQ,
                         p,
-                        newResult);
-        return createNewResultBoolean(newResult, resultValues, true);
+                        thenStore,
+                        elseStore);
+        TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
+        return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitGreaterThan(
             GreaterThanNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitGreaterThan(n, p);
-        ConditionalTransferResult<CFValue, CFStore> newResult =
-                new ConditionalTransferResult<CFValue, CFStore>(
-                        transferResult.getResultValue(),
-                        transferResult.getThenStore(),
-                        transferResult.getElseStore());
+        CFStore thenStore = transferResult.getThenStore();
+        CFStore elseStore = transferResult.getElseStore();
         List<Boolean> resultValues =
                 calculateBinaryComparison(
                         n.getLeftOperand(),
                         n.getRightOperand(),
                         ComparisonOperators.GREATER_THAN,
                         p,
-                        newResult);
-        return createNewResultBoolean(newResult, resultValues, true);
+                        thenStore,
+                        elseStore);
+        TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
+        return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitGreaterThanOrEqual(
             GreaterThanOrEqualNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitGreaterThanOrEqual(n, p);
-        ConditionalTransferResult<CFValue, CFStore> newResult =
-                new ConditionalTransferResult<CFValue, CFStore>(
-                        transferResult.getResultValue(),
-                        transferResult.getThenStore(),
-                        transferResult.getElseStore());
+        CFStore thenStore = transferResult.getThenStore();
+        CFStore elseStore = transferResult.getElseStore();
         List<Boolean> resultValues =
                 calculateBinaryComparison(
                         n.getLeftOperand(),
                         n.getRightOperand(),
                         ComparisonOperators.GREATER_THAN_EQ,
                         p,
-                        newResult);
-        return createNewResultBoolean(newResult, resultValues, true);
+                        thenStore,
+                        elseStore);
+        TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
+        return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
     }
 
     @Override
@@ -730,6 +722,8 @@ public class ValueTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> transferResult = super.visitEqualTo(n, p);
         if (TypesUtils.isPrimitive(n.getLeftOperand().getType())
                 || TypesUtils.isPrimitive(n.getRightOperand().getType())) {
+            CFStore thenStore = transferResult.getThenStore();
+            CFStore elseStore = transferResult.getElseStore();
             // At least one must be a primitive otherwise reference equality is used.
             List<Boolean> resultValues =
                     calculateBinaryComparison(
@@ -737,10 +731,12 @@ public class ValueTransfer extends CFTransfer {
                             n.getRightOperand(),
                             ComparisonOperators.EQUAL,
                             p,
-                            transferResult);
-            return createNewResultBoolean(transferResult, resultValues, true);
+                            thenStore,
+                            elseStore);
+            TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
+            return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
         }
-        return super.visitEqualTo(n, p);
+        return transferResult;
     }
 
     @Override
@@ -749,6 +745,8 @@ public class ValueTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> transferResult = super.visitNotEqual(n, p);
         if (TypesUtils.isPrimitive(n.getLeftOperand().getType())
                 || TypesUtils.isPrimitive(n.getRightOperand().getType())) {
+            CFStore thenStore = transferResult.getThenStore();
+            CFStore elseStore = transferResult.getElseStore();
             // At least one must be a primitive otherwise reference equality is
             // used.
             List<Boolean> resultValues =
@@ -757,10 +755,12 @@ public class ValueTransfer extends CFTransfer {
                             n.getRightOperand(),
                             ComparisonOperators.NOT_EQUAL,
                             p,
-                            transferResult);
-            return createNewResultBoolean(transferResult, resultValues, true);
+                            thenStore,
+                            elseStore);
+            TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
+            return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
         }
-        return super.visitNotEqual(n, p);
+        return transferResult;
     }
 
     enum ConditionalOperators {
@@ -819,7 +819,11 @@ public class ValueTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> transferResult = super.visitConditionalNot(n, p);
         List<Boolean> resultValues =
                 calculateConditionalOperator(n.getOperand(), null, ConditionalOperators.NOT, p);
-        return createNewResultBoolean(transferResult, resultValues, false);
+        return createNewResultBoolean(
+                transferResult.getThenStore(),
+                transferResult.getElseStore(),
+                resultValues,
+                transferResult.getResultValue().getUnderlyingType());
     }
 
     @Override
@@ -829,7 +833,11 @@ public class ValueTransfer extends CFTransfer {
         List<Boolean> resultValues =
                 calculateConditionalOperator(
                         n.getLeftOperand(), n.getRightOperand(), ConditionalOperators.AND, p);
-        return createNewResultBoolean(transferResult, resultValues, false);
+        return createNewResultBoolean(
+                transferResult.getThenStore(),
+                transferResult.getElseStore(),
+                resultValues,
+                transferResult.getResultValue().getUnderlyingType());
     }
 
     @Override
@@ -839,6 +847,10 @@ public class ValueTransfer extends CFTransfer {
         List<Boolean> resultValues =
                 calculateConditionalOperator(
                         n.getLeftOperand(), n.getRightOperand(), ConditionalOperators.OR, p);
-        return createNewResultBoolean(transferResult, resultValues, false);
+        return createNewResultBoolean(
+                transferResult.getThenStore(),
+                transferResult.getElseStore(),
+                resultValues,
+                transferResult.getResultValue().getUnderlyingType());
     }
 }

@@ -46,8 +46,21 @@ class Refinement2 {
     }
 
     void testDeadCode(int x) {
+        if (x == 4 || x == 5) {
+            @IntVal({4, 5}) int a = x;
+            //:: error: (assignment.type.incompatible)
+            @BottomVal int a2 = x;
+        }
+        if (x == 4 && x == 5) {
+            @IntVal({4, 5}) int a = x;
+            //:: error: (assignment.type.incompatible)
+            @BottomVal int a2 = x;
+        }
         if (x != 1 || x != 2) {
             return;
+        }
+        if (x != 2) {
+            @IntVal(1) int a = x;
         }
 
         if (x == 3) {
