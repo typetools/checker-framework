@@ -52,6 +52,8 @@ class Refinement2 {
         if (x == 3) {
             // This is actually dead code, but this assignment should pass.
             @IntVal(3) int y = x;
+            //:: error: (assignment.type.incompatible)
+            @BottomVal int z = x;
         }
     }
 
