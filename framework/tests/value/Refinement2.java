@@ -4,12 +4,16 @@ class Refinement2 {
 
     void eq_test(int x, @IntVal({1, 5, 6}) int w) {
         if (x == 1) {
+            //:: error: (assignment.type.incompatible)
+            @BottomVal int q = x;
+
         } else if (x == 2) {
         } else {
             return;
         }
 
         if (x == 1) {
+
             @IntVal({1}) int y = x;
 
             //:: error: (assignment.type.incompatible)

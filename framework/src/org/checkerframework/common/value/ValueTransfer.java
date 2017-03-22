@@ -7,6 +7,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
@@ -185,23 +186,19 @@ public class ValueTransfer extends CFTransfer {
     }
 
     private TransferResult<CFValue, CFStore> createNewResultBoolean(
-            TransferResult<CFValue, CFStore> result, List<Boolean> resultValues) {
+            TransferResult<CFValue, CFStore> result,
+            List<Boolean> resultValues,
+            boolean isConditional) {
         AnnotationMirror boolVal = createBooleanAnnotationMirror(resultValues);
         CFValue newResultValue =
                 analysis.createSingleAnnotationValue(
                         boolVal, result.getResultValue().getUnderlyingType());
-        return new RegularTransferResult<>(newResultValue, result.getRegularStore());
-    }
-
-    private TransferResult<CFValue, CFStore> createNewConditionalResult(
-            TransferResult<CFValue, CFStore> result, List<Boolean> resultValues, Node node) {
-        AnnotationMirror stringVal = createBooleanAnnotationMirror(resultValues);
-        CFValue newResultValue =
-                analysis.createSingleAnnotationValue(
-                        stringVal, result.getResultValue().getUnderlyingType());
-
-        return new ConditionalTransferResult<>(
-                newResultValue, result.getThenStore(), result.getElseStore(), true);
+        if (isConditional) {
+            return new ConditionalTransferResult<>(
+                    newResultValue, result.getThenStore(), result.getElseStore(), true);
+        } else {
+            return new RegularTransferResult<>(newResultValue, result.getRegularStore());
+        }
     }
 
     @Override
@@ -210,13 +207,19 @@ public class ValueTransfer extends CFTransfer {
 
         TransferResult<CFValue, CFStore> result = super.visitFieldAccess(node, in);
 
+        modifyArrayLenBasedOnIntValOnArrayLength(node, result.getRegularStore());
+
+        return result;
+    }
+
+    private void modifyArrayLenBasedOnIntValOnArrayLength(
+            FieldAccessNode arrayLengthNode, CFStore store) {
         // If array.length is encountered, transform its @IntVal annotation into an @ArrayLen annotation for array.
-        if (NodeUtils.isArrayLengthFieldAccess(node)) {
+        if (NodeUtils.isArrayLengthFieldAccess(arrayLengthNode)) {
             CFValue value =
-                    result.getRegularStore()
-                            .getValue(
-                                    FlowExpressions.internalReprOf(
-                                            analysis.getTypeFactory(), node));
+                    store.getValue(
+                            FlowExpressions.internalReprOf(
+                                    analysis.getTypeFactory(), arrayLengthNode));
             if (value != null) {
                 AnnotationMirror lengthAnno =
                         AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
@@ -228,15 +231,22 @@ public class ValueTransfer extends CFTransfer {
                     }
                     AnnotationMirror newArrayAnno =
                             atypefactory.createArrayLenAnnotation(arrayLenValues);
+                    AnnotationMirror oldArrayAnno =
+                            atypefactory.getAnnotationMirror(
+                                    arrayLengthNode.getReceiver().getTree(), ArrayLen.class);
+                    AnnotationMirror combinedAnno =
+                            atypefactory
+                                    .getQualifierHierarchy()
+                                    .greatestLowerBound(oldArrayAnno, newArrayAnno);
+
                     Receiver arrayRec =
                             FlowExpressions.internalReprOf(
-                                    analysis.getTypeFactory(), node.getReceiver());
-                    result.getRegularStore().clearValue(arrayRec);
-                    result.getRegularStore().insertValue(arrayRec, newArrayAnno);
+                                    analysis.getTypeFactory(), arrayLengthNode.getReceiver());
+                    store.clearValue(arrayRec);
+                    store.insertValue(arrayRec, combinedAnno);
                 }
             }
         }
-        return result;
     }
 
     @Override
@@ -585,70 +595,53 @@ public class ValueTransfer extends CFTransfer {
         List<Number> thenLeftVals = new ArrayList<>();
         List<Number> elseLeftVals = new ArrayList<>();
 
+        List<Number> thenRightVals = new ArrayList<>();
+        List<Number> elseRightVals = new ArrayList<>();
+
         // Because resultValues contains the (boolean) results of each comparison (i.e. the product of the number
         // of elements in each list), we have to iterate through parts of the list at a time in order to find all
         // the results of comparisons involving a particular value in the left list.
         for (int i = 0; i < lefts.size(); i++) {
-            for (int j = i; j < (1 + i) * rights.size(); j++) {
-                if (resultValues.get(j)) {
+            for (int j = 0; j < rights.size(); j++) {
+                if (resultValues.get(j + i * rights.size())) {
                     thenLeftVals.add(lefts.get(i));
+                    thenRightVals.add(rights.get(j));
                 } else {
                     elseLeftVals.add(lefts.get(i));
+                    elseRightVals.add(rights.get(j));
                 }
             }
         }
-
-        List<Number> thenRightVals = new ArrayList<>();
-        List<Number> elseRightVals = new ArrayList<>();
-
-        // Similarly to the left list, we need to iterate in an interesting way to get the appropriate values out
-        // of resultValues. In particular, we need to skip over large portions of the array at each step (because
-        // all the booleans that are relevant to a given right value each have rights.size - 1 other elements
-        // between them.
-        for (int i = 0; i < rights.size(); i++) {
-            for (int j = i; j < resultValues.size(); j += rights.size()) {
-                if (resultValues.get(j)) {
-                    thenRightVals.add(rights.get(i));
-                } else {
-                    elseRightVals.add(rights.get(i));
-                }
-            }
-        }
-
-        FlowExpressions.Receiver leftRec =
-                FlowExpressions.internalReprOf(analysis.getTypeFactory(), leftNode);
-        TypeMirror leftUnderlyingType =
-                atypefactory.getAnnotatedType(leftNode.getTree()).getUnderlyingType();
-
-        FlowExpressions.Receiver rightRec =
-                FlowExpressions.internalReprOf(analysis.getTypeFactory(), rightNode);
-        TypeMirror rightUnderlyingType =
-                atypefactory.getAnnotatedType(rightNode.getTree()).getUnderlyingType();
 
         CFStore thenStore = result.getThenStore();
         CFStore elseStore = result.getElseStore();
 
-        createAnnotationFromResultsAndAddToStore(
-                thenStore, thenLeftVals, leftUnderlyingType, leftRec);
-        createAnnotationFromResultsAndAddToStore(
-                elseStore, elseLeftVals, leftUnderlyingType, leftRec);
+        createAnnotationFromResultsAndAddToStore(thenStore, thenLeftVals, leftNode);
+        createAnnotationFromResultsAndAddToStore(elseStore, elseLeftVals, leftNode);
 
-        createAnnotationFromResultsAndAddToStore(
-                thenStore, thenRightVals, rightUnderlyingType, rightRec);
-        createAnnotationFromResultsAndAddToStore(
-                elseStore, elseRightVals, rightUnderlyingType, rightRec);
+        createAnnotationFromResultsAndAddToStore(thenStore, thenRightVals, rightNode);
+        createAnnotationFromResultsAndAddToStore(elseStore, elseRightVals, rightNode);
 
         return resultValues;
     }
 
     private void createAnnotationFromResultsAndAddToStore(
-            CFStore store,
-            List<?> results,
-            TypeMirror underlyingType,
-            FlowExpressions.Receiver rec) {
-        AnnotationMirror anno = atypefactory.createResultingAnnotation(underlyingType, results);
-        store.clearValue(rec);
-        store.insertValue(rec, anno);
+            CFStore store, List<?> results, Node node) {
+        // If a zero-length list is passed, this returns bottom - which is very problematic.
+        AnnotationMirror anno =
+                atypefactory.createResultingAnnotation(
+                        node.getType(), results.size() == 0 ? null : results);
+        AnnotationMirror currentAnno =
+                atypefactory
+                        .getAnnotatedType(node.getTree())
+                        .getAnnotationInHierarchy(atypefactory.BOTTOMVAL);
+        Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), node);
+        store.insertValue(
+                rec, atypefactory.getQualifierHierarchy().greatestLowerBound(anno, currentAnno));
+
+        if (node instanceof FieldAccessNode) {
+            modifyArrayLenBasedOnIntValOnArrayLength((FieldAccessNode) node, store);
+        }
     }
 
     @Override
@@ -667,7 +660,7 @@ public class ValueTransfer extends CFTransfer {
                         ComparisonOperators.LESS_THAN,
                         p,
                         newResult);
-        return createNewConditionalResult(newResult, resultValues, n.getLeftOperand());
+        return createNewResultBoolean(newResult, resultValues, true);
     }
 
     @Override
@@ -686,7 +679,7 @@ public class ValueTransfer extends CFTransfer {
                         ComparisonOperators.LESS_THAN_EQ,
                         p,
                         newResult);
-        return createNewConditionalResult(newResult, resultValues, n.getLeftOperand());
+        return createNewResultBoolean(newResult, resultValues, true);
     }
 
     @Override
@@ -705,7 +698,7 @@ public class ValueTransfer extends CFTransfer {
                         ComparisonOperators.GREATER_THAN,
                         p,
                         newResult);
-        return createNewConditionalResult(newResult, resultValues, n.getLeftOperand());
+        return createNewResultBoolean(newResult, resultValues, true);
     }
 
     @Override
@@ -724,7 +717,7 @@ public class ValueTransfer extends CFTransfer {
                         ComparisonOperators.GREATER_THAN_EQ,
                         p,
                         newResult);
-        return createNewConditionalResult(newResult, resultValues, n.getLeftOperand());
+        return createNewResultBoolean(newResult, resultValues, true);
     }
 
     @Override
@@ -741,7 +734,7 @@ public class ValueTransfer extends CFTransfer {
                             ComparisonOperators.EQUAL,
                             p,
                             transferResult);
-            return createNewConditionalResult(transferResult, resultValues, n.getLeftOperand());
+            return createNewResultBoolean(transferResult, resultValues, true);
         }
         return super.visitEqualTo(n, p);
     }
@@ -761,7 +754,7 @@ public class ValueTransfer extends CFTransfer {
                             ComparisonOperators.NOT_EQUAL,
                             p,
                             transferResult);
-            return createNewConditionalResult(transferResult, resultValues, n.getLeftOperand());
+            return createNewResultBoolean(transferResult, resultValues, true);
         }
         return super.visitNotEqual(n, p);
     }
@@ -822,7 +815,7 @@ public class ValueTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> transferResult = super.visitConditionalNot(n, p);
         List<Boolean> resultValues =
                 calculateConditionalOperator(n.getOperand(), null, ConditionalOperators.NOT, p);
-        return createNewResultBoolean(transferResult, resultValues);
+        return createNewResultBoolean(transferResult, resultValues, false);
     }
 
     @Override
@@ -832,7 +825,7 @@ public class ValueTransfer extends CFTransfer {
         List<Boolean> resultValues =
                 calculateConditionalOperator(
                         n.getLeftOperand(), n.getRightOperand(), ConditionalOperators.AND, p);
-        return createNewResultBoolean(transferResult, resultValues);
+        return createNewResultBoolean(transferResult, resultValues, false);
     }
 
     @Override
@@ -842,6 +835,6 @@ public class ValueTransfer extends CFTransfer {
         List<Boolean> resultValues =
                 calculateConditionalOperator(
                         n.getLeftOperand(), n.getRightOperand(), ConditionalOperators.OR, p);
-        return createNewResultBoolean(transferResult, resultValues);
+        return createNewResultBoolean(transferResult, resultValues, false);
     }
 }
