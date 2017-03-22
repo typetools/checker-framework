@@ -17,6 +17,9 @@ class Switch {
                 @IntVal({1}) int z = x;
                 break;
             default:
+                // This should be a legal assignment, but dataflow is failing to
+                // identify this as an else branch.
+                //:: error: (assignment.type.incompatible)
                 @IntVal({3, 4, 5}) int q = x;
                 break;
         }
@@ -37,6 +40,9 @@ class Switch {
                 @IntVal({3}) int z1 = x;
                 break;
             default:
+                // This should be a legal assignment, but dataflow is failing to
+                // identify this as an else branch.
+                //:: error: (assignment.type.incompatible)
                 @IntVal({4, 5}) int q = x;
                 break;
         }

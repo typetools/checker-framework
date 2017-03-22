@@ -1045,13 +1045,13 @@ public abstract class CFAbstractTransfer<
         TransferResult<V, S> result =
                 new ConditionalTransferResult<>(
                         finishValue(null, store), in.getThenStore(), in.getElseStore(), false);
-        V caseValue = in.getValueOfSubNode(n.getCaseOperand());
+
+        V caseValue = null;
+        if (n.getCaseOperand()
+                != null) { // When encountering a default node, getCaseOperand returns null.
+            caseValue = in.getValueOfSubNode(n.getCaseOperand());
+        }
         V switchValue = in.getValueOfSubNode(n.getSwitchOperand());
-        System.out.println("visiting a case statement");
-        System.out.println("case node: " + n.getCaseOperand());
-        System.out.println("switch node: " + n.getSwitchOperand());
-        System.out.println("case value: " + caseValue);
-        System.out.println("switch value: " + switchValue);
         strengthenAnnotationOfEqualTo(
                 result, n.getCaseOperand(), n.getSwitchOperand(), caseValue, switchValue, false);
         return result;
