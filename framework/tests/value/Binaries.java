@@ -15,8 +15,11 @@ class Binaries {
         }
     }
 
+    void write(int t) {}
+
     // Test widenUpperBound is working.
     public void loop(int c) {
+        double v = 0;
         int decexp = 0;
         int seendot = 0;
         while (true) {
@@ -25,11 +28,8 @@ class Binaries {
                 v = v * 10 + (c - '0');
                 decexp += seendot;
             } else break;
-            c = write();
         }
     }
-
-    void write(int t) {}
 
     public void testIntRange(
             @IntVal({1, 2}) int values,
