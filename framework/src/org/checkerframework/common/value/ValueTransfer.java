@@ -2,6 +2,7 @@ package org.checkerframework.common.value;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -235,6 +236,13 @@ public class ValueTransfer extends CFTransfer {
             concat = null;
         } else {
             concat = new ArrayList<>();
+            if (lefts.isEmpty()) {
+                lefts = Collections.singletonList("null");
+            }
+            if (rights.isEmpty()) {
+                rights = Collections.singletonList("null");
+            }
+
             for (String left : lefts) {
                 for (String right : rights) {
                     concat.add(left + right);
