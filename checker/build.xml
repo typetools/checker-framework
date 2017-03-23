@@ -1485,6 +1485,7 @@ So, use our own archived version.
       <fail unless="annotation-file-utilities.exist" message="Could not find annotation-file-utilities.jar: ${annotation-file-utilities.jar}.  You must build Annotation Tools; see https://checkerframework.org/manual/#build-source" />
 
       <exec executable="make" failonerror="true">
+         <arg value="CHECKERFRAMEWORK=${checkerframework}"/>
          <arg value="LANGTOOLS=${jsr308.langtools}"/>
          <arg value="LANGTOOLSDIST=${jsr308.langtools.dist}"/>
          <arg value="ANNOTATION_TOOLS=${annotation.tools}"/>
