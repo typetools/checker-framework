@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import org.checkerframework.checker.index.IndexUtils;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
@@ -420,13 +420,9 @@ public class OffsetEquation {
         if (node.getTree() != null && TreeUtils.isExpressionTree(node.getTree())) {
             Long i;
             if (op == '+') {
-                i =
-                        IndexUtils.getMinValueOrNullFromTree(
-                                node.getTree(), factory.getValueAnnotatedTypeFactory());
+                i = IndexUtil.getMinValue(node.getTree(), factory.getValueAnnotatedTypeFactory());
             } else {
-                i =
-                        IndexUtils.getMaxValueOrNullFromTree(
-                                node.getTree(), factory.getValueAnnotatedTypeFactory());
+                i = IndexUtil.getMaxValue(node.getTree(), factory.getValueAnnotatedTypeFactory());
                 i = i == null ? null : -i;
             }
             if (i != null) {

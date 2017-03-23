@@ -11,7 +11,7 @@ import com.sun.source.tree.Tree.Kind;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.checker.index.IndexUtils;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
@@ -79,11 +79,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         // Find max because it's important to determine whether the index is less than the
         // minimum length of the array. If it could be any of several values, only the max is of
         // interest.
-        Long valMax =
-                IndexUtils.getMaxValueOrNullFromTree(
-                        indexTree, atypeFactory.getValueAnnotatedTypeFactory());
-        int minLen =
-                IndexUtils.getMinLenFromTree(arrTree, atypeFactory.getMinLenAnnotatedTypeFactory());
+        Long valMax = IndexUtil.getMaxValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory());
+        int minLen = IndexUtil.getMinLen(arrTree, atypeFactory.getMinLenAnnotatedTypeFactory());
         if (valMax != null && minLen != -1 && valMax < minLen) {
             return;
         }
@@ -155,8 +152,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
     /**
      * Implements the actual check for the relaxed common assignment check. For what is permitted,
-     *
-     * <p>see {@link #relaxedCommonAssignment}
+     * see {@link #relaxedCommonAssignment}
      */
     private boolean relaxedCommonAssignmentCheck(
             LessThanLengthOf varLtlQual, ExpressionTree valueExp) {
@@ -164,9 +160,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(valueExp);
         UBQualifier expQual = UBQualifier.createUBQualifier(expType, atypeFactory.UNKNOWN);
 
-        Long value =
-                IndexUtils.getMaxValueOrNullFromTree(
-                        valueExp, atypeFactory.getValueAnnotatedTypeFactory());
+        Long value = IndexUtil.getMaxValue(valueExp, atypeFactory.getValueAnnotatedTypeFactory());
 
         if (value == null && !expQual.isLessThanLengthQualifier()) {
             return false;
@@ -195,7 +189,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
     /**
      * Tests whether replacing any of the arrays in sameLenArrays with arrayName makes expQual
-     * conform to varQual.
+     * equivalent to varQual.
      */
     private boolean testSameLen(
             UBQualifier expQual,
@@ -218,7 +212,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         return false;
     }
 
-    /** Abstracts a test of a value against a known minlen. */
+    /**
+     * Tests a constant value (value) against the minlen (minlen) of an array (arrayName) with a
+     * qualifier (varQual).
+     */
     private boolean testMinLen(Long value, int minLen, String arrayName, LessThanLengthOf varQual) {
         if (value == null) {
             return false;

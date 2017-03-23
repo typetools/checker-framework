@@ -6,7 +6,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
-import org.checkerframework.checker.index.IndexUtils;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
@@ -131,7 +131,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             LessThanLengthOf typeOfMultiplication) {
         if (atypeFactory.hasLowerBoundTypeByClass(other, Positive.class)) {
             Long minValue =
-                    IndexUtils.getMinValueOrNullFromTree(
+                    IndexUtil.getMinValue(
                             other.getTree(), atypeFactory.getValueAnnotatedTypeFactory());
             if (minValue != null && minValue > 1) {
                 typeOfMultiplication = (LessThanLengthOf) typeOfMultiplication.plusOffset(1);
