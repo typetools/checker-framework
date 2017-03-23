@@ -23,7 +23,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.ArrayLen;
-import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -87,29 +86,6 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Returns the value type associated with the given ExpressionTree. */
     public AnnotatedTypeMirror valueTypeFromTree(Tree tree) {
         return getValueAnnotatedTypeFactory().getAnnotatedType(tree);
-    }
-
-    /**
-     * Finds the minimum value in a Value Checker type. If there is no information (such as when the
-     * list of possible values is empty or null), returns null. Otherwise, returns the smallest
-     * value in the list of possible values.
-     */
-    public Integer getMinLenFromValueType(AnnotatedTypeMirror valueType) {
-        List<Long> possibleValues = possibleValuesFromValueType(valueType);
-        if (possibleValues == null || possibleValues.size() == 0) {
-            return null;
-        }
-        // There must be at least one element in the list, because of the previous check.
-        Integer min = Collections.min(possibleValues).intValue();
-        return min;
-    }
-
-    /**
-     * Get the list of possible values from a Value Checker type. Empty list means no possible
-     * values (dead code). Returns null if there is no estimate.
-     */
-    private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
-        return ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
     }
 
     @Override
