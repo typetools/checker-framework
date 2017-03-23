@@ -310,9 +310,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public AnnotationMirror widenUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
             AnnotationMirror lub = leastUpperBound(a1, a2);
-            if (AnnotationUtils.areSameByClass(lub, IntVal.class)) {
-                lub = convertIntValToIntRange(lub);
-            }
             if (AnnotationUtils.areSameByClass(lub, IntRange.class)) {
                 Range range = getIntRange(lub);
                 if (range.isWithin(Byte.MIN_VALUE, Byte.MAX_VALUE)) {
