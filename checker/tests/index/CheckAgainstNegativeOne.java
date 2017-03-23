@@ -1,5 +1,3 @@
-// @skip-test so that the travis build stops failing...
-
 class CheckAgainstNegativeOne {
 
     public static String replaceString(String target, String oldStr, String newStr) {
