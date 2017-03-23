@@ -147,16 +147,6 @@ public class ValueTransfer extends CFTransfer {
         return NumberUtils.castNumbers(subNode.getType(), values);
     }
 
-    private AnnotationMirror createStringValAnnotationMirror(List<String> values) {
-        if (values == null) {
-            return ((ValueAnnotatedTypeFactory) atypefactory).UNKNOWNVAL;
-        }
-        if (values.isEmpty()) {
-            return ((ValueAnnotatedTypeFactory) atypefactory).BOTTOMVAL;
-        }
-        return ((ValueAnnotatedTypeFactory) atypefactory).createStringAnnotation(values);
-    }
-
     private AnnotationMirror createNumberAnnotationMirror(List<Number> values) {
         if (values == null) {
             return ((ValueAnnotatedTypeFactory) atypefactory).UNKNOWNVAL;
@@ -182,16 +172,6 @@ public class ValueTransfer extends CFTransfer {
         throw new UnsupportedOperationException();
     }
 
-    private AnnotationMirror createBooleanAnnotationMirror(List<Boolean> values) {
-        if (values == null) {
-            return ((ValueAnnotatedTypeFactory) atypefactory).UNKNOWNVAL;
-        }
-        if (values.isEmpty()) {
-            return ((ValueAnnotatedTypeFactory) atypefactory).BOTTOMVAL;
-        }
-        return ((ValueAnnotatedTypeFactory) atypefactory).createBooleanAnnotation(values);
-    }
-
     private TransferResult<CFValue, CFStore> createNewResult(
             TransferResult<CFValue, CFStore> result, List<Number> resultValues) {
         AnnotationMirror stringVal = createNumberAnnotationMirror(resultValues);
@@ -203,7 +183,8 @@ public class ValueTransfer extends CFTransfer {
 
     private TransferResult<CFValue, CFStore> createNewResultBoolean(
             TransferResult<CFValue, CFStore> result, List<Boolean> resultValues) {
-        AnnotationMirror boolVal = createBooleanAnnotationMirror(resultValues);
+        AnnotationMirror boolVal =
+                ((ValueAnnotatedTypeFactory) atypefactory).createBooleanAnnotation(resultValues);
         CFValue newResultValue =
                 analysis.createSingleAnnotationValue(
                         boolVal, result.getResultValue().getUnderlyingType());
@@ -249,7 +230,8 @@ public class ValueTransfer extends CFTransfer {
                 }
             }
         }
-        AnnotationMirror stringVal = createStringValAnnotationMirror(concat);
+        AnnotationMirror stringVal =
+                ((ValueAnnotatedTypeFactory) atypefactory).createStringAnnotation(concat);
         TypeMirror underlyingType = result.getResultValue().getUnderlyingType();
         CFValue newResultValue = analysis.createSingleAnnotationValue(stringVal, underlyingType);
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
