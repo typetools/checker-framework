@@ -126,21 +126,29 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     private void notEqualToValue(
             Node mLiteral, Node otherNode, AnnotationMirror otherAnno, CFStore store) {
 
-        Long integerLiteralOrNull = aTypeFactory.getExactValueOrNullFromTree(mLiteral.getTree());
+        Long integerLiteral =
+                IndexUtil.getExactValue(
+                        mLiteral.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
 
-        if (integerLiteralOrNull == null) {
+        if (integerLiteral == null) {
             return;
         }
 
-        if (integerLiteralOrNull == 0) {
+        if (integerLiteral == 0) {
             if (AnnotationUtils.areSameByClass(otherAnno, NonNegative.class)) {
-                Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
-                store.insertValue(rec, POS);
+                List<Node> internals = splitAssignments(otherNode);
+                for (Node internal : internals) {
+                    Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, internal);
+                    store.insertValue(rec, POS);
+                }
             }
-        } else if (integerLiteralOrNull == -1) {
+        } else if (integerLiteral == -1) {
             if (AnnotationUtils.areSameByClass(otherAnno, GTENegativeOne.class)) {
-                Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
-                store.insertValue(rec, NN);
+                List<Node> internals = splitAssignments(otherNode);
+                for (Node internal : internals) {
+                    Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, internal);
+                    store.insertValue(rec, NN);
+                }
             }
         }
     }

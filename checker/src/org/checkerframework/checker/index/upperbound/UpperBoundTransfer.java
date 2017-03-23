@@ -1,12 +1,12 @@
 package org.checkerframework.checker.index.upperbound;
 
-import com.sun.source.tree.ExpressionTree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
@@ -73,158 +73,153 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             Receiver arrayRec =
                     FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getTarget());
             String arrayString = arrayRec.toString();
-            UBQualifier newInfo = UBQualifier.createUBQualifier(arrayString, "-1");
+            LessThanLengthOf newInfo =
+                    (LessThanLengthOf) UBQualifier.createUBQualifier(arrayString, "-1");
             UBQualifier combined = previousQualifier.glb(newInfo);
             AnnotationMirror newAnno = atypeFactory.convertUBQualifierToAnnotation(combined);
 
             Receiver dimRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), dim);
             result.getRegularStore().insertValue(dimRec, newAnno);
-            knownToBeLessThanLengthOf(arrayString, dim, result.getRegularStore(), in);
+            propagateToOperands(newInfo, dim, result.getRegularStore(), in);
         }
         return result;
     }
 
     /**
-     * Node is known to be less than the length of array. If the node is a plus or a minus then the
-     * types of the left and right operands can be refined to include offsets.
+     * Node is known to be {@code typeOfNode}. If the node is a plus or a minus then the types of
+     * the left and right operands can be refined to include offsets. If the node is a
+     * multiplication, its operands can also be refined. See {@link
+     * #propagateToAdditionOperand(LessThanLengthOf, Node, Node, TransferInput, CFStore)}, {@link
+     * #propagateToSubtractionOperands(LessThanLengthOf, NumericalSubtractionNode, TransferInput,
+     * CFStore)}, and {@link #propagateToMultiplicationOperand(Node, Node, TransferInput, CFStore,
+     * LessThanLengthOf)} for details.
      */
-    private void knownToBeLessThanLengthOf(
-            String array, Node node, CFStore store, TransferInput<CFValue, CFStore> in) {
+    private void propagateToOperands(
+            LessThanLengthOf typeOfNode,
+            Node node,
+            CFStore store,
+            TransferInput<CFValue, CFStore> in) {
         if (node instanceof NumericalAdditionNode) {
-            knownToBeArrayLength((NumericalAdditionNode) node, array, in, store);
+            Node right = ((NumericalAdditionNode) node).getRightOperand();
+            Node left = ((NumericalAdditionNode) node).getLeftOperand();
+            propagateToAdditionOperand(typeOfNode, left, right, in, store);
+            propagateToAdditionOperand(typeOfNode, right, left, in, store);
         } else if (node instanceof NumericalSubtractionNode) {
-            knownToBeArrayLength((NumericalSubtractionNode) node, array, in, store);
+            propagateToSubtractionOperands(typeOfNode, (NumericalSubtractionNode) node, in, store);
         } else if (node instanceof NumericalMultiplicationNode) {
-            Node right = ((NumericalMultiplicationNode) node).getRightOperand();
-            Node left = ((NumericalMultiplicationNode) node).getLeftOperand();
-            knownToBeArrayLengthMultiplication(left, right, array, in, store);
-            knownToBeArrayLengthMultiplication(right, left, array, in, store);
+            if (atypeFactory.hasLowerBoundTypeByClass(node, NonNegative.class)
+                    || atypeFactory.hasLowerBoundTypeByClass(node, Positive.class)) {
+                Node right = ((NumericalMultiplicationNode) node).getRightOperand();
+                Node left = ((NumericalMultiplicationNode) node).getLeftOperand();
+                propagateToMultiplicationOperand(left, right, in, store, typeOfNode);
+                propagateToMultiplicationOperand(right, left, in, store, typeOfNode);
+            }
         }
     }
 
     /**
-     * {@code other} times {@code node} is known to be exactly the length of {@code arrayExp}.
+     * {@code other} times {@code node} is known to be {@code typeOfMultiplication}.
      *
-     * <p>This implies that if {@code other} is positive, then {@code node} is less than or equal to
-     * the length of arrayExp. If {@code other} is greater than 1, then {@code node} is less than
-     * the length of arrayExp.
+     * <p>This implies that if {@code other} is positive, then {@code node} is {@code
+     * typeOfMultiplication}. If {@code other} is greater than 1, then {@code node} is {@code
+     * typeOfMultiplication} plus 1.
      */
-    private void knownToBeArrayLengthMultiplication(
+    private void propagateToMultiplicationOperand(
             Node node,
             Node other,
-            String arrayExp,
             TransferInput<CFValue, CFStore> in,
-            CFStore store) {
+            CFStore store,
+            LessThanLengthOf typeOfMultiplication) {
         if (atypeFactory.hasLowerBoundTypeByClass(other, Positive.class)) {
-            UBQualifier lessThan;
-            Integer x = atypeFactory.valMinFromExpressionTree((ExpressionTree) other.getTree());
-            if (x != null && x > 1) {
-                lessThan = UBQualifier.createUBQualifier(arrayExp, "0");
-            } else {
-                lessThan = UBQualifier.createUBQualifier(arrayExp, "-1");
+            Long minValue =
+                    IndexUtil.getMinValue(
+                            other.getTree(), atypeFactory.getValueAnnotatedTypeFactory());
+            if (minValue != null && minValue > 1) {
+                typeOfMultiplication = (LessThanLengthOf) typeOfMultiplication.plusOffset(1);
             }
             UBQualifier qual = getUBQualifier(node, in);
-            UBQualifier newQual = qual.glb(lessThan);
+            UBQualifier newQual = qual.glb(typeOfMultiplication);
             Receiver rec = FlowExpressions.internalReprOf(atypeFactory, node);
             store.insertValue(rec, atypeFactory.convertUBQualifierToAnnotation(newQual));
         }
     }
 
     /**
-     * The subtraction node, {@code node}, is known to be exactly the length of the array referenced
-     * by the arrayExp.
+     * The subtraction node, {@code node}, is known to be {@code typeOfSubtraction}.
      *
      * <p>This means that the left node is less than or equal to the length of the array when the
      * right node is subtracted from the left node.
      *
-     * @param node subtraction node that is known to be equal to the length of the array referenced
-     *     by arrayExp
-     * @param arrayExp array expression
+     * @param typeOfSubtraction type of node
+     * @param node subtraction node that has typeOfSubtraction
      * @param in TransferInput
      * @param store location to store the refined type
      */
-    private void knownToBeArrayLength(
+    private void propagateToSubtractionOperands(
+            LessThanLengthOf typeOfSubtraction,
             NumericalSubtractionNode node,
-            String arrayExp,
             TransferInput<CFValue, CFStore> in,
             CFStore store) {
-        UBQualifier newInfo = UBQualifier.createUBQualifier(arrayExp, "-1");
         UBQualifier left = getUBQualifier(node.getLeftOperand(), in);
+        UBQualifier newInfo = typeOfSubtraction.minusOffset(node.getRightOperand(), atypeFactory);
 
-        UBQualifier newLeft = left.glb(newInfo.minusOffset(node.getRightOperand(), atypeFactory));
+        UBQualifier newLeft = left.glb(newInfo);
         Receiver leftRec = FlowExpressions.internalReprOf(atypeFactory, node.getLeftOperand());
         store.insertValue(leftRec, atypeFactory.convertUBQualifierToAnnotation(newLeft));
     }
 
     /**
-     * The addition node is known to be exactly the length of the array referenced by the arrayExp.
+     * Refines the type of {@code operand} to {@code typeOfAddition} plus {@code other}. If {@code
+     * other} is non-negative, then {@code operand} also less than the length of the arrays in
+     * {@code typeOfAddition}. If {@code other} is positive, then {@code operand} also less than the
+     * length of the arrays in {@code typeOfAddition} plus 1.
      *
-     * <p>This means that the left node is less than or equal to the length of the array when the
-     * right node is added to the left node. And this means that the right node is less than or
-     * equal to the length of the array when the left node is added to the right node.
-     *
-     * <p>In addition, if the right node is known to be NonNegative, then the left node on its own
-     * is less than or equal to the length of the array, and vice-versa. And, when the right node is
-     * Positive, the left node is less than the length of the array, and vice-versa.
-     *
-     * @param node addition node that is known to be equal to the length of the array referenced by
-     *     arrayExp
-     * @param arrayExp array expression
+     * @param typeOfAddition type of {@code operand + other}
+     * @param operand Node to refine
+     * @param other Node added to {@code operand}
      * @param in TransferInput
      * @param store location to store the refined types
      */
-    private void knownToBeArrayLength(
-            NumericalAdditionNode node,
-            String arrayExp,
+    private void propagateToAdditionOperand(
+            LessThanLengthOf typeOfAddition,
+            Node operand,
+            Node other,
             TransferInput<CFValue, CFStore> in,
             CFStore store) {
-        UBQualifier left = getUBQualifier(node.getLeftOperand(), in);
-        UBQualifier right = getUBQualifier(node.getRightOperand(), in);
+        UBQualifier operandQual = getUBQualifier(operand, in);
+        UBQualifier newQual = operandQual.glb(typeOfAddition.plusOffset(other, atypeFactory));
 
-        UBQualifier newInfo = UBQualifier.createUBQualifier(arrayExp, "-1");
-        UBQualifier newLeft = left.glb(newInfo.plusOffset(node.getRightOperand(), atypeFactory));
-        newLeft = accountForLowerBoundAnnos(node.getRightOperand(), newLeft, arrayExp);
-
-        Receiver leftRec = FlowExpressions.internalReprOf(atypeFactory, node.getLeftOperand());
-        store.insertValue(leftRec, atypeFactory.convertUBQualifierToAnnotation(newLeft));
-
-        UBQualifier newRight = right.glb(newInfo.plusOffset(node.getLeftOperand(), atypeFactory));
-        newRight = accountForLowerBoundAnnos(node.getLeftOperand(), newRight, arrayExp);
-
-        Receiver rightRec = FlowExpressions.internalReprOf(atypeFactory, node.getRightOperand());
-        store.insertValue(rightRec, atypeFactory.convertUBQualifierToAnnotation(newRight));
-    }
-
-    /** If the node is NN, add an LTEL to the qual. If POS, add an LTL. */
-    private UBQualifier accountForLowerBoundAnnos(Node node, UBQualifier qual, String arrayExp) {
-        if (atypeFactory.hasLowerBoundTypeByClass(node, Positive.class)) {
-            qual = qual.glb(UBQualifier.createUBQualifier(arrayExp, "0"));
-        } else if (atypeFactory.hasLowerBoundTypeByClass(node, NonNegative.class)) {
-            qual = qual.glb(UBQualifier.createUBQualifier(arrayExp, "-1"));
+        /** If the node is NN, add an LTEL to the qual. If POS, add an LTL. */
+        if (atypeFactory.hasLowerBoundTypeByClass(other, Positive.class)) {
+            newQual = newQual.glb(typeOfAddition.plusOffset(1));
+        } else if (atypeFactory.hasLowerBoundTypeByClass(other, NonNegative.class)) {
+            newQual = newQual.glb(typeOfAddition);
         }
-        return qual;
+        Receiver operandRec = FlowExpressions.internalReprOf(atypeFactory, operand);
+        store.insertValue(operandRec, atypeFactory.convertUBQualifierToAnnotation(newQual));
     }
 
     @Override
     protected void refineGT(
-            Node left,
-            AnnotationMirror leftAnno,
-            Node right,
-            AnnotationMirror rightAnno,
+            Node larger,
+            AnnotationMirror largerAnno,
+            Node smaller,
+            AnnotationMirror smallerAnno,
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
-        // left > right
-        UBQualifier leftQualifier = UBQualifier.createUBQualifier(leftAnno);
-        leftQualifier = leftQualifier.plusOffset(1);
-        UBQualifier rightQualifier = UBQualifier.createUBQualifier(rightAnno);
-        UBQualifier refinedRight = rightQualifier.glb(leftQualifier);
 
-        if (NodeUtils.isArrayLengthFieldAccess(left)) {
-            String array = ((FieldAccessNode) left).getReceiver().toString();
-            knownToBeLessThanLengthOf(array, right, store, in);
+        // larger > smaller
+        UBQualifier largerQual = UBQualifier.createUBQualifier(largerAnno);
+        // larger + 1 >= smaller
+        UBQualifier largerQualPlus1 = largerQual.plusOffset(1);
+        UBQualifier rightQualifier = UBQualifier.createUBQualifier(smallerAnno);
+        UBQualifier refinedRight = rightQualifier.glb(largerQualPlus1);
+
+        if (largerQualPlus1.isLessThanLengthQualifier()) {
+            propagateToOperands((LessThanLengthOf) largerQualPlus1, smaller, store, in);
         }
 
-        Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
+        Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), smaller);
         store.insertValue(rightRec, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
     }
 
@@ -247,9 +242,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         UBQualifier rightQualifier = UBQualifier.createUBQualifier(rightAnno);
         UBQualifier refinedRight = rightQualifier.glb(leftQualifier);
 
-        if (NodeUtils.isArrayLengthFieldAccess(left)) {
-            String array = ((FieldAccessNode) left).getReceiver().toString();
-            knownToBeLessThanLengthOf(array, right, store, in);
+        if (leftQualifier.isLessThanLengthQualifier()) {
+            propagateToOperands((LessThanLengthOf) leftQualifier, right, store, in);
         }
 
         Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
@@ -294,11 +288,17 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         UBQualifier glb = rightQualifier.glb(leftQualifier);
         AnnotationMirror glbAnno = atypeFactory.convertUBQualifierToAnnotation(glb);
 
-        Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-        store.insertValue(rightRec, glbAnno);
+        List<Node> internalsRight = splitAssignments(right);
+        for (Node internal : internalsRight) {
+            Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
+            store.insertValue(rightRec, glbAnno);
+        }
 
-        Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
-        store.insertValue(leftRec, glbAnno);
+        List<Node> internalsLeft = splitAssignments(left);
+        for (Node internal : internalsLeft) {
+            Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
+            store.insertValue(leftRec, glbAnno);
+        }
     }
 
     /**
@@ -316,10 +316,13 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                 String array = fa.getReceiver().toString();
                 if (otherQualifier.hasArrayWithOffsetNeg1(array)) {
                     otherQualifier = otherQualifier.glb(UBQualifier.createUBQualifier(array, "0"));
-                    Receiver leftRec =
-                            FlowExpressions.internalReprOf(analysis.getTypeFactory(), otherNode);
-                    store.insertValue(
-                            leftRec, atypeFactory.convertUBQualifierToAnnotation(otherQualifier));
+                    for (Node internal : splitAssignments(otherNode)) {
+                        Receiver leftRec =
+                                FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
+                        store.insertValue(
+                                leftRec,
+                                atypeFactory.convertUBQualifierToAnnotation(otherQualifier));
+                    }
                 }
             }
         }

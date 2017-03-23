@@ -1,10 +1,10 @@
 package org.checkerframework.checker.index.minlen;
 
-import com.sun.source.tree.Tree;
 import java.util.Collections;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -14,7 +14,6 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
@@ -81,7 +80,10 @@ public class MinLenTransfer extends IndexAbstractTransfer {
         return rfi.newResult;
     }
 
-    private Receiver getReceiverForFiNodeOrNull(Node node) {
+    /**
+     * Returns a receiver representing node if node is an FieldAccessNode. Otherwise returns null.
+     */
+    private Receiver getReceiverOfFieldAccessNode(Node node) {
         if (node instanceof FieldAccessNode) {
             Receiver rec =
                     FlowExpressions.internalReprOf(
@@ -91,29 +93,10 @@ public class MinLenTransfer extends IndexAbstractTransfer {
         return null;
     }
 
-    private Integer getNewMinLenForRefinement(Node fiNode, Node nonFiNode) {
-        // Only the length matters. This will miss an expression which
-        // include an array length (like "a.length + 1"), but that's okay
-        // for now.
-        if (NodeUtils.isArrayLengthFieldAccess(fiNode)) {
-            // At this point, MinLen needs to invoke the constant value checker
-            // to find out if it knows anything about what the length is being
-            // compared to.
-            Tree tree = nonFiNode.getTree();
-            if (tree == null) {
-                return null;
-            }
-            AnnotatedTypeMirror valueType = atypeFactory.valueTypeFromTree(tree);
-
-            if (valueType == null) {
-                return null;
-            }
-
-            return atypeFactory.getMinLenFromValueType(valueType);
-        }
-        return null;
-    }
-
+    /**
+     * Contains a special case that's only needed in the minlen hierarchy: if an array length is not
+     * equal to zero, then the array must be at least minlen 1.
+     */
     private void refineNotEqual(
             Node left,
             AnnotationMirror leftAnno,
@@ -121,8 +104,9 @@ public class MinLenTransfer extends IndexAbstractTransfer {
             AnnotationMirror rightAnno,
             CFStore store) {
 
-        Receiver rec = getReceiverForFiNodeOrNull(left);
-        Integer newMinLen = getNewMinLenForRefinement(left, right);
+        Receiver rec = getReceiverOfFieldAccessNode(left);
+        Long newMinLen =
+                IndexUtil.getMinValue(right.getTree(), atypeFactory.getValueAnnotatedTypeFactory());
 
         if (newMinLen != null && newMinLen == 0 && rec != null) {
             store.insertValue(rec, atypeFactory.createMinLen(1));
@@ -138,10 +122,11 @@ public class MinLenTransfer extends IndexAbstractTransfer {
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
 
-        Receiver rec = getReceiverForFiNodeOrNull(left);
-        Integer newMinLen = getNewMinLenForRefinement(left, right);
+        Receiver rec = getReceiverOfFieldAccessNode(left);
+        Long newMinLen =
+                IndexUtil.getMinValue(right.getTree(), atypeFactory.getValueAnnotatedTypeFactory());
         if (rec != null && newMinLen != null) {
-            store.insertValue(rec, atypeFactory.createMinLen(newMinLen + 1));
+            store.insertValue(rec, atypeFactory.createMinLen(newMinLen.intValue() + 1));
         }
     }
 
@@ -153,10 +138,11 @@ public class MinLenTransfer extends IndexAbstractTransfer {
             AnnotationMirror rightAnno,
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
-        Receiver rec = getReceiverForFiNodeOrNull(left);
-        Integer newMinLen = getNewMinLenForRefinement(left, right);
+        Receiver rec = getReceiverOfFieldAccessNode(left);
+        Long newMinLen =
+                IndexUtil.getMinValue(right.getTree(), atypeFactory.getValueAnnotatedTypeFactory());
         if (rec != null && newMinLen != null) {
-            store.insertValue(rec, atypeFactory.createMinLen(newMinLen));
+            store.insertValue(rec, atypeFactory.createMinLen(newMinLen.intValue()));
         }
     }
 }
