@@ -80,7 +80,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The canonical @{@link PolyLowerBound} annotation. */
     public final AnnotationMirror POLY = AnnotationUtils.fromClass(elements, PolyLowerBound.class);
 
-    private final AnnotationMirror NEGATIVE_SEARCH_INDEX =
+    /** A special annotation for dealing with binary search. */
+    public final AnnotationMirror NEGATIVE_SEARCH_INDEX =
             AnnotationUtils.fromClass(elements, NegativeIndexFor.class);
 
     private final IndexMethodIdentifier imf;

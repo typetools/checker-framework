@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.lowerbound.LowerBoundAnnotatedTypeFactory;
 import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
 import org.checkerframework.checker.index.minlen.MinLenAnnotatedTypeFactory;
@@ -31,6 +32,7 @@ import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.MinLen;
+import org.checkerframework.checker.index.qual.NegativeIndexFor;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.PolyIndex;
 import org.checkerframework.checker.index.qual.PolyUpperBound;
@@ -461,8 +463,29 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
             // Dataflow refines this type if possible
-            type.addAnnotation(UNKNOWN);
+            if (node.getKind() == Kind.BITWISE_COMPLEMENT) {
+                addAnnotationForBitwiseComplement(getAnnotatedType(node), type);
+            } else {
+                type.addAnnotation(UNKNOWN);
+            }
             return super.visitUnary(node, type);
+        }
+
+        private void addAnnotationForBitwiseComplement(
+                AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
+            if (typeSrc.hasAnnotationRelaxed(
+                    getLowerBoundAnnotatedTypeFactory().NEGATIVE_SEARCH_INDEX)) {
+                AnnotationMirror nif = typeSrc.getAnnotation(NegativeIndexFor.class);
+                List<String> arrays = IndexUtil.getValueOfAnnotationWithStringArgument(nif);
+                List<String> negativeOnes = new ArrayList<>(arrays.size());
+                for (String s : arrays) {
+                    negativeOnes.add("-1");
+                }
+                UBQualifier qual = UBQualifier.createUBQualifier(arrays, negativeOnes);
+                typeDst.addAnnotation(convertUBQualifierToAnnotation(qual));
+            } else {
+                typeDst.addAnnotation(UNKNOWN);
+            }
         }
 
         @Override

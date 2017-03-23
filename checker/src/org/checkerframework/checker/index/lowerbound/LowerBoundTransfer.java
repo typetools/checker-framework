@@ -1,12 +1,15 @@
 package org.checkerframework.checker.index.lowerbound;
 
+import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.index.qual.LowerBoundUnknown;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.checker.index.qual.SearchIndex;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -172,6 +175,28 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
+     * Special binary search handling: if the left value is exactly comparison, and the right side
+     * is a search index, then convert the right side in the store to a negative index for.
+     */
+    private void specialHandlingForBinarySearch(
+            Node left, Node right, CFStore store, int comparison) {
+        assert comparison == 0 || comparison == -1;
+        Long leftValue =
+                IndexUtil.getExactValue(
+                        left.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
+        if (leftValue != null && leftValue == comparison) {
+            AnnotationMirror rightSI =
+                    aTypeFactory.getAnnotationMirror(right.getTree(), SearchIndex.class);
+            if (rightSI != null) {
+                List<String> arrays = IndexUtil.getValueOfAnnotationWithStringArgument(rightSI);
+                AnnotationMirror nif = aTypeFactory.createNegativeIndexFor(arrays);
+                store.insertValue(
+                        FlowExpressions.internalReprOf(analysis.getTypeFactory(), right), nif);
+            }
+        }
+    }
+
+    /**
      * The implementation of the algorithm for refining a &gt; test. Changes the type of left (the
      * greater one) to one closer to bottom than the type of right. Can't call the promote function
      * from the ATF directly because a new expression isn't introduced here - the modifications have
@@ -185,6 +210,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
             AnnotationMirror rightAnno,
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
+
+        specialHandlingForBinarySearch(left, right, store, -1);
 
         if (rightAnno == null || leftAnno == null) {
             return;
@@ -219,6 +246,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
             AnnotationMirror rightAnno,
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
+
+        specialHandlingForBinarySearch(left, right, store, 0);
 
         if (rightAnno == null || leftAnno == null) {
             return;
