@@ -15,6 +15,20 @@ class Binaries {
         }
     }
 
+    // Test widenUpperBound is working.
+    public void loop(int c) {
+        int decexp = 0;
+        int seendot = 0;
+        while (true) {
+            if (c == '.' && seendot == 0) seendot = 1;
+            else if ('0' <= c && c <= '9') {
+                v = v * 10 + (c - '0');
+                decexp += seendot;
+            } else break;
+            c = write();
+        }
+    }
+
     void write(int t) {}
 
     public void testIntRange(

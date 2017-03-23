@@ -795,7 +795,7 @@ public class Range {
      * Determines if this range is completely contained in the range specified by the given lower
      * bound and upper bound.
      */
-    private boolean isWithin(long lb, long ub) {
+    public boolean isWithin(long lb, long ub) {
         return from >= lb && to <= ub;
     }
 

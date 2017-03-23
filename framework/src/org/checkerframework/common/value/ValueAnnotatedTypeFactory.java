@@ -302,6 +302,31 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
+        @Override
+        public boolean implementsWidening() {
+            return true;
+        }
+
+        @Override
+        public AnnotationMirror widenUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+            AnnotationMirror lub = leastUpperBound(a1, a2);
+            if (AnnotationUtils.areSameByClass(lub, IntVal.class)) {
+                lub = convertIntValToIntRange(lub);
+            }
+            if (AnnotationUtils.areSameByClass(lub, IntRange.class)) {
+                Range range = getIntRange(lub);
+                if (range.isWithin(Byte.MIN_VALUE, Byte.MAX_VALUE)) {
+                    return createIntRangeAnnotation(Range.BYTE_EVERYTHING);
+                } else if (range.isWithin(Short.MIN_VALUE, Short.MAX_VALUE)) {
+                    return createIntRangeAnnotation(Range.SHORT_EVERYTHING);
+                } else if (range.isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+                    return createIntRangeAnnotation(Range.INT_EVERYTHING);
+                } else {
+                    return UNKNOWNVAL;
+                }
+            }
+            return lub;
+        }
         /**
          * Determines the least upper bound of a1 and a2, which contains the union of their sets of
          * possible values.
