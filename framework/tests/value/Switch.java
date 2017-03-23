@@ -47,4 +47,49 @@ class Switch {
                 break;
         }
     }
+
+    void test3(@IntVal({1, 2, 3, 4, 5}) int x) {
+
+        // harder version, fall through
+        switch (x) {
+            case 1:
+                @IntVal({1}) int y = x;
+            case 2:
+            case 3:
+                @IntVal({1, 2, 3}) int w = x;
+                //:: error: (assignment.type.incompatible)
+                @IntVal({2, 3}) int z = x;
+                //:: error: (assignment.type.incompatible)
+                @IntVal({3}) int z1 = x;
+                break;
+            case 4:
+            default:
+                // This should be a legal assignment, but dataflow is failing to
+                // identify this as an else branch.
+                //:: error: (assignment.type.incompatible)
+                @IntVal({4, 5}) int q = x;
+
+                //:: error: (assignment.type.incompatible)
+                @IntVal(5) int q2 = x;
+                break;
+        }
+    }
+
+    void test4(int x) {
+        switch (x) {
+            case 1:
+                @IntVal({1}) int y = x;
+                break;
+            case 2:
+            case 3:
+                @IntVal({2, 3}) int z = x;
+                break;
+            case 4:
+            default:
+                return;
+        }
+        @IntVal({1, 2, 3}) int y = x;
+        //:: error: (assignment.type.incompatible)
+        @IntVal(4) int y2 = x;
+    }
 }
