@@ -124,7 +124,10 @@ public class ValueTransfer extends CFTransfer {
         return ValueAnnotatedTypeFactory.getCharValues(intAnno);
     }
 
-    /** Returns a list of possible values, or null if no estimate is available. */
+    /**
+     * Returns a list of possible values, or null if no estimate is available and any value is
+     * possible.
+     */
     private List<? extends Number> getNumericalValues(
             Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
