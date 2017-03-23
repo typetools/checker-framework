@@ -314,7 +314,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * Dispatch to binary operator helper methods. The Lower Bound Checker currently handles
-         * addition, subtraction, multiplication, division, and modular division.
+         * addition, subtraction, multiplication, division, and remainder.
          */
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {

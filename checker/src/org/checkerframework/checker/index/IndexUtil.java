@@ -15,10 +15,11 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class IndexUtil {
 
     /**
-     * Gets the value field of an annotation with a list of strings in its value field. For the
-     * Index Checker, this will get a list of array names from an Upper Bound or SameLen annotation.
-     * If the annotation has no value field (e.g. if it is UpperBoundUnknown) then null is returned,
-     * making this safe to call on any Upper Bound or SameLen annotation.
+     * Gets the value field of an annotation with a list of strings in its value field. Null is
+     * returned if the annotation has no value field.
+     *
+     * <p>For the Index Checker, this will get a list of array names from an Upper Bound or SameLen
+     * annotation. making this safe to call on any Upper Bound or SameLen annotation.
      */
     public static List<String> getValueOfAnnotationWithStringArgument(AnnotationMirror anno) {
         if (!AnnotationUtils.hasElementValue(anno, "value")) {
@@ -61,7 +62,6 @@ public class IndexUtil {
         AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
         List<Long> possibleValues = getPossibleValues(valueType);
         if (possibleValues != null && possibleValues.size() != 0) {
-            // There must be at least one element in the list, because of the previous check.
             return Collections.min(possibleValues);
         } else {
             return null;
@@ -77,7 +77,6 @@ public class IndexUtil {
         AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
         List<Long> possibleValues = getPossibleValues(valueType);
         if (possibleValues != null && possibleValues.size() != 0) {
-            // There must be at least one element in the list, because of the previous check.
             return Collections.max(possibleValues);
         } else {
             return null;
@@ -85,8 +84,8 @@ public class IndexUtil {
     }
 
     /**
-     * Queries the MinLen Checker to determine if there is a known minimum length for the array. If
-     * not, returns -1.
+     * Queries the MinLen Checker to determine if there is a known minimum length for the array
+     * represented by {@code tree}. If not, returns -1.
      */
     public static int getMinLen(Tree tree, MinLenAnnotatedTypeFactory minLenAnnotatedTypeFactory) {
         AnnotatedTypeMirror minLenType = minLenAnnotatedTypeFactory.getAnnotatedType(tree);
@@ -95,7 +94,7 @@ public class IndexUtil {
     }
 
     /**
-     * Returns the MinLen value of the given annotation mirror; or -1 if the annotation mirror is
+     * Returns the MinLen value of the given annotation mirror, or -1 if the annotation mirror is
      * null.
      */
     public static int getMinLen(AnnotationMirror anm) {

@@ -1,5 +1,7 @@
 package org.checkerframework.checker.index.samelen;
 
+import static org.checkerframework.checker.index.IndexUtil.getValueOfAnnotationWithStringArgument;
+
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
@@ -10,7 +12,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.PolySameLen;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.SameLenBottom;
@@ -121,13 +122,13 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (isReceiverToStringParsable(aRec)) {
             aValues.add(aRec.toString());
             if (AnnotationUtils.areSameByClass(sl1, SameLen.class)) {
-                aValues.addAll(IndexUtil.getValueOfAnnotationWithStringArgument(sl1));
+                aValues.addAll(getValueOfAnnotationWithStringArgument(sl1));
             }
         }
         if (isReceiverToStringParsable(bRec)) {
             bValues.add(bRec.toString());
             if (AnnotationUtils.areSameByClass(sl2, SameLen.class)) {
-                bValues.addAll(IndexUtil.getValueOfAnnotationWithStringArgument(sl2));
+                bValues.addAll(getValueOfAnnotationWithStringArgument(sl2));
             }
         }
 
@@ -163,8 +164,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (AnnotationUtils.hasElementValue(a1, "value")
                     && AnnotationUtils.hasElementValue(a2, "value")) {
-                List<String> a1Val = IndexUtil.getValueOfAnnotationWithStringArgument(a1);
-                List<String> a2Val = IndexUtil.getValueOfAnnotationWithStringArgument(a2);
+                List<String> a1Val = getValueOfAnnotationWithStringArgument(a1);
+                List<String> a2Val = getValueOfAnnotationWithStringArgument(a2);
 
                 if (overlap(a1Val, a2Val)) {
                     return getCombinedSameLen(a1Val, a2Val);
@@ -188,8 +189,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (AnnotationUtils.hasElementValue(a1, "value")
                     && AnnotationUtils.hasElementValue(a2, "value")) {
-                List<String> a1Val = IndexUtil.getValueOfAnnotationWithStringArgument(a1);
-                List<String> a2Val = IndexUtil.getValueOfAnnotationWithStringArgument(a2);
+                List<String> a1Val = getValueOfAnnotationWithStringArgument(a1);
+                List<String> a2Val = getValueOfAnnotationWithStringArgument(a2);
 
                 if (overlap(a1Val, a2Val)) {
                     return getCombinedSameLen(a1Val, a2Val);
@@ -222,8 +223,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return AnnotationUtils.areSameByClass(superAnno, PolySameLen.class);
             } else if (AnnotationUtils.hasElementValue(subAnno, "value")
                     && AnnotationUtils.hasElementValue(superAnno, "value")) {
-                List<String> a1Val = IndexUtil.getValueOfAnnotationWithStringArgument(subAnno);
-                List<String> a2Val = IndexUtil.getValueOfAnnotationWithStringArgument(superAnno);
+                List<String> a1Val = getValueOfAnnotationWithStringArgument(subAnno);
+                List<String> a2Val = getValueOfAnnotationWithStringArgument(superAnno);
 
                 if (overlap(a1Val, a2Val)) {
                     return true;
@@ -254,6 +255,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // Could not find a more precise type, so return 0;
             return new ArrayList<>();
         }
-        return IndexUtil.getValueOfAnnotationWithStringArgument(sameLenAnno);
+        return getValueOfAnnotationWithStringArgument(sameLenAnno);
     }
 }
