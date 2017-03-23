@@ -64,9 +64,9 @@ class Refinement2 {
         }
 
         if (x == 3) {
-            // This is actually dead code, but this assignment should pass.
+            // This is actually dead code, so x is treated as bottom.
             @IntVal(3) int y = x;
-            //:: error: (assignment.type.incompatible)
+            @IntVal(33) int v = x;
             @BottomVal int z = x;
         }
     }
@@ -86,7 +86,7 @@ class Refinement2 {
         if (a.length == 3) {
             // Dead code
             int @ArrayLen(3) [] b = a;
-            //:: error: (assignment.type.incompatible)
+            int @ArrayLen(5) [] c = a;
             int @BottomVal [] bot = a;
         }
     }
