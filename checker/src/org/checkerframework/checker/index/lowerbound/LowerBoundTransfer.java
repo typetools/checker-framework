@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.lowerbound;
 
+import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
@@ -131,13 +132,19 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
         if (integerLiteralOrNull == 0) {
             if (AnnotationUtils.areSameByClass(otherAnno, NonNegative.class)) {
-                Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
-                store.insertValue(rec, POS);
+                List<Node> internals = splitAssignments(otherNode);
+                for (Node internal : internals) {
+                    Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, internal);
+                    store.insertValue(rec, POS);
+                }
             }
         } else if (integerLiteralOrNull == -1) {
             if (AnnotationUtils.areSameByClass(otherAnno, GTENegativeOne.class)) {
-                Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
-                store.insertValue(rec, NN);
+                List<Node> internals = splitAssignments(otherNode);
+                for (Node internal : internals) {
+                    Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, internal);
+                    store.insertValue(rec, NN);
+                }
             }
         }
     }

@@ -704,6 +704,10 @@ public abstract class CFAbstractTransfer<
      * precise than {@code firstvalue}. This is possible, if {@code secondNode} is an expression
      * that is tracked by the store (e.g., a local variable or a field).
      *
+     * <p>Note that when overriding this method, when a new type is inserted into the store,
+     * splitAssignments should be called, and the new type should be inserted into the store for
+     * each of the resulting nodes.
+     *
      * @param res the previous result
      * @param notEqualTo if true, indicates that the logic is flipped (i.e., the information is
      *     added to the {@code elseStore} instead of the {@code thenStore}) for a not-equal
