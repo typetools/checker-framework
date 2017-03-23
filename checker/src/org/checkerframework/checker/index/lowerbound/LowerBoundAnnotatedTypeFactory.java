@@ -24,6 +24,7 @@ import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.index.qual.IndexOrLow;
 import org.checkerframework.checker.index.qual.LowerBoundUnknown;
 import org.checkerframework.checker.index.qual.MinLen;
+import org.checkerframework.checker.index.qual.NegativeIndexFor;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.PolyIndex;
 import org.checkerframework.checker.index.qual.PolyLowerBound;
@@ -40,6 +41,7 @@ import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -77,6 +79,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);
     /** The canonical @{@link PolyLowerBound} annotation. */
     public final AnnotationMirror POLY = AnnotationUtils.fromClass(elements, PolyLowerBound.class);
+
+    private final AnnotationMirror NEGATIVE_SEARCH_INDEX =
+            AnnotationUtils.fromClass(elements, NegativeIndexFor.class);
 
     private final IndexMethodIdentifier imf;
 
@@ -283,10 +288,20 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case POSTFIX_DECREMENT:
                     // Do nothing. The CF should take care of these itself.
                     break;
+                case BITWISE_COMPLEMENT:
+                    handleBitWiseComplement(typeSrc, typeDst);
                 default:
                     break;
             }
             return super.visitUnary(tree, typeDst);
+        }
+
+        /** */
+        private void handleBitWiseComplement(
+                AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
+            if (typeSrc.hasAnnotationRelaxed(NEGATIVE_SEARCH_INDEX)) {
+                typeDst.addAnnotation(NN);
+            }
         }
 
         /** Special handling for Math.max. The return is the GLB of the arguments. */
@@ -782,5 +797,11 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         type.addAnnotation(UNKNOWN);
+    }
+
+    AnnotationMirror createNegativeIndexFor(List<String> arrays) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, NegativeIndexFor.class);
+        builder.setValue("value", arrays);
+        return builder.build();
     }
 }
