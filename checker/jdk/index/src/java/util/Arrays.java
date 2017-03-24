@@ -824,7 +824,7 @@ public class Arrays {
      *         that this guarantees that the return value will be &gt;= 0 if
      *         and only if the key is found.
      */
-    public static /*@SearchIndex("#1") @LTLengthOf("#1")*/ int binarySearch(long[] a, long key) {
+    public static @LTLengthOf("#1") @SearchIndex("#1") int binarySearch(long[] a, long key) {
         return binarySearch0(a, 0, a.length, key);
     }
 
@@ -860,7 +860,7 @@ public class Arrays {
      *         if {@code fromIndex < 0 or toIndex > a.length}
      * @since 1.6
      */
-    public static /*@SearchIndex("#1") @LTLengthOf("#1")*/ int binarySearch(long[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
+    public static @LTLengthOf("#1") @SearchIndex("#1") int binarySearch(long[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
                                    long key) {
         rangeCheck(a.length, fromIndex, toIndex);
         return binarySearch0(a, fromIndex, toIndex, key);
@@ -905,7 +905,7 @@ public class Arrays {
      *         that this guarantees that the return value will be &gt;= 0 if
      *         and only if the key is found.
      */
-    public static /*@SearchIndex("#1") @LTLengthOf("#1")*/ int binarySearch(int[] a, int key) {
+    public static @LTLengthOf("#1") @SearchIndex("#1") int binarySearch(int[] a, int key) {
         return binarySearch0(a, 0, a.length, key);
     }
 
@@ -941,14 +941,14 @@ public class Arrays {
      *         if {@code fromIndex < 0 or toIndex > a.length}
      * @since 1.6
      */
-    public static /*@SearchIndex("#1") @LTLengthOf("#1")*/ int binarySearch(int[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
+    public static @LTLengthOf("#1") @SearchIndex("#1") int binarySearch(int[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
                                    int key) {
         rangeCheck(a.length, fromIndex, toIndex);
         return binarySearch0(a, fromIndex, toIndex, key);
     }
 
     // Like public version, but without range checks.
-    private static /*@SearchIndex("#1") @LTLengthOf("#1")*/ int binarySearch0(int[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
+    private static @LTLengthOf("#1") @SearchIndex("#1") int binarySearch0(int[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
                                      int key) {
         int low = fromIndex;
         int high = toIndex - 1;
@@ -986,7 +986,7 @@ public class Arrays {
      *         that this guarantees that the return value will be &gt;= 0 if
      *         and only if the key is found.
      */
-    public static /*@SearchIndex("#1") @LTLengthOf("#1")*/ int binarySearch(short[] a, short key) {
+    public static @LTLengthOf("#1") @SearchIndex("#1") int binarySearch(short[] a, short key) {
         return binarySearch0(a, 0, a.length, key);
     }
 
@@ -1022,7 +1022,7 @@ public class Arrays {
      *         if {@code fromIndex < 0 or toIndex > a.length}
      * @since 1.6
      */
-    public static /*@SearchIndex("#1") @LTLengthOf("#1")*/ int binarySearch(short[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
+    public static @LTLengthOf("#1") @SearchIndex("#1") int binarySearch(short[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
                                    short key) {
         rangeCheck(a.length, fromIndex, toIndex);
         return binarySearch0(a, fromIndex, toIndex, key);
@@ -1067,7 +1067,7 @@ public class Arrays {
      *         that this guarantees that the return value will be &gt;= 0 if
      *         and only if the key is found.
      */
-    public static /*@SearchIndex("#1") @LTLengthOf("#1")*/ int binarySearch(char[] a, char key) {
+    public static @LTLengthOf("#1") @SearchIndex("#1") int binarySearch(char[] a, char key) {
         return binarySearch0(a, 0, a.length, key);
     }
 
@@ -1103,7 +1103,7 @@ public class Arrays {
      *         if {@code fromIndex < 0 or toIndex > a.length}
      * @since 1.6
      */
-    public static /*@SearchIndex("#1") @LTLengthOf("#1")*/ int binarySearch(char[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
+    public static @LTLengthOf("#1") @SearchIndex("#1") int binarySearch(char[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
                                    char key) {
         rangeCheck(a.length, fromIndex, toIndex);
         return binarySearch0(a, fromIndex, toIndex, key);
@@ -1148,7 +1148,7 @@ public class Arrays {
      *         that this guarantees that the return value will be &gt;= 0 if
      *         and only if the key is found.
      */
-    public static /*@SearchIndex("#1") @LTLengthOf("#1")*/ int binarySearch(byte[] a, byte key) {
+    public static @LTLengthOf("#1") @SearchIndex("#1") int binarySearch(byte[] a, byte key) {
         return binarySearch0(a, 0, a.length, key);
     }
 
@@ -1184,7 +1184,7 @@ public class Arrays {
      *         if {@code fromIndex < 0 or toIndex > a.length}
      * @since 1.6
      */
-    public static /*@SearchIndex("#1") @LTLengthOf("#1")*/ int binarySearch(byte[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
+    public static @LTLengthOf("#1") @SearchIndex("#1") int binarySearch(byte[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
                                    byte key) {
         rangeCheck(a.length, fromIndex, toIndex);
         return binarySearch0(a, fromIndex, toIndex, key);
@@ -1230,7 +1230,7 @@ public class Arrays {
      *         that this guarantees that the return value will be &gt;= 0 if
      *         and only if the key is found.
      */
-    public static /*@SearchIndex("#1") @LTLengthOf("#1")*/ int binarySearch(double[] a, double key) {
+    public static @LTLengthOf("#1") @SearchIndex("#1") int binarySearch(double[] a, double key) {
         return binarySearch0(a, 0, a.length, key);
     }
 
@@ -1267,7 +1267,7 @@ public class Arrays {
      *         if {@code fromIndex < 0 or toIndex > a.length}
      * @since 1.6
      */
-    public static /*@SearchIndex("#1") @LTLengthOf("#1")*/ int binarySearch(double[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
+    public static @LTLengthOf("#1") @SearchIndex("#1") int binarySearch(double[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
                                    double key) {
         rangeCheck(a.length, fromIndex, toIndex);
         return binarySearch0(a, fromIndex, toIndex, key);
@@ -1321,7 +1321,7 @@ public class Arrays {
      *         that this guarantees that the return value will be &gt;= 0 if
      *         and only if the key is found.
      */
-    public static /*@SearchIndex("#1") @LTLengthOf("#1")*/ int binarySearch(float[] a, float key) {
+    public static @LTLengthOf("#1") @SearchIndex("#1") int binarySearch(float[] a, float key) {
         return binarySearch0(a, 0, a.length, key);
     }
 
@@ -1358,7 +1358,7 @@ public class Arrays {
      *         if {@code fromIndex < 0 or toIndex > a.length}
      * @since 1.6
      */
-    public static /*@SearchIndex("#1") @LTLengthOf("#1")*/ int binarySearch(float[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
+    public static @LTLengthOf("#1") @SearchIndex("#1") int binarySearch(float[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
                                    float key) {
         rangeCheck(a.length, fromIndex, toIndex);
         return binarySearch0(a, fromIndex, toIndex, key);
@@ -1420,7 +1420,7 @@ public class Arrays {
      * @throws ClassCastException if the search key is not comparable to the
      *         elements of the array.
      */
-    public static /*@SearchIndex("#1") @LTLengthOf("#1")*/ int binarySearch(Object[] a, Object key) {
+    public static @LTLengthOf("#1") @SearchIndex("#1") int binarySearch(Object[] a, Object key) {
         return binarySearch0(a, 0, a.length, key);
     }
 
@@ -1464,7 +1464,7 @@ public class Arrays {
      *         if {@code fromIndex < 0 or toIndex > a.length}
      * @since 1.6
      */
-    public static /*@SearchIndex("#1") @LTLengthOf("#1")*/ int binarySearch(Object[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
+    public static @LTLengthOf("#1") @SearchIndex("#1") int binarySearch(Object[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
                                    Object key) {
         rangeCheck(a.length, fromIndex, toIndex);
         return binarySearch0(a, fromIndex, toIndex, key);
@@ -1520,7 +1520,7 @@ public class Arrays {
      *         or the search key is not comparable to the
      *         elements of the array using this comparator.
      */
-    public static /*@SearchIndex("#1") @LTLengthOf("#1")*/ <T> int binarySearch(T[] a, T key, Comparator<? super T> c) {
+    public static <T> @LTLengthOf("#1") @SearchIndex("#1") int binarySearch(T[] a, T key, Comparator<? super T> c) {
         return binarySearch0(a, 0, a.length, key, c);
     }
 
@@ -1565,7 +1565,7 @@ public class Arrays {
      *         if {@code fromIndex < 0 or toIndex > a.length}
      * @since 1.6
      */
-    public static /*@SearchIndex("#1") @LTLengthOf("#1")*/ <T> int binarySearch(T[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
+    public static <T> @LTLengthOf("#1") @SearchIndex("#1") int binarySearch(T[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex,
                                        T key, Comparator<? super T> c) {
         rangeCheck(a.length, fromIndex, toIndex);
         return binarySearch0(a, fromIndex, toIndex, key, c);

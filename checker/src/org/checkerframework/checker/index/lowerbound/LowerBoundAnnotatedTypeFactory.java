@@ -32,6 +32,8 @@ import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.PolyIndex;
 import org.checkerframework.checker.index.qual.PolyLowerBound;
 import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.checker.index.searchindex.SearchIndexAnnotatedTypeFactory;
+import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -43,7 +45,6 @@ import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -81,10 +82,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);
     /** The canonical @{@link PolyLowerBound} annotation. */
     public final AnnotationMirror POLY = AnnotationUtils.fromClass(elements, PolyLowerBound.class);
-
-    /** A special annotation for dealing with binary search. */
-    public final AnnotationMirror NEGATIVE_SEARCH_INDEX =
-            AnnotationUtils.fromClass(elements, NegativeIndexFor.class);
 
     private final IndexMethodIdentifier imf;
 
@@ -164,6 +161,11 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Returns the MinLen Checker's annotated type factory. */
     public MinLenAnnotatedTypeFactory getMinLenAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(MinLenChecker.class);
+    }
+
+    /** Returns the SearchIndex Checker's annotated type factory. */
+    public SearchIndexAnnotatedTypeFactory getSearchIndexAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(SearchIndexChecker.class);
     }
 
     /** Returns the type in the lower bound hierarchy that a Value Checker type corresponds to. */
@@ -268,17 +270,23 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     // Do nothing. The CF should take care of these itself.
                     break;
                 case BITWISE_COMPLEMENT:
-                    handleBitWiseComplement(typeSrc, typeDst);
+                    handleBitWiseComplement(
+                            getSearchIndexAnnotatedTypeFactory().getAnnotatedType(tree), typeDst);
+                    break;
                 default:
                     break;
             }
             return super.visitUnary(tree, typeDst);
         }
 
-        /** */
+        /**
+         * Special case for bitwise complement on the result of binary search that has been compared
+         * to zero.
+         */
         private void handleBitWiseComplement(
-                AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
-            if (typeSrc.hasAnnotationRelaxed(NEGATIVE_SEARCH_INDEX)) {
+                AnnotatedTypeMirror searchIndexType, AnnotatedTypeMirror typeDst) {
+            if (AnnotationUtils.containsSameByClass(
+                    searchIndexType.getAnnotations(), NegativeIndexFor.class)) {
                 typeDst.addAnnotation(NN);
             }
         }
@@ -776,11 +784,5 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         type.addAnnotation(UNKNOWN);
-    }
-
-    AnnotationMirror createNegativeIndexFor(List<String> arrays) {
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, NegativeIndexFor.class);
-        builder.setValue("value", arrays);
-        return builder.build();
     }
 }

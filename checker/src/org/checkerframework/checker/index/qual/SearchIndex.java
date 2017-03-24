@@ -21,7 +21,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #index-checker Index Checker
  */
-@SubtypeOf({})
+@SubtypeOf(SearchIndexUnknown.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface SearchIndex {

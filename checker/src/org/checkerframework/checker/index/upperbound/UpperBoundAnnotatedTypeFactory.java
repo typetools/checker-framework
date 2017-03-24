@@ -39,6 +39,8 @@ import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.samelen.SameLenChecker;
+import org.checkerframework.checker.index.searchindex.SearchIndexAnnotatedTypeFactory;
+import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -110,6 +112,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(ValueChecker.class);
+    }
+
+    /**
+     * Provides a way to query the search index checker, which helps the Index Checker type the
+     * results of calling the JDK's binary search methods correctly.
+     */
+    private SearchIndexAnnotatedTypeFactory getSearchIndexAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(SearchIndexChecker.class);
     }
 
     /**
@@ -382,7 +392,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
             // Dataflow refines this type if possible
             if (node.getKind() == Kind.BITWISE_COMPLEMENT) {
-                addAnnotationForBitwiseComplement(getAnnotatedType(node), type);
+                addAnnotationForBitwiseComplement(
+                        getSearchIndexAnnotatedTypeFactory().getAnnotatedType(node), type);
             } else {
                 type.addAnnotation(UNKNOWN);
             }
@@ -390,10 +401,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private void addAnnotationForBitwiseComplement(
-                AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
-            if (typeSrc.hasAnnotationRelaxed(
-                    getLowerBoundAnnotatedTypeFactory().NEGATIVE_SEARCH_INDEX)) {
-                AnnotationMirror nif = typeSrc.getAnnotation(NegativeIndexFor.class);
+                AnnotatedTypeMirror searchIndexType, AnnotatedTypeMirror typeDst) {
+            if (AnnotationUtils.containsSameByClass(
+                    searchIndexType.getAnnotations(), NegativeIndexFor.class)) {
+                AnnotationMirror nif = searchIndexType.getAnnotation(NegativeIndexFor.class);
                 List<String> arrays = IndexUtil.getValueOfAnnotationWithStringArgument(nif);
                 List<String> negativeOnes = new ArrayList<>(arrays.size());
                 for (String s : arrays) {
