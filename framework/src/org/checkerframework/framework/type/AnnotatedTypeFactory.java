@@ -501,15 +501,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.root = root;
         treePathCache.clear();
         pathHack.clear();
-        // Clear the caches with trees because once the compilation unit changes,
-        // the trees may be modified and lose type arguments.
-        elementToTreeCache.clear();
-        fromTreeCache.clear();
-        classAndMethodTreeCache.clear();
 
-        // There is no need to clear the following cache, it is limited by cache size and it
-        // contents won't change between compilation units.
-        // elementCache.clear();
+        if (shouldCache) {
+            // Clear the caches with trees because once the compilation unit changes,
+            // the trees may be modified and lose type arguments.
+            elementToTreeCache.clear();
+            fromTreeCache.clear();
+            classAndMethodTreeCache.clear();
+
+            // There is no need to clear the following cache, it is limited by cache size and it
+            // contents won't change between compilation units.
+            // elementCache.clear();
+        }
     }
 
     @SideEffectFree
