@@ -132,8 +132,9 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         if (integerLiteral == null) {
             return;
         }
+        long intLiteral = integerLiteral.longValue();
 
-        if (integerLiteral == 0) {
+        if (intLiteral == 0) {
             if (AnnotationUtils.areSameByClass(otherAnno, NonNegative.class)) {
                 List<Node> internals = splitAssignments(otherNode);
                 for (Node internal : internals) {
@@ -141,7 +142,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
                     store.insertValue(rec, POS);
                 }
             }
-        } else if (integerLiteral == -1) {
+        } else if (intLiteral == -1) {
             if (AnnotationUtils.areSameByClass(otherAnno, GTENegativeOne.class)) {
                 List<Node> internals = splitAssignments(otherNode);
                 for (Node internal : internals) {
