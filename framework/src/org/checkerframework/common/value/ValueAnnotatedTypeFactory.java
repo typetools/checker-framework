@@ -1047,8 +1047,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
      * sorted and duplicates are removed before the annotation is created.
      *
-     * @param doubleValues list of doubles; duplicates are allowed and the values may be in any
-     *     order
+     * @param values list of doubles; duplicates are allowed and the values may be in any order
      * @return a {@link DoubleVal} annotation using the values
      */
     public AnnotationMirror createDoubleValAnnotation(List<Double> values) {
