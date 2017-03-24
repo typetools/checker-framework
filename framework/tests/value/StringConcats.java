@@ -1,4 +1,5 @@
 import org.checkerframework.common.value.qual.BottomVal;
+import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.StringVal;
 
 class Test {
