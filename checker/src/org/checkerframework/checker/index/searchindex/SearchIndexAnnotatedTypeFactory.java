@@ -52,12 +52,6 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         SearchIndexUnknown.class,
                         NegativeIndexFor.class));
     }
-    /*
-    @Override
-    public TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
-                new PropagationTreeAnnotator(this), super.createTreeAnnotator(), new ImplicitsTreeAnnotator(this));
-    }*/
 
     @Override
     public QualifierHierarchy createQualifierHierarchy(
@@ -71,17 +65,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
             super(factory);
         }
-        /*
-                @Override
-                public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-                    return BOTTOM;
-                }
 
-                @Override
-                public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-                    return UNKNOWN;
-                }
-        */
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
             if (AnnotationUtils.areSameByClass(superAnno, SearchIndexUnknown.class)) {
