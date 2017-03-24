@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
-import org.checkerframework.checker.index.IndexUtils;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.lowerbound.LowerBoundAnnotatedTypeFactory;
 import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
 import org.checkerframework.checker.index.minlen.MinLenAnnotatedTypeFactory;
@@ -63,9 +63,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Implements the introduction rules for the upper bound checker. Works primarily by way of querying
- * the minLen checker and comparing the min lengths of arrays to the known values of variables as
- * supplied by the value checker.
+ * Implements the introduction rules for the Upper Bound Checker. Works primarily by way of querying
+ * the MinLen Checker and comparing the min lengths of arrays to the known values of variables as
+ * supplied by the Value Checker.
  */
 public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -450,9 +450,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 ExpressionTree divisorTree,
                 AnnotatedTypeMirror resultType) {
 
-            Long divisor =
-                    IndexUtils.getExactValueOrNullFromTree(
-                            divisorTree, getValueAnnotatedTypeFactory());
+            Long divisor = IndexUtil.getExactValue(divisorTree, getValueAnnotatedTypeFactory());
             if (divisor == null) {
                 resultType.addAnnotation(UNKNOWN);
                 return;
