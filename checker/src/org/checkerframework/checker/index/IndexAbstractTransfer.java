@@ -13,6 +13,10 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 
+/**
+ * This class provides methods shared by the Index Checker's internal checkers in their transfer
+ * functions. In particular, it provides a common framework for visiting comparison operators.
+ */
 public abstract class IndexAbstractTransfer extends CFTransfer {
 
     protected CFAnalysis analysis;

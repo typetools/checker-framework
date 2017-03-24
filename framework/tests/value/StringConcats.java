@@ -1,3 +1,4 @@
+import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.StringVal;
 
 class Test {
@@ -6,6 +7,8 @@ class Test {
 
         @StringVal("true") String bool = "" + true;
         @StringVal("null") String nullV = "" + null;
+        //:: error: (assignment.type.incompatible)
+        @BottomVal String bottom = "" + null;
         @StringVal("1") String intL = "" + 1;
         @StringVal("$") String charL = "" + '$';
         @StringVal("1.0") String doubleDefault = "" + 1.0;
