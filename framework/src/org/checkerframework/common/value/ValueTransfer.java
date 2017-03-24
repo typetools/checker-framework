@@ -221,6 +221,7 @@ public class ValueTransfer extends CFTransfer {
             if (value != null) {
                 AnnotationMirror lengthAnno =
                         AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
+
                 if (lengthAnno != null) {
                     List<Long> lengthValues = ValueAnnotatedTypeFactory.getIntValues(lengthAnno);
                     List<Integer> arrayLenValues = new ArrayList<>(lengthValues.size());
@@ -246,6 +247,17 @@ public class ValueTransfer extends CFTransfer {
                                     analysis.getTypeFactory(), arrayLengthNode.getReceiver());
                     store.clearValue(arrayRec);
                     store.insertValue(arrayRec, combinedAnno);
+                } else {
+                    lengthAnno =
+                            AnnotationUtils.getAnnotationByClass(
+                                    value.getAnnotations(), BottomVal.class);
+                    if (lengthAnno != null) {
+                        Receiver arrayRec =
+                                FlowExpressions.internalReprOf(
+                                        analysis.getTypeFactory(), arrayLengthNode.getReceiver());
+                        store.clearValue(arrayRec);
+                        store.insertValue(arrayRec, lengthAnno);
+                    }
                 }
             }
         }
@@ -616,21 +628,24 @@ public class ValueTransfer extends CFTransfer {
             }
         }
 
-        createAnnotationFromResultsAndAddToStore(thenStore, thenLeftVals, leftNode);
-        createAnnotationFromResultsAndAddToStore(elseStore, elseLeftVals, leftNode);
+        boolean canGoToBottom = resultValues.size() > 0;
 
-        createAnnotationFromResultsAndAddToStore(thenStore, thenRightVals, rightNode);
-        createAnnotationFromResultsAndAddToStore(elseStore, elseRightVals, rightNode);
+        createAnnotationFromResultsAndAddToStore(thenStore, thenLeftVals, leftNode, canGoToBottom);
+        createAnnotationFromResultsAndAddToStore(elseStore, elseLeftVals, leftNode, canGoToBottom);
+
+        createAnnotationFromResultsAndAddToStore(
+                thenStore, thenRightVals, rightNode, canGoToBottom);
+        createAnnotationFromResultsAndAddToStore(
+                elseStore, elseRightVals, rightNode, canGoToBottom);
 
         return resultValues;
     }
 
     private void createAnnotationFromResultsAndAddToStore(
-            CFStore store, List<?> results, Node node) {
-        // If a zero-length list is passed, this returns bottom - which is very problematic.
+            CFStore store, List<?> results, Node node, boolean canGoToBottom) {
         AnnotationMirror anno =
                 atypefactory.createResultingAnnotation(
-                        node.getType(), results.size() == 0 ? null : results);
+                        node.getType(), results.size() == 0 && !canGoToBottom ? null : results);
         AnnotationMirror currentAnno =
                 atypefactory
                         .getAnnotatedType(node.getTree())
