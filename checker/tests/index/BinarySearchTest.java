@@ -48,4 +48,13 @@ public class BinarySearchTest {
         int y = 7;
         @LTLengthOf("a") int x = i;
     }
+
+    void test2(int[] a, @SearchIndex("#1") int xyz) {
+        if (0 > xyz) {
+            @NegativeIndexFor("a")
+            int w = xyz;
+            @NonNegative int y = ~xyz;
+            @LTEqLengthOf("a") int z = ~xyz;
+        }
+    }
 }

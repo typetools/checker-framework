@@ -271,7 +271,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     break;
                 case BITWISE_COMPLEMENT:
                     handleBitWiseComplement(
-                            getSearchIndexAnnotatedTypeFactory().getAnnotatedType(tree), typeDst);
+                            getSearchIndexAnnotatedTypeFactory()
+                                    .getAnnotatedType(tree.getExpression()),
+                            typeDst);
                     break;
                 default:
                     break;

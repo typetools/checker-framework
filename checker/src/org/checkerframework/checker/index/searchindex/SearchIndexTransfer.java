@@ -58,7 +58,7 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
             AnnotationMirror rightAnno,
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
-        specialHandlingForBinarySearch(left, right, store, -1);
+        specialHandlingForBinarySearch(left, right, store, 0);
     }
 
     @Override
@@ -69,6 +69,6 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
             AnnotationMirror rightAnno,
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
-        specialHandlingForBinarySearch(left, right, store, 0);
+        specialHandlingForBinarySearch(left, right, store, -1);
     }
 }

@@ -393,7 +393,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // Dataflow refines this type if possible
             if (node.getKind() == Kind.BITWISE_COMPLEMENT) {
                 addAnnotationForBitwiseComplement(
-                        getSearchIndexAnnotatedTypeFactory().getAnnotatedType(node), type);
+                        getSearchIndexAnnotatedTypeFactory().getAnnotatedType(node.getExpression()),
+                        type);
             } else {
                 type.addAnnotation(UNKNOWN);
             }
