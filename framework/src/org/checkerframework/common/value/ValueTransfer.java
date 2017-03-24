@@ -157,10 +157,10 @@ public class ValueTransfer extends CFTransfer {
 
     private AnnotationMirror createNumberAnnotationMirror(List<Number> values) {
         if (values == null) {
-            return ((ValueAnnotatedTypeFactory) atypefactory).UNKNOWNVAL;
+            return atypefactory.UNKNOWNVAL;
         }
         if (values.isEmpty()) {
-            return ((ValueAnnotatedTypeFactory) atypefactory).BOTTOMVAL;
+            return atypefactory.BOTTOMVAL;
         }
         Number first = values.get(0);
         if (first instanceof Integer || first instanceof Short || first instanceof Long) {
@@ -306,8 +306,7 @@ public class ValueTransfer extends CFTransfer {
                 }
             }
         }
-        AnnotationMirror stringVal =
-                ((ValueAnnotatedTypeFactory) atypefactory).createStringAnnotation(concat);
+        AnnotationMirror stringVal = atypefactory.createStringAnnotation(concat);
         TypeMirror underlyingType = result.getResultValue().getUnderlyingType();
         CFValue newResultValue = analysis.createSingleAnnotationValue(stringVal, underlyingType);
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
