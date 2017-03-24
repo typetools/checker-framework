@@ -137,7 +137,6 @@ public class MinLenTransfer extends IndexAbstractTransfer {
             AnnotationMirror rightAnno,
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
-
         Receiver rec = getReceiverOfFieldAccessNode(left);
         Long newMinLen = getMinValue(right.getTree(), atypeFactory.getValueAnnotatedTypeFactory());
         if (rec != null && newMinLen != null) {
