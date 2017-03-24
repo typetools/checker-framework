@@ -65,27 +65,34 @@ public class ValueTransfer extends CFTransfer {
         atypefactory = analysis.getTypeFactory();
     }
 
-    /** Get possible string values from annotation. */
+    /**
+     * Returns a list of possible values for {@code subNode}, as casted to a String. Returns null if
+     * {@code subNode}'s type is top/unknown. Returns an empty list if {@code subNode}'s type is
+     * bottom.
+     */
     private List<String> getStringValues(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
-        // @StringVal, @BottomVal, @UnknownVal
-        AnnotationMirror numberAnno =
+        // @StringVal, @UnknownVal, @BottomVal
+        AnnotationMirror stringAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), StringVal.class);
-        if (numberAnno != null) {
-            return AnnotationUtils.getElementValueArray(numberAnno, "value", String.class, true);
+        if (stringAnno != null) {
+            return AnnotationUtils.getElementValueArray(stringAnno, "value", String.class, true);
         }
-        numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), UnknownVal.class);
-        if (numberAnno != null) {
+        AnnotationMirror topAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), UnknownVal.class);
+        if (topAnno != null) {
             return null;
         }
-        numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
-        if (numberAnno != null) {
-            return Collections.singletonList("null");
+        AnnotationMirror bottomAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
+        if (bottomAnno != null) {
+            return new ArrayList<String>();
         }
 
         // @IntVal, @IntRange, @DoubleVal, @BoolVal (have to be converted to string)
         List<? extends Object> values;
-        numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BoolVal.class);
+        AnnotationMirror numberAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BoolVal.class);
         if (numberAnno != null) {
             values = getBooleanValues(subNode, p);
         } else if (subNode.getType().getKind() == TypeKind.CHAR) {
@@ -138,95 +145,72 @@ public class ValueTransfer extends CFTransfer {
     }
 
     /**
-     * Get possible numerical values from annotation and cast them to the underlying type. Return
-     * null if @BottomVal.
+     * Returns a list of possible values, or null if no estimate is available and any value is
+     * possible.
      */
     private List<? extends Number> getNumericalValues(
             Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
-        AnnotationMirror numberAnno;
-
-        numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
-        if (numberAnno != null) {
-            List<Long> values =
-                    AnnotationUtils.getElementValueArray(numberAnno, "value", Long.class, true);
-            return NumberUtils.castNumbers(subNode.getType(), values);
+        List<? extends Number> values = null;
+        AnnotationMirror intValAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
+        if (intValAnno != null) {
+            values = AnnotationUtils.getElementValueArray(intValAnno, "value", Long.class, true);
         }
-
-        numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), DoubleVal.class);
-        if (numberAnno != null) {
-            List<Double> values =
-                    AnnotationUtils.getElementValueArray(numberAnno, "value", Double.class, true);
-            return NumberUtils.castNumbers(subNode.getType(), values);
+        AnnotationMirror doubleValAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), DoubleVal.class);
+        if (doubleValAnno != null) {
+            values =
+                    AnnotationUtils.getElementValueArray(
+                            doubleValAnno, "value", Double.class, true);
         }
-
-        numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
-        if (numberAnno != null) {
+        AnnotationMirror bottomValAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
+        if (bottomValAnno != null) {
+            return new ArrayList<>();
+        }
+        if (values == null) {
             return null;
         }
-
-        return null;
+        return NumberUtils.castNumbers(subNode.getType(), values);
     }
 
     /** Get possible integer range from annotation. */
     private Range getIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
-        AnnotationMirror anno;
-
-        anno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
-        if (anno != null) {
-            Range range = ValueAnnotatedTypeFactory.getIntRange(anno);
-            return NumberUtils.castRange(subNode.getType(), range);
+        Range range = Range.EVERYTHING;
+        AnnotationMirror intRangeAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
+        if (intRangeAnno != null) {
+            range = ValueAnnotatedTypeFactory.getIntRange(intRangeAnno);
         }
-
-        anno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
-        if (anno != null) {
+        AnnotationMirror intValAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
+        if (intValAnno != null) {
             List<Long> values =
-                    AnnotationUtils.getElementValueArray(anno, "value", Long.class, true);
-            Range range = ValueCheckerUtils.getRangeFromValues(values);
-            return NumberUtils.castRange(subNode.getType(), range);
+                    AnnotationUtils.getElementValueArray(intValAnno, "value", Long.class, true);
+            range = ValueCheckerUtils.getRangeFromValues(values);
         }
-
-        anno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), DoubleVal.class);
-        if (anno != null) {
+        AnnotationMirror doubleValAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), DoubleVal.class);
+        if (doubleValAnno != null) {
             List<Double> values =
-                    AnnotationUtils.getElementValueArray(anno, "value", Double.class, true);
-            Range range = ValueCheckerUtils.getRangeFromValues(values);
-            return NumberUtils.castRange(subNode.getType(), range);
+                    AnnotationUtils.getElementValueArray(
+                            doubleValAnno, "value", Double.class, true);
+            range = ValueCheckerUtils.getRangeFromValues(values);
         }
-
-        anno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
-        if (anno != null) {
+        AnnotationMirror bottomValAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
+        if (bottomValAnno != null) {
             return Range.NOTHING;
         }
-
-        return Range.EVERYTHING;
+        return NumberUtils.castRange(subNode.getType(), range);
     }
 
     /** a helper function to determine if this node is annotated with @IntRange */
     private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         return AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class) != null;
-    }
-
-    /** a wrapper for {@link ValueAnnotatedTypeFactory#createStringAnnotation} */
-    private AnnotationMirror createStringValAnnotationMirror(List<String> values) {
-        return ((ValueAnnotatedTypeFactory) atypefactory).createStringAnnotation(values);
-    }
-
-    /** a wrapper for {@link ValueAnnotatedTypeFactory#createNumberAnnotationMirror} */
-    private AnnotationMirror createNumberAnnotationMirror(List<Number> values) {
-        return ((ValueAnnotatedTypeFactory) atypefactory).createNumberAnnotationMirror(values);
-    }
-
-    /** a wrapper for {@link ValueAnnotatedTypeFactory#createIntRangeAnnotation} */
-    private AnnotationMirror createRangeAnnotationMirror(Range range) {
-        return ((ValueAnnotatedTypeFactory) atypefactory).createIntRangeAnnotation(range);
-    }
-
-    /** a wrapper for {@link ValueAnnotatedTypeFactory#createBooleanAnnotation} */
-    private AnnotationMirror createBooleanAnnotationMirror(List<Boolean> values) {
-        return ((ValueAnnotatedTypeFactory) atypefactory).createBooleanAnnotation(values);
     }
 
     /**
@@ -247,7 +231,8 @@ public class ValueTransfer extends CFTransfer {
     /** Create a boolean transfer result. */
     private TransferResult<CFValue, CFStore> createNewResultBoolean(
             TransferResult<CFValue, CFStore> result, List<Boolean> resultValues) {
-        AnnotationMirror boolVal = createBooleanAnnotationMirror(resultValues);
+        AnnotationMirror boolVal =
+                ((ValueAnnotatedTypeFactory) atypefactory).createBooleanAnnotation(resultValues);
         return createNewResult(result, boolVal);
     }
 
@@ -277,13 +262,20 @@ public class ValueTransfer extends CFTransfer {
             concat = null;
         } else {
             concat = new ArrayList<>();
+            if (lefts.isEmpty()) {
+                lefts = Collections.singletonList("null");
+            }
+            if (rights.isEmpty()) {
+                rights = Collections.singletonList("null");
+            }
             for (String left : lefts) {
                 for (String right : rights) {
                     concat.add(left + right);
                 }
             }
         }
-        AnnotationMirror stringVal = createStringValAnnotationMirror(concat);
+        AnnotationMirror stringVal =
+                ((ValueAnnotatedTypeFactory) atypefactory).createStringAnnotation(concat);
         TypeMirror underlyingType = result.getResultValue().getUnderlyingType();
         CFValue newResultValue = analysis.createSingleAnnotationValue(stringVal, underlyingType);
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
@@ -320,10 +312,11 @@ public class ValueTransfer extends CFTransfer {
             TransferInput<CFValue, CFStore> p) {
         if (!isIntRange(leftNode, p) && !isIntRange(rightNode, p)) {
             List<Number> resultValues = calculateValuesBinaryOp(leftNode, rightNode, op, p);
-            return createNumberAnnotationMirror(resultValues);
+            return ((ValueAnnotatedTypeFactory) atypefactory)
+                    .createNumberAnnotationMirror(resultValues);
         } else {
             Range resultRange = calculateRangeBinaryOp(leftNode, rightNode, op, p);
-            return createRangeAnnotationMirror(resultRange);
+            return ((ValueAnnotatedTypeFactory) atypefactory).createIntRangeAnnotation(resultRange);
         }
     }
 
@@ -600,10 +593,11 @@ public class ValueTransfer extends CFTransfer {
             Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
         if (!isIntRange(operand, p)) {
             List<Number> resultValues = calculateValuesUnaryOp(operand, op, p);
-            return createNumberAnnotationMirror(resultValues);
+            return ((ValueAnnotatedTypeFactory) atypefactory)
+                    .createNumberAnnotationMirror(resultValues);
         } else {
             Range resultRange = calculateRangeUnaryOp(operand, op, p);
-            return createRangeAnnotationMirror(resultRange);
+            return ((ValueAnnotatedTypeFactory) atypefactory).createIntRangeAnnotation(resultRange);
         }
     }
 

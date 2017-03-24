@@ -4,6 +4,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.index.qual.LowerBoundUnknown;
 import org.checkerframework.checker.index.qual.NonNegative;
@@ -124,13 +125,16 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     private void notEqualToValue(
             Node mLiteral, Node otherNode, AnnotationMirror otherAnno, CFStore store) {
 
-        Long integerLiteralOrNull = aTypeFactory.getExactValueOrNullFromTree(mLiteral.getTree());
+        Long integerLiteral =
+                IndexUtil.getExactValue(
+                        mLiteral.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
 
-        if (integerLiteralOrNull == null) {
+        if (integerLiteral == null) {
             return;
         }
+        long intLiteral = integerLiteral.longValue();
 
-        if (integerLiteralOrNull == 0) {
+        if (intLiteral == 0) {
             if (AnnotationUtils.areSameByClass(otherAnno, NonNegative.class)) {
                 List<Node> internals = splitAssignments(otherNode);
                 for (Node internal : internals) {
@@ -138,7 +142,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
                     store.insertValue(rec, POS);
                 }
             }
-        } else if (integerLiteralOrNull == -1) {
+        } else if (intLiteral == -1) {
             if (AnnotationUtils.areSameByClass(otherAnno, GTENegativeOne.class)) {
                 List<Node> internals = splitAssignments(otherNode);
                 for (Node internal : internals) {

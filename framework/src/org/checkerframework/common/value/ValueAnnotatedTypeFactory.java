@@ -1010,23 +1010,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * the number of {@code values} is greater than MAX_VALUES, return an {@link IntRange}. In other
      * cases, the values are sorted and duplicates are removed before an {@link IntVal} is created.
      *
-     * @param intValues list of longs; duplicates are allowed and the values may be in any order
+     * @param values list of longs; duplicates are allowed and the values may be in any order
      * @return an annotation depends on the values
      */
-    public AnnotationMirror createIntValAnnotation(List<Long> intValues) {
-        if (intValues == null) {
+    public AnnotationMirror createIntValAnnotation(List<Long> values) {
+        if (values == null) {
             return UNKNOWNVAL;
         }
-        intValues = ValueCheckerUtils.removeDuplicates(intValues);
-        if (intValues.isEmpty()) {
+        if (values.isEmpty()) {
             return BOTTOMVAL;
-        } else if (intValues.size() > MAX_VALUES) {
-            long valMin = Collections.min(intValues);
-            long valMax = Collections.max(intValues);
+        }
+        values = ValueCheckerUtils.removeDuplicates(values);
+        if (values.size() > MAX_VALUES) {
+            long valMin = Collections.min(values);
+            long valMax = Collections.max(values);
             return createIntRangeAnnotation(new Range(valMin, valMax));
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntVal.class);
-            builder.setValue("value", intValues);
+            builder.setValue("value", values);
             return builder.build();
         }
     }
@@ -1050,18 +1051,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *     order
      * @return a {@link DoubleVal} annotation using the values
      */
-    public AnnotationMirror createDoubleValAnnotation(List<Double> doubleValues) {
-        if (doubleValues == null) {
+    public AnnotationMirror createDoubleValAnnotation(List<Double> values) {
+        if (values == null) {
             return UNKNOWNVAL;
         }
-        doubleValues = ValueCheckerUtils.removeDuplicates(doubleValues);
-        if (doubleValues.isEmpty()) {
+        if (values.isEmpty()) {
             return BOTTOMVAL;
-        } else if (doubleValues.size() > MAX_VALUES) {
+        }
+        values = ValueCheckerUtils.removeDuplicates(values);
+        if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DoubleVal.class);
-            builder.setValue("value", doubleValues);
+            builder.setValue("value", values);
             return builder.build();
         }
     }
@@ -1093,10 +1095,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values == null) {
             return UNKNOWNVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
         if (values.isEmpty()) {
             return BOTTOMVAL;
-        } else if (values.size() > MAX_VALUES) {
+        }
+        values = ValueCheckerUtils.removeDuplicates(values);
+        if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, StringVal.class);
@@ -1116,6 +1119,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror createArrayLenAnnotation(List<Integer> values) {
         if (values == null) {
             return UNKNOWNVAL;
+        }
+        if (values.isEmpty()) {
+            return BOTTOMVAL;
         }
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.isEmpty()) {
@@ -1141,10 +1147,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values == null) {
             return UNKNOWNVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
         if (values.isEmpty()) {
             return BOTTOMVAL;
-        } else if (values.size() > MAX_VALUES) {
+        }
+        values = ValueCheckerUtils.removeDuplicates(values);
+        if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, BoolVal.class);
@@ -1165,10 +1172,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values == null) {
             return UNKNOWNVAL;
         }
-        values = ValueCheckerUtils.removeDuplicates(values);
         if (values.isEmpty()) {
             return BOTTOMVAL;
-        } else if (values.size() > MAX_VALUES) {
+        }
+        values = ValueCheckerUtils.removeDuplicates(values);
+        if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
             List<Long> longValues = new ArrayList<>();

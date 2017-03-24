@@ -3,6 +3,7 @@ package org.checkerframework.checker.index.samelen;
 import com.sun.source.util.TreePath;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -125,7 +126,7 @@ public class SameLenTransfer extends CFTransfer {
         if (currentPath == null) {
             return;
         }
-        for (String s : SameLenUtils.getValue(combinedSameLen)) {
+        for (String s : IndexUtil.getValueOfAnnotationWithStringArgument(combinedSameLen)) {
             Receiver recS;
             try {
                 recS = aTypeFactory.getReceiverFromJavaExpressionString(s, currentPath);
