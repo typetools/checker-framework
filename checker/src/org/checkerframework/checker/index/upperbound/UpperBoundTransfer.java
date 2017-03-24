@@ -26,7 +26,6 @@ import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
 import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
-import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -207,7 +206,6 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             AnnotationMirror smallerAnno,
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
-
         // larger > smaller
         UBQualifier largerQual = UBQualifier.createUBQualifier(largerAnno);
         // larger + 1 >= smaller
@@ -307,7 +305,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      */
     private void refineNeqArrayLength(
             Node arrayLengthAccess, Node otherNode, AnnotationMirror otherNodeAnno, CFStore store) {
-        if (NodeUtils.isArrayLengthFieldAccess(arrayLengthAccess)) {
+        if (isArrayLengthFieldAccess(arrayLengthAccess)) {
             UBQualifier otherQualifier = UBQualifier.createUBQualifier(otherNodeAnno);
             FieldAccess fa =
                     FlowExpressions.internalReprOfFieldAccess(
@@ -433,7 +431,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     @Override
     public TransferResult<CFValue, CFStore> visitFieldAccess(
             FieldAccessNode n, TransferInput<CFValue, CFStore> in) {
-        if (NodeUtils.isArrayLengthFieldAccess(n)) {
+        if (isArrayLengthFieldAccess(n)) {
             FieldAccess arrayLength = FlowExpressions.internalReprOfFieldAccess(atypeFactory, n);
             Receiver arrayRec = arrayLength.getReceiver();
             if (CFAbstractStore.canInsertReceiver(arrayRec)) {
