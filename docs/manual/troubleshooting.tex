@@ -564,6 +564,22 @@ they have a different representation in bytecode.  More importantly,
 means that the compiler permits uses of the former in some locations where
 it issues a warning for the latter.  You can suppress the warning.
 
+A message of the form
+
+\begin{Verbatim}
+  error: annotation values must be of the form 'name=value'
+        @LTLengthOf("firstName", "lastName") int index;
+                    ^
+\end{Verbatim}
+
+\noindent
+is caused by incorrect Java syntax.  When you supply a set of multiple
+values as an annotation argument, you need to put curly braces around them:
+
+\begin{Verbatim}
+        @LTLengthOf({"firstName", "lastName"}) int index;
+\end{Verbatim}
+
 
 \subsection{Unable to build the checker, or to run programs\label{common-problems-running-java}}
 
@@ -573,6 +589,7 @@ An error like this
 Unsupported major.minor version 52.0
 \end{Verbatim}
 
+\noindent
 means that you have compiled some files into the Java 8 format (version
 52.0), but you are trying to run them with Java 7 or earlier.
 Likewise, ``Unsupported major.minor version 51.0''
