@@ -38,6 +38,7 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
             /*@CompilerMessageKey*/ String errorKey) {
         if (valueType.getKind() == TypeKind.ARRAY
                 && TreeUtils.isExpressionTree(valueTree)
+                && !(valueTree.getKind() == Tree.Kind.NEW_ARRAY)
                 && !(valueType.hasAnnotation(PolySameLen.class)
                         && varType.hasAnnotation(PolySameLen.class))) {
 
