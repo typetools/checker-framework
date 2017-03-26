@@ -1379,6 +1379,46 @@ effects.  The GUI Effect Checker (\chapterpageref{guieffect-checker}) is a
 type-and-effect system that is distributed with the Checker Framework.
 
 
+\subsection{How does pluggable type-checking work?\label{faq-pluggable-type-checking}}
+
+The Checker Framework enables you to define a new type system.  It finds
+errors, or guarantees their absence, by performing type-checking that is
+similar to that already performed by the Java compiler.
+
+Type-checking examines each statement of your program in turn, one at a time.
+\begin{itemize}
+\item
+Expressions are processed bottom-up.  Given types for each sub-expression,
+the type-checker determines whether the types are legal for the
+expression's operator and determines the type of the expression.
+% For example, if \<x> has type \<@Positive> and \<y> has type \<@Positive>,
+% then the expression \<x + y> also has type @Positive.
+
+\item
+An assignment is legal if the type of the right-hand side is a subtype of
+the declared type of the left-hand side.
+
+\item
+ At a method call, the arguments are legal if they can be assigned to the
+ formal parameters (this is called a ``pseudo-assignment'' and it follows
+ the normal rules for assignment).  The type of the method call is the
+ declared type of the return type, where the the method is declared.  If
+ the method declaration is not annotated, then a default annotation is
+ used.
+
+\item
+  Suppose that method \<Sub.m> overrides method \<Super.m>.
+  %
+  The return type of \<Sub.m> must be equal to or a subtype of the return
+  type of \<Super.m> (this is called ``covariance'').
+  %
+  The type of formal parameter $i$ of \<Sub.m> must be equal to or a
+  \emph{super}type of the type of formal parameter $i$ in \<Super.m> (this
+  is called ``contravariance'').
+
+\end{itemize}
+
+
 % LocalWords:  toolset AbstractCollection ConcurrentHashMap NullnessUtil
 % LocalWords:  castNonNull createWidget backporting JCIP's GuardedBy Awarns PMD
 % LocalWords:  ElementType nullness bytecodes Jlint Hashtable SuppressWarnings
@@ -1388,4 +1428,5 @@ type-and-effect system that is distributed with the Checker Framework.
 %  LocalWords:  m1 m2 RequiresNonNull AconcurrentSemantics MyQual plugin
 %  LocalWords:  MyClass MyMoreRestrictiveQual TOPTYPEANNO DEFAULTANNO api
 %%  LocalWords:  OtherClass Goetz antipattern subclassed varargs
-%%  LocalWords:  featureful RetentionPolicy
+%%  LocalWords:  featureful RetentionPolicy instanceof contravariance
+%%  LocalWords:  NoSuchElementException binarySearch
