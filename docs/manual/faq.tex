@@ -46,6 +46,7 @@ the answers, or other questions to include here.
 \\ \ref{faq-awarns}: How do I make compilation succeed even if a checker issues errors?
 \\ \ref{faq-100-warnings}: Why does the checker always say there are 100 errors or warnings?
 \\ \ref{faq-type-i-did-not-write}: Why does the Checker Framework report an error regarding a type I have not written in my program?
+\\ \ref {faq-false-positive}: Why does the Checker Framework report an error even though my program is correct (false positive warnings)?
 \\ \ref{faq-run-time-checking}: How can I do run-time monitoring of properties that were not statically checked?
 
 \faqtocpara{\ref{faq-syntax-section}: Syntax of type annotations}
@@ -66,6 +67,7 @@ fully-qualified type name?
 
 \faqtocpara{\ref{faq-create-a-checker-section}: Creating a new checker}
 \\ \ref{faq-create-a-checker}: How do I create a new checker?
+\\ \ref{faq-type-properties}: What properties can and cannot be handled by type-checking?
 \\ \ref{faq-declarative-syntax-for-type-rules}: Why is there no declarative syntax for writing type rules?
 
 \faqtocpara{\ref{faq-other-tools-section}: Relationship to other tools}
@@ -77,6 +79,8 @@ fully-qualified type name?
 \\ \ref{faq-jsr-305}: What is the relationship between the Checker Framework and JSR 305?
 \\ \ref{faq-jsr-308}: What is the relationship between the Checker Framework and JSR 308?
 \\ \ref{faq-checked-exceptions}: Is there a type-checker for managing checked and unchecked exceptions?
+\\ \ref{faq-pluggable-type-checking}: How does pluggable type-checking work?
+
 
 \section{Motivation for pluggable type-checking\label{faq-motivation-section}}
 
@@ -585,7 +589,6 @@ See Section~\ref{running} for more details.
 
 \subsection{Why does the Checker Framework report an error regarding a type I have not written in my program?\label{faq-type-i-did-not-write}}
 
-
 Sometimes, a Checker Framework warning message will mention a type you have
 not written in your program.  This is typically because a default has been
 applied where you did not write a type; see Section~\ref{defaults}.  In
@@ -595,6 +598,68 @@ Section~\ref{type-refinement}.
 Note that an invocation of an impure method may cause the loss of all
 information that was determined via flow-sensitive type refinement; see
 Section~\ref{type-refinement-purity}.
+
+
+\subsection{Why does the Checker Framework report an error even though my program is correct (false positive warnings)?\label{faq-false-positive}}
+
+The Checker Framework aims to be sound; that is, if the Checker Framework
+does not report any possible errors, then your code is correct.
+
+Every sound tool always suffers false positive errors.  A ``false
+positive'' is when the tool reports a potential problem, but the code is
+actually correct and will never violate the given property at run time.
+Whevere the Checker Framework issues an error, you can think of it as
+saying, ``I can't prove this code is safe,'' but the code might be safe for
+some complex, tricky reason that is beyond the capabilities of its
+analysis.
+
+If you are sure that the warning is a false positive, then you can suppress
+the warning (Section~\ref{handling-warnings}).  Sometimes you can instead
+write the code in a clearer way that the Checker Framework can verify and
+that might be easier for people to understand, too.  And, you can report
+the false positive in the Checker Framework issue tracker
+(Section~\ref{reporting-bugs}).
+
+For any given false positive warning, it is theoretically impossible to
+improve the Checker Framework to eliminate it.
+% (However, there will always exist some false positives --- that is, there
+% will always exist some programs that don't go wrong at run time but for
+% which the Checker Framework issues a warning.)
+Not all of them are worth fixing, though.  By design, each type system in
+the Checker Framework has limited expressiveness.  Our goal is to implement
+enough functionality to handle common, well-written real-world code, not to
+cover every possible situation.  A simple type system is easier for users
+to understand, less likely to contain bugs, and more efficient.
+
+For example, the type systems do not currently capture arbitrary arithmetic
+relationships between variables, such as \code{x > y}.  We have not found
+it necessary.  This does mean, however, that the Nullness Checker will
+issue a warning for code like:
+
+\begin{Verbatim}
+  void falsePositive1(int arg1, int arg2) {
+    Object o;
+    if (arg1 > arg2) {
+      o = new Object();
+    }
+    if (arg1 > arg2) {
+      o.toString();     // Nullness Checker issues a false positive warning
+    }
+  }
+
+  void falsePositive2(int arg) {
+    Object o;
+    if (arg * arg >= arg) { // always true!
+      o = new Object();
+    }
+    o.toString();     // Nullness Checker issues a false positive warning
+  }
+\end{Verbatim}
+
+When reporting bugs, please focus on realistic scenarios.  We are sure that
+you can make up artificial code that stymies the type-checker, but
+those aren't a good use of your time to report nor the maintainers' time to
+evaluate and fix.
 
 
 \subsection{How can I do run-time monitoring of properties that were not statically checked?\label{faq-run-time-checking}}
@@ -1140,6 +1205,25 @@ is an example of a complete, useful type-checker.
 
 Section~\ref{subtyping-example} explains this checker and tells
 you how to run it.
+
+
+\subsection{What properties can and cannot be handled by type-checking?\label{faq-type-properties}}
+
+In theory, any property about a program can be expressed and checked within
+a type system.  In practice, types are a good choice for some properties
+and a bad choice for others.
+
+A type expresses the set of possible values for an expression.  Therefore,
+types are a good for any property that is about variable values or
+provenance.
+
+Types are a poor choice for expressing properties about timing, such as
+that action B will happen within 10 milliseconds of action A.  Types are
+not good for verifying the results of calculations; for example, they could
+ensure that code always call an \<encrypt> routine in the appropriate
+places, but not that the \<encrypt> routine is correctly implemented.
+Types are not a good solution for preventing infinite loops, except perhaps
+in special cases.
 
 
 \subsection{Why is there no declarative syntax for writing type rules?\label{faq-declarative-syntax-for-type-rules}}
