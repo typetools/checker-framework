@@ -52,8 +52,6 @@ public class SameLenTransfer extends CFTransfer {
             AssignmentNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitAssignment(node, in);
 
-        System.out.println("visiting this assignment: " + node);
-
         // Handle b = new T[a.length]
         if (node.getExpression() instanceof ArrayCreationNode) {
             ArrayCreationNode acNode = (ArrayCreationNode) node.getExpression();

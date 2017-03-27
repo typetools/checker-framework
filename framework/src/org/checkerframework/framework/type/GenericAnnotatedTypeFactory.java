@@ -1189,12 +1189,17 @@ public abstract class GenericAnnotatedTypeFactory<
         // Don't cache the result because getAnnotatedType(lhsTree) could
         // be called from elsewhere and would expect flow-sensitive type refinements.
         shouldCache = false;
+
         switch (lhsTree.getKind()) {
             case VARIABLE:
             case IDENTIFIER:
             case MEMBER_SELECT:
             case ARRAY_ACCESS:
                 res = getAnnotatedType(lhsTree);
+                if (dependentTypesHelper != null && lhsTree.getKind() == Kind.VARIABLE) {
+                    dependentTypesHelper.standardizeVariable(
+                            res, TreeUtils.elementFromDeclaration((VariableTree) lhsTree));
+                }
                 break;
             default:
                 if (TreeUtils.isTypeTree(lhsTree)) {
