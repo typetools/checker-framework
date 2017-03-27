@@ -1,12 +1,13 @@
 package org.checkerframework.checker.index.upperbound;
 
-import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
@@ -130,8 +131,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             CFStore store,
             LessThanLengthOf typeOfMultiplication) {
         if (atypeFactory.hasLowerBoundTypeByClass(other, Positive.class)) {
-            Integer minValue =
-                    atypeFactory.valMinFromExpressionTree((ExpressionTree) other.getTree());
+            Long minValue =
+                    IndexUtil.getMinValue(
+                            other.getTree(), atypeFactory.getValueAnnotatedTypeFactory());
             if (minValue != null && minValue > 1) {
                 typeOfMultiplication = (LessThanLengthOf) typeOfMultiplication.plusOffset(1);
             }
@@ -431,10 +433,29 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     public TransferResult<CFValue, CFStore> visitFieldAccess(
             FieldAccessNode n, TransferInput<CFValue, CFStore> in) {
         if (isArrayLengthFieldAccess(n)) {
+
             FieldAccess arrayLength = FlowExpressions.internalReprOfFieldAccess(atypeFactory, n);
             Receiver arrayRec = arrayLength.getReceiver();
+
+            // Look up the SameLen type of the array.
+            Tree arrayTree = n.getReceiver().getTree();
+            AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromTree(arrayTree);
+            List<String> sameLenArrays =
+                    sameLenAnno == null
+                            ? new ArrayList<String>()
+                            : IndexUtil.getValueOfAnnotationWithStringArgument(sameLenAnno);
+
+            if (!sameLenArrays.contains(arrayRec.toString())) {
+                sameLenArrays.add(arrayRec.toString());
+            }
+
+            ArrayList<String> offsets = new ArrayList<>(sameLenArrays.size());
+            for (String s : sameLenArrays) {
+                offsets.add("-1");
+            }
+
             if (CFAbstractStore.canInsertReceiver(arrayRec)) {
-                UBQualifier qualifier = UBQualifier.createUBQualifier(arrayRec.toString(), "-1");
+                UBQualifier qualifier = UBQualifier.createUBQualifier(sameLenArrays, offsets);
                 UBQualifier previous = getUBQualifier(n, in);
                 return createTransferResult(n, in, qualifier.glb(previous));
             }

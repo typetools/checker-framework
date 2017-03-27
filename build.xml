@@ -144,7 +144,7 @@
 
   <target name="html-validate"
           description="Validate that HTML files are well-formed; only works with JDK 8">
-    <exec executable="html5validator">
+    <exec executable="html5validator" failonerror="true">
       <arg value="--ignore"/>
       <arg value="/api/"/>
       <arg value="/build/"/>

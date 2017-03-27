@@ -868,6 +868,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values == null) {
             return UNKNOWNVAL;
         }
+        if (values.isEmpty()) {
+            return BOTTOMVAL;
+        }
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
@@ -888,6 +891,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror createDoubleValAnnotation(List<Double> values) {
         if (values == null) {
             return UNKNOWNVAL;
+        }
+        if (values.isEmpty()) {
+            return BOTTOMVAL;
         }
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
@@ -910,6 +916,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values == null) {
             return UNKNOWNVAL;
         }
+        if (values.isEmpty()) {
+            return BOTTOMVAL;
+        }
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
@@ -930,6 +939,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror createArrayLenAnnotation(List<Integer> values) {
         if (values == null) {
             return UNKNOWNVAL;
+        }
+        if (values.isEmpty()) {
+            return BOTTOMVAL;
         }
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
@@ -952,6 +964,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values == null) {
             return UNKNOWNVAL;
         }
+        if (values.isEmpty()) {
+            return BOTTOMVAL;
+        }
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
@@ -973,10 +988,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values == null) {
             return UNKNOWNVAL;
         }
+        if (values.isEmpty()) {
+            return BOTTOMVAL;
+        }
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         }
+
         List<Long> longValues = new ArrayList<>();
         for (char value : values) {
             longValues.add((long) value);

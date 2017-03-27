@@ -20,7 +20,7 @@ public class ObjectOutputStream extends OutputStream implements ObjectOutput, Ob
   public ObjectOutputStream(OutputStream a1) throws IOException { throw new RuntimeException("skeleton method"); }
   public void useProtocolVersion(int a1) throws IOException { throw new RuntimeException("skeleton method"); }
   public final void writeObject(@Nullable Object a1) throws IOException { throw new RuntimeException("skeleton method"); }
-  public void writeUnshared(Object a1) throws IOException { throw new RuntimeException("skeleton method"); }
+  public void writeUnshared(@Nullable Object a1) throws IOException { throw new RuntimeException("skeleton method"); }
   public void defaultWriteObject() throws IOException { throw new RuntimeException("skeleton method"); }
   public ObjectOutputStream.PutField putFields() throws IOException { throw new RuntimeException("skeleton method"); }
   public void writeFields() throws IOException { throw new RuntimeException("skeleton method"); }
