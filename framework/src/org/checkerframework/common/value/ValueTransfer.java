@@ -209,14 +209,16 @@ public class ValueTransfer extends CFTransfer {
 
         TransferResult<CFValue, CFStore> result = super.visitFieldAccess(node, in);
 
-        modifyArrayLenBasedOnIntValOnArrayLength(node, result.getRegularStore());
+        refineArrayAtLengthAccess(node, result.getRegularStore());
 
         return result;
     }
 
-    private void modifyArrayLenBasedOnIntValOnArrayLength(
-            FieldAccessNode arrayLengthNode, CFStore store) {
-        // If array.length is encountered, transform its @IntVal annotation into an @ArrayLen annotation for array.
+    /**
+     * If array.length is encountered, transform its @IntVal annotation into an @ArrayLen annotation
+     * for array.
+     */
+    private void refineArrayAtLengthAccess(FieldAccessNode arrayLengthNode, CFStore store) {
         if (!NodeUtils.isArrayLengthFieldAccess(arrayLengthNode)) {
             return;
         }
@@ -240,6 +242,9 @@ public class ValueTransfer extends CFTransfer {
                     atypefactory.getAnnotationMirror(
                             arrayLengthNode.getReceiver().getTree(), ArrayLen.class);
             AnnotationMirror combinedAnno;
+            // If the array doesn't have an @ArrayLen annotation, use the new annotation.
+            // If it does have an annotation, combine the facts known about the array
+            // with the facts known about its length using GLB.
             if (oldArrayAnno == null) {
                 combinedAnno = newArrayAnno;
             } else {
@@ -251,16 +256,16 @@ public class ValueTransfer extends CFTransfer {
             Receiver arrayRec =
                     FlowExpressions.internalReprOf(
                             analysis.getTypeFactory(), arrayLengthNode.getReceiver());
-            store.clearValue(arrayRec);
             store.insertValue(arrayRec, combinedAnno);
         } else {
+            // If the array's length is bottom, then this is dead code, so the array's type
+            // should also be bottom.
             lengthAnno =
                     AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
             if (lengthAnno != null) {
                 Receiver arrayRec =
                         FlowExpressions.internalReprOf(
                                 analysis.getTypeFactory(), arrayLengthNode.getReceiver());
-                store.clearValue(arrayRec);
                 store.insertValue(arrayRec, lengthAnno);
             }
         }
@@ -679,7 +684,7 @@ public class ValueTransfer extends CFTransfer {
                 rec, atypefactory.getQualifierHierarchy().greatestLowerBound(anno, currentAnno));
 
         if (node instanceof FieldAccessNode) {
-            modifyArrayLenBasedOnIntValOnArrayLength((FieldAccessNode) node, store);
+            refineArrayAtLengthAccess((FieldAccessNode) node, store);
         }
     }
 
