@@ -464,8 +464,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             result = result.glb(plusTreeDivideByVal(divisor.intValue(), numeratorTree));
 
-            // If the numerator is an array length access of an array with length greater than 1, and the divisor is
-            // positive, glb the result with an LTL of the array.
+            // If the numerator is an array length access of an array with non-zero length, and the divisor is
+            // greater than one, glb the result with an LTL of the array.
             if (TreeUtils.isArrayLengthAccess(numeratorTree) && divisor > 1) {
                 String arrayName = ((MemberSelectTree) numeratorTree).getExpression().toString();
                 int minlen =
