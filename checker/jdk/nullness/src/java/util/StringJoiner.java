@@ -1,30 +1,20 @@
 
 package java.util;
-
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public final class StringJoiner {
-    private final String prefix;
-    private final String delimiter;
-    private final String suffix;
-
   
-    private StringBuilder value;
-
-    private String emptyValue;
-
-    public StringJoiner(@NonNull CharSequence delimiter) {
+    public StringJoiner(CharSequence delimiter) {
         throw new RuntimeException("skeleton method");
     }
 
-    public StringJoiner(@NonNull CharSequence delimiter,
-                        @NonNull CharSequence prefix,
-                        @NonNull CharSequence suffix) {
+    public StringJoiner(CharSequence delimiter,
+                        CharSequence prefix,
+                        CharSequence suffix) {
         throw new RuntimeException("skeleton method");
     }
 
-    public StringJoiner setEmptyValue(@NonNull CharSequence emptyValue) {
+    public StringJoiner setEmptyValue(CharSequence emptyValue) {
        throw new RuntimeException("skeleton method");
     }
 
@@ -40,7 +30,7 @@ public final class StringJoiner {
     }
 
 
-    public StringJoiner merge(@NonNull StringJoiner other) {
+    public StringJoiner merge(StringJoiner other) {
         throw new RuntimeException("skeleton method");
     }
 
