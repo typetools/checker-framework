@@ -250,6 +250,10 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 new ImplicitsTreeAnnotator(this));
     }
 
+    /**
+     * SameLen needs a tree annotator in order to properly type the right side of assignments of new
+     * arrays that are initialized with the length of another array.
+     */
     protected class SameLenTreeAnnotator extends TreeAnnotator {
 
         public SameLenTreeAnnotator(SameLenAnnotatedTypeFactory factory) {
