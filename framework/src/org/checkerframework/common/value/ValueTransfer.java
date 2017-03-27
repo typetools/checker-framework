@@ -650,28 +650,20 @@ public class ValueTransfer extends CFTransfer {
             }
         }
 
-        // The result can only be bottom if both the comparison had some results and one of the four lists is empty.
-        boolean canGoToBottom = resultValues.size() > 0;
-
-        createAnnotationFromResultsAndAddToStore(thenStore, thenLeftVals, leftNode, canGoToBottom);
-        createAnnotationFromResultsAndAddToStore(elseStore, elseLeftVals, leftNode, canGoToBottom);
-
-        createAnnotationFromResultsAndAddToStore(
-                thenStore, thenRightVals, rightNode, canGoToBottom);
-        createAnnotationFromResultsAndAddToStore(
-                elseStore, elseRightVals, rightNode, canGoToBottom);
+        createAnnotationFromResultsAndAddToStore(thenStore, thenLeftVals, leftNode);
+        createAnnotationFromResultsAndAddToStore(elseStore, elseLeftVals, leftNode);
+        createAnnotationFromResultsAndAddToStore(thenStore, thenRightVals, rightNode);
+        createAnnotationFromResultsAndAddToStore(elseStore, elseRightVals, rightNode);
 
         return resultValues;
     }
 
     private void createAnnotationFromResultsAndAddToStore(
-            CFStore store, List<?> results, Node node, boolean canGoToBottom) {
+            CFStore store, List<?> results, Node node) {
         // createResultingAnnotation returns bottom if an empty list is passed. So,
         // if the result cannot be bottom and the size of the list is zero, pass null
         // instead.
-        AnnotationMirror anno =
-                atypefactory.createResultingAnnotation(
-                        node.getType(), results.size() == 0 && !canGoToBottom ? null : results);
+        AnnotationMirror anno = atypefactory.createResultingAnnotation(node.getType(), results);
         AnnotationMirror currentAnno =
                 atypefactory
                         .getAnnotatedType(node.getTree())
@@ -762,6 +754,27 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitEqualTo(
             EqualToNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitEqualTo(n, p);
+
+        Receiver rightRec =
+                FlowExpressions.internalReprOf(analysis.getTypeFactory(), n.getRightOperand());
+        Receiver leftRec =
+                FlowExpressions.internalReprOf(analysis.getTypeFactory(), n.getLeftOperand());
+
+        System.out.println(
+                n
+                        + " : "
+                        + TypesUtils.isPrimitive(n.getLeftOperand().getType())
+                        + " : "
+                        + TypesUtils.isPrimitive(n.getRightOperand().getType())
+                        + " : "
+                        + (n.getRightOperand().getType().getKind() == TypeKind.NULL)
+                        + " : "
+                        + (n.getLeftOperand().getType().getKind() == TypeKind.NULL));
+
+        System.out.println(transferResult.getRegularStore().getValue(rightRec));
+
+        System.out.println(transferResult.getRegularStore().getValue(leftRec));
+
         if (TypesUtils.isPrimitive(n.getLeftOperand().getType())
                 || TypesUtils.isPrimitive(n.getRightOperand().getType())) {
             CFStore thenStore = transferResult.getThenStore();
@@ -777,6 +790,18 @@ public class ValueTransfer extends CFTransfer {
                             elseStore);
             TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
             return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
+        }
+
+        if (n.getRightOperand().getType().getKind() == TypeKind.NULL
+                || n.getLeftOperand().getType().getKind() == TypeKind.NULL) {
+
+            transferResult.getRegularStore().insertValue(rightRec, atypefactory.BOTTOMVAL);
+            transferResult.getRegularStore().insertValue(leftRec, atypefactory.BOTTOMVAL);
+            return createNewResultBoolean(
+                    transferResult.getThenStore(),
+                    transferResult.getElseStore(),
+                    new ArrayList<Boolean>(),
+                    transferResult.getResultValue().getUnderlyingType());
         }
         return transferResult;
     }
