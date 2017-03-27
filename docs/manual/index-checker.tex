@@ -194,8 +194,8 @@ It uses a type system (Figure~\ref{fig-index-int-types}) with the following
 qualifiers:
 
 It issues an error when a sequence \code{arr}
-is indexed by an integer that is not of type \code{@LTLengthOf({"arr"})}
-or \code{@LTOMLengthOf({"arr"})}.
+is indexed by an integer that is not of type \code{@LTLengthOf("arr")}
+or \code{@LTOMLengthOf("arr")}.
 
 \begin{description}
 
@@ -206,14 +206,14 @@ or \code{@LTOMLengthOf({"arr"})}.
   if it is non-negative.
   For example, an expression of type \code{@LTLengthOf("a") int} might be
   used as an index to \<a>.
-  The type \code{@LTLengthOf({"a", "b"})} is a subtype of both
+  The type \code{@LTLengthOf(\{"a", "b"\})} is a subtype of both
   \code{@LTLengthOf("a")} and \code{@LTLengthOf("b")}.
   (``\<LT>'' stands for ``Less Than''.)
 
   \<@LTLengthOf> takes an optional \<offset> element, meaning that the
   annotated expression plus the offset is less than the length of the given
   array.  For example, suppose expression \<e> has type \<@LTLengthOf(value
-  = {"a", "b"}, offset = {"-1", "x"})>. Then \<e - 1> is less than
+  = \{"a", "b"\}, offset = \{"-1", "x"\})>. Then \<e - 1> is less than
   \<a.length>, and \<e + x> is less than \<b.length>.  This helps to make
   the checker more precise.  Programmers rarely need to write the \<offset>
   element.
@@ -222,7 +222,7 @@ or \code{@LTOMLengthOf({"arr"})}.
   An expression with this type
   has value less than or equal to the length of each sequence listed in \<names>.
   It may not be used as an index for these sequences, because it might be too high.
-  \code{@LTEqLengthOf({"a", "b"})} is a subtype of both
+  \code{@LTEqLengthOf(\{"a", "b"\})} is a subtype of both
   \code{@LTEqLengthOf("a")} and \code{@LTEqLengthOf("b")}.
   (``\<LTEq>'' stands for ``Less Than or Equal to''.)
 
@@ -242,7 +242,7 @@ or \code{@LTOMLengthOf({"arr"})}.
   This annotation should rarely (if ever) be written by the programmer; usually
   \refqualclasswithparams{checker/index/qual}{LTLengthOf}{String[] names}
   should be written instead.
-  \code{@LTOMLengthOf({"a", "b"})} is a subtype of both
+  \code{@LTOMLengthOf(\{"a", "b"\})} is a subtype of both
   \code{@LTOMLengthOf("a")} and \code{@LTOMLengthOf("b")}.
   (``\<LTOM>'' stands for ``Less Than One Minus'', because another way of
   saying ``at least 2 less than \<a.length>'' is ``less than \<a.length-1>''.)

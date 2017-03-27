@@ -196,7 +196,7 @@ build the latest development version from source
 
 % Not "\url" because it looks bad in the printed manual.
 \textbf{Requirement:}
-You must have \textbf{JDK 7} or later installed.  You can get JDK 7 from
+You must have \textbf{JDK 7 or later} installed.  You can get the JDK from
 \href{http://www.oracle.com/technetwork/java/javase/downloads/index.html}{Oracle}
 or elsewhere.
 
@@ -441,7 +441,8 @@ Finally, there is a
 \ahreforurl{https://checkerframework.org/tutorial/}{tutorial}
 that walks you through using the Checker Framework in Eclipse or on the
 command line, and a separate
-\ahreforurl{https://github.com/glts/safer-spring-petclinic/wiki}{Nullness Checker tutorial}.
+\ahreforurl{https://github.com/glts/safer-spring-petclinic/wiki}{Nullness
+  Checker tutorial} by David B\"urgin.
 
 % The annotations have to be on your classpath even when you are not using
 % the -processor, because of the existence of the import statement for
@@ -954,14 +955,19 @@ find that it is manageable.
 
 \subsubsection{Start small\label{get-started-start-small}}
 
-Start small, focusing on one specific property that matters to you and
-on the most mission-critical or error-prone part of your code.
+Start small.  Focus on one specific property that matters to you; in
+other words, run just one checker rather than multiple ones.  You may
+choose a different checker for different programs.
+Focus on
+the most mission-critical or error-prone part of your code; don't try to
+annotate your whole program at first.
+
 It is easiest to add annotations if you know the code or the
 code contains documentation; you will find that you spend most of your time
 understanding the code, and very little time actually writing annotations
 or running the checker.
 
-Start by annotating just part of your program.  Be systematic; we recommend
+When annotating, be systematic; we recommend
 annotating an entire class at a time (not just some of the methods)
 so that you don't lose track of your work or redo work.  For example,
 working class-by-class avoids confusion about whether an unannotated type
