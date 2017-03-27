@@ -143,7 +143,7 @@ All \code{@GuardedBy} annotations are incomparable:
 if \emph{exprSet1} $\neq$ \emph{exprSet2}, then \code{@GuardedBy(\emph{exprSet1})} and
 \code{@GuardedBy(\emph{exprSet2})} are siblings in the type hierarchy.
 You might expect that
-\<@GuardedBy({"x", "y"}) T> is a subtype of \<@GuardedBy({"x"}) T>.  The
+\<@GuardedBy(\{"x", "y"\}) T> is a subtype of \<@GuardedBy(\{"x"\}) T>.  The
 first type requires two locks to be held, and the second requires only one
 lock to be held and so could be used in any situation where both locks are
 held.  The type system conservatively prohibits this in order to prevent
