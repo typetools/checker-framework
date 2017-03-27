@@ -10,15 +10,24 @@ before_install:
 services:
   - docker
 
-# jdkany contains extra packages that permit it to be used to build the manual
+# jdkany contains extra packages that permit it to be used to build the manual.
+# all-tests is the same as junit + nonjunit.  So, choose either:
+#  * junit + nonjunit , or
+#  * all-tests + jdk.jar
 env:
   matrix:
-  - JDKVER=jdk7 GROUP=all-tests
+  - JDKVER=jdk7 GROUP=junit
+  - JDKVER=jdk7 GROUP=nonjunit
+#  - JDKVER=jdk7 GROUP=all-tests
+#  - JDKVER=jdk7 GROUP=jdk.jar
+  - JDKVER=jdk7 GROUP=demos
   - JDKVER=jdk7 GROUP=downstream
-  - JDKVER=jdk7 GROUP=jdk.jar
-  - JDKVER=jdk8 GROUP=all-tests
+  - JDKVER=jdk8 GROUP=junit
+  - JDKVER=jdk8 GROUP=nonjunit
+#  - JDKVER=jdk8 GROUP=all-tests
+#  - JDKVER=jdk8 GROUP=jdk.jar
+  - JDKVER=jdk8 GROUP=demos
   - JDKVER=jdk8 GROUP=downstream
-  - JDKVER=jdk8 GROUP=jdk.jar
   - JDKVER=jdkany GROUP=misc
 
 before_script:
