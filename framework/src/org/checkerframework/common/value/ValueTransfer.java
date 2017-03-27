@@ -217,52 +217,49 @@ public class ValueTransfer extends CFTransfer {
     private void modifyArrayLenBasedOnIntValOnArrayLength(
             FieldAccessNode arrayLengthNode, CFStore store) {
         // If array.length is encountered, transform its @IntVal annotation into an @ArrayLen annotation for array.
-        if (NodeUtils.isArrayLengthFieldAccess(arrayLengthNode)) {
-            CFValue value =
-                    store.getValue(
-                            FlowExpressions.internalReprOf(
-                                    analysis.getTypeFactory(), arrayLengthNode));
-            if (value != null) {
-                AnnotationMirror lengthAnno =
-                        AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
+        if (!NodeUtils.isArrayLengthFieldAccess(arrayLengthNode)) {
+            return;
+        }
+        CFValue value =
+                store.getValue(
+                        FlowExpressions.internalReprOf(analysis.getTypeFactory(), arrayLengthNode));
+        if (value == null) {
+            return;
+        }
+        AnnotationMirror lengthAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
 
-                if (lengthAnno != null) {
-                    List<Long> lengthValues = ValueAnnotatedTypeFactory.getIntValues(lengthAnno);
-                    List<Integer> arrayLenValues = new ArrayList<>(lengthValues.size());
-                    for (Long l : lengthValues) {
-                        arrayLenValues.add(l.intValue());
-                    }
-                    AnnotationMirror newArrayAnno =
-                            atypefactory.createArrayLenAnnotation(arrayLenValues);
-                    AnnotationMirror oldArrayAnno =
-                            atypefactory.getAnnotationMirror(
-                                    arrayLengthNode.getReceiver().getTree(), ArrayLen.class);
-                    AnnotationMirror combinedAnno =
-                            atypefactory
-                                    .getQualifierHierarchy()
-                                    .greatestLowerBound(
-                                            oldArrayAnno != null
-                                                    ? oldArrayAnno
-                                                    : atypefactory.UNKNOWNVAL,
-                                            newArrayAnno);
+        if (lengthAnno != null) {
+            List<Long> lengthValues = ValueAnnotatedTypeFactory.getIntValues(lengthAnno);
+            List<Integer> arrayLenValues = new ArrayList<>(lengthValues.size());
+            for (Long l : lengthValues) {
+                arrayLenValues.add(l.intValue());
+            }
+            AnnotationMirror newArrayAnno = atypefactory.createArrayLenAnnotation(arrayLenValues);
+            AnnotationMirror oldArrayAnno =
+                    atypefactory.getAnnotationMirror(
+                            arrayLengthNode.getReceiver().getTree(), ArrayLen.class);
+            AnnotationMirror combinedAnno =
+                    atypefactory
+                            .getQualifierHierarchy()
+                            .greatestLowerBound(
+                                    oldArrayAnno != null ? oldArrayAnno : atypefactory.UNKNOWNVAL,
+                                    newArrayAnno);
 
-                    Receiver arrayRec =
-                            FlowExpressions.internalReprOf(
-                                    analysis.getTypeFactory(), arrayLengthNode.getReceiver());
-                    store.clearValue(arrayRec);
-                    store.insertValue(arrayRec, combinedAnno);
-                } else {
-                    lengthAnno =
-                            AnnotationUtils.getAnnotationByClass(
-                                    value.getAnnotations(), BottomVal.class);
-                    if (lengthAnno != null) {
-                        Receiver arrayRec =
-                                FlowExpressions.internalReprOf(
-                                        analysis.getTypeFactory(), arrayLengthNode.getReceiver());
-                        store.clearValue(arrayRec);
-                        store.insertValue(arrayRec, lengthAnno);
-                    }
-                }
+            Receiver arrayRec =
+                    FlowExpressions.internalReprOf(
+                            analysis.getTypeFactory(), arrayLengthNode.getReceiver());
+            store.clearValue(arrayRec);
+            store.insertValue(arrayRec, combinedAnno);
+        } else {
+            lengthAnno =
+                    AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
+            if (lengthAnno != null) {
+                Receiver arrayRec =
+                        FlowExpressions.internalReprOf(
+                                analysis.getTypeFactory(), arrayLengthNode.getReceiver());
+                store.clearValue(arrayRec);
+                store.insertValue(arrayRec, lengthAnno);
             }
         }
     }
