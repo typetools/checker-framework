@@ -239,13 +239,15 @@ public class ValueTransfer extends CFTransfer {
             AnnotationMirror oldArrayAnno =
                     atypefactory.getAnnotationMirror(
                             arrayLengthNode.getReceiver().getTree(), ArrayLen.class);
-            AnnotationMirror combinedAnno =
-                    atypefactory
-                            .getQualifierHierarchy()
-                            .greatestLowerBound(
-                                    oldArrayAnno != null ? oldArrayAnno : atypefactory.UNKNOWNVAL,
-                                    newArrayAnno);
-
+            AnnotationMirror combinedAnno;
+            if (oldArrayAnno == null) {
+                combinedAnno = newArrayAnno;
+            } else {
+                combinedAnno =
+                        atypefactory
+                                .getQualifierHierarchy()
+                                .greatestLowerBound(oldArrayAnno, newArrayAnno);
+            }
             Receiver arrayRec =
                     FlowExpressions.internalReprOf(
                             analysis.getTypeFactory(), arrayLengthNode.getReceiver());
