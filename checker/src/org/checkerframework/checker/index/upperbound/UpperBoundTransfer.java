@@ -449,13 +449,13 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                 sameLenArrays.add(arrayRec.toString());
             }
 
-            ArrayList<String> negativeOnes = new ArrayList<>(sameLenArrays.size());
+            ArrayList<String> offsets = new ArrayList<>(sameLenArrays.size());
             for (String s : sameLenArrays) {
-                negativeOnes.add("-1");
+                offsets.add("-1");
             }
 
             if (CFAbstractStore.canInsertReceiver(arrayRec)) {
-                UBQualifier qualifier = UBQualifier.createUBQualifier(sameLenArrays, negativeOnes);
+                UBQualifier qualifier = UBQualifier.createUBQualifier(sameLenArrays, offsets);
                 UBQualifier previous = getUBQualifier(n, in);
                 return createTransferResult(n, in, qualifier.glb(previous));
             }
