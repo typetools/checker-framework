@@ -17,13 +17,13 @@ import org.junit.runner.RunWith;
  * <p>To use this class you must do two things:
  *
  * <ol>
- *   <li> Create exactly 1 constructor in the subclass with exactly 1 argument of type java.io.File.
+ *   <li>Create exactly 1 constructor in the subclass with exactly 1 argument of type java.io.File.
  *       This File will be the Java file that is compiled and whose output is verified.
- *   <li> Create one of the following 2 public static methods with the annotation
+ *   <li>Create one of the following 2 public static methods with the annotation
  *       org.junit.runners.Parameterized.Parameters. The method name and signature must match
  *       exactly.
  *       <ul>
- *         <li> {@code @Parameters public static String [] getTestDirs()}
+ *         <li>{@code @Parameters public static String [] getTestDirs()}
  *             <p>getTestDir must return an array of directories that exist in the test folder, e.g.
  *             <pre>  @Parameters
  *   public static String [] getTestDirs() {
@@ -33,7 +33,7 @@ import org.junit.runner.RunWith;
  *             note, the test suite will find all of the Java test files that exists below the
  *             listed directories. It is unnecessary to list child directories of a directory you
  *             have already listed.
- *         <li> {@code @Parameters public static List<File> getTestFiles() }
+ *         <li>{@code @Parameters public static List<File> getTestFiles() }
  *             <p>The method returns a List of Java files. There are methods like {@link
  *             TestUtilities#findNestedJavaTestFiles} to help you construct this List. The
  *             PerDirectorySuite will then instantiate the subclass once for each file returned by
@@ -43,7 +43,6 @@ import org.junit.runner.RunWith;
  *     return TestUtilities.findNestedJavaTestFiles("aggregate");
  *   }</pre>
  *       </ul>
- *
  * </ol>
  */
 @RunWith(PerFileSuite.class)

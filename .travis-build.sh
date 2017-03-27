@@ -1,19 +1,17 @@
 #!/bin/bash
 
 # Optional argument $1 is one of:
-#   all, junit, nonjunit, downstream, misc
+#   all, junit, nonjunit, all-tests, jdk.jar, demos, downstream, misc
 # If it is omitted, this script does everything.
-
 export GROUP=$1
 if [[ "${GROUP}" == "" ]]; then
   export GROUP=all
 fi
 
-if [[ "${GROUP}" != "all" && "${GROUP}" != "junit" && "${GROUP}" != "nonjunit" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" ]]; then
-  echo "Bad argument '${GROUP}'; should be omitted or one of: all, junit, nonjunit, downstream, misc."
+if [[ "${GROUP}" != "all" && "${GROUP}" != "junit" && "${GROUP}" != "nonjunit" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "demos" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" ]]; then
+  echo "Bad argument '${GROUP}'; should be omitted or one of: all, junit, nonjunit, all-tests, jdk.jar, demos, downstream, misc."
   exit 1
 fi
-
 
 # Fail the whole script if any command fails
 set -e
@@ -31,8 +29,8 @@ export SHELLOPTS
 
 
 ./.travis-build-without-test.sh
-# The above command builds the JDK, so there is no need for a subsequent
-# command to rebuild it again.
+# The above command builds or downloads the JDK, so there is no need for a
+# subsequent command to build it except to test building it.
 
 set -e
 
@@ -42,13 +40,14 @@ fi
 
 if [[ "${GROUP}" == "nonjunit" || "${GROUP}" == "all" ]]; then
   (cd checker && ant nonjunit-tests-nojtreg-nobuild jtreg-tests)
+fi
 
-  # It's cheaper to run the demos test here than to trigger the
-  # checker-framework-demos job, which has to build the whole Checker Framework.
-  (cd checker && ant check-demos)
-  # Here's a more verbose way to do the same thing as "ant check-demos":
-  # (cd .. && git clone --depth 1 https://github.com/typetools/checker-framework.demos.git)
-  # (cd ../checker-framework.demos && ant -Djsr308.home=$ROOT)
+if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
+  (cd checker && ant all-tests-nobuildjdk)
+  # If the above command ever exceeds the time limit on Travis, it can be split
+  # using the following commands:
+  # (cd checker && ant junit-tests-nojtreg-nobuild)
+  # (cd checker && ant nonjunit-tests-nojtreg-nobuild jtreg-tests)
 fi
 
 if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
@@ -76,6 +75,15 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   # Travis hangs if enabled without Android installation).
   # (cd .. && git clone --depth 1 https://github.com/typetools/sparta.git)
   # (cd ../sparta && ant jar all-tests)
+
+fi
+
+if [[ "${GROUP}" == "demos" || "${GROUP}" == "all" ]]; then
+  (cd checker && ant check-demos)
+fi
+
+if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then
+  cd checker; ant jdk.jar
 fi
 
 if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then

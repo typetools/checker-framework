@@ -162,7 +162,7 @@ public final class String
      * @param  original
      *         A {@code String}
      */
-    public /*@ PolyMinLen @ PolySameLen*/ String(/*@ PolyMinLen @ PolySameLen*/ String original) {
+    public @PolyMinLen @PolySameLen String(@PolyMinLen @PolySameLen String original) {
         int size = original.count;
         char[] originalValue = original.value;
         char[] v;
@@ -191,7 +191,7 @@ public final class String
      * @param  value
      *         The initial value of the string
      */
-    public /*@ PolyMinLen @ PolySameLen*/ String(char /*@ PolyMinLen @ PolySameLen*/ [] value) {
+    public @PolyMinLen @PolySameLen String(char @PolyMinLen @PolySameLen [] value) {
         int size = value.length;
         this.offset = 0;
         this.count = size;
@@ -394,7 +394,7 @@ public final class String
      * @see  #String(byte[])
      */
     @Deprecated
-    public /*@ PolyMinLen @ PolySameLen*/ String(byte /*@ PolyMinLen @ PolySameLen*/ [] ascii, int hibyte) {
+    public @PolyMinLen @PolySameLen String(byte @PolyMinLen @PolySameLen [] ascii, int hibyte) {
         this(ascii, hibyte, 0, ascii.length);
     }
 
@@ -2403,7 +2403,7 @@ public final class String
      * @since 1.4
      * @spec JSR-51
      */
-    public String[] split(String regex) {
+    public String @MinLen(1) [] split(String regex) {
         return split(regex, 0);
     }
 
@@ -2916,7 +2916,7 @@ public final class String
      * @return  a newly allocated string representing the same sequence of
      *          characters contained in the character array argument.
      */
-    public static /*@ PolyMinLen @ PolySameLen*/ String valueOf(char /*@ PolyMinLen @ PolySameLen*/ [] data) {
+    public static @PolyMinLen @PolySameLen String valueOf(char @PolyMinLen @PolySameLen [] data) {
         return new String(data);
     }
 
@@ -2968,7 +2968,7 @@ public final class String
      * @return  a <code>String</code> that contains the characters of the
      *          character array.
      */
-    public static /*@ PolyMinLen @ PolySameLen*/ String copyValueOf(char /*@ PolyMinLen @ PolySameLen*/ [] data) {
+    public static @PolyMinLen @PolySameLen String copyValueOf(char @PolyMinLen @PolySameLen [] data) {
         return copyValueOf(data, 0, data.length);
     }
 
@@ -2992,7 +2992,7 @@ public final class String
      * @return  a string of length <code>1</code> containing
      *          as its single character the argument <code>c</code>.
      */
-    public static @MinLen(1) String valueOf(char c) {
+    public static /*@ MinLen(1)*/ String valueOf(char c) {
         char data[] = {c};
         return new String(0, 1, data);
     }
@@ -3007,7 +3007,7 @@ public final class String
      * @return  a string representation of the <code>int</code> argument.
      * @see     java.lang.Integer#toString(int, int)
      */
-    public static @MinLen(1) String valueOf(int i) {
+    public static /*@ MinLen(1)*/ String valueOf(int i) {
         return Integer.toString(i);
     }
 
@@ -3021,7 +3021,7 @@ public final class String
      * @return  a string representation of the <code>long</code> argument.
      * @see     java.lang.Long#toString(long)
      */
-    public static @MinLen(1) String valueOf(long l) {
+    public static /*@ MinLen(1)*/ String valueOf(long l) {
         return Long.toString(l);
     }
 
@@ -3035,7 +3035,7 @@ public final class String
      * @return  a string representation of the <code>float</code> argument.
      * @see     java.lang.Float#toString(float)
      */
-    public static @MinLen(1) String valueOf(float f) {
+    public static /*@ MinLen(1)*/ String valueOf(float f) {
         return Float.toString(f);
     }
 
@@ -3049,7 +3049,7 @@ public final class String
      * @return  a  string representation of the <code>double</code> argument.
      * @see     java.lang.Double#toString(double)
      */
-    public static @MinLen(1) String valueOf(double d) {
+    public static /*@ MinLen(1)*/ String valueOf(double d) {
         return Double.toString(d);
     }
 

@@ -191,10 +191,13 @@ Here is an example of one good way to proceed.
   easier to understand and change in text than in an implementation.
   Section~\ref{creating-documenting-a-checker} gives a suggested structure for the
   manual chapter, which will help you avoid omitting any parts.
+  Get feedback from someone else at this point to ensure that your manual
+  is comprehensible.
 
   Once you have designed and documented the parts of your type system, you
-  may also want to choose some case studies and play computer to ensure
-  that they give the expected results.  During manual checking, ask
+  may also want to choose some case studies and ``play computer'', manually
+  type-checking the code according to the rules you defined.
+  During manual checking, ask
   yourself what reasoning you applied, what information you needed, and
   whether your written-down rules were sufficient.
 
@@ -609,7 +612,8 @@ then the default would apply to every
 type system that uses \<@Unqualified>, which is unlikely to be desired.
 
 
-\subsection{Annotations whose argument is a Java expression (``dependent type annotations'')\label{expression-annotations}}
+\subsection{Annotations whose argument is a Java expression (dependent type annotations)\label{dependent-types}}
+\label{expression-annotations}
 
 Sometimes, an annotation needs to refer to a Java expression.
 Section~\ref{java-expressions-as-arguments} gives examples of such
@@ -1381,7 +1385,7 @@ hierarchy), including whether it supports the polymorphic qualifier
 
 By default, a checker supports \<PolyAll>, and all annotations located in a
 subdirectory called \<qual> that's located in the same directory as the checker.
-Note that only annotations defined with the \<@Target({ElementType.TYPE\_USE})>
+Note that only annotations defined with the \<@Target(ElementType.TYPE\_USE)>
 meta-annotation (and optionally with the additional value of
 \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values)
 are automatically considered as supported annotations.
@@ -1729,7 +1733,7 @@ can step into its source code if needed.
 You can also set up remote (or local) debugging using the following command as a template:
 
 \begin{Verbatim}
-java -jar $CHECKERFRAMEWORK/framework/dist/framework.jar \
+java -jar "$CHECKERFRAMEWORK/framework/dist/framework.jar" \
     -J-Xdebug -J-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005 \
     -processor org.checkerframework.checker.nullness.NullnessChecker \
     src/sandbox/FileToCheck.java

@@ -1,11 +1,11 @@
 package org.checkerframework.checker.index.upperbound;
 
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
@@ -116,6 +116,27 @@ public class OffsetEquation {
         return terms;
     }
 
+    /**
+     * Makes a copy of this offset and removes any added terms that are accesses to the length of
+     * the listed arrays. If any terms were removed, then the copy is returned. Otherwise, null is
+     * returned.
+     *
+     * @param arrays List of arrays
+     * @return a copy of this equation with array.length removed or null if no array.lengths could
+     *     be removed
+     */
+    public OffsetEquation removeArrayLengths(List<String> arrays) {
+        OffsetEquation copy = new OffsetEquation(this);
+        boolean simplified = false;
+        for (String array : arrays) {
+            String arrayLen = array + ".length";
+            if (addedTerms.contains(arrayLen)) {
+                copy.addedTerms.remove(arrayLen);
+                simplified = true;
+            }
+        }
+        return simplified ? copy : null;
+    }
     /**
      * Adds or subtracts the other equation to a copy of this one.
      *
@@ -383,10 +404,38 @@ public class OffsetEquation {
     }
 
     /**
-     * Creates an offset equation from the Node.
-     *
-     * <p>If node is an int value known at compile time, then the return equation is just the int
+     * If node is an int value known at compile time, then the returned equation is just the int
      * value or if op is '-', the return equation is the negation of the int value.
+     *
+     * <p>Otherwise, null is returned.
+     *
+     * @param node Node from which to create offset equation
+     * @param factory AnnotationTypeFactory
+     * @param op '+' or '-'
+     * @return an offset equation from value of known or null if the value isn't known
+     */
+    public static OffsetEquation createOffsetFromNodesValue(
+            Node node, UpperBoundAnnotatedTypeFactory factory, char op) {
+        assert op == '+' || op == '-';
+        if (node.getTree() != null && TreeUtils.isExpressionTree(node.getTree())) {
+            Long i;
+            if (op == '+') {
+                i = IndexUtil.getMinValue(node.getTree(), factory.getValueAnnotatedTypeFactory());
+            } else {
+                i = IndexUtil.getMaxValue(node.getTree(), factory.getValueAnnotatedTypeFactory());
+                i = i == null ? null : -i;
+            }
+            if (i != null) {
+                OffsetEquation eq = new OffsetEquation();
+                eq.addInt(i.intValue());
+                return eq;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Creates an offset equation from the Node.
      *
      * <p>If node is an addition or subtracted node, then this method is called recursively on the
      * left and right hand nodes and the two equations are added/subtracted to each other depending
@@ -411,20 +460,6 @@ public class OffsetEquation {
 
     private static void createOffsetFromNode(
             Node node, UpperBoundAnnotatedTypeFactory factory, OffsetEquation eq, char op) {
-        if (node.getTree() != null && TreeUtils.isExpressionTree(node.getTree())) {
-            Integer i;
-            if (op == '+') {
-                i = factory.valMinFromExpressionTree((ExpressionTree) node.getTree());
-            } else {
-                i = factory.valMaxFromExpressionTree((ExpressionTree) node.getTree());
-                i = i == null ? null : -i;
-            }
-            if (i != null) {
-                eq.addInt(i);
-                return;
-            }
-        }
-
         Receiver r = FlowExpressions.internalReprOf(factory, node);
         if (r instanceof Unknown || r == null) {
             if (node instanceof NumericalAdditionNode) {

@@ -11,8 +11,8 @@
 
   <!-- These variables contain commands, not lists of files. -->
   <!-- keep these two lists in sync -->
-  <property name="style.grep.files" value="--exclude-dir=.git --exclude-dir=annotated --exclude-dir=api --exclude-dir=bib --exclude-dir=bootstrap --exclude-dir=build --exclude-dir=jdk --exclude-dir=maven-plugin --exclude-dir=stubparser --exclude='*.aux' --exclude='*.bib' --exclude='*.class' --exclude='*.dvi' --exclude='*.expected' --exclude='*.gif' --exclude='*.jar' --exclude='*.jtr' --exclude='*.log' --exclude='*.out' --exclude='*.patch' --exclude='*.pdf' --exclude='*.png' --exclude='*.sty' --exclude='*.xcf' --exclude='*~' --exclude='#*#' --exclude='CFLogo.ai' --exclude='logfile.log.rec.index' --exclude='manual.html' --exclude='manual.html-e' --exclude='junit*.properties' ."/>
-  <property name="style.find.files" value=". -not ( -name .git -prune ) -not ( -name annotated -prune ) -not ( -name api -prune ) -not ( -name bib -prune ) -not ( -name bootstrap -prune ) -not ( -name build -prune ) -not ( -name jdk -prune ) -not ( -path maven-plugin -prune ) -not ( -path stubparser -prune ) -not ( -name '*.aux' ) -not ( -name '*.bib' ) -not ( -name '*.class' ) -not ( -name '*.dvi' ) -not ( -name '*.expected' ) -not ( -name '*.gif' ) -not ( -name '*.jar' ) -not ( -name '*.log' ) -not ( -name '*.out' ) -not ( -name '*.patch' ) -not ( -name '*.pdf' ) -not ( -name '*.png' ) -not ( -name 'junit*.properties' ) -not ( -name '*~' ) -not ( -name '#*#' ) -not ( -name 'manual.html' ) -not ( -name 'manual.html-e' ) -not ( -empty ) -type f"/>
+  <property name="style.grep.files" value="--exclude-dir=.git --exclude-dir=annotated --exclude-dir=api --exclude-dir=bib --exclude-dir=bootstrap --exclude-dir=build --exclude-dir=jdk --exclude-dir=maven-artifacts --exclude-dir=stubparser --exclude='*.aux' --exclude='*.bib' --exclude='*.class' --exclude='*.dvi' --exclude='*.expected' --exclude='*.gif' --exclude='*.jar' --exclude='*.jtr' --exclude='*.log' --exclude='*.out' --exclude='*.patch' --exclude='*.pdf' --exclude='*.png' --exclude='*.sty' --exclude='*.xcf' --exclude='*~' --exclude='#*#' --exclude='CFLogo.ai' --exclude='logfile.log.rec.index' --exclude='manual.html' --exclude='manual.html-e' --exclude='junit*.properties' ."/>
+  <property name="style.find.files" value=". -not ( -name .git -prune ) -not ( -name annotated -prune ) -not ( -name api -prune ) -not ( -name bib -prune ) -not ( -name bootstrap -prune ) -not ( -name build -prune ) -not ( -name jdk -prune ) -not ( -path maven-artifacts -prune ) -not ( -path stubparser -prune ) -not ( -name '*.aux' ) -not ( -name '*.bib' ) -not ( -name '*.class' ) -not ( -name '*.dvi' ) -not ( -name '*.expected' ) -not ( -name '*.gif' ) -not ( -name '*.jar' ) -not ( -name '*.log' ) -not ( -name '*.out' ) -not ( -name '*.patch' ) -not ( -name '*.pdf' ) -not ( -name '*.png' ) -not ( -name 'junit*.properties' ) -not ( -name '*~' ) -not ( -name '#*#' ) -not ( -name 'manual.html' ) -not ( -name 'manual.html-e' ) -not ( -empty ) -type f"/>
 
   <loadresource property="style.find.files.quoted">
     <propertyresource name="style.find.files"/>
@@ -113,15 +113,37 @@
     <isset property="isMac"/>
   </condition>
 
+
+  <target name="-run-google-java-format.check">
+    <condition property="run-google-java-format.exists">
+      <available file="${checker.loc}/bin-devel/.run-google-java-format" type="dir"/>
+    </condition>
+  </target>
+
   <target name="-get-run-google-java-format"
-          description="Obtain or update run-google-java-format project">
-    <exec executable="/bin/sh">
-      <arg value="-c"/>
-      <arg value="cd ${checker.loc}/bin-devel &amp;&amp; ((cd .run-google-java-format &amp;&amp; git pull -q) || git clone -q https://github.com/plume-lib/run-google-java-format.git .run-google-java-format)"/>
+          description="Obtain the run-google-java-format project"
+          depends="-run-google-java-format.check"
+          unless="run-google-java-format.exists">
+    <exec executable="git"
+          dir="${checker.loc}/bin-devel">
+      <arg value="clone"/>
+      <arg value="-q"/>
+      <arg value="https://github.com/plume-lib/run-google-java-format.git"/>
+      <arg value=".run-google-java-format"/>
     </exec>
   </target>
 
-  <target name="reformat" depends="-get-run-google-java-format"
+  <target name="-update-run-google-java-format"
+          description="Update the run-google-java-format project"
+          depends="-get-run-google-java-format">
+    <exec executable="git"
+          dir="${checker.loc}/bin-devel/.run-google-java-format">
+      <arg value="pull"/>
+      <arg value="-q"/>
+    </exec>
+  </target>
+
+  <target name="reformat" depends="-update-run-google-java-format"
           description="Reformat Java code">
     <apply executable="python" parallel="true" maxparallel="${maxparallel}" failonerror="true">
       <arg value="${checker.loc}/bin-devel/.run-google-java-format/run-google-java-format.py"/>
@@ -130,7 +152,7 @@
     </apply>
   </target>
 
-  <target name="check-format" depends="-get-run-google-java-format"
+  <target name="check-format" depends="-update-run-google-java-format"
           description="Check Java code formatting">
     <apply executable="python" parallel="true" maxparallel="${maxparallel}" failonerror="true">
       <arg value="${checker.loc}/bin-devel/.run-google-java-format/check-google-java-format.py"/>

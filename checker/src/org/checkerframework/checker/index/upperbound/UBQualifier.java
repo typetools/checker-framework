@@ -13,6 +13,7 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
+import org.checkerframework.checker.index.qual.PolyUpperBound;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -44,6 +45,8 @@ public abstract class UBQualifier {
             return parseLTEqLengthOf(am);
         } else if (AnnotationUtils.areSameByClass(am, LTOMLengthOf.class)) {
             return parseLTOMLengthOf(am);
+        } else if (AnnotationUtils.areSameByClass(am, PolyUpperBound.class)) {
+            return PolyQualifier.POLY;
         }
         assert false;
         return UpperBoundUnknownQualifier.UNKNOWN;
@@ -77,7 +80,7 @@ public abstract class UBQualifier {
     }
 
     public static UBQualifier createUBQualifier(AnnotatedTypeMirror type, AnnotationMirror top) {
-        return createUBQualifier(type.getAnnotationInHierarchy(top));
+        return createUBQualifier(type.getEffectiveAnnotationInHierarchy(top));
     }
 
     /**
@@ -141,17 +144,29 @@ public abstract class UBQualifier {
         return UpperBoundUnknownQualifier.UNKNOWN;
     }
 
-    public final boolean isUnknownOrBottom() {
-        return isBottom() || isUnknown();
+    public boolean isLessThanLengthQualifier() {
+        return false;
     }
 
-    public abstract boolean isUnknown();
+    public boolean isUnknown() {
+        return false;
+    }
 
-    public abstract boolean isBottom();
+    public boolean isBottom() {
+        return false;
+    }
+
+    public boolean isPoly() {
+        return false;
+    }
 
     public abstract boolean isSubtype(UBQualifier superType);
 
     public abstract UBQualifier lub(UBQualifier other);
+
+    public UBQualifier widenUpperBound(UBQualifier obj) {
+        return lub(obj);
+    }
 
     public abstract UBQualifier glb(UBQualifier other);
 
@@ -177,6 +192,16 @@ public abstract class UBQualifier {
     }
 
     /**
+     * Returns whether or not this qualifier has array with offset of -1.
+     *
+     * @param array array expression
+     * @return whether or not this qualifier has array with offset of -1.
+     */
+    public boolean hasArrayWithOffsetNeg1(String array) {
+        return false;
+    }
+
+    /**
      * Is the value with this qualifier less than or equal to the length of array?
      *
      * @param array String array
@@ -187,13 +212,21 @@ public abstract class UBQualifier {
         return false;
     }
 
-    /** */
     static class LessThanLengthOf extends UBQualifier {
         private final Map<String, Set<OffsetEquation>> map;
 
         private LessThanLengthOf(Map<String, Set<OffsetEquation>> map) {
             assert !map.isEmpty();
             this.map = map;
+        }
+
+        @Override
+        public boolean hasArrayWithOffsetNeg1(String array) {
+            Set<OffsetEquation> offsets = map.get(array);
+            if (offsets == null) {
+                return false;
+            }
+            return offsets.contains(OffsetEquation.NEG_1);
         }
 
         /**
@@ -204,11 +237,7 @@ public abstract class UBQualifier {
          */
         @Override
         public boolean isLessThanOrEqualTo(String array) {
-            Set<OffsetEquation> offsets = map.get(array);
-            if (offsets == null) {
-                return false;
-            }
-            return offsets.contains(OffsetEquation.NEG_1);
+            return isLessThanLengthOf(array) || hasArrayWithOffsetNeg1(array);
         }
 
         /**
@@ -329,13 +358,8 @@ public abstract class UBQualifier {
         }
 
         @Override
-        public boolean isUnknown() {
-            return false;
-        }
-
-        @Override
-        public boolean isBottom() {
-            return false;
+        public boolean isLessThanLengthQualifier() {
+            return true;
         }
 
         /**
@@ -443,7 +467,17 @@ public abstract class UBQualifier {
             if (lubMap.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
-            widenLub(otherLtl, lubMap);
+            return new LessThanLengthOf(lubMap);
+        }
+
+        @Override
+        public UBQualifier widenUpperBound(UBQualifier obj) {
+            UBQualifier lub = lub(obj);
+            if (!lub.isLessThanLengthQualifier() || !obj.isLessThanLengthQualifier()) {
+                return lub;
+            }
+            Map<String, Set<OffsetEquation>> lubMap = ((LessThanLengthOf) lub).map;
+            widenLub((LessThanLengthOf) obj, lubMap);
             if (lubMap.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
@@ -468,9 +502,8 @@ public abstract class UBQualifier {
          * <p>3. @LTLengthOf(value="a', offset="-3")
          *
          * <p>In order to prevent this, if both types passed to lub include all the same arrays with
-         * the same non-constant value offsets and if the constant value offsets are different and
-         * one is less than -10 (-10 is arbitrary, could be -5 or some other number) then remove
-         * that array-offset pair from lub.
+         * the same non-constant value offsets and if the constant value offsets are different then
+         * remove that array-offset pair from lub.
          *
          * <p>For example:
          *
@@ -499,10 +532,7 @@ public abstract class UBQualifier {
                         int thisInt = OffsetEquation.getIntOffsetEquation(thisOffsets).getInt();
                         int otherInt = OffsetEquation.getIntOffsetEquation(otherOffsets).getInt();
                         if (thisInt != otherInt) {
-                            int value = lubEq.getInt();
-                            if (value < -10) {
-                                remove.add(Pair.of(array, lubEq));
-                            }
+                            remove.add(Pair.of(array, lubEq));
                         }
                     } else if (thisOffsets.contains(lubEq) && otherOffsets.contains(lubEq)) {
                         //  continue;
@@ -578,11 +608,53 @@ public abstract class UBQualifier {
          */
         @Override
         public UBQualifier plusOffset(Node node, UpperBoundAnnotatedTypeFactory factory) {
-            OffsetEquation newOffset = OffsetEquation.createOffsetFromNode(node, factory, '+');
-            if (newOffset.hasError()) {
-                return UpperBoundUnknownQualifier.UNKNOWN;
+            return pluseOrMinusOffset(node, factory, '+');
+        }
+
+        /**
+         * Adds node as a negative offset to a copy of this qualifier. This is done by creating a
+         * negative offset equation for node and then adding that equation to every offset equation
+         * in a copy of this object.
+         *
+         * @param node Node
+         * @param factory AnnotatedTypeFactory
+         * @return a copy of this qualifier with node add as an offset
+         */
+        @Override
+        public UBQualifier minusOffset(Node node, UpperBoundAnnotatedTypeFactory factory) {
+            return pluseOrMinusOffset(node, factory, '-');
+        }
+
+        private UBQualifier pluseOrMinusOffset(
+                Node node, UpperBoundAnnotatedTypeFactory factory, char op) {
+            assert op == '-' || op == '+';
+
+            OffsetEquation newOffset = OffsetEquation.createOffsetFromNode(node, factory, op);
+            LessThanLengthOf nodeOffsetQualifier = null;
+            if (!newOffset.hasError()) {
+                nodeOffsetQualifier = (LessThanLengthOf) addOffset(newOffset);
             }
-            return addOffset(newOffset);
+
+            OffsetEquation valueOffset =
+                    OffsetEquation.createOffsetFromNodesValue(node, factory, op);
+            LessThanLengthOf valueOffsetQualifier = null;
+            if (valueOffset != null && !valueOffset.hasError()) {
+                valueOffsetQualifier = (LessThanLengthOf) addOffset(valueOffset);
+            }
+
+            if (valueOffsetQualifier == null) {
+                if (nodeOffsetQualifier == null) {
+                    return UpperBoundUnknownQualifier.UNKNOWN;
+                } else {
+                    return nodeOffsetQualifier;
+                }
+            } else {
+                if (nodeOffsetQualifier == null) {
+                    return valueOffsetQualifier;
+                } else {
+                    return nodeOffsetQualifier.glb(valueOffsetQualifier);
+                }
+            }
         }
 
         /**
@@ -599,24 +671,6 @@ public abstract class UBQualifier {
         }
 
         /**
-         * Adds node as a negative offset to a copy of this qualifier. This is done by creating a
-         * negative offset equation for node and then adding that equation to every offset equation
-         * in a copy of this object.
-         *
-         * @param node Node
-         * @param factory AnnotatedTypeFactory
-         * @return a copy of this qualifier with node add as an offset
-         */
-        @Override
-        public UBQualifier minusOffset(Node node, UpperBoundAnnotatedTypeFactory factory) {
-            OffsetEquation newOffset = OffsetEquation.createOffsetFromNode(node, factory, '-');
-            if (newOffset.hasError()) {
-                return UpperBoundUnknownQualifier.UNKNOWN;
-            }
-            return addOffset(newOffset);
-        }
-
-        /**
          * Adds the negation of value as an offset to a copy of this qualifier. This is done by
          * adding the negation of value value to every offset equation in a copy of this object.
          *
@@ -629,16 +683,66 @@ public abstract class UBQualifier {
             return addOffset(newOffset);
         }
 
-        private UBQualifier addOffset(OffsetEquation newOffset) {
-            Map<String, Set<OffsetEquation>> plusMap = new HashMap<>(map.size());
-            for (Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
-                Set<OffsetEquation> plus = new HashSet<>(entry.getValue().size());
-                for (OffsetEquation eq : entry.getValue()) {
-                    plus.add(eq.copyAdd('+', newOffset));
-                }
-                plusMap.put(entry.getKey(), plus);
+        /**
+         * Returns a copy of this qualifier with array-offset pairs where in the original the offset
+         * contains an access of an array length in arrays. The array length access has been removed
+         * from the offset. If the original qualifier has no array length offsets, then UNKNOWN is
+         * returned.
+         *
+         * @param arrays access of the length of these arrays are removed
+         * @return Returns a copy of this qualifier with some offsets removed
+         */
+        public UBQualifier removeArrayLengthAccess(final List<String> arrays) {
+            if (arrays.isEmpty()) {
+                return UpperBoundUnknownQualifier.UNKNOWN;
             }
-            return new LessThanLengthOf(plusMap);
+            OffsetEquationFunction removeArrayLengthsFunc =
+                    new OffsetEquationFunction() {
+                        @Override
+                        public OffsetEquation compute(OffsetEquation eq) {
+                            return eq.removeArrayLengths(arrays);
+                        }
+                    };
+            return computeNewOffsets(removeArrayLengthsFunc);
+        }
+        /**
+         * Returns a copy of this qualifier with array-offset pairs where in the original the offset
+         * contains an access of an array length in arrays. The array length access has been removed
+         * from the offset. If the offset also has -1 then -1 is also removed.
+         *
+         * @param arrays access of the length of these arrays are removed
+         * @return Returns a copy of this qualifier with some offsets removed
+         */
+        public UBQualifier removeArrayLengthAccessAndNeg1(final List<String> arrays) {
+            if (arrays.isEmpty()) {
+                return UpperBoundUnknownQualifier.UNKNOWN;
+            }
+            OffsetEquationFunction removeArrayLenFunc =
+                    new OffsetEquationFunction() {
+                        @Override
+                        public OffsetEquation compute(OffsetEquation eq) {
+                            OffsetEquation newEq = eq.removeArrayLengths(arrays);
+                            if (newEq == null) {
+                                return null;
+                            }
+                            if (newEq.getInt() == -1) {
+                                return newEq.copyAdd('+', OffsetEquation.ONE);
+                            }
+                            return newEq;
+                        }
+                    };
+            return computeNewOffsets(removeArrayLenFunc);
+        }
+
+        private UBQualifier addOffset(final OffsetEquation newOffset) {
+            OffsetEquationFunction addOffsetFunc =
+                    new OffsetEquationFunction() {
+                        @Override
+                        public OffsetEquation compute(OffsetEquation eq) {
+                            return eq.copyAdd('+', newOffset);
+                        }
+                    };
+            return computeNewOffsets(addOffsetFunc);
         }
 
         /**
@@ -656,23 +760,17 @@ public abstract class UBQualifier {
             if (divisor == 1) {
                 return this;
             } else if (divisor > 1) {
-                Map<String, Set<OffsetEquation>> divideMap = new HashMap<>(map.size());
-                for (Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
-                    Set<OffsetEquation> divide = new HashSet<>(entry.getValue().size());
-                    for (OffsetEquation eq : entry.getValue()) {
-                        if (eq.isNegativeOrZero()) {
-                            divide.add(eq);
-                        }
-                    }
-                    if (!divide.isEmpty()) {
-                        divideMap.put(entry.getKey(), divide);
-                    }
-                }
-
-                if (divideMap.isEmpty()) {
-                    return UpperBoundUnknownQualifier.UNKNOWN;
-                }
-                return new LessThanLengthOf(divideMap);
+                OffsetEquationFunction divideFunc =
+                        new OffsetEquationFunction() {
+                            @Override
+                            public OffsetEquation compute(OffsetEquation eq) {
+                                if (eq.isNegativeOrZero()) {
+                                    return eq;
+                                }
+                                return null;
+                            }
+                        };
+                return computeNewOffsets(divideFunc);
             }
             return UpperBoundUnknownQualifier.UNKNOWN;
         }
@@ -690,6 +788,23 @@ public abstract class UBQualifier {
             return false;
         }
 
+        /**
+         * Checks whether replacing array with replacementArray in this qualifier creates
+         * replacementArray's entry in other.
+         */
+        public boolean isValidReplacement(
+                String array, String replacementArray, LessThanLengthOf other) {
+            Set<OffsetEquation> offsets = map.get(array);
+            if (offsets == null) {
+                return false;
+            }
+            Set<OffsetEquation> otherOffsets = other.map.get(replacementArray);
+            if (otherOffsets == null) {
+                return false;
+            }
+            return containsSame(offsets, otherOffsets);
+        }
+
         @Override
         public String toString() {
             return "LessThanLengthOf{" + "map=" + map + '}';
@@ -698,17 +813,58 @@ public abstract class UBQualifier {
         public Iterable<? extends String> getArrays() {
             return map.keySet();
         }
+
+        /** Functional interface that operates on {@link OffsetEquation}s */
+        interface OffsetEquationFunction {
+            /**
+             * Returns the result of the computation or null if the passed equation should be
+             * removed.
+             *
+             * @param eq Current offset equation
+             * @return the result of the computation or null if the passed equation should be
+             *     removed
+             */
+            OffsetEquation compute(OffsetEquation eq);
+        }
+
+        /**
+         * Returns a new qualifier that is a copy of this qualifier with the OffsetEquationFunction
+         * applied to each offset.
+         *
+         * <p>If the {@link OffsetEquationFunction} returns null, it's not added as an offset. If
+         * after all functions have been applied, an array has no offsets, then that array is not
+         * added to the returned qualifier. If no arrays are added to the returned qualifier, then
+         * UNKNOWN is returned.
+         *
+         * @param f function to apply
+         * @return a new qualifier that is a copy of this qualifier with the OffsetEquationFunction
+         *     applied to each offset.
+         */
+        private UBQualifier computeNewOffsets(OffsetEquationFunction f) {
+            Map<String, Set<OffsetEquation>> newMap = new HashMap<>(map.size());
+            for (Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
+                Set<OffsetEquation> offsets = new HashSet<>(entry.getValue().size());
+                for (OffsetEquation eq : entry.getValue()) {
+                    OffsetEquation newEq = f.compute(eq);
+                    if (newEq != null) {
+                        offsets.add(newEq);
+                    }
+                }
+                if (!offsets.isEmpty()) {
+                    newMap.put(entry.getKey(), offsets);
+                }
+            }
+            if (newMap.isEmpty()) {
+                return UpperBoundUnknownQualifier.UNKNOWN;
+            }
+            return new LessThanLengthOf(newMap);
+        }
     }
 
     public static class UpperBoundUnknownQualifier extends UBQualifier {
         static final UBQualifier UNKNOWN = new UpperBoundUnknownQualifier();
 
         private UpperBoundUnknownQualifier() {}
-
-        @Override
-        public boolean isBottom() {
-            return false;
-        }
 
         @Override
         public boolean isSubtype(UBQualifier superType) {
@@ -740,11 +896,6 @@ public abstract class UBQualifier {
         static final UBQualifier BOTTOM = new UpperBoundBottomQualifier();
 
         @Override
-        public boolean isUnknown() {
-            return false;
-        }
-
-        @Override
         public boolean isBottom() {
             return true;
         }
@@ -767,6 +918,36 @@ public abstract class UBQualifier {
         @Override
         public String toString() {
             return "BOTTOM";
+        }
+    }
+
+    private static class PolyQualifier extends UBQualifier {
+        static final UBQualifier POLY = new UpperBoundBottomQualifier();
+
+        @Override
+        public boolean isPoly() {
+            return true;
+        }
+
+        @Override
+        public boolean isSubtype(UBQualifier superType) {
+            return superType.isUnknown() || superType.isPoly();
+        }
+
+        @Override
+        public UBQualifier lub(UBQualifier other) {
+            if (other.isPoly() || other.isBottom()) {
+                return this;
+            }
+            return UpperBoundUnknownQualifier.UNKNOWN;
+        }
+
+        @Override
+        public UBQualifier glb(UBQualifier other) {
+            if (other.isPoly() || other.isUnknown()) {
+                return this;
+            }
+            return UpperBoundBottomQualifier.BOTTOM;
         }
     }
 }

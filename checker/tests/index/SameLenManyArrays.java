@@ -1,4 +1,5 @@
 import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.dataflow.qual.Pure;
 
 class SameLenManyArrays {
     void transfer1(int @SameLen("#2") [] a, int[] b) {
@@ -34,4 +35,22 @@ class SameLenManyArrays {
             }
         }
     }
+
+    void transfer5(int[] a, int[] b, int[] c, int[] d) {
+        if (a.length == b.length && b.length == c.length) {
+            int[] x = a;
+            int[] y = x;
+            int index = x.length - 1;
+            if (index > 0) {
+                f(a[index]);
+                f(b[index]);
+                f(c[index]);
+                f(x[index]);
+                f(y[index]);
+            }
+        }
+    }
+
+    @Pure
+    void f(Object o) {}
 }

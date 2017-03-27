@@ -757,10 +757,10 @@ public abstract class AnnotatedTypeMirror {
      * <p>Note: deepCopy provides two important properties in the returned copy:
      *
      * <ol>
-     *   <li> Structure preservation -- The exact structure of the original AnnotatedTypeMirror is
+     *   <li>Structure preservation -- The exact structure of the original AnnotatedTypeMirror is
      *       preserved in the copy including all component types.
-     *   <li> Annotation preservation -- All of the annotations from the original
-     *       AnnotatedTypeMirror and its components have been copied to the new type.
+     *   <li>Annotation preservation -- All of the annotations from the original AnnotatedTypeMirror
+     *       and its components have been copied to the new type.
      * </ol>
      *
      * If copyAnnotations is set to false, the second property, Annotation preservation, is removed.
@@ -839,7 +839,10 @@ public abstract class AnnotatedTypeMirror {
 
             TypeMirror encl = type.getEnclosingType();
             if (encl.getKind() == TypeKind.DECLARED) {
-                this.enclosingType = (AnnotatedDeclaredType) createType(encl, atypeFactory, true);
+                this.enclosingType =
+                        (AnnotatedDeclaredType) createType(encl, atypeFactory, declaration);
+                // Force instantiation of type arguments of enclosing type.
+                this.enclosingType.getTypeArguments();
             } else if (encl.getKind() != TypeKind.NONE) {
                 ErrorReporter.errorAbort(
                         "AnnotatedDeclaredType: unsupported enclosing type: "
@@ -1737,8 +1740,8 @@ public abstract class AnnotatedTypeMirror {
      *
      * <ul>
      *   <li>VOID -- corresponds to the keyword void.
-     *   <li> PACKAGE -- the pseudo-type of a package element.
-     *   <li> NONE -- used in other cases where no actual type is appropriate; for example, the
+     *   <li>PACKAGE -- the pseudo-type of a package element.
+     *   <li>NONE -- used in other cases where no actual type is appropriate; for example, the
      *       superclass of java.lang.Object.
      * </ul>
      */

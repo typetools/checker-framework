@@ -875,7 +875,7 @@ public final class Math {
      * @param   b   another argument.
      * @return  the smaller of {@code a} and {@code b}.
      */
-    public static int min(int a, int b) {
+    public static @PolyLowerBound int min(@PolyLowerBound int a, @PolyLowerBound int b) {
         return (a <= b) ? a : b;
     }
 
@@ -889,7 +889,7 @@ public final class Math {
      * @param   b   another argument.
      * @return  the smaller of {@code a} and {@code b}.
      */
-    public static long min(long a, long b) {
+    public static @PolyLowerBound long min(@PolyLowerBound long a, @PolyLowerBound long b) {
         return (a <= b) ? a : b;
     }
 

@@ -48,6 +48,8 @@
         <mkdir dir="${tests.build}/testclasses"/>
         <mkdir dir="${api.doc}" />
 
+        <symlink link="${checkerframework}/docs/api" resource="../checker/${api.doc}" overwrite="true"/>
+
         <available property="framework.project"
                    file="${framework.loc}/build.xml"/>
         <antcall target="-prep-framework-compile"/>
@@ -1035,7 +1037,7 @@
             <param name="param" value="tests.I18nFormatterLubGlbCheckerTest"/>
         </antcall>
         <antcall target="-run-tests">
-            <param name="param" value="tests.I18nFormatterFormatterUncheckedDefaultsTest"/>
+            <param name="param" value="tests.I18nFormatterUncheckedDefaultsTest"/>
         </antcall>
     </target>
 
@@ -1425,6 +1427,33 @@ So, use our own archived version.
         <fail unless="javac.exist" message="Could not find javac.jar: ${javac.lib}" />
     </target>
 
+    <target name="download-jdk" description="Downloads jdk7.jar and jdk8.jar from checkerframework.org/dev-jdk to checker/jdk and checker/dist">
+        <get src="https://checkerframework.org/dev-jdk/jdk7.jar" dest="jdk/jdk7.jar"/>
+        <get src="https://checkerframework.org/dev-jdk/jdk8.jar" dest="jdk/jdk8.jar"/>
+
+        <!-- Copy jars to dist. If dist doesn't exist then the copy task creates it.-->
+        <copy file="jdk/jdk7.jar" tofile="dist/jdk7.jar"/>
+        <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar"/>
+
+
+        <!--The implementation version listed in the Manifest is the hash of the commit of-->
+        <!--the Checker Framework that created the jdk.jar.  Show it here to help debugging.-->
+        <loadfile property="message">
+            <zipentry zipfile="jdk/jdk7.jar" name="META-INF/MANIFEST.MF"/>
+        </loadfile>
+        <echo>"Manifest file from jdk7.jar:"</echo>
+        <echo>"${message}"</echo>
+
+
+        <loadfile property="message">
+            <zipentry zipfile="jdk/jdk8.jar" name="META-INF/MANIFEST.MF"/>
+        </loadfile>
+        <echo>"Manifest file from jdk8.jar:"</echo>
+        <echo>"${message}"</echo>
+
+
+    </target>
+
     <target name="all.jdks.jar" description="Build jdkX.jar using JAVA_X_HOME (with X in 7, 8, and 9)">
         <fail unless="env.JAVA_7_HOME" message="Environment variable &quot;JAVA_7_HOME&quot; needs to be set!"/>
         <fail unless="env.JAVA_8_HOME" message="Environment variable &quot;JAVA_8_HOME&quot; needs to be set!"/>
@@ -1456,6 +1485,7 @@ So, use our own archived version.
       <fail unless="annotation-file-utilities.exist" message="Could not find annotation-file-utilities.jar: ${annotation-file-utilities.jar}.  You must build Annotation Tools; see https://checkerframework.org/manual/#build-source" />
 
       <exec executable="make" failonerror="true">
+         <arg value="CHECKERFRAMEWORK=${checkerframework}"/>
          <arg value="LANGTOOLS=${jsr308.langtools}"/>
          <arg value="LANGTOOLSDIST=${jsr308.langtools.dist}"/>
          <arg value="ANNOTATION_TOOLS=${annotation.tools}"/>
@@ -1486,6 +1516,9 @@ So, use our own archived version.
             depends="-prep-dist,jar,jdk.jar,dist-nobuildjdk"
             description="Build checker.jar, checker-qual.jar, and one jdkX.jar where X is the major version number of java in JAVA_HOME (only Java 7/8/9 are currently supported).  This comprises all jars needed to run the framework.">
     </target>
+
+    <target name="dist-downloadjdk" depends="download-jdk,dist-nobuildjdk"
+            description="Build checker.jar, checker-qual.jar, and download the jdkX.jars rather than building them."/>
 
     <target name="dist-nobuildjdk"
             depends="-prep-dist,jar,jdk.jar.exists"

@@ -529,8 +529,7 @@ public abstract class CFAbstractTransfer<
                                 false);
                 info.insertValue(expr, annotation);
             } catch (FlowExpressionParseException e) {
-                // report errors here
-                analysis.checker.report(e.getResult(), methodTree);
+                // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration()
             }
         }
     }
@@ -704,6 +703,10 @@ public abstract class CFAbstractTransfer<
      * Refine the annotation of {@code secondNode} if the annotation {@code secondValue} is less
      * precise than {@code firstvalue}. This is possible, if {@code secondNode} is an expression
      * that is tracked by the store (e.g., a local variable or a field).
+     *
+     * <p>Note that when overriding this method, when a new type is inserted into the store,
+     * splitAssignments should be called, and the new type should be inserted into the store for
+     * each of the resulting nodes.
      *
      * @param res the previous result
      * @param notEqualTo if true, indicates that the logic is flipped (i.e., the information is

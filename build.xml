@@ -15,7 +15,7 @@
         basedir=".">
   <property file="${basedir}/local.properties"/>
 
-  <property name="checkerframework" value="${basedir}/../checker-framework"/>
+  <property name="checkerframework" value="${basedir}"/>
   <property file="${checkerframework}/build-common.properties"/>
 
   <target name="dist"
@@ -144,7 +144,7 @@
 
   <target name="html-validate"
           description="Validate that HTML files are well-formed; only works with JDK 8">
-    <exec executable="html5validator">
+    <exec executable="html5validator" failonerror="true">
       <arg value="--ignore"/>
       <arg value="/api/"/>
       <arg value="/build/"/>

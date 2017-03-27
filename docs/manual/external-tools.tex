@@ -104,7 +104,7 @@ use the last one.
    run checker.jar via \<java> (not \<javac>) as in:
 
 \begin{Verbatim}
-  java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar ...
+  java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar" ...
 \end{Verbatim}
 
     You can simplify the above command by introducing an alias.  Then,
@@ -114,11 +114,11 @@ use the last one.
 \begin{Verbatim}
   # Unix
   export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.9
-  alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
+  alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
   set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.1.9\
-  doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
+  doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
    \noindent
@@ -356,13 +356,13 @@ checker as an annotation processor directly.
             <artifactId>checker</artifactId>
             <version>\ReleaseVersion{}</version>
         </dependency>
-        <!-- The type annotations compiler - uncomment if desired -->
+        <!-- The Type Annotations compiler. Uncomment if using Java 7 or annotations in comments. -->
         <!-- <dependency>
             <groupId>org.checkerframework</groupId>
             <artifactId>compiler</artifactId>
             <version>\ReleaseVersion{}</version>
         </dependency> -->
-        <!-- The annotated JDK to use (change to jdk7 if using Java 7) -->
+        <!-- The annotated JDK to use (change to jdk7 if using Java 7). -->
         <dependency>
             <groupId>org.checkerframework</groupId>
             <artifactId>jdk8</artifactId>
@@ -682,7 +682,7 @@ To run a checker within IntelliJ:
   Go to the ``Settings'' menu via (File>Settings) or (Ctrl-Alt-S) and
   navigate to the ``Java Compiler'' sub-menu via (Build, Execution,
   Deployment>Compiler>Java Compiler).  Add the following to the field
-  ``Additional command line parameters'':
+  ``Additional command line parameters'': \\
   \<-Xbootclasspath/p:\$CHECKERFRAMEWORK/checker/dist/jdk8.jar>
 
 \item
@@ -715,6 +715,14 @@ It is necessary to manually inform the IDE via a plugin if an annotation
 system adds any dependencies beyond those that normally exist in Java.
 For information about the extension points, see
 \url{https://youtrack.jetbrains.com/issue/IDEA-159286}.
+
+
+\subsection{Android Studio\label{android-studio}}
+
+Some people have reported success running the Checker Framework with
+Android Studio, but others have had trouble.  We do not currently have
+instructions for using the Checker Framework with Android Studio.  If you
+are able to contribute such instructions, please do so.
 
 
 \section{Eclipse\label{eclipse}}
@@ -812,7 +820,7 @@ You can download it from \myurl{https://sourceforge.net/projects/tide/}.
 
 \section{NetBeans\label{netbeans}}
 
-There are two approaches to running a checker in Netbeans:  via modifying the project properties, or via a custom ant target.
+There are two approaches to running a checker in NetBeans:  via modifying the project properties, or via a custom ant target.
 
 
 \subsection{Adding a checker via the project properties\label{netbeans-project-properties}}
@@ -1053,8 +1061,9 @@ inside the body of a method.
 % LocalWords:  compilerArgs Xbootclasspath JSR308 jsr308 jsr308javac mvn
 %  LocalWords:  plugins proc procOnly DirectoryScanner setIncludes groupId
 %  LocalWords:  setExcludes checkerFrameworkVersion javacParams javaParams
-%%  LocalWords:  artifactId quals failOnError ejc CHECKERFRAMEWORK
-%%  LocalWords:  javacheck checkerframework MavenExample org arg
+%%  LocalWords:  artifactId quals failOnError ejc CHECKERFRAMEWORK env
+%%  LocalWords:  javacheck checkerframework MavenExample org arg typecheck
 %%  LocalWords:  AoutputArgsToFile qual jdk7 jdk8 annotatedJdk Unhandled
-%%  LocalWords:  annotationProcessors annotationProcessor JavaCompile
+%%  LocalWords:  annotationProcessors annotationProcessor JavaCompile Ctrl
 %%  LocalWords:  typeAnnotationsJavac targetJavaVersion GradleExamples
+%%  LocalWords:  systemPath artifactID MacOS
