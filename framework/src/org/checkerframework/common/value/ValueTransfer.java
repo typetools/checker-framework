@@ -606,57 +606,51 @@ public class ValueTransfer extends CFTransfer {
             return null;
         }
         List<Boolean> resultValues = new ArrayList<>();
+
+        // These lists are used to refine the values in the store based on the results of the comparison.
+        List<Number> thenLeftVals = new ArrayList<>();
+        List<Number> elseLeftVals = new ArrayList<>();
+        List<Number> thenRightVals = new ArrayList<>();
+        List<Number> elseRightVals = new ArrayList<>();
+
         for (Number left : lefts) {
             NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
             for (Number right : rights) {
+                Boolean result;
                 switch (op) {
                     case EQUAL:
-                        resultValues.add(nmLeft.equalTo(right));
+                        result = nmLeft.equalTo(right);
                         break;
                     case GREATER_THAN:
-                        resultValues.add(nmLeft.greaterThan(right));
+                        result = nmLeft.greaterThan(right);
                         break;
                     case GREATER_THAN_EQ:
-                        resultValues.add(nmLeft.greaterThanEq(right));
+                        result = nmLeft.greaterThanEq(right);
                         break;
                     case LESS_THAN:
-                        resultValues.add(nmLeft.lessThan(right));
+                        result = nmLeft.lessThan(right);
                         break;
                     case LESS_THAN_EQ:
-                        resultValues.add(nmLeft.lessThanEq(right));
+                        result = nmLeft.lessThanEq(right);
                         break;
                     case NOT_EQUAL:
-                        resultValues.add(nmLeft.notEqualTo(right));
+                        result = nmLeft.notEqualTo(right);
                         break;
                     default:
                         throw new UnsupportedOperationException();
                 }
-            }
-        }
-
-        // Refine the values of the operands in the store based on the result of the comparison.
-
-        List<Number> thenLeftVals = new ArrayList<>();
-        List<Number> elseLeftVals = new ArrayList<>();
-
-        List<Number> thenRightVals = new ArrayList<>();
-        List<Number> elseRightVals = new ArrayList<>();
-
-        // Because resultValues contains the (boolean) results of each comparison (i.e. the product of the number
-        // of elements in each list), we have to iterate through parts of the list at a time in order to find all
-        // the results of comparisons involving a particular value in the left list.
-        for (int i = 0; i < lefts.size(); i++) {
-            for (int j = 0; j < rights.size(); j++) {
-                if (resultValues.get(j + i * rights.size())) {
-                    thenLeftVals.add(lefts.get(i));
-                    thenRightVals.add(rights.get(j));
+                resultValues.add(result);
+                if (result) {
+                    thenLeftVals.add(left);
+                    thenRightVals.add(right);
                 } else {
-                    elseLeftVals.add(lefts.get(i));
-                    elseRightVals.add(rights.get(j));
+                    elseLeftVals.add(left);
+                    elseRightVals.add(right);
                 }
             }
         }
 
+        // The result can only be bottom if both the comparison had some results and one of the four lists is empty.
         boolean canGoToBottom = resultValues.size() > 0;
 
         createAnnotationFromResultsAndAddToStore(thenStore, thenLeftVals, leftNode, canGoToBottom);
@@ -672,6 +666,9 @@ public class ValueTransfer extends CFTransfer {
 
     private void createAnnotationFromResultsAndAddToStore(
             CFStore store, List<?> results, Node node, boolean canGoToBottom) {
+        // createResultingAnnotation returns bottom if an empty list is passed. So,
+        // if the result cannot be bottom and the size of the list is zero, pass null
+        // instead.
         AnnotationMirror anno =
                 atypefactory.createResultingAnnotation(
                         node.getType(), results.size() == 0 && !canGoToBottom ? null : results);
@@ -680,6 +677,7 @@ public class ValueTransfer extends CFTransfer {
                         .getAnnotatedType(node.getTree())
                         .getAnnotationInHierarchy(atypefactory.BOTTOMVAL);
         Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), node);
+        // Combine the new annotations based on the results of the comparison with the existing type.
         store.insertValue(
                 rec, atypefactory.getQualifierHierarchy().greatestLowerBound(anno, currentAnno));
 
