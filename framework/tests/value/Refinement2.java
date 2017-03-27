@@ -71,6 +71,32 @@ class Refinement2 {
         }
     }
 
+    void moreTests(@IntVal({1, 2, 3}) Integer x, int y) {
+        if (x == null) {
+            if (y == x) {
+                // x and y should be @BottomVal
+                @BottomVal int z1 = x;
+                @BottomVal int z2 = y;
+            } else {
+                // y should be @UnknownVal here.
+                //:: error: (assignment.type.incompatible)
+                @IntVal({1, 2, 3}) int z = y;
+            }
+        }
+
+        if (x == null) {
+            if (y < x) {
+                // x should be @BottomVal
+                @BottomVal int z1 = x;
+                // This is dead code since the unboxing of x in the if statement
+                // will throw a NPE, so the type of y doesn't matter.
+                // @BottomVal int z2 = y;
+            } else {
+                // This is dead code, too.
+            }
+        }
+    }
+
     void testArrayLen(boolean flag) {
         int[] a;
         if (flag) {
