@@ -41,7 +41,8 @@ class Switch {
                 break;
             default:
                 // This should be a legal assignment, but dataflow is failing to
-                // identify this as an else branch.
+                // identify this as an else branch.  See Issue 1180
+                // https://github.com/typetools/checker-framework/issues/1180
                 //:: error: (assignment.type.incompatible)
                 @IntVal({4, 5}) int q = x;
                 break;
@@ -66,6 +67,7 @@ class Switch {
             default:
                 // This should be a legal assignment, but dataflow is failing to
                 // identify this as an else branch.
+                // https://github.com/typetools/checker-framework/issues/1180
                 //:: error: (assignment.type.incompatible)
                 @IntVal({4, 5}) int q = x;
 
