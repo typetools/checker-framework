@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # Optional argument $1 is one of:
-#   all, junit, nonjunit, all-tests, jdk.jar, downstream, misc
+#   all, junit, nonjunit, all-tests, jdk.jar, demos, downstream, misc
 # If it is omitted, this script does everything.
 export GROUP=$1
 if [[ "${GROUP}" == "" ]]; then
   export GROUP=all
 fi
 
-if [[ "${GROUP}" != "all" && "${GROUP}" != "junit" && "${GROUP}" != "nonjunit" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" ]]; then
-  echo "Bad argument '${GROUP}'; should be omitted or one of: all, junit, nonjunit, all-tests, jdk.jar, downstream, misc."
+if [[ "${GROUP}" != "all" && "${GROUP}" != "junit" && "${GROUP}" != "nonjunit" && "${GROUP}" != "all-tests" && "${GROUP}" != "jdk.jar" && "${GROUP}" != "demos" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" ]]; then
+  echo "Bad argument '${GROUP}'; should be omitted or one of: all, junit, nonjunit, all-tests, jdk.jar, demos, downstream, misc."
   exit 1
 fi
 
@@ -40,13 +40,6 @@ fi
 
 if [[ "${GROUP}" == "nonjunit" || "${GROUP}" == "all" ]]; then
   (cd checker && ant nonjunit-tests-nojtreg-nobuild jtreg-tests)
-
-  # It's cheaper to run the demos test here than to trigger the
-  # checker-framework-demos job, which has to build the whole Checker Framework.
-  (cd checker && ant check-demos)
-  # Here's a more verbose way to do the same thing as "ant check-demos":
-  # (cd .. && git clone --depth 1 https://github.com/typetools/checker-framework.demos.git)
-  # (cd ../checker-framework.demos && ant -Djsr308.home=$ROOT)
 fi
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
@@ -83,13 +76,10 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   # (cd .. && git clone --depth 1 https://github.com/typetools/sparta.git)
   # (cd ../sparta && ant jar all-tests)
 
-  ## Currently done in "nonjunit" instead.
-  # # It's cheaper to run the demos test here than to trigger the
-  # # checker-framework-demos job, which has to build the whole Checker Framework.
-  # (cd checker && ant check-demos)
-  # # Here's a more verbose way to do the same thing as "ant check-demos":
-  # # (cd .. && git clone --depth 1 https://github.com/typetools/checker-framework.demos.git)
-  # # (cd ../checker-framework.demos && ant -Djsr308.home=$ROOT)
+fi
+
+if [[ "${GROUP}" == "demos" || "${GROUP}" == "all" ]]; then
+  (cd checker && ant check-demos)
 fi
 
 if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then

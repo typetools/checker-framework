@@ -32,7 +32,10 @@ echo "Running:  (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 
 ## Compile
-## Two options: rebuild the JDK or download a prebuilt JDK.  Comment out one.
+# Two options: rebuild the JDK or download a prebuilt JDK.  Comment out one.
+# If downloading, then some Travis jobs can be combined to save overall time,
+# such as merging "demos" into either "nonjunit" or "downstream".  (When
+# rebuilding, merging "demos" into one of those could exceed timeouts.)
 ## To rebuild the JDK:
 echo "running \"ant dist\" for checker-framework"
 ant dist

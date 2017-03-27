@@ -20,11 +20,13 @@ env:
   - JDKVER=jdk7 GROUP=nonjunit
 #  - JDKVER=jdk7 GROUP=all-tests
 #  - JDKVER=jdk7 GROUP=jdk.jar
+  - JDKVER=jdk7 GROUP=demos
   - JDKVER=jdk7 GROUP=downstream
   - JDKVER=jdk8 GROUP=junit
   - JDKVER=jdk8 GROUP=nonjunit
 #  - JDKVER=jdk8 GROUP=all-tests
 #  - JDKVER=jdk8 GROUP=jdk.jar
+  - JDKVER=jdk8 GROUP=demos
   - JDKVER=jdk8 GROUP=downstream
   - JDKVER=jdkany GROUP=misc
 
