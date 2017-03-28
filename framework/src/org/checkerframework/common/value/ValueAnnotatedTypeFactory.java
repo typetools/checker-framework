@@ -30,10 +30,13 @@ import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
+import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
+import org.checkerframework.common.value.util.NumberUtils;
+import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -126,6 +129,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
+    public AnnotationMirror aliasedAnnotation(AnnotationMirror anno) {
+        if (AnnotationUtils.areSameByClass(anno, android.support.annotation.IntRange.class)) {
+            Range range = getIntRange(anno);
+            return createIntRangeAnnotation(range);
+        }
+        return super.aliasedAnnotation(anno);
+    }
+
+    @Override
     public CFTransfer createFlowTransferFunction(
             CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         return new ValueTransfer(analysis);
@@ -209,31 +221,61 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitPrimitive(AnnotatedPrimitiveType type, Void p) {
-            replaceWithUnknownValIfTooManyValues(type);
+            replaceWithNewAnnoInSpecialCases(type);
 
             return super.visitPrimitive(type, p);
         }
 
         @Override
         public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
-            replaceWithUnknownValIfTooManyValues(type);
+            replaceWithNewAnnoInSpecialCases(type);
 
             return super.visitDeclared(type, p);
         }
 
         /**
-         * If any constant-value annotation has &gt; MAX_VALUES number of values provided, treats
-         * the value as UnknownVal. Works together with {@link ValueVisitor#visitAnnotation}, which
-         * issues a warning to the user in this case.
+         * This method performs pre-processing on annotations written by users.
+         *
+         * <p>If any *Val annotation has &gt; MAX_VALUES number of values provided, replaces the
+         * annotation by @IntRange for integral types and @UnknownVal for all other types. Works
+         * together with {@link
+         * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
+         * Void)} which issues warnings to users in these cases.
+         *
+         * <p>If any @IntRange annotation has incorrect parameters, e.g. the value "from" is
+         * specified to be greater than the value "to", replaces the annotation by @BOTTOMVAL as
+         * well. The {@link
+         * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
+         * Void)} would raise error to users in this case.
          */
-        private void replaceWithUnknownValIfTooManyValues(AnnotatedTypeMirror atm) {
+        private void replaceWithNewAnnoInSpecialCases(AnnotatedTypeMirror atm) {
             AnnotationMirror anno = atm.getAnnotationInHierarchy(UNKNOWNVAL);
 
             if (anno != null && anno.getElementValues().size() > 0) {
-                List<Object> values =
-                        AnnotationUtils.getElementValueArray(anno, "value", Object.class, false);
-                if (values != null && values.size() > MAX_VALUES) {
-                    atm.replaceAnnotation(UNKNOWNVAL);
+                if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
+                    List<Long> values =
+                            AnnotationUtils.getElementValueArray(anno, "value", Long.class, true);
+                    if (values.size() > MAX_VALUES) {
+                        long annoMinVal = Collections.min(values);
+                        long annoMaxVal = Collections.max(values);
+                        atm.replaceAnnotation(
+                                createIntRangeAnnotation(new Range(annoMinVal, annoMaxVal)));
+                    }
+                } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
+                    long from = AnnotationUtils.getElementValue(anno, "from", Long.class, true);
+                    long to = AnnotationUtils.getElementValue(anno, "to", Long.class, true);
+                    if (from > to) {
+                        atm.replaceAnnotation(BOTTOMVAL);
+                    }
+                } else {
+                    // In here the annotation is @*Val where (*) is not Int but other types (String, Double, etc).
+                    // Therefore we extract its values in a generic way to check its size.
+                    List<Object> values =
+                            AnnotationUtils.getElementValueArray(
+                                    anno, "value", Object.class, false);
+                    if (values.size() > MAX_VALUES) {
+                        atm.replaceAnnotation(UNKNOWNVAL);
+                    }
                 }
             }
         }
@@ -254,18 +296,37 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (isSubtype(a2, a1)) {
                 return a2;
             } else {
-                // If the two are unrelated, then bottom is the GLB.
+                // Simply return BOTTOMVAL if not related. Refine this if discover more use cases
+                // that need a more precision GLB.
                 return BOTTOMVAL;
             }
         }
 
+        @Override
+        public boolean implementsWidening() {
+            return true;
+        }
+
+        @Override
+        public AnnotationMirror widenUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+            AnnotationMirror lub = leastUpperBound(a1, a2);
+            if (AnnotationUtils.areSameByClass(lub, IntRange.class)) {
+                Range range = getIntRange(lub);
+                if (range.isWithin(Byte.MIN_VALUE, Byte.MAX_VALUE)) {
+                    return createIntRangeAnnotation(Range.BYTE_EVERYTHING);
+                } else if (range.isWithin(Short.MIN_VALUE, Short.MAX_VALUE)) {
+                    return createIntRangeAnnotation(Range.SHORT_EVERYTHING);
+                } else if (range.isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+                    return createIntRangeAnnotation(Range.INT_EVERYTHING);
+                } else {
+                    return UNKNOWNVAL;
+                }
+            }
+            return lub;
+        }
         /**
-         * Determines the least upper bound of a1 and a2. If a1 and a2 are both the same type of
-         * Value annotation, then the LUB is the result of taking all values from both a1 and a2 and
-         * removing duplicates. If a1 and a2 are not the same type of Value annotation they may
-         * still be mergeable because some values can be implicitly cast as others. If a1 and a2 are
-         * both in {DoubleVal, IntVal} then they will be converted upwards: IntVal &rarr; DoubleVal
-         * to arrive at a common annotation type.
+         * Determines the least upper bound of a1 and a2, which contains the union of their sets of
+         * possible values.
          *
          * @return the least upper bound of a1 and a2
          */
@@ -273,63 +334,95 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (!AnnotationUtils.areSameIgnoringValues(
                     getTopAnnotation(a1), getTopAnnotation(a2))) {
+                // The annotations are in different hierarchies
                 return null;
-            } else if (isSubtype(a1, a2)) {
+            }
+
+            if (isSubtype(a1, a2)) {
                 return a2;
             } else if (isSubtype(a2, a1)) {
                 return a1;
             }
-            // If both are the same type, determine the type and merge:
-            else if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
-                List<Object> a1Values =
-                        AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
-                List<Object> a2Values =
-                        AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
-                Set<Object> newValues = new TreeSet<>();
-                newValues.addAll(a1Values);
-                newValues.addAll(a2Values);
 
-                return createAnnotation(a1.getAnnotationType().toString(), newValues);
-            }
-            // Annotations are in this hierarchy, but they are not the same
-            else {
-                // If either is UNKNOWNVAL, ARRAYLEN, STRINGVAL, or BOOLEAN then the LUB is
-                // UnknownVal.
-                if (!((AnnotationUtils.areSameByClass(a1, IntVal.class)
-                                || AnnotationUtils.areSameByClass(a1, DoubleVal.class))
-                        && (AnnotationUtils.areSameByClass(a2, IntVal.class)
-                                || AnnotationUtils.areSameByClass(a2, DoubleVal.class)))) {
-                    return UNKNOWNVAL;
+            if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
+                // If both are the same type, determine the type and merge
+                if (AnnotationUtils.areSameByClass(a1, IntRange.class)) {
+                    // special handling for IntRange
+                    Range range1 = getIntRange(a1);
+                    Range range2 = getIntRange(a2);
+                    return createIntRangeAnnotation(range1.union(range2));
                 } else {
-                    // At this point one of them must be a DoubleVal and one an IntVal.
-                    AnnotationMirror doubleAnno;
-                    AnnotationMirror intAnno;
+                    List<Object> a1Values =
+                            AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
+                    List<Object> a2Values =
+                            AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
+                    Set<Object> newValues = new TreeSet<>();
+                    newValues.addAll(a1Values);
+                    newValues.addAll(a2Values);
 
-                    if (AnnotationUtils.areSameByClass(a2, DoubleVal.class)) {
-                        doubleAnno = a2;
-                        intAnno = a1;
-                    } else {
-                        doubleAnno = a1;
-                        intAnno = a2;
-                    }
-                    List<Long> intVals = getIntValues(intAnno);
-                    List<Double> doubleVals = getDoubleValues(doubleAnno);
-
-                    for (Long n : intVals) {
-                        doubleVals.add(n.doubleValue());
-                    }
-
-                    return createDoubleValAnnotation(doubleVals);
+                    // createAnnotation returns @UnknownVal if the list is longer than MAX_VALUES
+                    return createAnnotation(a1.getAnnotationType().toString(), newValues);
                 }
             }
+
+            // Annotations are both in the same hierarchy, but they are not the same.
+            // If a1 and a2 are not the same type of *Value annotation, they may still be mergeable
+            // because some values can be implicitly cast as others. For example, if a1 and a2 are
+            // both in {DoubleVal, IntVal} then they will be converted upwards: IntVal -> DoubleVal
+            // to arrive at a common annotation type.
+
+            // Each of these variables is an annotation of the given type, or is null if neither of
+            // the arguments to leastUpperBound is of the given types.
+            AnnotationMirror intValAnno = null;
+            AnnotationMirror intRangeAnno = null;
+            AnnotationMirror doubleValAnno = null;
+            if (AnnotationUtils.areSameByClass(a1, IntVal.class)) {
+                intValAnno = a1;
+            } else if (AnnotationUtils.areSameByClass(a2, IntVal.class)) {
+                intValAnno = a2;
+            }
+            if (AnnotationUtils.areSameByClass(a1, DoubleVal.class)) {
+                doubleValAnno = a1;
+            } else if (AnnotationUtils.areSameByClass(a2, DoubleVal.class)) {
+                doubleValAnno = a2;
+            }
+            if (AnnotationUtils.areSameByClass(a1, IntRange.class)) {
+                intRangeAnno = a1;
+            } else if (AnnotationUtils.areSameByClass(a2, IntRange.class)) {
+                intRangeAnno = a2;
+            }
+
+            if (doubleValAnno != null) {
+                if (intRangeAnno != null) {
+                    intValAnno = convertIntRangeToIntVal(intRangeAnno);
+                    intRangeAnno = null;
+                    if (intValAnno == UNKNOWNVAL) {
+                        intValAnno = null;
+                    }
+                }
+                if (intValAnno != null) {
+                    // Convert intValAnno to a @DoubleVal AnnotationMirror
+                    AnnotationMirror doubleValAnno2 = convertIntValToDoubleVal(intValAnno);
+                    return leastUpperBound(doubleValAnno, doubleValAnno2);
+                }
+                return UNKNOWNVAL;
+            }
+            if (intRangeAnno != null && intValAnno != null) {
+                // Convert intValAnno to an @IntRange AnnotationMirror
+                AnnotationMirror intRangeAnno2 = convertIntValToIntRange(intValAnno);
+                return leastUpperBound(intRangeAnno, intRangeAnno2);
+            }
+
+            // In all other cases, the LUB is UnknownVal.
+            return UNKNOWNVAL;
         }
 
         /**
          * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
-         * annotations are Value. In this case, rhs is a subtype of lhs iff lhs contains at least
-         * every element of rhs.
+         * annotations are Value. In this case, subAnno is a subtype of superAnno iff superAnno
+         * contains at least every element of subAnno.
          *
-         * @return true if rhs is a subtype of lhs, false otherwise
+         * @return true if subAnno is a subtype of superAnno, false otherwise
          */
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
@@ -342,29 +435,63 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return false;
             } else if (AnnotationUtils.areSameIgnoringValues(superAnno, subAnno)) {
                 // Same type, so might be subtype
-                List<Object> lhsValues =
-                        AnnotationUtils.getElementValueArray(
-                                superAnno, "value", Object.class, true);
-                List<Object> rhsValues =
-                        AnnotationUtils.getElementValueArray(subAnno, "value", Object.class, true);
-                return lhsValues.containsAll(rhsValues);
+                if (AnnotationUtils.areSameByClass(subAnno, IntRange.class)) {
+                    // Special case for IntRange
+                    Range superRange = getIntRange(superAnno);
+                    Range subRange = getIntRange(subAnno);
+                    return superRange.contains(subRange);
+                } else {
+                    List<Object> superValues =
+                            AnnotationUtils.getElementValueArray(
+                                    superAnno, "value", Object.class, true);
+                    List<Object> subValues =
+                            AnnotationUtils.getElementValueArray(
+                                    subAnno, "value", Object.class, true);
+                    return superValues.containsAll(subValues);
+                }
             } else if (AnnotationUtils.areSameByClass(superAnno, DoubleVal.class)
                     && AnnotationUtils.areSameByClass(subAnno, IntVal.class)) {
-                List<Double> superValues = getDoubleValues(superAnno);
-                List<Long> subValues = getIntValues(subAnno);
-                if (subValues.size() < superValues.size()) {
+                List<Double> subValues =
+                        convertLongListToDoubleList(
+                                AnnotationUtils.getElementValueArray(
+                                        subAnno, "value", Long.class, true));
+                List<Double> superValues =
+                        AnnotationUtils.getElementValueArray(
+                                superAnno, "value", Double.class, true);
+                return superValues.containsAll(subValues);
+            } else if (AnnotationUtils.areSameByClass(superAnno, IntRange.class)
+                    && AnnotationUtils.areSameByClass(subAnno, IntVal.class)) {
+                List<Long> subValues =
+                        AnnotationUtils.getElementValueArray(subAnno, "value", Long.class, true);
+                Range superRange = getIntRange(superAnno);
+                long subMinVal = Collections.min(subValues);
+                long subMaxVal = Collections.max(subValues);
+                return subMinVal >= superRange.from && subMaxVal <= superRange.to;
+            } else if (AnnotationUtils.areSameByClass(superAnno, DoubleVal.class)
+                    && AnnotationUtils.areSameByClass(subAnno, IntRange.class)) {
+                Range subRange = getIntRange(subAnno);
+                if (subRange.isWiderThan(MAX_VALUES)) {
                     return false;
                 }
-                for (int i = 0; i < superValues.size(); i++) {
-                    double lhsDbl = superValues.get(i);
-                    double rhsDbl = subValues.get(i).doubleValue();
-                    if (lhsDbl != rhsDbl) {
-                        return false;
-                    }
+                List<Double> superValues =
+                        AnnotationUtils.getElementValueArray(
+                                superAnno, "value", Double.class, true);
+                List<Double> subValues =
+                        ValueCheckerUtils.getValuesFromRange(subRange, Double.class);
+                return superValues.containsAll(subValues);
+            } else if (AnnotationUtils.areSameByClass(superAnno, IntVal.class)
+                    && AnnotationUtils.areSameByClass(subAnno, IntRange.class)) {
+                Range subRange = getIntRange(subAnno);
+                if (subRange.isWiderThan(MAX_VALUES)) {
+                    return false;
                 }
-                return true;
+                List<Long> superValues =
+                        AnnotationUtils.getElementValueArray(superAnno, "value", Long.class, true);
+                List<Long> subValues = ValueCheckerUtils.getValuesFromRange(subRange, Long.class);
+                return superValues.containsAll(subValues);
+            } else {
+                return false;
             }
-            return false;
         }
     }
 
@@ -546,14 +673,35 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
-            if (handledByValueChecker(type)) {
-                AnnotatedTypeMirror castedAnnotation = getAnnotatedType(tree.getExpression());
-                List<?> values = getValues(castedAnnotation, type.getUnderlyingType());
-                type.replaceAnnotation(createResultingAnnotation(type.getUnderlyingType(), values));
-            } else if (type.getKind() == TypeKind.ARRAY) {
+        public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror atm) {
+            if (handledByValueChecker(atm)) {
+                AnnotationMirror oldAnno =
+                        getAnnotatedType(tree.getExpression()).getAnnotationInHierarchy(UNKNOWNVAL);
+                if (oldAnno != null) {
+                    TypeMirror newType = atm.getUnderlyingType();
+                    AnnotationMirror newAnno;
+                    Range range;
+                    if (AnnotationUtils.areSameByClass(oldAnno, IntRange.class)
+                            && (range = getIntRange(oldAnno)).isWiderThan(MAX_VALUES)) {
+                        Class<?> newClass = ValueCheckerUtils.getClassFromType(newType);
+                        if (newClass == String.class) {
+                            newAnno = UNKNOWNVAL;
+                        } else if (newClass == Boolean.class || newClass == boolean.class) {
+                            throw new UnsupportedOperationException(
+                                    "ValueAnnotatedTypeFactory: can't convert int to boolean");
+                        } else {
+                            newAnno =
+                                    createIntRangeAnnotation(NumberUtils.castRange(newType, range));
+                        }
+                    } else {
+                        List<?> values = ValueCheckerUtils.getValuesCastedToType(oldAnno, newType);
+                        newAnno = createResultingAnnotation(atm.getUnderlyingType(), values);
+                    }
+                    atm.replaceAnnotation(newAnno);
+                }
+            } else if (atm.getKind() == TypeKind.ARRAY) {
                 if (tree.getExpression().getKind() == Kind.NULL_LITERAL) {
-                    type.replaceAnnotation(BOTTOMVAL);
+                    atm.replaceAnnotation(BOTTOMVAL);
                 }
             }
             return null;
@@ -857,12 +1005,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns a {@link IntVal} annotation using the values. If {@code values} is null, then
-     * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
-     * sorted and duplicates are removed before the annotation is created.
+     * Returns a {@link IntVal} or {@link IntRange} annotation using the values. If {@code values}
+     * is null, then UnknownVal is returned; if {@code values} is empty, then bottom is returned. If
+     * the number of {@code values} is greater than MAX_VALUES, return an {@link IntRange}. In other
+     * cases, the values are sorted and duplicates are removed before an {@link IntVal} is created.
      *
      * @param values list of longs; duplicates are allowed and the values may be in any order
-     * @return a {@link IntVal} annotation using the values
+     * @return an annotation depends on the values
      */
     public AnnotationMirror createIntValAnnotation(List<Long> values) {
         if (values == null) {
@@ -873,11 +1022,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
-            return UNKNOWNVAL;
+            long valMin = Collections.min(values);
+            long valMax = Collections.max(values);
+            return createIntRangeAnnotation(new Range(valMin, valMax));
+        } else {
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntVal.class);
+            builder.setValue("value", values);
+            return builder.build();
         }
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntVal.class);
-        builder.setValue("value", values);
-        return builder.build();
+    }
+
+    /**
+     * Convert an {@code @IntRange} annotation to an {@code @IntVal} annotation, or to UNKNOWNVAL if
+     * the input is too wide to be represented as an {@code @IntVal}.
+     */
+    public AnnotationMirror convertIntRangeToIntVal(AnnotationMirror intRangeAnno) {
+        Range range = getIntRange(intRangeAnno);
+        List<Long> values = ValueCheckerUtils.getValuesFromRange(range, Long.class);
+        return createIntValAnnotation(values);
     }
 
     /**
@@ -898,10 +1060,26 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
+        } else {
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DoubleVal.class);
+            builder.setValue("value", values);
+            return builder.build();
         }
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DoubleVal.class);
-        builder.setValue("value", values);
-        return builder.build();
+    }
+
+    /** Convert an {@code @IntVal} annotation to a {@code @DoubleVal} annotation. */
+    private AnnotationMirror convertIntValToDoubleVal(AnnotationMirror intValAnno) {
+        List<Long> intValues = getIntValues(intValAnno);
+        return createDoubleValAnnotation(convertLongListToDoubleList(intValues));
+    }
+
+    /** Convert a {@code List&lt;Long&gt;} to a {@code List&lt;Double&gt;}. */
+    private List<Double> convertLongListToDoubleList(List<Long> intValues) {
+        List<Double> doubleValues = new ArrayList<Double>(intValues.size());
+        for (Long intValue : intValues) {
+            doubleValues.add(intValue.doubleValue());
+        }
+        return doubleValues;
     }
 
     /**
@@ -922,10 +1100,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
+        } else {
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, StringVal.class);
+            builder.setValue("value", values);
+            return builder.build();
         }
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, StringVal.class);
-        builder.setValue("value", values);
-        return builder.build();
     }
 
     /**
@@ -944,12 +1123,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return BOTTOMVAL;
         }
         values = ValueCheckerUtils.removeDuplicates(values);
-        if (values.size() > MAX_VALUES) {
+        if (values.isEmpty()) {
+            return BOTTOMVAL;
+        } else if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
+        } else {
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, ArrayLen.class);
+            builder.setValue("value", values);
+            return builder.build();
         }
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, ArrayLen.class);
-        builder.setValue("value", values);
-        return builder.build();
     }
 
     /**
@@ -970,10 +1152,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
+        } else {
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, BoolVal.class);
+            builder.setValue("value", values);
+            return builder.build();
         }
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, BoolVal.class);
-        builder.setValue("value", values);
-        return builder.build();
     }
 
     /**
@@ -994,21 +1177,21 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
+        } else {
+            List<Long> longValues = new ArrayList<>();
+            for (char value : values) {
+                longValues.add((long) value);
+            }
+            return createIntValAnnotation(longValues);
         }
-
-        List<Long> longValues = new ArrayList<>();
-        for (char value : values) {
-            longValues.add((long) value);
-        }
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntVal.class);
-        builder.setValue("value", longValues);
-        return builder.build();
     }
 
     /** @param values must be a homogeneous list: every element of it has the same class. */
-    private AnnotationMirror createNumberAnnotationMirror(List<Number> values) {
-        if (values.isEmpty()) {
+    public AnnotationMirror createNumberAnnotationMirror(List<Number> values) {
+        if (values == null) {
             return UNKNOWNVAL;
+        } else if (values.isEmpty()) {
+            return BOTTOMVAL;
         }
         Number first = values.get(0);
         if (first instanceof Integer
@@ -1020,8 +1203,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 intValues.add(number.longValue());
             }
             return createIntValAnnotation(intValues);
-        }
-        if (first instanceof Double || first instanceof Float) {
+        } else if (first instanceof Double || first instanceof Float) {
             List<Double> intValues = new ArrayList<>();
             for (Number number : values) {
                 intValues.add(number.doubleValue());
@@ -1030,6 +1212,48 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         throw new UnsupportedOperationException(
                 "ValueAnnotatedTypeFactory: unexpected class: " + first.getClass());
+    }
+
+    /**
+     * Create an {@code @IntRange} annotation from the two (inclusive) bounds. Does not return
+     * BOTTOMVAL or UNKNOWNVAL.
+     */
+    public AnnotationMirror createIntRangeAnnotation(long from, long to) {
+        assert from <= to;
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntRange.class);
+        builder.setValue("from", from);
+        builder.setValue("to", to);
+        return builder.build();
+    }
+
+    /**
+     * Create an {@code @IntRange} annotation from the range. May return BOTTOMVAL or UNKNOWNVAL.
+     */
+    public AnnotationMirror createIntRangeAnnotation(Range range) {
+        if (range.isNothing()) {
+            return BOTTOMVAL;
+        } else if (range.isEverything()) {
+            return UNKNOWNVAL;
+        } else {
+            return createIntRangeAnnotation(range.from, range.to);
+        }
+    }
+
+    /** Converts an {@code @IntVal} annotation to an {@code @IntRange} annotation. */
+    public AnnotationMirror convertIntValToIntRange(AnnotationMirror intValAnno) {
+        List<Long> intValues = getIntValues(intValAnno);
+        return createIntRangeAnnotation(Collections.min(intValues), Collections.max(intValues));
+    }
+
+    /** Returns a {@code Range} bounded by the values specified in the given annotation. */
+    public static Range getIntRange(AnnotationMirror rangeAnno) {
+        if (rangeAnno == null) {
+            return null;
+        }
+        // Assume rangeAnno is well-formed, i.e., 'from' is less than or equal to 'to'.
+        return new Range(
+                AnnotationUtils.getElementValue(rangeAnno, "from", Long.class, true),
+                AnnotationUtils.getElementValue(rangeAnno, "to", Long.class, true));
     }
 
     /**

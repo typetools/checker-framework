@@ -11,6 +11,16 @@ Closed issues:
 
 ---------------------------------------------------------------------------
 
+Version 2.1.9, 3 April 2017
+
+The Constant Value Checker, which performs constant propagation, has been
+extended to perform interval analysis -- that is, it determines, for each
+expression, a statically-known lower and upper bound.  Use the new
+@IntRange annotation to express this.  Thanks to Jiasen (Jason) Xu for this
+feature.
+
+---------------------------------------------------------------------------
+
 Version 2.1.8, 20 January 2017
 
 The Checker Framework webpage has moved to https://checkerframework.org/.

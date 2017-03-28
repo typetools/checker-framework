@@ -42,4 +42,15 @@ class TypeCast {
         byte[] b = (byte[]) null;
         @BoolVal(true) boolean bool = (boolean) true;
     }
+
+    void rangeCast(@IntRange(from = 127, to = 128) int a, @IntRange(from = 128, to = 129) int b) {
+        @IntRange(from = 0, to = 128)
+        //:: error: (assignment.type.incompatible) :: warning: (cast.unsafe)
+        byte c = (byte) a;
+        // (byte) a is @IntRange(from = -128, to = 127) because of casting
+
+        @IntRange(from = -128, to = -127)
+        //:: warning: (cast.unsafe)
+        byte d = (byte) b;
+    }
 }
