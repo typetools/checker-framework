@@ -43,8 +43,7 @@ class Polymorphic2 {
         int @SameLen("array1") [] zz = mergeMinLen(a, b);
     }
 
-    @PolyUpperBound
-    int mergeUpperBound(@PolyUpperBound int a, @PolyUpperBound int b) {
+    @PolyUpperBound int mergeUpperBound(@PolyUpperBound int a, @PolyUpperBound int b) {
         return flag ? a : b;
     }
     // UpperBound tests
@@ -68,8 +67,7 @@ class Polymorphic2 {
         @LTLengthOf("array1") int zz = mergeUpperBound(a, b);
     }
 
-    @PolyLowerBound
-    int mergeLowerBound(@PolyLowerBound int a, @PolyLowerBound int b) {
+    @PolyLowerBound int mergeLowerBound(@PolyLowerBound int a, @PolyLowerBound int b) {
         return flag ? a : b;
     }
     // LowerBound tests
