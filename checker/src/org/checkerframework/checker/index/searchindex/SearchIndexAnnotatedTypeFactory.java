@@ -68,10 +68,6 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-
-            System.out.println(subAnno);
-            System.out.println(superAnno);
-
             if (AnnotationUtils.areSameByClass(superAnno, SearchIndexUnknown.class)) {
                 return true;
             }
