@@ -71,6 +71,24 @@ class Refinement2 {
         }
     }
 
+    void simpleNull1(@IntVal({1,2,3}) Integer x) {
+	if (x == null) {
+	    @BottomVal int y = x;
+	}
+    }
+
+    void simpleNull2(@BottomVal Integer xyz, int yqe) {
+	if (xyz == yqe) {
+	    @BottomVal int eze = yqe;
+	}
+    }
+
+    void simpleNull3(@BottomVal Integer hfd, Integer u) {
+	if (hfd == u) {
+	    @BottomVal int bork = u;
+	}
+    }
+    
     void moreTests(@IntVal({1, 2, 3}) Integer x, int y) {
         if (x == null) {
             if (y == x) {

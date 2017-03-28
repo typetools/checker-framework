@@ -784,7 +784,40 @@ public class ValueTransfer extends CFTransfer {
 
         List<? extends Number> lefts = getNumericalValues(leftNode, p);
         List<? extends Number> rights = getNumericalValues(rightNode, p);
+
+        System.out.println(leftNode + " : ");
+        if (lefts != null)
+            for (Number n : lefts)
+                System.out.print(n + ",");
+        else
+            System.out.println("null");
+        System.out.println();
+
+        System.out.println(rightNode + " : ");
+        if (rights != null)
+            for (Number n : rights)
+                System.out.print(n + ",");
+        else
+            System.out.println("null");
+        System.out.println();
+
         if (lefts == null || rights == null) {
+            // Appropriately handle bottom when something is compared to bottom.
+            AnnotationMirror leftAnno =  atypefactory
+                    .getAnnotatedType(leftNode.getTree())
+                    .getAnnotationInHierarchy(atypefactory.BOTTOMVAL);
+            AnnotationMirror rightAnno =  atypefactory
+                    .getAnnotatedType(rightNode.getTree())
+                    .getAnnotationInHierarchy(atypefactory.BOTTOMVAL);
+
+            System.out.println("either rights or lefts is null");
+            System.out.println("leftAnno: " + leftAnno);
+            System.out.println("rightAnno: " + rightAnno);
+
+            if (AnnotationUtils.areSame(leftAnno, atypefactory.BOTTOMVAL) ||
+                    AnnotationUtils.areSame(rightAnno, atypefactory.BOTTOMVAL)) {
+                return new ArrayList<Boolean>();
+            }
             return null;
         }
 
@@ -935,27 +968,6 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitEqualTo(
             EqualToNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitEqualTo(n, p);
-
-        Receiver rightRec =
-                FlowExpressions.internalReprOf(analysis.getTypeFactory(), n.getRightOperand());
-        Receiver leftRec =
-                FlowExpressions.internalReprOf(analysis.getTypeFactory(), n.getLeftOperand());
-
-        System.out.println(
-                n
-                        + " : "
-                        + TypesUtils.isPrimitive(n.getLeftOperand().getType())
-                        + " : "
-                        + TypesUtils.isPrimitive(n.getRightOperand().getType())
-                        + " : "
-                        + (n.getRightOperand().getType().getKind() == TypeKind.NULL)
-                        + " : "
-                        + (n.getLeftOperand().getType().getKind() == TypeKind.NULL));
-
-        System.out.println(transferResult.getRegularStore().getValue(rightRec));
-
-        System.out.println(transferResult.getRegularStore().getValue(leftRec));
-
         if (TypesUtils.isPrimitive(n.getLeftOperand().getType())
                 || TypesUtils.isPrimitive(n.getRightOperand().getType())) {
             CFStore thenStore = transferResult.getThenStore();
@@ -971,18 +983,6 @@ public class ValueTransfer extends CFTransfer {
                             elseStore);
             TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
             return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
-        }
-
-        if (n.getRightOperand().getType().getKind() == TypeKind.NULL
-                || n.getLeftOperand().getType().getKind() == TypeKind.NULL) {
-
-            transferResult.getRegularStore().insertValue(rightRec, atypefactory.BOTTOMVAL);
-            transferResult.getRegularStore().insertValue(leftRec, atypefactory.BOTTOMVAL);
-            return createNewResultBoolean(
-                    transferResult.getThenStore(),
-                    transferResult.getElseStore(),
-                    new ArrayList<Boolean>(),
-                    transferResult.getResultValue().getUnderlyingType());
         }
         return transferResult;
     }
