@@ -398,7 +398,11 @@ public class InternalUtils {
     }
 
     public static TypeElement getTypeElement(TypeMirror type) {
-        return (TypeElement) ((Type) type).tsym;
+        Element element = ((Type) type).tsym;
+        if (ElementUtils.isTypeDeclaration(element)) {
+            return (TypeElement) element;
+        }
+        return null;
     }
 
     /**
