@@ -467,7 +467,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotationUtils.fromClass(
                         elements, org.checkerframework.dataflow.qual.TerminatesExecution.class));
 
-        initilizeReflectionResolution();
+        initializeReflectionResolution();
 
         if (this.getClass().equals(AnnotatedTypeFactory.class)) {
             this.parseStubFiles();
@@ -479,7 +479,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return wholeProgramInference;
     }
 
-    protected void initilizeReflectionResolution() {
+    protected void initializeReflectionResolution() {
         if (checker.shouldResolveReflection()) {
             boolean debug = "debug".equals(checker.getOption("resolveReflection"));
 

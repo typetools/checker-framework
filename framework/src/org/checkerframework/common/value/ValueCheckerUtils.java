@@ -13,10 +13,12 @@ import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
+import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
 import org.checkerframework.common.value.util.NumberUtils;
+import org.checkerframework.common.value.util.Range;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -82,6 +84,13 @@ public class ValueCheckerUtils {
         }
     }
 
+    /**
+     * Get a list of values of annotation, and then cast them to a given type
+     *
+     * @param anno the annotation that contains values
+     * @param castTo the type that is casted to
+     * @return a list of values after the casting
+     */
     public static List<?> getValuesCastedToType(AnnotationMirror anno, TypeMirror castTo) {
         Class<?> castType = ValueCheckerUtils.getClassFromType(castTo);
         List<?> values = null;
@@ -89,7 +98,12 @@ public class ValueCheckerUtils {
         if (AnnotationUtils.areSameByClass(anno, DoubleVal.class)) {
             values = convertDoubleVal(anno, castType, castTo);
         } else if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
-            values = convertIntVal(anno, castType, castTo);
+            List<Long> longs = ValueAnnotatedTypeFactory.getIntValues(anno);
+            values = convertIntVal(longs, castType, castTo);
+        } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
+            Range range = ValueAnnotatedTypeFactory.getIntRange(anno);
+            List<Long> longs = getValuesFromRange(range, Long.class);
+            values = convertIntVal(longs, castType, castTo);
         } else if (AnnotationUtils.areSameByClass(anno, StringVal.class)) {
             values = convertStringVal(anno, castType);
         } else if (AnnotationUtils.areSameByClass(anno, BoolVal.class)) {
@@ -100,6 +114,66 @@ public class ValueCheckerUtils {
             values = null;
         } else if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
             values = new ArrayList<>();
+        }
+        return values;
+    }
+
+    /** Get the minimum and maximum of a list and return a range bounded by them. */
+    public static Range getRangeFromValues(List<? extends Number> values) {
+        if (values == null) {
+            return null;
+        } else if (values.isEmpty()) {
+            return Range.NOTHING;
+        }
+        // The number elements in the values list should not exceed MAX_VALUES (10).
+        List<Long> longValues = new ArrayList<>();
+        for (Number value : values) {
+            longValues.add(value.longValue());
+        }
+        return new Range(Collections.min(longValues), Collections.max(longValues));
+    }
+
+    /**
+     * Get all possible values from the given type and cast them into Long type, Double type, or
+     * Character type accordingly. Only support casting to integral type and double type.
+     *
+     * @param range the given range
+     * @param expectedType the expected type
+     * @return a list of all the values in the range
+     */
+    public static <T> List<T> getValuesFromRange(Range range, Class<T> expectedType) {
+        if (range == null || range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
+            return null;
+        }
+        List<T> values = new ArrayList<>();
+        if (range.isNothing()) {
+            return values;
+        }
+        if (expectedType == Integer.class
+                || expectedType == int.class
+                || expectedType == Long.class
+                || expectedType == long.class
+                || expectedType == Short.class
+                || expectedType == short.class
+                || expectedType == Byte.class
+                || expectedType == byte.class) {
+            for (Long value = range.from; value <= range.to; value++) {
+                values.add(expectedType.cast(value.longValue()));
+            }
+        } else if (expectedType == Double.class
+                || expectedType == double.class
+                || expectedType == Float.class
+                || expectedType == float.class) {
+            for (Long value = range.from; value <= range.to; value++) {
+                values.add(expectedType.cast(value.doubleValue()));
+            }
+        } else if (expectedType == Character.class || expectedType == char.class) {
+            for (Long value = range.from; value <= range.to; value++) {
+                values.add(expectedType.cast((char) value.intValue()));
+            }
+        } else {
+            throw new UnsupportedOperationException(
+                    "ValueCheckerUtils: unexpected class: " + expectedType);
         }
         return values;
     }
@@ -157,9 +231,7 @@ public class ValueCheckerUtils {
         return strings;
     }
 
-    private static List<?> convertIntVal(
-            AnnotationMirror anno, Class<?> newClass, TypeMirror newType) {
-        List<Long> longs = ValueAnnotatedTypeFactory.getIntValues(anno);
+    private static List<?> convertIntVal(List<Long> longs, Class<?> newClass, TypeMirror newType) {
         if (longs == null) {
             return null;
         }
