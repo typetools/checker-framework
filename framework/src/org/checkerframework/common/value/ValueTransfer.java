@@ -692,41 +692,43 @@ public class ValueTransfer extends CFTransfer {
             Node rightNode,
             ComparisonOperators op,
             TransferInput<CFValue, CFStore> p) {
-        List<Boolean> resultValues = new ArrayList<>();
-        if (!isIntRange(leftNode, p) && !isIntRange(rightNode, p)) {
+        if (isIntRange(leftNode, p) && !isIntRange(rightNode, p)) {
             // TODO:
             // Handle @IntRange annotation when the control flow refinement is implemented
             // typetools/checker-framework#1163
-            List<? extends Number> lefts = getNumericalValues(leftNode, p);
-            List<? extends Number> rights = getNumericalValues(rightNode, p);
-            if (lefts == null || rights == null) {
-                return null;
-            }
-            for (Number left : lefts) {
-                NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
-                for (Number right : rights) {
-                    switch (op) {
-                        case EQUAL:
-                            resultValues.add(nmLeft.equalTo(right));
-                            break;
-                        case GREATER_THAN:
-                            resultValues.add(nmLeft.greaterThan(right));
-                            break;
-                        case GREATER_THAN_EQ:
-                            resultValues.add(nmLeft.greaterThanEq(right));
-                            break;
-                        case LESS_THAN:
-                            resultValues.add(nmLeft.lessThan(right));
-                            break;
-                        case LESS_THAN_EQ:
-                            resultValues.add(nmLeft.lessThanEq(right));
-                            break;
-                        case NOT_EQUAL:
-                            resultValues.add(nmLeft.notEqualTo(right));
-                            break;
-                        default:
-                            throw new UnsupportedOperationException();
-                    }
+            return new ArrayList<>();
+        }
+        List<Boolean> resultValues = new ArrayList<>();
+
+        List<? extends Number> lefts = getNumericalValues(leftNode, p);
+        List<? extends Number> rights = getNumericalValues(rightNode, p);
+        if (lefts == null || rights == null) {
+            return null;
+        }
+        for (Number left : lefts) {
+            NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
+            for (Number right : rights) {
+                switch (op) {
+                    case EQUAL:
+                        resultValues.add(nmLeft.equalTo(right));
+                        break;
+                    case GREATER_THAN:
+                        resultValues.add(nmLeft.greaterThan(right));
+                        break;
+                    case GREATER_THAN_EQ:
+                        resultValues.add(nmLeft.greaterThanEq(right));
+                        break;
+                    case LESS_THAN:
+                        resultValues.add(nmLeft.lessThan(right));
+                        break;
+                    case LESS_THAN_EQ:
+                        resultValues.add(nmLeft.lessThanEq(right));
+                        break;
+                    case NOT_EQUAL:
+                        resultValues.add(nmLeft.notEqualTo(right));
+                        break;
+                    default:
+                        throw new UnsupportedOperationException();
                 }
             }
         }
