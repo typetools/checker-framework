@@ -1329,6 +1329,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return fields invariants for {@code element}
      */
     public FieldInvariantObject getFieldInvariants(TypeElement element) {
+        if (element == null) {
+            return null;
+        }
         AnnotationMirror fieldInvarAnno = getDeclAnnotation(element, FieldInvariant.class);
         if (fieldInvarAnno == null) {
             return null;

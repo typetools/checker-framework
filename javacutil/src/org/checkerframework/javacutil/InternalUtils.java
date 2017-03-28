@@ -398,11 +398,16 @@ public class InternalUtils {
     }
 
     public static TypeElement getTypeElement(TypeMirror type) {
-        Element element = ((Type) type).tsym;
-        if (ElementUtils.isTypeDeclaration(element)) {
-            return (TypeElement) element;
+        Element element = ((Type) type).asElement();
+        switch (element.getKind()) {
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+                return (TypeElement) element;
+            default:
+                return null;
         }
-        return null;
     }
 
     /**
