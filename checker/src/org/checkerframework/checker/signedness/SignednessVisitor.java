@@ -122,12 +122,49 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      *
      * because these two expressions are guaranteed to have the same result.
      *
+     * @param shiftTypeKind the kind of the type of the shift literal (BYTE, CHAR, SHORT, INT, or LONG)
+     * @param castTypeKind the kind of the cast target type (BYTE, CHAR, SHORT, INT, or LONG)
      * @param numBitsLit the LiteralTree whose value is numBits
-     * @param bitDiff the difference between the widths of the type of the right shift (which is int
-     *     or long) and {@code type}; that is, 32 or 64 minus the width of {@code type}
-     * @return true iff numBits is less than or equal to bitDiff
+     * @return true iff introduced bits are discarded
      */
-    private boolean castIgnoresMSB(LiteralTree numBitsLit, long bitDiff) {
+    private boolean castIgnoresMSB(TypeKind shiftTypeKind, TypeKind castTypeKind, LiteralTree numBitsLit) {
+        // Determine number of bits in the shift type, note shifts upcast to int
+        long shiftBits = 0;
+        switch (shiftTypeKind) {
+            case INT:
+                shiftBits = 32;
+                break;
+            case LONG:
+                shiftBits = 64;
+                break;
+            default:
+                return false;
+        }
+
+        // Determine number of bits in the cast type
+        long castBits = 0;
+        switch (castTypeKind) {
+            case BYTE:
+                castBits = 8;
+                break;
+            case CHAR:
+                castBits = 8;
+                break;
+            case SHORT:
+                castBits = 16;
+                break;
+            case INT:
+                castBits = 32;
+                break;
+            case LONG:
+                castBits = 64;
+                break;
+            default:
+                return false;
+        }
+
+        // Determine the bit difference between the shift and cast and the number of bits shifted
+        long bitDiff = shiftBits - castBits;
         long numBits = getLong(numBitsLit.getValue());
 
         return numBits <= bitDiff || numBits == 0;
@@ -193,7 +230,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
     /**
      * Determines if a right shift operation, {@code >>} or {@code >>>}, is type casted such that
-     * the cast renders the shift signedness ({@code >>} vs {@code >>>}) irrelevent by destroying
+     * the cast renders the shift signedness ({@code >>} vs {@code >>>}) irrelevent by discarding
      * the bits duplicated into the shift result. For example, the following pair of right shifts on
      * {@code short s} both produce the same results under any input, because of type casting:
      *
@@ -236,52 +273,14 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         TypeKind shiftTypeKind =
                 atypeFactory.getAnnotatedType(shiftExpr).getUnderlyingType().getKind();
 
-        // Determine number of bits in the shift type, note shifts upcast to int
-        long shiftBits = 0;
-        switch (shiftTypeKind) {
-            case INT:
-                shiftBits = 32;
-                break;
-            case LONG:
-                shiftBits = 64;
-                break;
-            default:
-                return false;
-        }
-
-        // Determine number of bits in the cast type
-        long castBits = 0;
-        switch (castTypeKind) {
-            case BYTE:
-                castBits = 8;
-                break;
-            case CHAR:
-                castBits = 8;
-                break;
-            case SHORT:
-                castBits = 16;
-                break;
-            case INT:
-                castBits = 32;
-                break;
-            case LONG:
-                castBits = 64;
-                break;
-            default:
-                return false;
-        }
-
-        // Determine the bit difference between the shift and cast
-        long bitDiff = shiftBits - castBits;
-
+        // Determine shift literal
         ExpressionTree shift = shiftExpr.getRightOperand();
-
         if (!isLiteral(shift)) {
             return false;
         }
-
         LiteralTree shiftLit = (LiteralTree) shift;
-        return castIgnoresMSB(shiftLit, bitDiff);
+
+        return castIgnoresMSB(shiftTypeKind, castTypeKind, shiftLit);
     }
 
     /**
