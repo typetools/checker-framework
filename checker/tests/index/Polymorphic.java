@@ -4,8 +4,7 @@ class Polymorphic {
 
     //Identity functions
 
-    @PolyLowerBound
-    int lbc_identity(@PolyLowerBound int a) {
+    @PolyLowerBound int lbc_identity(@PolyLowerBound int a) {
         return a;
     }
 
@@ -23,8 +22,7 @@ class Polymorphic {
         return a;
     }
 
-    @PolyUpperBound
-    int ubc_identity(@PolyUpperBound int a) {
+    @PolyUpperBound int ubc_identity(@PolyUpperBound int a) {
         return a;
     }
 
