@@ -57,7 +57,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected void initilizeReflectionResolution() {
+    protected void initializeReflectionResolution() {
         boolean debug = "debug".equals(checker.getOption("resolveReflection"));
         reflectionResolver = new DefaultReflectionResolver(checker, this, debug);
     }
