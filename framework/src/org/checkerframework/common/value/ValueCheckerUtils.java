@@ -1,7 +1,6 @@
 package org.checkerframework.common.value;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -95,21 +94,13 @@ public class ValueCheckerUtils {
         } else if (AnnotationUtils.areSameByClass(anno, BoolVal.class)) {
             values = convertBoolVal(anno, castType);
         } else if (AnnotationUtils.areSameByClass(anno, BottomVal.class)) {
-            values = convertBottomVal(anno, castType);
+            values = new ArrayList<>();
         } else if (AnnotationUtils.areSameByClass(anno, UnknownVal.class)) {
             values = null;
         } else if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
             values = new ArrayList<>();
         }
         return values;
-    }
-
-    private static List<?> convertBottomVal(AnnotationMirror anno, Class<?> newClass) {
-        if (newClass == String.class) {
-            return Collections.singletonList("null");
-        } else {
-            return new ArrayList<>();
-        }
     }
 
     private static List<?> convertToStringVal(List<?> origValues) {
