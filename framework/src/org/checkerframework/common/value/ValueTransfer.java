@@ -53,16 +53,15 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class ValueTransfer extends CFTransfer {
-    AnnotatedTypeFactory atypefactory;
+    ValueAnnotatedTypeFactory atypefactory;
 
     public ValueTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
-        atypefactory = analysis.getTypeFactory();
+        atypefactory = (ValueAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 
     /**
@@ -231,8 +230,7 @@ public class ValueTransfer extends CFTransfer {
     /** Create a boolean transfer result. */
     private TransferResult<CFValue, CFStore> createNewResultBoolean(
             TransferResult<CFValue, CFStore> result, List<Boolean> resultValues) {
-        AnnotationMirror boolVal =
-                ((ValueAnnotatedTypeFactory) atypefactory).createBooleanAnnotation(resultValues);
+        AnnotationMirror boolVal = atypefactory.createBooleanAnnotation(resultValues);
         return createNewResult(result, boolVal);
     }
 
@@ -274,8 +272,7 @@ public class ValueTransfer extends CFTransfer {
                 }
             }
         }
-        AnnotationMirror stringVal =
-                ((ValueAnnotatedTypeFactory) atypefactory).createStringAnnotation(concat);
+        AnnotationMirror stringVal = atypefactory.createStringAnnotation(concat);
         TypeMirror underlyingType = result.getResultValue().getUnderlyingType();
         CFValue newResultValue = analysis.createSingleAnnotationValue(stringVal, underlyingType);
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
@@ -312,11 +309,10 @@ public class ValueTransfer extends CFTransfer {
             TransferInput<CFValue, CFStore> p) {
         if (!isIntRange(leftNode, p) && !isIntRange(rightNode, p)) {
             List<Number> resultValues = calculateValuesBinaryOp(leftNode, rightNode, op, p);
-            return ((ValueAnnotatedTypeFactory) atypefactory)
-                    .createNumberAnnotationMirror(resultValues);
+            return atypefactory.createNumberAnnotationMirror(resultValues);
         } else {
             Range resultRange = calculateRangeBinaryOp(leftNode, rightNode, op, p);
-            return ((ValueAnnotatedTypeFactory) atypefactory).createIntRangeAnnotation(resultRange);
+            return atypefactory.createIntRangeAnnotation(resultRange);
         }
     }
 
@@ -593,11 +589,10 @@ public class ValueTransfer extends CFTransfer {
             Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
         if (!isIntRange(operand, p)) {
             List<Number> resultValues = calculateValuesUnaryOp(operand, op, p);
-            return ((ValueAnnotatedTypeFactory) atypefactory)
-                    .createNumberAnnotationMirror(resultValues);
+            return atypefactory.createNumberAnnotationMirror(resultValues);
         } else {
             Range resultRange = calculateRangeUnaryOp(operand, op, p);
-            return ((ValueAnnotatedTypeFactory) atypefactory).createIntRangeAnnotation(resultRange);
+            return atypefactory.createIntRangeAnnotation(resultRange);
         }
     }
 
@@ -699,6 +694,8 @@ public class ValueTransfer extends CFTransfer {
             TransferInput<CFValue, CFStore> p) {
         List<Boolean> resultValues = new ArrayList<>();
         if (!isIntRange(leftNode, p) && !isIntRange(rightNode, p)) {
+            // TODO:
+            // Handle @IntRange annotation when the control flow refinement is implemented
             List<? extends Number> lefts = getNumericalValues(leftNode, p);
             List<? extends Number> rights = getNumericalValues(rightNode, p);
             if (lefts == null || rights == null) {
