@@ -68,6 +68,10 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+
+            System.out.println(subAnno);
+            System.out.println(superAnno);
+
             if (AnnotationUtils.areSameByClass(superAnno, SearchIndexUnknown.class)) {
                 return true;
             }
@@ -84,14 +88,21 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // SearchIndex. All NegativeIndexFor annotations are subtypes of SearchIndex
             // annotations whose arguments contain their arguments.
             if (AnnotationUtils.areSameByClass(subAnno, NegativeIndexFor.class)) {
-                return IndexUtil.getValueOfAnnotationWithStringArgument(superAnno)
-                        .containsAll(IndexUtil.getValueOfAnnotationWithStringArgument(subAnno));
+                List<String> superArrays =
+                        IndexUtil.getValueOfAnnotationWithStringArgument(superAnno);
+                List<String> subArrays = IndexUtil.getValueOfAnnotationWithStringArgument(subAnno);
+                return superArrays != null
+                        && subArrays != null
+                        && superArrays.containsAll(subArrays);
             }
             if (AnnotationUtils.areSameByClass(subAnno, SearchIndex.class)) {
-                return AnnotationUtils.areSameByClass(superAnno, SearchIndex.class)
-                        && IndexUtil.getValueOfAnnotationWithStringArgument(superAnno)
-                                .containsAll(
-                                        IndexUtil.getValueOfAnnotationWithStringArgument(subAnno));
+                List<String> superArrays =
+                        IndexUtil.getValueOfAnnotationWithStringArgument(superAnno);
+                List<String> subArrays = IndexUtil.getValueOfAnnotationWithStringArgument(subAnno);
+                return superArrays != null
+                        && subArrays != null
+                        && AnnotationUtils.areSameByClass(superAnno, SearchIndex.class)
+                        && superArrays.containsAll(subArrays);
             }
             assert false;
             return false; // dead code
@@ -100,6 +111,9 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Creates a new negative index for annotation with the given arrays as its arguments. */
     AnnotationMirror createNegativeIndexFor(List<String> arrays) {
+        if (arrays.size() == 0) {
+            return UNKNOWN;
+        }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, NegativeIndexFor.class);
         builder.setValue("value", arrays);
         return builder.build();
