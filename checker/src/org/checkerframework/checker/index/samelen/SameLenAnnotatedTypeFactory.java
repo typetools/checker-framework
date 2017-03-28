@@ -245,6 +245,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
+                super.createTreeAnnotator(),
                 new SameLenTreeAnnotator(this),
                 new PropagationTreeAnnotator(this),
                 new ImplicitsTreeAnnotator(this));

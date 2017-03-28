@@ -17,7 +17,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -38,7 +37,6 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
             /*@CompilerMessageKey*/ String errorKey) {
         if (valueType.getKind() == TypeKind.ARRAY
                 && TreeUtils.isExpressionTree(valueTree)
-                && !(valueTree.getKind() == Tree.Kind.NEW_ARRAY)
                 && !(valueType.hasAnnotation(PolySameLen.class)
                         && varType.hasAnnotation(PolySameLen.class))) {
 
@@ -49,7 +47,7 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
                             : IndexUtil.getValueOfAnnotationWithStringArgument(am);
 
             Receiver rec = FlowExpressions.internalReprOf(atypeFactory, (ExpressionTree) valueTree);
-            if (rec != null && !(rec instanceof Unknown)) {
+            if (rec != null && SameLenAnnotatedTypeFactory.isReceiverToStringParsable(rec)) {
                 List<String> itself = Collections.singletonList(rec.toString());
                 AnnotationMirror newSameLen = atypeFactory.getCombinedSameLen(arraysInAnno, itself);
                 valueType.replaceAnnotation(newSameLen);

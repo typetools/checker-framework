@@ -1195,10 +1195,6 @@ public abstract class GenericAnnotatedTypeFactory<
             case MEMBER_SELECT:
             case ARRAY_ACCESS:
                 res = getAnnotatedType(lhsTree);
-                if (dependentTypesHelper != null && lhsTree.getKind() == Kind.VARIABLE) {
-                    dependentTypesHelper.standardizeVariable(
-                            res, TreeUtils.elementFromDeclaration((VariableTree) lhsTree));
-                }
                 break;
             default:
                 if (TreeUtils.isTypeTree(lhsTree)) {
