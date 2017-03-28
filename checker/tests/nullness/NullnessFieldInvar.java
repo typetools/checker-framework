@@ -66,17 +66,16 @@ public class NullnessFieldInvar {
         }
     }
 
-    // nonfinal isn't final
-    //:: error: ([field.invar.not.final)
-    @FieldInvariant(field = "nonfinal", qualifier = NonNull.class)
-    class SubSubInvalid extends Sub {
-        public SubSubInvalid() {
-            super("");
-        }
+    class SuperWithNonFinal {
+        @Nullable Object nonfinal = null;
     }
+    // nonfinal isn't final
+    //:: error: (field.invar.not.final)
+    @FieldInvariant(field = "nonfinal", qualifier = NonNull.class)
+    class SubSubInvalid extends SuperWithNonFinal {}
 
     // field is declared in this class
-    //:: error: (invalid.field.invar)
+    //:: error: (field.invar.not.found)
     @FieldInvariant(field = "field", qualifier = NonNull.class)
     class Invalid {
         final Object field = new Object();
@@ -127,12 +126,13 @@ public class NullnessFieldInvar {
 
     class Super2 {}
 
+    //:: error: (field.invar.not.wellformed)
     @FieldInvariant(
         field = {},
         qualifier = NonNull.class
     )
     class Invalid1 extends Super2 {}
-
+    //:: error: (field.invar.not.wellformed)
     @FieldInvariant(
         field = {"a", "b"},
         qualifier = {NonNull.class, NonNull.class, NonNull.class}
