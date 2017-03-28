@@ -122,12 +122,14 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      *
      * because these two expressions are guaranteed to have the same result.
      *
-     * @param shiftTypeKind the kind of the type of the shift literal (BYTE, CHAR, SHORT, INT, or LONG)
+     * @param shiftTypeKind the kind of the type of the shift literal (BYTE, CHAR, SHORT, INT, or
+     *     LONG)
      * @param castTypeKind the kind of the cast target type (BYTE, CHAR, SHORT, INT, or LONG)
      * @param numBitsLit the LiteralTree whose value is numBits
      * @return true iff introduced bits are discarded
      */
-    private boolean castIgnoresMSB(TypeKind shiftTypeKind, TypeKind castTypeKind, LiteralTree numBitsLit) {
+    private boolean castIgnoresMSB(
+            TypeKind shiftTypeKind, TypeKind castTypeKind, LiteralTree numBitsLit) {
         // Determine number of bits in the shift type, note shifts upcast to int
         long shiftBits = 0;
         switch (shiftTypeKind) {
