@@ -33,7 +33,7 @@ public class Range {
     public static final Range BYTE_EVERYTHING = new Range(Byte.MIN_VALUE, Byte.MAX_VALUE);
 
     /** The empty range. */
-    public static final Range NOTHING = new Range(true);
+    public static final Range NOTHING = new Range();
 
     /**
      * Constructs a range with its bounds specified by two parameters, {@code from} and {@code to}.
@@ -50,10 +50,7 @@ public class Range {
     }
 
     /** Creates the singleton empty range. */
-    private Range(boolean isEmpty) {
-        if (!isEmpty) {
-            throw new IllegalArgumentException();
-        }
+    private Range() {
         this.from = Long.MAX_VALUE;
         this.to = Long.MIN_VALUE;
     }

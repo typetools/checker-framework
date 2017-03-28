@@ -696,6 +696,7 @@ public class ValueTransfer extends CFTransfer {
         if (!isIntRange(leftNode, p) && !isIntRange(rightNode, p)) {
             // TODO:
             // Handle @IntRange annotation when the control flow refinement is implemented
+            // typetools/checker-framework#1163
             List<? extends Number> lefts = getNumericalValues(leftNode, p);
             List<? extends Number> rights = getNumericalValues(rightNode, p);
             if (lefts == null || rights == null) {
