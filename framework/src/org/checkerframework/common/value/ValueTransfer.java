@@ -57,15 +57,16 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class ValueTransfer extends CFTransfer {
-    private ValueAnnotatedTypeFactory atypefactory;
+    AnnotatedTypeFactory atypefactory;
 
     public ValueTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
-        atypefactory = (ValueAnnotatedTypeFactory) analysis.getTypeFactory();
+        atypefactory = analysis.getTypeFactory();
     }
 
     /**
@@ -168,14 +169,14 @@ public class ValueTransfer extends CFTransfer {
             for (Number number : values) {
                 intValues.add(number.longValue());
             }
-            return atypefactory.createIntValAnnotation(intValues);
+            return ((ValueAnnotatedTypeFactory) atypefactory).createIntValAnnotation(intValues);
         }
         if (first instanceof Double || first instanceof Float) {
             List<Double> intValues = new ArrayList<>();
             for (Number number : values) {
                 intValues.add(number.doubleValue());
             }
-            return atypefactory.createDoubleValAnnotation(intValues);
+            return ((ValueAnnotatedTypeFactory) atypefactory).createDoubleValAnnotation(intValues);
         }
         throw new UnsupportedOperationException();
     }
@@ -208,9 +209,7 @@ public class ValueTransfer extends CFTransfer {
             FieldAccessNode node, TransferInput<CFValue, CFStore> in) {
 
         TransferResult<CFValue, CFStore> result = super.visitFieldAccess(node, in);
-
         refineArrayAtLengthAccess(node, result.getRegularStore());
-
         return result;
     }
 
