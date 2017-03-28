@@ -8,9 +8,9 @@ import org.checkerframework.framework.qual.JavaExpression;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The annotated expression is both negative and has absolute value less than the length of each
- * sequence listed in the annotation. Used (with SearchIndex) to handle the JDK's binary search
- * routine.
+ * The annotated expression is between -1 and -a.length - 1, inclusive, of each sequence a listed in
+ * the annotation. Used (with {@link SearchIndex}) to handle the JDK's {@link
+ * java.util.Arrays#binarySearch(Object[],Object) binary search} routine.
  *
  * @checker_framework.manual #index-checker Index Checker
  */
@@ -18,7 +18,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface NegativeIndexFor {
-    /** Sequences, each of which is longer than the annotated expression's absolute value. */
+    /**
+     * Sequences for which this value is a negative index; that is, the expression is in the range
+     * -1 to -1 * a.length - 1, inclusive, for each sequence a.
+     */
     @JavaExpression
     public String[] value();
 }

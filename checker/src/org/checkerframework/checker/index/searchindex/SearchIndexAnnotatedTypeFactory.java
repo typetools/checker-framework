@@ -80,24 +80,25 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (AnnotationUtils.areSameByClass(superAnno, SearchIndexBottom.class)) {
                 return false;
             }
-            if (AnnotationUtils.areSameByClass(subAnno, SearchIndex.class)) {
-                if (AnnotationUtils.areSameByClass(superAnno, NegativeIndexFor.class)) {
-                    return false;
-                }
-                return IndexUtil.getValueOfAnnotationWithStringArgument(superAnno)
-                        .containsAll(IndexUtil.getValueOfAnnotationWithStringArgument(subAnno));
-            }
+            // All annotations have arguments, because each is either NegativeIndexFor or
+            // SearchIndex. All NegativeIndexFor annotations are subtypes of SearchIndex
+            // annotations whose arguments contain their arguments.
             if (AnnotationUtils.areSameByClass(subAnno, NegativeIndexFor.class)) {
-                if (AnnotationUtils.areSameByClass(superAnno, SearchIndex.class)) {
-                    return true;
-                }
                 return IndexUtil.getValueOfAnnotationWithStringArgument(superAnno)
                         .containsAll(IndexUtil.getValueOfAnnotationWithStringArgument(subAnno));
             }
+            if (AnnotationUtils.areSameByClass(subAnno, SearchIndex.class)) {
+                return AnnotationUtils.areSameByClass(superAnno, SearchIndex.class)
+                        && IndexUtil.getValueOfAnnotationWithStringArgument(superAnno)
+                                .containsAll(
+                                        IndexUtil.getValueOfAnnotationWithStringArgument(subAnno));
+            }
+            assert false;
             return false; // dead code
         }
     }
 
+    /** Creates a new negative index for annotation with the given arrays as its arguments. */
     AnnotationMirror createNegativeIndexFor(List<String> arrays) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, NegativeIndexFor.class);
         builder.setValue("value", arrays);

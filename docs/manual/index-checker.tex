@@ -115,7 +115,7 @@ are some annotations that give multiple types of information:
   \begin{mysmall}
   \begin{Verbatim}
   class Arrays {
-    void fill(Object[] a,  @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex, Object val)
+    void fill(Object[] a, @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex, Object val)
   }
   \end{Verbatim}
   \end{mysmall}
@@ -377,10 +377,11 @@ When needed, you can specify which sequences have the same length using the foll
 
 The JDK's implementation of
 \sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-int-int-java.lang.Object-}{binary search}
-uses a contract that is not directly
+uses a contract that is otherwise not
 supported by the Index Checker. Because binary search is a common array operation,
 the Index Checker includes a special type system to check whether a value originated
-from a call to binary search. This type system should never be user-visible, but for
+from a call to binary search. This type system should never be user-visible (i.e.
+none of its annotations should ever need to be written by users of the Index Checker), but for
 completeness, we explain its qualifiers here.
 
 The binary search tracking type system has four qualifiers:

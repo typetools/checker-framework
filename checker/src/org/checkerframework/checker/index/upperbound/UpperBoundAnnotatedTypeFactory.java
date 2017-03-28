@@ -35,6 +35,7 @@ import org.checkerframework.checker.index.qual.PolyIndex;
 import org.checkerframework.checker.index.qual.PolyUpperBound;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SameLen;
+import org.checkerframework.checker.index.qual.SearchIndex;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
@@ -85,6 +86,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(IndexOrLow.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(IndexOrHigh.class, createLTEqLengthOfAnnotation());
+        addAliasedAnnotation(SearchIndex.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyIndex.class, POLY);
 
@@ -223,6 +225,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<String> stringList =
                     AnnotationUtils.getElementValueArray(a, "value", String.class, true);
             return createLTEqLengthOfAnnotation(stringList.toArray(new String[0]));
+        }
+        if (AnnotationUtils.areSameByClass(a, SearchIndex.class)) {
+            List<String> stringList =
+                    AnnotationUtils.getElementValueArray(a, "value", String.class, true);
+            return createLTLengthOfAnnotation(stringList.toArray(new String[0]));
         }
         return super.aliasedAnnotation(a);
     }
@@ -401,6 +408,22 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitUnary(node, type);
         }
 
+        /**
+         * Takes a type returned by an {@link SearchIndexAnnotatedTypeFactory} and checks if it
+         * contains a {@link NegativeIndexFor} annotation. If so, then refine the result to be
+         * {@link LTLengthOf}. This handles this case:
+         *
+         * <pre>{@code
+         * int i = Arrays.binarySearch(a, x);
+         * if (i >= 0) {
+         *     // do something
+         * } else {
+         *     i = ~i;
+         *     int y = a[i]; // Here, i is LTL of a because the complement of a NegativeIndexFor is an LTL.
+         * }
+         *
+         * }</pre>
+         */
         private void addAnnotationForBitwiseComplement(
                 AnnotatedTypeMirror searchIndexType, AnnotatedTypeMirror typeDst) {
             if (AnnotationUtils.containsSameByClass(

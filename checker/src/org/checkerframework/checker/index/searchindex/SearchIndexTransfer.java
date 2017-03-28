@@ -13,7 +13,9 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 
 /**
- * The transfer function for the SearchIndex checker. Allows SearchIndex to become NegativeIndexFor.
+ * The transfer function for the SearchIndex checker. Allows {@link
+ * org.checkerframework.checker.index.qual.SearchIndex SearchIndex} to become {@link
+ * org.checkerframework.checker.index.qual.NegativeIndexFor NegativeIndexFor}.
  */
 public class SearchIndexTransfer extends IndexAbstractTransfer {
 
@@ -29,16 +31,52 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * Special binary search handling: if the left value is exactly comparison, and the right side
-     * is a search index, then convert the right side in the store to a negative index for.
+     * Only possible refinements of {@link org.checkerframework.checker.index.qual.SearchIndex
+     * SearchIndex} occur when a {@link org.checkerframework.checker.index.qual.SearchIndex
+     * SearchIndex} is compared to these values.
+     */
+    private enum ValidComparisons {
+        NEGATIVE_ONE,
+        ZERO
+    }
+
+    /**
+     * Special binary search handling: if the left value is exactly the value of toCompareTo, and
+     * the right side is a {@link org.checkerframework.checker.index.qual.SearchIndex SearchIndex},
+     * then the right side's new value in the store should be a new {@link
+     * org.checkerframework.checker.index.qual.NegativeIndexFor NegativeIndexFor}.
+     *
+     * <p>For example, this allows the following code to typecheck:
+     *
+     * <pre>{@code
+     * @SearchIndex("a") int x = Arrays.binarySearch(a, y);
+     * if (x < 0) {
+     *     @NegativeIndexFor("a") int z = x;
+     * }
+     *
+     * }</pre>
      */
     private void specialHandlingForBinarySearch(
-            Node left, Node right, CFStore store, int comparison) {
-        assert comparison == 0 || comparison == -1;
+            Node left, Node right, CFStore store, ValidComparisons toCompareTo) {
+        int valueToCompareTo;
+        switch (toCompareTo) {
+            case ZERO:
+                valueToCompareTo = 0;
+                break;
+            case NEGATIVE_ONE:
+                valueToCompareTo = -1;
+                break;
+            default:
+                valueToCompareTo = 42;
+                // Code issues a warning without valueToCompareTo getting a value here,
+                // but this is dead code.
+                assert false;
+                break;
+        }
         Long leftValue =
                 IndexUtil.getExactValue(
                         left.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
-        if (leftValue != null && leftValue == comparison) {
+        if (leftValue != null && leftValue == valueToCompareTo) {
             AnnotationMirror rightSI =
                     aTypeFactory.getAnnotationMirror(right.getTree(), SearchIndex.class);
             if (rightSI != null) {
@@ -58,7 +96,7 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
             AnnotationMirror rightAnno,
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
-        specialHandlingForBinarySearch(left, right, store, 0);
+        specialHandlingForBinarySearch(left, right, store, ValidComparisons.ZERO);
     }
 
     @Override
@@ -69,6 +107,6 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
             AnnotationMirror rightAnno,
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
-        specialHandlingForBinarySearch(left, right, store, -1);
+        specialHandlingForBinarySearch(left, right, store, ValidComparisons.NEGATIVE_ONE);
     }
 }
