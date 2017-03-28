@@ -560,6 +560,13 @@
 
     </target>
 
+    <target name="range-tests" depends="jar,build-tests"
+            description="Run tests for the Range library">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.RangeTest"/>
+        </antcall>
+    </target>
+
     <target name="report-tests" depends="jar,build-tests"
             description="Run tests for the Report Checker">
         <antcall target="-run-tests">
