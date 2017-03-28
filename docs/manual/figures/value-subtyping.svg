@@ -7,13 +7,16 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="1062.9921"
-   height="182.88882"
-   viewBox="158 238 1283.1598 53.317458"
+   width="856.07397"
+   height="320.67801"
+   viewBox="158 238 1033.3847 93.487044"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.4 r9939"
-   sodipodi:docname="value-subtyping.svg">
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="value-subtyping.svg"
+   inkscape:export-filename="/home/jasonmrx/Software/jsr308/checker-framework/checker/manual/figures/value-subtyping.svg.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
   <metadata
      id="metadata84">
     <rdf:RDF>
@@ -22,6 +25,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -36,54 +40,58 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="978"
+     inkscape:window-width="1855"
+     inkscape:window-height="1056"
      id="namedview80"
      showgrid="false"
-     inkscape:zoom="1.6576842"
-     inkscape:cx="384.6542"
-     inkscape:cy="223.12021"
-     inkscape:window-x="0"
-     inkscape:window-y="31"
+     inkscape:zoom="1.1721597"
+     inkscape:cx="347.58185"
+     inkscape:cy="241.13556"
+     inkscape:window-x="1985"
+     inkscape:window-y="24"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg2"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
-     fit-margin-bottom="0" />
+     fit-margin-bottom="0"
+     showguides="false"
+     inkscape:snap-nodes="true"
+     inkscape:snap-bbox="false"
+     showborder="true" />
   <g
      id="g4"
-     transform="translate(912.15981,-82.917825)">
+     transform="matrix(1,0,0,0.86985556,410.95762,95.095832)">
     <rect
        style="fill:#ffffff"
        x="160"
        y="240"
-       width="176"
+       width="215"
        height="38"
        id="rect6" />
     <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
+       style="fill:none;stroke:#000000;stroke-width:2.14440465"
        x="160"
        y="240"
-       width="176"
+       width="215"
        height="38"
        id="rect8" />
     <text
        font-size="12.8"
-       style="font-size:14.10753822px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       style="font-style:normal;font-weight:normal;font-size:14.10753822px;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="248"
        y="262.89999"
        id="text10">
       <tspan
-         x="248"
+         x="270"
          y="262.89999"
          id="tspan12"
-         style="font-size:14.10753822px">@DoubleVal({1.0,2.0})</tspan>
+         style="font-size:14.10753822px">@DoubleVal({0.0,1.0,2.0})</tspan>
     </text>
   </g>
   <g
      id="g14"
-     transform="translate(912.15981,-82.917825)">
+     transform="matrix(1,0,0,0.86985556,410.95762,95.095832)">
     <rect
        style="fill:#ffffff"
        x="380"
@@ -92,7 +100,7 @@
        height="38"
        id="rect16" />
     <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
+       style="fill:none;stroke:#000000;stroke-width:2.14440465"
        x="380"
        y="320"
        width="148"
@@ -100,7 +108,7 @@
        id="rect18" />
     <text
        font-size="12.8"
-       style="font-size:14.10753822px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       style="font-style:normal;font-weight:normal;font-size:14.10753822px;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="454"
        y="342.89999"
        id="text20">
@@ -113,7 +121,7 @@
   </g>
   <g
      id="g24"
-     transform="translate(912.15981,-82.917825)">
+     transform="matrix(1,0,0,0.86985556,205.60605,96.36268)">
     <rect
        style="fill:#ffffff"
        x="380"
@@ -122,7 +130,7 @@
        height="38"
        id="rect26" />
     <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
+       style="fill:none;stroke:#000000;stroke-width:2.14440465"
        x="380"
        y="400"
        width="148"
@@ -130,7 +138,7 @@
        id="rect28" />
     <text
        font-size="12.8"
-       style="font-size:14.10753822px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       style="font-style:normal;font-weight:normal;font-size:14.10753822px;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="454"
        y="422.89999"
        id="text30">
@@ -143,7 +151,7 @@
   </g>
   <g
      id="g34"
-     transform="translate(912.15981,-82.917825)">
+     transform="matrix(1,0,0,0.86985556,410.95762,95.095832)">
     <rect
        style="fill:#ffffff"
        x="160"
@@ -152,7 +160,7 @@
        height="38"
        id="rect36" />
     <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
+       style="fill:none;stroke:#000000;stroke-width:2.14440465"
        x="160"
        y="320"
        width="176"
@@ -160,7 +168,7 @@
        id="rect38" />
     <text
        font-size="12.8"
-       style="font-size:14.10753822px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       style="font-style:normal;font-weight:normal;font-size:14.10753822px;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="248"
        y="342.89999"
        id="text40">
@@ -173,9 +181,9 @@
   </g>
   <g
      id="g44"
-     transform="translate(912.15981,-82.917825)">
+     transform="matrix(1,0,0,0.86985556,410.95762,96.125906)">
     <line
-       style="fill:none;stroke:#000000;stroke-width:3"
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
        x1="248"
        y1="320"
        x2="248"
@@ -186,15 +194,34 @@
        points="243,289.5 253,289.5 248,279.5 "
        id="polygon48" />
     <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="243,289.5 253,289.5 248,279.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="253,289.5 248,279.5 243,289.5 "
        id="polygon50" />
   </g>
   <g
-     id="g52"
-     transform="translate(912.15981,-82.917825)">
+     transform="matrix(1,0,0,0.86985556,190.57483,96.125658)"
+     id="g3305">
     <line
-       style="fill:none;stroke:#000000;stroke-width:3"
+       id="line3307"
+       y2="289.5"
+       x2="248"
+       y1="320"
+       x1="248"
+       style="fill:none;stroke:#000000;stroke-width:3.21660709" />
+    <polygon
+       id="polygon3309"
+       points="243,289.5 253,289.5 248,279.5 "
+       style="fill:#000000" />
+    <polygon
+       id="polygon3311"
+       points="253,289.5 248,279.5 243,289.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709" />
+  </g>
+  <g
+     id="g52"
+     transform="matrix(1,0,0,0.86985556,204.14966,95.529498)">
+    <line
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
        x1="454"
        y1="400"
        x2="454"
@@ -202,18 +229,18 @@
        id="line54" />
     <polygon
        style="fill:#000000"
-       points="449,369.5 459,369.5 454,359.5 "
+       points="459,369.5 454,359.5 449,369.5 "
        id="polygon56" />
     <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="449,369.5 459,369.5 454,359.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="454,359.5 449,369.5 459,369.5 "
        id="polygon58" />
   </g>
   <g
      id="g60"
-     transform="translate(912.15981,-82.917825)">
+     transform="matrix(-1,0,0,0.86985538,1103.8605,95.095832)">
     <line
-       style="fill:none;stroke:#000000;stroke-width:3"
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
        x1="402.10901"
        y1="399.461"
        x2="302.76199"
@@ -221,18 +248,18 @@
        id="line62" />
     <polygon
        style="fill:#000000"
-       points="301,366.732 304.524,357.373 293.404,358.529 "
+       points="304.524,357.373 293.404,358.529 301,366.732 "
        id="polygon64" />
     <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="301,366.732 304.524,357.373 293.404,358.529 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="293.404,358.529 301,366.732 304.524,357.373 "
        id="polygon66" />
   </g>
   <g
      id="g68"
-     transform="translate(912.15981,-82.917825)">
+     transform="matrix(1,0,0,0.86985556,410.95762,95.095832)">
     <line
-       style="fill:none;stroke:#000000;stroke-width:3"
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
        x1="400"
        y1="320"
        x2="302.71799"
@@ -240,27 +267,28 @@
        id="line70" />
     <polygon
        style="fill:#000000"
-       points="300.906,286.828 304.53,277.508 293.398,278.544 "
+       points="293.398,278.544 300.906,286.828 304.53,277.508 "
        id="polygon72" />
     <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
        points="300.906,286.828 304.53,277.508 293.398,278.544 "
        id="polygon74" />
   </g>
   <text
      font-size="12.8"
-     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
-     x="444.76227"
-     y="336.08212"
-     id="text76">
+     style="font-style:normal;font-weight:normal;font-size:11.9380455px;font-family:'courier new';text-anchor:start;fill:#000000"
+     x="282.03122"
+     y="266.73294"
+     id="text76"
+     transform="scale(1.0722017,0.93266034)">
     <tspan
-       x="444.76227"
-       y="336.08212"
+       x="282.03122"
+       y="266.73294"
        id="tspan78" />
   </text>
   <g
      id="g14-6"
-     transform="translate(-1.0000003,-83.067815)">
+     transform="matrix(1,0,0,0.86985556,-0.92776084,-115.82861)">
     <rect
        style="fill:#ffffff"
        x="380"
@@ -269,7 +297,7 @@
        height="38"
        id="rect16-5" />
     <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
+       style="fill:none;stroke:#000000;stroke-width:2.14440465"
        x="380"
        y="320"
        width="148"
@@ -277,7 +305,7 @@
        id="rect18-3" />
     <text
        font-size="12.8"
-       style="font-size:14.10753822px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       style="font-style:normal;font-weight:normal;font-size:14.10753822px;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="454"
        y="342.89999"
        id="text20-0">
@@ -290,7 +318,7 @@
   </g>
   <g
      id="g24-05"
-     transform="translate(98.193624,-63.22909)">
+     transform="matrix(1,0,0,0.86985556,204.49239,-98.571797)">
     <rect
        style="fill:#ffffff"
        x="380"
@@ -299,7 +327,7 @@
        height="38"
        id="rect26-6" />
     <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
+       style="fill:none;stroke:#808080;stroke-width:2.14440465"
        x="380"
        y="400"
        width="148"
@@ -307,7 +335,7 @@
        id="rect28-1" />
     <text
        font-size="12.8"
-       style="font-size:15.43011951px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       style="font-style:normal;font-weight:normal;font-size:15.43011951px;font-family:'courier new';text-anchor:middle;fill:#808080"
        x="454"
        y="422.89999"
        id="text30-8">
@@ -323,7 +351,7 @@
   </g>
   <g
      id="g34-2"
-     transform="translate(-1,-83.067815)">
+     transform="matrix(1,0,0,0.86985556,-0.92776084,-115.82861)">
     <rect
        style="fill:#ffffff"
        x="160"
@@ -332,7 +360,7 @@
        height="38"
        id="rect36-3" />
     <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
+       style="fill:none;stroke:#000000;stroke-width:2.14440465"
        x="160"
        y="320"
        width="176"
@@ -340,7 +368,7 @@
        id="rect38-9" />
     <text
        font-size="12.8"
-       style="font-size:14.10753822px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       style="font-style:normal;font-weight:normal;font-size:14.10753822px;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="248"
        y="342.89999"
        id="text40-7">
@@ -351,12 +379,13 @@
          style="font-size:14.10753822px">@<tspan
    style="font-size:14.10753822px"
    id="tspan3486">BoolVal</tspan>
+
 (boolean[])</tspan>
     </text>
   </g>
   <g
      id="g14-6-9"
-     transform="translate(97.624214,-163.99797)">
+     transform="matrix(1,0,0,0.86985556,203.92298,-186.22614)">
     <rect
        style="fill:#ffffff"
        x="380"
@@ -365,7 +394,7 @@
        height="38"
        id="rect16-5-2" />
     <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
+       style="fill:none;stroke:#808080;stroke-width:2.14440465"
        x="380"
        y="320"
        width="148"
@@ -373,7 +402,7 @@
        id="rect18-3-3" />
     <text
        font-size="12.8"
-       style="font-size:14.10753822px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       style="font-style:normal;font-weight:normal;font-size:14.10753822px;font-family:'courier new';text-anchor:middle;fill:#808080"
        x="454"
        y="342.89999"
        id="text20-0-2">
@@ -386,7 +415,7 @@
   </g>
   <g
      id="g34-2-5"
-     transform="translate(410.99679,-82.474595)">
+     transform="matrix(1,0,0,0.86985556,411.06899,-115.3126)">
     <rect
        style="fill:#ffffff"
        x="160"
@@ -395,7 +424,7 @@
        height="38"
        id="rect36-3-8" />
     <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
+       style="fill:none;stroke:#000000;stroke-width:2.14440465"
        x="160"
        y="320"
        width="176"
@@ -403,7 +432,7 @@
        id="rect38-9-1" />
     <text
        font-size="12.8"
-       style="font-size:14.10753822px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       style="font-style:normal;font-weight:normal;font-size:14.10753822px;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="248"
        y="342.89999"
        id="text40-7-1">
@@ -416,7 +445,7 @@
   </g>
   <g
      id="g34-2-5-5"
-     transform="translate(633.38053,-83.139475)">
+     transform="matrix(1,0,0,0.86985556,633.45273,-115.89095)">
     <rect
        style="fill:#ffffff"
        x="160"
@@ -425,7 +454,7 @@
        height="38"
        id="rect36-3-8-1" />
     <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
+       style="fill:none;stroke:#000000;stroke-width:2.14440465"
        x="160"
        y="320"
        width="176"
@@ -433,7 +462,7 @@
        id="rect38-9-1-7" />
     <text
        font-size="12.8"
-       style="font-size:14.10753822px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       style="font-style:normal;font-weight:normal;font-size:14.10753822px;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="248"
        y="342.89999"
        id="text40-7-1-0">
@@ -441,135 +470,322 @@
          x="248"
          y="342.89999"
          id="tspan42-4-7-0"
-         style="font-size:14.10753822px">@DoubleVal(double[])</tspan>
+         style="font-size:14.10753822px">@StringVal(String[])</tspan>
     </text>
   </g>
   <g
      id="g78"
-     transform="matrix(0.99992458,0,0,0.99992458,52.59029,597.28398)">
+     transform="matrix(0.99992458,0,0,0.86978978,158.88907,475.97905)">
     <polyline
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="500,-260 500,-291 231,-291 231,-310.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="500,-260 500,-291 90,-291 90,-310.5 "
        id="polyline80" />
     <polygon
        style="fill:#000000"
-       points="236,-310.5 231,-320.5 226,-310.5 "
+       points="90,-320.5 85,-310.5 95,-310.5 "
        id="polygon82" />
     <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="236,-310.5 231,-320.5 226,-310.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="85,-310.5 95,-310.5 90,-320.5 "
        id="polygon84" />
   </g>
   <g
      id="g86"
-     transform="matrix(0.99992458,0,0,0.99992458,52.59029,597.28398)">
+     transform="matrix(0.99992458,0,0,0.86978978,158.88907,475.97905)">
     <polyline
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="500,-260 500,-291 592.525,-291 592.525,-310.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="500,-260 500,-291 720,-291 720,-310.5 "
        id="polyline88" />
     <polygon
        style="fill:#000000"
-       points="597.525,-310.5 592.525,-320.5 587.525,-310.5 "
+       points="720,-320.5 715,-310.5 725,-310.5 "
        id="polygon90" />
     <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="597.525,-310.5 592.525,-320.5 587.525,-310.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="725,-310.5 720,-320.5 715,-310.5 "
        id="polygon92" />
   </g>
   <g
      id="g94"
-     transform="matrix(0.99992458,0,0,0.99992458,52.59029,597.28398)">
+     transform="matrix(0.99992458,0,0,0.86978978,158.88907,475.97905)">
     <polyline
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="500,-260 500,-291 411,-291 411,-310.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="500,-260 500,-291 295,-291 295,-310.5 "
        id="polyline96" />
     <polygon
        style="fill:#000000"
-       points="416,-310.5 411,-320.5 406,-310.5 "
+       points="295,-320.5 290,-310.5 300,-310.5 "
        id="polygon98" />
     <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="416,-310.5 411,-320.5 406,-310.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="290,-310.5 300,-310.5 295,-320.5 "
        id="polygon100" />
   </g>
   <g
      id="g102"
-     transform="matrix(1.1047793,0,0,0.99992458,0.3202199,597.28398)">
+     transform="matrix(1.1047793,0,0,0.86978978,106.61902,475.97905)">
     <polyline
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="500,-260 500,-291 771,-291 771,-310.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="500,-260 500,-291 900,-291 900,-310.5 "
        id="polyline104" />
     <polygon
        style="fill:#000000"
-       points="771,-320.5 766,-310.5 776,-310.5 "
+       points="895,-310.5 905,-310.5 900,-320.5 "
        id="polygon106" />
     <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="771,-320.5 766,-310.5 776,-310.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="905,-310.5 900,-320.5 895,-310.5 "
        id="polygon108" />
   </g>
   <g
-     id="g54"
-     transform="matrix(0.99992458,0,0,0.99992458,52.34097,596.86505)">
+     transform="matrix(1.1047793,0,0,0.86978978,106.61902,475.97905)"
+     id="g3689">
     <polyline
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="231,-360 231,-381 500,-381 500,-390.5 "
+       id="polyline3691"
+       points="500,-260 500,-310.5"
+       style="fill:none;stroke:#000000;stroke-width:3.21660709" />
+    <polygon
+       id="polygon3693"
+       points="505,-310.5 500,-320.5 495,-310.5 "
+       style="fill:#000000" />
+    <polygon
+       id="polygon3695"
+       points="500,-320.5 495,-310.5 505,-310.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709" />
+  </g>
+  <g
+     id="g54"
+     transform="matrix(0.99992458,0,0,0.86978978,158.63975,475.61464)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="90,-360 90,-381 500,-381 500,-390.5 "
        id="polyline56" />
     <polygon
        style="fill:#000000"
        points="500,-400.5 495,-390.5 505,-390.5 "
        id="polygon58-2" />
     <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="500,-400.5 495,-390.5 505,-390.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="495,-390.5 505,-390.5 500,-400.5 "
        id="polygon60" />
   </g>
   <g
      id="g62"
-     transform="matrix(0.99992458,0,0,0.99992458,52.34097,596.86505)">
+     transform="matrix(0.99992458,0,0,0.86978978,158.63975,475.61464)">
     <polyline
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="592.525,-360 592.525,-381 500,-381 500,-390.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="720,-360 720,-381 500,-381 500,-390.5 "
        id="polyline64" />
     <polygon
        style="fill:#000000"
        points="500,-400.5 495,-390.5 505,-390.5 "
        id="polygon66-9" />
     <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="500,-400.5 495,-390.5 505,-390.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="495,-390.5 505,-390.5 500,-400.5 "
        id="polygon68" />
   </g>
   <g
-     id="g70"
-     transform="matrix(0.99992458,0,0,0.99992458,52.34097,596.86505)">
+     transform="matrix(0.99992458,0,0,0.86978978,158.63975,475.61464)"
+     id="g3269">
     <polyline
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="411,-360 411,-381 500,-381 500,-390.5 "
+       id="polyline3271"
+       points="500,-360  500,-390.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709" />
+    <polygon
+       id="polygon3273"
+       points="500,-400.5 495,-390.5 505,-390.5 "
+       style="fill:#000000" />
+    <polygon
+       id="polygon3275"
+       points="495,-390.5 505,-390.5 500,-400.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709" />
+  </g>
+  <g
+     id="g70"
+     transform="matrix(0.99992458,0,0,0.86978978,158.63975,475.61464)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="295,-360 295,-381 500,-381 500,-390.5 "
        id="polyline72" />
     <polygon
        style="fill:#000000"
        points="500,-400.5 495,-390.5 505,-390.5 "
        id="polygon74-3" />
     <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="500,-400.5 495,-390.5 505,-390.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="495,-390.5 505,-390.5 500,-400.5 "
        id="polygon76" />
   </g>
   <g
      id="g110"
-     transform="matrix(1.1047793,0,0,0.99992458,0.5951735,596.86505)">
+     transform="matrix(1.1047793,0,0,0.86978978,106.89398,475.61464)">
     <polyline
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="771,-360 771,-381 500,-381 500,-390.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="900,-360 900,-381 500,-381 500,-390.5 "
        id="polyline112" />
     <polygon
        style="fill:#000000"
        points="495,-390.5 505,-390.5 500,-400.5 "
        id="polygon114" />
     <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="495,-390.5 505,-390.5 500,-400.5 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="505,-390.5 500,-400.5 495,-390.5 "
        id="polygon116" />
+  </g>
+  <path
+     style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.20712066px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 658.49239,265.89768 0,0"
+     id="path3546"
+     inkscape:connector-type="polyline"
+     inkscape:connector-curvature="3"
+     inkscape:connection-start="#g24-05"
+     inkscape:connection-end="#g24-05" />
+  <g
+     id="g34-2-5-5-9"
+     transform="matrix(1,0,0,0.86985556,712.01656,-115.89132)">
+    <rect
+       style="fill:#ffffff"
+       x="302.44049"
+       y="320"
+       width="176"
+       height="38"
+       id="rect36-3-8-1-1" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2.14440465"
+       x="302.44049"
+       y="320"
+       width="176"
+       height="38"
+       id="rect38-9-1-7-2" />
+    <text
+       font-size="12.8"
+       style="font-style:normal;font-weight:normal;font-size:14.10753822px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="390.44049"
+       y="342.89999"
+       id="text40-7-1-0-7">
+      <tspan
+         x="390.44049"
+         y="342.89999"
+         id="tspan42-4-7-0-0"
+         style="font-size:14.10753822px">@IntRange(int, int)</tspan>
+    </text>
+  </g>
+  <g
+     id="g60-8"
+     transform="matrix(-1,0,0,0.86985538,902.13044,26.085562)">
+    <line
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       x1="402.10901"
+       y1="399.461"
+       x2="302.76199"
+       y2="362.052"
+       id="line62-7" />
+    <polygon
+       style="fill:#000000"
+       points="301,366.732 304.524,357.373 293.404,358.529 "
+       id="polygon64-9" />
+    <polygon
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="304.524,357.373 293.404,358.529 301,366.732 "
+       id="polygon66-2" />
+  </g>
+  <g
+     id="g68-0"
+     transform="matrix(1,0,0,0.86985556,205.67461,164.80041)">
+    <line
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       x1="400"
+       y1="320"
+       x2="302.71799"
+       y2="282.168"
+       id="line70-2" />
+    <polygon
+       style="fill:#000000"
+       points="293.398,278.544 300.906,286.828 304.53,277.508 "
+       id="polygon72-3" />
+    <polygon
+       style="fill:none;stroke:#000000;stroke-width:3.21660709"
+       points="300.906,286.828 304.53,277.508 293.398,278.544 "
+       id="polygon74-7" />
+  </g>
+  <g
+     transform="matrix(1,0,0,0.86985556,207.37968,95.210732)"
+     id="g3297">
+    <line
+       id="line3299"
+       y2="282.168"
+       x2="302.71799"
+       y1="320"
+       x1="400"
+       style="fill:none;stroke:#000000;stroke-width:3.21660709" />
+    <polygon
+       id="polygon3301"
+       points="304.53,277.508 293.398,278.544 300.906,286.828 "
+       style="fill:#000000" />
+    <polygon
+       id="polygon3303"
+       points="293.398,278.544 300.906,286.828 304.53,277.508 "
+       style="fill:none;stroke:#000000;stroke-width:3.21660709" />
+  </g>
+  <g
+     id="g34-5"
+     transform="matrix(1,0,0,0.86985556,200.09846,95.095546)">
+    <rect
+       style="fill:#ffffff"
+       x="130"
+       y="320"
+       width="220"
+       height="38"
+       id="rect36-9" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2.14440465"
+       x="130"
+       y="320"
+       width="220"
+       height="38"
+       id="rect38-2" />
+    <text
+       font-size="12.8"
+       style="font-style:normal;font-weight:normal;font-size:14.10753822px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="240"
+       y="342.89999"
+       id="text40-2">
+      <tspan
+         x="240"
+         y="342.89999"
+         id="tspan42-8"
+         style="font-size:14.10753822px">@IntRange(from=0, to=1)</tspan>
+    </text>
+  </g>
+  <g
+     transform="matrix(1,0,0,0.86985556,200.0983,25.507444)"
+     id="g3287">
+    <rect
+       id="rect3289"
+       height="38"
+       width="220"
+       y="320"
+       x="130"
+       style="fill:#ffffff" />
+    <rect
+       id="rect3291"
+       height="38"
+       width="220"
+       y="320"
+       x="130"
+       style="fill:none;stroke:#000000;stroke-width:2.14440465" />
+    <text
+       id="text3293"
+       y="342.89999"
+       x="240"
+       style="font-style:normal;font-weight:normal;font-size:14.10753822px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       font-size="12.8">
+      <tspan
+         style="font-size:14.10753822px"
+         id="tspan3295"
+         y="342.89999"
+         x="240">@IntRange(from=0, to=200)</tspan>
+    </text>
   </g>
 </svg>
