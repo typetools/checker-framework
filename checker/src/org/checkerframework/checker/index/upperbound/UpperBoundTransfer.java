@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.upperbound;
 
+import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -432,10 +433,29 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     public TransferResult<CFValue, CFStore> visitFieldAccess(
             FieldAccessNode n, TransferInput<CFValue, CFStore> in) {
         if (isArrayLengthFieldAccess(n)) {
+
             FieldAccess arrayLength = FlowExpressions.internalReprOfFieldAccess(atypeFactory, n);
             Receiver arrayRec = arrayLength.getReceiver();
+
+            // Look up the SameLen type of the array.
+            Tree arrayTree = n.getReceiver().getTree();
+            AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromTree(arrayTree);
+            List<String> sameLenArrays =
+                    sameLenAnno == null
+                            ? new ArrayList<String>()
+                            : IndexUtil.getValueOfAnnotationWithStringArgument(sameLenAnno);
+
+            if (!sameLenArrays.contains(arrayRec.toString())) {
+                sameLenArrays.add(arrayRec.toString());
+            }
+
+            ArrayList<String> offsets = new ArrayList<>(sameLenArrays.size());
+            for (String s : sameLenArrays) {
+                offsets.add("-1");
+            }
+
             if (CFAbstractStore.canInsertReceiver(arrayRec)) {
-                UBQualifier qualifier = UBQualifier.createUBQualifier(arrayRec.toString(), "-1");
+                UBQualifier qualifier = UBQualifier.createUBQualifier(sameLenArrays, offsets);
                 UBQualifier previous = getUBQualifier(n, in);
                 return createTransferResult(n, in, qualifier.glb(previous));
             }

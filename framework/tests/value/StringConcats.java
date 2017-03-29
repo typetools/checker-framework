@@ -1,4 +1,5 @@
 import org.checkerframework.common.value.qual.BottomVal;
+import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.StringVal;
 
 class Test {
@@ -35,5 +36,11 @@ class Test {
         // compound assignments have not been implemented.
         //:: error: (assignment.type.incompatible)
         @StringVal("helloa11.01.020truenull2626") String all = s;
+    }
+
+    void stringIntRangeConcat(
+            @IntRange(from = 0, to = 1) int num, @IntRange(from = 'A', to = 'B') char letter) {
+        @StringVal({"num0", "num1"}) String numV = "num" + num;
+        @StringVal({"letterA", "letterB"}) String letterV = "letter" + letter;
     }
 }

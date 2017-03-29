@@ -134,9 +134,6 @@ public abstract class AnnotatedTypeMirror {
     /** Actual type wrapped with this AnnotatedTypeMirror */
     protected final TypeMirror actualType;
 
-    /** Used to format AnnotatedTypeMirrors into strings for printing. */
-    protected final AnnotatedTypeFormatter formatter;
-
     /** The annotations on this type. */
     // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
     // the class name of Annotation instead.
@@ -159,7 +156,6 @@ public abstract class AnnotatedTypeMirror {
         this.actualType = type;
         assert atypeFactory != null;
         this.atypeFactory = atypeFactory;
-        this.formatter = atypeFactory.typeFormatter;
     }
 
     @Override
@@ -730,12 +726,12 @@ public abstract class AnnotatedTypeMirror {
     @SideEffectFree
     @Override
     public final String toString() {
-        return formatter.format(this);
+        return atypeFactory.getAnnotatedTypeFormatter().format(this);
     }
 
     @SideEffectFree
     public final String toString(boolean verbose) {
-        return formatter.format(this, verbose);
+        return atypeFactory.getAnnotatedTypeFormatter().format(this, verbose);
     }
 
     /**

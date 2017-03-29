@@ -180,8 +180,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * This formatter is used for converting AnnotatedTypeMirrors to Strings. This formatter will be
-     * passed to all AnnotatedTypeMirrors created by this factory and will be used in their toString
-     * methods.
+     * used by all AnnotatedTypeMirrors created by this factory in their toString methods.
      */
     protected final AnnotatedTypeFormatter typeFormatter;
 
@@ -468,7 +467,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotationUtils.fromClass(
                         elements, org.checkerframework.dataflow.qual.TerminatesExecution.class));
 
-        initilizeReflectionResolution();
+        initializeReflectionResolution();
 
         if (this.getClass().equals(AnnotatedTypeFactory.class)) {
             this.parseStubFiles();
@@ -480,7 +479,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return wholeProgramInference;
     }
 
-    protected void initilizeReflectionResolution() {
+    protected void initializeReflectionResolution() {
         if (checker.shouldResolveReflection()) {
             boolean debug = "debug".equals(checker.getOption("resolveReflection"));
 
@@ -848,6 +847,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
         return new DefaultAnnotatedTypeFormatter(
                 checker.hasOption("printVerboseGenerics"), checker.hasOption("printAllQualifiers"));
+    }
+
+    public AnnotatedTypeFormatter getAnnotatedTypeFormatter() {
+        return typeFormatter;
     }
 
     protected AnnotationFormatter createAnnotationFormatter() {
