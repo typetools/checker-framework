@@ -215,10 +215,6 @@ public class ValueCheckerUtils {
                 chars.add(s.toCharArray());
             }
             return chars;
-        } else if (newClass == Object.class && strings.size() == 1) {
-            if (strings.get(0).equals("null")) {
-                return strings;
-            }
         }
         return strings;
     }
