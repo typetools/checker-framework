@@ -1395,11 +1395,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return null;
     }
 
-    /**
-     * Returns the set of classes of field invariant annotations.
-     *
-     * @return
-     */
+    /** Returns the set of classes of field invariant annotations. */
     protected Set<Class<? extends Annotation>> getFieldInvariantDeclarationAnnotations() {
         return Collections.<Class<? extends Annotation>>singleton(FieldInvariant.class);
     }

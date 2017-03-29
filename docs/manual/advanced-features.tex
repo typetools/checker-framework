@@ -1235,7 +1235,46 @@ quantification over all array components (e.g. to express that all
   array elements are non-null).  There is no such Java expression, but it
   would be useful when writing specifications.
 
+\section{Field invariants\label{field-invariants}}
 
+Sometimes a field declared in a superclass has a more precise type in a
+subclass.  To express this fact, write
+\refqualclass{framework/qual}{FieldInvariant} on the subclass. It specifies
+that a field's type in the class on which this annotation is written is a
+subtype of its declared type. The field must be declared in a superclass and
+must be final. For example,
+\begin{Verbatim}
+class Super {
+  final @Nullable Object field;
+  public Super(@Nullable Object field) {
+    this.field = field;
+  }
+}
+
+@FieldInvariant(qualifier = NonNull.class, field = "field")
+class Sub {
+  public Sub(Object field) {
+    super(field);
+  }
+  void method() {
+    field.toString() // legal, field is non-null in this class.
+  }
+}
+\end{Verbatim}
+ A field invariant annotation can refer to more than one field. For example,
+\<@FieldInvariant(qualifier = NonNull.class, field = {fieldA, fieldB})> means
+that \<fieldA> and \<fieldB> are both non-null. A field invariant annotation
+can also apply different qualifiers to fields. For example,
+\<@FieldInvariant(qualifier = {NonNull.class, Untainted.class}, field =
+{fieldA, fieldB})> means that \<fieldA> is non-null and \<fieldB> is untainted.
+
+This annotation is inherited so, if a superclass is annotated with
+@FieldInvariant, its subclasses have the same annotation. If a subclass has its
+own @FieldInvariant, then it must include the fields in the superclass
+annotation and those fields' annotations must be a subtype (or equal) to the
+annotations for those fields in the the superclass @FieldInvariant.
+
+Whether the field actually has the type specified in the invariant is not checked, but rather trusted.
 
 % \section{Unused fields and dependent types\label{unused-fields-and-dependent-types}}
 \section{Unused fields\label{unused-fields}}

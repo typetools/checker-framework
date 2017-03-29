@@ -351,6 +351,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * qualifier and at least on field.
      *
      * @param classTree class that might have a field invariant
+     * @checker_framework.manual #field-invariants Field invariants
      */
     protected void checkFieldInvariants(ClassTree classTree) {
         TypeElement elt = TreeUtils.elementFromDeclaration(classTree);
