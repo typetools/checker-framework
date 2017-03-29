@@ -182,8 +182,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * This formatter is used for converting AnnotatedTypeMirrors to Strings. This formatter will be
-     * passed to all AnnotatedTypeMirrors created by this factory and will be used in their toString
-     * methods.
+     * used by all AnnotatedTypeMirrors created by this factory in their toString methods.
      */
     protected final AnnotatedTypeFormatter typeFormatter;
 
@@ -850,6 +849,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
         return new DefaultAnnotatedTypeFormatter(
                 checker.hasOption("printVerboseGenerics"), checker.hasOption("printAllQualifiers"));
+    }
+
+    public AnnotatedTypeFormatter getAnnotatedTypeFormatter() {
+        return typeFormatter;
     }
 
     protected AnnotationFormatter createAnnotationFormatter() {

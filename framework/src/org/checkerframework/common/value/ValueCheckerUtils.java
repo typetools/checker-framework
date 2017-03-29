@@ -109,7 +109,7 @@ public class ValueCheckerUtils {
         } else if (AnnotationUtils.areSameByClass(anno, BoolVal.class)) {
             values = convertBoolVal(anno, castType);
         } else if (AnnotationUtils.areSameByClass(anno, BottomVal.class)) {
-            values = convertBottomVal(anno, castType);
+            values = new ArrayList<>();
         } else if (AnnotationUtils.areSameByClass(anno, UnknownVal.class)) {
             values = null;
         } else if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
@@ -178,14 +178,6 @@ public class ValueCheckerUtils {
         return values;
     }
 
-    private static List<?> convertBottomVal(AnnotationMirror anno, Class<?> newClass) {
-        if (newClass == String.class) {
-            return Collections.singletonList("null");
-        } else {
-            return new ArrayList<>();
-        }
-    }
-
     private static List<?> convertToStringVal(List<?> origValues) {
         if (origValues == null) {
             return null;
@@ -223,10 +215,6 @@ public class ValueCheckerUtils {
                 chars.add(s.toCharArray());
             }
             return chars;
-        } else if (newClass == Object.class && strings.size() == 1) {
-            if (strings.get(0).equals("null")) {
-                return strings;
-            }
         }
         return strings;
     }
