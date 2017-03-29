@@ -48,13 +48,13 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
      *
      * <p>For example, this allows the following code to typecheck:
      *
-     * <pre>{@code
-     * @SearchIndex("a") int x = Arrays.binarySearch(a, y);
-     * if (x < 0) {
-     *     @NegativeIndexFor("a") int z = x;
+     * <pre>
+     * {@literal @}SearchIndex("a") int x = Arrays.binarySearch(a, y);
+     * if (x {@literal <} 0) {
+     *     {@literal @}NegativeIndexFor("a") int z = x;
      * }
      *
-     * }</pre>
+     * </pre>
      */
     private void specialHandlingForBinarySearch(
             Node left, Node right, CFStore store, ValidComparisons toCompareTo) {
