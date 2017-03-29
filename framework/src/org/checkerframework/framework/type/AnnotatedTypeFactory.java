@@ -1294,12 +1294,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Adds the qualifier specified by a field invariant for {@code field} to {@code type}
+     * Adds the qualifier specified by a field invariant for {@code field} to {@code type}.
      *
      * @param type annotated type to which the annotation is added
      * @param accessedVia the annotated type of the receiver of the accessing tree. (Only used to
      *     get the type element of the underling type.)
-     * @param field element of the field
+     * @param field element representing the field
      */
     protected void addAnnotationFromFieldInvariant(
             AnnotatedTypeMirror type, AnnotatedTypeMirror accessedVia, VariableElement field) {
@@ -1321,9 +1321,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Returns the field invariants for the given class.
      *
-     * <p>Subclass may override this to implement their own field invariant annotations if {@link
-     * FieldInvariant} is not expressive enough. They must also override {@link
-     * #getFieldInvariantDeclarationAnnotations()} to return their field invariants.
+     * <p>Subclass may implement their own field invariant annotations if {@link FieldInvariant} is
+     * not expressive enough. They must override this method to properly create AnnotationMirror and
+     * also override {@link #getFieldInvariantDeclarationAnnotations()} to return their field
+     * invariants.
      *
      * @param element class for which to get invariants
      * @return fields invariants for {@code element}
