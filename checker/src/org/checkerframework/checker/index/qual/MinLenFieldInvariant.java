@@ -3,14 +3,14 @@ package org.checkerframework.checker.index.qual;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.JavaExpression;
 
 @Inherited
 @Target(ElementType.TYPE)
 public @interface MinLenFieldInvariant {
-    /* The field which has the qualifier.  The field must
-     * be final and declared in a superclass of the class on which the field invariant applies.*/
-    @JavaExpression
+    /**
+     * The field which has the qualifier. The field must be final and declared in a superclass of
+     * the class on which the field invariant is written.
+     */
     String[] field();
 
     /**

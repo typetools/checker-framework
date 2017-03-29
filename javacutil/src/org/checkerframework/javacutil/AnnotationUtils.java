@@ -580,8 +580,8 @@ public class AnnotationUtils {
         return names;
     }
     /**
-     * Get the Class that is referenced by attribute {@class name}. This method uses Class.forName
-     * to load the class. It returns null if the class wasn't found.
+     * Get the Class that is referenced by attribute {@code name}. This method uses Class.forName to
+     * load the class. It returns null if the class wasn't found.
      */
     public static Class<?> getElementValueClass(
             AnnotationMirror anno, CharSequence name, boolean useDefaults) {
