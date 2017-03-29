@@ -547,8 +547,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Recursive method to handle array initializations. Recursively descends the initializer to
          * find each dimension's size and create the appropriate annotation for it.
          *
+         * <p>If the annotation of the dimension is {@code @IntVal}, create an {@code @ArrayLen}
+         * with the same set of possible values. If the annotation is {@code @IntRange}, convert it
+         * to {@code @IntVal} before creating the {@code @ArrayLen} by the same method as above. If
+         * the annotation is {@code @BottomVal}, create an {@code @BottomVal} instead. In other
+         * cases, no annotations would be created.
+         *
          * @param dimensions a list of ExpressionTrees where each ExpressionTree is a specifier of
-         *     the size of that dimension (should be an IntVal)
+         *     the size of that dimension
          * @param type the AnnotatedTypeMirror of the array
          */
         private void handleDimensions(
@@ -558,10 +564,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         dimensions.subList(1, dimensions.size()),
                         (AnnotatedArrayType) type.getComponentType());
             }
-
             AnnotationMirror dimType =
                     getAnnotatedType(dimensions.get(0)).getAnnotationInHierarchy(UNKNOWNVAL);
-            if (!AnnotationUtils.areSameIgnoringValues(dimType, UNKNOWNVAL)) {
+            if (AnnotationUtils.areSameByClass(dimType, IntRange.class)) {
+                dimType = convertIntRangeToIntVal(dimType);
+            }
+            if (AnnotationUtils.areSameByClass(dimType, IntVal.class)) {
                 List<Long> longLengths = getIntValues(dimType);
 
                 HashSet<Integer> lengths = new HashSet<Integer>(longLengths.size());
@@ -570,6 +578,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 AnnotationMirror newQual = createArrayLenAnnotation(new ArrayList<>(lengths));
                 type.replaceAnnotation(newQual);
+            } else if (AnnotationUtils.areSameIgnoringValues(dimType, BOTTOMVAL)) {
+                type.replaceAnnotation(BOTTOMVAL);
             }
         }
 
