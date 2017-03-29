@@ -854,11 +854,13 @@ public class ValueTransfer extends CFTransfer {
         return resultValues;
     }
 
+    /**
+     * Takes a list of result values (i.e. the values possible after the comparison) and creates the
+     * appropriate annotation from them, then combines that annotation with the existing annotation
+     * on the node. The resulting annotation is inserted into the store.
+     */
     private void createAnnotationFromResultsAndAddToStore(
             CFStore store, List<?> results, Node node) {
-        // createResultingAnnotation returns bottom if an empty list is passed. So,
-        // if the result cannot be bottom and the size of the list is zero, pass null
-        // instead.
         AnnotationMirror anno = atypefactory.createResultingAnnotation(node.getType(), results);
         AnnotationMirror currentAnno =
                 atypefactory
