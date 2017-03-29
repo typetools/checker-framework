@@ -67,8 +67,6 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   ## downstream tests:  projects that depend on the the Checker Framework.
   ## These are here so they can be run by pull requests.  (Pull requests
   ## currently don't trigger downstream jobs.)
-  ## Done in "nonjunit" above:
-  ##  * checker-framework.demos (takes 15 minutes)
   ## Not done in the Travis build, but triggered as a separate Travis project:
   ##  * daikon-typecheck: (takes 2 hours)
 
@@ -83,6 +81,11 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   export CHECKERFRAMEWORK=`pwd`
   (cd ../plume-lib/java && make check-types)
 
+  if [[ "${BUILDJDK}" = "downloadjdk" ]]; then
+    ## If buildjdk, use "demos" below:
+    ##  * checker-framework.demos (takes 15 minutes)
+    (cd checker && ant check-demos)
+  fi
   # sparta: 1 minute, but the command is "true"!
   # TODO: requires Android installation (and at one time, it caused weird
   # Travis hangs if enabled without Android installation).
