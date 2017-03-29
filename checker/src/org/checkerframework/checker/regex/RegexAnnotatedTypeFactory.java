@@ -191,28 +191,28 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameIgnoringValues(rhs, REGEX)
-                    && AnnotationUtils.areSameIgnoringValues(lhs, REGEX)) {
-                int rhsValue = getRegexValue(rhs);
-                int lhsValue = getRegexValue(lhs);
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, REGEX)
+                    && AnnotationUtils.areSameIgnoringValues(superAnno, REGEX)) {
+                int rhsValue = getRegexValue(subAnno);
+                int lhsValue = getRegexValue(superAnno);
                 return lhsValue <= rhsValue;
             }
             // TODO: subtyping between PartialRegex?
             // Ignore annotation values to ensure that annotation is in supertype map.
-            if (AnnotationUtils.areSameIgnoringValues(lhs, REGEX)) {
-                lhs = REGEX;
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, REGEX)) {
+                superAnno = REGEX;
             }
-            if (AnnotationUtils.areSameIgnoringValues(rhs, REGEX)) {
-                rhs = REGEX;
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, REGEX)) {
+                subAnno = REGEX;
             }
-            if (AnnotationUtils.areSameIgnoringValues(lhs, PARTIALREGEX)) {
-                lhs = PARTIALREGEX;
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, PARTIALREGEX)) {
+                superAnno = PARTIALREGEX;
             }
-            if (AnnotationUtils.areSameIgnoringValues(rhs, PARTIALREGEX)) {
-                rhs = PARTIALREGEX;
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, PARTIALREGEX)) {
+                subAnno = PARTIALREGEX;
             }
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
 
         /** Gets the value out of a regex annotation. */

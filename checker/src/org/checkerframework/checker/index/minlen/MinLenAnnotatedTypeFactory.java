@@ -23,7 +23,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.ArrayLen;
-import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -87,30 +86,6 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Returns the value type associated with the given ExpressionTree. */
     public AnnotatedTypeMirror valueTypeFromTree(Tree tree) {
         return getValueAnnotatedTypeFactory().getAnnotatedType(tree);
-    }
-
-    /**
-     * Finds the minimum value in a Value Checker type. If there is no information (such as when the
-     * list of possible values is empty or null), returns null. Otherwise, returns the smallest
-     * value in the list of possible values.
-     */
-    public Integer getMinLenFromValueType(AnnotatedTypeMirror valueType) {
-        List<Long> possibleValues = possibleValuesFromValueType(valueType);
-        if (possibleValues == null || possibleValues.size() == 0) {
-            return null;
-        }
-        // There must be at least one element in the list, because of the previous check.
-        Integer min = Collections.min(possibleValues).intValue();
-        return min;
-    }
-
-    /** Get the list of possible values from a Value Checker type. May return null. */
-    private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
-        AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
-        if (anm == null) {
-            return null;
-        }
-        return ValueAnnotatedTypeFactory.getIntValues(anm);
     }
 
     @Override
@@ -206,22 +181,24 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @return true if rhs is a subtype of lhs, false otherwise
          */
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameByClass(lhs, PolyMinLen.class)) {
-                return AnnotationUtils.areSameByClass(rhs, PolyMinLen.class);
-            } else if (AnnotationUtils.areSameByClass(rhs, PolyMinLen.class)) {
-                return AnnotationUtils.areSame(lhs, MIN_LEN_0);
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSameByClass(superAnno, PolyMinLen.class)) {
+                return AnnotationUtils.areSameByClass(subAnno, PolyMinLen.class);
+            } else if (AnnotationUtils.areSameByClass(subAnno, PolyMinLen.class)) {
+                return AnnotationUtils.areSame(superAnno, MIN_LEN_0);
             }
-            if (AnnotationUtils.areSameByClass(rhs, MinLenBottom.class)) {
+            if (AnnotationUtils.areSameByClass(subAnno, MinLenBottom.class)) {
                 return true;
-            } else if (AnnotationUtils.areSameByClass(lhs, MinLenBottom.class)) {
+            } else if (AnnotationUtils.areSameByClass(superAnno, MinLenBottom.class)) {
                 return false;
-            } else if (AnnotationUtils.areSameIgnoringValues(rhs, lhs)) {
+            } else if (AnnotationUtils.areSameIgnoringValues(subAnno, superAnno)) {
                 // Implies both are MinLen since that's the only other type.
                 // There is no need for a check to see if these values exist - they must.
 
-                Integer rhsVal = AnnotationUtils.getElementValue(rhs, "value", Integer.class, true);
-                Integer lhsVal = AnnotationUtils.getElementValue(lhs, "value", Integer.class, true);
+                Integer rhsVal =
+                        AnnotationUtils.getElementValue(subAnno, "value", Integer.class, true);
+                Integer lhsVal =
+                        AnnotationUtils.getElementValue(superAnno, "value", Integer.class, true);
                 return rhsVal >= lhsVal;
             }
             return false;
@@ -243,9 +220,8 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
         if (valueType.hasAnnotation(StringVal.class)) {
             AnnotationMirror anm = valueType.getAnnotation(StringVal.class);
-            String[] values =
-                    AnnotationUtils.getElementValueArray(anm, "value", String.class, true)
-                            .toArray(new String[0]);
+            List<String> values =
+                    AnnotationUtils.getElementValueArray(anm, "value", String.class, true);
             ArrayList<Integer> lengths = new ArrayList<>();
             for (String value : values) {
                 lengths.add(value.length());

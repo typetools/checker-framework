@@ -223,8 +223,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * If any constant-value annotation has &gt; MAX_VALUES number of values provided, treats
-         * the value as UnknownVal. Works together with ValueVisitor.visitAnnotation, which issues a
-         * warning to the user in this case.
+         * the value as UnknownVal. Works together with {@link ValueVisitor#visitAnnotation}, which
+         * issues a warning to the user in this case.
          */
         private void replaceWithUnknownValIfTooManyValues(AnnotatedTypeMirror atm) {
             AnnotationMirror anno = atm.getAnnotationInHierarchy(UNKNOWNVAL);
@@ -285,8 +285,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
                 List<Object> a2Values =
                         AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
-                HashSet<Object> newValues = new HashSet<Object>(a1Values.size() + a2Values.size());
-
+                Set<Object> newValues = new TreeSet<>();
                 newValues.addAll(a1Values);
                 newValues.addAll(a2Values);
 
@@ -294,17 +293,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             // Annotations are in this hierarchy, but they are not the same
             else {
-                // If either is UNKNOWNVAL, ARRAYLEN, STRINGVAL, or BOOLEAN then
-                // the LUB is
-                // UnknownVal
+                // If either is UNKNOWNVAL, ARRAYLEN, STRINGVAL, or BOOLEAN then the LUB is
+                // UnknownVal.
                 if (!((AnnotationUtils.areSameByClass(a1, IntVal.class)
                                 || AnnotationUtils.areSameByClass(a1, DoubleVal.class))
                         && (AnnotationUtils.areSameByClass(a2, IntVal.class)
                                 || AnnotationUtils.areSameByClass(a2, DoubleVal.class)))) {
                     return UNKNOWNVAL;
                 } else {
-                    // At this point one of them must be a DoubleVal and one an
-                    // IntVal
+                    // At this point one of them must be a DoubleVal and one an IntVal.
                     AnnotationMirror doubleAnno;
                     AnnotationMirror intAnno;
 
@@ -335,40 +332,37 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @return true if rhs is a subtype of lhs, false otherwise
          */
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
 
-            if (AnnotationUtils.areSameByClass(lhs, UnknownVal.class)
-                    || AnnotationUtils.areSameByClass(rhs, BottomVal.class)) {
+            if (AnnotationUtils.areSameByClass(superAnno, UnknownVal.class)
+                    || AnnotationUtils.areSameByClass(subAnno, BottomVal.class)) {
                 return true;
-            } else if (AnnotationUtils.areSameByClass(rhs, UnknownVal.class)
-                    || AnnotationUtils.areSameByClass(lhs, BottomVal.class)) {
+            } else if (AnnotationUtils.areSameByClass(subAnno, UnknownVal.class)
+                    || AnnotationUtils.areSameByClass(superAnno, BottomVal.class)) {
                 return false;
-            } else if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
+            } else if (AnnotationUtils.areSameIgnoringValues(superAnno, subAnno)) {
                 // Same type, so might be subtype
                 List<Object> lhsValues =
-                        AnnotationUtils.getElementValueArray(lhs, "value", Object.class, true);
+                        AnnotationUtils.getElementValueArray(
+                                superAnno, "value", Object.class, true);
                 List<Object> rhsValues =
-                        AnnotationUtils.getElementValueArray(rhs, "value", Object.class, true);
+                        AnnotationUtils.getElementValueArray(subAnno, "value", Object.class, true);
                 return lhsValues.containsAll(rhsValues);
-            } else if (AnnotationUtils.areSameByClass(lhs, DoubleVal.class)
-                    && AnnotationUtils.areSameByClass(rhs, IntVal.class)) {
-                List<Long> rhsValues;
-                rhsValues = AnnotationUtils.getElementValueArray(rhs, "value", Long.class, true);
-                List<Double> lhsValues =
-                        AnnotationUtils.getElementValueArray(lhs, "value", Double.class, true);
-                boolean same = false;
-                for (Long rhsLong : rhsValues) {
-                    for (Double lhsDbl : lhsValues) {
-                        if (lhsDbl.doubleValue() == rhsLong.doubleValue()) {
-                            same = true;
-                            break;
-                        }
-                    }
-                    if (!same) {
+            } else if (AnnotationUtils.areSameByClass(superAnno, DoubleVal.class)
+                    && AnnotationUtils.areSameByClass(subAnno, IntVal.class)) {
+                List<Double> superValues = getDoubleValues(superAnno);
+                List<Long> subValues = getIntValues(subAnno);
+                if (subValues.size() < superValues.size()) {
+                    return false;
+                }
+                for (int i = 0; i < superValues.size(); i++) {
+                    double lhsDbl = superValues.get(i);
+                    double rhsDbl = subValues.get(i).doubleValue();
+                    if (lhsDbl != rhsDbl) {
                         return false;
                     }
                 }
-                return same;
+                return true;
             }
             return false;
         }
@@ -402,7 +396,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 handleDimensions(dimensions, (AnnotatedArrayType) type);
             } else {
                 // Initializer used
-                handleInitalizers(initializers, (AnnotatedArrayType) type);
+                handleInitializers(initializers, (AnnotatedArrayType) type);
 
                 AnnotationMirror newQual;
                 Class<?> clazz = ValueCheckerUtils.getClassFromType(type.getUnderlyingType());
@@ -452,49 +446,60 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        private void handleInitalizers(
+        /**
+         * Adds the ArrayLen annotation from the array initializers to {@code type}.
+         *
+         * <p>If type is a multi-dimensional array, the the initializers might also contain arrays,
+         * so this method adds the annotations for those initializers, too.
+         *
+         * @param initializers initializer trees
+         * @param type array type to which annotations are added
+         */
+        private void handleInitializers(
                 List<? extends ExpressionTree> initializers, AnnotatedArrayType type) {
 
             List<Integer> array = new ArrayList<>();
             array.add(initializers.size());
             type.replaceAnnotation(createArrayLenAnnotation(array));
 
-            boolean singleDem = type.getComponentType().getKind() != TypeKind.ARRAY;
-            if (singleDem) {
+            if (type.getComponentType().getKind() != TypeKind.ARRAY) {
                 return;
             }
-            List<List<Integer>> summarylengths = new ArrayList<>();
 
+            // A list of arrayLens.  arrayLenOfDimensions.get(i) is the array lengths for the ith
+            // dimension.
+            List<List<Integer>> arrayLenOfDimensions = new ArrayList<>();
             for (ExpressionTree init : initializers) {
                 AnnotatedTypeMirror componentType = getAnnotatedType(init);
-                int count = 0;
+                int dimension = 0;
                 while (componentType.getKind() == TypeKind.ARRAY) {
-                    AnnotationMirror arrayLen = componentType.getAnnotation(ArrayLen.class);
-                    List<Integer> currentLengths;
-                    if (arrayLen != null) {
-                        currentLengths = getArrayLength(arrayLen);
+                    List<Integer> arrayLens;
+                    if (dimension == arrayLenOfDimensions.size()) {
+                        arrayLens = new ArrayList<>();
+                        arrayLenOfDimensions.add(arrayLens);
                     } else {
-                        currentLengths = (new ArrayList<Integer>());
+                        arrayLens = arrayLenOfDimensions.get(dimension);
                     }
-                    if (count == summarylengths.size()) {
-                        summarylengths.add(new ArrayList<Integer>());
+                    AnnotationMirror arrayLen = componentType.getAnnotation(ArrayLen.class);
+                    if (arrayLen != null) {
+                        List<Integer> currentLengths = getArrayLength(arrayLen);
+                        arrayLens.addAll(currentLengths);
                     }
-                    summarylengths.get(count).addAll(currentLengths);
-                    count++;
+                    dimension++;
                     componentType = ((AnnotatedArrayType) componentType).getComponentType();
                 }
             }
 
             AnnotatedTypeMirror componentType = type.getComponentType();
             int i = 0;
-            while (componentType.getKind() == TypeKind.ARRAY && i < summarylengths.size()) {
-                componentType.addAnnotation(createArrayLenAnnotation(summarylengths.get(i)));
+            while (componentType.getKind() == TypeKind.ARRAY && i < arrayLenOfDimensions.size()) {
+                componentType.addAnnotation(createArrayLenAnnotation(arrayLenOfDimensions.get(i)));
                 componentType = ((AnnotatedArrayType) componentType).getComponentType();
                 i++;
             }
         }
 
-        /** Convert a byte array to a String. */
+        /** Convert a byte array to a String. Return null if unable to convert. */
         private String getByteArrayStringVal(List<? extends ExpressionTree> initializers) {
             // True iff every element of the array is a literal.
             boolean allLiterals = true;
@@ -517,7 +522,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
-        /** Convert a char array to a String. */
+        /** Convert a char array to a String. Return null if unable to convert. */
         private String getCharArrayStringVal(List<? extends ExpressionTree> initializers) {
             boolean allLiterals = true;
             StringBuilder stringVal = new StringBuilder();
@@ -545,8 +550,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (handledByValueChecker(type)) {
                 AnnotatedTypeMirror castedAnnotation = getAnnotatedType(tree.getExpression());
                 List<?> values = getValues(castedAnnotation, type.getUnderlyingType());
-                type.replaceAnnotation(
-                        resultAnnotationHandler(type.getUnderlyingType(), values, tree));
+                type.replaceAnnotation(createResultingAnnotation(type.getUnderlyingType(), values));
             } else if (type.getKind() == TypeKind.ARRAY) {
                 if (tree.getExpression().getKind() == Kind.NULL_LITERAL) {
                     type.replaceAnnotation(BOTTOMVAL);
@@ -555,7 +559,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
-        /** Get the "value" field of the given annotation, casted to the given type. */
+        /**
+         * Get the "value" field of the given annotation, casted to the given type. Empty list means
+         * no value is possible (dead code). Null means no information is known -- any value is
+         * possible.
+         */
         private List<?> getValues(AnnotatedTypeMirror type, TypeMirror castTo) {
             AnnotationMirror anno = type.getAnnotationInHierarchy(UNKNOWNVAL);
             if (anno == null) {
@@ -563,67 +571,46 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // then anno will be null. It would be safe to use the annotation on the upper bound;
                 // however, unless the upper bound was explicitly annotated, it will be unknown.
                 // AnnotatedTypes.findEffectiveAnnotationInHierarchy(, toSearch, top)
-                return new ArrayList<>();
+                return null;
             }
             return ValueCheckerUtils.getValuesCastedToType(anno, castTo);
         }
 
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            if (handledByValueChecker(type)) {
-                switch (tree.getKind()) {
-                    case BOOLEAN_LITERAL:
-                        AnnotationMirror boolAnno =
-                                createBooleanAnnotation(
-                                        Collections.singletonList((Boolean) tree.getValue()));
-                        type.replaceAnnotation(boolAnno);
-                        return null;
-
-                    case CHAR_LITERAL:
-                        AnnotationMirror charAnno =
-                                createCharAnnotation(
-                                        Collections.singletonList((Character) tree.getValue()));
-                        type.replaceAnnotation(charAnno);
-                        return null;
-
-                    case DOUBLE_LITERAL:
-                        AnnotationMirror doubleAnno =
-                                createNumberAnnotationMirror(
-                                        Collections.<Number>singletonList(
-                                                (Double) tree.getValue()));
-                        type.replaceAnnotation(doubleAnno);
-                        return null;
-
-                    case FLOAT_LITERAL:
-                        AnnotationMirror floatAnno =
-                                createNumberAnnotationMirror(
-                                        Collections.<Number>singletonList((Float) tree.getValue()));
-                        type.replaceAnnotation(floatAnno);
-                        return null;
-                    case INT_LITERAL:
-                        AnnotationMirror intAnno =
-                                createNumberAnnotationMirror(
-                                        Collections.<Number>singletonList(
-                                                (Integer) tree.getValue()));
-                        type.replaceAnnotation(intAnno);
-                        return null;
-                    case LONG_LITERAL:
-                        AnnotationMirror longAnno =
-                                createNumberAnnotationMirror(
-                                        Collections.<Number>singletonList((Long) tree.getValue()));
-                        type.replaceAnnotation(longAnno);
-                        return null;
-                    case STRING_LITERAL:
-                        AnnotationMirror stringAnno =
-                                createStringAnnotation(
-                                        Collections.singletonList((String) tree.getValue()));
-                        type.replaceAnnotation(stringAnno);
-                        return null;
-                    default:
-                        return null;
-                }
+            if (!handledByValueChecker(type)) {
+                return null;
             }
-            return null;
+            Object value = tree.getValue();
+            switch (tree.getKind()) {
+                case BOOLEAN_LITERAL:
+                    AnnotationMirror boolAnno =
+                            createBooleanAnnotation(Collections.singletonList((Boolean) value));
+                    type.replaceAnnotation(boolAnno);
+                    return null;
+
+                case CHAR_LITERAL:
+                    AnnotationMirror charAnno =
+                            createCharAnnotation(Collections.singletonList((Character) value));
+                    type.replaceAnnotation(charAnno);
+                    return null;
+
+                case DOUBLE_LITERAL:
+                case FLOAT_LITERAL:
+                case INT_LITERAL:
+                case LONG_LITERAL:
+                    AnnotationMirror numberAnno =
+                            createNumberAnnotationMirror(Collections.singletonList((Number) value));
+                    type.replaceAnnotation(numberAnno);
+                    return null;
+                case STRING_LITERAL:
+                    AnnotationMirror stringAnno =
+                            createStringAnnotation(Collections.singletonList((String) value));
+                    type.replaceAnnotation(stringAnno);
+                    return null;
+                default:
+                    return null;
+            }
         }
 
         /**
@@ -646,9 +633,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     for (ExpressionTree argument : arguments) {
                         AnnotatedTypeMirror argType = getAnnotatedType(argument);
                         List<?> values = getValues(argType, argType.getUnderlyingType());
-                        if (values.isEmpty()) {
-                            // values aren't known, so don't try to evaluate the
-                            // method
+                        if (values == null || values.isEmpty()) {
+                            // Values aren't known, so don't try to evaluate the method.
                             return null;
                         }
                         argValues.add(values);
@@ -663,9 +649,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 if (receiver != null && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
                     receiverValues = getValues(receiver, receiver.getUnderlyingType());
-                    if (receiverValues.isEmpty()) {
-                        // values aren't known, so don't try to evaluate the
-                        // method
+                    if (receiverValues == null || receiverValues.isEmpty()) {
+                        // Values aren't known, so don't try to evaluate the method.
                         return null;
                     }
                 } else {
@@ -676,7 +661,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<?> returnValues =
                         evalutator.evaluateMethodCall(argValues, receiverValues, tree);
                 AnnotationMirror returnType =
-                        resultAnnotationHandler(type.getUnderlyingType(), returnValues, tree);
+                        createResultingAnnotation(type.getUnderlyingType(), returnValues);
                 type.replaceAnnotation(returnType);
             }
 
@@ -693,7 +678,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (wrapperClass
                     || (handledByValueChecker(type)
                             && methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree)))) {
-                // get arugment values
+                // get argument values
                 List<? extends ExpressionTree> arguments = tree.getArguments();
                 ArrayList<List<?>> argValues;
                 if (arguments.size() > 0) {
@@ -701,9 +686,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     for (ExpressionTree argument : arguments) {
                         AnnotatedTypeMirror argType = getAnnotatedType(argument);
                         List<?> values = getValues(argType, argType.getUnderlyingType());
-                        if (values.isEmpty()) {
-                            // values aren't known, so don't try to evaluate the
-                            // method
+                        if (values == null || values.isEmpty()) {
+                            // Values aren't known, so don't try to evaluate the method.
                             return null;
                         }
                         argValues.add(values);
@@ -715,7 +699,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<?> returnValues =
                         evalutator.evaluteConstrutorCall(argValues, tree, type.getUnderlyingType());
                 AnnotationMirror returnType =
-                        resultAnnotationHandler(type.getUnderlyingType(), returnValues, tree);
+                        createResultingAnnotation(type.getUnderlyingType(), returnValues);
                 type.replaceAnnotation(returnType);
             }
 
@@ -730,10 +714,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (value != null) {
                     // The field is a compile time constant.
                     type.replaceAnnotation(
-                            resultAnnotationHandler(
-                                    type.getUnderlyingType(),
-                                    Collections.singletonList(value),
-                                    tree));
+                            createResultingAnnotation(type.getUnderlyingType(), value));
                     return null;
                 }
                 if (ElementUtils.isStatic(elem) && ElementUtils.isFinal(elem)) {
@@ -745,17 +726,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         value = evalutator.evaluateStaticFieldAccess(classname, fieldName, tree);
                         if (value != null) {
                             type.replaceAnnotation(
-                                    resultAnnotationHandler(
-                                            type.getUnderlyingType(),
-                                            Collections.singletonList(value),
-                                            tree));
+                                    createResultingAnnotation(type.getUnderlyingType(), value));
                         }
                         return null;
                     }
                 }
 
-                if (tree.getIdentifier().toString().equals("length")) {
-                    // The field acces is "someArrayExpression.length"
+                if (TreeUtils.isArrayLengthAccess(tree)) {
+                    // The field access is to the length field, as in "someArrayExpression.length"
                     AnnotatedTypeMirror receiverType = getAnnotatedType(tree.getExpression());
                     if (receiverType.getKind() == TypeKind.ARRAY) {
                         AnnotationMirror arrayAnno = receiverType.getAnnotation(ArrayLen.class);
@@ -779,106 +757,170 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * @param resultType is evaluated using getClass to derive a Class object
-         * @param tree location for error reporting
+         * Returns a constant value annotation with the {@code value}. The class of the annotation
+         * reflects the {@code resultType} given.
+         *
+         * @param resultType used to selecte which kind of value annotation is returned
+         * @param value value to use
+         * @return a constant value annotation with the {@code value}
          */
-        private AnnotationMirror resultAnnotationHandler(
-                TypeMirror resultType, List<?> results, Tree tree) {
+        private AnnotationMirror createResultingAnnotation(TypeMirror resultType, Object value) {
+            return createResultingAnnotation(resultType, Collections.singletonList(value));
+        }
 
-            Class<?> resultClass = ValueCheckerUtils.getClassFromType(resultType);
-
+        /**
+         * Returns a constant value annotation with the {@code values}. The class of the annotation
+         * reflects the {@code resultType} given.
+         *
+         * @param resultType used to selected which kind of value annotation is returned
+         * @param values must be a homogeneous list: every element of it has the same class
+         * @return a constant value annotation with the {@code values}
+         */
+        private AnnotationMirror createResultingAnnotation(TypeMirror resultType, List<?> values) {
+            if (values == null) {
+                return UNKNOWNVAL;
+            }
             // For some reason null is included in the list of values,
             // so remove it so that it does not cause a NPE elsewhere.
-            results.remove(null);
-            if (results.size() == 0) {
-                return UNKNOWNVAL;
-            } else if (resultClass == Boolean.class || resultClass == boolean.class) {
-                HashSet<Boolean> boolVals = new HashSet<Boolean>(results.size());
-                for (Object o : results) {
-                    boolVals.add((Boolean) o);
-                }
-                return createBooleanAnnotation(new ArrayList<Boolean>(boolVals));
+            values.remove(null);
+            if (values.size() == 0) {
+                return BOTTOMVAL;
+            }
 
-            } else if (resultClass == Double.class
-                    || resultClass == double.class
-                    || resultClass == Float.class
-                    || resultClass == float.class
-                    || resultClass == Integer.class
-                    || resultClass == int.class
-                    || resultClass == Long.class
-                    || resultClass == long.class
-                    || resultClass == Short.class
-                    || resultClass == short.class
-                    || resultClass == Byte.class
-                    || resultClass == byte.class) {
-                HashSet<Number> numberVals = new HashSet<>(results.size());
-                List<Character> charVals = new ArrayList<>();
-                for (Object o : results) {
-                    if (o instanceof Character) {
-                        charVals.add((Character) o);
-                    } else {
-                        numberVals.add((Number) o);
-                    }
-                }
-                if (numberVals.isEmpty()) {
-                    return createCharAnnotation(charVals);
-                }
-                return createNumberAnnotationMirror(new ArrayList<Number>(numberVals));
-            } else if (resultClass == char.class || resultClass == Character.class) {
-                HashSet<Character> intVals = new HashSet<>(results.size());
-                for (Object o : results) {
-                    if (o instanceof Number) {
-                        intVals.add((char) ((Number) o).intValue());
-                    } else {
-                        intVals.add((char) o);
-                    }
-                }
-                return createCharAnnotation(new ArrayList<Character>(intVals));
-            } else if (resultClass == String.class) {
-                HashSet<String> stringVals = new HashSet<String>(results.size());
-                for (Object o : results) {
+            if (TypesUtils.isString(resultType)) {
+                List<String> stringVals = new ArrayList<>(values.size());
+                for (Object o : values) {
                     stringVals.add((String) o);
                 }
-                return createStringAnnotation(new ArrayList<String>(stringVals));
-            } else if (resultClass == byte[].class) {
-                HashSet<String> stringVals = new HashSet<String>(results.size());
-                for (Object o : results) {
+                return createStringAnnotation(stringVals);
+            } else if (ValueCheckerUtils.getClassFromType(resultType) == byte[].class) {
+                List<String> stringVals = new ArrayList<>(values.size());
+                for (Object o : values) {
                     if (o instanceof byte[]) {
                         stringVals.add(new String((byte[]) o));
                     } else {
                         stringVals.add(o.toString());
                     }
                 }
-                return createStringAnnotation(new ArrayList<String>(stringVals));
+                return createStringAnnotation(stringVals);
             }
 
-            return UNKNOWNVAL;
+            TypeKind primitiveKind;
+            if (TypesUtils.isPrimitive(resultType)) {
+                primitiveKind = resultType.getKind();
+            } else if (TypesUtils.isBoxedPrimitive(resultType)) {
+                primitiveKind = types.unboxedType(resultType).getKind();
+            } else {
+                return UNKNOWNVAL;
+            }
+
+            switch (primitiveKind) {
+                case BOOLEAN:
+                    List<Boolean> boolVals = new ArrayList<>(values.size());
+                    for (Object o : values) {
+                        boolVals.add((Boolean) o);
+                    }
+                    return createBooleanAnnotation(boolVals);
+                case DOUBLE:
+                case FLOAT:
+                case INT:
+                case LONG:
+                case SHORT:
+                case BYTE:
+                    List<Number> numberVals = new ArrayList<>(values.size());
+                    List<Character> characterVals = new ArrayList<>(values.size());
+                    for (Object o : values) {
+                        if (o instanceof Character) {
+                            characterVals.add((Character) o);
+                        } else {
+                            numberVals.add((Number) o);
+                        }
+                    }
+                    if (numberVals.isEmpty()) {
+                        return createCharAnnotation(characterVals);
+                    }
+                    return createNumberAnnotationMirror(new ArrayList<>(numberVals));
+                case CHAR:
+                    List<Character> charVals = new ArrayList<>(values.size());
+                    for (Object o : values) {
+                        if (o instanceof Number) {
+                            charVals.add((char) ((Number) o).intValue());
+                        } else {
+                            charVals.add((char) o);
+                        }
+                    }
+                    return createCharAnnotation(charVals);
+            }
+
+            throw new UnsupportedOperationException("Unexpected kind:" + resultType);
         }
     }
 
-    public AnnotationMirror createIntValAnnotation(List<Long> intValues) {
-        intValues = ValueCheckerUtils.removeDuplicates(intValues);
-        if (intValues.isEmpty() || intValues.size() > MAX_VALUES) {
+    /**
+     * Returns a {@link IntVal} annotation using the values. If {@code values} is null, then
+     * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
+     * sorted and duplicates are removed before the annotation is created.
+     *
+     * @param values list of longs; duplicates are allowed and the values may be in any order
+     * @return a {@link IntVal} annotation using the values
+     */
+    public AnnotationMirror createIntValAnnotation(List<Long> values) {
+        if (values == null) {
+            return UNKNOWNVAL;
+        }
+        if (values.isEmpty()) {
+            return BOTTOMVAL;
+        }
+        values = ValueCheckerUtils.removeDuplicates(values);
+        if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntVal.class);
-        builder.setValue("value", intValues);
+        builder.setValue("value", values);
         return builder.build();
     }
 
-    public AnnotationMirror createDoubleValAnnotation(List<Double> doubleValues) {
-        doubleValues = ValueCheckerUtils.removeDuplicates(doubleValues);
-        if (doubleValues.isEmpty() || doubleValues.size() > MAX_VALUES) {
+    /**
+     * Returns a {@link DoubleVal} annotation using the values. If {@code values} is null, then
+     * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
+     * sorted and duplicates are removed before the annotation is created.
+     *
+     * @param values list of doubles; duplicates are allowed and the values may be in any order
+     * @return a {@link DoubleVal} annotation using the values
+     */
+    public AnnotationMirror createDoubleValAnnotation(List<Double> values) {
+        if (values == null) {
+            return UNKNOWNVAL;
+        }
+        if (values.isEmpty()) {
+            return BOTTOMVAL;
+        }
+        values = ValueCheckerUtils.removeDuplicates(values);
+        if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DoubleVal.class);
-        builder.setValue("value", doubleValues);
+        builder.setValue("value", values);
         return builder.build();
     }
 
+    /**
+     * Returns a {@link StringVal} annotation using the values. If {@code values} is null, then
+     * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
+     * sorted and duplicates are removed before the annotation is created.
+     *
+     * @param values list of strings; duplicates are allowed and the values may be in any order
+     * @return a {@link StringVal} annotation using the values
+     */
     public AnnotationMirror createStringAnnotation(List<String> values) {
+        if (values == null) {
+            return UNKNOWNVAL;
+        }
+        if (values.isEmpty()) {
+            return BOTTOMVAL;
+        }
         values = ValueCheckerUtils.removeDuplicates(values);
-        if (values.isEmpty() || values.size() > MAX_VALUES) {
+        if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, StringVal.class);
@@ -886,9 +928,23 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
+    /**
+     * Returns a {@link ArrayLen} annotation using the values. If {@code values} is null, then
+     * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
+     * sorted and duplicates are removed before the annotation is created.
+     *
+     * @param values list of integers; duplicates are allowed and the values may be in any order
+     * @return a {@link ArrayLen} annotation using the values
+     */
     public AnnotationMirror createArrayLenAnnotation(List<Integer> values) {
+        if (values == null) {
+            return UNKNOWNVAL;
+        }
+        if (values.isEmpty()) {
+            return BOTTOMVAL;
+        }
         values = ValueCheckerUtils.removeDuplicates(values);
-        if (values.isEmpty() || values.size() > MAX_VALUES) {
+        if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, ArrayLen.class);
@@ -896,9 +952,23 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
+    /**
+     * Returns a {@link BoolVal} annotation using the values. If {@code values} is null, then
+     * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
+     * sorted and duplicates are removed before the annotation is created.
+     *
+     * @param values list of booleans; duplicates are allowed and the values may be in any order
+     * @return a {@link BoolVal} annotation using the values
+     */
     public AnnotationMirror createBooleanAnnotation(List<Boolean> values) {
+        if (values == null) {
+            return UNKNOWNVAL;
+        }
+        if (values.isEmpty()) {
+            return BOTTOMVAL;
+        }
         values = ValueCheckerUtils.removeDuplicates(values);
-        if (values.isEmpty() || values.size() > MAX_VALUES) {
+        if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, BoolVal.class);
@@ -906,11 +976,26 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
+    /**
+     * Returns a {@link IntVal} annotation using the values. If {@code values} is null, then
+     * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
+     * sorted and duplicates are removed before the annotation is created.
+     *
+     * @param values list of characters; duplicates are allowed and the values may be in any order
+     * @return a {@link IntVal} annotation using the values
+     */
     public AnnotationMirror createCharAnnotation(List<Character> values) {
-        values = ValueCheckerUtils.removeDuplicates(values);
-        if (values.isEmpty() || values.size() > MAX_VALUES) {
+        if (values == null) {
             return UNKNOWNVAL;
         }
+        if (values.isEmpty()) {
+            return BOTTOMVAL;
+        }
+        values = ValueCheckerUtils.removeDuplicates(values);
+        if (values.size() > MAX_VALUES) {
+            return UNKNOWNVAL;
+        }
+
         List<Long> longValues = new ArrayList<>();
         for (char value : values) {
             longValues.add((long) value);
@@ -947,31 +1032,91 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 "ValueAnnotatedTypeFactory: unexpected class: " + first.getClass());
     }
 
+    /**
+     * Returns the set of possible values as a sorted listed with no duplicate values. Returns the
+     * empty list if no values are possible (for dead code). Returns null if any value is possible
+     * -- that is, if no estimate can be made -- and this includes when there is no constant-value
+     * annotation so the argument is null.
+     *
+     * <p>The method returns a list of {@code Long} but is named {@code getIntValues} because it
+     * supports the {@code @IntVal} annotation.
+     *
+     * @param intAnno an {@code @IntVal} annotation, or null
+     */
     public static List<Long> getIntValues(AnnotationMirror intAnno) {
-        return AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, true);
+        if (intAnno == null) {
+            return null;
+        }
+        List<Long> list = AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, true);
+        ValueCheckerUtils.removeDuplicates(list);
+        return list;
     }
 
+    /**
+     * Returns the set of possible values as a sorted listed with no duplicate values. Returns the
+     * empty list if no values are possible (for dead code). Returns null if any value is possible
+     * -- that is, if no estimate can be made -- and this includes when there is no constant-value
+     * annotation so the argument is null.
+     *
+     * @param doubleAnno a {@code @DoubleVal} annotation, or null
+     */
     public static List<Double> getDoubleValues(AnnotationMirror doubleAnno) {
-        return AnnotationUtils.getElementValueArray(doubleAnno, "value", Double.class, true);
+        if (doubleAnno == null) {
+            return null;
+        }
+        List<Double> list =
+                AnnotationUtils.getElementValueArray(doubleAnno, "value", Double.class, true);
+        ValueCheckerUtils.removeDuplicates(list);
+        return list;
     }
 
+    /**
+     * Returns the set of possible array lengths as a sorted listed with no duplicate values.
+     * Returns the empty list if no values are possible (for dead code). Returns null if any value
+     * is possible -- that is, if no estimate can be made -- and this includes when there is no
+     * constant-value annotation so the argument is null.
+     *
+     * @param arrayAnno an {@code @ArrayLen} annotation, or null
+     */
     public static List<Integer> getArrayLength(AnnotationMirror arrayAnno) {
-        return AnnotationUtils.getElementValueArray(arrayAnno, "value", Integer.class, true);
+        if (arrayAnno == null) {
+            return null;
+        }
+        List<Integer> list =
+                AnnotationUtils.getElementValueArray(arrayAnno, "value", Integer.class, true);
+        ValueCheckerUtils.removeDuplicates(list);
+        return list;
     }
 
+    /**
+     * Returns the set of possible values as a sorted listed with no duplicate values. Returns the
+     * empty list if no values are possible (for dead code). Returns null if any value is possible
+     * -- that is, if no estimate can be made -- and this includes when there is no constant-value
+     * annotation so the argument is null.
+     *
+     * @param intAnno an {@code @IntVal} annotation, or null
+     */
     public static List<Character> getCharValues(AnnotationMirror intAnno) {
         if (intAnno == null) {
             return new ArrayList<>();
         }
         List<Long> intValues =
                 AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, true);
-        List<Character> charValues = new ArrayList<Character>();
+        TreeSet<Character> charValues = new TreeSet<>();
         for (Long i : intValues) {
             charValues.add((char) i.intValue());
         }
-        return charValues;
+        return new ArrayList<>(charValues);
     }
 
+    /**
+     * Returns the set of possible values as a sorted listed with no duplicate values. Returns the
+     * empty list if no values are possible (for dead code). Returns null if any value is possible
+     * -- that is, if no estimate can be made -- and this includes when there is no constant-value
+     * annotation so the argument is null.
+     *
+     * @param boolAnno a {@code @BoolVal} annotation, or null
+     */
     public static List<Boolean> getBooleanValues(AnnotationMirror boolAnno) {
         if (boolAnno == null) {
             return new ArrayList<>();
@@ -981,19 +1126,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Set<Boolean> boolSet = new TreeSet<>(boolValues);
         if (boolSet.size() > 1) {
             // boolSet={true,false};
-            return new ArrayList<>();
+            return null;
         }
-        if (boolSet.size() == 0) {
-            // boolSet={};
-            return new ArrayList<>();
-        }
-        if (boolSet.size() == 1) {
-            // boolSet={true} or boolSet={false}
-            return new ArrayList<>(boolSet);
-        }
-        return new ArrayList<>();
+        return new ArrayList<>(boolSet);
     }
 
+    /**
+     * Empty list means dead code -- no values are possible. Null means no information in available
+     * -- all values are possible.
+     */
     public List<Long> getIntValuesFromExpression(
             String expression, Tree tree, TreePath currentPath) {
         AnnotationMirror intValAnno = null;
@@ -1005,10 +1146,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // ignore parse errors
             return null;
         }
-        if (intValAnno == null) {
-            return null;
-        }
-
         return getIntValues(intValAnno);
     }
 }

@@ -220,9 +220,6 @@ import org.checkerframework.javacutil.TreeUtils;
     // org.checkerframework.framework.type.AnnotatedTypeMirror.toString()
     "printAllQualifiers",
 
-    // Print qualifier parameters using annotations instead of the <<Q>> format.
-    "printQualifierParametersAsAnnotations",
-
     // Whether to print [] around a set of type parameters in order to clearly see where they end
     // e.g.  <E extends F, F extends Object>
     // without this option the E is printed as:   E extends F extends Object

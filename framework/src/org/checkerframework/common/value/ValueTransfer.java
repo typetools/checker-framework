@@ -1,6 +1,7 @@
 package org.checkerframework.common.value;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -62,26 +63,34 @@ public class ValueTransfer extends CFTransfer {
         atypefactory = analysis.getTypeFactory();
     }
 
+    /**
+     * Returns a list of possible values for {@code subNode}, as casted to a String. Returns null if
+     * {@code subNode}'s type is top/unknown. Returns an empty list if {@code subNode}'s type is
+     * bottom.
+     */
     private List<String> getStringValues(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
-        // @StringVal, @BottomVal, @UnknownVal
-        AnnotationMirror numberAnno =
+        // @StringVal, @UnknownVal, @BottomVal
+        AnnotationMirror stringAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), StringVal.class);
-        if (numberAnno != null) {
-            return AnnotationUtils.getElementValueArray(numberAnno, "value", String.class, true);
+        if (stringAnno != null) {
+            return AnnotationUtils.getElementValueArray(stringAnno, "value", String.class, true);
         }
-        numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), UnknownVal.class);
-        if (numberAnno != null) {
+        AnnotationMirror topAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), UnknownVal.class);
+        if (topAnno != null) {
+            return null;
+        }
+        AnnotationMirror bottomAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
+        if (bottomAnno != null) {
             return new ArrayList<String>();
         }
-        numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
-        if (numberAnno != null) {
-            return Collections.singletonList("null");
-        }
 
-        //@IntVal, @DoubleVal, @BoolVal (have to be converted to string)
+        // @IntVal, @DoubleVal, @BoolVal (have to be converted to string)
         List<? extends Object> values;
-        numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BoolVal.class);
+        AnnotationMirror numberAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BoolVal.class);
         if (numberAnno != null) {
             values = getBooleanValues(subNode, p);
         } else if (subNode.getType().getKind() == TypeKind.CHAR) {
@@ -90,6 +99,9 @@ public class ValueTransfer extends CFTransfer {
             return getStringValues(((StringConversionNode) subNode).getOperand(), p);
         } else {
             values = getNumericalValues(subNode, p);
+        }
+        if (values == null) {
+            return null;
         }
         List<String> stringValues = new ArrayList<String>();
         for (Object o : values) {
@@ -112,38 +124,38 @@ public class ValueTransfer extends CFTransfer {
         return ValueAnnotatedTypeFactory.getCharValues(intAnno);
     }
 
+    /**
+     * Returns a list of possible values, or null if no estimate is available and any value is
+     * possible.
+     */
     private List<? extends Number> getNumericalValues(
             Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
-        AnnotationMirror numberAnno =
+        List<? extends Number> values = null;
+        AnnotationMirror intValAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
-        List<? extends Number> values;
-        if (numberAnno == null) {
-            numberAnno =
-                    AnnotationUtils.getAnnotationByClass(value.getAnnotations(), DoubleVal.class);
-            if (numberAnno != null) {
-                values =
-                        AnnotationUtils.getElementValueArray(
-                                numberAnno, "value", Double.class, true);
-            } else {
-                return new ArrayList<Number>();
-            }
-        } else {
-            values = AnnotationUtils.getElementValueArray(numberAnno, "value", Long.class, true);
+        if (intValAnno != null) {
+            values = AnnotationUtils.getElementValueArray(intValAnno, "value", Long.class, true);
+        }
+        AnnotationMirror doubleValAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), DoubleVal.class);
+        if (doubleValAnno != null) {
+            values =
+                    AnnotationUtils.getElementValueArray(
+                            doubleValAnno, "value", Double.class, true);
+        }
+        if (values == null) {
+            return null;
         }
         return NumberUtils.castNumbers(subNode.getType(), values);
     }
 
-    private AnnotationMirror createStringValAnnotationMirror(List<String> values) {
-        if (values.isEmpty()) {
+    private AnnotationMirror createNumberAnnotationMirror(List<Number> values) {
+        if (values == null) {
             return ((ValueAnnotatedTypeFactory) atypefactory).UNKNOWNVAL;
         }
-        return ((ValueAnnotatedTypeFactory) atypefactory).createStringAnnotation(values);
-    }
-
-    private AnnotationMirror createNumberAnnotationMirror(List<Number> values) {
         if (values.isEmpty()) {
-            return ((ValueAnnotatedTypeFactory) atypefactory).UNKNOWNVAL;
+            return ((ValueAnnotatedTypeFactory) atypefactory).BOTTOMVAL;
         }
         Number first = values.get(0);
         if (first instanceof Integer || first instanceof Short || first instanceof Long) {
@@ -163,13 +175,6 @@ public class ValueTransfer extends CFTransfer {
         throw new UnsupportedOperationException();
     }
 
-    private AnnotationMirror createBooleanAnnotationMirror(List<Boolean> values) {
-        if (values.isEmpty()) {
-            return ((ValueAnnotatedTypeFactory) atypefactory).UNKNOWNVAL;
-        }
-        return ((ValueAnnotatedTypeFactory) atypefactory).createBooleanAnnotation(values);
-    }
-
     private TransferResult<CFValue, CFStore> createNewResult(
             TransferResult<CFValue, CFStore> result, List<Number> resultValues) {
         AnnotationMirror stringVal = createNumberAnnotationMirror(resultValues);
@@ -181,10 +186,11 @@ public class ValueTransfer extends CFTransfer {
 
     private TransferResult<CFValue, CFStore> createNewResultBoolean(
             TransferResult<CFValue, CFStore> result, List<Boolean> resultValues) {
-        AnnotationMirror stringVal = createBooleanAnnotationMirror(resultValues);
+        AnnotationMirror boolVal =
+                ((ValueAnnotatedTypeFactory) atypefactory).createBooleanAnnotation(resultValues);
         CFValue newResultValue =
                 analysis.createSingleAnnotationValue(
-                        stringVal, result.getResultValue().getUnderlyingType());
+                        boolVal, result.getResultValue().getUnderlyingType());
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
     }
 
@@ -209,13 +215,26 @@ public class ValueTransfer extends CFTransfer {
             TransferResult<CFValue, CFStore> result) {
         List<String> lefts = getStringValues(leftOperand, p);
         List<String> rights = getStringValues(rightOperand, p);
-        List<String> concat = new ArrayList<>();
-        for (String left : lefts) {
-            for (String right : rights) {
-                concat.add(left + right);
+        List<String> concat;
+        if (lefts == null || rights == null) {
+            concat = null;
+        } else {
+            concat = new ArrayList<>();
+            if (lefts.isEmpty()) {
+                lefts = Collections.singletonList("null");
+            }
+            if (rights.isEmpty()) {
+                rights = Collections.singletonList("null");
+            }
+
+            for (String left : lefts) {
+                for (String right : rights) {
+                    concat.add(left + right);
+                }
             }
         }
-        AnnotationMirror stringVal = createStringValAnnotationMirror(concat);
+        AnnotationMirror stringVal =
+                ((ValueAnnotatedTypeFactory) atypefactory).createStringAnnotation(concat);
         TypeMirror underlyingType = result.getResultValue().getUnderlyingType();
         CFValue newResultValue = analysis.createSingleAnnotationValue(stringVal, underlyingType);
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
@@ -242,6 +261,9 @@ public class ValueTransfer extends CFTransfer {
             TransferInput<CFValue, CFStore> p) {
         List<? extends Number> lefts = getNumericalValues(leftNode, p);
         List<? extends Number> rights = getNumericalValues(rightNode, p);
+        if (lefts == null || rights == null) {
+            return null;
+        }
         List<Number> resultValues = new ArrayList<>();
         for (Number left : lefts) {
             NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
@@ -436,6 +458,9 @@ public class ValueTransfer extends CFTransfer {
     private List<Number> calculateNumericalUnaryOp(
             Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
         List<? extends Number> lefts = getNumericalValues(operand, p);
+        if (lefts == null) {
+            return null;
+        }
         List<Number> resultValues = new ArrayList<>();
         for (Number left : lefts) {
             NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
@@ -499,6 +524,9 @@ public class ValueTransfer extends CFTransfer {
             TransferInput<CFValue, CFStore> p) {
         List<? extends Number> lefts = getNumericalValues(leftNode, p);
         List<? extends Number> rights = getNumericalValues(rightNode, p);
+        if (lefts == null || rights == null) {
+            return null;
+        }
         List<Boolean> resultValues = new ArrayList<>();
         for (Number left : lefts) {
             NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
@@ -619,16 +647,25 @@ public class ValueTransfer extends CFTransfer {
         AND;
     }
 
+    private static final List<Boolean> ALL_BOOLEANS =
+            Arrays.asList(new Boolean[] {Boolean.TRUE, Boolean.FALSE});
+
     private List<Boolean> calculateConditionalOperator(
             Node leftNode,
             Node rightNode,
             ConditionalOperators op,
             TransferInput<CFValue, CFStore> p) {
         List<Boolean> lefts = getBooleanValues(leftNode, p);
+        if (lefts == null) {
+            lefts = ALL_BOOLEANS;
+        }
         List<Boolean> resultValues = new ArrayList<>();
-        List<Boolean> rights = new ArrayList<Boolean>();
+        List<Boolean> rights = null;
         if (rightNode != null) {
             rights = getBooleanValues(rightNode, p);
+            if (rights == null) {
+                rights = ALL_BOOLEANS;
+            }
         }
         switch (op) {
             case NOT:
@@ -637,20 +674,6 @@ public class ValueTransfer extends CFTransfer {
                 }
                 return resultValues;
             case OR:
-                if (lefts.isEmpty() && rights.size() == 1) {
-                    if (rights.get(0)) {
-                        // unknown || true == true
-                        return rights;
-                    }
-                }
-
-                if (rights.isEmpty() && lefts.size() == 1) {
-                    if (lefts.get(0)) {
-                        // true || unknown == true
-                        return lefts;
-                    }
-                }
-
                 for (Boolean left : lefts) {
                     for (Boolean right : rights) {
                         resultValues.add(left || right);
@@ -658,20 +681,6 @@ public class ValueTransfer extends CFTransfer {
                 }
                 return resultValues;
             case AND:
-                if (lefts.isEmpty() && rights.size() == 1) {
-                    if (!rights.get(0)) {
-                        // unknown && false == false
-                        return rights;
-                    }
-                }
-
-                if (rights.isEmpty() && lefts.size() == 1) {
-                    if (!lefts.get(0)) {
-                        // false && unknown == false
-                        return lefts;
-                    }
-                }
-
                 for (Boolean left : lefts) {
                     for (Boolean right : rights) {
                         resultValues.add(left && right);
@@ -679,8 +688,7 @@ public class ValueTransfer extends CFTransfer {
                 }
                 return resultValues;
         }
-
-        return resultValues;
+        throw new RuntimeException("Unrecognized conditional operator " + op);
     }
 
     @Override

@@ -11,6 +11,7 @@ import com.sun.source.tree.Tree.Kind;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
@@ -49,6 +50,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         return super.visitArrayAccess(tree, type);
     }
 
+    /**
+     * Checks if this array access is either using a variable that is less than the length of the
+     * array, or using a constant less than the array's minlen. Issues an error if neither is true.
+     */
     private void visitAccess(ExpressionTree indexTree, ExpressionTree arrTree) {
         AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
         String arrName = FlowExpressions.internalReprOf(this.atypeFactory, arrTree).toString();
@@ -58,7 +63,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return;
         }
 
-        AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromExpressionTree(arrTree);
+        AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromTree(arrTree);
         // Produce the full list of relevant names by checking the SameLen type.
         if (sameLenAnno != null && AnnotationUtils.areSameByClass(sameLenAnno, SameLen.class)) {
             if (AnnotationUtils.hasElementValue(sameLenAnno, "value")) {
@@ -74,8 +79,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         // Find max because it's important to determine whether the index is less than the
         // minimum length of the array. If it could be any of several values, only the max is of
         // interest.
-        Integer valMax = atypeFactory.valMaxFromExpressionTree(indexTree);
-        int minLen = atypeFactory.minLenFromExpressionTree(arrTree);
+        Long valMax = IndexUtil.getMaxValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory());
+        int minLen = IndexUtil.getMinLen(arrTree, atypeFactory.getMinLenAnnotatedTypeFactory());
         if (valMax != null && minLen != -1 && valMax < minLen) {
             return;
         }
@@ -145,13 +150,17 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 && relaxedCommonAssignmentCheck((LessThanLengthOf) qualifier, valueExp);
     }
 
+    /**
+     * Implements the actual check for the relaxed common assignment check. For what is permitted,
+     * see {@link #relaxedCommonAssignment}.
+     */
     private boolean relaxedCommonAssignmentCheck(
             LessThanLengthOf varLtlQual, ExpressionTree valueExp) {
 
         AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(valueExp);
         UBQualifier expQual = UBQualifier.createUBQualifier(expType, atypeFactory.UNKNOWN);
 
-        Integer value = atypeFactory.valMaxFromExpressionTree(valueExp);
+        Long value = IndexUtil.getMaxValue(valueExp, atypeFactory.getValueAnnotatedTypeFactory());
 
         if (value == null && !expQual.isLessThanLengthQualifier()) {
             return false;
@@ -178,6 +187,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         return true;
     }
 
+    /**
+     * Tests whether replacing any of the arrays in sameLenArrays with arrayName makes expQual
+     * equivalent to varQual.
+     */
     private boolean testSameLen(
             UBQualifier expQual,
             LessThanLengthOf varQual,
@@ -199,11 +212,14 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         return false;
     }
 
-    private boolean testMinLen(
-            Integer value, int minLen, String arrayName, LessThanLengthOf varQual) {
+    /**
+     * Tests a constant value (value) against the minlen (minlen) of an array (arrayName) with a
+     * qualifier (varQual).
+     */
+    private boolean testMinLen(Long value, int minLen, String arrayName, LessThanLengthOf varQual) {
         if (value == null) {
             return false;
         }
-        return varQual.isValuePlusOffsetLessThanMinLen(arrayName, value, minLen);
+        return varQual.isValuePlusOffsetLessThanMinLen(arrayName, value.intValue(), minLen);
     }
 }

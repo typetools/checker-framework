@@ -704,6 +704,10 @@ public abstract class CFAbstractTransfer<
      * precise than {@code firstvalue}. This is possible, if {@code secondNode} is an expression
      * that is tracked by the store (e.g., a local variable or a field).
      *
+     * <p>Note that when overriding this method, when a new type is inserted into the store,
+     * splitAssignments should be called, and the new type should be inserted into the store for
+     * each of the resulting nodes.
+     *
      * @param res the previous result
      * @param notEqualTo if true, indicates that the logic is flipped (i.e., the information is
      *     added to the {@code elseStore} instead of the {@code thenStore}) for a not-equal
@@ -1038,7 +1042,15 @@ public abstract class CFAbstractTransfer<
     @Override
     public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
         S store = in.getRegularStore();
-        return new RegularTransferResult<>(finishValue(null, store), store);
+        TransferResult<V, S> result =
+                new ConditionalTransferResult<>(
+                        finishValue(null, store), in.getThenStore(), in.getElseStore(), false);
+
+        V caseValue = in.getValueOfSubNode(n.getCaseOperand());
+        V switchValue = in.getValueOfSubNode(n.getSwitchOperand());
+        strengthenAnnotationOfEqualTo(
+                result, n.getCaseOperand(), n.getSwitchOperand(), caseValue, switchValue, false);
+        return result;
     }
 
     /**

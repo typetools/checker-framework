@@ -1,11 +1,11 @@
 package org.checkerframework.checker.index.upperbound;
 
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
@@ -418,16 +418,16 @@ public class OffsetEquation {
             Node node, UpperBoundAnnotatedTypeFactory factory, char op) {
         assert op == '+' || op == '-';
         if (node.getTree() != null && TreeUtils.isExpressionTree(node.getTree())) {
-            Integer i;
+            Long i;
             if (op == '+') {
-                i = factory.valMinFromExpressionTree((ExpressionTree) node.getTree());
+                i = IndexUtil.getMinValue(node.getTree(), factory.getValueAnnotatedTypeFactory());
             } else {
-                i = factory.valMaxFromExpressionTree((ExpressionTree) node.getTree());
+                i = IndexUtil.getMaxValue(node.getTree(), factory.getValueAnnotatedTypeFactory());
                 i = i == null ? null : -i;
             }
             if (i != null) {
                 OffsetEquation eq = new OffsetEquation();
-                eq.addInt(i);
+                eq.addInt(i.intValue());
                 return eq;
             }
         }
