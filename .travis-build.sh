@@ -13,6 +13,19 @@ if [[ "${GROUP}" != "all" && "${GROUP}" != "junit" && "${GROUP}" != "nonjunit" &
   exit 1
 fi
 
+# Optional argument $2 is one of:
+#  downloadjdk, buildjdk
+# If it is omitted, this script uses downloadjdk
+export BUILDJDK=$2
+if [[ "${BUILDJDK}" == "" ]]; then
+  export BUILDJDK=buildjdk
+fi
+
+if [[ "${BUILDJDK}" != "buildjdk" && "${BUILDJDK}" != "downloadjdk" ]]; then
+  echo "Bad argument '${BUILDJDK}'; should be omitted or one of: downloadjdk, buildjdk."
+  exit 1
+fi
+
 # Fail the whole script if any command fails
 set -e
 
@@ -28,7 +41,7 @@ set -o xtrace
 export SHELLOPTS
 
 
-./.travis-build-without-test.sh
+./.travis-build-without-test.sh ${BUILDJDK}
 # The above command builds or downloads the JDK, so there is no need for a
 # subsequent command to build it except to test building it.
 

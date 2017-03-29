@@ -1,0 +1,94 @@
+sudo: false
+
+language: generic
+
+# Alternative to "language: java", which has node installed
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq nodejs
+
+services:
+  - docker
+
+# jdkany contains extra packages that permit it to be used to build the manual.
+# all-tests is the same as junit + nonjunit.  So, choose either:
+#  * junit + nonjunit , or
+#  * all-tests + jdk.jar
+env:
+  matrix:
+  - JDKVER=jdk7 GROUP=junit
+  - JDKVER=jdk7 GROUP=nonjunit
+#  - JDKVER=jdk7 GROUP=all-tests
+#  - JDKVER=jdk7 GROUP=jdk.jar
+  - JDKVER=jdk7 GROUP=demos
+  - JDKVER=jdk7 GROUP=downstream
+  - JDKVER=jdk8 GROUP=junit
+  - JDKVER=jdk8 GROUP=nonjunit
+#  - JDKVER=jdk8 GROUP=all-tests
+#  - JDKVER=jdk8 GROUP=jdk.jar
+  - JDKVER=jdk8 GROUP=demos
+  - JDKVER=jdk8 GROUP=downstream
+  - JDKVER=jdkany GROUP=misc
+
+before_script:
+- docker pull mdernst/ubuntu-for-cf-$JDKVER
+
+# Using travis_wait here seems to cause the job to terminate after 1 minute
+# with no error (!).
+script:
+- REMOTE_ORIGIN_URL=`git config --get remote.origin.url`
+- echo "JDKVER=${JDKVER}"
+- echo "TRAVIS_BRANCH=${TRAVIS_BRANCH}"
+- echo "REMOTE_ORIGIN_URL=${REMOTE_ORIGIN_URL}"
+- echo "TRAVIS_EVENT_TYPE=${TRAVIS_EVENT_TYPE}"
+- echo "TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST}"
+- echo "TRAVIS_PULL_REQUEST_BRANCH=${TRAVIS_PULL_REQUEST_BRANCH}"
+- echo "TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG}"
+- echo "GROUP=${GROUP}"
+- echo "Building the jdk"
+- >-
+  docker run mdernst/ubuntu-for-cf-$JDKVER /bin/bash -c "true &&
+     export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` &&
+     if [ $TRAVIS_EVENT_TYPE = pull_request ] ; then
+       git clone --quiet --depth 9 $REMOTE_ORIGIN_URL checker-framework
+       cd checker-framework
+       git fetch origin +refs/pull/$TRAVIS_PULL_REQUEST/merge
+       git checkout -qf FETCH_HEAD
+       git config user.email noone@cares.com
+       git config user.name Noone Cares
+       git remote add theupstream https://github.com/$TRAVIS_REPO_SLUG.git
+       git pull --depth 9 theupstream $TRAVIS_BRANCH
+     else
+       git clone --quiet -b $TRAVIS_BRANCH --depth 9 $REMOTE_ORIGIN_URL checker-framework
+       cd checker-framework
+     fi &&
+     java -version &&
+     javac -version &&
+     export TRAVIS_REPO_SLUG=$TRAVIS_REPO_SLUG &&
+     export TRAVIS_BUILD_DIR=$TRAVIS_BUILD_DIR &&
+     ./.travis-build.sh $GROUP"
+
+after_script:
+  - |
+      set +e
+      declare exitCode;
+
+      curl -sSL https://raw.githubusercontent.com/mernst/travis-after-all/master/lib/travis-after-all.js | tac | tac | nodejs
+      exitCode=$?
+      echo "exitCode=$exitCode TRAVIS_BRANCH=$TRAVIS_BRANCH TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST"
+
+      if [ "$exitCode" -eq 0 ]; then
+        if [[ ($TRAVIS_BRANCH == master) &&
+              ($TRAVIS_PULL_REQUEST == false) ]] ; then
+          curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
+          SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
+          sh trigger-travis.sh ${SLUGOWNER} checker-framework.demos $TRAVISTOKEN
+          sh trigger-travis.sh ${SLUGOWNER} checker-framework-inference $TRAVISTOKEN
+          sh trigger-travis.sh typetests daikon-typecheck $TRAVISTOKEN
+          sh trigger-travis.sh typetests plume-lib-typecheck $TRAVISTOKEN
+          sh trigger-travis.sh ${SLUGOWNER} sparta $TRAVISTOKEN
+        fi
+      fi
+
+git:
+  depth: 9
