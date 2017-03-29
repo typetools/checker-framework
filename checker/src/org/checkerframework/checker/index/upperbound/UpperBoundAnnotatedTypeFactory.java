@@ -218,9 +218,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Queries the SameLen Checker to return the type that the SameLen Checker associates with the
-     * given expression tree.
+     * given tree.
      */
-    public AnnotationMirror sameLenAnnotationFromExpressionTree(ExpressionTree tree) {
+    public AnnotationMirror sameLenAnnotationFromTree(Tree tree) {
         AnnotatedTypeMirror sameLenType = getSameLenAnnotatedTypeFactory().getAnnotatedType(tree);
         return sameLenType.getAnnotation(SameLen.class);
     }
@@ -463,6 +463,20 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 result = ((LessThanLengthOf) numerator).divide(divisor.intValue());
             }
             result = result.glb(plusTreeDivideByVal(divisor.intValue(), numeratorTree));
+
+            // If the numerator is an array length access of an array with non-zero length, and the divisor is
+            // greater than one, glb the result with an LTL of the array.
+            if (TreeUtils.isArrayLengthAccess(numeratorTree) && divisor > 1) {
+                String arrayName = ((MemberSelectTree) numeratorTree).getExpression().toString();
+                int minlen =
+                        getMinLenAnnotatedTypeFactory()
+                                .getMinLenFromString(
+                                        arrayName, numeratorTree, getPath(numeratorTree));
+                if (minlen > 0) {
+                    result = result.glb(UBQualifier.createUBQualifier(arrayName, "0"));
+                }
+            }
+
             resultType.addAnnotation(convertUBQualifierToAnnotation(result));
         }
 

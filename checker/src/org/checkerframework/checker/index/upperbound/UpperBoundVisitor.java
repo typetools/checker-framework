@@ -63,7 +63,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return;
         }
 
-        AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromExpressionTree(arrTree);
+        AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromTree(arrTree);
         // Produce the full list of relevant names by checking the SameLen type.
         if (sameLenAnno != null && AnnotationUtils.areSameByClass(sameLenAnno, SameLen.class)) {
             if (AnnotationUtils.hasElementValue(sameLenAnno, "value")) {
