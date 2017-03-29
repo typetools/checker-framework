@@ -71,7 +71,7 @@ class Refinement2 {
         }
     }
 
-    void moreTests(@IntVal({1, 2, 3}) Integer x, int y) {
+    void moreTests(@IntVal({1, 2, 3}) Integer x, Integer y) {
         if (x == null) {
             if (y == x) {
                 // x and y should be @BottomVal
