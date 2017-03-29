@@ -33,6 +33,16 @@ class ArrayInit {
         int @ArrayLen({1}) [] a = new int[i];
     }
 
+    public void rangeInit(
+            @IntRange(from = 1, to = 2) int shortLength,
+            @IntRange(from = 1, to = 20) int longLength,
+            @BottomVal int bottom) {
+        int @ArrayLen({1, 2}) [] a = new int[shortLength];
+        //:: error: (assignment.type.incompatible)
+        int @ArrayLen({1, 2}) [] b = new int[longLength];
+        int @ArrayLen({0}) [] c = new int[bottom];
+    }
+
     public void multiDim() {
         int i = 2;
         int j = 3;
@@ -50,13 +60,13 @@ class ArrayInit {
     }
 
     public void vargsTest() {
-        // type of arg should be @UnknownValue Object @BottomVal[]
+        // type of arg should be @UnknownVal Object @BottomVal[]
         vargs((Object[]) null);
 
-        // type of arg should be @UnknownValue int @BottomVal[]
+        // type of arg should be @UnknownVal int @BottomVal[]
         vargs((int[]) null);
 
-        // type of arg should be @UnknownValue byte @BottomVal[]
+        // type of arg should be @UnknownVal byte @BottomVal[]
         vargs((byte[]) null);
     }
 
