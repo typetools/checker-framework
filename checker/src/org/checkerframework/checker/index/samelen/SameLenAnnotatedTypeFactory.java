@@ -2,6 +2,8 @@ package org.checkerframework.checker.index.samelen;
 
 import static org.checkerframework.checker.index.IndexUtil.getValueOfAnnotationWithStringArgument;
 
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
@@ -21,12 +23,18 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.qual.PolyAll;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * The SameLen Checker is used to determine whether there are multiple arrays in a program that
@@ -231,6 +239,49 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
             return false;
+        }
+    }
+
+    @Override
+    public TreeAnnotator createTreeAnnotator() {
+        return new ListTreeAnnotator(
+                super.createTreeAnnotator(),
+                new SameLenTreeAnnotator(this),
+                new PropagationTreeAnnotator(this),
+                new ImplicitsTreeAnnotator(this));
+    }
+
+    /**
+     * SameLen needs a tree annotator in order to properly type the right side of assignments of new
+     * arrays that are initialized with the length of another array.
+     */
+    protected class SameLenTreeAnnotator extends TreeAnnotator {
+
+        public SameLenTreeAnnotator(SameLenAnnotatedTypeFactory factory) {
+            super(factory);
+        }
+
+        @Override
+        public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
+            if (node.getDimensions().size() == 1
+                    && TreeUtils.isArrayLengthAccess(node.getDimensions().get(0))) {
+                MemberSelectTree arrayLength = (MemberSelectTree) (node.getDimensions().get(0));
+                AnnotationMirror arrayAnno =
+                        getAnnotatedType(arrayLength.getExpression())
+                                .getAnnotationInHierarchy(UNKNOWN);
+
+                if (AnnotationUtils.areSameByClass(arrayAnno, SameLenUnknown.class)) {
+                    Receiver rec =
+                            FlowExpressions.internalReprOf(
+                                    this.atypeFactory, arrayLength.getExpression());
+                    if (isReceiverToStringParsable(rec)) {
+                        arrayAnno = createSameLen(rec.toString());
+                    }
+                }
+
+                type.addAnnotation(arrayAnno);
+            }
+            return null;
         }
     }
 
