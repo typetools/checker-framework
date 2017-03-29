@@ -547,8 +547,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Recursive method to handle array initializations. Recursively descends the initializer to
          * find each dimension's size and create the appropriate annotation for it.
          *
+         * <p>If the annotation of the dimension is {@code @IntVal}, create an {@code @ArrayLen}
+         * with the same set of possible values. If the annotation is {@code @IntRange} and the
+         * specified range is not wider than 10, create an {@code @ArrayLen} by the same method as
+         * above. If the annotation is {@code @BottomVal}, create an {@code @BottomVal} instead. In
+         * other cases, no annotations are created.
+         *
          * @param dimensions a list of ExpressionTrees where each ExpressionTree is a specifier of
-         *     the size of that dimension (should be an IntVal)
+         *     the size of that dimension
          * @param type the AnnotatedTypeMirror of the array
          */
         private void handleDimensions(
@@ -558,18 +564,26 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         dimensions.subList(1, dimensions.size()),
                         (AnnotatedArrayType) type.getComponentType());
             }
-
             AnnotationMirror dimType =
                     getAnnotatedType(dimensions.get(0)).getAnnotationInHierarchy(UNKNOWNVAL);
-            if (!AnnotationUtils.areSameIgnoringValues(dimType, UNKNOWNVAL)) {
-                List<Long> longLengths = getIntValues(dimType);
-
-                HashSet<Integer> lengths = new HashSet<Integer>(longLengths.size());
-                for (Long l : longLengths) {
-                    lengths.add(l.intValue());
+            if (AnnotationUtils.areSameIgnoringValues(dimType, BOTTOMVAL)) {
+                type.replaceAnnotation(BOTTOMVAL);
+            } else {
+                List<Long> longLengths = null;
+                if (AnnotationUtils.areSameByClass(dimType, IntRange.class)) {
+                    longLengths =
+                            ValueCheckerUtils.getValuesFromRange(getIntRange(dimType), Long.class);
+                } else if (AnnotationUtils.areSameByClass(dimType, IntVal.class)) {
+                    longLengths = getIntValues(dimType);
                 }
-                AnnotationMirror newQual = createArrayLenAnnotation(new ArrayList<>(lengths));
-                type.replaceAnnotation(newQual);
+                if (longLengths != null) {
+                    HashSet<Integer> lengths = new HashSet<Integer>(longLengths.size());
+                    for (Long l : longLengths) {
+                        lengths.add(l.intValue());
+                    }
+                    AnnotationMirror newQual = createArrayLenAnnotation(new ArrayList<>(lengths));
+                    type.replaceAnnotation(newQual);
+                }
             }
         }
 
