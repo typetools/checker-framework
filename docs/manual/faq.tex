@@ -631,7 +631,8 @@ enough functionality to handle common, well-written real-world code, not to
 cover every possible situation.  A simple type system is easier for users
 to understand, less likely to contain bugs, and more efficient.
 
-For example, the type systems do not currently capture arbitrary arithmetic
+For example, the type systems are not path-sensitive, and they
+do not currently capture arbitrary arithmetic
 relationships between variables, such as \code{x > y}.  We have not found
 it necessary.  This does mean, however, that the Nullness Checker will
 issue a warning for code like:

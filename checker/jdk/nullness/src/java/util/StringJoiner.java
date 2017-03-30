@@ -3,7 +3,7 @@ package java.util;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public final class StringJoiner {
-  
+
     public StringJoiner(CharSequence delimiter) {
         throw new RuntimeException("skeleton method");
     }
@@ -18,13 +18,13 @@ public final class StringJoiner {
        throw new RuntimeException("skeleton method");
     }
 
-   
+
     @Override
     public String toString() {
       throw new RuntimeException("skeleton method");
     }
 
-    
+
     public StringJoiner add(@Nullable CharSequence newElement) {
         throw new RuntimeException("skeleton method");
     }
@@ -38,7 +38,7 @@ public final class StringJoiner {
         throw new RuntimeException("skeleton method");
     }
 
-   
+
     public int length() {
        throw new RuntimeException("skeleton method");
     }

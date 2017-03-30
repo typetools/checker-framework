@@ -88,5 +88,5 @@ public class I18nFormatterTransfer extends CFTransfer {
         }
 
         return result;
-    };
+    }
 }
