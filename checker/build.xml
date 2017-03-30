@@ -1274,6 +1274,11 @@ So, use our own archived version.
         </condition>
 
         <echo message="${src.files}" file="${tmpdir}/srcfiles-checker.txt"/>
+
+        <echo message="Applying ${checker-name} to the Checker Framework sources."/>
+        <!-- Use this if you want to see the file names:
+        <echo message="Applying ${checker-name} to: ${src.files}"/>
+        -->
         <java fork="true"
               failonerror="true"
               classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
