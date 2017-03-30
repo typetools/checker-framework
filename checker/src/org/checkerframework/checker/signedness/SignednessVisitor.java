@@ -31,22 +31,27 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         return kind == Kind.AND || kind == Kind.OR;
     }
 
-    /** @return true iff node is a primitive type cast */
-    private boolean isPrimitiveCast(Tree node) {
+    /** @return type of a primitive cast, or null if not primitive */
+    private PrimitiveTypeTree primitiveTypeCast(Tree node) {
         if (node.getKind() != Kind.TYPE_CAST) {
-            return false;
+            return null;
         }
 
         TypeCastTree cast = (TypeCastTree) node;
         Tree castType = cast.getType();
+        // All types should be wrapped in some annotation
         if (castType.getKind() != Kind.ANNOTATED_TYPE) {
-            return false;
+            return null;
         }
 
         AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) castType;
         ExpressionTree underlyingType = annotatedType.getUnderlyingType();
 
-        return underlyingType.getKind() == Kind.PRIMITIVE_TYPE;
+        if (underlyingType.getKind() != Kind.PRIMITIVE_TYPE) {
+            return null;
+        }
+
+        return (PrimitiveTypeTree) underlyingType;
     }
 
     /** @return true iff expr is a literal */
@@ -70,35 +75,36 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     /**
      * Given a masking operation of the form {@code expr & maskLit} or {@code expr | maskLit},
      * return true iff the masking operation results in the same output regardless of the value of
-     * the numBits most significant bits of expr. This is if the numBits most significant bits of
-     * mask are 0 for AND, and 1 for OR. For example, assuming that numBits is 4, the following is
-     * true about AND and OR masks:
+     * the shiftAmount most significant bits of expr. This is if the shiftAmount most significant
+     * bits of mask are 0 for AND, and 1 for OR. For example, assuming that shiftAmount is 4, the
+     * following is true about AND and OR masks:
      *
      * <p>{@code expr & 0x0... == 0x0... ;}
      *
      * <p>{@code expr | 0xF... == 0xF... ;}
      *
      * @param maskKind the kind of mask (AND or OR)
-     * @param numBitsLit the LiteralTree whose value is numBits
+     * @param shiftAmountLit the LiteralTree whose value is shiftAmount
      * @param maskLit the LiteralTree whose value is mask
-     * @return true iff the numBits most significant bits of mask are 0 for AND, and 1 for OR
+     * @return true iff the shiftAmount most significant bits of mask are 0 for AND, and 1 for OR
      */
-    private boolean maskIgnoresMSB(Kind maskKind, LiteralTree numBitsLit, LiteralTree maskLit) {
-        long numBits = getLong(numBitsLit.getValue());
+    private boolean maskIgnoresMSB(Kind maskKind, LiteralTree shiftAmountLit, LiteralTree maskLit) {
+        long shiftAmount = getLong(shiftAmountLit.getValue());
         long mask = getLong(maskLit.getValue());
 
-        // Shift the numBits most significant bits to become the numBits least significant bits, zeroing out the rest.
+        // Shift the shiftAmount most significant bits to become the shiftAmount least significant bits, zeroing out the
+        // rest.
         if (maskLit.getKind() != Kind.LONG_LITERAL) {
             mask <<= 32;
         }
-        mask >>>= (64 - numBits);
+        mask >>>= (64 - shiftAmount);
 
         if (maskKind == Kind.AND) {
-            // Check that the numBits most significant bits of the mask were 0.
+            // Check that the shiftAmount most significant bits of the mask were 0.
             return mask == 0;
         } else if (maskKind == Kind.OR) {
-            // Check that the numBits most significant bits of the mask were 1.
-            return mask == (1 << numBits) - 1;
+            // Check that the shiftAmount most significant bits of the mask were 1.
+            return mask == (1 << shiftAmount) - 1;
         } else {
             // This shouldn't be possible.
             throw new RuntimeException("Invalid Masking Operation");
@@ -106,11 +112,11 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     }
 
     /**
-     * Given a casted right shift of the form {@code (type) (baseExpr >> numBits)} or {@code (type)
-     * (baseExpr >>> numBits)}, return true iff the expression's value is the same regardless of the
-     * type of right shift (signed or unsigned). This is true if the cast ignores the numBits most
-     * significant bits of the shift result -- that is, if the cast ignores all the new bits that
-     * the right shift introduced on the left.
+     * Given a casted right shift of the form {@code (type) (baseExpr >> shiftAmount)} or {@code
+     * (type) (baseExpr >>> shiftAmount)}, return true iff the expression's value is the same
+     * regardless of the type of right shift (signed or unsigned). This is true if the cast ignores
+     * the shiftAmount most significant bits of the shift result -- that is, if the cast ignores all
+     * the new bits that the right shift introduced on the left.
      *
      * <p>For example, the function returns true for
      *
@@ -125,26 +131,32 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      * @param shiftTypeKind the kind of the type of the shift literal (BYTE, CHAR, SHORT, INT, or
      *     LONG)
      * @param castTypeKind the kind of the cast target type (BYTE, CHAR, SHORT, INT, or LONG)
-     * @param numBitsLit the LiteralTree whose value is numBits
+     * @param shiftAmountLit the LiteralTree whose value is shiftAmount
      * @return true iff introduced bits are discarded
      */
     private boolean castIgnoresMSB(
-            TypeKind shiftTypeKind, TypeKind castTypeKind, LiteralTree numBitsLit) {
+            TypeKind shiftTypeKind, TypeKind castTypeKind, LiteralTree shiftAmountLit) {
         // Determine number of bits in the shift type, note shifts upcast to int
-        long shiftBits = 0;
+        // Also determine the shift amount as it is dependent on the shift type.
+        long shiftBits;
+        long shiftAmount;
         switch (shiftTypeKind) {
             case INT:
                 shiftBits = 32;
+                // When the LHS of the shift is an int, the 5 lower order bits of the RHS are used
+                shiftAmount = 0x1F & getLong(shiftAmountLit.getValue());
                 break;
             case LONG:
                 shiftBits = 64;
+                // When the LHS of the shift is a long, the 6 lower order bits of the RHS are used
+                shiftAmount = 0x3F & getLong(shiftAmountLit.getValue());
                 break;
             default:
-                return false;
+                throw new RuntimeException("Invalid shift type");
         }
 
         // Determine number of bits in the cast type
-        long castBits = 0;
+        long castBits;
         switch (castTypeKind) {
             case BYTE:
                 castBits = 8;
@@ -162,14 +174,12 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                 castBits = 64;
                 break;
             default:
-                return false;
+                throw new RuntimeException("Invalid cast target");
         }
 
-        // Determine the bit difference between the shift and cast and the number of bits shifted
-        long bitDiff = shiftBits - castBits;
-        long numBits = getLong(numBitsLit.getValue());
+        long bitsDiscarded = shiftBits - castBits;
 
-        return numBits <= bitDiff || numBits == 0;
+        return shiftAmount <= bitsDiscarded || shiftAmount == 0;
     }
 
     /**
@@ -209,7 +219,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         }
 
         BinaryTree maskExpr = (BinaryTree) enclosing;
-        ExpressionTree shift = shiftExpr.getRightOperand();
+        ExpressionTree shiftAmountExpr = shiftExpr.getRightOperand();
 
         // Determine which child of maskExpr leads to shiftExpr. The other one is the mask.
         ExpressionTree mask =
@@ -220,11 +230,11 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         // Strip away the parentheses from the mask if any exist
         mask = TreeUtils.skipParens(mask);
 
-        if (!isLiteral(shift) || !isLiteral(mask)) {
+        if (!isLiteral(shiftAmountExpr) || !isLiteral(mask)) {
             return false;
         }
 
-        LiteralTree shiftLit = (LiteralTree) shift;
+        LiteralTree shiftLit = (LiteralTree) shiftAmountExpr;
         LiteralTree maskLit = (LiteralTree) mask;
 
         return maskIgnoresMSB(maskExpr.getKind(), shiftLit, maskLit);
@@ -255,20 +265,10 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
             }
         }
 
-        if (!isPrimitiveCast(enclosing)) {
+        PrimitiveTypeTree castPrimitiveType = primitiveTypeCast(enclosing);
+        if (castPrimitiveType == null) {
             return false;
         }
-
-        TypeCastTree cast = (TypeCastTree) enclosing;
-
-        // Determine the type of the cast target
-        Tree castType = cast.getType();
-        if (castType.getKind() != Kind.ANNOTATED_TYPE) {
-            return false;
-        }
-        AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) castType;
-        ExpressionTree underlyingType = annotatedType.getUnderlyingType();
-        PrimitiveTypeTree castPrimitiveType = (PrimitiveTypeTree) underlyingType;
         TypeKind castTypeKind = castPrimitiveType.getPrimitiveTypeKind();
 
         // Determine the type of the shift result
@@ -276,11 +276,11 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                 atypeFactory.getAnnotatedType(shiftExpr).getUnderlyingType().getKind();
 
         // Determine shift literal
-        ExpressionTree shift = shiftExpr.getRightOperand();
-        if (!isLiteral(shift)) {
+        ExpressionTree shiftAmountExpr = shiftExpr.getRightOperand();
+        if (!isLiteral(shiftAmountExpr)) {
             return false;
         }
-        LiteralTree shiftLit = (LiteralTree) shift;
+        LiteralTree shiftLit = (LiteralTree) shiftAmountExpr;
 
         return castIgnoresMSB(shiftTypeKind, castTypeKind, shiftLit);
     }

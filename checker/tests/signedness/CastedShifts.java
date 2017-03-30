@@ -181,6 +181,24 @@ public class CastedShifts {
         intRes = (@Unsigned int) ((unsigned >> 0));
         intRes = (@Signed int) ((signed >>> 0));
         intRes = (@Signed int) ((signed >> 0));
+
+        // Test outside Java Specification shift ranges
+        // Cast to int.
+        // Now shift signedness matters again
+        intRes = (@Unsigned int) ((unsigned >>> 33));
+
+        //:: error: (shift.signed)
+        intRes = (@Unsigned int) ((unsigned >> 33));
+
+        //:: error: (shift.unsigned)
+        intRes = (@Signed int) ((signed >>> 33));
+        intRes = (@Signed int) ((signed >> 33));
+
+        // Shifting right by zero should behave as assignment
+        intRes = (@Unsigned int) ((unsigned >>> 32));
+        intRes = (@Unsigned int) ((unsigned >> 32));
+        intRes = (@Signed int) ((signed >>> 32));
+        intRes = (@Signed int) ((signed >> 32));
     }
 
     public void CastedLongShifts(@Unsigned long unsigned, @Signed long signed) {
@@ -374,5 +392,23 @@ public class CastedShifts {
         longRes = (@Unsigned long) ((unsigned >> 0));
         longRes = (@Signed long) ((signed >>> 0));
         longRes = (@Signed long) ((signed >> 0));
+
+        // Test outside Java Specification shift ranges
+        // Cast to long.
+        // Now shift signedness matters again
+        longRes = (@Unsigned long) ((unsigned >>> 65));
+
+        //:: error: (shift.signed)
+        longRes = (@Unsigned long) ((unsigned >> 65));
+
+        //:: error: (shift.unsigned)
+        longRes = (@Signed long) ((signed >>> 65));
+        longRes = (@Signed long) ((signed >> 65));
+
+        // Shifting right by zero should behave as assignment
+        longRes = (@Unsigned long) ((unsigned >>> 64));
+        longRes = (@Unsigned long) ((unsigned >> 64));
+        longRes = (@Signed long) ((signed >>> 64));
+        longRes = (@Signed long) ((signed >> 64));
     }
 }
