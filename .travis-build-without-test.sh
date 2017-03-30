@@ -5,7 +5,7 @@ set -e
 
 # Optional argument $1 is one of:
 #  downloadjdk, buildjdk
-# If it is omitted, this script uses downloadjdk
+# If it is omitted, this script uses downloadjdk.
 export BUILDJDK=$1
 if [[ "${BUILDJDK}" == "" ]]; then
   export BUILDJDK=buildjdk
