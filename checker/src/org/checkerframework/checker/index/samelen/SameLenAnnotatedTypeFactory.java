@@ -105,7 +105,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         newValues.addAll(a1Names);
         newValues.addAll(a2Names);
         String[] names = newValues.toArray(new String[newValues.size()]);
-        Arrays.sort(names);
         return createSameLen(names);
     }
 
@@ -293,7 +292,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         if (!arrayAnnoArrays.contains(rec.toString())) {
                             arrayAnnoArrays.add(rec.toString());
                             String[] newArrayAnnoArrays = arrayAnnoArrays.toArray(new String[0]);
-                            Arrays.sort(newArrayAnnoArrays);
                             arrayAnno = createSameLen(newArrayAnnoArrays);
                         }
                     }
@@ -307,10 +305,15 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Creates a @SameLen annotation whose values are the given strings. */
     public AnnotationMirror createSameLen(String... val) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
+        Arrays.sort(val);
         builder.setValue("value", val);
         return builder.build();
     }
 
+    /**
+     * Find all the arrays that are members of the SameLen annotation associated with the array
+     * named in arrayExpression along the current path.
+     */
     public List<String> getSameLensFromString(
             String arrayExpression, Tree tree, TreePath currentPath) {
         AnnotationMirror sameLenAnno = null;
