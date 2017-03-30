@@ -1,6 +1,8 @@
 package org.checkerframework.checker.index.samelen;
 
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
+import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexUtil;
@@ -149,27 +151,38 @@ public class SameLenTransfer extends CFTransfer {
      * and b have SameLen of each other in the store.
      */
     private void refineEq(Node left, Node right, CFStore store) {
-        Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
-        Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
+        List<Receiver> receivers = new ArrayList<>();
+        List<AnnotationMirror> annos = new ArrayList<>();
 
-        AnnotationMirror leftAnno = getAnno(left);
-        AnnotationMirror rightAnno = getAnno(right);
-        AnnotationMirror combinedSameLen =
-                aTypeFactory.createCombinedSameLen(leftRec, rightRec, leftAnno, rightAnno);
+        for (Node internal : splitAssignments(left)) {
+            receivers.add(FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal));
+            annos.add(getAnno(internal));
+        }
+
+        for (Node internal : splitAssignments(right)) {
+            receivers.add(FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal));
+            annos.add(getAnno(internal));
+        }
+
+        AnnotationMirror combinedSameLen = aTypeFactory.createCombinedSameLen(receivers, annos);
 
         propagateCombinedSameLen(combinedSameLen, left, store);
     }
 
     /** Return n's annotation from the SameLen hierarchy. */
     AnnotationMirror getAnno(Node n) {
-        CFValue cfValue = analysis.getValue(n);
-        if (cfValue == null) {
+        if (n.isLValue()) {
+            return aTypeFactory.getAnnotatedType(n.getTree()).getAnnotationInHierarchy(UNKNOWN);
+        } else {
+            CFValue cfValue = analysis.getValue(n);
+            if (cfValue == null) {
+                return UNKNOWN;
+            }
+            if (cfValue.getAnnotations().size() == 1) {
+                return cfValue.getAnnotations().iterator().next();
+            }
             return UNKNOWN;
         }
-        if (cfValue.getAnnotations().size() == 1) {
-            return cfValue.getAnnotations().iterator().next();
-        }
-        return UNKNOWN;
     }
 
     /** Implements the transfer rules for both equal nodes and not-equals nodes. */
