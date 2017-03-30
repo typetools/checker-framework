@@ -373,7 +373,7 @@ When needed, you can specify which sequences have the same length using the foll
   \code{null} has this type.
 \end{description}
 
-\section{Special handling for binarySearch\label{index-searchindex}}
+\section{Special handling for binary search\label{index-searchindex}}
 
 The JDK's implementation of
 \sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-int-int-java.lang.Object-}{binary search}
@@ -389,10 +389,16 @@ The binary search tracking type system has four qualifiers:
 \item[\refqualclasswithparams{checker/index/qual}{SearchIndex}{String[] names}]
   An expression with this type represents an integer produced by
   calling \sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-int-int-java.lang.Object-}{Arrays.binarySearch}.
+  The argument represents the array(s) on which binary search was called.
+  This type is a subtype of [\refqualclass{checker/index/qual}{SearchIndexUnknown}].
 \item[\refqualclasswithparams{checker/index/qual}{NegativeIndexFor}{String[] names}]
   An expression with this type represents an integer that both originated
   from a binary search call and is known to be negative. Applying the bitwise
   complement operator (~) to this type produces an [\refqualclass{checker/index/qual}{IndexOrHigh}].
+  This type can only be produced by comparing a [\refqualclass{checker/index/qual}{SearchIndex}]
+  to zero. This type is a subtype of [\refqualclass{checker/index/qual}{SearchIndex}] if every array
+  present in the argument of the [\refqualclass{checker/index/qual}{SearchIndex}] is present in this
+  type's argument.
 \item[\refqualclass{checker/index/qual}{SearchIndexBottom}]
   This is the bottom type, and programmers should never write it.
 \item[\refqualclass{checker/index/qual}{SearchIndexUnknown}]

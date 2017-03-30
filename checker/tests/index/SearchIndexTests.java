@@ -25,4 +25,14 @@ class SearchIndexTests {
             @LTEqLengthOf("a") int z = ~xyz;
         }
     }
+
+    void subtyping1(
+            @SearchIndex({"#3", "#4"}) int x, @NegativeIndexFor("#3") int y, int[] a, int[] b) {
+        //:: error: (assignment.type.incompatible)
+        @SearchIndex({"a", "b"}) int z = y;
+        @SearchIndex("a") int w = y;
+        @SearchIndex("b") int p = x;
+        //:: error: (assignment.type.incompatible)
+        @NegativeIndexFor({"a", "b"}) int q = x;
+    }
 }

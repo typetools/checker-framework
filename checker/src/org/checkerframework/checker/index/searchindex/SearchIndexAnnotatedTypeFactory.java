@@ -80,7 +80,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (AnnotationUtils.areSameByClass(superAnno, SearchIndexBottom.class)) {
                 return false;
             }
-            // All annotations have arguments, because each is either NegativeIndexFor or
+            // All annotations should have arguments, because each is either NegativeIndexFor or
             // SearchIndex. All NegativeIndexFor annotations are subtypes of SearchIndex
             // annotations whose arguments contain their arguments.
             if (AnnotationUtils.areSameByClass(subAnno, NegativeIndexFor.class)) {
@@ -89,7 +89,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<String> subArrays = IndexUtil.getValueOfAnnotationWithStringArgument(subAnno);
                 return superArrays != null
                         && subArrays != null
-                        && superArrays.containsAll(subArrays);
+                        && subArrays.containsAll(superArrays);
             }
             if (AnnotationUtils.areSameByClass(subAnno, SearchIndex.class)) {
                 List<String> superArrays =
@@ -98,7 +98,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return superArrays != null
                         && subArrays != null
                         && AnnotationUtils.areSameByClass(superAnno, SearchIndex.class)
-                        && superArrays.containsAll(subArrays);
+                        && subArrays.containsAll(superArrays);
             }
             assert false;
             return false; // dead code

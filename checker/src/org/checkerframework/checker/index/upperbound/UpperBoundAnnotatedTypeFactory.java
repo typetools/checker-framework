@@ -87,6 +87,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(IndexOrLow.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(IndexOrHigh.class, createLTEqLengthOfAnnotation());
         addAliasedAnnotation(SearchIndex.class, createLTLengthOfAnnotation());
+        addAliasedAnnotation(NegativeIndexFor.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyIndex.class, POLY);
 
@@ -211,7 +212,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
-        if (AnnotationUtils.areSameByClass(a, IndexFor.class)) {
+        if (AnnotationUtils.areSameByClass(a, IndexFor.class)
+                || AnnotationUtils.areSameByClass(a, SearchIndex.class)
+                || AnnotationUtils.areSameByClass(a, NegativeIndexFor.class)) {
             List<String> stringList =
                     AnnotationUtils.getElementValueArray(a, "value", String.class, true);
             return createLTLengthOfAnnotation(stringList.toArray(new String[0]));
@@ -225,11 +228,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<String> stringList =
                     AnnotationUtils.getElementValueArray(a, "value", String.class, true);
             return createLTEqLengthOfAnnotation(stringList.toArray(new String[0]));
-        }
-        if (AnnotationUtils.areSameByClass(a, SearchIndex.class)) {
-            List<String> stringList =
-                    AnnotationUtils.getElementValueArray(a, "value", String.class, true);
-            return createLTLengthOfAnnotation(stringList.toArray(new String[0]));
         }
         return super.aliasedAnnotation(a);
     }
