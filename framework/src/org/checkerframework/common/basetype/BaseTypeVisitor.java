@@ -334,21 +334,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Check that the field invariant meets the following requirements:
+     * Check that the field invariant declaration annotations meets the following requirements:
      *
-     * <p>1.) If the superclass of {@code classTree} has a field invariant, then the field invariant
-     * for {@code classTree} must include all the fields in the superclass invariant and those
-     * fields' annotations must be a subtype (or equal) to the annotations for those fields in the
-     * the superclass.
-     *
-     * <p>2.) The fields in the invariant must be a.) final and b.) declared in a superclass of
-     * {@code classTree}.
-     *
-     * <p>3.) The qualifier for each field must be a subtype of the annotation on the declaration of
-     * that field.
-     *
-     * <p>4.) The field invariant has an equal number of fields and qualifiers, or it has one
-     * qualifier and at least on field.
+     * <ol>
+     *   <!-- The number of the items below are referred to in the body of the method.-->
+     *   <li value="1">If the superclass of {@code classTree} has a field invariant, then the field
+     *       invariant for {@code classTree} must include all the fields in the superclass invariant
+     *       and those fields' annotations must be a subtype (or equal) to the annotations for those
+     *       fields in the the superclass.
+     *   <li value="2">The fields in the invariant must be a.) final and b.) declared in a
+     *       superclass of {@code classTree}.
+     *   <li value="3">The qualifier for each field must be a subtype of the annotation on the
+     *       declaration of that field.
+     *   <li value="4">The field invariant has an equal number of fields and qualifiers, or it has
+     *       one qualifier and at least on field.
+     * </ol>
      *
      * @param classTree class that might have a field invariant
      * @checker_framework.manual #field-invariants Field invariants
