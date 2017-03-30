@@ -15,8 +15,8 @@ services:
 #  * junit + nonjunit , or
 #  * all-tests + jdk.jar
 
-env:
 matrix:
+env:
 ## Jobs used when downloading jdk
   - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=all-tests
   - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=jdk.jar
