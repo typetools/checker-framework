@@ -880,24 +880,24 @@ public class ValueTransfer extends CFTransfer {
             case GREATER_THAN:
                 thenLeftRange = leftRange.refineGreaterThan(rightRange);
                 thenRightRange = rightRange.refineLessThan(leftRange);
-                elseRightRange = rightRange.refineLessThanEq(leftRange);
-                elseLeftRange = leftRange.refineGreaterThanEq(rightRange);
+                elseRightRange = rightRange.refineGreaterThanEq(leftRange);
+                elseLeftRange = leftRange.refineLessThanEq(rightRange);
                 break;
             case GREATER_THAN_EQ:
-                thenRightRange = rightRange.refineGreaterThanEq(leftRange);
-                thenLeftRange = leftRange.refineLessThanEq(rightRange);
+                thenRightRange = rightRange.refineLessThanEq(leftRange);
+                thenLeftRange = leftRange.refineGreaterThan(rightRange);
                 elseLeftRange = leftRange.refineLessThan(rightRange);
                 elseRightRange = rightRange.refineGreaterThan(leftRange);
                 break;
             case LESS_THAN:
                 thenLeftRange = leftRange.refineLessThan(rightRange);
                 thenRightRange = rightRange.refineGreaterThan(leftRange);
-                elseRightRange = rightRange.refineGreaterThanEq(leftRange);
-                elseLeftRange = leftRange.refineLessThanEq(rightRange);
+                elseRightRange = rightRange.refineLessThanEq(leftRange);
+                elseLeftRange = leftRange.refineGreaterThanEq(rightRange);
                 break;
             case LESS_THAN_EQ:
-                thenRightRange = rightRange.refineLessThanEq(leftRange);
-                thenLeftRange = leftRange.refineGreaterThanEq(rightRange);
+                thenRightRange = rightRange.refineGreaterThanEq(leftRange);
+                thenLeftRange = leftRange.refineLessThanEq(rightRange);
                 elseLeftRange = leftRange.refineGreaterThan(rightRange);
                 elseRightRange = rightRange.refineLessThan(leftRange);
                 break;
