@@ -399,7 +399,7 @@ public class InternalUtils {
 
     /**
      * Returns the type element for {@code type} if {@code type} is a class, interface, annotation
-     * type, or enum. Otherwise, returns null
+     * type, or enum. Otherwise, returns null.
      *
      * @param type whose element is returned
      * @return the type element for {@code type} if {@code type} is a class, interface, annotation

@@ -251,8 +251,9 @@ public class ElementUtils {
      * Returns the elements of the fields whose simple names are {@code names} and are declared in
      * {@code type}.
      *
-     * <p>If a field or fields isn't found, it's element isn't included in the list. If no fields
-     * are found, the empty list is returned.
+     * <p>If a field or fields isn't declared in {@code type}, its element isn't included in the
+     * returned set. If none of the fields is declared in {@code type} found, the empty set is
+     * returned.
      *
      * @param type where to look for fields
      * @param names simple names of fields that might be declared in {@code type}
@@ -271,19 +272,19 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the elements of the fields whose simple names are {@code names} and are declared in
-     * {@code type} or a super type.
+     * Returns field elements, and side-effects {@code names} to remove them. For every field name
+     * in {@code names} that is declared in {@code type} or a supertype, add its element to the
+     * returned set and remove it from {@code names}.
      *
-     * <p>If a field or fields isn't found, it's element isn't included in the list. If no fields
-     * are found, the empty list is returned. Names of fields that are found are removed from {@code
-     * names}, such that after this method is called, {@code names} only contains names of filed not
-     * declared in type or a super type.
+     * <p>When this routine returns, the combination of the return value and {@code names} has the
+     * same cardinality, and represents the same fields, as {@code names} did when the method was
+     * called.
      *
      * @param type where to look for fields
-     * @param names simple names of fields that might be declared in {@code type}. (Names that are
-     *     found are removed from this list.)
-     * @return the elements of the fields whose simple names are {@code names} and are declared in
-     *     {@code type}
+     * @param names simple names of fields that might be declared in {@code type} or a supertype.
+     *     (Names that are found are removed from this list.)
+     * @return the {@code VariableElement}s for fields that are declared in {@code type} whose
+     *     simple names were in {@code names} when the method was called.
      */
     public static Set<VariableElement> findFieldsInTypeOrSuperType(
             TypeMirror type, Collection<String> names) {
@@ -292,21 +293,25 @@ public class ElementUtils {
         return elements;
     }
 
+    /**
+     * Side-effects both {@code foundFields} (which starts empty) and {@code notFound}, conceptually
+     * moving elements from {@code notFound} to {@code foundFields}.
+     */
     private static void findFieldsInTypeOrSuperType(
-            Set<VariableElement> foundFields, Collection<String> notFound, TypeMirror superClass) {
-        if (TypesUtils.isObject(superClass)) {
+            Set<VariableElement> foundFields, Collection<String> notFound, TypeMirror type) {
+        if (TypesUtils.isObject(type)) {
             return;
         }
-        TypeElement superElt = InternalUtils.getTypeElement(superClass);
+        TypeElement elt = InternalUtils.getTypeElement(type);
 
-        Set<VariableElement> fieldElts = findFieldsInType(superElt, notFound);
+        Set<VariableElement> fieldElts = findFieldsInType(elt, notFound);
         for (VariableElement field : fieldElts) {
             notFound.remove(field.getSimpleName().toString());
         }
         foundFields.addAll(fieldElts);
 
         if (!notFound.isEmpty()) {
-            findFieldsInTypeOrSuperType(foundFields, notFound, superElt.getSuperclass());
+            findFieldsInTypeOrSuperType(foundFields, notFound, elt.getSuperclass());
         }
     }
 

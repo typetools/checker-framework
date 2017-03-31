@@ -347,7 +347,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *   <li value="3">The qualifier for each field must be a subtype of the annotation on the
      *       declaration of that field.
      *   <li value="4">The field invariant has an equal number of fields and qualifiers, or it has
-     *       one qualifier and at least on field.
+     *       one qualifier and at least one field.
      * </ol>
      *
      * @param classTree class that might have a field invariant
@@ -361,6 +361,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
+        // Where to issue an error, if any.
         Tree errorTree =
                 atypeFactory.getFieldInvariantAnnotationTree(
                         classTree.getModifiers().getAnnotations());
