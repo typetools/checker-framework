@@ -15,6 +15,15 @@ public final class SignednessUtil {
     }
 
     /**
+     * Gets an unsigned int from the ByteBuffer b. Wraps {@link java.nio.ByteBuffer#getInt()
+     * getInt()}, but assumes that the result should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static @Unsigned int getUnsignedInt(ByteBuffer b) {
+        return b.getInt();
+    }
+
+    /**
      * Gets an unsigned short from the ByteBuffer b. Wraps {@link java.nio.ByteBuffer#getShort()
      * getShort()}, but assumes that the result should be interpreted as unsigned.
      */
