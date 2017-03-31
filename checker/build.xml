@@ -1306,12 +1306,18 @@ So, use our own archived version.
         </antcall>
     </target>
 
+    <fileset dir=".." id="messages.properties.files">
+      <include name="**/messages.properties"/>
+    </fileset>
+
+    <pathconvert pathsep=":" property="messages.properties.concatenated" refid="messages.properties.files">
+    </pathconvert>
+
     <target name="check-compilermsgs"
             description="Run the compiler message keys checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="org.checkerframework.checker.compilermsgs.CompilerMessagesChecker"/>
-
-            <param name="checker-args" value="-Apropfiles=${framework.loc}/src/org/checkerframework/framework/source/messages.properties:${framework.loc}/src/org/checkerframework/common/aliasing/messages.properties:${framework.loc}/src/org/checkerframework/common/basetype/messages.properties:./src/org/checkerframework/checker/lock/messages.properties:./src/org/checkerframework/checker/interning/messages.properties:./src/org/checkerframework/checker/index/lowerbound/messages.properties:./src/org/checkerframework/checker/nullness/messages.properties:./src/org/checkerframework/checker/initialization/messages.properties:./src/org/checkerframework/checker/linear/messages.properties:./src/org/checkerframework/checker/signedness/messages.properties:./src/org/checkerframework/checker/regex/messages.properties:${framework.loc}/src/org/checkerframework/common/util/report/messages.properties:./src/org/checkerframework/checker/formatter/messages.properties:./src/org/checkerframework/checker/i18nformatter/messages.properties:${framework.loc}/src/org/checkerframework/common/value/messages.properties:./src/org/checkerframework/checker/guieffect/messages.properties:${framework.loc}/src/org/checkerframework/common/reflection/messages.properties:./src/org/checkerframework/checker/index/upperbound/messages.properties"/>
+            <param name="checker-args" value="-Apropfiles=${messages.properties.concatenated}"/>
         </antcall>
     </target>
 
