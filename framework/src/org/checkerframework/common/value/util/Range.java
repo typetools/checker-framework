@@ -767,6 +767,38 @@ public class Range {
     }
 
     /**
+     * Refines this range to reflect that no value in it can be equal to a value in the given range.
+     * This is used for calculating the control-flow-refined result of the != operator. For example:
+     *
+     * <pre>
+     * <code>
+     *     {@literal @}IntRange(from = 0, to = 10) int a;
+     *     {@literal @}IntRange(from = 3, to = 15) int b;
+     *     ...
+     *     if (a != b) {
+     *         // range of <i>a</i> is now refined to [0, 2] because a value in range [3, 10]
+     *         // cannot be equal to variable <i>b</i> with range [3, 15].
+     *         ...
+     *     }
+     * </code>
+     * </pre>
+     *
+     * @param right the specified {@code Range} to compare with
+     * @return the refined {@code Range}
+     */
+    public Range refineNotEqualTo(Range right) {
+        Range intersection = this.intersect(right);
+        Range result;
+        if (intersection.to == this.to) {
+            result = new Range(this.from, intersection.from - 1);
+        } else {
+            // intersection.from == this.from
+            result = new Range(intersection.to + 1, this.to);
+        }
+        return result;
+    }
+
+    /**
      * Determines if the range is wider than a given value, i.e., if the number of possible values
      * enclosed by this range is more than the given value.
      *

@@ -159,4 +159,88 @@ class Refinement {
         @BoolVal({false}) boolean c = w == 3;
         @BoolVal({true, false}) boolean d = x < w;
     }
+
+    void test_intrange_eq(@IntRange(from = 3, to = 10) int x, @IntRange(from = 1, to = 5) int y) {
+        if (x == y) {
+            @IntRange(from = 3, to = 5)
+            int a = x;
+            @IntRange(from = 3, to = 5)
+            int b = y;
+        } else {
+            @IntRange(from = 6, to = 10)
+            int a = x;
+            @IntRange(from = 1, to = 2)
+            int b = y;
+        }
+    }
+
+    void test_intrange_neq(@IntRange(from = 3, to = 10) int x, @IntRange(from = 1, to = 5) int y) {
+        if (x != y) {
+            @IntRange(from = 6, to = 10)
+            int a = x;
+            @IntRange(from = 1, to = 2)
+            int b = y;
+        } else {
+            @IntRange(from = 3, to = 5)
+            int a = x;
+            @IntRange(from = 3, to = 5)
+            int b = y;
+        }
+    }
+
+    void test_intrange_gt(@IntRange(from = 0, to = 10) int x, @IntRange(from = 5, to = 20) int y) {
+        if (x > y) {
+            @IntRange(from = 6, to = 10)
+            int a = x;
+            @IntRange(from = 5, to = 9)
+            int b = y;
+        } else {
+            @IntRange(from = 0, to = 10)
+            int a = x;
+            @IntRange(from = 5, to = 20)
+            int b = y;
+        }
+    }
+
+    void test_intrange_lte(@IntRange(from = 0, to = 10) int x, @IntRange(from = 5, to = 20) int y) {
+        if (x <= y) {
+            @IntRange(from = 0, to = 10)
+            int a = x;
+            @IntRange(from = 5, to = 20)
+            int b = y;
+        } else {
+            @IntRange(from = 6, to = 10)
+            int a = x;
+            @IntRange(from = 5, to = 9)
+            int b = y;
+        }
+    }
+
+    void test_intrange_lt(@IntRange(from = 5, to = 10) int x, @IntRange(from = 2, to = 7) int y) {
+        if (x < y) {
+            @IntRange(from = 2, to = 6)
+            int a = x;
+            @IntRange(from = 6, to = 7)
+            int b = y;
+        } else {
+            @IntRange(from = 5, to = 10)
+            int a = x;
+            @IntRange(from = 2, to = 7)
+            int b = y;
+        }
+    }
+
+    void test_intrange_gte(@IntRange(from = 5, to = 10) int x, @IntRange(from = 2, to = 7) int y) {
+        if (x >= y) {
+            @IntRange(from = 5, to = 10)
+            int a = x;
+            @IntRange(from = 2, to = 7)
+            int b = y;
+        } else {
+            @IntRange(from = 2, to = 6)
+            int a = x;
+            @IntRange(from = 6, to = 7)
+            int b = y;
+        }
+    }
 }

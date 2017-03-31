@@ -778,7 +778,7 @@ public class ValueTransfer extends CFTransfer {
             // TODO:
             // Handle @IntRange annotation when the control flow refinement is implemented
             // typetools/checker-framework#1163
-            return new ArrayList<>();
+            return refineIntRanges(leftNode, rightNode, op, p, thenStore, elseStore);
         }
         List<Boolean> resultValues = new ArrayList<>();
 
@@ -852,6 +852,78 @@ public class ValueTransfer extends CFTransfer {
         createAnnotationFromResultsAndAddToStore(elseStore, elseRightVals, rightNode);
 
         return resultValues;
+    }
+
+    /**
+     * Calculates the result of a binary comparison on a pair of intRange annotations, and refines
+     * annotations appropriately.
+     */
+    private List<Boolean> refineIntRanges(
+            Node leftNode,
+            Node rightNode,
+            ComparisonOperators op,
+            TransferInput<CFValue, CFStore> p,
+            CFStore thenStore,
+            CFStore elseStore) {
+        Range leftRange = getIntRange(leftNode, p);
+        Range rightRange = getIntRange(rightNode, p);
+
+        final Range thenRightRange;
+        final Range thenLeftRange;
+        final Range elseRightRange;
+        final Range elseLeftRange;
+
+        switch (op) {
+            case EQUAL:
+                thenRightRange = rightRange.refineEqualTo(leftRange);
+                thenLeftRange = leftRange.refineEqualTo(rightRange);
+                elseRightRange = rightRange.refineNotEqualTo(leftRange);
+                elseLeftRange = leftRange.refineNotEqualTo(rightRange);
+                break;
+            case GREATER_THAN:
+                thenLeftRange = leftRange.refineGreaterThan(rightRange);
+                thenRightRange = rightRange.refineLessThan(leftRange);
+                elseRightRange = rightRange.refineLessThanEq(leftRange);
+                elseLeftRange = leftRange.refineGreaterThanEq(rightRange);
+                break;
+            case GREATER_THAN_EQ:
+                thenRightRange = rightRange.refineGreaterThanEq(leftRange);
+                thenLeftRange = leftRange.refineLessThanEq(rightRange);
+                elseLeftRange = leftRange.refineLessThan(rightRange);
+                elseRightRange = rightRange.refineGreaterThan(leftRange);
+                break;
+            case LESS_THAN:
+                thenLeftRange = leftRange.refineLessThan(rightRange);
+                thenRightRange = rightRange.refineGreaterThan(leftRange);
+                elseRightRange = rightRange.refineGreaterThanEq(leftRange);
+                elseLeftRange = leftRange.refineLessThanEq(rightRange);
+                break;
+            case LESS_THAN_EQ:
+                thenRightRange = rightRange.refineLessThanEq(leftRange);
+                thenLeftRange = leftRange.refineGreaterThanEq(rightRange);
+                elseLeftRange = leftRange.refineGreaterThan(rightRange);
+                elseRightRange = rightRange.refineLessThan(leftRange);
+                break;
+            case NOT_EQUAL:
+                thenRightRange = rightRange.refineNotEqualTo(leftRange);
+                thenLeftRange = leftRange.refineNotEqualTo(rightRange);
+                elseRightRange = rightRange.refineEqualTo(leftRange);
+                elseLeftRange = leftRange.refineEqualTo(rightRange);
+                break;
+            default:
+                throw new UnsupportedOperationException();
+        }
+
+        Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), leftNode);
+        Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), rightNode);
+
+        thenStore.insertValue(leftRec, atypefactory.createIntRangeAnnotation(thenLeftRange));
+        thenStore.insertValue(rightRec, atypefactory.createIntRangeAnnotation(thenRightRange));
+
+        elseStore.insertValue(leftRec, atypefactory.createIntRangeAnnotation(elseLeftRange));
+        elseStore.insertValue(rightRec, atypefactory.createIntRangeAnnotation(elseRightRange));
+
+        return null; // For now, we're not going to refine the boolean value.
     }
 
     /**
