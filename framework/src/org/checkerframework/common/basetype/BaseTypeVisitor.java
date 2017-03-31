@@ -310,7 +310,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param classTree class to check
      */
     public void processClassTree(ClassTree classTree) {
-        checkFieldInvariants(classTree);
+        checkFieldInvariantDeclarations(classTree);
         if (!TreeUtils.hasExplicitConstructor(classTree)) {
             checkDefaultConstructor(classTree);
         }
@@ -334,10 +334,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Check that the field invariant declaration annotations meets the following requirements:
+     * Check that the field invariant declaration annotations meet the following requirements:
      *
      * <ol>
-     *   <!-- The number of the items below are referred to in the body of the method.-->
+     *   <!-- The item numbering is referred to in the body of the method.-->
      *   <li value="1">If the superclass of {@code classTree} has a field invariant, then the field
      *       invariant for {@code classTree} must include all the fields in the superclass invariant
      *       and those fields' annotations must be a subtype (or equal) to the annotations for those
@@ -353,7 +353,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param classTree class that might have a field invariant
      * @checker_framework.manual #field-invariants Field invariants
      */
-    protected void checkFieldInvariants(ClassTree classTree) {
+    protected void checkFieldInvariantDeclarations(ClassTree classTree) {
         TypeElement elt = TreeUtils.elementFromDeclaration(classTree);
         FieldInvariantObject invariants = atypeFactory.getFieldInvariants(elt);
         if (invariants == null) {

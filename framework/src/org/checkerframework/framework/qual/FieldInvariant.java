@@ -8,11 +8,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import javax.lang.model.element.TypeElement;
 /**
- * Specifies that a field's type in the class on which this annotation is written is a subtype of
+ * Specifies that a field's type, in the class on which this annotation is written, is a subtype of
  * its declared type. The field must be declared in a superclass and must be final.
  *
- * <p>If a type system includes qualifiers with attributes such as {@code @MinLen(1)} then, the type
- * system can implement its own field invariant annotation and override {@link
+ * <p>The {@code @FieldInvariant} annotation does not currently accommodate type qualifiers with
+ * with attributes, such as {@code @MinLen(1)}. In this case, the type system should implement its
+ * own field invariant annotation and override {@link
  * org.checkerframework.framework.type.AnnotatedTypeFactory#getFieldInvariantDeclarationAnnotations()}
  * and {@link
  * org.checkerframework.framework.type.AnnotatedTypeFactory#getFieldInvariants(TypeElement)}. See
@@ -25,8 +26,8 @@ import javax.lang.model.element.TypeElement;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface FieldInvariant {
     /**
-     * The field that has the qualifier. The field must be final and declared in a superclass of the
-     * class on which the field invariant applies.
+     * The field that has a more precise type, in the class on which the {@code FieldInvariant}
+     * annotation is written. The field must be declared in a superclass and must be {@code final}.
      */
     String[] field();
 
