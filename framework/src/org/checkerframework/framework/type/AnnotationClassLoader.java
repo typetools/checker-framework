@@ -282,7 +282,7 @@ public class AnnotationClassLoader {
      * dot)
      *
      * <p>Each step of the recursion checks to see if there's a subdirectory in the current
-     * directory which has a name matching the package name segment, if so, it recursively descends
+     * directory that has a name matching the package name segment, if so, it recursively descends
      * into that subdirectory to check the next package name segment
      *
      * <p>If there's no more segments left, then we've found the qual directory of interest

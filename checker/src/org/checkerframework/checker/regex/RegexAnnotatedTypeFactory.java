@@ -181,7 +181,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * A custom qualifier hierarchy for the Regex Checker. This makes a regex annotation a subtype
      * of all regex annotations with lower group count values. For example, {@code @Regex(3)} is a
-     * subtype of {@code @Regex(1)}. All regex annotations are subtypes of {@code @Regex} which has
+     * subtype of {@code @Regex(1)}. All regex annotations are subtypes of {@code @Regex}, which has
      * a default value of 0.
      */
     private final class RegexQualifierHierarchy extends GraphQualifierHierarchy {
