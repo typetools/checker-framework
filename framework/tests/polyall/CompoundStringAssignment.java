@@ -10,7 +10,7 @@ class CompoundStringAssignment {
         // There was a bug in data flow where
         // the type of local was @H1Bot @H2Bot after this
         // StringConcatenateAssignmentNode,
-        // but only if the RHS was a method method call.
+        // but only if the RHS was a method call.
         local += getSib1();
 
         //:: error: (assignment.type.incompatible)

@@ -174,7 +174,7 @@ public class AnnotationClassLoader {
         // won't be a resourceURL since there isn't a qual directory
 
         // each path from the set of classpaths will be checked to see if it
-        // contains the qual directory of a checker, if so, the the first
+        // contains the qual directory of a checker, if so, the first
         // directory or jar that contains the package will be used as the source
         // for loading classes from the qual package
 

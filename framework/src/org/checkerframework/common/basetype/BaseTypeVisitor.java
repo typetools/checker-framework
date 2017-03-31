@@ -1502,8 +1502,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * <p>By default, this method checks that the thrown expression is a subtype of top.
      *
-     * <p>Issue error if the thrown expression is not a sub type of the the annotation given by
-     * {@link #getThrowUpperBoundAnnotations()}, the same as {@link
+     * <p>Issue error if the thrown expression is not a sub type of the annotation given by {@link
+     * #getThrowUpperBoundAnnotations()}, the same as {@link
      * #getExceptionParameterLowerBoundAnnotations()} by default.
      *
      * <p>Subclasses may override this method to change the behavior of this check. Subclasses
@@ -2231,7 +2231,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return overrideChecker.checkOverride();
     }
 
-    /** Check if method reference type argument inference is required. Issue an error if is is. */
+    /** Check if method reference type argument inference is required. Issue an error if it is. */
     private boolean checkMethodReferenceInference(
             MemberReferenceTree memberReferenceTree,
             AnnotatedExecutableType memberReferenceType,

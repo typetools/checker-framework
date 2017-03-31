@@ -299,7 +299,7 @@ Section~\ref{inherited-wildcard-annotations}).
 
 Recall that \<@Nullable \emph{X}> is a supertype of \<@NonNull \emph{X}>,
 for any \emph{X}\@.
-Most of of the following types mean different things:
+Most of the following types mean different things:
 
 \begin{Verbatim}
   class MyList1<@Nullable T> { ... }
@@ -401,7 +401,7 @@ Another example would be the type parameter of a hypothetical class
 \<ImmutableList>.
 
 The \<@Covariant> annotation is trusted but not checked.
-If you incorrectly specify as covariant a type parameter that that can be
+If you incorrectly specify as covariant a type parameter that can be
 written (say, the class performs a
 \<set> operation or some other mutation on an object of that type), then
 you have created an unsoundness in the type system.
@@ -658,7 +658,7 @@ two declarations are equivalent (where \<@PA> means \<@PolyAll>, for brevity):
 As described in Section~\ref{qualifier-polymorphism-return-type}, the
 qualifier on a return type must be the same as that on some formal parameter.
 Therefore, the first of these declarations is legal because it is
-equivalent to the second, but the third is illegal because it it
+equivalent to the second, but the third is illegal because it is
 equivalent to the fourth.
 
 \begin{Verbatim}
