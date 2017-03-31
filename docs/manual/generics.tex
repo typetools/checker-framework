@@ -424,6 +424,21 @@ explicit method type arguments, for which the syntax is as follows:
 This uses Java's existing syntax for specifying a method call's type arguments.
 
 
+\subsection{The Bottom type\label{bottom-type}}
+
+Many type systems have a \<*Bottom> type that is used only for the \<null>
+value, dead code, and some erroneous situations.  A programmer should
+rarely write the bottom type.
+
+One use is on a lower bound, to indicate that any type qualifier is
+permitted.  A lower-bounded wildcard indicates that a consumer method can
+accept a collection containing any Java type above some Java type, and you
+can add the bottom type qualifier as well:
+
+\begin{Verbatim}
+public static void addNumbers(List<? super @SignednessBottom Integer> list) { ... }
+\end{Verbatim}
+
 
 \section{Qualifier polymorphism\label{qualifier-polymorphism}}
 
