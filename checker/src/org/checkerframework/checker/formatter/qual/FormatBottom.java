@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Represents the bottom of the Format String type hierarchy.
+ * The bottom type in the Format String type system. Programmers should rarely write this type.
  *
  * @checker_framework.manual #formatter-checker Format String Checker
  * @author Konstantin Weitz

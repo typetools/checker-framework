@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Represents the bottom of the type-qualifier hierarchy.
+ * The bottom type in the Signature String type system. Programmers should rarely write this type.
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */

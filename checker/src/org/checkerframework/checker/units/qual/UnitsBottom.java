@@ -8,10 +8,11 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * UnitsBottom is the bottom type of the type hierarchy.
+ * The bottom type in the Units type system. Programmers should rarely write this type.
  *
  * @checker_framework.manual #units-checker Units Checker
  */
@@ -21,4 +22,5 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @DefaultFor(TypeUseLocation.LOWER_BOUND)
 @ImplicitFor(typeNames = Void.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
 public @interface UnitsBottom {}

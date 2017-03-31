@@ -11,8 +11,7 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Represents the bottom of the Regex qualifier hierarchy. This is used to make the null literal a
- * subtype of all Regex annotations.
+ * The bottom type in the Regex type system. Programmers should rarely write this type.
  *
  * @checker_framework.manual #regex-checker Regex Checker
  */

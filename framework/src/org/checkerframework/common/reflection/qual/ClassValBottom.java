@@ -10,8 +10,7 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Represents the bottom of the ClassVal qualifier hierarchy. This is used to make the {@code null}
- * literal a subtype of all ClassVal annotations.
+ * The bottom type in the ClassVal type system. Programmers should rarely write this type.
  *
  * @checker_framework.manual #methodval-and-classval-checkers ClassVal Checker
  */

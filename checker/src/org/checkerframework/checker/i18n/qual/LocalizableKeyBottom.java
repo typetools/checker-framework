@@ -9,10 +9,12 @@ import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * The bottom qualifier for the Internationalization Checker.
+ * The bottom type in the Internationalization type system. Programmers should rarely write this
+ * type.
  *
  * @checker_framework.manual #i18n-checker Internationalization Checker
  */
@@ -20,6 +22,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
 @ImplicitFor(
     typeNames = {java.lang.Void.class},
     literals = {LiteralKind.NULL}

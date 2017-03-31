@@ -10,7 +10,8 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Represents the bottom of the Internationalization Format String type hierarchy.
+ * The bottom type in the Internationalization Format String type system. Programmers should rarely
+ * write this type.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  * @author Siwakorn Srisakaokul
