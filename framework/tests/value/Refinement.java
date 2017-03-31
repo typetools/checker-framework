@@ -168,8 +168,10 @@ class Refinement {
             int b = y;
         } else {
             @IntRange(from = 6, to = 10)
+            //:: error: (assignment.type.incompatible)
             int a = x;
             @IntRange(from = 1, to = 2)
+            //:: error: (assignment.type.incompatible)
             int b = y;
         }
     }
@@ -177,8 +179,10 @@ class Refinement {
     void test_intrange_neq(@IntRange(from = 3, to = 10) int x, @IntRange(from = 1, to = 5) int y) {
         if (x != y) {
             @IntRange(from = 6, to = 10)
+            //:: error: (assignment.type.incompatible)
             int a = x;
             @IntRange(from = 1, to = 2)
+            //:: error: (assignment.type.incompatible)
             int b = y;
         } else {
             @IntRange(from = 3, to = 5)

@@ -874,8 +874,8 @@ public class ValueTransfer extends CFTransfer {
             case EQUAL:
                 thenRightRange = rightRange.refineEqualTo(leftRange);
                 thenLeftRange = leftRange.refineEqualTo(rightRange);
-                elseRightRange = rightRange.refineNotEqualTo(leftRange);
-                elseLeftRange = leftRange.refineNotEqualTo(rightRange);
+                elseRightRange = rightRange; // Not equals gives almost no information.
+                elseLeftRange = leftRange;
                 break;
             case GREATER_THAN:
                 thenLeftRange = leftRange.refineGreaterThan(rightRange);
@@ -902,8 +902,8 @@ public class ValueTransfer extends CFTransfer {
                 elseRightRange = rightRange.refineLessThan(leftRange);
                 break;
             case NOT_EQUAL:
-                thenRightRange = rightRange.refineNotEqualTo(leftRange);
-                thenLeftRange = leftRange.refineNotEqualTo(rightRange);
+                thenRightRange = rightRange; // Not equals gives almost no information.
+                thenLeftRange = leftRange;
                 elseRightRange = rightRange.refineEqualTo(leftRange);
                 elseLeftRange = leftRange.refineEqualTo(rightRange);
                 break;
