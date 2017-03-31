@@ -14,6 +14,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * write this type.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
+ * @checker_framework.manual #bottom-type the bottom type
  * @author Siwakorn Srisakaokul
  */
 @SubtypeOf({I18nFormat.class, I18nInvalidFormat.class, I18nFormatFor.class})

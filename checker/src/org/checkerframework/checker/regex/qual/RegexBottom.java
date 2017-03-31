@@ -14,6 +14,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * The bottom type in the Regex type system. Programmers should rarely write this type.
  *
  * @checker_framework.manual #regex-checker Regex Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
 @InvisibleQualifier
 @ImplicitFor(

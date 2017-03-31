@@ -17,6 +17,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * type.
  *
  * @checker_framework.manual #i18n-checker Internationalization Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
 @SubtypeOf(LocalizableKey.class)
 @Documented

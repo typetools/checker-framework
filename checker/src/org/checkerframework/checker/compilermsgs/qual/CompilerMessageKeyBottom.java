@@ -17,6 +17,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * type.
  *
  * @checker_framework.manual #compilermsgs-checker Compiler Message Key Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
 @SubtypeOf(CompilerMessageKey.class)
 @Documented

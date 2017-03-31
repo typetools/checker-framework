@@ -13,6 +13,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * The bottom type in the Signature String type system. Programmers should rarely write this type.
  *
  * @checker_framework.manual #signature-checker Signature Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
 @SubtypeOf({Identifier.class, FieldDescriptorForArray.class, MethodDescriptor.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

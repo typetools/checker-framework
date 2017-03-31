@@ -13,6 +13,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * The bottom type in the ClassVal type system. Programmers should rarely write this type.
  *
  * @checker_framework.manual #methodval-and-classval-checkers ClassVal Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
 @InvisibleQualifier
 @ImplicitFor(

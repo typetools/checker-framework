@@ -20,6 +20,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * <p>
  *
  * @checker_framework.manual #lock-checker Lock Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
 @SubtypeOf({GuardedBy.class, GuardSatisfied.class})
 @ImplicitFor(literals = {LiteralKind.NULL})

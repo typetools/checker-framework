@@ -15,6 +15,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * The bottom type in the Units type system. Programmers should rarely write this type.
  *
  * @checker_framework.manual #units-checker Units Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
 @SubtypeOf({}) // needs to be done programmatically
 @Documented

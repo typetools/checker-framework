@@ -17,6 +17,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * The bottom type in the Map Key type system. Programmers should rarely write this type.
  *
  * @checker_framework.manual #map-key-checker Map Key Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

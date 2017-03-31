@@ -17,6 +17,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * Programmers should rarely write this type.
  *
  * @checker_framework.manual #propkey-checker Property File Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
 @SubtypeOf(PropertyKey.class)
 @Documented
