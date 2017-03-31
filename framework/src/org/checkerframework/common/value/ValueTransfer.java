@@ -775,9 +775,6 @@ public class ValueTransfer extends CFTransfer {
             CFStore thenStore,
             CFStore elseStore) {
         if (isIntRange(leftNode, p) || isIntRange(rightNode, p)) {
-            // TODO:
-            // Handle @IntRange annotation when the control flow refinement is implemented
-            // typetools/checker-framework#1163
             return refineIntRanges(leftNode, rightNode, op, p, thenStore, elseStore);
         }
         List<Boolean> resultValues = new ArrayList<>();
