@@ -64,7 +64,7 @@ if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
 fi
 
 if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
-  ## downstream tests:  projects that depend on the the Checker Framework.
+  ## downstream tests:  projects that depend on the Checker Framework.
   ## These are here so they can be run by pull requests.  (Pull requests
   ## currently don't trigger downstream jobs.)
   ## Not done in the Travis build, but triggered as a separate Travis project:

@@ -3058,8 +3058,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * If {@code wildcard}'s upper bound is a super type of {@code annotatedTypeMirror}, this method
      * returns an AnnotatedTypeMirror with the same qualifiers as {@code annotatedTypeMirror}, but
-     * the underlying Java type is the the most specific base type of {@code annotatedTypeMirror}
-     * whose erasure type is equivalent to the upper bound of {@code wildcard}.
+     * the underlying Java type is the most specific base type of {@code annotatedTypeMirror} whose
+     * erasure type is equivalent to the upper bound of {@code wildcard}.
      *
      * <p>Otherwise, returns {@code annotatedTypeMirror} unmodified.
      *
