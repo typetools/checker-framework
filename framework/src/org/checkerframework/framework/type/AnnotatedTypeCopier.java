@@ -342,11 +342,11 @@ public class AnnotatedTypeCopier
         originalToCopy.put(original, copy);
 
         if (original.getExtendsBoundField() != null) {
-            copy.setExtendsBound(visit(original.getExtendsBoundField(), originalToCopy));
+            copy.setExtendsBound(visit(original.getExtendsBoundField(), originalToCopy).asUse());
         }
 
         if (original.getSuperBoundField() != null) {
-            copy.setSuperBound(visit(original.getSuperBoundField(), originalToCopy));
+            copy.setSuperBound(visit(original.getSuperBoundField(), originalToCopy).asUse());
         }
 
         return copy;
