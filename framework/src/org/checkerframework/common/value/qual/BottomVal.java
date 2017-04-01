@@ -10,10 +10,10 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Represents the bottom of the Constant Value qualifier hierarchy. It means that the value always
- * has the value null or that the expression is dead code.
+ * The bottom type in the Constant Value type system. Programmers should rarely write this type.
  *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
 @InvisibleQualifier
 @ImplicitFor(

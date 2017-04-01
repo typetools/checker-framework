@@ -191,10 +191,13 @@ Here is an example of one good way to proceed.
   easier to understand and change in text than in an implementation.
   Section~\ref{creating-documenting-a-checker} gives a suggested structure for the
   manual chapter, which will help you avoid omitting any parts.
+  Get feedback from someone else at this point to ensure that your manual
+  is comprehensible.
 
   Once you have designed and documented the parts of your type system, you
-  may also want to choose some case studies and play computer to ensure
-  that they give the expected results.  During manual checking, ask
+  may also want to choose some case studies and ``play computer'', manually
+  type-checking the code according to the rules you defined.
+  During manual checking, ask
   yourself what reasoning you applied, what information you needed, and
   whether your written-down rules were sufficient.
 
@@ -575,11 +578,22 @@ will not type-check unless \<null> has the bottom type:
 % appropriate bottom qualifier.
 % \end{sloppypar}
 
-If your type system has a special bottom type that is used \emph{only} for
-the \code{null} value, then users should only write the bottom qualifier
-on explicit bounds.  To ensure this, write
-\<@TargetLocations(\{ TypeUseLocation.EXPLICIT\_LOWER\_BOUND, TypeUseLocation.EXPLICIT\_UPPER\_BOUND \})>
-on the definition of the bottom qualifier.
+Some type systems have a special bottom type that is used \emph{only} for
+the \code{null} value, and for dead code and other erroneous situations.
+In this case, users should only write the bottom qualifier on explicit
+bounds.  In this case, the definition of the bottom qualifier should be
+meta-annotated with:
+
+% import java.lang.annotation.ElementType;
+% import java.lang.annotation.Target;
+% import org.checkerframework.framework.qual.TargetLocations;
+% import org.checkerframework.framework.qual.TypeUseLocation;
+%
+\begin{Verbatim}
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
+\end{Verbatim}
+
 Furthermore, by convention the name of such a qualifier ends with ``\<Bottom>''.
 
 The hierarchy shown in Figure~\ref{fig-initialization-hierarchy} lacks
@@ -630,7 +644,7 @@ annotation is changed to indicate that the expression is not valid.
 
 The Checker Framework standardizes the expression strings.  For example, a
 field \<f> can be referred to as either ``f'' or ``this.f''.  If the
-programmer writes ``f'', the the Checker Framework changes it to
+programmer writes ``f'', the Checker Framework changes it to
 ``this.f'', as if the programmer had written that.
 An advantage of this canonicalization is that
 that comparisons, such as \<isSubtype>, can be implemented as string comparisons.
@@ -1382,7 +1396,7 @@ hierarchy), including whether it supports the polymorphic qualifier
 
 By default, a checker supports \<PolyAll>, and all annotations located in a
 subdirectory called \<qual> that's located in the same directory as the checker.
-Note that only annotations defined with the \<@Target({ElementType.TYPE\_USE})>
+Note that only annotations defined with the \<@Target(ElementType.TYPE\_USE)>
 meta-annotation (and optionally with the additional value of
 \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values)
 are automatically considered as supported annotations.

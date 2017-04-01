@@ -1042,7 +1042,15 @@ public abstract class CFAbstractTransfer<
     @Override
     public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
         S store = in.getRegularStore();
-        return new RegularTransferResult<>(finishValue(null, store), store);
+        TransferResult<V, S> result =
+                new ConditionalTransferResult<>(
+                        finishValue(null, store), in.getThenStore(), in.getElseStore(), false);
+
+        V caseValue = in.getValueOfSubNode(n.getCaseOperand());
+        V switchValue = in.getValueOfSubNode(n.getSwitchOperand());
+        strengthenAnnotationOfEqualTo(
+                result, n.getCaseOperand(), n.getSwitchOperand(), caseValue, switchValue, false);
+        return result;
     }
 
     /**

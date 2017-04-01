@@ -21,7 +21,7 @@ import org.checkerframework.checker.index.upperbound.UpperBoundChecker;
  *
  * <ul>
  *   <li>in a subtraction expression of the form `a.length - x`, if x is a compile time constant,
- *       the the LBC queries the MLC for the min length of a. If MinLen(a) &gt; x, the resulting
+ *       the LBC queries the MLC for the min length of a. If MinLen(a) &gt; x, the resulting
  *       expression is non-negative.
  *   <li>when typing an array length (i.e. `a.length`), if the MinLen is &gt;= 1, then the type
  *       is @Positive; if its MinLen is zero, then the type is @NonNegative.

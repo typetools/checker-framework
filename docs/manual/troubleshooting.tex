@@ -564,6 +564,22 @@ they have a different representation in bytecode.  More importantly,
 means that the compiler permits uses of the former in some locations where
 it issues a warning for the latter.  You can suppress the warning.
 
+A message of the form
+
+\begin{Verbatim}
+  error: annotation values must be of the form 'name=value'
+        @LTLengthOf("firstName", "lastName") int index;
+                    ^
+\end{Verbatim}
+
+\noindent
+is caused by incorrect Java syntax.  When you supply a set of multiple
+values as an annotation argument, you need to put curly braces around them:
+
+\begin{Verbatim}
+        @LTLengthOf({"firstName", "lastName"}) int index;
+\end{Verbatim}
+
 
 \subsection{Unable to build the checker, or to run programs\label{common-problems-running-java}}
 
@@ -573,6 +589,7 @@ An error like this
 Unsupported major.minor version 52.0
 \end{Verbatim}
 
+\noindent
 means that you have compiled some files into the Java 8 format (version
 52.0), but you are trying to run them with Java 7 or earlier.
 Likewise, ``Unsupported major.minor version 51.0''
@@ -636,9 +653,10 @@ helpful if you:
 \item
   Indicate exactly what you did.  Don't skip any steps, and don't merely
   describe your actions in words.  Show the exact commands by attaching a
-  file or using cut-and-paste from your command shell.  A screenshot is not
-  as useful as plaintext, and if you can only reproduce the problem in an
-  IDE but not from the command line, then the problem is with the IDE\@.
+  file or using cut-and-paste from your command shell.  Always include
+  plaintext, not just a screenshot.  Try to reproduce the problem from the
+  command line as well as from an IDE or within a build system; that helps
+  to indicate whether the problem is with the IDE or build system.
 \item
   Include all files that are necessary to reproduce the problem.  This
   includes every file that is used by any of the commands you reported, and
@@ -673,6 +691,11 @@ an existing file, for the existing Checker Framework test suite.  For
 instance, for the Nullness
 Checker, see directory \<checker-framework/checker/tests/nullness/>.
 But, please report your bug even if you do not report it in this format.
+
+When reporting bugs, please focus on realistic scenarios and well-written
+code.  We are sure that you can make up artificial code that stymies the
+type-checker!  Those aren't a good use of your time to report nor the
+maintainers' time to evaluate and fix.
 
 
 \section{Building from source\label{build-source}}
@@ -903,6 +926,24 @@ Run the
 though note that the \<.travis.yml> files already exist, so only the first
 two steps may be necessary.
 
+To save time, by default the Travis jobs download a pre-built version of
+the JDK rather than building the JDK from the sources in the Checker
+Framework repository.  This means that if you make a change to the
+annotated JDK, your tests will fail.  Here is how to deal with this issue:
+\begin{enumerate}
+\item
+In your pull request, edit file \<.travis.yml> so that it rebuilds
+the JDK (some jobs might time out).
+\item Verify that all tests pass.
+\item A Checker Framework developer needs to update the pre-built JDK from
+  your branch.
+\item
+  Undo your edits to file \<.travis.yml>.
+\item Verify that all tests pass.
+\item A Checker Framework developer will merge your branch.
+\end{enumerate}
+
+
 \subsection{Code style\label{code-style}}
 
 Code in this project follows the
@@ -930,7 +971,7 @@ Please see the document
 create a pull request, which is the way you can contribute code to the
 Checker Framework project.  Thanks in advance for your participation!
 
-Instructions for writing new test cases appears in file
+For writing new test cases, see file
 \ahref{https://raw.githubusercontent.com/typetools/checker-framework/master/checker/tests/README}{\<checker-framework/checker/tests/README>}.
 
 
@@ -1139,6 +1180,7 @@ Eric Spishak,
 Google Inc.\ (via @wmdietlGC),
 Javier Thaine,
 Jeff Luo,
+Jiasen (Jason) Xu,
 Jonathan Burke,
 Kivanc Muslu,
 Konstantin Weitz,

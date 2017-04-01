@@ -491,7 +491,7 @@ def main(argv):
                "leave the \"Automatically drop\" box checked. For the description, write " +
                "Checker Framework release " + new_checker_version + "\n\n")
 
-    # TODO: fix this so that the maven plug-in directory directory is not included in the first place.
+    # TODO: fix this so that the maven plug-in directory is not included in the first place.
 
     print  msg
     prompt_to_continue()

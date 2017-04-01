@@ -10,16 +10,28 @@ before_install:
 services:
   - docker
 
-# jdkany contains extra packages that permit it to be used to build the manual
+matrix:
 env:
-  matrix:
-  - JDKVER=jdk7 GROUP=all-tests
-  - JDKVER=jdk7 GROUP=downstream
-  - JDKVER=jdk7 GROUP=jdk.jar
-  - JDKVER=jdk8 GROUP=all-tests
-  - JDKVER=jdk8 GROUP=downstream
-  - JDKVER=jdk8 GROUP=jdk.jar
-  - JDKVER=jdkany GROUP=misc
+## Jobs used when downloading JDK during testing.
+## all-tests = junit + nonjunit + demos.  Separately, test building the JDK.
+  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=all-tests
+  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=jdk.jar
+  - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=all-tests
+  - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=jdk.jar
+  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=downstream
+  - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=downstream
+  - BUILDJDK=downloadjdk JDKVER=jdkany GROUP=misc
+## Jobs used when building JDK during testing.
+#  - BUILDJDK=buildjdk JDKVER=jdk7 GROUP=junit
+#  - BUILDJDK=buildjdk JDKVER=jdk7 GROUP=nonjunit
+#  - BUILDJDK=buildjdk JDKVER=jdk7 GROUP=demos
+#  - BUILDJDK=buildjdk JDKVER=jdk8 GROUP=junit
+#  - BUILDJDK=buildjdk JDKVER=jdk8 GROUP=nonjunit
+#  - BUILDJDK=buildjdk JDKVER=jdk8 GROUP=demos
+#  - BUILDJDK=buildjdk JDKVER=jdk7 GROUP=downstream
+#  - BUILDJDK=buildjdk JDKVER=jdk8 GROUP=downstream
+#  - BUILDJDK=buildjdk JDKVER=jdkany GROUP=misc
+
 
 before_script:
 - docker pull mdernst/ubuntu-for-cf-$JDKVER
@@ -36,6 +48,7 @@ script:
 - echo "TRAVIS_PULL_REQUEST_BRANCH=${TRAVIS_PULL_REQUEST_BRANCH}"
 - echo "TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG}"
 - echo "GROUP=${GROUP}"
+- echo "BUILDJDK=${BUILDJDK}"
 - >-
   docker run mdernst/ubuntu-for-cf-$JDKVER /bin/bash -c "true &&
      export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` &&
@@ -56,7 +69,7 @@ script:
      javac -version &&
      export TRAVIS_REPO_SLUG=$TRAVIS_REPO_SLUG &&
      export TRAVIS_BUILD_DIR=$TRAVIS_BUILD_DIR &&
-     ./.travis-build.sh $GROUP"
+     ./.travis-build.sh $GROUP $BUILDJDK"
 
 after_script:
   - |

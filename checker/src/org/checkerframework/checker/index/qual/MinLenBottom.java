@@ -11,9 +11,10 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * The bottom type for the MinLen type system. Programmers should not have to write this type.
+ * The bottom type in the MinLen type system. Programmers should rarely write this type.
  *
  * @checker_framework.manual #index-checker Index Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
 @SubtypeOf(MinLen.class)
 @Retention(RetentionPolicy.RUNTIME)

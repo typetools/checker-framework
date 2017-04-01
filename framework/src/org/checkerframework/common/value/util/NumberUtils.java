@@ -55,6 +55,25 @@ public class NumberUtils {
         }
     }
 
+    public static Range castRange(TypeMirror type, Range range) {
+        TypeKind typeKind = unBoxPrimitive(type);
+        switch (typeKind) {
+            case INT:
+                return range.intRange();
+            case SHORT:
+                return range.shortRange();
+            case BYTE:
+                return range.byteRange();
+            case LONG:
+            case CHAR:
+            case FLOAT:
+            case DOUBLE:
+                return range;
+            default:
+                throw new UnsupportedOperationException(typeKind.toString());
+        }
+    }
+
     private static TypeKind unBoxPrimitive(TypeMirror type) {
         if (type.getKind() == TypeKind.DECLARED) {
             String stringType = TypesUtils.getQualifiedName((DeclaredType) type).toString();
