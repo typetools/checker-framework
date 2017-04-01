@@ -281,7 +281,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitUnary(tree, typeDst);
         }
 
-        /** Bitwise complement converts between {@code @NegativeIndexFor} and {@code @IndexFor}. */
+        /**
+         * Bitwise complement converts between {@code @NegativeIndexFor} and {@code @IndexOrHigh}.
+         */
         private void handleBitWiseComplement(
                 AnnotatedTypeMirror searchIndexType, AnnotatedTypeMirror typeDst) {
             if (AnnotationUtils.containsSameByClass(
