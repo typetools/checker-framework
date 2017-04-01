@@ -281,10 +281,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitUnary(tree, typeDst);
         }
 
-        /**
-         * Special case for bitwise complement on the result of binary search that has been compared
-         * to zero.
-         */
+        /** Bitwise complement converts between {@code @NegativeIndexFor} and {@code @IndexFor}. */
         private void handleBitWiseComplement(
                 AnnotatedTypeMirror searchIndexType, AnnotatedTypeMirror typeDst) {
             if (AnnotationUtils.containsSameByClass(
