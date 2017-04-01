@@ -408,7 +408,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * If a type returned by an {@link SearchIndexAnnotatedTypeFactory} has a {@link
-         * NegativeIndexFor} annotation, then refine the result to be {@link LTLengthOf}. This
+         * NegativeIndexFor} annotation, then refine the result to be {@link LTEqLengthOf}. This
          * handles this case:
          *
          * <pre>{@code
@@ -417,10 +417,17 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *     // do something
          * } else {
          *     i = ~i;
-         *     // i is now @LTLengthOf("a"), because the bitwise complement of a NegativeIndexFor is an LTL.
-         *     int y = a[i];
+         *     // i is now @LTEqLengthOf("a"), because the bitwise complement of a NegativeIndexFor is an LTL.
+         *     for (int j = 0; j < i; j++) {
+         *          // j is now a valid index for "a"
+         *     }
          * }
          * }</pre>
+         *
+         * @param searchIndexType The type of an expression in a bitwise complement. For instance,
+         *     in {@code ~x}, this is the type of {@code x}.
+         * @param typeDst The type of the entire bitwise complement expression. It is modified by
+         *     this method.
          */
         private void addAnnotationForBitwiseComplement(
                 AnnotatedTypeMirror searchIndexType, AnnotatedTypeMirror typeDst) {

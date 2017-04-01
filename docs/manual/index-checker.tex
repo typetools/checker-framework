@@ -382,7 +382,19 @@ method returns either where the value was found, or a negative value
 indicating where the value could be inserted.  The Search Index Checker
 represents this concept.
 
-The Search Index Checker has four type qualifiers:
+\begin{figure}
+\begin{center}
+  \hfill
+  \includeimage{searchindex}{7cm}
+  \hfill
+\end{center}
+  \caption{The type hierarchy for the Index Checker's internal type system
+  that captures information about the results of calls to
+  \sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-java.lang.Object-}{Arrays.binarySearch}.}
+  \label{fig-index-searchindex}
+\end{figure}
+
+The Search Index Checker's type hierarchy (Figure~/ref{fig-index-searchindex}) has four type qualifiers:
 \begin{description}
 \item[\refqualclasswithparams{checker/index/qual}{SearchIndexFor}{String[] names}]
   An expression with this type represents an integer that could have been produced by

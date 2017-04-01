@@ -31,18 +31,10 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * {@link org.checkerframework.checker.index.qual.SearchIndexFor {@code @SearchIndexFor}} is
-     * refined only when it is compared to these values.
-     */
-    private enum ValidComparisons {
-        NEGATIVE_ONE,
-        ZERO
-    }
-
-    /**
-     * If the left value is exactly the value of {@code toCompareTo}, and the right side has type
-     * {@link SearchIndexFor}, then the right side's new value in the store should become {@link
-     * NegativeIndexFor}.
+     * If the left value is exactly the value of {@code valueToCompareTo}, and the right side has
+     * type {@link SearchIndexFor}, then the right side's new value in the store should become
+     * {@link NegativeIndexFor}. This function is called by the transfer functions for greater than,
+     * less than, greater than or equal, and less than or equal.
      *
      * <p>For example, this allows the following code to typecheck:
      *
@@ -52,21 +44,13 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
      *     @NegativeIndexFor("a") int negInsertionPoint = index;
      * }
      * }</pre>
+     *
+     * @param valueToCompareTo This value must be 0 (for greater than or less than) or -1 (for
+     *     greater than or equal or less than or equal).
      */
-    private void specialHandlingForBinarySearch(
-            Node left, Node right, CFStore store, ValidComparisons toCompareTo) {
-        int valueToCompareTo;
-        switch (toCompareTo) {
-            case ZERO:
-                valueToCompareTo = 0;
-                break;
-            case NEGATIVE_ONE:
-                valueToCompareTo = -1;
-                break;
-            default:
-                // Needed to satisfy Java definite assignment rules.
-                throw new Error("this can't happen");
-        }
+    private void refineSearchIndexToNegativeIndexFor(
+            Node left, Node right, CFStore store, int valueToCompareTo) {
+        assert valueToCompareTo == 0 || valueToCompareTo == -1;
         Long leftValue =
                 IndexUtil.getExactValue(
                         left.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
@@ -90,7 +74,7 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
             AnnotationMirror rightAnno,
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
-        specialHandlingForBinarySearch(left, right, store, ValidComparisons.ZERO);
+        refineSearchIndexToNegativeIndexFor(left, right, store, 0);
     }
 
     @Override
@@ -101,6 +85,6 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
             AnnotationMirror rightAnno,
             CFStore store,
             TransferInput<CFValue, CFStore> in) {
-        specialHandlingForBinarySearch(left, right, store, ValidComparisons.NEGATIVE_ONE);
+        refineSearchIndexToNegativeIndexFor(left, right, store, -1);
     }
 }

@@ -85,6 +85,12 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<String> superArrays = IndexUtil.getValueOfAnnotationWithStringArgument(superAnno);
             List<String> subArrays = IndexUtil.getValueOfAnnotationWithStringArgument(subAnno);
 
+            // It's possible that either superArrays or subArrays is null in rare circumstances.
+            // In those cases, return false. An example is framework/tests/all-systems/Issue1006.java.
+            if (superArrays == null || subArrays == null) {
+                return false;
+            }
+
             // Subtyping requires:
             //  * subtype is NegativeIndexFor or supertype is SearchIndexFor
             //  * subtype's arrays are a superset of supertype's arrays
