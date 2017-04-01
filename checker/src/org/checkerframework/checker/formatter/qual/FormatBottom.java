@@ -10,9 +10,10 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Represents the bottom of the Format String type hierarchy.
+ * The bottom type in the Format String type system. Programmers should rarely write this type.
  *
  * @checker_framework.manual #formatter-checker Format String Checker
+ * @checker_framework.manual #bottom-type the bottom type
  * @author Konstantin Weitz
  */
 @SubtypeOf({Format.class, InvalidFormat.class})

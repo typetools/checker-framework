@@ -424,6 +424,21 @@ explicit method type arguments, for which the syntax is as follows:
 This uses Java's existing syntax for specifying a method call's type arguments.
 
 
+\subsection{The Bottom type\label{bottom-type}}
+
+Many type systems have a \<*Bottom> type that is used only for the \<null>
+value, dead code, and some erroneous situations.  A programmer should
+rarely write the bottom type.
+
+One use is on a lower bound, to indicate that any type qualifier is
+permitted.  A lower-bounded wildcard indicates that a consumer method can
+accept a collection containing any Java type above some Java type, and you
+can add the bottom type qualifier as well:
+
+\begin{Verbatim}
+public static void addNumbers(List<? super @SignednessBottom Integer> list) { ... }
+\end{Verbatim}
+
 
 \section{Qualifier polymorphism\label{qualifier-polymorphism}}
 
@@ -525,37 +540,40 @@ then the unification (lub) is \<@Nullable>, and so is the return type.
 \subsection{Relationship to subtyping and generics\label{qualifier-polymorhism-vs-subtyping}}
 
 Qualifier polymorphism has the same purpose and plays the same role as
-Java's generics.  If a method is written using generics, it usually does
-not need qualifier polymorphism.  If you have legacy code that is not
+Java's generics.  You use them in the same cases, such as:
+\begin{itemize}
+\item
+  A method operates on collections with different types of
+  elements.
+\item
+  Two different arguments have the same type, without constraining them to
+  be one specific type.
+\item
+  A method returns a value of the same type as its argument.
+\end{itemize}
+
+
+If a method is written using Java generics, it usually does not need
+qualifier polymorphism.  If you can use Java's generics, then that is often
+better.  On the other hand, if you have legacy code that is not
 written generically, and you cannot change it to use generics, then you can
 use qualifier polymorphism to achieve a similar effect, with respect to
-type qualifiers only.  The base Java types are still treated non-generically.
+type qualifiers only.  The Java compiler still treats the base Java types
+non-generically.
 
-Why not use ordinary subtyping to handle qualifier polymorphism?
-Ordinarily, when you want a method to work on multiple types, you can just
-use Java's subtyping.  For example, the \<equals> method is declared to
-take an \<Object> as its first formal parameter, but it can be called on a
-\<String> or a \<Date> because those are subtypes of \<Object>.
-
-In most cases, the same subtyping mechanism works with type qualifiers.
+In some cases, you don't need qualifier polymorphism because subtyping
+already provides the needed functionality.
 \<String> is a supertype of \<@Interned String>, so a method \<toUpperCase>
-that is declared to take a \<String> parameter can also be called on a
+that is declared to take a \<String> parameter can also be called on an
 \<@Interned String> argument.
-
-You use qualifier polymorphism in the same cases when you would use Java's
-generics.  (If you can use Java's generics, then that is often better and
-you don't also need to use qualifier polymorphism.)  One example is when
-you want a method to operate on collections with different types of
-elements.  Another example is when you want two different formal parameters
-to be of the same type, without constraining them to be one specific type.
 
 
 \subsection{The \code{@PolyAll} qualifier applies to every type system\label{polyall}}
 
 Each type system has its own polymorphic type qualifier.
 If some method is qualifier-polymorphic over every type qualifier
-hierarchy, then it is tedious, and leads to an explosion in the number of
-type annotations, to place every \<@Poly*> qualifier on that method.
+hierarchy, then you can use \refqualclass{framework/qual}{PolyAll}.
+This is better than trying to write every \<@Poly*> qualifier on that method.
 
 For example, a method that only performs \<==> on array elements will work
 no matter what the array's element types are:
@@ -576,98 +594,98 @@ no matter what the array's element types are:
 \end{Verbatim}
 
 
-\subsection{Multiple instances of polymorphic qualifiers (the index argument)\label{qualifier-polymorphism-multiple-instances}}
-
-% TODO: Polymorphic qualifiers such as @PolyAll do not yet take an optional argument.
-
-Each polymorphic qualifier such as \refqualclass{framework/qual}{PolyAll}
-takes an optional argument so that you can
-specify multiple, independent polymorphic type qualifiers.  For example,
-this signature is overly restrictive:
-
-\begin{Verbatim}
-  /**
-   * Returns true if the arrays are elementwise equal,
-   * testing for equality using == (not the equals method).
-   */
-  public static int eltwiseEqualUsingEq(@PolyAll Object[] a, @PolyAll Object elt) {
-    for (int i=0; i<a.length; i++) {
-      if (elt != a[i]) {
-        return false;
-      }
-    }
-    return true;
-  }
-\end{Verbatim}
-
-\noindent
-That signature requires the element type annotation to be identical for the
-two arguments.  For example, it forbids this invocation:
-
-\begin{Verbatim}
-  @Nullable Object[] x;
-   @NonNull Object   y;
-  ... indexOf(x, y) ...
-\end{Verbatim}
-
-\noindent
-A better signature lets the two arrays' element types vary independently:
-
-\begin{Verbatim}
-  public static int eltwiseEqualUsingEq(@PolyAll(1) Object[] a, @PolyAll(2) Object elt)
-\end{Verbatim}
-
-\noindent
-Note that in this case, the \<@Nullable> annotation on \<elt>'s type is no
-longer necessary, since it is subsumed by \<@PolyAll>.
-
-The \<@PolyAll> annotation at a location $l$ applies to every type
-qualifier hierarchy for which no explicit qualifier is written at location
-$l$.  For example, a declaration like
-\<@PolyAll @NonNull Object elt> is polymorphic over every type system
-\emph{except} the nullness type system, for which the type is fixed at
-\<@NonNull>.  That would be the proper declaration for \<elt> if the body
-had used \<elt.equals(a[i])> instead of \<elt == a[i]>.
-
-
-% Suppose that some type system has two qualifiers, such as
-% \<@Nullable> and \<@NonNull>.  When a polymorphic type qualifier such
-% as \<@PolyNull> is used in a method, then the method conceptually
-% has two different versions:  one in which every instance of
-% \<@PolyNull> has been replaced by \<@NonNull> and one in
-% which every instance of \<@PolyNull> has been replaced by
-% \<@Nullable>.
-
-If a method signature contains only indexless versions of a polymorphic
-qualifier such as \refqualclass{framework/qual}{PolyAll} or
-\refqualclass{checker/nullness/qual}{PolyNull}, then all of them refer to
-the same type as described in
-Section~\ref{qualifier-polymorphism-multiple-qualifiers}.  If any indexed
-version appears, then every occurrence of the polymorphic qualifier without
-an index is considered to use a fresh index.  For example, the following
-two declarations are equivalent (where \<@PA> means \<@PolyAll>, for brevity):
-
-\begin{smaller}
-\begin{Verbatim}
-  @PA(1) foo(@PA(1) Object a, @PA(2) Object b, @PA(2) Object c, @PA    Object d, @PA    Object e) {...}
-
-  @PA(1) foo(@PA(1) Object a, @PA(2) Object b, @PA(2) Object c, @PA(3) Object d, @PA(4) Object e) {...}
-\end{Verbatim}
-\end{smaller}
-
-As described in Section~\ref{qualifier-polymorphism-return-type}, the
-qualifier on a return type must be the same as that on some formal parameter.
-Therefore, the first of these declarations is legal because it is
-equivalent to the second, but the third is illegal because it is
-equivalent to the fourth.
-
-\begin{Verbatim}
-  @PolyAll    m1(@PolyAll    Object a, @PolyAll    Object b) { ... } // OK
-  @PolyAll(1) m2(@PolyAll(1) Object a, @PolyAll(1) Object b) { ... } // OK (same as m1)
-
-  @PolyAll    m3(@PolyAll    Object a, @PolyAll(1) Object b) { ... } // illegal
-  @PolyAll(2) m4(@PolyAll(3) Object a, @PolyAll(1) Object b) { ... } // illegal (same as m3)
-\end{Verbatim}
+%% TODO: Polymorphic qualifiers such as @PolyAll do not yet take an optional argument.
+%
+% \subsection{Multiple instances of polymorphic qualifiers (the index argument)\label{qualifier-polymorphism-multiple-instances}}
+%
+% Each polymorphic qualifier such as \refqualclass{framework/qual}{PolyAll}
+% takes an optional argument so that you can
+% specify multiple, independent polymorphic type qualifiers.  For example,
+% this signature is overly restrictive:
+%
+% \begin{Verbatim}
+%   /**
+%    * Returns true if the arrays are elementwise equal,
+%    * testing for equality using == (not the equals method).
+%    */
+%   public static int eltwiseEqualUsingEq(@PolyAll Object[] a, @PolyAll Object elt) {
+%     for (int i=0; i<a.length; i++) {
+%       if (elt != a[i]) {
+%         return false;
+%       }
+%     }
+%     return true;
+%   }
+% \end{Verbatim}
+%
+% \noindent
+% That signature requires the element type annotation to be identical for the
+% two arguments.  For example, it forbids this invocation:
+%
+% \begin{Verbatim}
+%   @Nullable Object[] x;
+%    @NonNull Object   y;
+%   ... indexOf(x, y) ...
+% \end{Verbatim}
+%
+% \noindent
+% A better signature lets the two arrays' element types vary independently:
+%
+% \begin{Verbatim}
+%   public static int eltwiseEqualUsingEq(@PolyAll(1) Object[] a, @PolyAll(2) Object elt)
+% \end{Verbatim}
+%
+% \noindent
+% Note that in this case, the \<@Nullable> annotation on \<elt>'s type is no
+% longer necessary, since it is subsumed by \<@PolyAll>.
+%
+% The \<@PolyAll> annotation at a location $l$ applies to every type
+% qualifier hierarchy for which no explicit qualifier is written at location
+% $l$.  For example, a declaration like
+% \<@PolyAll @NonNull Object elt> is polymorphic over every type system
+% \emph{except} the nullness type system, for which the type is fixed at
+% \<@NonNull>.  That would be the proper declaration for \<elt> if the body
+% had used \<elt.equals(a[i])> instead of \<elt == a[i]>.
+%
+%
+% % Suppose that some type system has two qualifiers, such as
+% % \<@Nullable> and \<@NonNull>.  When a polymorphic type qualifier such
+% % as \<@PolyNull> is used in a method, then the method conceptually
+% % has two different versions:  one in which every instance of
+% % \<@PolyNull> has been replaced by \<@NonNull> and one in
+% % which every instance of \<@PolyNull> has been replaced by
+% % \<@Nullable>.
+%
+% If a method signature contains only indexless versions of a polymorphic
+% qualifier such as \refqualclass{framework/qual}{PolyAll} or
+% \refqualclass{checker/nullness/qual}{PolyNull}, then all of them refer to
+% the same type as described in
+% Section~\ref{qualifier-polymorphism-multiple-qualifiers}.  If any indexed
+% version appears, then every occurrence of the polymorphic qualifier without
+% an index is considered to use a fresh index.  For example, the following
+% two declarations are equivalent (where \<@PA> means \<@PolyAll>, for brevity):
+%
+% \begin{smaller}
+% \begin{Verbatim}
+%   @PA(1) foo(@PA(1) Object a, @PA(2) Object b, @PA(2) Object c, @PA    Object d, @PA    Object e) {...}
+%
+%   @PA(1) foo(@PA(1) Object a, @PA(2) Object b, @PA(2) Object c, @PA(3) Object d, @PA(4) Object e) {...}
+% \end{Verbatim}
+% \end{smaller}
+%
+% As described in Section~\ref{qualifier-polymorphism-return-type}, the
+% qualifier on a return type must be the same as that on some formal parameter.
+% Therefore, the first of these declarations is legal because it is
+% equivalent to the second, but the third is illegal because it is
+% equivalent to the fourth.
+%
+% \begin{Verbatim}
+%   @PolyAll    m1(@PolyAll    Object a, @PolyAll    Object b) { ... } // OK
+%   @PolyAll(1) m2(@PolyAll(1) Object a, @PolyAll(1) Object b) { ... } // OK (same as m1)
+%
+%   @PolyAll    m3(@PolyAll    Object a, @PolyAll(1) Object b) { ... } // illegal
+%   @PolyAll(2) m4(@PolyAll(3) Object a, @PolyAll(1) Object b) { ... } // illegal (same as m3)
+% \end{Verbatim}
 
 
 \subsection{Using multiple polymorphic qualifiers in a method signature\label{qualifier-polymorphism-multiple-qualifiers}}
@@ -719,8 +737,8 @@ void moveBetweenStacks(Stack<@PolyNull Object> s1, Stack<@PolyNull Object> s2) {
 \end{Verbatim}
 
 \noindent
-In this example, if it is acceptable to rewrite your code to use Java
-generics, the code can be even cleaner:
+In this particular example, it would be cleaner to rewrite your code to use
+Java generics, if you can do so:
 
 \begin{Verbatim}
 <T> void moveBetweenStacks(Stack<T> s1, Stack<T> s2) {
@@ -729,8 +747,9 @@ generics, the code can be even cleaner:
 \end{Verbatim}
 
 \label{qualifier-polymorphism-return-type}
-It is permitted to write a polymorphic qualifier on a return type only if
-that polymorphic qualifier appeared elsewhere in the signature, on some
+It is not permitted to write just one polymorphic qualifier, on a return type.
+You may write a polymorphic qualifier on a return type only if
+that polymorphic qualifier also appears elsewhere in the signature, on some
 formal parameter.
 
 %% It would be nice to give an example that isn't too contrived.
@@ -779,7 +798,7 @@ of these signatures:
  public static <T extends @Nullable Object> int indexOf(T[] a, T elt) { ... }
 \end{Verbatim}
 
-The examples in this section use arrays, but analogous examples exist that
+This example uses arrays, but analogous examples exist that
 use collections.
 
 
