@@ -8,19 +8,18 @@ import org.checkerframework.framework.qual.JavaExpression;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The annotated expression is between -1 and -a.length - 1, inclusive, of each sequence a listed in
- * the annotation. Used (with {@link SearchIndex}) to handle the JDK's {@link
- * java.util.Arrays#binarySearch(Object[],Object) binary search} routine.
+ * The annotated expression is between {@code -1} and {@code -a.length - 1}, inclusive, for each
+ * sequence {@code a} listed in the annotation.
  *
  * @checker_framework.manual #index-checker Index Checker
  */
-@SubtypeOf(SearchIndex.class)
+@SubtypeOf(SearchIndexFor.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface NegativeIndexFor {
     /**
-     * Sequences for which this value is a negative index; that is, the expression is in the range
-     * -1 to -1 * a.length - 1, inclusive, for each sequence a.
+     * Sequences for which this value is a "negative index"; that is, the expression is in the range
+     * {@code -1} to {@code -a.length - 1}, inclusive, for each sequence {@code a} given here.
      */
     @JavaExpression
     public String[] value();

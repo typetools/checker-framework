@@ -8,8 +8,8 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.NegativeIndexFor;
-import org.checkerframework.checker.index.qual.SearchIndex;
 import org.checkerframework.checker.index.qual.SearchIndexBottom;
+import org.checkerframework.checker.index.qual.SearchIndexFor;
 import org.checkerframework.checker.index.qual.SearchIndexUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -47,7 +47,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return new LinkedHashSet<>(
                 Arrays.asList(
-                        SearchIndex.class,
+                        SearchIndexFor.class,
                         SearchIndexBottom.class,
                         SearchIndexUnknown.class,
                         NegativeIndexFor.class));
@@ -80,28 +80,27 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (AnnotationUtils.areSameByClass(superAnno, SearchIndexBottom.class)) {
                 return false;
             }
-            // All annotations should have arguments, because each is either NegativeIndexFor or
-            // SearchIndex. All NegativeIndexFor annotations are subtypes of SearchIndex
+
+            // Each annotation is either NegativeIndexFor or SearchIndexFor.
+            List<String> superArrays = IndexUtil.getValueOfAnnotationWithStringArgument(superAnno);
+            List<String> subArrays = IndexUtil.getValueOfAnnotationWithStringArgument(subAnno);
+            if (superarrays == null || subarrays == null) {
+                throw new Error("This can't happen");
+            }
+
+            // All NegativeIndexFor annotations are subtypes of SearchIndexFor
             // annotations whose arguments contain their arguments.
             if (AnnotationUtils.areSameByClass(subAnno, NegativeIndexFor.class)) {
+                return subArrays.containsAll(superArrays);
+            }
+            if (AnnotationUtils.areSameByClass(subAnno, SearchIndexFor.class)) {
                 List<String> superArrays =
                         IndexUtil.getValueOfAnnotationWithStringArgument(superAnno);
                 List<String> subArrays = IndexUtil.getValueOfAnnotationWithStringArgument(subAnno);
-                return superArrays != null
-                        && subArrays != null
+                return AnnotationUtils.areSameByClass(superAnno, SearchIndexFor.class)
                         && subArrays.containsAll(superArrays);
             }
-            if (AnnotationUtils.areSameByClass(subAnno, SearchIndex.class)) {
-                List<String> superArrays =
-                        IndexUtil.getValueOfAnnotationWithStringArgument(superAnno);
-                List<String> subArrays = IndexUtil.getValueOfAnnotationWithStringArgument(subAnno);
-                return superArrays != null
-                        && subArrays != null
-                        && AnnotationUtils.areSameByClass(superAnno, SearchIndex.class)
-                        && subArrays.containsAll(superArrays);
-            }
-            assert false;
-            return false; // dead code
+            throw new Error("This can't happen");
         }
     }
 

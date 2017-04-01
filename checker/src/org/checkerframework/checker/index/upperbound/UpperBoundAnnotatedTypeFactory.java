@@ -35,7 +35,7 @@ import org.checkerframework.checker.index.qual.PolyIndex;
 import org.checkerframework.checker.index.qual.PolyUpperBound;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SameLen;
-import org.checkerframework.checker.index.qual.SearchIndex;
+import org.checkerframework.checker.index.qual.SearchIndexFor;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
@@ -86,7 +86,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(IndexOrLow.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(IndexOrHigh.class, createLTEqLengthOfAnnotation());
-        addAliasedAnnotation(SearchIndex.class, createLTLengthOfAnnotation());
+        addAliasedAnnotation(SearchIndexFor.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(NegativeIndexFor.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyIndex.class, POLY);
@@ -213,7 +213,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
         if (AnnotationUtils.areSameByClass(a, IndexFor.class)
-                || AnnotationUtils.areSameByClass(a, SearchIndex.class)
+                || AnnotationUtils.areSameByClass(a, SearchIndexFor.class)
                 || AnnotationUtils.areSameByClass(a, NegativeIndexFor.class)) {
             List<String> stringList =
                     AnnotationUtils.getElementValueArray(a, "value", String.class, true);

@@ -163,7 +163,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return getTypeFactoryOfSubchecker(MinLenChecker.class);
     }
 
-    /** Returns the SearchIndex Checker's annotated type factory. */
+    /** Returns the SearchIndexFor Checker's annotated type factory. */
     public SearchIndexAnnotatedTypeFactory getSearchIndexAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(SearchIndexChecker.class);
     }

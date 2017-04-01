@@ -386,7 +386,7 @@ completeness, we explain its qualifiers here.
 
 The binary search tracking type system has four qualifiers:
 \begin{description}
-\item[\refqualclasswithparams{checker/index/qual}{SearchIndex}{String[] names}]
+\item[\refqualclasswithparams{checker/index/qual}{SearchIndexFor}{String[] names}]
   An expression with this type represents an integer produced by
   calling \sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-int-int-java.lang.Object-}{Arrays.binarySearch}.
   The argument represents the array(s) on which binary search was called.
@@ -395,9 +395,9 @@ The binary search tracking type system has four qualifiers:
   An expression with this type represents an integer that both originated
   from a binary search call and is known to be negative. Applying the bitwise
   complement operator (~) to this type produces an [\refqualclass{checker/index/qual}{IndexOrHigh}].
-  This type can only be produced by comparing a [\refqualclass{checker/index/qual}{SearchIndex}]
-  to zero. This type is a subtype of [\refqualclass{checker/index/qual}{SearchIndex}] if every array
-  present in the argument of the [\refqualclass{checker/index/qual}{SearchIndex}] is present in this
+  This type can only be produced by comparing a [\refqualclass{checker/index/qual}{SearchIndexFor}]
+  to zero. This type is a subtype of [\refqualclass{checker/index/qual}{SearchIndexFor}] if every array
+  present in the argument of the [\refqualclass{checker/index/qual}{SearchIndexFor}] is present in this
   type's argument.
 \item[\refqualclass{checker/index/qual}{SearchIndexBottom}]
   This is the bottom type, and programmers should never write it.

@@ -77,7 +77,7 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     /**
      * Provides a way to query the Constant Value Checker, which computes the values of expressions
-     * known at compile time (constant prop + folding).
+     * known at compile time (constant propagation and folding).
      */
     public ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(ValueChecker.class);

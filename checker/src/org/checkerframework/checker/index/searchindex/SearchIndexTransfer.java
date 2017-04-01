@@ -4,7 +4,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexUtil;
-import org.checkerframework.checker.index.qual.SearchIndex;
+import org.checkerframework.checker.index.qual.SearchIndexFor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -13,8 +13,8 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 
 /**
- * The transfer function for the SearchIndex checker. Allows {@link
- * org.checkerframework.checker.index.qual.SearchIndex SearchIndex} to become {@link
+ * The transfer function for the SearchIndexFor checker. Allows {@link
+ * org.checkerframework.checker.index.qual.SearchIndexFor SearchIndexFor} to become {@link
  * org.checkerframework.checker.index.qual.NegativeIndexFor NegativeIndexFor}.
  */
 public class SearchIndexTransfer extends IndexAbstractTransfer {
@@ -31,9 +31,9 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * Only possible refinements of {@link org.checkerframework.checker.index.qual.SearchIndex
-     * SearchIndex} occur when a {@link org.checkerframework.checker.index.qual.SearchIndex
-     * SearchIndex} is compared to these values.
+     * Only possible refinements of {@link org.checkerframework.checker.index.qual.SearchIndexFor
+     * SearchIndexFor} occur when a {@link org.checkerframework.checker.index.qual.SearchIndexFor
+     * SearchIndexFor} is compared to these values.
      */
     private enum ValidComparisons {
         NEGATIVE_ONE,
@@ -42,14 +42,14 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
 
     /**
      * Special binary search handling: if the left value is exactly the value of toCompareTo, and
-     * the right side is a {@link org.checkerframework.checker.index.qual.SearchIndex SearchIndex},
-     * then the right side's new value in the store should be a new {@link
+     * the right side is a {@link org.checkerframework.checker.index.qual.SearchIndexFor
+     * SearchIndexFor}, then the right side's new value in the store should be a new {@link
      * org.checkerframework.checker.index.qual.NegativeIndexFor NegativeIndexFor}.
      *
      * <p>For example, this allows the following code to typecheck:
      *
      * <pre>
-     * {@literal @}SearchIndex("a") int x = Arrays.binarySearch(a, y);
+     * {@literal @}SearchIndexFor("a") int x = Arrays.binarySearch(a, y);
      * if (x {@literal <} 0) {
      *     {@literal @}NegativeIndexFor("a") int z = x;
      * }
@@ -78,7 +78,7 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
                         left.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
         if (leftValue != null && leftValue == valueToCompareTo) {
             AnnotationMirror rightSI =
-                    aTypeFactory.getAnnotationMirror(right.getTree(), SearchIndex.class);
+                    aTypeFactory.getAnnotationMirror(right.getTree(), SearchIndexFor.class);
             if (rightSI != null) {
                 List<String> arrays = IndexUtil.getValueOfAnnotationWithStringArgument(rightSI);
                 AnnotationMirror nif = aTypeFactory.createNegativeIndexFor(arrays);
