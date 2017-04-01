@@ -373,36 +373,33 @@ When needed, you can specify which sequences have the same length using the foll
   \code{null} has this type.
 \end{description}
 
-\section{Special handling for binary search\label{index-searchindex}}
 
-The JDK's implementation of
-\sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-int-int-java.lang.Object-}{binary search}
-uses a contract that is otherwise not
-supported by the Index Checker. Because binary search is a common array operation,
-the Index Checker includes a special type system to check whether a value originated
-from a call to binary search. This type system should never be user-visible (i.e.
-none of its annotations should ever need to be written by users of the Index Checker), but for
-completeness, we explain its qualifiers here.
+\section{Binary search indices\label{index-searchindex}}
 
-The binary search tracking type system has four qualifiers:
+The JDK's
+\sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-java.lang.Object-}{Arrays.binarySearch}
+method returns either where the value was found, or a negative value
+indicating where the value could be inserted.  The Search Index Checker
+represents this concept.
+
+The Search Index Checker has four type qualifiers:
 \begin{description}
 \item[\refqualclasswithparams{checker/index/qual}{SearchIndexFor}{String[] names}]
-  An expression with this type represents an integer produced by
-  calling \sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-int-int-java.lang.Object-}{Arrays.binarySearch}.
-  The argument represents the array(s) on which binary search was called.
-  This type is a subtype of [\refqualclass{checker/index/qual}{SearchIndexUnknown}].
+  An expression with this type represents an integer that could have been produced by
+  calling
+  \sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-java.lang.Object-}{Arrays.binarySearch}:
+  for each array \<a> specifed in the annotation, the annotated integer is
+  between \<-a.length-1> and \<a.length-1>, inclusive
 \item[\refqualclasswithparams{checker/index/qual}{NegativeIndexFor}{String[] names}]
-  An expression with this type represents an integer that both originated
-  from a binary search call and is known to be negative. Applying the bitwise
-  complement operator (~) to this type produces an [\refqualclass{checker/index/qual}{IndexOrHigh}].
-  This type can only be produced by comparing a [\refqualclass{checker/index/qual}{SearchIndexFor}]
-  to zero. This type is a subtype of [\refqualclass{checker/index/qual}{SearchIndexFor}] if every array
-  present in the argument of the [\refqualclass{checker/index/qual}{SearchIndexFor}] is present in this
-  type's argument.
+  An expression with this type represents a ``negative index'' that is
+  between \<a.length-1> and \<-1>, inclusive; that is, a value that is both
+  a \<@SearchIndex> and is negative.  Applying the bitwise complement
+  operator (~) to an expression of this type produces an expression of type
+  \refqualclass{checker/index/qual}{IndexOrHigh}.
 \item[\refqualclass{checker/index/qual}{SearchIndexBottom}]
-  This is the bottom type, and programmers should never write it.
+  This is the bottom type, and programmers should rarely need to write it.
 \item[\refqualclass{checker/index/qual}{SearchIndexUnknown}]
-  This is the top type, and programmers should never write it.
+  This is the top type, and programmers should rarely need to write it.
 \end{description}
 
 %%  LocalWords:  NegativeArraySizeException pre myArray IndexFor someArray

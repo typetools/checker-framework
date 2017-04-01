@@ -111,14 +111,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Provides a way to query the Constant Value Checker, which computes the values of expressions
-     * known at compile time (constant prop + folding).
+     * known at compile time (constant propagation and folding).
      */
     ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(ValueChecker.class);
     }
 
     /**
-     * Provides a way to query the search index checker, which helps the Index Checker type the
+     * Provides a way to query the Search Index Checker, which helps the Index Checker type the
      * results of calling the JDK's binary search methods correctly.
      */
     private SearchIndexAnnotatedTypeFactory getSearchIndexAnnotatedTypeFactory() {
@@ -407,9 +407,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Takes a type returned by an {@link SearchIndexAnnotatedTypeFactory} and checks if it
-         * contains a {@link NegativeIndexFor} annotation. If so, then refine the result to be
-         * {@link LTLengthOf}. This handles this case:
+         * If a type returned by an {@link SearchIndexAnnotatedTypeFactory} has a {@link
+         * NegativeIndexFor} annotation, then refine the result to be {@link LTLengthOf}. This
+         * handles this case:
          *
          * <pre>{@code
          * int i = Arrays.binarySearch(a, x);
@@ -417,9 +417,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *     // do something
          * } else {
          *     i = ~i;
-         *     int y = a[i]; // Here, i is LTL of a because the complement of a NegativeIndexFor is an LTL.
+         *     // i is now @LTLengthOf("a"), because the bitwise complement of a NegativeIndexFor is an LTL.
+         *     int y = a[i];
          * }
-         *
          * }</pre>
          */
         private void addAnnotationForBitwiseComplement(

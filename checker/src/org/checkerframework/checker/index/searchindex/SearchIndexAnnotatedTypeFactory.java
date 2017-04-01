@@ -37,7 +37,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Provides a way to query the Constant Value Checker, which computes the values of expressions
-     * known at compile time (constant prop + folding).
+     * known at compile time (constant propagation and folding).
      */
     ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(ValueChecker.class);
@@ -84,27 +84,17 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // Each annotation is either NegativeIndexFor or SearchIndexFor.
             List<String> superArrays = IndexUtil.getValueOfAnnotationWithStringArgument(superAnno);
             List<String> subArrays = IndexUtil.getValueOfAnnotationWithStringArgument(subAnno);
-            if (superarrays == null || subarrays == null) {
-                throw new Error("This can't happen");
-            }
 
-            // All NegativeIndexFor annotations are subtypes of SearchIndexFor
-            // annotations whose arguments contain their arguments.
-            if (AnnotationUtils.areSameByClass(subAnno, NegativeIndexFor.class)) {
-                return subArrays.containsAll(superArrays);
-            }
-            if (AnnotationUtils.areSameByClass(subAnno, SearchIndexFor.class)) {
-                List<String> superArrays =
-                        IndexUtil.getValueOfAnnotationWithStringArgument(superAnno);
-                List<String> subArrays = IndexUtil.getValueOfAnnotationWithStringArgument(subAnno);
-                return AnnotationUtils.areSameByClass(superAnno, SearchIndexFor.class)
-                        && subArrays.containsAll(superArrays);
-            }
-            throw new Error("This can't happen");
+            // Subtyping requires:
+            //  * subtype is NegativeIndexFor or supertype is SearchIndexFor
+            //  * subtype's arrays are a superset of supertype's arrays
+            return ((AnnotationUtils.areSameByClass(subAnno, NegativeIndexFor.class)
+                            || AnnotationUtils.areSameByClass(superAnno, SearchIndexFor.class))
+                    && subArrays.containsAll(superArrays));
         }
     }
 
-    /** Creates a new negative index for annotation with the given arrays as its arguments. */
+    /** Create a new {@code @NegativeIndexFor} annotation with the given arrays as its arguments. */
     AnnotationMirror createNegativeIndexFor(List<String> arrays) {
         if (arrays.size() == 0) {
             return UNKNOWN;
