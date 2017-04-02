@@ -23,13 +23,13 @@ public class Range {
     /** A range containing all possible 64-bit values. */
     public static final Range EVERYTHING = new Range(Long.MIN_VALUE, Long.MAX_VALUE);
 
-    /** A range containing all possible 32-bit values values. */
+    /** A range containing all possible 32-bit values. */
     public static final Range INT_EVERYTHING = new Range(Integer.MIN_VALUE, Integer.MAX_VALUE);
 
-    /** A range containing all possible 16-bit values values. */
+    /** A range containing all possible 16-bit values. */
     public static final Range SHORT_EVERYTHING = new Range(Short.MIN_VALUE, Short.MAX_VALUE);
 
-    /** A range containing all possible 8-bit values values. */
+    /** A range containing all possible 8-bit values. */
     public static final Range BYTE_EVERYTHING = new Range(Byte.MIN_VALUE, Byte.MAX_VALUE);
 
     /** The empty range. */

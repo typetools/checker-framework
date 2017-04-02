@@ -926,6 +926,24 @@ Run the
 though note that the \<.travis.yml> files already exist, so only the first
 two steps may be necessary.
 
+To save time, by default the Travis jobs download a pre-built version of
+the JDK rather than building the JDK from the sources in the Checker
+Framework repository.  This means that if you make a change to the
+annotated JDK, your tests will fail.  Here is how to deal with this issue:
+\begin{enumerate}
+\item
+In your pull request, edit file \<.travis.yml> so that it rebuilds
+the JDK (some jobs might time out).
+\item Verify that all tests pass.
+\item A Checker Framework developer needs to update the pre-built JDK from
+  your branch.
+\item
+  Undo your edits to file \<.travis.yml>.
+\item Verify that all tests pass.
+\item A Checker Framework developer will merge your branch.
+\end{enumerate}
+
+
 \subsection{Code style\label{code-style}}
 
 Code in this project follows the
