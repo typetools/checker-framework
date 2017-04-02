@@ -38,12 +38,14 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
      *
      * <p>For example, this allows the following code to typecheck:
      *
-     * <pre>{@code
-     * @SearchIndexFor("a") int index = Arrays.binarySearch(a, y);
-     * if (index < 0) {
-     *     @NegativeIndexFor("a") int negInsertionPoint = index;
-     * }
-     * }</pre>
+     * <pre>
+     * <code>
+     * {@literal @}SearchIndexFor("a") int index = Arrays.binarySearch(a, y);
+     *  if (index &lt; 0) {
+     *    {@literal @}NegativeIndexFor("a") int negInsertionPoint = index;
+     *  }
+     * </code>
+     * </pre>
      *
      * @param valueToCompareTo This value must be 0 (for greater than or less than) or -1 (for
      *     greater than or equal or less than or equal).
