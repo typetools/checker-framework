@@ -31,10 +31,13 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * If the left value is exactly the value of {@code valueToCompareTo}, and the right side has
-     * type {@link SearchIndexFor}, then the right side's new value in the store should become
-     * {@link NegativeIndexFor}. This function is called by the transfer functions for greater than,
-     * less than, greater than or equal, and less than or equal.
+     * If a {@link SearchIndexFor} value is negative, then refine it to {@link NegativeIndexFor}.
+     * This method is called by refinement rules for binary comparison operators.
+     *
+     * <p>If the left value (in a greater-than or greater-than-or-equal binary comparison) is
+     * exactly the value of {@code valueToCompareTo}, and the right side has type {@link
+     * SearchIndexFor}, then the right side's new value in the store should become {@link
+     * NegativeIndexFor}.
      *
      * <p>For example, this allows the following code to typecheck:
      *
@@ -61,9 +64,11 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
                     aTypeFactory.getAnnotationMirror(right.getTree(), SearchIndexFor.class);
             if (rightSI != null) {
                 List<String> arrays = IndexUtil.getValueOfAnnotationWithStringArgument(rightSI);
-                AnnotationMirror nif = aTypeFactory.createNegativeIndexFor(arrays);
-                store.insertValue(
-                        FlowExpressions.internalReprOf(analysis.getTypeFactory(), right), nif);
+                if (arrays != null) {
+                    AnnotationMirror nif = aTypeFactory.createNegativeIndexFor(arrays);
+                    store.insertValue(
+                            FlowExpressions.internalReprOf(analysis.getTypeFactory(), right), nif);
+                }
             }
         }
     }
