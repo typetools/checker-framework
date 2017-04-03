@@ -7,7 +7,7 @@ import org.checkerframework.framework.source.SuppressWarningsKeys;
 
 /**
  * An internal checker that assists the Index Checker in typing the results of calls to the JDK's
- * {@link java.util.Arrays#binarySearch(Object[],Object) {@code Arrays.binarySearch}} routine.
+ * {@link java.util.Arrays#binarySearch(Object[],Object) Arrays.binarySearch} routine.
  *
  * @checker_framework.manual #index-checker Index Checker
  */
