@@ -2133,11 +2133,11 @@ Within the constructor,
 \code{this} starts out with \refqualclass{checker/nullness/qual}{Raw} type.
 As soon as all of the \refqualclass{checker/nullness/qual}{NonNull} fields
 in class $C$ have been initialized, then \code{this} is treated as
-\refqualclass{checker/initialization/qual}{NonRaw}\code{(\emph{C})}.
+\refqualclass{checker/nullness/qual}{NonRaw}\code{(\emph{C})}.
 This means that \code{this} is still being initialized, but all
 initialization of $C$'s fields is complete, including all fields of supertypes.
 Eventually, when all constructors complete, the type is simply
-\refqualclass{checker/initialization/qual}{NonRaw}.
+\refqualclass{checker/nullness/qual}{NonRaw}.
 
 The Nullness Checker issues an error if the constructor fails to initialize
 any \code{@NonNull} field.  This ensures that the object is in a legal (non-raw)
