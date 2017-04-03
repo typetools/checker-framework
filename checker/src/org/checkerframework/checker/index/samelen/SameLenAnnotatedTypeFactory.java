@@ -105,42 +105,50 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         newValues.addAll(a1Names);
         newValues.addAll(a2Names);
         String[] names = newValues.toArray(new String[newValues.size()]);
-        Arrays.sort(names);
         return createSameLen(names);
+    }
+
+    /**
+     * Combines the given arrays and annotations into a single SameLen annotation. See {@link
+     * #createCombinedSameLen(List, List)}.
+     */
+    public AnnotationMirror createCombinedSameLen(
+            Receiver rec1, Receiver rec2, AnnotationMirror a1, AnnotationMirror a2) {
+        List<Receiver> receivers = new ArrayList<>();
+        receivers.add(rec1);
+        receivers.add(rec2);
+        List<AnnotationMirror> annos = new ArrayList<>();
+        annos.add(a1);
+        annos.add(a2);
+        return createCombinedSameLen(receivers, annos);
     }
 
     /**
      * For the use of the transfer function; generates a SameLen that includes a and b, as well as
      * everything in sl1 and sl2, if they are SameLen annotations.
      *
-     * @param aRec receiver representing the first array
-     * @param bRec receiver representing the second array
-     * @param sl1 the current annotation of the first array
-     * @param sl2 the current annotation of the second array
+     * @param receivers a list of receivers representing arrays to be included in the combined
+     *     annotation
+     * @param annos a list of the current annotations of the receivers. Must be the same length as
+     *     receivers.
      * @return a combined SameLen annotation
      */
     public AnnotationMirror createCombinedSameLen(
-            FlowExpressions.Receiver aRec,
-            FlowExpressions.Receiver bRec,
-            AnnotationMirror sl1,
-            AnnotationMirror sl2) {
-        List<String> aValues = new ArrayList<String>();
-        List<String> bValues = new ArrayList<String>();
+            List<FlowExpressions.Receiver> receivers, List<AnnotationMirror> annos) {
 
-        if (isReceiverToStringParsable(aRec)) {
-            aValues.add(aRec.toString());
-            if (AnnotationUtils.areSameByClass(sl1, SameLen.class)) {
-                aValues.addAll(getValueOfAnnotationWithStringArgument(sl1));
+        assert receivers.size() == annos.size();
+        List<String> values = new ArrayList<String>();
+        for (int i = 0; i < receivers.size(); i++) {
+            Receiver rec = receivers.get(i);
+            AnnotationMirror anno = annos.get(i);
+            if (isReceiverToStringParsable(rec)) {
+                values.add(rec.toString());
+            }
+            if (AnnotationUtils.areSameByClass(anno, SameLen.class)) {
+                values.addAll(getValueOfAnnotationWithStringArgument(anno));
             }
         }
-        if (isReceiverToStringParsable(bRec)) {
-            bValues.add(bRec.toString());
-            if (AnnotationUtils.areSameByClass(sl2, SameLen.class)) {
-                bValues.addAll(getValueOfAnnotationWithStringArgument(sl2));
-            }
-        }
-
-        AnnotationMirror res = getCombinedSameLen(aValues, bValues);
+        AnnotationMirror res = getCombinedSameLen(values, new ArrayList<String>());
         return res;
     }
 
@@ -231,10 +239,10 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return AnnotationUtils.areSameByClass(superAnno, PolySameLen.class);
             } else if (AnnotationUtils.hasElementValue(subAnno, "value")
                     && AnnotationUtils.hasElementValue(superAnno, "value")) {
-                List<String> a1Val = getValueOfAnnotationWithStringArgument(subAnno);
-                List<String> a2Val = getValueOfAnnotationWithStringArgument(superAnno);
+                List<String> subArrays = getValueOfAnnotationWithStringArgument(subAnno);
+                List<String> superArrays = getValueOfAnnotationWithStringArgument(superAnno);
 
-                if (overlap(a1Val, a2Val)) {
+                if (subArrays.containsAll(superArrays)) {
                     return true;
                 }
             }
@@ -270,15 +278,24 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         getAnnotatedType(arrayLength.getExpression())
                                 .getAnnotationInHierarchy(UNKNOWN);
 
-                if (AnnotationUtils.areSameByClass(arrayAnno, SameLenUnknown.class)) {
-                    Receiver rec =
-                            FlowExpressions.internalReprOf(
-                                    this.atypeFactory, arrayLength.getExpression());
-                    if (isReceiverToStringParsable(rec)) {
+                Receiver rec =
+                        FlowExpressions.internalReprOf(
+                                this.atypeFactory, arrayLength.getExpression());
+                if (isReceiverToStringParsable(rec)) {
+                    if (AnnotationUtils.areSameByClass(arrayAnno, SameLenUnknown.class)) {
                         arrayAnno = createSameLen(rec.toString());
+                    } else if (AnnotationUtils.areSameByClass(arrayAnno, SameLen.class)) {
+                        // Ensure that the array whose length is actually being used is part of the
+                        // annotation. If not, add it.
+                        List<String> arrayAnnoArrays =
+                                getValueOfAnnotationWithStringArgument(arrayAnno);
+                        if (!arrayAnnoArrays.contains(rec.toString())) {
+                            arrayAnnoArrays.add(rec.toString());
+                            String[] newArrayAnnoArrays = arrayAnnoArrays.toArray(new String[0]);
+                            arrayAnno = createSameLen(newArrayAnnoArrays);
+                        }
                     }
                 }
-
                 type.addAnnotation(arrayAnno);
             }
             return null;
@@ -288,10 +305,15 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Creates a @SameLen annotation whose values are the given strings. */
     public AnnotationMirror createSameLen(String... val) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
+        Arrays.sort(val);
         builder.setValue("value", val);
         return builder.build();
     }
 
+    /**
+     * Find all the arrays that are members of the SameLen annotation associated with the array
+     * named in arrayExpression along the current path.
+     */
     public List<String> getSameLensFromString(
             String arrayExpression, Tree tree, TreePath currentPath) {
         AnnotationMirror sameLenAnno = null;
