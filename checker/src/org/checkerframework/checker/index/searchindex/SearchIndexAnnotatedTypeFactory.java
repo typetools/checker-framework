@@ -67,6 +67,52 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
+        public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (AnnotationUtils.areSame(a1, UNKNOWN)) {
+                return a2;
+            }
+            if (AnnotationUtils.areSame(a2, UNKNOWN)) {
+                return a1;
+            }
+            if (AnnotationUtils.areSame(a1, BOTTOM)) {
+                return a1;
+            }
+            if (AnnotationUtils.areSame(a2, BOTTOM)) {
+                return a2;
+            }
+            if (isSubtype(a1, a2)) {
+                return a1;
+            }
+            if (isSubtype(a2, a1)) {
+                return a2;
+            }
+            return BOTTOM;
+        }
+
+        @Override
+        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (AnnotationUtils.areSame(a1, UNKNOWN)) {
+                return a1;
+            }
+            if (AnnotationUtils.areSame(a2, UNKNOWN)) {
+                return a2;
+            }
+            if (AnnotationUtils.areSame(a1, BOTTOM)) {
+                return a2;
+            }
+            if (AnnotationUtils.areSame(a2, BOTTOM)) {
+                return a1;
+            }
+            if (isSubtype(a1, a2)) {
+                return a2;
+            }
+            if (isSubtype(a2, a1)) {
+                return a1;
+            }
+            return UNKNOWN;
+        }
+
+        @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
             if (AnnotationUtils.areSameByClass(superAnno, SearchIndexUnknown.class)) {
                 return true;
@@ -84,12 +130,6 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // Each annotation is either NegativeIndexFor or SearchIndexFor.
             List<String> superArrays = IndexUtil.getValueOfAnnotationWithStringArgument(superAnno);
             List<String> subArrays = IndexUtil.getValueOfAnnotationWithStringArgument(subAnno);
-
-            // It's possible that either superArrays or subArrays is null in rare circumstances.
-            // In those cases, return false. An example is framework/tests/all-systems/Issue1006.java.
-            if (superArrays == null || subArrays == null) {
-                return false;
-            }
 
             // Subtyping requires:
             //  * subtype is NegativeIndexFor or supertype is SearchIndexFor
