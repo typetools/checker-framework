@@ -25,15 +25,16 @@ import javax.lang.model.element.TypeElement;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 public @interface FieldInvariant {
-    /**
-     * The field that has a more precise type, in the class on which the {@code FieldInvariant}
-     * annotation is written. The field must be declared in a superclass and must be {@code final}.
-     */
-    String[] field();
 
     /**
      * The qualifier on the field. Must be a subtype of the annotation on the declaration of the
      * field.
      */
     Class<? extends Annotation>[] qualifier();
+
+    /**
+     * The field that has a more precise type, in the class on which the {@code FieldInvariant}
+     * annotation is written. The field must be declared in a superclass and must be {@code final}.
+     */
+    String[] field();
 }
