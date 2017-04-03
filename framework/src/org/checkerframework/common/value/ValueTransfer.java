@@ -930,7 +930,8 @@ public class ValueTransfer extends CFTransfer {
         elseStore.insertValue(leftRec, atypefactory.createIntRangeAnnotation(elseLeftRange));
         elseStore.insertValue(rightRec, atypefactory.createIntRangeAnnotation(elseRightRange));
 
-        return null; // For now, we're not going to refine the boolean value.
+        // TODO: Refine the type of the comparison.
+        return null;
     }
 
     /**
@@ -1122,6 +1123,7 @@ public class ValueTransfer extends CFTransfer {
                 return resultValues;
         }
         ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
+        return null; // dead code
     }
 
     @Override
