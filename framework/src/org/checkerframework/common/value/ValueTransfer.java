@@ -877,9 +877,9 @@ public class ValueTransfer extends CFTransfer {
         switch (op) {
             case EQUAL:
                 thenRightRange = rightRange.refineEqualTo(leftRange);
-                thenLeftRange = leftRange.refineEqualTo(rightRange);
-                elseRightRange = rightRange; // Not equals gives almost no information.
-                elseLeftRange = leftRange;
+                thenLeftRange = thenRightRange; // Only needs to be computed once.
+                elseRightRange = rightRange.refineNotEqualTo(leftRange);
+                elseLeftRange = leftRange.refineNotEqualTo(rightRange);
                 break;
             case GREATER_THAN:
                 thenLeftRange = leftRange.refineGreaterThan(rightRange);
@@ -906,10 +906,10 @@ public class ValueTransfer extends CFTransfer {
                 elseRightRange = rightRange.refineLessThan(leftRange);
                 break;
             case NOT_EQUAL:
-                thenRightRange = rightRange; // Not equals gives almost no information.
-                thenLeftRange = leftRange;
+                thenRightRange = rightRange.refineNotEqualTo(leftRange);
+                thenLeftRange = leftRange.refineNotEqualTo(rightRange);
                 elseRightRange = rightRange.refineEqualTo(leftRange);
-                elseLeftRange = leftRange.refineEqualTo(rightRange);
+                elseLeftRange = elseRightRange; // Equality only needs to be computed once.
                 break;
             default:
                 ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);

@@ -176,6 +176,20 @@ class Refinement {
         }
     }
 
+    void test_intrange_eq2(@IntRange(from = 0, to = 10) int x, @IntRange(from = 0, to = 0) int y) {
+        if (x == y) {
+            @IntRange(from = 0, to = 0)
+            int a = x;
+            @IntRange(from = 0, to = 0)
+            int b = y;
+        } else {
+            @IntRange(from = 1, to = 10)
+            int a = x;
+            @IntRange(from = 0, to = 0)
+            int b = y;
+        }
+    }
+
     void test_intrange_neq(@IntRange(from = 3, to = 10) int x, @IntRange(from = 1, to = 5) int y) {
         if (x != y) {
             @IntRange(from = 6, to = 10)
@@ -188,6 +202,21 @@ class Refinement {
             @IntRange(from = 3, to = 5)
             int a = x;
             @IntRange(from = 3, to = 5)
+            int b = y;
+        }
+    }
+
+    void test_intrange_neq2(
+            @IntRange(from = 3, to = 10) int x, @IntRange(from = 10, to = 10) int y) {
+        if (x != y) {
+            @IntRange(from = 3, to = 9)
+            int a = x;
+            @IntRange(from = 10, to = 10)
+            int b = y;
+        } else {
+            @IntRange(from = 10, to = 10)
+            int a = x;
+            @IntRange(from = 10, to = 10)
             int b = y;
         }
     }
