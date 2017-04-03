@@ -17,6 +17,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.lowerbound.LowerBoundAnnotatedTypeFactory;
@@ -44,6 +45,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -134,6 +136,39 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private LowerBoundAnnotatedTypeFactory getLowerBoundAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(LowerBoundChecker.class);
+    }
+
+    @Override
+    public void addComputedTypeAnnotations(Element element, AnnotatedTypeMirror type) {
+        super.addComputedTypeAnnotations(element, type);
+        if (element != null) {
+            AnnotatedTypeMirror valueType =
+                    getValueAnnotatedTypeFactory().getAnnotatedType(element);
+            addUpperBoundTypeFromValueType(valueType, type);
+        }
+    }
+
+    @Override
+    public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+        super.addComputedTypeAnnotations(tree, type, iUseFlow);
+        // If dataflow shouldn't be used to compute this type, then do not use the result from
+        // the Value Checker, because dataflow is used to compute that type.  (Without this,
+        // "int i = 1; --i;" fails.)
+        if (iUseFlow && tree != null && TreeUtils.isExpressionTree(tree)) {
+            AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
+            addUpperBoundTypeFromValueType(valueType, type);
+        }
+    }
+
+    /**
+     * Checks if valueType contains a {@link org.checkerframework.common.value.qual.BottomVal}
+     * annotation. If so, adds an {@link UpperBoundBottom} annotation to type.
+     */
+    private void addUpperBoundTypeFromValueType(
+            AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
+        if (AnnotationUtils.containsSameByClass(valueType.getAnnotations(), BottomVal.class)) {
+            type.replaceAnnotation(BOTTOM);
+        }
     }
 
     @Override
