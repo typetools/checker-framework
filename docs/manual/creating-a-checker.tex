@@ -1552,6 +1552,9 @@ uses the JDK.  As described in Section~\ref{annotated-libraries-creating},
 there are two general ways to supply an annotated library:  in Java files
 that will be compiled to \<.class> files, or as stub files (partial Java source files).
 
+It's easier to start out with stub files.  If you need to annotated many
+classes (say, more than 20 or so), then you should create an annotated JDK.
+
 To supply an annotated JDK that will be compiled, see Section~\ref{annotating-jdk}.
 
 To supply an annotated JDK as a stub file, create a file \<jdk.astub> in
