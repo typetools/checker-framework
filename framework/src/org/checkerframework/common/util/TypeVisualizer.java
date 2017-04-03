@@ -40,7 +40,7 @@ import org.checkerframework.javacutil.ErrorReporter;
  *
  * <pre>{@code
  * if (type.getKind() == TypeKind.EXECUTABLE && type.toString().contains("methodToPrint")) {
- *   TypeVisualizer.drawToPng("/Users/jburke/Documents/tmp/method.png", type);
+ *     TypeVisualizer.drawToPng("/Users/jburke/Documents/tmp/method.png", type);
  * }
  * }</pre>
  *
