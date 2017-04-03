@@ -591,8 +591,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Adds the ArrayLen annotation from the array initializers to {@code type}.
          *
-         * <p>If type is a multi-dimensional array, the the initializers might also contain arrays,
-         * so this method adds the annotations for those initializers, too.
+         * <p>If type is a multi-dimensional array, the initializers might also contain arrays, so
+         * this method adds the annotations for those initializers, too.
          *
          * @param initializers initializer trees
          * @param type array type to which annotations are added

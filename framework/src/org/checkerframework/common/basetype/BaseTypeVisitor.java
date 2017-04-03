@@ -1502,8 +1502,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * <p>By default, this method checks that the thrown expression is a subtype of top.
      *
-     * <p>Issue error if the thrown expression is not a sub type of the the annotation given by
-     * {@link #getThrowUpperBoundAnnotations()}, the same as {@link
+     * <p>Issue error if the thrown expression is not a sub type of the annotation given by {@link
+     * #getThrowUpperBoundAnnotations()}, the same as {@link
      * #getExceptionParameterLowerBoundAnnotations()} by default.
      *
      * <p>Subclasses may override this method to change the behavior of this check. Subclasses
@@ -2025,7 +2025,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             retAsDt.replaceAnnotations(returnType.getAnnotations());
             returnType = retAsDt;
         } else if (newClassTree.getClassBody() != null) {
-            // An anonymous class invokes the constructor of it's super class, so the underlying
+            // An anonymous class invokes the constructor of its super class, so the underlying
             // types of invocation and returnType are not the same.  Call asSuper so they are the
             // same and the is subtype tests below work correctly
             invocation = AnnotatedTypes.asSuper(atypeFactory, invocation, returnType);
@@ -2231,7 +2231,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return overrideChecker.checkOverride();
     }
 
-    /** Check if method reference type argument inference is required. Issue an error if is is. */
+    /** Check if method reference type argument inference is required. Issue an error if it is. */
     private boolean checkMethodReferenceInference(
             MemberReferenceTree memberReferenceTree,
             AnnotatedExecutableType memberReferenceType,
@@ -3058,7 +3058,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     public boolean validateTypeOf(Tree tree) {
         AnnotatedTypeMirror type;
-        // It's quite annoying that there is no TypeTree
+        // It's quite annoying that there is no TypeTree.
         switch (tree.getKind()) {
             case PRIMITIVE_TYPE:
             case PARAMETERIZED_TYPE:
