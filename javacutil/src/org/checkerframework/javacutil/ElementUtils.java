@@ -272,9 +272,9 @@ public class ElementUtils {
     }
 
     /**
-     * Returns field elements, and side-effects {@code names} to remove them. For every field name
-     * in {@code names} that is declared in {@code type} or a supertype, add its element to the
-     * returned set and remove it from {@code names}.
+     * Returns non-private field elements, and side-effects {@code names} to remove them. For every
+     * field name in {@code names} that is declared in {@code type} or a supertype, add its element
+     * to the returned set and remove it from {@code names}.
      *
      * <p>When this routine returns, the combination of the return value and {@code names} has the
      * same cardinality, and represents the same fields, as {@code names} did when the method was
@@ -283,8 +283,8 @@ public class ElementUtils {
      * @param type where to look for fields
      * @param names simple names of fields that might be declared in {@code type} or a supertype.
      *     (Names that are found are removed from this list.)
-     * @return the {@code VariableElement}s for fields that are declared in {@code type} whose
-     *     simple names were in {@code names} when the method was called.
+     * @return the {@code VariableElement}s for non-private fields that are declared in {@code type}
+     *     whose simple names were in {@code names} when the method was called.
      */
     public static Set<VariableElement> findFieldsInTypeOrSuperType(
             TypeMirror type, Collection<String> names) {
@@ -306,7 +306,9 @@ public class ElementUtils {
 
         Set<VariableElement> fieldElts = findFieldsInType(elt, notFound);
         for (VariableElement field : fieldElts) {
-            notFound.remove(field.getSimpleName().toString());
+            if (!field.getModifiers().contains(Modifier.PRIVATE)) {
+                notFound.remove(field.getSimpleName().toString());
+            }
         }
         foundFields.addAll(fieldElts);
 
