@@ -608,8 +608,8 @@ public class Range {
      *
      * <pre>
      * <code>
-     *     {@literal @}IntRange(from = 0, to = 10) int a;
-     *     {@literal @}IntRange(from = 3, to = 7) int b;
+     *    {@literal @}IntRange(from = 0, to = 10) int a;
+     *    {@literal @}IntRange(from = 3, to = 7) int b;
      *     ...
      *     if (a &lt; b) {
      *         // range of <i>a</i> is now refined to [0, 6] because a value in range [7, 10]
@@ -645,8 +645,8 @@ public class Range {
      *
      * <pre>
      * <code>
-     *     {@literal @}IntRange(from = 0, to = 10) int a;
-     *     {@literal @}IntRange(from = 3, to = 7) int b;
+     *    {@literal @}IntRange(from = 0, to = 10) int a;
+     *    {@literal @}IntRange(from = 3, to = 7) int b;
      *     ...
      *     if (a &lt;= b) {
      *         // range of <i>a</i> is now refined to [0, 7] because a value in range [8, 10]
@@ -678,8 +678,8 @@ public class Range {
      *
      * <pre>
      * <code>
-     *     {@literal @}IntRange(from = 0, to = 10) int a;
-     *     {@literal @}IntRange(from = 3, to = 7) int b;
+     *    {@literal @}IntRange(from = 0, to = 10) int a;
+     *    {@literal @}IntRange(from = 3, to = 7) int b;
      *     ...
      *     if (a &gt; b) {
      *         // range of <i>a</i> is now refined to [4, 10] because a value in range [0, 3]
@@ -715,8 +715,8 @@ public class Range {
      *
      * <pre>
      * <code>
-     *     {@literal @}IntRange(from = 0, to = 10) int a;
-     *     {@literal @}IntRange(from = 3, to = 7) int b;
+     *    {@literal @}IntRange(from = 0, to = 10) int a;
+     *    {@literal @}IntRange(from = 3, to = 7) int b;
      *     ...
      *     if (a &gt;= b) {
      *         // range of <i>a</i> is now refined to [3, 10] because a value in range [0, 2]
@@ -748,8 +748,8 @@ public class Range {
      *
      * <pre>
      * <code>
-     *     {@literal @}IntRange(from = 0, to = 10) int a;
-     *     {@literal @}IntRange(from = 3, to = 15) int b;
+     *    {@literal @}IntRange(from = 0, to = 10) int a;
+     *    {@literal @}IntRange(from = 3, to = 15) int b;
      *     ...
      *     if (a == b) {
      *         // range of <i>a</i> is now refined to [3, 10] because a value in range [0, 2]
@@ -774,8 +774,8 @@ public class Range {
      *
      * <pre>
      * <code>
-     *     {@literal @}IntRange(from = 0, to = 10) int a;
-     *     {@literal @}IntRange(from = 0, to = 0) int b;
+     *    {@literal @}IntRange(from = 0, to = 10) int a;
+     *    {@literal @}IntRange(from = 0, to = 0) int b;
      *     ...
      *     if (a != b) {
      *         // range of <i>a</i> is now refined to [1, 10] because it cannot
