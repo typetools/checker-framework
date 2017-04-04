@@ -14,23 +14,23 @@ matrix:
 env:
 ## Jobs used when downloading JDK during testing.
 ## all-tests = junit + nonjunit + demos.  Separately, test building the JDK.
-#  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=all-tests
-#  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=jdk.jar
-#  - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=all-tests
-#  - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=jdk.jar
-#  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=downstream
-#  - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=downstream
-#  - BUILDJDK=downloadjdk JDKVER=jdkany GROUP=misc
+  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=all-tests
+  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=jdk.jar
+  - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=all-tests
+  - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=jdk.jar
+  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=downstream
+  - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=downstream
+  - BUILDJDK=downloadjdk JDKVER=jdkany GROUP=misc
 ## Jobs used when building JDK during testing.
-  - BUILDJDK=buildjdk JDKVER=jdk7 GROUP=junit
-  - BUILDJDK=buildjdk JDKVER=jdk7 GROUP=nonjunit
+#  - BUILDJDK=buildjdk JDKVER=jdk7 GROUP=junit
+#  - BUILDJDK=buildjdk JDKVER=jdk7 GROUP=nonjunit
 #  - BUILDJDK=buildjdk JDKVER=jdk7 GROUP=demos
-  - BUILDJDK=buildjdk JDKVER=jdk8 GROUP=junit
-  - BUILDJDK=buildjdk JDKVER=jdk8 GROUP=nonjunit
+#  - BUILDJDK=buildjdk JDKVER=jdk8 GROUP=junit
+#  - BUILDJDK=buildjdk JDKVER=jdk8 GROUP=nonjunit
 #  - BUILDJDK=buildjdk JDKVER=jdk8 GROUP=demos
-  - BUILDJDK=buildjdk JDKVER=jdk7 GROUP=downstream
-  - BUILDJDK=buildjdk JDKVER=jdk8 GROUP=downstream
-  - BUILDJDK=buildjdk JDKVER=jdkany GROUP=misc
+#  - BUILDJDK=buildjdk JDKVER=jdk7 GROUP=downstream
+#  - BUILDJDK=buildjdk JDKVER=jdk8 GROUP=downstream
+#  - BUILDJDK=buildjdk JDKVER=jdkany GROUP=misc
 
 
 before_script:
