@@ -74,6 +74,7 @@ import org.checkerframework.common.reflection.ReflectionResolver;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.FieldInvariant;
 import org.checkerframework.framework.qual.FromByteCode;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.InheritedAnnotation;
@@ -98,6 +99,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
+import org.checkerframework.framework.util.FieldInvariantObject;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -1288,7 +1290,117 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public void postAsMemberOf(
             AnnotatedTypeMirror type, AnnotatedTypeMirror owner, Element element) {
+        if (element.getKind() == ElementKind.FIELD) {
+            addAnnotationFromFieldInvariant(type, owner, (VariableElement) element);
+        }
         addComputedTypeAnnotations(element, type);
+    }
+
+    /**
+     * Adds the qualifier specified by a field invariant for {@code field} to {@code type}.
+     *
+     * @param type annotated type to which the annotation is added
+     * @param accessedVia the annotated type of the receiver of the accessing tree. (Only used to
+     *     get the type element of the underling type.)
+     * @param field element representing the field
+     */
+    protected void addAnnotationFromFieldInvariant(
+            AnnotatedTypeMirror type, AnnotatedTypeMirror accessedVia, VariableElement field) {
+        TypeElement typeElement = InternalUtils.getTypeElement(accessedVia.getUnderlyingType());
+        if (ElementUtils.enclosingClass(field).equals(typeElement)) {
+            // If the field is declared in the accessedVia class, then the field in the invariant
+            // cannot be this field, even if the field has the same name.
+            return;
+        }
+
+        FieldInvariantObject invariants = getFieldInvariants(typeElement);
+        if (invariants == null) {
+            return;
+        }
+        List<AnnotationMirror> invariantAnnos = invariants.getQualifiersFor(field.getSimpleName());
+        type.replaceAnnotations(invariantAnnos);
+    }
+
+    /**
+     * Returns the field invariants for the given class.
+     *
+     * <p>Subclass may implement their own field invariant annotations if {@link FieldInvariant} is
+     * not expressive enough. They must override this method to properly create AnnotationMirror and
+     * also override {@link #getFieldInvariantDeclarationAnnotations()} to return their field
+     * invariants.
+     *
+     * @param element class for which to get invariants
+     * @return fields invariants for {@code element}
+     */
+    public FieldInvariantObject getFieldInvariants(TypeElement element) {
+        if (element == null) {
+            return null;
+        }
+        AnnotationMirror fieldInvarAnno = getDeclAnnotation(element, FieldInvariant.class);
+        if (fieldInvarAnno == null) {
+            return null;
+        }
+        List<String> fields =
+                AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, true);
+        List<Name> classes =
+                AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", true);
+        List<AnnotationMirror> qualifiers = new ArrayList<>();
+        for (Name name : classes) {
+            qualifiers.add(AnnotationUtils.fromName(elements, name));
+        }
+        if (fields.size() > qualifiers.size()) {
+            int difference = fields.size() - qualifiers.size();
+            for (int i = 0; i < difference; i++) {
+                qualifiers.add(qualifiers.get(0));
+            }
+        }
+        if (fields.size() != qualifiers.size()) {
+            // FieldInvariant wasn't written correctly, so just return the object, the
+            // BaseTypeVisitor will issue an error.
+            return new FieldInvariantObject(fields, qualifiers);
+        }
+
+        // Only keep qualifiers that are supported by this checker.  (The other qualifiers cannot
+        // be checked by this checker, so they must be ignored.)
+        List<String> supportFields = new ArrayList<>();
+        List<AnnotationMirror> supportedQualifiers = new ArrayList<>();
+        for (int i = 0; i < fields.size(); i++) {
+            if (isSupportedQualifier(qualifiers.get(i))) {
+                supportedQualifiers.add(qualifiers.get(i));
+                supportFields.add(fields.get(i));
+            }
+        }
+        if (supportFields.isEmpty() && qualifiers.isEmpty()) {
+            return null;
+        }
+
+        return new FieldInvariantObject(supportFields, supportedQualifiers);
+    }
+
+    /**
+     * Returns the AnnotationTree which is a use of one of the field invariant annotations (as
+     * specified via {@link #getFieldInvariantDeclarationAnnotations()}. If one isn't found, null is
+     * returned.
+     *
+     * @param annoTrees trees to look
+     * @return Returns the AnnotationTree which is a use of one of the field invariant annotations
+     *     or null if one isn't found
+     */
+    public AnnotationTree getFieldInvariantAnnotationTree(
+            List<? extends AnnotationTree> annoTrees) {
+        List<AnnotationMirror> annos = InternalUtils.annotationsFromTypeAnnotationTrees(annoTrees);
+        for (int i = 0; i < annos.size(); i++) {
+            for (Class<? extends Annotation> clazz : getFieldInvariantDeclarationAnnotations())
+                if (AnnotationUtils.areSameByClass(annos.get(i), clazz)) {
+                    return annoTrees.get(i);
+                }
+        }
+        return null;
+    }
+
+    /** Returns the set of classes of field invariant annotations. */
+    protected Set<Class<? extends Annotation>> getFieldInvariantDeclarationAnnotations() {
+        return Collections.<Class<? extends Annotation>>singleton(FieldInvariant.class);
     }
 
     /**
@@ -2841,7 +2953,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         Set<AnnotationMirror> results = AnnotationUtils.createAnnotationSet();
         // Retrieving the annotations from the element.
-        results.addAll(elt.getAnnotationMirrors());
+        results.addAll(elements.getAllAnnotationMirrors(elt));
         // If declAnnosFromStubFiles == null, return the annotations in the element.
         if (declAnnosFromStubFiles != null) {
             // Adding @FromByteCode annotation to declAnnosFromStubFiles entry with key

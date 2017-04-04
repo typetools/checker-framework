@@ -1235,6 +1235,62 @@ quantification over all array components (e.g. to express that all
   array elements are non-null).  There is no such Java expression, but it
   would be useful when writing specifications.
 
+\section{Field invariants\label{field-invariants}}
+
+Sometimes a field declared in a superclass has a more precise type in a
+subclass.  To express this fact, write
+\refqualclass{framework/qual}{FieldInvariant} on the subclass. It specifies
+the field's type in the class on which this annotation is written.
+The field must be declared in a superclass and
+must be final.
+
+% Other possible examples:
+% Vehicles have some number of wheels; motorcycles have exactly 2 wheels.
+% Sentence: subject (missing for imperative, which would let us use
+%   @Unused, but that's not the point here), verb, object (optional,
+%   missing for some types of sentences?).
+% Book might have an index
+% DOM tree might have parent or not.
+% Computer might have a sound card or not.
+
+For example,
+\begin{Verbatim}
+class Person {
+  final @Nullable String nickname;
+  public Person(@Nullable String nickname) {
+    this.nickname = nickname;
+  }
+}
+
+// A rapper always has a nickname.
+@FieldInvariant(qualifier = NonNull.class, field = "nickname")
+class Rapper extends Person {
+  public Rapper(String nickname) {
+    super(nickname);
+  }
+  void method() {
+    ... nickname.length() ...   // legal, nickname is non-null in this class.
+  }
+}
+\end{Verbatim}
+ A field invariant annotation can refer to more than one field. For example,
+\<@FieldInvariant(qualifier = NonNull.class, field = \{fieldA, fieldB\})> means
+that \<fieldA> and \<fieldB> are both non-null in the class upon which the
+annotation is written.  A field invariant annotation
+can also apply different qualifiers to different fields. For example,
+\<@FieldInvariant(qualifier = \{NonNull.class, Untainted.class\}, field =
+\{fieldA, fieldB\})> means that \<fieldA> is non-null and \<fieldB> is untainted.
+
+This annotation is inherited:  if a superclass is annotated with
+\<@FieldInvariant>, its subclasses have the same annotation. If a subclass has its
+own \<@FieldInvariant>, then it must include the fields in the superclass
+annotation and those fields' annotations must be a subtype (or equal) to the
+annotations for those fields in the the superclass \<@FieldInvariant>.
+
+Currently, the \<@FieldInvariant> annotation is trusted rather than
+checked.  In other words, the \<@FieldInvariant> annotation introduces a
+loophole in the type system, which requires verification by other means
+such as manual examination.
 
 
 % \section{Unused fields and dependent types\label{unused-fields-and-dependent-types}}
