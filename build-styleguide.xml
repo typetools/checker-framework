@@ -139,6 +139,7 @@
     <exec executable="git"
           dir="${checker.loc}/bin-devel/.run-google-java-format">
       <arg value="pull"/>
+      <arg value="-q"/>
     </exec>
   </target>
 
