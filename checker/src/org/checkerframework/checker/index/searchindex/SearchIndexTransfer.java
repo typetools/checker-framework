@@ -22,8 +22,6 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
     // The ATF (Annotated Type Factory).
     private SearchIndexAnnotatedTypeFactory aTypeFactory;
 
-    private CFAnalysis analysis;
-
     public SearchIndexTransfer(CFAnalysis analysis) {
         super(analysis);
         this.analysis = analysis;
