@@ -2,6 +2,7 @@ package org.checkerframework.checker.index.searchindex;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -86,7 +87,20 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (isSubtype(a2, a1)) {
                 return a2;
             }
-            return BOTTOM;
+            // If neither is a subtype of the other, then create an
+            // annotation that combines their values.
+
+            // Each annotation is either NegativeIndexFor or SearchIndexFor.
+            Set<String> combinedArrays =
+                    new HashSet<>(IndexUtil.getValueOfAnnotationWithStringArgument(a1));
+            combinedArrays.addAll(IndexUtil.getValueOfAnnotationWithStringArgument(a2));
+
+            if (AnnotationUtils.areSameByClass(a1, NegativeIndexFor.class)
+                    || AnnotationUtils.areSameByClass(a2, NegativeIndexFor.class)) {
+                return createNegativeIndexFor(Arrays.asList(combinedArrays.toArray(new String[0])));
+            } else {
+                return createSearchIndexFor(Arrays.asList(combinedArrays.toArray(new String[0])));
+            }
         }
 
         @Override
@@ -109,7 +123,25 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (isSubtype(a2, a1)) {
                 return a1;
             }
-            return UNKNOWN;
+            // If neither is a subtype of the other, then create an
+            // annotation that includes only their overlapping values.
+
+            // Each annotation is either NegativeIndexFor or SearchIndexFor.
+            List<String> arrayIntersection = IndexUtil.getValueOfAnnotationWithStringArgument(a1);
+            arrayIntersection.retainAll(IndexUtil.getValueOfAnnotationWithStringArgument(a2));
+
+            if (arrayIntersection.size() == 0) {
+                return UNKNOWN;
+            }
+
+            if (AnnotationUtils.areSameByClass(a1, SearchIndexFor.class)
+                    || AnnotationUtils.areSameByClass(a2, SearchIndexFor.class)) {
+                return createSearchIndexFor(
+                        Arrays.asList(arrayIntersection.toArray(new String[0])));
+            } else {
+                return createNegativeIndexFor(
+                        Arrays.asList(arrayIntersection.toArray(new String[0])));
+            }
         }
 
         @Override
@@ -146,6 +178,16 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return UNKNOWN;
         }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, NegativeIndexFor.class);
+        builder.setValue("value", arrays);
+        return builder.build();
+    }
+
+    /** Create a new {@code @SearchIndexFor} annotation with the given arrays as its arguments. */
+    AnnotationMirror createSearchIndexFor(List<String> arrays) {
+        if (arrays.size() == 0) {
+            return UNKNOWN;
+        }
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SearchIndexFor.class);
         builder.setValue("value", arrays);
         return builder.build();
     }
