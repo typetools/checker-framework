@@ -435,10 +435,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     searchIndexType.getAnnotations(), NegativeIndexFor.class)) {
                 AnnotationMirror nif = searchIndexType.getAnnotation(NegativeIndexFor.class);
                 List<String> arrays = IndexUtil.getValueOfAnnotationWithStringArgument(nif);
-                List<String> negativeOnes = new ArrayList<>(arrays.size());
-                for (String s : arrays) {
-                    negativeOnes.add("-1");
-                }
+                List<String> negativeOnes = Collections.nCopies(arrays.size(), "-1");
                 UBQualifier qual = UBQualifier.createUBQualifier(arrays, negativeOnes);
                 typeDst.addAnnotation(convertUBQualifierToAnnotation(qual));
             } else {

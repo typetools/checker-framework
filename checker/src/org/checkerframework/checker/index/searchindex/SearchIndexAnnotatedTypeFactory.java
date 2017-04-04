@@ -1,6 +1,8 @@
 package org.checkerframework.checker.index.searchindex;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -177,6 +179,10 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (arrays.size() == 0) {
             return UNKNOWN;
         }
+
+        arrays = new ArrayList<>(new HashSet<>(arrays)); // remove duplicates
+        Collections.sort(arrays);
+
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, NegativeIndexFor.class);
         builder.setValue("value", arrays);
         return builder.build();
@@ -187,6 +193,10 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (arrays.size() == 0) {
             return UNKNOWN;
         }
+
+        arrays = new ArrayList<>(new HashSet<>(arrays)); // remove duplicates
+        Collections.sort(arrays);
+
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SearchIndexFor.class);
         builder.setValue("value", arrays);
         return builder.build();

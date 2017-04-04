@@ -1,8 +1,6 @@
 import java.util.Arrays;
 import org.checkerframework.checker.index.qual.*;
 
-//@skip-test because of a samelen issue
-
 public class BinarySearchTest {
 
     private final long @SameLen("iNameKeys") [] iTransitions;

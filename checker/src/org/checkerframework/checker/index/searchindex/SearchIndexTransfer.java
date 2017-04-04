@@ -24,7 +24,6 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
 
     public SearchIndexTransfer(CFAnalysis analysis) {
         super(analysis);
-        this.analysis = analysis;
         aTypeFactory = (SearchIndexAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 
