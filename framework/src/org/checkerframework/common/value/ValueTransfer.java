@@ -444,7 +444,7 @@ public class ValueTransfer extends CFTransfer {
                     break;
                 default:
                     ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
-                    resultRange = null;
+                    throw new RuntimeException("this can't happen");
             }
             // Any integral type with less than 32 bits would be promoted to 32-bit int type during operations.
             return leftNode.getType().getKind() == TypeKind.LONG
@@ -696,7 +696,7 @@ public class ValueTransfer extends CFTransfer {
                     break;
                 default:
                     ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
-                    resultRange = null;
+                    throw new RuntimeException("this can't happen");
             }
             // Any integral type with less than 32 bits would be promoted to 32-bit int type during operations.
             return operand.getType().getKind() == TypeKind.LONG
@@ -834,7 +834,7 @@ public class ValueTransfer extends CFTransfer {
                         break;
                     default:
                         ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
-                        result = null;
+                        throw new RuntimeException("this can't happen");
                 }
                 resultValues.add(result);
                 if (result) {
@@ -913,12 +913,7 @@ public class ValueTransfer extends CFTransfer {
                 break;
             default:
                 ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
-                // The next four lines are dead, but if they aren't here then
-                // these might not have been initialized.
-                thenLeftRange = null;
-                thenRightRange = null;
-                elseLeftRange = null;
-                elseRightRange = null;
+                throw new RuntimeException("this is impossible, but javac issues a warning");
         }
 
         Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), leftNode);
@@ -1123,7 +1118,7 @@ public class ValueTransfer extends CFTransfer {
                 return resultValues;
         }
         ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
-        return null; // dead code
+        throw new RuntimeException("this can't happen");
     }
 
     @Override
