@@ -81,7 +81,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
             Receiver dimRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), dim);
             result.getRegularStore().insertValue(dimRec, newAnno);
-            propagateToOperands(newInfo, dim, result.getRegularStore(), in);
+            propagateToOperands(newInfo, dim, in, result.getRegularStore());
         }
         return result;
     }
@@ -90,18 +90,16 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * {@code node} is known to be {@code typeOfNode}. If the node is a plus or a minus then the
      * types of the left and right operands can be refined to include offsets. If the node is a
      * multiplication, its operands can also be refined. See {@link
-     * #propagateToAdditionOperand(UBQualifier.LessThanLengthOf,Node,Node,TransferInput,CFStore)
-     * propagateToAdditionOperand}, {@link
-     * #propagateToSubtractionOperands(UBQualifier.LessThanLengthOf,NumericalSubtractionNode,TransferInput,CFStore)
-     * propagateToSubtractionOperands}, and {@link
-     * #propagateToMultiplicationOperand(Node,Node,TransferInput,CFStore,UBQualifier.LessThanLengthOf)
-     * propagateToMultiplicationOperand} for details.
+     * #propagateToAdditionOperand(LessThanLengthOf, Node, Node, TransferInput, CFStore)}, {@link
+     * #propagateToSubtractionOperands(LessThanLengthOf, NumericalSubtractionNode, TransferInput,
+     * CFStore)}, and {@link #propagateToMultiplicationOperand(LessThanLengthOf, Node, Node,
+     * TransferInput, CFStore)} for details.
      */
     private void propagateToOperands(
             LessThanLengthOf typeOfNode,
             Node node,
-            CFStore store,
-            TransferInput<CFValue, CFStore> in) {
+            TransferInput<CFValue, CFStore> in,
+            CFStore store) {
         if (node instanceof NumericalAdditionNode) {
             Node right = ((NumericalAdditionNode) node).getRightOperand();
             Node left = ((NumericalAdditionNode) node).getLeftOperand();
@@ -114,8 +112,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                     || atypeFactory.hasLowerBoundTypeByClass(node, Positive.class)) {
                 Node right = ((NumericalMultiplicationNode) node).getRightOperand();
                 Node left = ((NumericalMultiplicationNode) node).getLeftOperand();
-                propagateToMultiplicationOperand(left, right, in, store, typeOfNode);
-                propagateToMultiplicationOperand(right, left, in, store, typeOfNode);
+                propagateToMultiplicationOperand(typeOfNode, left, right, in, store);
+                propagateToMultiplicationOperand(typeOfNode, right, left, in, store);
             }
         }
     }
@@ -128,11 +126,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * typeOfMultiplication} plus 1.
      */
     private void propagateToMultiplicationOperand(
+            LessThanLengthOf typeOfMultiplication,
             Node node,
             Node other,
             TransferInput<CFValue, CFStore> in,
-            CFStore store,
-            LessThanLengthOf typeOfMultiplication) {
+            CFStore store) {
         if (atypeFactory.hasLowerBoundTypeByClass(other, Positive.class)) {
             Long minValue =
                     IndexUtil.getMinValue(
@@ -151,7 +149,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * The subtraction node, {@code node}, is known to be {@code typeOfSubtraction}.
      *
      * <p>This means that the left node is less than or equal to the length of the array when the
-     * right node is subtracted from the left node.
+     * right node is subtracted from the left node. Note that unlike {@link
+     * #propagateToAdditionOperand(LessThanLengthOf, Node, Node, TransferInput, CFStore)} and {@link
+     * #propagateToMultiplicationOperand(LessThanLengthOf, Node, Node, TransferInput, CFStore)},
+     * this method takes the NumericalSubtractionNode instead of the two operand nodes.
      *
      * @param typeOfSubtraction type of node
      * @param node subtraction node that has typeOfSubtraction
@@ -218,7 +219,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         UBQualifier refinedRight = rightQualifier.glb(largerQualPlus1);
 
         if (largerQualPlus1.isLessThanLengthQualifier()) {
-            propagateToOperands((LessThanLengthOf) largerQualPlus1, smaller, store, in);
+            propagateToOperands((LessThanLengthOf) largerQualPlus1, smaller, in, store);
         }
 
         Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), smaller);
@@ -245,7 +246,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         UBQualifier refinedRight = rightQualifier.glb(leftQualifier);
 
         if (leftQualifier.isLessThanLengthQualifier()) {
-            propagateToOperands((LessThanLengthOf) leftQualifier, right, store, in);
+            propagateToOperands((LessThanLengthOf) leftQualifier, right, in, store);
         }
 
         Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
