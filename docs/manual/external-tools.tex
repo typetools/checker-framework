@@ -331,7 +331,7 @@ Please note that the \<-AoutputArgsToFile> command-line option
 (see Section~\ref{shorthand-for-checkers}) are not available when
 following these instructions.  Both these features are available only when a checker is
 launched via \<checker.jar> such as when \code{\$CHECKERFRAMEWORK/checker/bin/javac}
-is run.  The Gradle instructions in this section
+is run.  The instructions in this section
 bypass \<checker.jar> and cause the compiler to run a
 checker as an annotation processor directly.
 
@@ -377,7 +377,7 @@ occurrence of \code{</dependency>}:
 
 \begin{alltt}
             <scope>system</scope>
-            <systemPath>\${env.CHECKERFRAMEWORK}/checker/dist/\emph{artifactID}.jar</systemPath>
+            <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/\emph{artifactID}.jar</systemPath>
 \end{alltt}
 
 \noindent
@@ -386,7 +386,7 @@ where \emph{artifactID} is a jar file name, such as \<checker-qual>.
 
 \item Use Maven properties to hold the locations of the
   annotated JDK and (if using annotations in comments), the type annotations compiler.  Both were declared as Maven dependencies above.
-To set the value of these properties automatically, use the Maven Dependency plugin.
+To set the value of these properties automatically, you will use the Maven Dependency plugin.
 
 First, create the properties in the \code{properties} section of the POM:
 
