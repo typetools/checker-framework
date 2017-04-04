@@ -608,8 +608,8 @@ public class Range {
      *
      * <pre>
      * <code>
-     *     {@literal @}IntRange(from = 0, to = 10) int a;
-     *     {@literal @}IntRange(from = 3, to = 7) int b;
+     *    {@literal @}IntRange(from = 0, to = 10) int a;
+     *    {@literal @}IntRange(from = 3, to = 7) int b;
      *     ...
      *     if (a &lt; b) {
      *         // range of <i>a</i> is now refined to [0, 6] because a value in range [7, 10]
@@ -645,8 +645,8 @@ public class Range {
      *
      * <pre>
      * <code>
-     *     {@literal @}IntRange(from = 0, to = 10) int a;
-     *     {@literal @}IntRange(from = 3, to = 7) int b;
+     *    {@literal @}IntRange(from = 0, to = 10) int a;
+     *    {@literal @}IntRange(from = 3, to = 7) int b;
      *     ...
      *     if (a &lt;= b) {
      *         // range of <i>a</i> is now refined to [0, 7] because a value in range [8, 10]
@@ -678,8 +678,8 @@ public class Range {
      *
      * <pre>
      * <code>
-     *     {@literal @}IntRange(from = 0, to = 10) int a;
-     *     {@literal @}IntRange(from = 3, to = 7) int b;
+     *    {@literal @}IntRange(from = 0, to = 10) int a;
+     *    {@literal @}IntRange(from = 3, to = 7) int b;
      *     ...
      *     if (a &gt; b) {
      *         // range of <i>a</i> is now refined to [4, 10] because a value in range [0, 3]
@@ -715,8 +715,8 @@ public class Range {
      *
      * <pre>
      * <code>
-     *     {@literal @}IntRange(from = 0, to = 10) int a;
-     *     {@literal @}IntRange(from = 3, to = 7) int b;
+     *    {@literal @}IntRange(from = 0, to = 10) int a;
+     *    {@literal @}IntRange(from = 3, to = 7) int b;
      *     ...
      *     if (a &gt;= b) {
      *         // range of <i>a</i> is now refined to [3, 10] because a value in range [0, 2]
@@ -748,8 +748,8 @@ public class Range {
      *
      * <pre>
      * <code>
-     *     {@literal @}IntRange(from = 0, to = 10) int a;
-     *     {@literal @}IntRange(from = 3, to = 15) int b;
+     *    {@literal @}IntRange(from = 0, to = 10) int a;
+     *    {@literal @}IntRange(from = 3, to = 15) int b;
      *     ...
      *     if (a == b) {
      *         // range of <i>a</i> is now refined to [3, 10] because a value in range [0, 2]
@@ -764,6 +764,39 @@ public class Range {
      */
     public Range refineEqualTo(Range right) {
         return this.intersect(right);
+    }
+
+    /**
+     * Refines this range to reflect that some value in it must not be equal to a value in the given
+     * range. This only changes the range if the given range (right) contains exactly one integer,
+     * and that integer is one of the bounds of this range. This is used for calculating the
+     * control-flow-refined result of the != operator. For example:
+     *
+     * <pre>
+     * <code>
+     *    {@literal @}IntRange(from = 0, to = 10) int a;
+     *    {@literal @}IntRange(from = 0, to = 0) int b;
+     *     ...
+     *     if (a != b) {
+     *         // range of <i>a</i> is now refined to [1, 10] because it cannot
+     *         // be zero.
+     *         ...
+     *     }
+     * </code>
+     * </pre>
+     *
+     * @param right the specified {@code Range} to compare with
+     * @return the refined {@code Range}
+     */
+    public Range refineNotEqualTo(Range right) {
+        if (right.to == right.from) {
+            if (this.to == right.to) {
+                return new Range(this.from, this.to - 1);
+            } else if (this.from == right.from) {
+                return new Range(this.from + 1, this.to);
+            }
+        }
+        return this;
     }
 
     /**
