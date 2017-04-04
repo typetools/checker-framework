@@ -61,11 +61,9 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
                     aTypeFactory.getAnnotationMirror(right.getTree(), SearchIndexFor.class);
             if (rightSI != null) {
                 List<String> arrays = IndexUtil.getValueOfAnnotationWithStringArgument(rightSI);
-                if (arrays != null) {
-                    AnnotationMirror nif = aTypeFactory.createNegativeIndexFor(arrays);
-                    store.insertValue(
-                            FlowExpressions.internalReprOf(analysis.getTypeFactory(), right), nif);
-                }
+                AnnotationMirror nif = aTypeFactory.createNegativeIndexFor(arrays);
+                store.insertValue(
+                        FlowExpressions.internalReprOf(analysis.getTypeFactory(), right), nif);
             }
         }
     }
