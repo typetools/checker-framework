@@ -190,6 +190,23 @@ class Refinement {
         }
     }
 
+    void test_intrange_eq3(@IntRange(from = 0, to = 10) int x, @IntVal(0) int y) {
+        if (x == y) {
+            @IntVal(0) int a = x;
+            @IntVal(0) int b = y;
+        } else {
+            @IntRange(from = 1, to = 10)
+            int a = x;
+            @IntVal(0) int b = y;
+        }
+
+        if (y != x) {
+            @IntRange(from = 1, to = 10)
+            int a = x;
+            @IntVal(0) int b = y;
+        }
+    }
+
     void test_intrange_neq(@IntRange(from = 3, to = 10) int x, @IntRange(from = 1, to = 5) int y) {
         if (x != y) {
             @IntRange(from = 6, to = 10)
