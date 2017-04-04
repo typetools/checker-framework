@@ -82,7 +82,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * The value method of the PartialRegex qualifier.
      *
-     * @see org.checkerframework.checker.regex.classic.qual.PartialRegex
+     * @see org.checkerframework.checker.regex.qual.PartialRegex
      */
     private final ExecutableElement partialRegexValue;
 

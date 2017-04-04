@@ -59,6 +59,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
@@ -100,6 +101,7 @@ import org.checkerframework.framework.util.ContractsUtils.ConditionalPostconditi
 import org.checkerframework.framework.util.ContractsUtils.Contract;
 import org.checkerframework.framework.util.ContractsUtils.Postcondition;
 import org.checkerframework.framework.util.ContractsUtils.Precondition;
+import org.checkerframework.framework.util.FieldInvariantObject;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -308,6 +310,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param classTree class to check
      */
     public void processClassTree(ClassTree classTree) {
+        checkFieldInvariantDeclarations(classTree);
         if (!TreeUtils.hasExplicitConstructor(classTree)) {
             checkDefaultConstructor(classTree);
         }
@@ -328,6 +331,108 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         }
         super.visitClass(classTree, null);
+    }
+
+    /**
+     * Check that the field invariant declaration annotations meet the following requirements:
+     *
+     * <ol>
+     *   <!-- The item numbering is referred to in the body of the method.-->
+     *   <li value="1">If the superclass of {@code classTree} has a field invariant, then the field
+     *       invariant for {@code classTree} must include all the fields in the superclass invariant
+     *       and those fields' annotations must be a subtype (or equal) to the annotations for those
+     *       fields in the the superclass.
+     *   <li value="2">The fields in the invariant must be a.) final and b.) declared in a
+     *       superclass of {@code classTree}.
+     *   <li value="3">The qualifier for each field must be a subtype of the annotation on the
+     *       declaration of that field.
+     *   <li value="4">The field invariant has an equal number of fields and qualifiers, or it has
+     *       one qualifier and at least one field.
+     * </ol>
+     *
+     * @param classTree class that might have a field invariant
+     * @checker_framework.manual #field-invariants Field invariants
+     */
+    protected void checkFieldInvariantDeclarations(ClassTree classTree) {
+        TypeElement elt = TreeUtils.elementFromDeclaration(classTree);
+        FieldInvariantObject invariants = atypeFactory.getFieldInvariants(elt);
+        if (invariants == null) {
+            // No invariants to check
+            return;
+        }
+
+        // Where to issue an error, if any.
+        Tree errorTree =
+                atypeFactory.getFieldInvariantAnnotationTree(
+                        classTree.getModifiers().getAnnotations());
+        if (errorTree == null) {
+            // If the annotation was inherited, then there is no annotation tree, so issue the
+            // error on the class.
+            errorTree = classTree;
+        }
+
+        // Checks #4 (see method Javadoc)
+        if (!invariants.isWellFormed()) {
+            checker.report(Result.failure("field.invar.not.wellformed"), errorTree);
+            return;
+        }
+
+        TypeMirror superClass = elt.getSuperclass();
+        List<String> fieldsNotFound = new ArrayList<>(invariants.getFields());
+        Set<VariableElement> fieldElts =
+                ElementUtils.findFieldsInTypeOrSuperType(superClass, fieldsNotFound);
+
+        // Checks that fields are declared in super class. (#2b)
+        if (!fieldsNotFound.isEmpty()) {
+            String notFoundString = PluginUtil.join(", ", fieldsNotFound);
+            checker.report(Result.failure("field.invar.not.found", notFoundString), errorTree);
+        }
+
+        FieldInvariantObject superInvar =
+                atypeFactory.getFieldInvariants(InternalUtils.getTypeElement(superClass));
+        if (superInvar != null) {
+            // Checks #3 (see method Javadoc)
+            Result superError = invariants.isSuperInvariant(superInvar, atypeFactory);
+            if (superError != null) {
+                checker.report(superError, errorTree);
+            }
+        }
+
+        List<String> notFinal = new ArrayList<>();
+        for (VariableElement field : fieldElts) {
+            String fieldName = field.getSimpleName().toString();
+            if (!ElementUtils.isFinal(field)) {
+                notFinal.add(fieldName);
+            }
+            AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(field);
+
+            List<AnnotationMirror> annos = invariants.getQualifiersFor(field.getSimpleName());
+            for (AnnotationMirror invariantAnno : annos) {
+                AnnotationMirror declaredAnno =
+                        type.getEffectiveAnnotationInHierarchy(invariantAnno);
+                if (declaredAnno == null) {
+                    // invariant anno isn't in this hierarchy
+                    continue;
+                }
+
+                if (!atypeFactory.getQualifierHierarchy().isSubtype(invariantAnno, declaredAnno)) {
+                    // Checks #3
+                    checker.report(
+                            Result.failure(
+                                    "field.invar.not.subtype",
+                                    fieldName,
+                                    invariantAnno,
+                                    declaredAnno),
+                            errorTree);
+                }
+            }
+        }
+
+        // Checks #2a
+        if (!notFinal.isEmpty()) {
+            String notFinalString = PluginUtil.join(", ", notFinal);
+            checker.report(Result.failure("field.invar.not.final", notFinalString), errorTree);
+        }
     }
 
     protected void checkDefaultConstructor(ClassTree node) {}

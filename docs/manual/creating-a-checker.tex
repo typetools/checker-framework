@@ -1177,7 +1177,7 @@ does not affect it), but in the true branch, the type of \<s> can be
 refined to \<@NonNull String>.
 
 
-Updating the \refclass{dataflow/analysis}{Store} treats an expression as a
+Updating the \refclass{dataflow/analysis}{Store} treats an expression as
 having a refined type for the remainder of the method or conditional block. For
 example, when the Nullness Checker's dataflow evaluates \code{myvar != null}, it
 updates the \refclass{dataflow/analysis}{Store} to specify that the variable
@@ -1551,6 +1551,9 @@ otherwise, your type-checker may produce spurious warnings for code that
 uses the JDK.  As described in Section~\ref{annotated-libraries-creating},
 there are two general ways to supply an annotated library:  in Java files
 that will be compiled to \<.class> files, or as stub files (partial Java source files).
+
+It's easier to start out with stub files.  If you need to annotated many
+classes (say, more than 20 or so), then you should create an annotated JDK.
 
 To supply an annotated JDK that will be compiled, see Section~\ref{annotating-jdk}.
 

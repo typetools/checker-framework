@@ -247,6 +247,19 @@ public class ElementUtils {
         return null;
     }
 
+    /**
+     * Returns the elements of the fields whose simple names are {@code names} and are declared in
+     * {@code type}.
+     *
+     * <p>If a field or fields isn't declared in {@code type}, its element isn't included in the
+     * returned set. If none of the fields is declared in {@code type} found, the empty set is
+     * returned.
+     *
+     * @param type where to look for fields
+     * @param names simple names of fields that might be declared in {@code type}
+     * @return the elements of the fields whose simple names are {@code names} and are declared in
+     *     {@code type}
+     */
     public static Set<VariableElement> findFieldsInType(
             TypeElement type, Collection<String> names) {
         Set<VariableElement> results = new HashSet<VariableElement>();
@@ -256,6 +269,52 @@ public class ElementUtils {
             }
         }
         return results;
+    }
+
+    /**
+     * Returns non-private field elements, and side-effects {@code names} to remove them. For every
+     * field name in {@code names} that is declared in {@code type} or a supertype, add its element
+     * to the returned set and remove it from {@code names}.
+     *
+     * <p>When this routine returns, the combination of the return value and {@code names} has the
+     * same cardinality, and represents the same fields, as {@code names} did when the method was
+     * called.
+     *
+     * @param type where to look for fields
+     * @param names simple names of fields that might be declared in {@code type} or a supertype.
+     *     (Names that are found are removed from this list.)
+     * @return the {@code VariableElement}s for non-private fields that are declared in {@code type}
+     *     whose simple names were in {@code names} when the method was called.
+     */
+    public static Set<VariableElement> findFieldsInTypeOrSuperType(
+            TypeMirror type, Collection<String> names) {
+        Set<VariableElement> elements = new HashSet<>();
+        findFieldsInTypeOrSuperType(elements, names, type);
+        return elements;
+    }
+
+    /**
+     * Side-effects both {@code foundFields} (which starts empty) and {@code notFound}, conceptually
+     * moving elements from {@code notFound} to {@code foundFields}.
+     */
+    private static void findFieldsInTypeOrSuperType(
+            Set<VariableElement> foundFields, Collection<String> notFound, TypeMirror type) {
+        if (TypesUtils.isObject(type)) {
+            return;
+        }
+        TypeElement elt = InternalUtils.getTypeElement(type);
+
+        Set<VariableElement> fieldElts = findFieldsInType(elt, notFound);
+        for (VariableElement field : fieldElts) {
+            if (!field.getModifiers().contains(Modifier.PRIVATE)) {
+                notFound.remove(field.getSimpleName().toString());
+            }
+        }
+        foundFields.addAll(fieldElts);
+
+        if (!notFound.isEmpty()) {
+            findFieldsInTypeOrSuperType(foundFields, notFound, elt.getSuperclass());
+        }
     }
 
     public static boolean isError(Element element) {
