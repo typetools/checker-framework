@@ -675,7 +675,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         node);
             }
 
-            checkParametersAreEffectivelyFinal(methodElement, expression);
+            checkParametersAreEffectivelyFinal(node, methodElement, expression);
         }
     }
 
@@ -683,7 +683,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Check that the parameters used in {@code stringExpr} are effectively final for method {@code
      * method}.
      */
-    private void checkParametersAreEffectivelyFinal(ExecutableElement method, String stringExpr) {
+    private void checkParametersAreEffectivelyFinal(
+            MethodTree node, ExecutableElement method, String stringExpr) {
         // check that all parameters used in the expression are
         // effectively final, so that they cannot be modified
         List<Integer> parameterIndices = FlowExpressionParseUtil.parameterIndices(stringExpr);
@@ -696,7 +697,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!ElementUtils.isEffectivelyFinal(parameter)) {
                 checker.report(
                         Result.failure("flowexpr.parameter.not.final", "#" + idx, stringExpr),
-                        method);
+                        node);
             }
         }
     }

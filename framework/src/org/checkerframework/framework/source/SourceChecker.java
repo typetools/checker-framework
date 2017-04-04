@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
@@ -1141,11 +1142,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (source instanceof Element) {
             messager.printMessage(kind, messageText, (Element) source);
         } else if (source instanceof Tree) {
-            Trees.instance(processingEnv)
-                    .printMessage(kind, messageText, (Tree) source, currentRoot);
+            printMessage(kind, messageText, (Tree) source, currentRoot);
         } else {
             ErrorReporter.errorAbort("invalid position source: " + source.getClass().getName());
         }
+    }
+
+    /**
+     * Do not call this method directly. Call {@link #message(Kind, Object, String, Object...)}
+     * instead. (This method exists so that the BaseTypeChecker can override it and treat messages
+     * from compound checkers differently.)
+     */
+    protected void printMessage(
+            Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
+        Trees.instance(processingEnv).printMessage(kind, message, source, root);
     }
 
     /**
@@ -1827,7 +1837,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected final Collection<String> getStandardSuppressWarningsKeys() {
         SuppressWarningsKeys annotation = this.getClass().getAnnotation(SuppressWarningsKeys.class);
 
-        Set<String> result = new HashSet<>();
+        // This ensures keys are printed consistently
+        Set<String> result = new TreeSet<>();
         result.add(SUPPRESS_ALL_KEY);
 
         if (annotation != null) {
