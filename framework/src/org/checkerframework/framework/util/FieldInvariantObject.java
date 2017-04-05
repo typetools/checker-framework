@@ -13,7 +13,9 @@ import org.checkerframework.framework.type.QualifierHierarchy;
  * this field invariant applies.
  */
 public class FieldInvariantObject {
+    /** simple name of the field */
     private final List<String> fields;
+
     private final List<AnnotationMirror> qualifiers;
 
     public FieldInvariantObject(List<String> fields, List<AnnotationMirror> qualifiers) {
