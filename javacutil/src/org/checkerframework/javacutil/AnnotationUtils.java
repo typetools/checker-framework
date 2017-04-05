@@ -568,7 +568,7 @@ public class AnnotationUtils {
         return ct.asElement().getQualifiedName();
     }
 
-    /** Get the list of Names of the classes that is referenced by attribute {@code name}. */
+    /** Get the list of Names of the classes that are referenced by attribute {@code name}. */
     public static List<Name> getElementValueClassNames(
             AnnotationMirror anno, CharSequence name, boolean useDefaults) {
         List<Type.ClassType> la =
@@ -579,6 +579,7 @@ public class AnnotationUtils {
         }
         return names;
     }
+
     /**
      * Get the Class that is referenced by attribute {@code name}. This method uses Class.forName to
      * load the class. It returns null if the class wasn't found.
