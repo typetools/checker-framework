@@ -119,11 +119,10 @@ public class ReflectiveEvalutator {
     }
 
     /**
-     * Convert the arguments that are part of the var arg into an array.
-     *
-     * @param arguments list of arguments
-     * @param method vararg method
-     * @return arguments with varargs converted to an array
+     * For each array of arguments in {@code arguments}, create a new array of arguments where the
+     * arguments that correspond to the vararg parameter are collected into an array. The new array
+     * of arguments has length equal to the number of parameters of {@code method}. A list
+     * containing the new argument arrays is returned.
      */
     private List<Object[]> handleVarArgs(List<Object[]> arguments, Method method) {
         List<Object[]> newList = new ArrayList<>();
@@ -133,20 +132,19 @@ public class ReflectiveEvalutator {
                 // null means no arguments.  For varargs no arguments is an empty array.
                 args = new Object[] {};
             }
-            Object[] newArgs;
+            Object[] newArgs = new Object[numberOfParameters];
+            Object[] varArgsArray;
             int numOfVarArgs = args.length - numberOfParameters + 1;
             if (numOfVarArgs > 0) {
-                newArgs = new Object[numberOfParameters];
                 System.arraycopy(args, 0, newArgs, 0, numberOfParameters - 1);
-                Object[] varArgsArray = new Object[numOfVarArgs];
+                varArgsArray = new Object[numOfVarArgs];
                 System.arraycopy(args, numberOfParameters - 1, varArgsArray, 0, numOfVarArgs);
-                newArgs[numberOfParameters - 1] = varArgsArray;
             } else {
-                newArgs = new Object[numberOfParameters];
                 System.arraycopy(args, 0, newArgs, 0, numberOfParameters - 1);
-                Object[] varArgsArray = {};
-                newArgs[numberOfParameters - 1] = varArgsArray;
+                varArgsArray = new Object[] {};
             }
+            newArgs[numberOfParameters - 1] = varArgsArray;
+
             newList.add(newArgs);
         }
         return newList;

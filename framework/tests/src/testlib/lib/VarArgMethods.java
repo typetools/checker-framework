@@ -2,7 +2,7 @@ package testlib.lib;
 
 import org.checkerframework.common.value.qual.StaticallyExecutable;
 
-/** Use by framework/tests/value/VarArgRe.java */
+/** Used by framework/tests/value/VarArgRe.java */
 public class VarArgMethods {
     @StaticallyExecutable
     public static int test0(Object... objects) {
