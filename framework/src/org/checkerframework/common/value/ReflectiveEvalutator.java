@@ -20,6 +20,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -65,6 +66,10 @@ public class ReflectiveEvalutator {
             listOfArguments = cartesianProduct(allArgValues, allArgValues.size() - 1);
         }
 
+        if (method.isVarArgs()) {
+            listOfArguments = handleVarArgs(listOfArguments, method);
+        }
+
         List<Object> results = new ArrayList<>();
         for (Object[] arguments : listOfArguments) {
             for (Object receiver : receiverValues) {
@@ -82,8 +87,28 @@ public class ReflectiveEvalutator {
                     // Method evaluation will always fail, so don't bother
                     // trying again
                     return new ArrayList<Object>();
+                } catch (ExceptionInInitializerError e) {
+                    if (reportWarnings) {
+                        checker.report(
+                                Result.warning(
+                                        "method.evaluation.exception",
+                                        method,
+                                        e.getCause().toString()),
+                                tree);
+                    }
+                } catch (IllegalArgumentException e) {
+                    if (reportWarnings) {
+                        String args = PluginUtil.join(", ", arguments);
+                        checker.report(
+                                Result.warning(
+                                        "method.evaluation.exception",
+                                        method,
+                                        e.getLocalizedMessage() + ": " + args),
+                                tree);
+                    }
 
-                } catch (ReflectiveOperationException e) {
+                } catch (Throwable e) {
+                    // Catch any exception thrown because they shouldn't crash the type checker.
                     if (reportWarnings) {
                         checker.report(Result.warning("method.evaluation.failed", method), tree);
                     }
@@ -91,6 +116,40 @@ public class ReflectiveEvalutator {
             }
         }
         return results;
+    }
+
+    /**
+     * Convert the arguments that are part of the var arg into an array.
+     *
+     * @param arguments list of arguments
+     * @param method vararg method
+     * @return arguments with varargs converted to an array
+     */
+    private List<Object[]> handleVarArgs(List<Object[]> arguments, Method method) {
+        List<Object[]> newList = new ArrayList<>();
+        int numberOfParameters = method.getParameterTypes().length;
+        for (Object[] args : arguments) {
+            if (args == null) {
+                // null means no arguments.  For varargs no arguments is an empty array.
+                args = new Object[] {};
+            }
+            Object[] newArgs;
+            int numOfVarArgs = args.length - numberOfParameters + 1;
+            if (numOfVarArgs > 0) {
+                newArgs = new Object[numberOfParameters];
+                System.arraycopy(args, 0, newArgs, 0, numberOfParameters - 1);
+                Object[] varArgsArray = new Object[numOfVarArgs];
+                System.arraycopy(args, numberOfParameters - 1, varArgsArray, 0, numOfVarArgs);
+                newArgs[numberOfParameters - 1] = varArgsArray;
+            } else {
+                newArgs = new Object[numberOfParameters];
+                System.arraycopy(args, 0, newArgs, 0, numberOfParameters - 1);
+                Object[] varArgsArray = {};
+                newArgs[numberOfParameters - 1] = varArgsArray;
+            }
+            newList.add(newArgs);
+        }
+        return newList;
     }
 
     /**
