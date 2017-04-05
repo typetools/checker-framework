@@ -7,6 +7,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import javax.lang.model.element.TypeElement;
+
 /**
  * Specifies that a field's type, in the class on which this annotation is written, is a subtype of
  * its declared type. The field must be declared in a superclass and must be final.
