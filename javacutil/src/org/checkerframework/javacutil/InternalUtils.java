@@ -397,8 +397,25 @@ public class InternalUtils {
         return ((JavacProcessingEnvironment) env).getContext();
     }
 
+    /**
+     * Returns the type element for {@code type} if {@code type} is a class, interface, annotation
+     * type, or enum. Otherwise, returns null.
+     *
+     * @param type whose element is returned
+     * @return the type element for {@code type} if {@code type} is a class, interface, annotation
+     *     type, or enum; otherwise, returns null
+     */
     public static TypeElement getTypeElement(TypeMirror type) {
-        return (TypeElement) ((Type) type).tsym;
+        Element element = ((Type) type).asElement();
+        switch (element.getKind()) {
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+                return (TypeElement) element;
+            default:
+                return null;
+        }
     }
 
     /**
