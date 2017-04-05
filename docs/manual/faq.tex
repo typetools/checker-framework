@@ -28,7 +28,6 @@ the answers, or other questions to include here.
 \faqtocpara{\ref{faq-getting-started-section}: Getting started}
 \\ \ref{faq-annotate-existing-program}: How do I get started annotating an existing program?
 \\ \ref{faq-first-checker}: Which checker should I start with?
-\\ \ref{faq-typequals-vs-subtypes}: Should I use pluggable types or Java subtypes?
 \\ \ref{faq-checker-framework-dev}: How can I join the checker-framework-dev mailing list?
 
 \faqtocpara{\ref{faq-usability-section}: Usability of pluggable type-checking}
@@ -117,78 +116,14 @@ automated approaches cannot find; pluggable type-checking gives you more
 time to focus on those.
 
 
-\subsection{When should I use type qualifiers, and when should I use subclasses?\label{faq-qualifiers-vs-subclasses}}
+\subsection{Should I use pluggable types (type qualifiers) or Java subtypes?\label{faq-typequals-vs-subtypes}}
+
+% Old labels, for backward compatibility.
+\label{when-to-use-type-qualifiers}
+\label{faq-qualifiers-vs-subclasses}
 
 In brief, use subtypes when you can, and use type qualifiers when you cannot
 use subtypes.
-For more details, see Section~\ref{when-to-use-type-qualifiers}.
-
-
-
-\section{Getting started\label{faq-getting-started-section}}
-
-\subsection{How do I get started annotating an existing program?\label{faq-annotate-existing-program}}
-
-See Section~\ref{get-started-with-legacy-code}.
-
-
-\subsection{Which checker should I start with?\label{faq-first-checker}}
-
-You should start with a property that matters to you.  Think about what
-aspects of your code cause the most errors, or cost the most time during
-maintenance, or are the most common to be incorrectly-documented.  Focusing
-on what you care about will give you the best benefits.
-
-When you first start out with the Checker Framework, it's usually best to
-get experience with an existing type-checker before you write your own new
-checker.
-
-Many users are tempted to start with the
-\ahrefloc{nullness-checker}{Nullness Checker} (see
-\chapterpageref{nullness-checker}), since null pointer errors are common
-and familiar.  The Nullness Checker works very well, but be warned of three
-facts that make the absence of null pointer exceptions challenging to
-verify.
-
-\begin{enumerate}
-\item
-  Dereferences happen throughout your codebase, so there are a lot of
-  potential problems.  By contrast, fewer lines of code are related to
-  locking, regular expressions, etc., so those properties are easier to
-  check.
-\item
-  Programmers use \<null> for many different purposes.  More seriously,
-  programmers write run-time tests against \<null>, and those are difficult
-  for any static analysis to capture.
-\item
-  The Nullness Checker interacts with initialization and map keys.
-\end{enumerate}
-
-If null pointer exceptions are most important to you, then by all means use
-the Nullness Checker.  But if you just want to try \emph{some}
-type-checker, there are others that are easier to use.
-
-we do not recommend indiscriminately running all the checkers on your code.
-The reason is that each one has a cost --- not just at compile time, but
-also in terms of code clutter and human time to maintain the annotations.
-If the property is important to you, is difficult for people to reason
-about, or has caused problems in the past, then you should run that
-checker.  For other properties, the benefits may not repay the effort to
-use it.  You will be the best judge of this for your own code, of course.
-
-The \ahrefloc{linear-checker}{Linear Checker} (see
-\chapterpageref{linear-checker}) has not been extensively tested.
-Some of the third-party checkers (see
-\chapterpageref{third-party-checkers})
-have known bugs that limit their
-usability.  (Report the ones that affect you, so the developers
-will prioritize fixing them.)
-
-
-\subsection{Should I use pluggable types or Java subtypes?\label{faq-typequals-vs-subtypes}}
-
-% Old label, from when this discussion was in the introduction
-\label{when-to-use-type-qualifiers}
 
 For some programming tasks, you can use either a Java subclass or a type
 qualifier.  As an example that your code currently uses \code{String} to
@@ -265,6 +200,71 @@ Java type-checker would reject.  Here are a few examples.
   subtypes in all locations.
 
 \end{description}
+
+
+For more details, see Section~\ref{faq-typequals-vs-subtypes}.
+
+
+
+\section{Getting started\label{faq-getting-started-section}}
+
+\subsection{How do I get started annotating an existing program?\label{faq-annotate-existing-program}}
+
+See Section~\ref{get-started-with-legacy-code}.
+
+
+\subsection{Which checker should I start with?\label{faq-first-checker}}
+
+You should start with a property that matters to you.  Think about what
+aspects of your code cause the most errors, or cost the most time during
+maintenance, or are the most common to be incorrectly-documented.  Focusing
+on what you care about will give you the best benefits.
+
+When you first start out with the Checker Framework, it's usually best to
+get experience with an existing type-checker before you write your own new
+checker.
+
+Many users are tempted to start with the
+\ahrefloc{nullness-checker}{Nullness Checker} (see
+\chapterpageref{nullness-checker}), since null pointer errors are common
+and familiar.  The Nullness Checker works very well, but be warned of three
+facts that make the absence of null pointer exceptions challenging to
+verify.
+
+\begin{enumerate}
+\item
+  Dereferences happen throughout your codebase, so there are a lot of
+  potential problems.  By contrast, fewer lines of code are related to
+  locking, regular expressions, etc., so those properties are easier to
+  check.
+\item
+  Programmers use \<null> for many different purposes.  More seriously,
+  programmers write run-time tests against \<null>, and those are difficult
+  for any static analysis to capture.
+\item
+  The Nullness Checker interacts with initialization and map keys.
+\end{enumerate}
+
+If null pointer exceptions are most important to you, then by all means use
+the Nullness Checker.  But if you just want to try \emph{some}
+type-checker, there are others that are easier to use.
+
+we do not recommend indiscriminately running all the checkers on your code.
+The reason is that each one has a cost --- not just at compile time, but
+also in terms of code clutter and human time to maintain the annotations.
+If the property is important to you, is difficult for people to reason
+about, or has caused problems in the past, then you should run that
+checker.  For other properties, the benefits may not repay the effort to
+use it.  You will be the best judge of this for your own code, of course.
+
+The \ahrefloc{linear-checker}{Linear Checker} (see
+\chapterpageref{linear-checker}) has not been extensively tested.
+Some of the third-party checkers (see
+\chapterpageref{third-party-checkers})
+have known bugs that limit their
+usability.  (Report the ones that affect you, so the developers
+will prioritize fixing them.)
+
 
 \subsection{How can I join the checker-framework-dev mailing list?\label{faq-checker-framework-dev}}
 
