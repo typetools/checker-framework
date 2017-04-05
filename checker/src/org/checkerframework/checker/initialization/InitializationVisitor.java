@@ -30,6 +30,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -146,7 +147,9 @@ public class InitializationVisitor<
             // Fields cannot have commitment annotations.
             for (Class<? extends Annotation> c : atypeFactory.getInitializationAnnotations()) {
                 for (AnnotationMirror a : annotationMirrors) {
-                    if (atypeFactory.isUnclassified(a)) continue; // unclassified is allowed
+                    if (atypeFactory.isUnclassified(a)) {
+                        continue; // unclassified is allowed
+                    }
                     if (AnnotationUtils.areSameByClass(a, c)) {
                         checker.report(Result.failure(COMMITMENT_INVALID_FIELD_TYPE, node), node);
                         break;
@@ -180,6 +183,19 @@ public class InitializationVisitor<
                                 fieldType.getAnnotations(), invariantAnno)) {
                             return true;
                         }
+                    }
+                } else if (fa.getReceiver() instanceof LocalVariable) {
+                    // TODO: what is the best way to handle other types of
+                    // receivers?
+                    Element elem = ((LocalVariable) fa.getReceiver()).getElement();
+                    AnnotatedTypeMirror recvType = atypeFactory.getAnnotatedType(elem);
+                    AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fa.getField());
+                    // The receiver is fully initialized and the field type
+                    // has the invariant type.
+                    if (atypeFactory.isCommitted(recvType)
+                            && AnnotationUtils.containsSame(
+                                    fieldType.getAnnotations(), invariantAnno)) {
+                        return true;
                     }
                 }
             }
