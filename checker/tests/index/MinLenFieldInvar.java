@@ -13,7 +13,7 @@ public class MinLenFieldInvar {
         }
     }
 
-    //:: error: (field.invar.not.subtype)
+    //:: error: (field.invariant.not.subtype)
     @MinLenFieldInvariant(field = "minlen2", minLen = 1)
     class InvalidSub extends Super {
         public InvalidSub() {
@@ -31,7 +31,7 @@ public class MinLenFieldInvar {
         }
     }
 
-    //:: error: (field.invar.not.found.superclass)
+    //:: error: (field.invariant.not.found.superclass)
     @MinLenFieldInvariant(field = "validSubField", minLen = 3)
     class InvalidSubSub1 extends ValidSub {
         public InvalidSubSub1() {
@@ -39,7 +39,7 @@ public class MinLenFieldInvar {
         }
     }
 
-    //:: error: (field.invar.not.subtype.superclass)
+    //:: error: (field.invariant.not.subtype.superclass)
     @MinLenFieldInvariant(field = "minlen2", minLen = 3)
     class InvalidSubSub2 extends ValidSub {
         public InvalidSubSub2() {

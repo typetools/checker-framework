@@ -373,7 +373,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // Checks #4 (see method Javadoc)
         if (!invariants.isWellFormed()) {
-            checker.report(Result.failure("field.invar.not.wellformed"), errorTree);
+            checker.report(Result.failure("field.invariant.not.wellformed"), errorTree);
             return;
         }
 
@@ -385,7 +385,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Checks that fields are declared in super class. (#2b)
         if (!fieldsNotFound.isEmpty()) {
             String notFoundString = PluginUtil.join(", ", fieldsNotFound);
-            checker.report(Result.failure("field.invar.not.found", notFoundString), errorTree);
+            checker.report(Result.failure("field.invariant.not.found", notFoundString), errorTree);
         }
 
         FieldInvariantObject superInvar =
@@ -419,7 +419,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // Checks #3
                     checker.report(
                             Result.failure(
-                                    "field.invar.not.subtype",
+                                    "field.invariant.not.subtype",
                                     fieldName,
                                     invariantAnno,
                                     declaredAnno),
@@ -431,7 +431,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Checks #2a
         if (!notFinal.isEmpty()) {
             String notFinalString = PluginUtil.join(", ", notFinal);
-            checker.report(Result.failure("field.invar.not.final", notFinalString), errorTree);
+            checker.report(Result.failure("field.invariant.not.final", notFinalString), errorTree);
         }
     }
 

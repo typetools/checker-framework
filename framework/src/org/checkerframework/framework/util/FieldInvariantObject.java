@@ -89,7 +89,7 @@ public class FieldInvariantObject {
             List<String> missingFields = new ArrayList<>(superInvar.fields);
             missingFields.removeAll(fields);
             return Result.failure(
-                    "field.invar.not.found.superclass", PluginUtil.join(", ", missingFields));
+                    "field.invariant.not.found.superclass", PluginUtil.join(", ", missingFields));
         }
 
         for (String field : superInvar.fields) {
@@ -99,7 +99,8 @@ public class FieldInvariantObject {
                 AnnotationMirror sub =
                         qualifierHierarchy.findAnnotationInSameHierarchy(subQualifiers, superA);
                 if (sub == null || !qualifierHierarchy.isSubtype(sub, superA)) {
-                    return Result.failure("field.invar.not.subtype.superclass", field, sub, superA);
+                    return Result.failure(
+                            "field.invariant.not.subtype.superclass", field, sub, superA);
                 }
             }
         }
