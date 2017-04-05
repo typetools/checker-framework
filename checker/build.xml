@@ -777,7 +777,9 @@
         <antcall target="check-compilermsgs"/>
         <antcall target="check-purity"/>
 
-        <antcall target="check-nullness"/>
+        <!-- Eventually we would also want this:
+          <antcall target="check-nullness"/>
+        -->
     </target>
 
     <target name="aggregate-tests" depends="jar,build-tests"
