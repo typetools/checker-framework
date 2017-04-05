@@ -66,7 +66,7 @@ public class InternalUtils {
      * @param tree the {@link Tree} node to get the symbol for
      * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal
      *     tree (JCTree)
-     * @return the {@code {@link Symbol}} for the given tree, or null if one could not be found
+     * @return the {@link Symbol} for the given tree, or null if one could not be found
      */
     public static /*@Nullable*/ Element symbol(Tree tree) {
         if (tree == null) {
@@ -397,8 +397,25 @@ public class InternalUtils {
         return ((JavacProcessingEnvironment) env).getContext();
     }
 
+    /**
+     * Returns the type element for {@code type} if {@code type} is a class, interface, annotation
+     * type, or enum. Otherwise, returns null.
+     *
+     * @param type whose element is returned
+     * @return the type element for {@code type} if {@code type} is a class, interface, annotation
+     *     type, or enum; otherwise, returns null
+     */
     public static TypeElement getTypeElement(TypeMirror type) {
-        return (TypeElement) ((Type) type).tsym;
+        Element element = ((Type) type).asElement();
+        switch (element.getKind()) {
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+                return (TypeElement) element;
+            default:
+                return null;
+        }
     }
 
     /**
