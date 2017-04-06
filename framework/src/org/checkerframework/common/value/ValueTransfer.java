@@ -216,7 +216,13 @@ public class ValueTransfer extends CFTransfer {
     /** a helper function to determine if this node is annotated with @IntRange */
     private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
-        return AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class) != null;
+        return AnnotationUtils.containsSameByClass(value.getAnnotations(), IntRange.class);
+    }
+
+    /** a helper function to determine if this node is annotated with @UnknownVal */
+    private boolean isUnknownVal(Node subNode, TransferInput<CFValue, CFStore> p) {
+        CFValue value = p.getValueOfSubNode(subNode);
+        return AnnotationUtils.containsSameByClass(value.getAnnotations(), UnknownVal.class);
     }
 
     /**
@@ -777,8 +783,14 @@ public class ValueTransfer extends CFTransfer {
             TransferInput<CFValue, CFStore> p,
             CFStore thenStore,
             CFStore elseStore) {
-        if (isIntRange(leftNode, p) || isIntRange(rightNode, p)) {
-            return refineIntRanges(leftNode, rightNode, op, p, thenStore, elseStore);
+        if (isIntRange(leftNode, p)
+                || isIntRange(rightNode, p)
+                || isUnknownVal(leftNode, p)
+                || isUnknownVal(rightNode, p)) {
+            if (TypesUtils.isIntegral(rightNode.getType())
+                    || TypesUtils.isIntegral(leftNode.getType())) {
+                return refineIntRanges(leftNode, rightNode, op, p, thenStore, elseStore);
+            }
         }
         List<Boolean> resultValues = new ArrayList<>();
 

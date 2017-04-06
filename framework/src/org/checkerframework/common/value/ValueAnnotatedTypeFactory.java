@@ -1242,15 +1242,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Create an {@code @IntRange} annotation from the range. May return BOTTOMVAL or UNKNOWNVAL.
+     * Create an {@code @IntRange} or {@code @IntVal} annotation from the range. May return
+     * BOTTOMVAL or UNKNOWNVAL.
      */
     public AnnotationMirror createIntRangeAnnotation(Range range) {
         if (range.isNothing()) {
             return BOTTOMVAL;
         } else if (range.isEverything()) {
             return UNKNOWNVAL;
-        } else {
+        } else if (range.isWiderThan(MAX_VALUES)) {
             return createIntRangeAnnotation(range.from, range.to);
+        } else {
+            List<Long> newValues = ValueCheckerUtils.getValuesFromRange(range, Long.class);
+            return createIntValAnnotation(newValues);
         }
     }
 
