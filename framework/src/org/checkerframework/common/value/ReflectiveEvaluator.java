@@ -67,7 +67,12 @@ public class ReflectiveEvaluator {
         }
 
         if (method.isVarArgs()) {
-            listOfArguments = normalizeVarargInvocations(listOfArguments, method);
+            List<Object[]> newList = new ArrayList<>();
+            int numberOfParameters = method.getParameterTypes().length;
+            for (Object[] args : listOfArguments) {
+                newList.add(normalizeVararg(args, numberOfParameters));
+            }
+            listOfArguments = newList;
         }
 
         List<Object> results = new ArrayList<>();
@@ -119,40 +124,33 @@ public class ReflectiveEvaluator {
     }
 
     /**
-     * This method changes a set of varargs invocations (each of which passes an arbitrary number of
-     * arguments) into a set of non-varargs invocations (each of which passes an exact number of
-     * arguments, the last of which is an array).
+     * This method normalizes an array of arguments to a varargs method by changing the arguments
+     * associated with the varargs parameter into an array.
      *
-     * @param arguments each element is an array of arguments for {@code method}.  The length of
-     *     each array is at least {@code method.numberOfParameters-1}.
+     * @param arguments an array of arguments for {@code method}. The length is at least {@code
+     *     method.numberOfParameters-1}.
      * @param method a method whose last formal parameter is a varargs parameter
-     * @return a list, equally as long as {code arguments}, where the length of each array is
-     *     exactly {@code method.numberOfParameters-1}
+     * @return the length of the array is exactly {@code method.numberOfParameters-1}
      */
-    private List<Object[]> normalizeVarargInvocations(List<Object[]> arguments, Method method) {
-        List<Object[]> newList = new ArrayList<>();
-        int numberOfParameters = method.getParameterTypes().length;
-        for (Object[] args : arguments) {
-            if (args == null) {
-                // null means no arguments.  For varargs no arguments is an empty array.
-                args = new Object[] {};
-            }
-            Object[] newArgs = new Object[numberOfParameters];
-            Object[] varArgsArray;
-            int numOfVarArgs = args.length - numberOfParameters + 1;
-            if (numOfVarArgs > 0) {
-                System.arraycopy(args, 0, newArgs, 0, numberOfParameters - 1);
-                varArgsArray = new Object[numOfVarArgs];
-                System.arraycopy(args, numberOfParameters - 1, varArgsArray, 0, numOfVarArgs);
-            } else {
-                System.arraycopy(args, 0, newArgs, 0, numberOfParameters - 1);
-                varArgsArray = new Object[] {};
-            }
-            newArgs[numberOfParameters - 1] = varArgsArray;
+    private Object[] normalizeVararg(Object[] arguments, int numberOfParameters) {
 
-            newList.add(newArgs);
+        if (arguments == null) {
+            // null means no arguments.  For varargs no arguments is an empty array.
+            arguments = new Object[] {};
         }
-        return newList;
+        Object[] newArgs = new Object[numberOfParameters];
+        Object[] varArgsArray;
+        int numOfVarArgs = arguments.length - numberOfParameters + 1;
+        if (numOfVarArgs > 0) {
+            System.arraycopy(arguments, 0, newArgs, 0, numberOfParameters - 1);
+            varArgsArray = new Object[numOfVarArgs];
+            System.arraycopy(arguments, numberOfParameters - 1, varArgsArray, 0, numOfVarArgs);
+        } else {
+            System.arraycopy(arguments, 0, newArgs, 0, numberOfParameters - 1);
+            varArgsArray = new Object[] {};
+        }
+        newArgs[numberOfParameters - 1] = varArgsArray;
+        return newArgs;
     }
 
     /**
