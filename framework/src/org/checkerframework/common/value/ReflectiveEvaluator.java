@@ -128,9 +128,9 @@ public class ReflectiveEvaluator {
      * associated with the varargs parameter into an array.
      *
      * @param arguments an array of arguments for {@code method}. The length is at least {@code
-     *     method.numberOfParameters-1}.
-     * @param method a method whose last formal parameter is a varargs parameter
-     * @return the length of the array is exactly {@code method.numberOfParameters-1}
+     *     numberOfParameters - 1}.
+     * @param numberOfParameters number of parameters of the vararg method
+     * @return the length of the array is exactly {@code numberOfParameters}
      */
     private Object[] normalizeVararg(Object[] arguments, int numberOfParameters) {
 
