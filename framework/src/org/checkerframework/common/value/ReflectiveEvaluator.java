@@ -25,11 +25,11 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-public class ReflectiveEvalutator {
+public class ReflectiveEvaluator {
     private BaseTypeChecker checker;
     private boolean reportWarnings;
 
-    public ReflectiveEvalutator(
+    public ReflectiveEvaluator(
             BaseTypeChecker checker, ValueAnnotatedTypeFactory factory, boolean reportWarnings) {
         this.checker = checker;
         this.reportWarnings = reportWarnings;
@@ -67,7 +67,7 @@ public class ReflectiveEvalutator {
         }
 
         if (method.isVarArgs()) {
-            listOfArguments = handleVarArgs(listOfArguments, method);
+            listOfArguments = normalizeVarargInvocations(listOfArguments, method);
         }
 
         List<Object> results = new ArrayList<>();
@@ -119,12 +119,17 @@ public class ReflectiveEvalutator {
     }
 
     /**
-     * For each array of arguments in {@code arguments}, create a new array of arguments where the
-     * arguments that correspond to the vararg parameter are collected into an array. The new array
-     * of arguments has length equal to the number of parameters of {@code method}. A list
-     * containing the new argument arrays is returned.
+     * This method changes a set of varargs invocations (each of which passes an arbitrary number of
+     * arguments) into a set of non-varargs invocations (each of which passes an exact number of
+     * arguments, the last of which is an array).
+     *
+     * @param arguments each element is an array of arguments for {@code method}.  The length of
+     *     each array is at least {@code method.numberOfParameters-1}.
+     * @param method a method whose last formal parameter is a varargs parameter
+     * @return a list, equally as long as {code arguments}, where the length of each array is
+     *     exactly {@code method.numberOfParameters-1}
      */
-    private List<Object[]> handleVarArgs(List<Object[]> arguments, Method method) {
+    private List<Object[]> normalizeVarargInvocations(List<Object[]> arguments, Method method) {
         List<Object[]> newList = new ArrayList<>();
         int numberOfParameters = method.getParameterTypes().length;
         for (Object[] args : arguments) {
