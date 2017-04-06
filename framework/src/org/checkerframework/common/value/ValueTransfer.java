@@ -60,6 +60,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class ValueTransfer extends CFTransfer {
@@ -442,7 +443,8 @@ public class ValueTransfer extends CFTransfer {
                     resultRange = leftRange.bitwiseXor(rightRange);
                     break;
                 default:
-                    throw new UnsupportedOperationException();
+                    ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
+                    throw new RuntimeException("this can't happen");
             }
             // Any integral type with less than 32 bits would be promoted to 32-bit int type during operations.
             return leftNode.getType().getKind() == TypeKind.LONG
@@ -504,7 +506,7 @@ public class ValueTransfer extends CFTransfer {
                         resultValues.add(nmLeft.bitwiseXor(right));
                         break;
                     default:
-                        throw new UnsupportedOperationException();
+                        ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
                 }
             }
         }
@@ -693,7 +695,8 @@ public class ValueTransfer extends CFTransfer {
                     resultRange = range.bitwiseComplement();
                     break;
                 default:
-                    throw new UnsupportedOperationException();
+                    ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
+                    throw new RuntimeException("this can't happen");
             }
             // Any integral type with less than 32 bits would be promoted to 32-bit int type during operations.
             return operand.getType().getKind() == TypeKind.LONG
@@ -725,7 +728,7 @@ public class ValueTransfer extends CFTransfer {
                     resultValues.add(nmLeft.bitwiseComplement());
                     break;
                 default:
-                    throw new UnsupportedOperationException();
+                    ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
             }
         }
         return resultValues;
@@ -775,10 +778,7 @@ public class ValueTransfer extends CFTransfer {
             CFStore thenStore,
             CFStore elseStore) {
         if (isIntRange(leftNode, p) || isIntRange(rightNode, p)) {
-            // TODO:
-            // Handle @IntRange annotation when the control flow refinement is implemented
-            // typetools/checker-framework#1163
-            return new ArrayList<>();
+            return refineIntRanges(leftNode, rightNode, op, p, thenStore, elseStore);
         }
         List<Boolean> resultValues = new ArrayList<>();
 
@@ -833,7 +833,8 @@ public class ValueTransfer extends CFTransfer {
                         result = nmLeft.notEqualTo(right);
                         break;
                     default:
-                        throw new UnsupportedOperationException();
+                        ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
+                        throw new RuntimeException("this can't happen");
                 }
                 resultValues.add(result);
                 if (result) {
@@ -852,6 +853,80 @@ public class ValueTransfer extends CFTransfer {
         createAnnotationFromResultsAndAddToStore(elseStore, elseRightVals, rightNode);
 
         return resultValues;
+    }
+
+    /**
+     * Calculates the result of a binary comparison on a pair of intRange annotations, and refines
+     * annotations appropriately.
+     */
+    private List<Boolean> refineIntRanges(
+            Node leftNode,
+            Node rightNode,
+            ComparisonOperators op,
+            TransferInput<CFValue, CFStore> p,
+            CFStore thenStore,
+            CFStore elseStore) {
+        Range leftRange = getIntRange(leftNode, p);
+        Range rightRange = getIntRange(rightNode, p);
+
+        final Range thenRightRange;
+        final Range thenLeftRange;
+        final Range elseRightRange;
+        final Range elseLeftRange;
+
+        switch (op) {
+            case EQUAL:
+                thenRightRange = rightRange.refineEqualTo(leftRange);
+                thenLeftRange = thenRightRange; // Only needs to be computed once.
+                elseRightRange = rightRange.refineNotEqualTo(leftRange);
+                elseLeftRange = leftRange.refineNotEqualTo(rightRange);
+                break;
+            case GREATER_THAN:
+                thenLeftRange = leftRange.refineGreaterThan(rightRange);
+                thenRightRange = rightRange.refineLessThan(leftRange);
+                elseRightRange = rightRange.refineGreaterThanEq(leftRange);
+                elseLeftRange = leftRange.refineLessThanEq(rightRange);
+                break;
+            case GREATER_THAN_EQ:
+                thenRightRange = rightRange.refineLessThanEq(leftRange);
+                thenLeftRange = leftRange.refineGreaterThan(rightRange);
+                elseLeftRange = leftRange.refineLessThan(rightRange);
+                elseRightRange = rightRange.refineGreaterThan(leftRange);
+                break;
+            case LESS_THAN:
+                thenLeftRange = leftRange.refineLessThan(rightRange);
+                thenRightRange = rightRange.refineGreaterThan(leftRange);
+                elseRightRange = rightRange.refineLessThanEq(leftRange);
+                elseLeftRange = leftRange.refineGreaterThanEq(rightRange);
+                break;
+            case LESS_THAN_EQ:
+                thenRightRange = rightRange.refineGreaterThanEq(leftRange);
+                thenLeftRange = leftRange.refineLessThanEq(rightRange);
+                elseLeftRange = leftRange.refineGreaterThan(rightRange);
+                elseRightRange = rightRange.refineLessThan(leftRange);
+                break;
+            case NOT_EQUAL:
+                thenRightRange = rightRange.refineNotEqualTo(leftRange);
+                thenLeftRange = leftRange.refineNotEqualTo(rightRange);
+                elseRightRange = rightRange.refineEqualTo(leftRange);
+                elseLeftRange = elseRightRange; // Equality only needs to be computed once.
+                break;
+            default:
+                ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
+                throw new RuntimeException("this is impossible, but javac issues a warning");
+        }
+
+        Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), leftNode);
+        Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), rightNode);
+
+        thenStore.insertValue(leftRec, atypefactory.createIntRangeAnnotation(thenLeftRange));
+        thenStore.insertValue(rightRec, atypefactory.createIntRangeAnnotation(thenRightRange));
+
+        elseStore.insertValue(leftRec, atypefactory.createIntRangeAnnotation(elseLeftRange));
+        elseStore.insertValue(rightRec, atypefactory.createIntRangeAnnotation(elseRightRange));
+
+        // TODO: Refine the type of the comparison.
+        return null;
     }
 
     /**
@@ -1042,7 +1117,8 @@ public class ValueTransfer extends CFTransfer {
                 }
                 return resultValues;
         }
-        throw new RuntimeException("Unrecognized conditional operator " + op);
+        ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
+        throw new RuntimeException("this can't happen");
     }
 
     @Override

@@ -38,6 +38,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -173,6 +174,11 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<Long> possibleValues = getPossibleValues(valueType);
         // possibleValues is null if the Value Checker does not have any estimate.
         if (possibleValues == null) {
+            // possibleValues is null if there is no IntVal annotation on the type - such as
+            // when there is a BottomVal annotation. In that case, give this the LBC's bottom type.
+            if (AnnotationUtils.containsSameByClass(valueType.getAnnotations(), BottomVal.class)) {
+                return POS;
+            }
             return UNKNOWN;
         }
         if (possibleValues.size() == 0) {

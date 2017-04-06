@@ -9,13 +9,16 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import org.checkerframework.checker.index.qual.MinLen;
 import org.checkerframework.checker.index.qual.MinLenBottom;
+import org.checkerframework.checker.index.qual.MinLenFieldInvariant;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.PolyMinLen;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -33,6 +36,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.framework.util.FieldInvariantObject;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -331,5 +335,33 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         Integer minLenValue = getMinLenValue(minLenAnno);
         return minLenValue == null ? 0 : minLenValue;
+    }
+
+    @Override
+    public FieldInvariantObject getFieldInvariants(TypeElement element) {
+        AnnotationMirror fieldInvarAnno = getDeclAnnotation(element, MinLenFieldInvariant.class);
+        if (fieldInvarAnno == null) {
+            return null;
+        }
+        List<String> fields =
+                AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, true);
+        List<Integer> minlens =
+                AnnotationUtils.getElementValueArray(fieldInvarAnno, "minLen", Integer.class, true);
+        List<AnnotationMirror> qualifiers = new ArrayList<>();
+        for (Integer minlen : minlens) {
+            qualifiers.add(createMinLen(minlen));
+        }
+
+        FieldInvariantObject superInvariants = super.getFieldInvariants(element);
+        return new FieldInvariantObject(superInvariants, fields, qualifiers);
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> getFieldInvariantDeclarationAnnotations() {
+        // include FieldInvariant so that @MinLenBottom can be used.
+        Set<Class<? extends Annotation>> set =
+                new HashSet<>(super.getFieldInvariantDeclarationAnnotations());
+        set.add(MinLenFieldInvariant.class);
+        return set;
     }
 }
