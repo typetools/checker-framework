@@ -1974,7 +1974,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected static void adaptGetClassReturnTypeToReceiver(
             final AnnotatedExecutableType getClassType, final AnnotatedTypeMirror receiverType) {
-        final AnnotatedTypeMirror newBound = receiverType.getErased();
+        // TODO: should the receiver type ever be a declaration??
+        // Work on removing the asUse() call.
+        final AnnotatedTypeMirror newBound = receiverType.getErased().asUse();
 
         final AnnotatedTypeMirror returnType = getClassType.getReturnType();
         if (returnType == null
