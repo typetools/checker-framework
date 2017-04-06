@@ -30,15 +30,19 @@ import org.checkerframework.checker.index.qual.IndexOrLow;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
+import org.checkerframework.checker.index.qual.NegativeIndexFor;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.PolyIndex;
 import org.checkerframework.checker.index.qual.PolyUpperBound;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SameLen;
+import org.checkerframework.checker.index.qual.SearchIndexFor;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.samelen.SameLenChecker;
+import org.checkerframework.checker.index.searchindex.SearchIndexAnnotatedTypeFactory;
+import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -84,6 +88,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(IndexOrLow.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(IndexOrHigh.class, createLTEqLengthOfAnnotation());
+        addAliasedAnnotation(SearchIndexFor.class, createLTLengthOfAnnotation());
+        addAliasedAnnotation(NegativeIndexFor.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyIndex.class, POLY);
 
@@ -107,10 +113,18 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Provides a way to query the Constant Value Checker, which computes the values of expressions
-     * known at compile time (constant prop + folding).
+     * known at compile time (constant propagation and folding).
      */
     ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(ValueChecker.class);
+    }
+
+    /**
+     * Provides a way to query the Search Index Checker, which helps the Index Checker type the
+     * results of calling the JDK's binary search methods correctly.
+     */
+    private SearchIndexAnnotatedTypeFactory getSearchIndexAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(SearchIndexChecker.class);
     }
 
     /**
@@ -233,7 +247,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
-        if (AnnotationUtils.areSameByClass(a, IndexFor.class)) {
+        if (AnnotationUtils.areSameByClass(a, IndexFor.class)
+                || AnnotationUtils.areSameByClass(a, SearchIndexFor.class)
+                || AnnotationUtils.areSameByClass(a, NegativeIndexFor.class)) {
             List<String> stringList =
                     AnnotationUtils.getElementValueArray(a, "value", String.class, true);
             return createLTLengthOfAnnotation(stringList.toArray(new String[0]));
@@ -415,8 +431,51 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
             // Dataflow refines this type if possible
-            type.addAnnotation(UNKNOWN);
+            if (node.getKind() == Kind.BITWISE_COMPLEMENT) {
+                addAnnotationForBitwiseComplement(
+                        getSearchIndexAnnotatedTypeFactory().getAnnotatedType(node.getExpression()),
+                        type);
+            } else {
+                type.addAnnotation(UNKNOWN);
+            }
             return super.visitUnary(node, type);
+        }
+
+        /**
+         * If a type returned by an {@link SearchIndexAnnotatedTypeFactory} has a {@link
+         * NegativeIndexFor} annotation, then refine the result to be {@link LTEqLengthOf}. This
+         * handles this case:
+         *
+         * <pre>{@code
+         * int i = Arrays.binarySearch(a, x);
+         * if (i >= 0) {
+         *     // do something
+         * } else {
+         *     i = ~i;
+         *     // i is now @LTEqLengthOf("a"), because the bitwise complement of a NegativeIndexFor is an LTL.
+         *     for (int j = 0; j < i; j++) {
+         *          // j is now a valid index for "a"
+         *     }
+         * }
+         * }</pre>
+         *
+         * @param searchIndexType The type of an expression in a bitwise complement. For instance,
+         *     in {@code ~x}, this is the type of {@code x}.
+         * @param typeDst The type of the entire bitwise complement expression. It is modified by
+         *     this method.
+         */
+        private void addAnnotationForBitwiseComplement(
+                AnnotatedTypeMirror searchIndexType, AnnotatedTypeMirror typeDst) {
+            if (AnnotationUtils.containsSameByClass(
+                    searchIndexType.getAnnotations(), NegativeIndexFor.class)) {
+                AnnotationMirror nif = searchIndexType.getAnnotation(NegativeIndexFor.class);
+                List<String> arrays = IndexUtil.getValueOfAnnotationWithStringArgument(nif);
+                List<String> negativeOnes = Collections.nCopies(arrays.size(), "-1");
+                UBQualifier qual = UBQualifier.createUBQualifier(arrays, negativeOnes);
+                typeDst.addAnnotation(convertUBQualifierToAnnotation(qual));
+            } else {
+                typeDst.addAnnotation(UNKNOWN);
+            }
         }
 
         @Override
