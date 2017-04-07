@@ -1,6 +1,9 @@
 package org.checkerframework.checker.signedness;
 
+import java.awt.Dimension;
 import java.math.BigInteger;
+import java.io.RandomAccessFile;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.checkerframework.checker.signedness.qual.Unsigned;
 
@@ -12,6 +15,31 @@ public final class SignednessUtil {
 
     private SignednessUtil() {
         throw new Error("Do not instantiate");
+    }
+
+    /**
+     * Gets the unsigned int width of a Java Dimension.
+     */
+    @SuppressWarnings("signedness")
+    public static @Unsigned int dimensionUnsignedWidth(Dimension dim) {
+        return dim.width;
+    }
+
+    /**
+     * Gets the unsigned int height of a Java Dimension.
+     */
+    @SuppressWarnings("signedness")
+    public static @Unsigned int dimensionUnsignedHeight(Dimension dim) {
+        return dim.height;
+    }
+
+    /**
+     * Wraps an unsigned byte array into a ByteBuffer. Wraps {@link java.nio.ByteBuffer#wrap() wrap()},
+     * but assumes that the input should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static ByteBuffer wrapUnsigned(@Unsigned byte [] array) {
+        return ByteBuffer.wrap(array);
     }
 
     /**
@@ -39,6 +67,105 @@ public final class SignednessUtil {
     @SuppressWarnings("signedness")
     public static @Unsigned byte getUnsigned(ByteBuffer b) {
         return b.get();
+    }
+
+    /**
+     * Reads an unsigned byte from the RandomAccessFile f. Wraps {@link java.io.RandomAccessFile#readByte() readByte()},
+     * but assumes the output should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static @Unsigned byte readUnsignedByte(RandomAccessFile f) throws IOException {
+        return f.readByte();
+    }
+
+    /**
+     * Reads an unsigned char from the RandomAccessFile f. Wraps {@link java.io.RandomAccessFile#readChar() readChar()},
+     * but assumes the output should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static @Unsigned char readUnsignedChar(RandomAccessFile f) throws IOException {
+        return f.readChar();
+    }
+
+    /**
+     * Reads an unsigned short from the RandomAccessFile f. Wraps {@link java.io.RandomAccessFile#readShort() readShort()},
+     * but assumes the output should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static @Unsigned short readUnsignedShort(RandomAccessFile f) throws IOException {
+        return f.readShort();
+    }
+
+    /**
+     * Reads an unsigned int from the RandomAccessFile f. Wraps {@link java.io.RandomAccessFile#readInt() readInt()},
+     * but assumes the output should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static @Unsigned int readUnsignedInt(RandomAccessFile f) throws IOException {
+        return f.readInt();
+    }
+
+    /**
+     * Reads an unsigned long from the RandomAccessFile f. Wraps {@link java.io.RandomAccessFile#readLong() readLong()},
+     * but assumes the output should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static @Unsigned long readUnsignedLong(RandomAccessFile f) throws IOException {
+        return f.readLong();
+    }
+
+    /**
+     * Writes len unsigned bytes to the RandomAccessFile f at offset off. Wraps {@link java.io.RandomAccessFile#write() write()},
+     * but assumes the input should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static void writeUnsigned(RandomAccessFile f, @Unsigned byte[] bs, int off, int len) throws IOException {
+        f.write(bs, off, len);
+    }
+
+    /**
+     * Writes an unsigned byte to the RandomAccessFile f. Wraps {@link java.io.RandomAccessFile#writeByte() writeByte()},
+     * but assumes the input should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static void writeUnsignedByte(RandomAccessFile f, @Unsigned byte b) throws IOException {
+        f.writeByte(b);
+    }
+
+    /**
+     * Writes an unsigned char to the RandomAccessFile f. Wraps {@link java.io.RandomAccessFile#writeChar() writeChar()},
+     * but assumes the input should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static void writeUnsignedChar(RandomAccessFile f, @Unsigned char c) throws IOException {
+        f.writeChar(c);
+    }
+
+    /**
+     * Writes an unsigned short to the RandomAccessFile f. Wraps {@link java.io.RandomAccessFile#writeShort() writeShort()},
+     * but assumes the input should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static void writeUnsignedShort(RandomAccessFile f, @Unsigned short s) throws IOException {
+        f.writeShort(s);
+    }
+
+    /**
+     * Writes an unsigned byte to the RandomAccessFile f. Wraps {@link java.io.RandomAccessFile#writeInt() writeInt()},
+     * but assumes the input should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static void writeUnsignedInt(RandomAccessFile f, @Unsigned int i) throws IOException {
+        f.writeInt(i);
+    }
+
+    /**
+     * Writes an unsigned byte to the RandomAccessFile f. Wraps {@link java.io.RandomAccessFile#writeLong() writeLong()},
+     * but assumes the input should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static void writeUnsignedLong(RandomAccessFile f, @Unsigned long l) throws IOException {
+        f.writeLong(l);
     }
 
     /**
