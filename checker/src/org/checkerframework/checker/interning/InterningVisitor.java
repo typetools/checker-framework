@@ -821,10 +821,14 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      */
     DeclaredType typeToCheck() {
         String className = checker.getOption("checkclass");
-        if (className == null) return null;
+        if (className == null) {
+            return null;
+        }
 
         TypeElement classElt = elements.getTypeElement(className);
-        if (classElt == null) return null;
+        if (classElt == null) {
+            return null;
+        }
 
         return types.getDeclaredType(classElt);
     }

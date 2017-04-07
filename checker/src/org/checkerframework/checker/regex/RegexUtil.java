@@ -153,7 +153,7 @@ public final class RegexUtil {
      *
      * @param s string to check for being a regular expression
      * @param groups number of groups expected
-     * @return true iff s is a regular expression with groups groups
+     * @return true iff s is a regular expression with {@code groups} groups
      */
     @SuppressWarnings({"regex", "deterministic"}) // RegexUtil; for purity, catches an exception
     /*@Pure*/

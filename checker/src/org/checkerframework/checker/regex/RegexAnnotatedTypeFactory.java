@@ -82,7 +82,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * The value method of the PartialRegex qualifier.
      *
-     * @see org.checkerframework.checker.regex.classic.qual.PartialRegex
+     * @see org.checkerframework.checker.regex.qual.PartialRegex
      */
     private final ExecutableElement partialRegexValue;
 
@@ -181,7 +181,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * A custom qualifier hierarchy for the Regex Checker. This makes a regex annotation a subtype
      * of all regex annotations with lower group count values. For example, {@code @Regex(3)} is a
-     * subtype of {@code @Regex(1)}. All regex annotations are subtypes of {@code @Regex} which has
+     * subtype of {@code @Regex(1)}. All regex annotations are subtypes of {@code @Regex}, which has
      * a default value of 0.
      */
     private final class RegexQualifierHierarchy extends GraphQualifierHierarchy {
@@ -418,8 +418,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Returns the value of the Regex annotation on the given type or NULL if there is no Regex
          * annotation. If type is a TYPEVAR, WILDCARD, or INTERSECTION type, visit first their
-         * primary annotation then visit their upper bounds to get the Regex annotation. It's get
-         * "minimum" regex count because, depending on the bounds of a typevar or wildcard, the
+         * primary annotation then visit their upper bounds to get the Regex annotation. The method
+         * gets "minimum" regex count because, depending on the bounds of a typevar or wildcard, the
          * actual type may have more than the upper bound's count.
          *
          * @param type type that may carry a Regex annotation

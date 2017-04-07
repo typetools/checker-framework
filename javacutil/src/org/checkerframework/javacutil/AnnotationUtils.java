@@ -555,10 +555,11 @@ public class AnnotationUtils {
     }
 
     /**
-     * Get the Name of the class that is referenced by attribute 'name'. This is a convenience
-     * method for the most common use-case. Like getElementValue(anno, name,
-     * ClassType.class).getQualifiedName(), but this method ensures consistent use of the qualified
-     * name.
+     * Get the Name of the class that is referenced by attribute {@code name}.
+     *
+     * <p>This is a convenience method for the most common use-case. Like getElementValue(anno,
+     * name, ClassType.class).getQualifiedName(), but this method ensures consistent use of the
+     * qualified name.
      */
     public static Name getElementValueClassName(
             AnnotationMirror anno, CharSequence name, boolean useDefaults) {
@@ -567,9 +568,21 @@ public class AnnotationUtils {
         return ct.asElement().getQualifiedName();
     }
 
+    /** Get the list of Names of the classes that are referenced by attribute {@code name}. */
+    public static List<Name> getElementValueClassNames(
+            AnnotationMirror anno, CharSequence name, boolean useDefaults) {
+        List<Type.ClassType> la =
+                getElementValueArray(anno, name, Type.ClassType.class, useDefaults);
+        List<Name> names = new ArrayList<>();
+        for (Type.ClassType classType : la) {
+            names.add(classType.asElement().getQualifiedName());
+        }
+        return names;
+    }
+
     /**
-     * Get the Class that is referenced by attribute 'name'. This method uses Class.forName to load
-     * the class. It returns null if the class wasn't found.
+     * Get the Class that is referenced by attribute {@code name}. This method uses Class.forName to
+     * load the class. It returns null if the class wasn't found.
      */
     public static Class<?> getElementValueClass(
             AnnotationMirror anno, CharSequence name, boolean useDefaults) {
@@ -579,14 +592,11 @@ public class AnnotationUtils {
             Class<?> cls = Class.forName(cn.toString(), true, classLoader);
             return cls;
         } catch (ClassNotFoundException e) {
-            ErrorReporter.errorAbort(
-                    "Could not load class '"
-                            + cn
-                            + "' for field '"
-                            + name
-                            + "' in annotation "
-                            + anno,
-                    e);
+            String msg =
+                    String.format(
+                            "Could not load class '%s' for field '%s' in annotation %s",
+                            cn, name, anno);
+            ErrorReporter.errorAbort(msg, e);
             return null; // dead code
         }
     }

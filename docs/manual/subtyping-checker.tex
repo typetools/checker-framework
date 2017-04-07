@@ -297,7 +297,8 @@ your new type.  There is no such guarantee for \<@MyTypeUnknown> and
 \<@NotMyType> is guaranteed never to evaluate to a value of your new type.
 An expression of type \<@MyTypeUnknown> may evaluate to any value ---
 including values of your new type and values not of your new type.
-(\<@MyTypeBottom> is the type of \<null> and can be ignored for this
+(\<@MyTypeBottom> is the type of \<null> and is also used for dead code and
+erroneous situations; it can be ignored for this
 discussion.)
 
 A key choice for the type system designer is which type is the default.

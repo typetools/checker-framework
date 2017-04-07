@@ -672,7 +672,7 @@ public abstract class UBQualifier {
 
         /**
          * Adds the negation of value as an offset to a copy of this qualifier. This is done by
-         * adding the negation of value value to every offset equation in a copy of this object.
+         * adding the negation of {@code value} to every offset equation in a copy of this object.
          *
          * @param value int value to add
          * @return a copy of this qualifier with value add as an offset

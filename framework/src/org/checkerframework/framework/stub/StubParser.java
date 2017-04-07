@@ -501,7 +501,7 @@ public class StubParser {
             */
         }
 
-        annotateTypeParameters(typeArguments, typeParameters);
+        annotateTypeParameters(atypes, typeArguments, typeParameters);
         annotateSupertypes(decl, type);
         putNew(atypes, elt, type);
         List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
@@ -568,7 +568,7 @@ public class StubParser {
         addDeclAnnotations(declAnnos, elt);
 
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
-        annotateTypeParameters(methodType.getTypeVariables(), decl.getTypeParameters());
+        annotateTypeParameters(atypes, methodType.getTypeVariables(), decl.getTypeParameters());
         typeParameters.addAll(methodType.getTypeVariables());
         annotate(methodType.getReturnType(), decl.getType());
 
@@ -846,7 +846,9 @@ public class StubParser {
     }
 
     private void annotateTypeParameters(
-            List<? extends AnnotatedTypeMirror> typeArguments, List<TypeParameter> typeParameters) {
+            Map<Element, AnnotatedTypeMirror> atypes,
+            List<? extends AnnotatedTypeMirror> typeArguments,
+            List<TypeParameter> typeParameters) {
         if (typeParameters == null) {
             return;
         }
@@ -875,6 +877,7 @@ public class StubParser {
                     stubWarnIfNotFound("Annotations on intersection types are not yet supported");
                 }
             }
+            putNew(atypes, paramType.getUnderlyingType().asElement(), paramType);
         }
     }
 

@@ -578,11 +578,22 @@ will not type-check unless \<null> has the bottom type:
 % appropriate bottom qualifier.
 % \end{sloppypar}
 
-If your type system has a special bottom type that is used \emph{only} for
-the \code{null} value, then users should only write the bottom qualifier
-on explicit bounds.  To ensure this, write
-\<@TargetLocations(\{ TypeUseLocation.EXPLICIT\_LOWER\_BOUND, TypeUseLocation.EXPLICIT\_UPPER\_BOUND \})>
-on the definition of the bottom qualifier.
+Some type systems have a special bottom type that is used \emph{only} for
+the \code{null} value, and for dead code and other erroneous situations.
+In this case, users should only write the bottom qualifier on explicit
+bounds.  In this case, the definition of the bottom qualifier should be
+meta-annotated with:
+
+% import java.lang.annotation.ElementType;
+% import java.lang.annotation.Target;
+% import org.checkerframework.framework.qual.TargetLocations;
+% import org.checkerframework.framework.qual.TypeUseLocation;
+%
+\begin{Verbatim}
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
+\end{Verbatim}
+
 Furthermore, by convention the name of such a qualifier ends with ``\<Bottom>''.
 
 The hierarchy shown in Figure~\ref{fig-initialization-hierarchy} lacks
@@ -633,7 +644,7 @@ annotation is changed to indicate that the expression is not valid.
 
 The Checker Framework standardizes the expression strings.  For example, a
 field \<f> can be referred to as either ``f'' or ``this.f''.  If the
-programmer writes ``f'', the the Checker Framework changes it to
+programmer writes ``f'', the Checker Framework changes it to
 ``this.f'', as if the programmer had written that.
 An advantage of this canonicalization is that
 that comparisons, such as \<isSubtype>, can be implemented as string comparisons.
@@ -907,7 +918,7 @@ which can be customized to enhance the built-in type refinement. The next
 sections detail dataflow customization.  It would also be helpful to read the
 \href{https://checkerframework.org/manual/checker-framework-dataflow-manual.pdf}
 {Dataflow Manual}, which gives a more in-depth description of the Checker
-Framework's dataflow framework.
+Framework's dataflow framework, including the control flow graph.
 
 The steps to customizing type refinement are:
 \begin{enumerate}
@@ -1166,7 +1177,7 @@ does not affect it), but in the true branch, the type of \<s> can be
 refined to \<@NonNull String>.
 
 
-Updating the \refclass{dataflow/analysis}{Store} treats an expression as a
+Updating the \refclass{dataflow/analysis}{Store} treats an expression as
 having a refined type for the remainder of the method or conditional block. For
 example, when the Nullness Checker's dataflow evaluates \code{myvar != null}, it
 updates the \refclass{dataflow/analysis}{Store} to specify that the variable
@@ -1540,6 +1551,9 @@ otherwise, your type-checker may produce spurious warnings for code that
 uses the JDK.  As described in Section~\ref{annotated-libraries-creating},
 there are two general ways to supply an annotated library:  in Java files
 that will be compiled to \<.class> files, or as stub files (partial Java source files).
+
+It's easier to start out with stub files.  If you need to annotated many
+classes (say, more than 20 or so), then you should create an annotated JDK.
 
 To supply an annotated JDK that will be compiled, see Section~\ref{annotating-jdk}.
 

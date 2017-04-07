@@ -65,13 +65,16 @@ section:
   the lower bound on an integer, such as whether it is known to be positive
   (Section~\ref{index-lowerbound})
 \item
-  the upper bound an an integer, such as whether it is less than the length
+  the upper bound an integer, such as whether it is less than the length
   of a given array (Section~\ref{index-upperbound})
 \item
   the minimum length of a sequence, such ``\<myArray> contains at least 3
   elements'' (Section~\ref{index-minlen})
 \item
   whether two sequences have the same length (Section~\ref{index-samelen})
+\item
+  whether an integer came from calling the JDK's binary search routine on
+  an array (Section~\ref{index-searchindex})
 \end{itemize}
 
 In addition to the indexing annotations described in those sections, there
@@ -106,13 +109,13 @@ are some annotations that give multiple types of information:
   \refqualclass{checker/index/qual}{LTEqLengthOf}.
 
   For example, the
-  \sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-int-int-java.lang.Object-}{Arrays.binarySearch}
+  \sunjavadoc{java/util/Arrays.html\#fill-java.lang.Object:A-int-int-java.lang.Object-}{Arrays.fill}
    method is declared as
 
   \begin{mysmall}
   \begin{Verbatim}
   class Arrays {
-    int binarySearch(Object[] a, @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex, Object key)
+    void fill(Object[] a, @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex, Object val)
   }
   \end{Verbatim}
   \end{mysmall}
@@ -121,7 +124,7 @@ are some annotations that give multiple types of information:
    The value is -1 or is a valid index for
    each named array.  This type combines
   \refqualclass{checker/index/qual}{GTENegativeOne} and
-  \refqualclass{checker/index/qual}{LTEqLengthOf}.
+  \refqualclass{checker/index/qual}{LTLengthOf}.
 
   For example, the
   \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf(String)}
@@ -322,7 +325,8 @@ Array minimum lengths use the following type qualifiers
 \end{center}
   \caption{The two type hierarchies for array types used by the Index
     Checker.  On the left is a type system for minimum array lengths.  On
-    the right is a type system for arrays of equal length.  Qualifiers
+    the right is a type system for arrays of equal length ("a" and "b" are
+    assumed to be in-scope arrays).  Qualifiers
     written in gray should never be written in source code; they are used
     internally by the type system.}
   \label{fig-index-array-types}
@@ -363,11 +367,52 @@ When needed, you can specify which sequences have the same length using the foll
   This is the top type, and programmers should never need to write it.
 \item[\refqualclass{checker/index/qual}{SameLenBottom}]
   This is the bottom type, and programmers should rarely need to write it.
+  \code{null} has this type.
 \item[\refqualclass{checker/index/qual}{PolySameLen}]
   indicates qualifier polymorphism.
   For a description of qualifier polymorphism, see
   Section~\ref{qualifier-polymorphism}.
-  \code{null} has this type.
+\end{description}
+
+
+\section{Binary search indices\label{index-searchindex}}
+
+The JDK's
+\sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-java.lang.Object-}{Arrays.binarySearch}
+method returns either where the value was found, or a negative value
+indicating where the value could be inserted.  The Search Index Checker
+represents this concept.
+
+\begin{figure}
+\begin{center}
+  \hfill
+  \includeimage{searchindex}{7cm}
+  \hfill
+\end{center}
+  \caption{The type hierarchy for the Index Checker's internal type system
+  that captures information about the results of calls to
+  \sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-java.lang.Object-}{Arrays.binarySearch}.}
+  \label{fig-index-searchindex}
+\end{figure}
+
+The Search Index Checker's type hierarchy (Figure~/ref{fig-index-searchindex}) has four type qualifiers:
+\begin{description}
+\item[\refqualclasswithparams{checker/index/qual}{SearchIndexFor}{String[] names}]
+  An expression with this type represents an integer that could have been produced by
+  calling
+  \sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-java.lang.Object-}{Arrays.binarySearch}:
+  for each array \<a> specifed in the annotation, the annotated integer is
+  between \<-a.length-1> and \<a.length-1>, inclusive
+\item[\refqualclasswithparams{checker/index/qual}{NegativeIndexFor}{String[] names}]
+  An expression with this type represents a ``negative index'' that is
+  between \<a.length-1> and \<-1>, inclusive; that is, a value that is both
+  a \<@SearchIndex> and is negative.  Applying the bitwise complement
+  operator (\verb|~|) to an expression of this type produces an expression of type
+  \refqualclass{checker/index/qual}{IndexOrHigh}.
+\item[\refqualclass{checker/index/qual}{SearchIndexBottom}]
+  This is the bottom type, and programmers should rarely need to write it.
+\item[\refqualclass{checker/index/qual}{SearchIndexUnknown}]
+  This is the top type, and programmers should rarely need to write it.
 \end{description}
 
 %%  LocalWords:  NegativeArraySizeException pre myArray IndexFor someArray

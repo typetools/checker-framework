@@ -206,7 +206,7 @@ public class LockAnnotatedTypeFactory
             return PurityUtils.isDeterministic(this, methodCall.getElement())
                     && isExpressionEffectivelyFinal(methodCall.getReceiver());
         } else if (expr instanceof ThisReference || expr instanceof ClassName) {
-            // this is always final. "ClassName" is actually a class literal,(String.class), it's
+            // this is always final. "ClassName" is actually a class literal (String.class), it's
             // final too.
             return true;
         } else { // type of 'expr' is not supported in @GuardedBy(...) lock expressions

@@ -7,6 +7,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
@@ -17,6 +18,9 @@ import org.checkerframework.common.value.qual.UnknownVal;
 import org.checkerframework.common.value.util.NumberMath;
 import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
+import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -28,6 +32,7 @@ import org.checkerframework.dataflow.cfg.node.ConditionalAndNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
+import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.FloatingDivisionNode;
 import org.checkerframework.dataflow.cfg.node.FloatingRemainderNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
@@ -49,11 +54,13 @@ import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class ValueTransfer extends CFTransfer {
@@ -229,9 +236,83 @@ public class ValueTransfer extends CFTransfer {
 
     /** Create a boolean transfer result. */
     private TransferResult<CFValue, CFStore> createNewResultBoolean(
-            TransferResult<CFValue, CFStore> result, List<Boolean> resultValues) {
+            CFStore thenStore,
+            CFStore elseStore,
+            List<Boolean> resultValues,
+            TypeMirror underlyingType) {
         AnnotationMirror boolVal = atypefactory.createBooleanAnnotation(resultValues);
-        return createNewResult(result, boolVal);
+        CFValue newResultValue = analysis.createSingleAnnotationValue(boolVal, underlyingType);
+        if (elseStore != null) {
+            return new ConditionalTransferResult<>(newResultValue, thenStore, elseStore);
+        } else {
+            return new RegularTransferResult<>(newResultValue, thenStore);
+        }
+    }
+
+    @Override
+    public TransferResult<CFValue, CFStore> visitFieldAccess(
+            FieldAccessNode node, TransferInput<CFValue, CFStore> in) {
+
+        TransferResult<CFValue, CFStore> result = super.visitFieldAccess(node, in);
+        refineArrayAtLengthAccess(node, result.getRegularStore());
+        return result;
+    }
+
+    /**
+     * If array.length is encountered, transform its @IntVal annotation into an @ArrayLen annotation
+     * for array.
+     */
+    private void refineArrayAtLengthAccess(FieldAccessNode arrayLengthNode, CFStore store) {
+        if (!NodeUtils.isArrayLengthFieldAccess(arrayLengthNode)) {
+            return;
+        }
+        CFValue value =
+                store.getValue(
+                        FlowExpressions.internalReprOf(analysis.getTypeFactory(), arrayLengthNode));
+        if (value == null) {
+            return;
+        }
+        AnnotationMirror lengthAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
+
+        if (lengthAnno != null) {
+            List<Long> lengthValues = ValueAnnotatedTypeFactory.getIntValues(lengthAnno);
+            List<Integer> arrayLenValues = new ArrayList<>(lengthValues.size());
+            for (Long l : lengthValues) {
+                arrayLenValues.add(l.intValue());
+            }
+            AnnotationMirror newArrayAnno = atypefactory.createArrayLenAnnotation(arrayLenValues);
+            AnnotationMirror oldArrayAnno =
+                    atypefactory.getAnnotationMirror(
+                            arrayLengthNode.getReceiver().getTree(), ArrayLen.class);
+            AnnotationMirror combinedAnno;
+            // If the array doesn't have an @ArrayLen annotation, use the new annotation.
+            // If it does have an annotation, combine the facts known about the array
+            // with the facts known about its length using GLB.
+            if (oldArrayAnno == null) {
+                combinedAnno = newArrayAnno;
+            } else {
+                combinedAnno =
+                        atypefactory
+                                .getQualifierHierarchy()
+                                .greatestLowerBound(oldArrayAnno, newArrayAnno);
+            }
+            Receiver arrayRec =
+                    FlowExpressions.internalReprOf(
+                            analysis.getTypeFactory(), arrayLengthNode.getReceiver());
+            store.insertValue(arrayRec, combinedAnno);
+        } else {
+            // If the array's length is bottom, then this is dead code, so the array's type
+            // should also be bottom.
+            lengthAnno =
+                    AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
+            if (lengthAnno != null) {
+                Receiver arrayRec =
+                        FlowExpressions.internalReprOf(
+                                analysis.getTypeFactory(), arrayLengthNode.getReceiver());
+                store.insertValue(arrayRec, lengthAnno);
+            }
+        }
     }
 
     @Override
@@ -362,7 +443,8 @@ public class ValueTransfer extends CFTransfer {
                     resultRange = leftRange.bitwiseXor(rightRange);
                     break;
                 default:
-                    throw new UnsupportedOperationException();
+                    ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
+                    throw new RuntimeException("this can't happen");
             }
             // Any integral type with less than 32 bits would be promoted to 32-bit int type during operations.
             return leftNode.getType().getKind() == TypeKind.LONG
@@ -424,7 +506,7 @@ public class ValueTransfer extends CFTransfer {
                         resultValues.add(nmLeft.bitwiseXor(right));
                         break;
                     default:
-                        throw new UnsupportedOperationException();
+                        ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
                 }
             }
         }
@@ -613,7 +695,8 @@ public class ValueTransfer extends CFTransfer {
                     resultRange = range.bitwiseComplement();
                     break;
                 default:
-                    throw new UnsupportedOperationException();
+                    ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
+                    throw new RuntimeException("this can't happen");
             }
             // Any integral type with less than 32 bits would be promoted to 32-bit int type during operations.
             return operand.getType().getKind() == TypeKind.LONG
@@ -645,7 +728,7 @@ public class ValueTransfer extends CFTransfer {
                     resultValues.add(nmLeft.bitwiseComplement());
                     break;
                 default:
-                    throw new UnsupportedOperationException();
+                    ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
             }
         }
         return resultValues;
@@ -691,95 +774,253 @@ public class ValueTransfer extends CFTransfer {
             Node leftNode,
             Node rightNode,
             ComparisonOperators op,
-            TransferInput<CFValue, CFStore> p) {
+            TransferInput<CFValue, CFStore> p,
+            CFStore thenStore,
+            CFStore elseStore) {
+        if (isIntRange(leftNode, p) || isIntRange(rightNode, p)) {
+            return refineIntRanges(leftNode, rightNode, op, p, thenStore, elseStore);
+        }
         List<Boolean> resultValues = new ArrayList<>();
-        if (!isIntRange(leftNode, p) && !isIntRange(rightNode, p)) {
-            // TODO:
-            // Handle @IntRange annotation when the control flow refinement is implemented
-            // typetools/checker-framework#1163
-            List<? extends Number> lefts = getNumericalValues(leftNode, p);
-            List<? extends Number> rights = getNumericalValues(rightNode, p);
-            if (lefts == null || rights == null) {
-                return null;
+
+        List<? extends Number> lefts = getNumericalValues(leftNode, p);
+        List<? extends Number> rights = getNumericalValues(rightNode, p);
+
+        if (lefts == null || rights == null) {
+            // Appropriately handle bottom when something is compared to bottom.
+            AnnotationMirror leftAnno =
+                    atypefactory
+                            .getAnnotatedType(leftNode.getTree())
+                            .getAnnotationInHierarchy(atypefactory.BOTTOMVAL);
+            AnnotationMirror rightAnno =
+                    atypefactory
+                            .getAnnotatedType(rightNode.getTree())
+                            .getAnnotationInHierarchy(atypefactory.BOTTOMVAL);
+
+            if (AnnotationUtils.areSame(leftAnno, atypefactory.BOTTOMVAL)
+                    || AnnotationUtils.areSame(rightAnno, atypefactory.BOTTOMVAL)) {
+                return new ArrayList<Boolean>();
             }
-            for (Number left : lefts) {
-                NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
-                for (Number right : rights) {
-                    switch (op) {
-                        case EQUAL:
-                            resultValues.add(nmLeft.equalTo(right));
-                            break;
-                        case GREATER_THAN:
-                            resultValues.add(nmLeft.greaterThan(right));
-                            break;
-                        case GREATER_THAN_EQ:
-                            resultValues.add(nmLeft.greaterThanEq(right));
-                            break;
-                        case LESS_THAN:
-                            resultValues.add(nmLeft.lessThan(right));
-                            break;
-                        case LESS_THAN_EQ:
-                            resultValues.add(nmLeft.lessThanEq(right));
-                            break;
-                        case NOT_EQUAL:
-                            resultValues.add(nmLeft.notEqualTo(right));
-                            break;
-                        default:
-                            throw new UnsupportedOperationException();
-                    }
+            return null;
+        }
+
+        // These lists are used to refine the values in the store based on the results of the comparison.
+        List<Number> thenLeftVals = new ArrayList<>();
+        List<Number> elseLeftVals = new ArrayList<>();
+        List<Number> thenRightVals = new ArrayList<>();
+        List<Number> elseRightVals = new ArrayList<>();
+
+        for (Number left : lefts) {
+            NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
+            for (Number right : rights) {
+                Boolean result;
+                switch (op) {
+                    case EQUAL:
+                        result = nmLeft.equalTo(right);
+                        break;
+                    case GREATER_THAN:
+                        result = nmLeft.greaterThan(right);
+                        break;
+                    case GREATER_THAN_EQ:
+                        result = nmLeft.greaterThanEq(right);
+                        break;
+                    case LESS_THAN:
+                        result = nmLeft.lessThan(right);
+                        break;
+                    case LESS_THAN_EQ:
+                        result = nmLeft.lessThanEq(right);
+                        break;
+                    case NOT_EQUAL:
+                        result = nmLeft.notEqualTo(right);
+                        break;
+                    default:
+                        ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
+                        throw new RuntimeException("this can't happen");
+                }
+                resultValues.add(result);
+                if (result) {
+                    thenLeftVals.add(left);
+                    thenRightVals.add(right);
+                } else {
+                    elseLeftVals.add(left);
+                    elseRightVals.add(right);
                 }
             }
         }
+
+        createAnnotationFromResultsAndAddToStore(thenStore, thenLeftVals, leftNode);
+        createAnnotationFromResultsAndAddToStore(elseStore, elseLeftVals, leftNode);
+        createAnnotationFromResultsAndAddToStore(thenStore, thenRightVals, rightNode);
+        createAnnotationFromResultsAndAddToStore(elseStore, elseRightVals, rightNode);
+
         return resultValues;
+    }
+
+    /**
+     * Calculates the result of a binary comparison on a pair of intRange annotations, and refines
+     * annotations appropriately.
+     */
+    private List<Boolean> refineIntRanges(
+            Node leftNode,
+            Node rightNode,
+            ComparisonOperators op,
+            TransferInput<CFValue, CFStore> p,
+            CFStore thenStore,
+            CFStore elseStore) {
+        Range leftRange = getIntRange(leftNode, p);
+        Range rightRange = getIntRange(rightNode, p);
+
+        final Range thenRightRange;
+        final Range thenLeftRange;
+        final Range elseRightRange;
+        final Range elseLeftRange;
+
+        switch (op) {
+            case EQUAL:
+                thenRightRange = rightRange.refineEqualTo(leftRange);
+                thenLeftRange = thenRightRange; // Only needs to be computed once.
+                elseRightRange = rightRange.refineNotEqualTo(leftRange);
+                elseLeftRange = leftRange.refineNotEqualTo(rightRange);
+                break;
+            case GREATER_THAN:
+                thenLeftRange = leftRange.refineGreaterThan(rightRange);
+                thenRightRange = rightRange.refineLessThan(leftRange);
+                elseRightRange = rightRange.refineGreaterThanEq(leftRange);
+                elseLeftRange = leftRange.refineLessThanEq(rightRange);
+                break;
+            case GREATER_THAN_EQ:
+                thenRightRange = rightRange.refineLessThanEq(leftRange);
+                thenLeftRange = leftRange.refineGreaterThan(rightRange);
+                elseLeftRange = leftRange.refineLessThan(rightRange);
+                elseRightRange = rightRange.refineGreaterThan(leftRange);
+                break;
+            case LESS_THAN:
+                thenLeftRange = leftRange.refineLessThan(rightRange);
+                thenRightRange = rightRange.refineGreaterThan(leftRange);
+                elseRightRange = rightRange.refineLessThanEq(leftRange);
+                elseLeftRange = leftRange.refineGreaterThanEq(rightRange);
+                break;
+            case LESS_THAN_EQ:
+                thenRightRange = rightRange.refineGreaterThanEq(leftRange);
+                thenLeftRange = leftRange.refineLessThanEq(rightRange);
+                elseLeftRange = leftRange.refineGreaterThan(rightRange);
+                elseRightRange = rightRange.refineLessThan(leftRange);
+                break;
+            case NOT_EQUAL:
+                thenRightRange = rightRange.refineNotEqualTo(leftRange);
+                thenLeftRange = leftRange.refineNotEqualTo(rightRange);
+                elseRightRange = rightRange.refineEqualTo(leftRange);
+                elseLeftRange = elseRightRange; // Equality only needs to be computed once.
+                break;
+            default:
+                ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
+                throw new RuntimeException("this is impossible, but javac issues a warning");
+        }
+
+        Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), leftNode);
+        Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), rightNode);
+
+        thenStore.insertValue(leftRec, atypefactory.createIntRangeAnnotation(thenLeftRange));
+        thenStore.insertValue(rightRec, atypefactory.createIntRangeAnnotation(thenRightRange));
+
+        elseStore.insertValue(leftRec, atypefactory.createIntRangeAnnotation(elseLeftRange));
+        elseStore.insertValue(rightRec, atypefactory.createIntRangeAnnotation(elseRightRange));
+
+        // TODO: Refine the type of the comparison.
+        return null;
+    }
+
+    /**
+     * Takes a list of result values (i.e. the values possible after the comparison) and creates the
+     * appropriate annotation from them, then combines that annotation with the existing annotation
+     * on the node. The resulting annotation is inserted into the store.
+     */
+    private void createAnnotationFromResultsAndAddToStore(
+            CFStore store, List<?> results, Node node) {
+        AnnotationMirror anno = atypefactory.createResultingAnnotation(node.getType(), results);
+        AnnotationMirror currentAnno =
+                atypefactory
+                        .getAnnotatedType(node.getTree())
+                        .getAnnotationInHierarchy(atypefactory.BOTTOMVAL);
+        Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), node);
+        // Combine the new annotations based on the results of the comparison with the existing type.
+        store.insertValue(
+                rec, atypefactory.getQualifierHierarchy().greatestLowerBound(anno, currentAnno));
+
+        if (node instanceof FieldAccessNode) {
+            refineArrayAtLengthAccess((FieldAccessNode) node, store);
+        }
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitLessThan(
             LessThanNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitLessThan(n, p);
+        CFStore thenStore = transferResult.getThenStore();
+        CFStore elseStore = transferResult.getElseStore();
         List<Boolean> resultValues =
                 calculateBinaryComparison(
-                        n.getLeftOperand(), n.getRightOperand(), ComparisonOperators.LESS_THAN, p);
-        return createNewResultBoolean(transferResult, resultValues);
+                        n.getLeftOperand(),
+                        n.getRightOperand(),
+                        ComparisonOperators.LESS_THAN,
+                        p,
+                        thenStore,
+                        elseStore);
+        TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
+        return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitLessThanOrEqual(
             LessThanOrEqualNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitLessThanOrEqual(n, p);
+        CFStore thenStore = transferResult.getThenStore();
+        CFStore elseStore = transferResult.getElseStore();
         List<Boolean> resultValues =
                 calculateBinaryComparison(
                         n.getLeftOperand(),
                         n.getRightOperand(),
                         ComparisonOperators.LESS_THAN_EQ,
-                        p);
-        return createNewResultBoolean(transferResult, resultValues);
+                        p,
+                        thenStore,
+                        elseStore);
+        TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
+        return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitGreaterThan(
             GreaterThanNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitGreaterThan(n, p);
+        CFStore thenStore = transferResult.getThenStore();
+        CFStore elseStore = transferResult.getElseStore();
         List<Boolean> resultValues =
                 calculateBinaryComparison(
                         n.getLeftOperand(),
                         n.getRightOperand(),
                         ComparisonOperators.GREATER_THAN,
-                        p);
-        return createNewResultBoolean(transferResult, resultValues);
+                        p,
+                        thenStore,
+                        elseStore);
+        TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
+        return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitGreaterThanOrEqual(
             GreaterThanOrEqualNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitGreaterThanOrEqual(n, p);
+        CFStore thenStore = transferResult.getThenStore();
+        CFStore elseStore = transferResult.getElseStore();
         List<Boolean> resultValues =
                 calculateBinaryComparison(
                         n.getLeftOperand(),
                         n.getRightOperand(),
                         ComparisonOperators.GREATER_THAN_EQ,
-                        p);
-        return createNewResultBoolean(transferResult, resultValues);
+                        p,
+                        thenStore,
+                        elseStore);
+        TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
+        return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
     }
 
     @Override
@@ -788,13 +1029,21 @@ public class ValueTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> transferResult = super.visitEqualTo(n, p);
         if (TypesUtils.isPrimitive(n.getLeftOperand().getType())
                 || TypesUtils.isPrimitive(n.getRightOperand().getType())) {
+            CFStore thenStore = transferResult.getThenStore();
+            CFStore elseStore = transferResult.getElseStore();
             // At least one must be a primitive otherwise reference equality is used.
             List<Boolean> resultValues =
                     calculateBinaryComparison(
-                            n.getLeftOperand(), n.getRightOperand(), ComparisonOperators.EQUAL, p);
-            return createNewResultBoolean(transferResult, resultValues);
+                            n.getLeftOperand(),
+                            n.getRightOperand(),
+                            ComparisonOperators.EQUAL,
+                            p,
+                            thenStore,
+                            elseStore);
+            TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
+            return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
         }
-        return super.visitEqualTo(n, p);
+        return transferResult;
     }
 
     @Override
@@ -803,6 +1052,8 @@ public class ValueTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> transferResult = super.visitNotEqual(n, p);
         if (TypesUtils.isPrimitive(n.getLeftOperand().getType())
                 || TypesUtils.isPrimitive(n.getRightOperand().getType())) {
+            CFStore thenStore = transferResult.getThenStore();
+            CFStore elseStore = transferResult.getElseStore();
             // At least one must be a primitive otherwise reference equality is
             // used.
             List<Boolean> resultValues =
@@ -810,10 +1061,13 @@ public class ValueTransfer extends CFTransfer {
                             n.getLeftOperand(),
                             n.getRightOperand(),
                             ComparisonOperators.NOT_EQUAL,
-                            p);
-            return createNewResultBoolean(transferResult, resultValues);
+                            p,
+                            thenStore,
+                            elseStore);
+            TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
+            return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
         }
-        return super.visitNotEqual(n, p);
+        return transferResult;
     }
 
     enum ConditionalOperators {
@@ -863,7 +1117,8 @@ public class ValueTransfer extends CFTransfer {
                 }
                 return resultValues;
         }
-        throw new RuntimeException("Unrecognized conditional operator " + op);
+        ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
+        throw new RuntimeException("this can't happen");
     }
 
     @Override
@@ -872,7 +1127,11 @@ public class ValueTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> transferResult = super.visitConditionalNot(n, p);
         List<Boolean> resultValues =
                 calculateConditionalOperator(n.getOperand(), null, ConditionalOperators.NOT, p);
-        return createNewResultBoolean(transferResult, resultValues);
+        return createNewResultBoolean(
+                transferResult.getThenStore(),
+                transferResult.getElseStore(),
+                resultValues,
+                transferResult.getResultValue().getUnderlyingType());
     }
 
     @Override
@@ -882,7 +1141,11 @@ public class ValueTransfer extends CFTransfer {
         List<Boolean> resultValues =
                 calculateConditionalOperator(
                         n.getLeftOperand(), n.getRightOperand(), ConditionalOperators.AND, p);
-        return createNewResultBoolean(transferResult, resultValues);
+        return createNewResultBoolean(
+                transferResult.getThenStore(),
+                transferResult.getElseStore(),
+                resultValues,
+                transferResult.getResultValue().getUnderlyingType());
     }
 
     @Override
@@ -892,6 +1155,10 @@ public class ValueTransfer extends CFTransfer {
         List<Boolean> resultValues =
                 calculateConditionalOperator(
                         n.getLeftOperand(), n.getRightOperand(), ConditionalOperators.OR, p);
-        return createNewResultBoolean(transferResult, resultValues);
+        return createNewResultBoolean(
+                transferResult.getThenStore(),
+                transferResult.getElseStore(),
+                resultValues,
+                transferResult.getResultValue().getUnderlyingType());
     }
 }

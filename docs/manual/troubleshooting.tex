@@ -926,6 +926,24 @@ Run the
 though note that the \<.travis.yml> files already exist, so only the first
 two steps may be necessary.
 
+To save time, by default the Travis jobs download a pre-built version of
+the JDK rather than building the JDK from the sources in the Checker
+Framework repository.  This means that if you make a change to the
+annotated JDK, your tests will fail.  Here is how to deal with this issue:
+\begin{enumerate}
+\item
+In your pull request, edit file \<.travis.yml> so that it rebuilds
+the JDK (some jobs might time out).
+\item Verify that all tests pass.
+\item A Checker Framework developer needs to update the pre-built JDK from
+  your branch.
+\item
+  Undo your edits to file \<.travis.yml>.
+\item Verify that all tests pass.
+\item A Checker Framework developer will merge your branch.
+\end{enumerate}
+
+
 \subsection{Code style\label{code-style}}
 
 Code in this project follows the
@@ -948,12 +966,12 @@ try again.
 \section{Contributing fixes (creating a pull request)\label{pull-request}}
 
 Please see the document
-\ahref{http://homes.cs.washington.edu/~mernst/advice/github-pull-request.html}{How
+\ahref{http://homes.cs.washington.edu/\%7emernst/advice/github-pull-request.html}{How
   to create and review a GitHub pull request} for instructions about how to
 create a pull request, which is the way you can contribute code to the
 Checker Framework project.  Thanks in advance for your participation!
 
-Instructions for writing new test cases appears in file
+For writing new test cases, see file
 \ahref{https://raw.githubusercontent.com/typetools/checker-framework/master/checker/tests/README}{\<checker-framework/checker/tests/README>}.
 
 
