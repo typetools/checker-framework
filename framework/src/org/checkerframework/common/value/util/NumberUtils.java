@@ -12,6 +12,9 @@ public class NumberUtils {
     /** Converts a {@code List<A>} to a {@code List<B>}, where A and B are numeric types. */
     public static List<? extends Number> castNumbers(
             TypeMirror type, List<? extends Number> numbers) {
+        if (numbers == null) {
+            return null;
+        }
         TypeKind typeKind = unBoxPrimitive(type);
         switch (typeKind) {
             case BYTE:

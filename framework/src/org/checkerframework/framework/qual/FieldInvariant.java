@@ -7,13 +7,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import javax.lang.model.element.TypeElement;
+
 /**
  * Specifies that a field's type, in the class on which this annotation is written, is a subtype of
  * its declared type. The field must be declared in a superclass and must be final.
  *
  * <p>The {@code @FieldInvariant} annotation does not currently accommodate type qualifiers with
- * with attributes, such as {@code @MinLen(1)}. In this case, the type system should implement its
- * own field invariant annotation and override {@link
+ * attributes, such as {@code @MinLen(1)}. In this case, the type system should implement its own
+ * field invariant annotation and override {@link
  * org.checkerframework.framework.type.AnnotatedTypeFactory#getFieldInvariantDeclarationAnnotations()}
  * and {@link
  * org.checkerframework.framework.type.AnnotatedTypeFactory#getFieldInvariants(TypeElement)}. See
