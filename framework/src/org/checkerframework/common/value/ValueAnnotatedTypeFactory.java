@@ -235,15 +235,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Void)} which issues warnings to users in these cases.
          *
          * <p>If any @IntRange annotation has incorrect parameters, e.g. the value "from" is
-         * specified to be greater than the value "to", replaces the annotation by @BOTTOMVAL as
-         * well. The {@link
+         * specified to be greater than the value "to", replaces the annotation by @BOTTOMVAL. The
+         * {@link
          * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
-         * Void)} would raise error to users in this case.
+         * Void)} would raise an error to users in this case.
          *
-         * <p>If any @ArrayLen annotation has a negative number replaces the annotation
-         * by @BOTTOMVAL as well. The {@link
+         * <p>If any @ArrayLen annotation has a negative number, replaces the annotation
+         * by @BOTTOMVAL. The {@link
          * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
-         * Void)} would raise error to users in this case.
+         * Void)} would raise an error to users in this case.
          */
         private void replaceWithNewAnnoInSpecialCases(AnnotatedTypeMirror atm) {
             AnnotationMirror anno = atm.getAnnotationInHierarchy(UNKNOWNVAL);
@@ -271,12 +271,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     List<Integer> values =
                             AnnotationUtils.getElementValueArray(
                                     anno, "value", Integer.class, true);
-                    if (values.size() > MAX_VALUES) {
-                        atm.replaceAnnotation(UNKNOWNVAL);
-                    } else if (values.isEmpty()) {
-                        // don't change annotation
+                    if (values.isEmpty()) {
+                        atm.replaceAnnotation(BOTTOMVAL);
                     } else if (Collections.min(values) < 0) {
                         atm.replaceAnnotation(BOTTOMVAL);
+                    } else if (values.size() > MAX_VALUES) {
+                        atm.replaceAnnotation(UNKNOWNVAL);
                     }
                 } else {
                     // In here the annotation is @*Val where (*) is not Int but other types (String, Double, etc).
