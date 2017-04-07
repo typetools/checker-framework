@@ -1,7 +1,7 @@
 import org.checkerframework.checker.signedness.qual.*;
 
 class Defines {
-    public final static int CON_INT = 0;
+    public static final int CON_INT = 0;
 }
 
 public class Defaults {
@@ -65,13 +65,13 @@ public class Defaults {
 
         // Test fields on external classes with literal values
         // Commented out until issue is fixed.
-//        @Constant int conField;
-//        @SignednessBottom int botField;
-//
-//        conField = Defines.CON_INT;
-//
-//        //:: error: (assignment.type.incompatible)
-//        botField = Defines.CON_INT;
+        //        @Constant int conField;
+        //        @SignednessBottom int botField;
+        //
+        //        conField = Defines.CON_INT;
+        //
+        //        //:: error: (assignment.type.incompatible)
+        //        botField = Defines.CON_INT;
     }
 
     public void SignedTest(
