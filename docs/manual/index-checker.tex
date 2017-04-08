@@ -120,6 +120,13 @@ are some annotations that give multiple types of information:
   \end{Verbatim}
   \end{mysmall}
 
+ \item[\refqualclasswithparams{checker/index/qual}{LengthOf}{String[] names}]
+   The value is exactly equal to the length of the named
+   arrays. In the implementation, this type aliases
+   \refqualclass{checker/index/qual}{IndexOrHigh}, so writing it
+   only adds documentation (although future versions of the Index Checker
+   may use it to improve precision).
+
  \item[\refqualclasswithparams{checker/index/qual}{IndexOrLow}{String[] names}]
    The value is -1 or is a valid index for
    each named array.  This type combines

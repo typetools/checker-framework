@@ -25,6 +25,7 @@ import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.index.qual.IndexOrLow;
+import org.checkerframework.checker.index.qual.LengthOf;
 import org.checkerframework.checker.index.qual.LowerBoundUnknown;
 import org.checkerframework.checker.index.qual.MinLen;
 import org.checkerframework.checker.index.qual.NegativeIndexFor;
@@ -91,6 +92,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(IndexFor.class, NN);
         addAliasedAnnotation(IndexOrLow.class, GTEN1);
         addAliasedAnnotation(IndexOrHigh.class, NN);
+        addAliasedAnnotation(LengthOf.class, NN);
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyIndex.class, POLY);
 
