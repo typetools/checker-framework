@@ -1,5 +1,3 @@
-package value;
-
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.BottomVal;
 

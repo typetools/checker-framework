@@ -17,7 +17,6 @@ import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.framework.source.Result;
-import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 
@@ -74,8 +73,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
         if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
             // If there are 2 arguments, issue an error if from.greater.than.to.
-            // If there are less than 2 arguments, we needn't worry about this problem because the
-            // other argument would be defaulted to Long.MIN_VALUE or Long.MAX_VALUE accordingly.
+            // If there are fewer than 2 arguments, we needn't worry about this problem because the
+            // other argument will be defaulted to Long.MIN_VALUE or Long.MAX_VALUE accordingly.
             if (args.size() == 2) {
                 long from = AnnotationUtils.getElementValue(anno, "from", Long.class, true);
                 long to = AnnotationUtils.getElementValue(anno, "to", Long.class, true);
@@ -92,7 +91,10 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             List<Object> values =
                     AnnotationUtils.getElementValueArray(anno, "value", Object.class, true);
 
-            if (values.size() > ValueAnnotatedTypeFactory.MAX_VALUES) {
+            if (values.isEmpty()) {
+                checker.report(Result.warning("no.values.given"), node);
+                return null;
+            } else if (values.size() > ValueAnnotatedTypeFactory.MAX_VALUES) {
                 checker.report(
                         Result.warning(
                                 (AnnotationUtils.areSameByClass(anno, IntVal.class)
@@ -102,15 +104,12 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                         node);
                 return null;
             } else if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
-                if (values.isEmpty()) {
-                    return null;
-                }
                 List<Integer> arrayLens =
                         AnnotationUtils.getElementValueArray(anno, "value", Integer.class, true);
                 if (Collections.min(arrayLens) < 0) {
                     checker.report(
-                            Result.warning("negative.arraylen", PluginUtil.join(", ", values)),
-                            node);
+                            Result.warning("negative.arraylen", Collections.min(arrayLens)), node);
+                    return null;
                 }
             }
         }

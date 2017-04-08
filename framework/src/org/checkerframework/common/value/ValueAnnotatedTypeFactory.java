@@ -234,9 +234,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
          * Void)} which issues warnings to users in these cases.
          *
-         * <p>If any @IntRange annotation has incorrect parameters, e.g. the value "from" is
-         * specified to be greater than the value "to", replaces the annotation by @BOTTOMVAL. The
-         * {@link
+         * <p>If any @IntRange annotation has incorrect parameters, e.g. the value "from" is greater
+         * than the value "to", replaces the annotation by @BOTTOMVAL. The {@link
          * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
          * Void)} would raise an error to users in this case.
          *
