@@ -569,13 +569,15 @@ improve handling of mutable public fields in unannotated libraries.
 \section{Automatic type refinement (flow-sensitive type qualifier inference)\label{type-refinement}}
 
 The
-checkers soundly treat certain variables and expressions as having a
+checkers soundly treat local variables and expressions within a method body as having a
 subtype of their declared or defaulted (Section~\ref{defaults})
 type.
 This functionality
 reduces your burden of annotating types in your program and
 eliminates some false positive warnings, but it
 never introduces unsoundness nor causes an error to be missed.
+This functionality works within a method, but you still need to
+annotate method signatures (parameter and return type) and field types.
 
 By default all checkers
 automatically incorporate type refinement.  Most of the time, users don't
@@ -921,7 +923,7 @@ Usually, you only need to use \refqualclass{dataflow/qual}{SideEffectFree}.
   arguments, then it returns the identical result.
 
 \item[\refqualclass{dataflow/qual}{Pure}]
-  indicates that the method is both @SideEffectFree and @Deterministic.
+  indicates that the method is both \<@SideEffectFree> and \<@Deterministic>.
 
 \end{description}
 
