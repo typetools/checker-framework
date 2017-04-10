@@ -707,7 +707,7 @@ public final class Long extends Number implements Comparable<Long> {
      * Returns the value of this {@code Long} as a
      * {@code byte}.
      */
-    public byte byteValue() {
+    public @PolyIndex byte byteValue(@PolyIndex Long this) {
         return (byte)value;
     }
 
@@ -715,7 +715,7 @@ public final class Long extends Number implements Comparable<Long> {
      * Returns the value of this {@code Long} as a
      * {@code short}.
      */
-    public short shortValue() {
+    public @PolyIndex short shortValue(@PolyIndex Long this) {
         return (short)value;
     }
 
@@ -723,7 +723,7 @@ public final class Long extends Number implements Comparable<Long> {
      * Returns the value of this {@code Long} as an
      * {@code int}.
      */
-    public int intValue() {
+    public @PolyIndex int intValue(@PolyIndex Long this) {
         return (int)value;
     }
 
@@ -731,7 +731,7 @@ public final class Long extends Number implements Comparable<Long> {
      * Returns the value of this {@code Long} as a
      * {@code long} value.
      */
-    public long longValue() {
+    public @PolyIndex long longValue(@PolyIndex Long this) {
         return (long)value;
     }
 
