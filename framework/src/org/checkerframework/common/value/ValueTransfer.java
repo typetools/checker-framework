@@ -783,6 +783,9 @@ public class ValueTransfer extends CFTransfer {
             TransferInput<CFValue, CFStore> p,
             CFStore thenStore,
             CFStore elseStore) {
+        List<? extends Number> lefts = getNumericalValues(leftNode, p);
+        List<? extends Number> rights = getNumericalValues(rightNode, p);
+
         if (isIntRange(leftNode, p)
                 || isIntRange(rightNode, p)
                 || isUnknownVal(leftNode, p)
@@ -793,9 +796,6 @@ public class ValueTransfer extends CFTransfer {
             }
         }
         List<Boolean> resultValues = new ArrayList<>();
-
-        List<? extends Number> lefts = getNumericalValues(leftNode, p);
-        List<? extends Number> rights = getNumericalValues(rightNode, p);
 
         if (lefts == null || rights == null) {
             // Appropriately handle bottom when something is compared to bottom.

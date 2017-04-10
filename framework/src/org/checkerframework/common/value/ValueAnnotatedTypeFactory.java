@@ -1039,7 +1039,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.size() > MAX_VALUES) {
             long valMin = Collections.min(values);
             long valMax = Collections.max(values);
-            return createIntRangeAnnotation(new Range(valMin, valMax));
+            return createIntRangeAnnotation(valMin, valMax);
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntVal.class);
             builder.setValue("value", values);
@@ -1233,7 +1233,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Create an {@code @IntRange} annotation from the two (inclusive) bounds. Does not return
      * BOTTOMVAL or UNKNOWNVAL.
      */
-    public AnnotationMirror createIntRangeAnnotation(long from, long to) {
+    private AnnotationMirror createIntRangeAnnotation(long from, long to) {
         assert from <= to;
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntRange.class);
         builder.setValue("from", from);
@@ -1270,9 +1270,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         // Assume rangeAnno is well-formed, i.e., 'from' is less than or equal to 'to'.
-        return new Range(
-                AnnotationUtils.getElementValue(rangeAnno, "from", Long.class, true),
-                AnnotationUtils.getElementValue(rangeAnno, "to", Long.class, true));
+        return new Range(rangeAnno);
     }
 
     /**

@@ -4,7 +4,9 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.dataflow.util.HashCodeUtils;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * The Range class models a 64-bit two's-complement integral interval, such as all integers between
@@ -51,8 +53,12 @@ public class Range {
 
     /** Creates the singleton empty range. */
     private Range() {
-        this.from = Long.MAX_VALUE;
-        this.to = Long.MIN_VALUE;
+        this(Long.MIN_VALUE, Long.MAX_VALUE);
+    }
+
+    public Range(AnnotationMirror rangeAnno) {
+        this.from = AnnotationUtils.getElementValue(rangeAnno, "from", Long.class, true);
+        this.to = AnnotationUtils.getElementValue(rangeAnno, "to", Long.class, true);
     }
 
     /**
@@ -407,7 +413,7 @@ public class Range {
      * Returns a range that includes all possible values of the remainder of dividing an arbitrary
      * value in this range by an arbitrary value in the specified range.
      *
-     * <p>In the current implementtation, the result might not be the smallest range that includes
+     * <p>In the current implementation, the result might not be the smallest range that includes
      * all the possible values.
      *
      * @param right the specified range by which this range is divided
