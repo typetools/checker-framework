@@ -468,6 +468,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+
             if (AnnotationUtils.areSameByClass(superAnno, UnknownVal.class)
                     || AnnotationUtils.areSameByClass(subAnno, BottomVal.class)) {
                 return true;
