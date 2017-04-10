@@ -30,6 +30,7 @@ import org.checkerframework.checker.index.qual.IndexOrLow;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
+import org.checkerframework.checker.index.qual.LengthOf;
 import org.checkerframework.checker.index.qual.NegativeIndexFor;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.PolyIndex;
@@ -90,6 +91,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(IndexOrHigh.class, createLTEqLengthOfAnnotation());
         addAliasedAnnotation(SearchIndexFor.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(NegativeIndexFor.class, createLTLengthOfAnnotation());
+        addAliasedAnnotation(LengthOf.class, createLTEqLengthOfAnnotation());
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyIndex.class, POLY);
 
@@ -259,7 +261,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     AnnotationUtils.getElementValueArray(a, "value", String.class, true);
             return createLTLengthOfAnnotation(stringList.toArray(new String[0]));
         }
-        if (AnnotationUtils.areSameByClass(a, IndexOrHigh.class)) {
+        if (AnnotationUtils.areSameByClass(a, IndexOrHigh.class)
+                || AnnotationUtils.areSameByClass(a, LengthOf.class)) {
             List<String> stringList =
                     AnnotationUtils.getElementValueArray(a, "value", String.class, true);
             return createLTEqLengthOfAnnotation(stringList.toArray(new String[0]));

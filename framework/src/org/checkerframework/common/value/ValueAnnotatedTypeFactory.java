@@ -89,7 +89,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final boolean reportEvalWarnings;
 
     /** Helper class that evaluates statically executable methods, constructors, and fields. */
-    private final ReflectiveEvalutator evalutator;
+    private final ReflectiveEvaluator evaluator;
 
     static {
         Set<String> backingSet = new HashSet<String>(18);
@@ -121,7 +121,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         UNKNOWNVAL = AnnotationUtils.fromClass(elements, UnknownVal.class);
 
         reportEvalWarnings = checker.hasOption(ValueChecker.REPORT_EVAL_WARNS);
-        evalutator = new ReflectiveEvalutator(checker, this, reportEvalWarnings);
+        evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
             this.postInit();
@@ -822,7 +822,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 // Evaluate method
                 List<?> returnValues =
-                        evalutator.evaluateMethodCall(argValues, receiverValues, tree);
+                        evaluator.evaluateMethodCall(argValues, receiverValues, tree);
                 AnnotationMirror returnType =
                         createResultingAnnotation(type.getUnderlyingType(), returnValues);
                 type.replaceAnnotation(returnType);
@@ -860,7 +860,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 // Evaluate method
                 List<?> returnValues =
-                        evalutator.evaluteConstrutorCall(argValues, tree, type.getUnderlyingType());
+                        evaluator.evaluteConstrutorCall(argValues, tree, type.getUnderlyingType());
                 AnnotationMirror returnType =
                         createResultingAnnotation(type.getUnderlyingType(), returnValues);
                 type.replaceAnnotation(returnType);
@@ -886,7 +886,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     if (e != null) {
                         String classname = ElementUtils.getQualifiedClassName(e).toString();
                         String fieldName = tree.getIdentifier().toString();
-                        value = evalutator.evaluateStaticFieldAccess(classname, fieldName, tree);
+                        value = evaluator.evaluateStaticFieldAccess(classname, fieldName, tree);
                         if (value != null) {
                             type.replaceAnnotation(
                                     createResultingAnnotation(type.getUnderlyingType(), value));
