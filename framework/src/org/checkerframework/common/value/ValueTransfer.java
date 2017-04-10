@@ -8,6 +8,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.value.qual.ArrayLen;
+import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
@@ -143,7 +144,7 @@ public class ValueTransfer extends CFTransfer {
 
         intAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
         if (intAnno != null) {
-            Range range = ValueAnnotatedTypeFactory.getIntRange(intAnno);
+            Range range = ValueAnnotatedTypeFactory.getRange(intAnno);
             return ValueCheckerUtils.getValuesFromRange(range, Character.class);
         }
 
@@ -188,7 +189,7 @@ public class ValueTransfer extends CFTransfer {
         AnnotationMirror intRangeAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
         if (intRangeAnno != null) {
-            range = ValueAnnotatedTypeFactory.getIntRange(intRangeAnno);
+            range = ValueAnnotatedTypeFactory.getRange(intRangeAnno);
         }
         AnnotationMirror intValAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
@@ -272,19 +273,37 @@ public class ValueTransfer extends CFTransfer {
         if (value == null) {
             return;
         }
+
+        boolean isIntRange = false;
+
         AnnotationMirror lengthAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
 
+        if (lengthAnno == null) {
+            lengthAnno =
+                    AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
+            isIntRange = true;
+        }
+
         if (lengthAnno != null) {
-            List<Long> lengthValues = ValueAnnotatedTypeFactory.getIntValues(lengthAnno);
-            List<Integer> arrayLenValues = new ArrayList<>(lengthValues.size());
-            for (Long l : lengthValues) {
-                arrayLenValues.add(l.intValue());
+            Range range;
+            if (isIntRange) {
+                range = ValueAnnotatedTypeFactory.getRange(lengthAnno);
+            } else {
+                List<Long> lengthValues = ValueAnnotatedTypeFactory.getIntValues(lengthAnno);
+                range = new Range(Collections.min(lengthValues), Collections.max(lengthValues));
             }
-            AnnotationMirror newArrayAnno = atypefactory.createArrayLenAnnotation(arrayLenValues);
+            AnnotationMirror newArrayAnno = atypefactory.createArrayLenRangeAnnotation(range);
             AnnotationMirror oldArrayAnno =
                     atypefactory.getAnnotationMirror(
                             arrayLengthNode.getReceiver().getTree(), ArrayLen.class);
+
+            if (oldArrayAnno == null) {
+                oldArrayAnno =
+                        atypefactory.getAnnotationMirror(
+                                arrayLengthNode.getReceiver().getTree(), ArrayLenRange.class);
+            }
+
             AnnotationMirror combinedAnno;
             // If the array doesn't have an @ArrayLen annotation, use the new annotation.
             // If it does have an annotation, combine the facts known about the array

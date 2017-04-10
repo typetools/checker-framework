@@ -10,6 +10,14 @@ class ArrayInit {
                     {{1}, {1}, {1, 1, 1, 1}}
                 };
 
+        int @ArrayLen(4) [] @ArrayLen({1, 3, 4}) [] @ArrayLenRange(from = 1, to = 12) [] gamma =
+                new int[][][] {
+                    {{1, 1}, {1, 1, 1}, {1}, {1}},
+                    {{1}, {1}, {1}, {1, 1}},
+                    {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}},
+                    {{1}, {1}, {1, 1, 1, 1}}
+                };
+
         int @ArrayLen(4) [] @ArrayLen({1, 2, 3}) [] a = {{1, 1}, {1, 1, 1}, {1}, {1}};
         int @ArrayLen(4) [] @ArrayLen({1, 2}) [] b = {{1}, {1}, {1}, {1, 1}};
         int @ArrayLen(1) [] @ArrayLen(7) [] c = {{1, 2, 3, 4, 5, 6, 7}};
@@ -40,6 +48,7 @@ class ArrayInit {
         int @ArrayLen({1, 2}) [] a = new int[shortLength];
         //:: error: (assignment.type.incompatible)
         int @ArrayLen({1, 2}) [] b = new int[longLength];
+        int @ArrayLenRange(from = 1, to = 20) [] d = new int[longLength];
         int @ArrayLen({0}) [] c = new int[bottom];
     }
 
