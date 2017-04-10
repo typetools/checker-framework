@@ -44,8 +44,6 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -215,22 +213,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private class ValueTypeAnnotator extends TypeAnnotator {
 
-        public ValueTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
+        private ValueTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
 
         @Override
-        public Void visitPrimitive(AnnotatedPrimitiveType type, Void p) {
-            replaceWithNewAnnoInSpecialCases(type);
-
-            return super.visitPrimitive(type, p);
-        }
-
-        @Override
-        public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
-            replaceWithNewAnnoInSpecialCases(type);
-
-            return super.visitDeclared(type, p);
+        protected Void scan(AnnotatedTypeMirror type, Void aVoid) {
+            if (type != null) {
+                replaceWithNewAnnoInSpecialCases(type);
+            }
+            return super.scan(type, aVoid);
         }
 
         /**
@@ -242,14 +234,21 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
          * Void)} which issues warnings to users in these cases.
          *
-         * <p>If any @IntRange annotation has incorrect parameters, e.g. the value "from" is
-         * specified to be greater than the value "to", replaces the annotation by @BOTTOMVAL as
-         * well. The {@link
+         * <p>If any @IntRange annotation has incorrect parameters, e.g. the value "from" is greater
+         * than the value "to", replaces the annotation by @BOTTOMVAL. The {@link
          * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
-         * Void)} would raise error to users in this case.
+         * Void)} would raise an error to users in this case.
+         *
+         * <p>If any @ArrayLen annotation has a negative number, replaces the annotation
+         * by @BOTTOMVAL. The {@link
+         * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
+         * Void)} would raise an error to users in this case.
          */
         private void replaceWithNewAnnoInSpecialCases(AnnotatedTypeMirror atm) {
             AnnotationMirror anno = atm.getAnnotationInHierarchy(UNKNOWNVAL);
+            if (anno == null) {
+                return;
+            }
 
             if (anno != null && anno.getElementValues().size() > 0) {
                 if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
@@ -266,6 +265,17 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     long to = AnnotationUtils.getElementValue(anno, "to", Long.class, true);
                     if (from > to) {
                         atm.replaceAnnotation(BOTTOMVAL);
+                    }
+                } else if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
+                    List<Integer> values =
+                            AnnotationUtils.getElementValueArray(
+                                    anno, "value", Integer.class, true);
+                    if (values.isEmpty()) {
+                        atm.replaceAnnotation(BOTTOMVAL);
+                    } else if (Collections.min(values) < 0) {
+                        atm.replaceAnnotation(BOTTOMVAL);
+                    } else if (values.size() > MAX_VALUES) {
+                        atm.replaceAnnotation(UNKNOWNVAL);
                     }
                 } else {
                     // In here the annotation is @*Val where (*) is not Int but other types (String, Double, etc).
@@ -1138,7 +1148,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return BOTTOMVAL;
         }
         values = ValueCheckerUtils.removeDuplicates(values);
-        if (values.isEmpty()) {
+        if (values.isEmpty() || Collections.min(values) < 0) {
             return BOTTOMVAL;
         } else if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
