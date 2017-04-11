@@ -130,6 +130,26 @@ public class Range {
         }
     }
 
+    /**
+     * Either calls {@link #intRange()} if ignoreOverflow is false, or creates a new range whose
+     * from is either this.from or Integer.MIN_VALUE, and whose to is either this.to or
+     * Integer.MAX_VALUE.
+     */
+    public Range intRange(boolean ignoreOverflow) {
+        if (this.isNothing()) {
+            return NOTHING;
+        }
+        if (ignoreOverflow) {
+            Range r =
+                    new Range(
+                            from < Integer.MIN_VALUE ? Integer.MIN_VALUE : from,
+                            to > Integer.MAX_VALUE ? Integer.MAX_VALUE : to);
+            return r;
+        } else {
+            return intRange();
+        }
+    }
+
     /** The number of values representable in 16 bits: 2^16 or 1&lt;&lt;16. */
     private static long shortWidth = Short.MAX_VALUE - Short.MIN_VALUE + 1;
 
@@ -158,6 +178,24 @@ public class Range {
         }
     }
 
+    /**
+     * Either calls {@link #shortRange()} if ignoreOverflow is false, or creates a new range whose
+     * from is either this.from or Short.MIN_VALUE, and whose to is either this.to or
+     * Short.MAX_VALUE.
+     */
+    public Range shortRange(boolean ignoreOverflow) {
+        if (this.isNothing()) {
+            return NOTHING;
+        }
+        if (ignoreOverflow) {
+            return new Range(
+                    from < Short.MIN_VALUE ? Short.MIN_VALUE : from,
+                    to > Short.MAX_VALUE ? Short.MAX_VALUE : to);
+        } else {
+            return shortRange();
+        }
+    }
+
     /** The number of values representable in 8 bits: 2^8 or 1&lt;&lt;8. */
     private static long byteWidth = Byte.MAX_VALUE - Byte.MIN_VALUE + 1;
 
@@ -183,6 +221,23 @@ public class Range {
             } else {
                 return BYTE_EVERYTHING;
             }
+        }
+    }
+
+    /**
+     * Either calls {@link #byteRange()} if ignoreOverflow is false, or creates a new range whose
+     * from is either this.from or Byte.MIN_VALUE, and whose to is either this.to or Byte.MAX_VALUE.
+     */
+    public Range byteRange(boolean ignoreOverflow) {
+        if (this.isNothing()) {
+            return NOTHING;
+        }
+        if (ignoreOverflow) {
+            return new Range(
+                    from < Byte.MIN_VALUE ? Byte.MIN_VALUE : from,
+                    to > Byte.MAX_VALUE ? Byte.MAX_VALUE : to);
+        } else {
+            return byteRange();
         }
     }
 

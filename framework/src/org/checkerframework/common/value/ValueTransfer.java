@@ -210,7 +210,7 @@ public class ValueTransfer extends CFTransfer {
         if (bottomValAnno != null) {
             return Range.NOTHING;
         }
-        return NumberUtils.castRange(subNode.getType(), range);
+        return NumberUtils.castRange(subNode.getType(), range, atypefactory.ignoreOverflow);
     }
 
     /** a helper function to determine if this node is annotated with @IntRange */
@@ -447,10 +447,11 @@ public class ValueTransfer extends CFTransfer {
                     throw new RuntimeException("this can't happen");
             }
             // Any integral type with less than 32 bits would be promoted to 32-bit int type during operations.
+            System.out.println(resultRange);
             return leftNode.getType().getKind() == TypeKind.LONG
                             || rightNode.getType().getKind() == TypeKind.LONG
                     ? resultRange
-                    : resultRange.intRange();
+                    : resultRange.intRange(atypefactory.ignoreOverflow);
         } else {
             return Range.EVERYTHING;
         }
@@ -701,7 +702,7 @@ public class ValueTransfer extends CFTransfer {
             // Any integral type with less than 32 bits would be promoted to 32-bit int type during operations.
             return operand.getType().getKind() == TypeKind.LONG
                     ? resultRange
-                    : resultRange.intRange();
+                    : resultRange.intRange(atypefactory.ignoreOverflow);
         } else {
             return Range.EVERYTHING;
         }

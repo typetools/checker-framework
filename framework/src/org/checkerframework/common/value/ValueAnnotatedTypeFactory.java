@@ -86,6 +86,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Should this type factory report warnings? */
     private final boolean reportEvalWarnings;
 
+    /** Should this type factory ignore integer overflow when operating with ranges? */
+    final boolean ignoreOverflow;
+
     /** Helper class that evaluates statically executable methods, constructors, and fields. */
     private final ReflectiveEvaluator evaluator;
 
@@ -119,6 +122,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         UNKNOWNVAL = AnnotationUtils.fromClass(elements, UnknownVal.class);
 
         reportEvalWarnings = checker.hasOption(ValueChecker.REPORT_EVAL_WARNS);
+        ignoreOverflow = checker.hasOption(ValueChecker.IGNORE_OVERFLOW);
         evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
@@ -716,7 +720,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                     "ValueAnnotatedTypeFactory: can't convert int to boolean");
                         } else {
                             newAnno =
-                                    createIntRangeAnnotation(NumberUtils.castRange(newType, range));
+                                    createIntRangeAnnotation(
+                                            NumberUtils.castRange(
+                                                    newType,
+                                                    range,
+                                                    ((ValueAnnotatedTypeFactory) atypeFactory)
+                                                            .ignoreOverflow));
                         }
                     } else {
                         List<?> values = ValueCheckerUtils.getValuesCastedToType(oldAnno, newType);

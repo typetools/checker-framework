@@ -11,9 +11,10 @@ import org.checkerframework.framework.source.SupportedOptions;
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
 @StubFiles("statically-executable.astub")
-@SupportedOptions(ValueChecker.REPORT_EVAL_WARNS)
+@SupportedOptions({ValueChecker.REPORT_EVAL_WARNS, ValueChecker.IGNORE_OVERFLOW})
 public class ValueChecker extends BaseTypeChecker {
     public static final String REPORT_EVAL_WARNS = "reportEvalWarns";
+    public static final String IGNORE_OVERFLOW = "ignoreOverflow";
 
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor() {
