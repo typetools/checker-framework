@@ -509,7 +509,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             && AnnotationUtils.areSameByClass(subAnno, IntVal.class))
                     || (AnnotationUtils.areSameByClass(superAnno, ArrayLenRange.class)
                             && AnnotationUtils.areSameByClass(subAnno, ArrayLen.class))) {
-                List<Long> subValues = getValues(subAnno);
+                List<Long> subValues = getArrayLenOrIntValue(subAnno);
                 Range superRange = getRange(superAnno);
                 long subMinVal = Collections.min(subValues);
                 long subMaxVal = Collections.max(subValues);
@@ -534,7 +534,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (subRange.isWiderThan(MAX_VALUES)) {
                     return false;
                 }
-                List<Long> superValues = getValues(superAnno);
+                List<Long> superValues = getArrayLenOrIntValue(superAnno);
                 List<Long> subValues = ValueCheckerUtils.getValuesFromRange(subRange, Long.class);
                 return superValues.containsAll(subValues);
             } else {
@@ -545,15 +545,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Gets the values stored in either an ArrayLen annotation (ints) or an IntVal/DoubleVal/etc.
-     * annnotation (longs), and casts the result to a long.
+     * annotation (longs), and casts the result to a long.
      */
-    private List<Long> getValues(AnnotationMirror anno) {
+    private List<Long> getArrayLenOrIntValue(AnnotationMirror anno) {
         List<Long> result;
         if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
-            List<Integer> superValuesInt =
+            List<Integer> intValues =
                     AnnotationUtils.getElementValueArray(anno, "value", Integer.class, true);
-            result = new ArrayList<Long>(superValuesInt.size());
-            for (Integer i : superValuesInt) {
+            result = new ArrayList<Long>(intValues.size());
+            for (Integer i : intValues) {
                 result.add(i.longValue());
             }
         } else {
