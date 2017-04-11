@@ -679,23 +679,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotatedTypeMirror componentType = getAnnotatedType(init);
                 int dimension = 0;
                 while (componentType.getKind() == TypeKind.ARRAY) {
-                    RangeOrListOfValues rolv = null;
                     if (dimension == arrayLenOfDimensions.size()) {
                         arrayLenOfDimensions.add(new RangeOrListOfValues());
                     }
+                    RangeOrListOfValues rolv = arrayLenOfDimensions.get(dimension);
                     AnnotationMirror arrayLen = componentType.getAnnotation(ArrayLen.class);
                     if (arrayLen != null) {
-                        rolv = arrayLenOfDimensions.get(dimension);
                         List<Integer> currentLengths = getArrayLength(arrayLen);
-                        if (rolv.isRange) {
-                            Range range =
-                                    new Range(
-                                            Collections.min(currentLengths),
-                                            Collections.max(currentLengths));
-                            rolv.range = range.union(rolv.range);
-                        } else {
-                            rolv.addAll(currentLengths);
-                        }
+                        rolv.addAll(currentLengths);
                     } else {
                         // Check for an arrayLenRange annotation
                         AnnotationMirror arrayLenRangeAnno =

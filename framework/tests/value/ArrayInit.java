@@ -26,6 +26,14 @@ class ArrayInit {
         int @ArrayLen(4) [] @ArrayLen({1, 3, 4}) [] @ArrayLen({1, 2, 3, 4, 7}) [] beta = {
             a, b, c, d
         };
+
+        int @ArrayLen(4) [] @ArrayLen({1, 2, 3}) [] a1 = {{1, 1}, {1, 1, 1}, {1}, {1}};
+        int @ArrayLen(4) [] @ArrayLen({1, 2}) [] b1 = {{1}, {1}, {1}, {1, 1}};
+        int @ArrayLen(1) [] @ArrayLen(11) [] c1 = {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}};
+        int @ArrayLen(3) [] @ArrayLen({1, 4}) [] d1 = {{1}, {1}, {1, 1, 1, 1}};
+
+        int @ArrayLen(4) [] @ArrayLenRange(from = 1, to = 4) [] @ArrayLenRange(from = 1, to = 11) []
+                delta = {a1, b1, c1, d1};
     }
 
     public void numberInit() {
