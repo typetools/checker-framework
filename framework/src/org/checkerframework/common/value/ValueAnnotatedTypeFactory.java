@@ -640,69 +640,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (AnnotationUtils.areSameByClass(dimType, IntRange.class)) {
                     rolv = new RangeOrListOfValues(getRange(dimType));
                 } else if (AnnotationUtils.areSameByClass(dimType, IntVal.class)) {
-                    rolv = new RangeOrListOfValues();
-                    rolv.addAll(rolv.convertLongsToInts(getIntValues(dimType)));
+                    rolv =
+                            new RangeOrListOfValues(
+                                    RangeOrListOfValues.convertLongsToInts(getIntValues(dimType)));
                 }
                 if (rolv != null) {
-                    AnnotationMirror newQual;
-                    if (rolv.isRange) {
-                        newQual = createArrayLenRangeAnnotation(rolv.range);
-                    } else {
-                        newQual = createArrayLenAnnotation(rolv.values);
-                    }
+                    AnnotationMirror newQual =
+                            rolv.createAnnotation((ValueAnnotatedTypeFactory) atypeFactory);
                     type.replaceAnnotation(newQual);
-                }
-            }
-        }
-
-        // An abstraction that can be either a range or a list of values that could come from an
-        // ArrayLen or IntVal. This abstraction reduces the number of cases that handleInitializers
-        // and handleDimensions must handle.
-        private class RangeOrListOfValues {
-            Range range;
-            List<Integer> values;
-            boolean isRange;
-
-            public RangeOrListOfValues(Integer... values) {
-                this.values = new ArrayList<>(values.length);
-                for (Integer l : values) {
-                    if (!this.values.contains(l)) {
-                        this.values.add(l);
-                    }
-                }
-                isRange = false;
-            }
-
-            public RangeOrListOfValues(Range range) {
-                this.range = range;
-                isRange = true;
-            }
-
-            public void addAll(List<Integer> newValues) {
-                for (Integer i : newValues) {
-                    if (!values.contains(i)) {
-                        values.add(i);
-                    }
-                }
-                if (values.size() > MAX_VALUES) {
-                    convertToRange();
-                }
-            }
-
-            // To be called before addAll
-            public List<Integer> convertLongsToInts(List<Long> newValues) {
-                List<Integer> result = new ArrayList<>(newValues.size());
-                for (Long l : newValues) {
-                    result.add(l.intValue());
-                }
-                return result;
-            }
-
-            public void convertToRange() {
-                if (!isRange) {
-                    isRange = true;
-                    range = new Range(Collections.min(values), Collections.max(values));
-                    values = null;
                 }
             }
         }
@@ -775,11 +720,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             int i = 0;
             while (componentType.getKind() == TypeKind.ARRAY && i < arrayLenOfDimensions.size()) {
                 RangeOrListOfValues rolv = arrayLenOfDimensions.get(i);
-                if (rolv.isRange) {
-                    componentType.addAnnotation(createArrayLenRangeAnnotation(rolv.range));
-                } else {
-                    componentType.addAnnotation(createArrayLenAnnotation(rolv.values));
-                }
+                componentType.addAnnotation(
+                        rolv.createAnnotation((ValueAnnotatedTypeFactory) atypeFactory));
                 componentType = ((AnnotatedArrayType) componentType).getComponentType();
                 i++;
             }

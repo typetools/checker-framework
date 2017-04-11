@@ -286,14 +286,16 @@ public class ValueTransfer extends CFTransfer {
         }
 
         if (lengthAnno != null) {
-            Range range;
+            RangeOrListOfValues rolv;
             if (isIntRange) {
-                range = ValueAnnotatedTypeFactory.getRange(lengthAnno);
+                rolv = new RangeOrListOfValues(ValueAnnotatedTypeFactory.getRange(lengthAnno));
             } else {
                 List<Long> lengthValues = ValueAnnotatedTypeFactory.getIntValues(lengthAnno);
-                range = new Range(Collections.min(lengthValues), Collections.max(lengthValues));
+                rolv =
+                        new RangeOrListOfValues(
+                                RangeOrListOfValues.convertLongsToInts(lengthValues));
             }
-            AnnotationMirror newArrayAnno = atypefactory.createArrayLenRangeAnnotation(range);
+            AnnotationMirror newArrayAnno = rolv.createAnnotation(atypefactory);
             AnnotationMirror oldArrayAnno =
                     atypefactory.getAnnotationMirror(
                             arrayLengthNode.getReceiver().getTree(), ArrayLen.class);
