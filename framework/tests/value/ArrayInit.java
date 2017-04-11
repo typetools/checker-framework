@@ -164,4 +164,11 @@ class ArrayInit {
             int @ArrayLen({1, 2, 3, 4, 5, 6, 7, 8, 9, 10}) [] c = a;
         }
     }
+
+    public void warnings() {
+        //:: warning: (negative.arraylen)
+        int @ArrayLenRange(from = -1, to = 5) [] a;
+        //:: error: (from.greater.than.to)
+        int @ArrayLenRange(from = 10, to = 3) [] b;
+    }
 }

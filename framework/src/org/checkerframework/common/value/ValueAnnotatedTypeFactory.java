@@ -284,7 +284,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else if (AnnotationUtils.areSameByClass(anno, ArrayLenRange.class)) {
                     int from = AnnotationUtils.getElementValue(anno, "from", Integer.class, true);
                     int to = AnnotationUtils.getElementValue(anno, "to", Integer.class, true);
-                    if (from > to) {
+                    if (from > to || from < 0) {
                         atm.replaceAnnotation(BOTTOMVAL);
                     }
                 } else {
