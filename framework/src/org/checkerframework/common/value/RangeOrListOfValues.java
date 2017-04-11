@@ -19,9 +19,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  * AnnotatedTypeMirror.AnnotatedArrayType)} must handle.
  */
 class RangeOrListOfValues {
-    Range range;
-    List<Integer> values;
-    boolean isRange;
+    private Range range;
+    private List<Integer> values;
+    private boolean isRange;
 
     public RangeOrListOfValues() {
         this.values = new ArrayList<>();
@@ -37,6 +37,15 @@ class RangeOrListOfValues {
     public RangeOrListOfValues(Range range) {
         this.range = range;
         isRange = true;
+    }
+
+    public void add(Range otherRange) {
+        if (isRange) {
+            range = range.union(otherRange);
+        } else {
+            convertToRange();
+            add(otherRange);
+        }
     }
 
     /**

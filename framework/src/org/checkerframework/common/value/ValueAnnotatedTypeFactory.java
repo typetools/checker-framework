@@ -693,8 +693,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                 componentType.getAnnotation(ArrayLenRange.class);
                         if (arrayLenRangeAnno != null) {
                             Range range = getRange(arrayLenRangeAnno);
-                            rolv.convertToRange();
-                            rolv.range = range.union(rolv.range);
+                            rolv.add(range);
                         }
                     }
 
