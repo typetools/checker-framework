@@ -17,6 +17,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  * AnnotatedTypeMirror.AnnotatedArrayType)} and {@link
  * org.checkerframework.common.value.ValueAnnotatedTypeFactory.ValueTreeAnnotator#handleDimensions(List,
  * AnnotatedTypeMirror.AnnotatedArrayType)} must handle.
+ *
+ * <p>Tracks Ints in the list, and creates ArrayLen or ArrayLenRange annotations, because it's meant
+ * to be used to reason about ArrayLen and ArrayLenRange values.
  */
 class RangeOrListOfValues {
     private Range range;
@@ -81,11 +84,20 @@ class RangeOrListOfValues {
         }
     }
 
-    // To be called before addAll
+    /**
+     * To be called before addAll. Converts Longs to Ints; meant to be used with ArrayLenRange
+     * (which only handles Ints).
+     */
     public static List<Integer> convertLongsToInts(List<Long> newValues) {
         List<Integer> result = new ArrayList<>(newValues.size());
         for (Long l : newValues) {
-            result.add(l.intValue());
+            if (l > Integer.MAX_VALUE) {
+                result.add(Integer.MAX_VALUE);
+            } else if (l < Integer.MIN_VALUE) {
+                result.add(Integer.MIN_VALUE);
+            } else {
+                result.add(l.intValue());
+            }
         }
         return result;
     }
