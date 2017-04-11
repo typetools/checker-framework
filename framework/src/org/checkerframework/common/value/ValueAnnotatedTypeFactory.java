@@ -1059,6 +1059,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             Range range = getRange(arrayAnno);
                             type.replaceAnnotation(createIntRangeAnnotation(range));
                             return null;
+                        } else {
+                            type.replaceAnnotation(createIntRangeAnnotation(0, Integer.MAX_VALUE));
                         }
                     }
                 }

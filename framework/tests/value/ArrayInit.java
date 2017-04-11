@@ -100,6 +100,61 @@ class ArrayInit {
         int @ArrayLen({1, 5}) [] c = a;
     }
 
+    public void subtyping3(int @ArrayLenRange(from = 1, to = 17) [] a) {
+        //:: error: (assignment.type.incompatible)
+        int @ArrayLenRange(from = 1, to = 12) [] b = a;
+        //:: error: (assignment.type.incompatible)
+        int @ArrayLenRange(from = 5, to = 18) [] c = a;
+        int @ArrayLenRange(from = 0, to = 20) [] d = a;
+    }
+
+    public void lub1(boolean flag, @IntRange(from = 1, to = 200) int x) {
+        int[] a;
+        if (flag) {
+            a = new int[x];
+        } else {
+            a = new int[250];
+        }
+
+        int @ArrayLenRange(from = 1, to = 250) [] b = a;
+    }
+
+    public void lub2(
+            boolean flag, @IntRange(from = 1, to = 20) int x, @IntRange(from = 50, to = 75) int y) {
+        int[] a;
+        if (flag) {
+            a = new int[x];
+        } else {
+            a = new int[y];
+        }
+
+        int @ArrayLenRange(from = 1, to = 75) [] b = a;
+    }
+
+    public void lub3(
+            boolean flag, @IntRange(from = 1, to = 5) int x, @IntRange(from = 3, to = 7) int y) {
+        int[] a;
+        if (flag) {
+            a = new int[x];
+        } else {
+            a = new int[y];
+        }
+
+        int @ArrayLenRange(from = 1, to = 7) [] b = a;
+        int @ArrayLen({1, 2, 3, 4, 5, 6, 7}) [] c = a;
+    }
+
+    public void refine(int[] q) {
+        if (q.length < 20) {
+            @IntRange(from = 0, to = 19)
+            int x = q.length;
+            int @ArrayLenRange(from = 0, to = 19) [] b = q;
+            if (q.length < 5) {
+                int @ArrayLen({0, 1, 2, 3, 4}) [] c = q;
+            }
+        }
+    }
+
     // The argument is an arraylen with too many values.
     //:: warning: (too.many.values.given)
     public void coerce(int @ArrayLen({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 36}) [] a) {
