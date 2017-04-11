@@ -55,6 +55,9 @@ class RangeOrListOfValues {
      * If this is not a range, adds all members of newValues to the list. Otherwise, extends the
      * range as appropriate based on the max and min of newValues. If adding newValues to a
      * non-range would cause the list to become too large, converts this into a range.
+     *
+     * <p>If reading from an {@link org.checkerframework.common.value.qual.IntRange} annotation,
+     * {@link #convertLongsToInts(List)} should be called before calling this method.
      */
     public void addAll(List<Integer> newValues) {
         if (isRange) {
