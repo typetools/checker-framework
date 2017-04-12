@@ -2,31 +2,23 @@ import org.checkerframework.common.value.qual.*;
 
 class ValueNoOverflow {
     void test_plus(@IntRange(from = 0) int x, @IntRange(from = -1) int z) {
-        @IntRange(from = 1)
-        int y = x + 1; // IntRange(from = 0) to IntRange(from = 1)
-        @IntRange(from = 0)
-        int w = z + 1; // GTEN1 to NN
+        @IntRange(from = 1) int y = x + 1; // IntRange(from = 0) to IntRange(from = 1)
+        @IntRange(from = 0) int w = z + 1; // GTEN1 to NN
     }
 
     void test_minus(@IntRange(to = 0) int x, @IntRange(to = 1) int z) {
-        @IntRange(to = -1)
-        int y = x - 1; // IntRange(from = 0) to GTEN1
-        @IntRange(to = 0)
-        int w = z - 1; // Pos to NN
+        @IntRange(to = -1) int y = x - 1; // IntRange(from = 0) to GTEN1
+        @IntRange(to = 0) int w = z - 1; // Pos to NN
     }
 
     void test_mult(@IntRange(from = 0) int x, @IntRange(from = 1) int z) {
-        @IntRange(from = 0)
-        int y = x * z;
-        @IntRange(from = 1)
-        int w = z * z;
+        @IntRange(from = 0) int y = x * z;
+        @IntRange(from = 1) int w = z * z;
     }
 
     void testLong(@IntRange(from = 0) long x, @IntRange(from = 1) long z) {
-        @IntRange(from = 0)
-        long y = x * z;
-        @IntRange(from = 1)
-        long w = z * z;
+        @IntRange(from = 0) long y = x * z;
+        @IntRange(from = 1) long w = z * z;
     }
     // Include ArrayLenRange tests once ArrayLenRange is merged.
     /*

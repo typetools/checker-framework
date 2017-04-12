@@ -223,10 +223,23 @@ public class ValueTransfer extends CFTransfer {
     }
 
     /** a helper function to determine if this node is annotated with @UnknownVal */
-    private boolean isUnknownVal(Node node, TransferInput<CFValue, CFStore> p) {
+    private boolean isIntegralUnknownVal(Node node, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(node);
         return AnnotationUtils.getAnnotationByClass(value.getAnnotations(), UnknownVal.class)
-                != null;
+                        != null
+                && isIntegral(node.getType().getKind());
+    }
+
+    private boolean isIntegral(TypeKind typeKind) {
+        switch (typeKind) {
+            case INT:
+            case SHORT:
+            case LONG:
+            case BYTE:
+                return true;
+            default:
+                return false;
+        }
     }
 
     /**
@@ -789,8 +802,8 @@ public class ValueTransfer extends CFTransfer {
             CFStore elseStore) {
         if (isIntRange(leftNode, p)
                 || isIntRange(rightNode, p)
-                || isUnknownVal(rightNode, p)
-                || isUnknownVal(leftNode, p)) {
+                || isIntegralUnknownVal(rightNode, p)
+                || isIntegralUnknownVal(leftNode, p)) {
             return refineIntRanges(leftNode, rightNode, op, p, thenStore, elseStore);
         }
         List<Boolean> resultValues = new ArrayList<>();

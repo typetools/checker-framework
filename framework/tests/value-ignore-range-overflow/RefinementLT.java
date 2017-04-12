@@ -7,24 +7,21 @@ public class RefinementLT {
         //:: error: (assignment.type.incompatible)
         @IntRange(from = 0) int aa = a;
         if (-1 < a) {
-            @IntRange(from = 0)
-            int b = a;
+            @IntRange(from = 0) int b = a;
         } else {
             //:: error: (assignment.type.incompatible)
             @IntRange(from = 0) int c = a;
         }
 
         if (0 < j) {
-            @IntRange(from = 1)
-            int k = j;
+            @IntRange(from = 1) int k = j;
         } else {
             //:: error: (assignment.type.incompatible)
             @IntRange(from = 1) int l = j;
         }
 
         if (1 < s) {
-            @IntRange(from = 1)
-            int t = s;
+            @IntRange(from = 1) int t = s;
         } else {
             //:: error: (assignment.type.incompatible)
             @IntRange(from = 1) int u = s;
@@ -39,24 +36,21 @@ public class RefinementLT {
             //:: error: (assignment.type.incompatible)
             @IntRange(from = -1) int b = a;
         } else {
-            @IntRange(from = -1)
-            int c = a;
+            @IntRange(from = -1) int c = a;
         }
 
         if (j < 0) {
             //:: error: (assignment.type.incompatible)
             @IntRange(from = 0) int k = j;
         } else {
-            @IntRange(from = 0)
-            int l = j;
+            @IntRange(from = 0) int l = j;
         }
 
         if (s < 1) {
             //:: error: (assignment.type.incompatible)
             @IntRange(from = 1) int t = s;
         } else {
-            @IntRange(from = 1)
-            int u = s;
+            @IntRange(from = 1) int u = s;
         }
     }
 }

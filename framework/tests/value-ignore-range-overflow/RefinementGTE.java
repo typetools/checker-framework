@@ -7,16 +7,14 @@ public class RefinementGTE {
         //:: error: (assignment.type.incompatible)
         @IntRange(from = -1) int aa = a;
         if (a >= -1) {
-            @IntRange(from = -1)
-            int b = a;
+            @IntRange(from = -1) int b = a;
         } else {
             //:: error: (assignment.type.incompatible)
             @IntRange(from = -1) int c = a;
         }
 
         if (j >= 0) {
-            @IntRange(from = 0)
-            int k = j;
+            @IntRange(from = 0) int k = j;
         } else {
             //:: error: (assignment.type.incompatible)
             @IntRange(from = 0) int l = j;
@@ -31,24 +29,21 @@ public class RefinementGTE {
             //:: error: (assignment.type.incompatible)
             @IntRange(from = 0) int b = a;
         } else {
-            @IntRange(from = 0)
-            int c = a;
+            @IntRange(from = 0) int c = a;
         }
 
         if (0 >= j) {
             //:: error: (assignment.type.incompatible)
             @IntRange(from = 1) int k = j;
         } else {
-            @IntRange(from = 1)
-            int l = j;
+            @IntRange(from = 1) int l = j;
         }
 
         if (1 >= s) {
             //:: error: (assignment.type.incompatible)
             @IntRange(from = 1) int t = s;
         } else {
-            @IntRange(from = 1)
-            int u = s;
+            @IntRange(from = 1) int u = s;
         }
     }
 }

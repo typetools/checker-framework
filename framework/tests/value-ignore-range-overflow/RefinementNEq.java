@@ -10,24 +10,21 @@ public class RefinementNEq {
             //:: error: (assignment.type.incompatible)
             @IntRange(from = -1) int b = a;
         } else {
-            @IntRange(from = -1)
-            int c = a;
+            @IntRange(from = -1) int c = a;
         }
 
         if (0 != j) {
             //:: error: (assignment.type.incompatible)
             @IntRange(from = 0) int k = j;
         } else {
-            @IntRange(from = 0)
-            int l = j;
+            @IntRange(from = 0) int l = j;
         }
 
         if (1 != s) {
             //:: error: (assignment.type.incompatible)
             @IntRange(from = 1) int t = s;
         } else {
-            @IntRange(from = 1)
-            int u = s;
+            @IntRange(from = 1) int u = s;
         }
     }
 }
