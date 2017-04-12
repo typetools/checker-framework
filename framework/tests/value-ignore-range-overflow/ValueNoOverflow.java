@@ -3,14 +3,14 @@ import org.checkerframework.common.value.qual.*;
 class ValueNoOverflow {
     void test_plus(@IntRange(from = 0) int x, @IntRange(from = -1) int z) {
         @IntRange(from = 1)
-        int y = x + 1; // NonNegative to Positive
+        int y = x + 1; // IntRange(from = 0) to IntRange(from = 1)
         @IntRange(from = 0)
         int w = z + 1; // GTEN1 to NN
     }
 
     void test_minus(@IntRange(to = 0) int x, @IntRange(to = 1) int z) {
         @IntRange(to = -1)
-        int y = x - 1; // NonNegative to GTEN1
+        int y = x - 1; // IntRange(from = 0) to GTEN1
         @IntRange(to = 0)
         int w = z - 1; // Pos to NN
     }

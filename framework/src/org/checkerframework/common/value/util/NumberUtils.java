@@ -58,15 +58,15 @@ public class NumberUtils {
         }
     }
 
-    public static Range castRange(TypeMirror type, Range range, boolean ignoreOverflow) {
+    public static Range castRange(TypeMirror type, Range range) {
         TypeKind typeKind = unBoxPrimitive(type);
         switch (typeKind) {
             case INT:
-                return range.intRange(ignoreOverflow);
+                return range.intRange();
             case SHORT:
-                return range.shortRange(ignoreOverflow);
+                return range.shortRange();
             case BYTE:
-                return range.byteRange(ignoreOverflow);
+                return range.byteRange();
             case LONG:
             case CHAR:
             case FLOAT:

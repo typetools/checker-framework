@@ -143,7 +143,8 @@ public class ValueTransfer extends CFTransfer {
 
         intAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
         if (intAnno != null) {
-            Range range = ValueAnnotatedTypeFactory.getIntRange(intAnno);
+            Range range =
+                    ValueAnnotatedTypeFactory.getIntRange(intAnno, atypefactory.ignoreOverflow);
             return ValueCheckerUtils.getValuesFromRange(range, Character.class);
         }
 
@@ -188,14 +189,16 @@ public class ValueTransfer extends CFTransfer {
         AnnotationMirror intRangeAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
         if (intRangeAnno != null) {
-            range = ValueAnnotatedTypeFactory.getIntRange(intRangeAnno);
+            range =
+                    ValueAnnotatedTypeFactory.getIntRange(
+                            intRangeAnno, atypefactory.ignoreOverflow);
         }
         AnnotationMirror intValAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
         if (intValAnno != null) {
             List<Long> values =
                     AnnotationUtils.getElementValueArray(intValAnno, "value", Long.class, true);
-            range = ValueCheckerUtils.getRangeFromValues(values);
+            range = ValueCheckerUtils.getRangeFromValues(values, atypefactory.ignoreOverflow);
         }
         AnnotationMirror doubleValAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), DoubleVal.class);
@@ -203,20 +206,27 @@ public class ValueTransfer extends CFTransfer {
             List<Double> values =
                     AnnotationUtils.getElementValueArray(
                             doubleValAnno, "value", Double.class, true);
-            range = ValueCheckerUtils.getRangeFromValues(values);
+            range = ValueCheckerUtils.getRangeFromValues(values, atypefactory.ignoreOverflow);
         }
         AnnotationMirror bottomValAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
         if (bottomValAnno != null) {
             return Range.NOTHING;
         }
-        return NumberUtils.castRange(subNode.getType(), range, atypefactory.ignoreOverflow);
+        return NumberUtils.castRange(subNode.getType(), range);
     }
 
     /** a helper function to determine if this node is annotated with @IntRange */
     private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         return AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class) != null;
+    }
+
+    /** a helper function to determine if this node is annotated with @UnknownVal */
+    private boolean isUnknownVal(Node node, TransferInput<CFValue, CFStore> p) {
+        CFValue value = p.getValueOfSubNode(node);
+        return AnnotationUtils.getAnnotationByClass(value.getAnnotations(), UnknownVal.class)
+                != null;
     }
 
     /**
@@ -447,11 +457,10 @@ public class ValueTransfer extends CFTransfer {
                     throw new RuntimeException("this can't happen");
             }
             // Any integral type with less than 32 bits would be promoted to 32-bit int type during operations.
-            System.out.println(resultRange);
             return leftNode.getType().getKind() == TypeKind.LONG
                             || rightNode.getType().getKind() == TypeKind.LONG
                     ? resultRange
-                    : resultRange.intRange(atypefactory.ignoreOverflow);
+                    : resultRange.intRange();
         } else {
             return Range.EVERYTHING;
         }
@@ -702,7 +711,7 @@ public class ValueTransfer extends CFTransfer {
             // Any integral type with less than 32 bits would be promoted to 32-bit int type during operations.
             return operand.getType().getKind() == TypeKind.LONG
                     ? resultRange
-                    : resultRange.intRange(atypefactory.ignoreOverflow);
+                    : resultRange.intRange();
         } else {
             return Range.EVERYTHING;
         }
@@ -778,7 +787,10 @@ public class ValueTransfer extends CFTransfer {
             TransferInput<CFValue, CFStore> p,
             CFStore thenStore,
             CFStore elseStore) {
-        if (isIntRange(leftNode, p) || isIntRange(rightNode, p)) {
+        if (isIntRange(leftNode, p)
+                || isIntRange(rightNode, p)
+                || isUnknownVal(rightNode, p)
+                || isUnknownVal(leftNode, p)) {
             return refineIntRanges(leftNode, rightNode, op, p, thenStore, elseStore);
         }
         List<Boolean> resultValues = new ArrayList<>();

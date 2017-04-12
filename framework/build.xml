@@ -614,10 +614,10 @@
         </antcall>
     </target>
 
-    <target name="value-tests-no-overflow" depends="jar,build-tests"
-            description="Run tests for constant value propagation with no overflow">
+    <target name="value-tests-ignore-range-overflow" depends="jar,build-tests"
+            description="Run tests for constant value propagation with no overflow for ranges">
         <antcall target="-run-tests">
-            <param name="param" value="tests.ValueNoOverflowTest"/>
+            <param name="param" value="tests.ValueIgnoreRangeOverflowTest"/>
         </antcall>
     </target>
 
