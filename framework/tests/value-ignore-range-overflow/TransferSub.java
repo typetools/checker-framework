@@ -9,24 +9,20 @@ public class TransferSub {
         @IntRange(from = 0)
         int b = a - 1;
         //:: error: (assignment.type.incompatible)
-        @IntRange(from = 1)
-        int c = a - 1;
+        @IntRange(from = 1) int c = a - 1;
         @IntRange(from = -1)
         int d = a - 2;
 
         //:: error: (assignment.type.incompatible)
-        @IntRange(from = 0)
-        int e = a - 2;
+        @IntRange(from = 0) int e = a - 2;
 
         @IntRange(from = -1)
         int f = b - 1;
         //:: error: (assignment.type.incompatible)
-        @IntRange(from = 0)
-        int g = b - 1;
+        @IntRange(from = 0) int g = b - 1;
 
         //:: error: (assignment.type.incompatible)
-        @IntRange(from = -1)
-        int h = f - 1;
+        @IntRange(from = -1) int h = f - 1;
 
         @IntRange(from = -1)
         int i = f - 0;
@@ -36,15 +32,12 @@ public class TransferSub {
         int k = a - 0;
 
         //:: error: (assignment.type.incompatible)
-        @IntRange(from = 1)
-        int l = j - 0;
+        @IntRange(from = 1) int l = j - 0;
         //:: error: (assignment.type.incompatible)
-        @IntRange(from = 0)
-        int m = i - 0;
+        @IntRange(from = 0) int m = i - 0;
 
         //:: error: (assignment.type.incompatible)
-        @IntRange(from = 1)
-        int n = a - k;
+        @IntRange(from = 1) int n = a - k;
         // this would be an error if the values of b and j (both zero) weren't known at compile time
         @IntRange(from = 0)
         int o = b - j;
@@ -56,8 +49,7 @@ public class TransferSub {
         // decrements
 
         //:: error: (compound.assignment.type.incompatible) :: error: (assignment.type.incompatible)
-        @IntRange(from = 1)
-        int q = --k; // k = 0
+        @IntRange(from = 1) int q = --k; // k = 0
 
         @IntRange(from = 0)
         int r = k--; // after this k = -1
@@ -67,8 +59,7 @@ public class TransferSub {
         int s = k1--;
 
         //:: error: (assignment.type.incompatible)
-        @IntRange(from = 0)
-        int s1 = k1;
+        @IntRange(from = 0) int s1 = k1;
 
         // transferred to SimpleTransferSub.java
         // this section is failing due to CF bug
@@ -82,15 +73,13 @@ public class TransferSub {
 
         k1 = 1;
         //:: error: (assignment.type.incompatible)
-        @IntRange(from = 1)
-        int t1 = --k1;
+        @IntRange(from = 1) int t1 = --k1;
 
         int u1 = -1;
         @IntRange(from = -1)
         int x = u1--;
         //:: error: (assignment.type.incompatible)
-        @IntRange(from = -1)
-        int x1 = u1;
+        @IntRange(from = -1)  int x1 = u1;
     }
 }
 //a comment

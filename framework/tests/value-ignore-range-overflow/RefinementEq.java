@@ -9,8 +9,7 @@ public class RefinementEq {
             int b = a;
         } else {
             //:: error: (assignment.type.incompatible)
-            @IntRange(from = -1)
-            int c = a;
+            @IntRange(from = -1) int c = a;
         }
 
         if (0 == j) {
@@ -18,8 +17,7 @@ public class RefinementEq {
             int k = j;
         } else {
             //:: error: (assignment.type.incompatible)
-            @IntRange(from = 0)
-            int l = j;
+            @IntRange(from = 0) int l = j;
         }
 
         if (1 == s) {
@@ -27,8 +25,7 @@ public class RefinementEq {
             int t = s;
         } else {
             //:: error: (assignment.type.incompatible)
-            @IntRange(from = 1)
-            int u = s;
+            @IntRange(from = 1) int u = s;
         }
     }
 }
