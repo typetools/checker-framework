@@ -245,6 +245,18 @@ warning message:
 
 \end{itemize}
 \end{sloppypar}
+
+\section{Overflow}
+\begin{sloppypar}
+The constant value checker normally takes Java's normal overflow rules into account when
+computing the possible values of expressions. However, the overflow rules can be turned off
+for range annotations (\<@IntRange>, for instance) if desired. This is achieved by passing the
+\code{-AignoreRangeOverflow} flag to the Value Checker. Ignoring overflow is useful for some checkers
+that need to reason about only one bound on a variable, such as the
+\ahrefloc{index-checker}{Index Checker}.
+
+\end{sloppypar}
+
 %%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange
 %  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
 %%  LocalWords:  classpath AreportEvalWarns
