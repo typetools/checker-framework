@@ -22,6 +22,12 @@ class ValueNoOverflow {
         int w = z * z;
     }
 
+    void testLong(@IntRange(from = 0) long x, @IntRange(from = 1) long z) {
+        @IntRange(from = 0)
+        long y = x * z;
+        @IntRange(from = 1)
+        long w = z * z;
+    }
     // Include ArrayLenRange tests once ArrayLenRange is merged.
     /*
      void arraylenrange_test(int @ArrayLenRange(from = 5) [] a) {
