@@ -51,15 +51,10 @@ class Unaries {
 
     public void intRange(@IntRange(from = 0, to = 2) int val) {
         int a = val;
-        @IntRange(from = -2, to = 0)
-        int b = -a;
-        @IntRange(from = 0, to = 2)
-        int c = +a;
-        @IntRange(from = -3, to = -1)
-        int d = ~a;
-        @IntRange(from = 1, to = 3)
-        int e = ++a;
-        @IntRange(from = 1, to = 3)
-        int f = a++;
+        @IntRange(from = -2, to = 0) int b = -a;
+        @IntRange(from = 0, to = 2) int c = +a;
+        @IntRange(from = -3, to = -1) int d = ~a;
+        @IntRange(from = 1, to = 3) int e = ++a;
+        @IntRange(from = 1, to = 3) int f = a++;
     }
 }
