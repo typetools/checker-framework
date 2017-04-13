@@ -26,6 +26,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
     DoubleVal.class,
     IntVal.class,
     StringVal.class,
+    ArrayLenRange.class,
     IntRange.class
 })
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

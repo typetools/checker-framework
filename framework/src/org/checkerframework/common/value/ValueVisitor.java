@@ -11,6 +11,7 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.qual.ArrayLen;
+import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.DoubleVal;
 import org.checkerframework.common.value.qual.IntRange;
@@ -111,6 +112,16 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                             Result.warning("negative.arraylen", Collections.min(arrayLens)), node);
                     return null;
                 }
+            }
+        } else if (AnnotationUtils.areSameByClass(anno, ArrayLenRange.class)) {
+            int from = AnnotationUtils.getElementValue(anno, "from", Integer.class, true);
+            int to = AnnotationUtils.getElementValue(anno, "to", Integer.class, true);
+            if (from > to) {
+                checker.report(Result.failure("from.greater.than.to"), node);
+                return null;
+            } else if (from < 0) {
+                checker.report(Result.warning("negative.arraylen", from), node);
+                return null;
             }
         }
 

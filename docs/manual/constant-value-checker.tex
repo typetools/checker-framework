@@ -41,8 +41,9 @@ The main type annotations are
 \refqualclass{common/value/qual}{IntRange},
 \refqualclass{common/value/qual}{DoubleVal}, and
 \refqualclass{common/value/qual}{StringVal}.
-An additional type annotation is
-\refqualclass{common/value/qual}{ArrayLen}.
+Additional type annotations for arrays are
+\refqualclass{common/value/qual}{ArrayLen} and
+\refqualclass{common/value/qual}{ArrayLenRange}.
 
 Each \<*Val> type annotation takes as an argument a set of values, and its
 meaning is that at run time, the expression evaluates to one of the values.  For
@@ -52,7 +53,8 @@ one of the values \<"a">, \<"b">, or \<null>.
 The set is limited to 10 entries; if a variable
 could be more than 10 different values, the Constant Value
 Checker gives up and its type becomes
-\refqualclass{common/value/qual}{IntRange} for integral types and
+\refqualclass{common/value/qual}{IntRange} for integral types,
+\refqualclass{common/value/qual}{ArrayLenRange} for array types, and
 \refqualclass{common/value/qual}{UnknownVal} for all other types.
 The \<@ArrayLen> annotation means that at run time, the expression
 evaluates to an array whose length is one of the annotation's arguments.
@@ -69,6 +71,10 @@ An \refqualclass{common/value/qual}{IntVal} and
 \refqualclass{common/value/qual}{IntRange} annotation that represent the
 same set of values are semantically identical and interchangeable:  they
 have exactly the same meaning, and using either one has the same effect.
+\refqualclass{common/value/qual}{ArrayLenRange} has the same relationship
+to \refqualclass{common/value/qual}{ArrayLen} that
+\refqualclass{common/value/qual}{IntRange} has to
+\refqualclass{common/value/qual}{IntVal}.
 
 Figure~\ref{fig-value-hierarchy} shows the
 subtyping relationship among the type annotations.
@@ -241,7 +247,7 @@ warning message:
 
   The Constant Value Checker only tracks up to 10 possible values for an
   expression.  If you write an annotation with more values than will be
-  tracked, the annotation is replaced with \<@IntRange> or \<@UnknownVal>.
+  tracked, the annotation is replaced with \<@IntRange>, \<@ArrayLenRange>, or \<@UnknownVal>.
 
 \end{itemize}
 \end{sloppypar}
