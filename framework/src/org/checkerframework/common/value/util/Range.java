@@ -51,7 +51,8 @@ public class Range {
 
     /** Creates the singleton empty range. */
     private Range() {
-        this(Long.MIN_VALUE, Long.MAX_VALUE);
+        this.from = Long.MAX_VALUE;
+        this.to = Long.MIN_VALUE;
     }
 
     /**
