@@ -809,6 +809,11 @@ public class ValueTransfer extends CFTransfer {
                 || isIntRange(rightNode, p)
                 || isIntegralUnknownVal(rightNode, p)
                 || isIntegralUnknownVal(leftNode, p)) {
+            // If either is @UnknownVal, then refineIntRanges will treat it as the max range and
+            // thus refine it if possible.  Also, if either is an @IntVal, then it will be
+            // converted to a range.  This is less precise in some cases, but avoids the
+            // complexity of comparing a list of values to a range. (This could be implemented in
+            // the future.)
             return refineIntRanges(leftNode, rightNode, op, p, thenStore, elseStore);
         }
         List<Boolean> resultValues = new ArrayList<>();
