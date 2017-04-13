@@ -89,11 +89,9 @@ public class ValueCheckerUtils {
      *
      * @param anno the annotation that contains values
      * @param castTo the type that is casted to
-     * @param ignoreOverflow should overflow be ignored for range types?
      * @return a list of values after the casting
      */
-    public static List<?> getValuesCastedToType(
-            AnnotationMirror anno, TypeMirror castTo, boolean ignoreOverflow) {
+    public static List<?> getValuesCastedToType(AnnotationMirror anno, TypeMirror castTo) {
         Class<?> castType = ValueCheckerUtils.getClassFromType(castTo);
         List<?> values = null;
 
@@ -103,7 +101,7 @@ public class ValueCheckerUtils {
             List<Long> longs = ValueAnnotatedTypeFactory.getIntValues(anno);
             values = convertIntVal(longs, castType, castTo);
         } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
-            Range range = ValueAnnotatedTypeFactory.getIntRange(anno, ignoreOverflow);
+            Range range = ValueAnnotatedTypeFactory.getIntRange(anno);
             List<Long> longs = getValuesFromRange(range, Long.class);
             values = convertIntVal(longs, castType, castTo);
         } else if (AnnotationUtils.areSameByClass(anno, StringVal.class)) {
@@ -121,7 +119,7 @@ public class ValueCheckerUtils {
     }
 
     /** Get the minimum and maximum of a list and return a range bounded by them. */
-    public static Range getRangeFromValues(List<? extends Number> values, boolean ignoreOverflow) {
+    public static Range getRangeFromValues(List<? extends Number> values) {
         if (values == null) {
             return null;
         } else if (values.isEmpty()) {
@@ -132,7 +130,7 @@ public class ValueCheckerUtils {
         for (Number value : values) {
             longValues.add(value.longValue());
         }
-        return new Range(Collections.min(longValues), Collections.max(longValues), ignoreOverflow);
+        return new Range(Collections.min(longValues), Collections.max(longValues));
     }
 
     /**

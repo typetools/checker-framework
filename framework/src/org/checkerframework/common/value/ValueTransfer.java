@@ -143,8 +143,7 @@ public class ValueTransfer extends CFTransfer {
 
         intAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
         if (intAnno != null) {
-            Range range =
-                    ValueAnnotatedTypeFactory.getIntRange(intAnno, atypefactory.ignoreOverflow);
+            Range range = ValueAnnotatedTypeFactory.getIntRange(intAnno);
             return ValueCheckerUtils.getValuesFromRange(range, Character.class);
         }
 
@@ -189,16 +188,14 @@ public class ValueTransfer extends CFTransfer {
         AnnotationMirror intRangeAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
         if (intRangeAnno != null) {
-            range =
-                    ValueAnnotatedTypeFactory.getIntRange(
-                            intRangeAnno, atypefactory.ignoreOverflow);
+            range = ValueAnnotatedTypeFactory.getIntRange(intRangeAnno);
         }
         AnnotationMirror intValAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
         if (intValAnno != null) {
             List<Long> values =
                     AnnotationUtils.getElementValueArray(intValAnno, "value", Long.class, true);
-            range = ValueCheckerUtils.getRangeFromValues(values, atypefactory.ignoreOverflow);
+            range = ValueCheckerUtils.getRangeFromValues(values);
         }
         AnnotationMirror doubleValAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), DoubleVal.class);
@@ -206,7 +203,7 @@ public class ValueTransfer extends CFTransfer {
             List<Double> values =
                     AnnotationUtils.getElementValueArray(
                             doubleValAnno, "value", Double.class, true);
-            range = ValueCheckerUtils.getRangeFromValues(values, atypefactory.ignoreOverflow);
+            range = ValueCheckerUtils.getRangeFromValues(values);
         }
         AnnotationMirror bottomValAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
