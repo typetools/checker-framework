@@ -102,16 +102,14 @@ class Basics {
         @IntRange(from = 15, to = 30)
         //:: error: (assignment.type.incompatible)
         Integer test4 = a;
-        @IntRange(from = 3, to = 30)
-        Integer test5 = a;
+        @IntRange(from = 3, to = 30) Integer test5 = a;
 
         /* IntRange + IntVal */
         a = new Integer(0);
         if (true) {
             a = x;
         }
-        @IntRange(from = 0, to = 4)
-        Integer test7 = a;
+        @IntRange(from = 0, to = 4) Integer test7 = a;
 
         /* IntRange (Wider than 10) + IntVal */
         a = new Integer(0);
@@ -121,8 +119,7 @@ class Basics {
         @IntRange(from = 1, to = 30)
         //:: error: (assignment.type.incompatible)
         Integer test8 = a;
-        @IntRange(from = 0, to = 30)
-        Integer test9 = a;
+        @IntRange(from = 0, to = 30) Integer test9 = a;
     }
 
     public void intTest(@IntRange(from = 3, to = 4) int x, @IntRange(from = 20, to = 30) int y) {
@@ -146,16 +143,14 @@ class Basics {
         @IntRange(from = 15, to = 30)
         //:: error: (assignment.type.incompatible)
         int test4 = a;
-        @IntRange(from = 3, to = 30)
-        int test5 = a;
+        @IntRange(from = 3, to = 30) int test5 = a;
 
         /* IntRange + IntVal */
         a = 0;
         if (true) {
             a = x;
         }
-        @IntRange(from = 0, to = 4)
-        int test7 = a;
+        @IntRange(from = 0, to = 4) int test7 = a;
 
         /* IntRange (Wider than 10) + IntVal */
         a = 0;
@@ -165,8 +160,7 @@ class Basics {
         @IntRange(from = 1, to = 30)
         //:: error: (assignment.type.incompatible)
         int test8 = a;
-        @IntRange(from = 0, to = 30)
-        int test9 = a;
+        @IntRange(from = 0, to = 30) int test9 = a;
     }
 
     public void IntDoubleTest(
@@ -242,14 +236,11 @@ class Basics {
         //:: error: (assignment.type.incompatible)
         int a = 1; // a should be @BottomVal
 
-        @IntRange(from = 1)
-        int b = 2;
+        @IntRange(from = 1) int b = 2;
 
-        @IntRange(to = 2)
-        int c = 1;
+        @IntRange(to = 2) int c = 1;
 
-        @IntRange(to = 2, from = 0)
-        int d = 1;
+        @IntRange(to = 2, from = 0) int d = 1;
     }
 
     void tooManyValuesDouble() {

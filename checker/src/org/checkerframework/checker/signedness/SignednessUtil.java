@@ -39,6 +39,15 @@ public final class SignednessUtil {
     }
 
     /**
+     * Wraps an unsigned byte array into a ByteBuffer. Wraps {@link java.nio.ByteBuffer#wrap()
+     * wrap()}, but assumes that the input should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static ByteBuffer wrapUnsigned(@Unsigned byte[] array, int offset, int length) {
+        return ByteBuffer.wrap(array, offset, length);
+    }
+
+    /**
      * Gets an unsigned int from the ByteBuffer b. Wraps {@link java.nio.ByteBuffer#getInt()
      * getInt()}, but assumes that the result should be interpreted as unsigned.
      */
@@ -113,6 +122,28 @@ public final class SignednessUtil {
     @SuppressWarnings("signedness")
     public static @Unsigned long readUnsignedLong(RandomAccessFile f) throws IOException {
         return f.readLong();
+    }
+
+    /**
+     * Reads up to {@code len} bytes of data from this file into an unsigned array of bytes. Wraps
+     * {@link java.io.RandomAccessFile#read() read()}, but assumes the output should be interpreted
+     * as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static int readUnsigned(RandomAccessFile f, @Unsigned byte b[], int off, int len)
+            throws IOException {
+        return f.read(b, off, len);
+    }
+
+    /**
+     * Reads a file fully into an unsigned byte array. Wraps {@link
+     * java.io.RandomAccessFile#readFully() readFully()}, but assumes the output should be
+     * interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static void readFullyUnsigned(RandomAccessFile f, @Unsigned byte b[])
+            throws IOException {
+        f.readFully(b);
     }
 
     /**
@@ -366,5 +397,45 @@ public final class SignednessUtil {
     /** Returns an unsigned short representing the same value as an unsigned byte. */
     public static @Unsigned short toUnsignedShort(@Unsigned byte b) {
         return (short) (((int) b) & 0xff);
+    }
+
+    /** Returns a float representing the same value as the unsigned byte. */
+    public static float toFloat(@Unsigned byte b) {
+        return toUnsignedBigInteger(toUnsignedLong(b)).floatValue();
+    }
+
+    /** Returns a float representing the same value as the unsigned short. */
+    public static float toFloat(@Unsigned short s) {
+        return toUnsignedBigInteger(toUnsignedLong(s)).floatValue();
+    }
+
+    /** Returns a float representing the same value as the unsigned int. */
+    public static float toFloat(@Unsigned int i) {
+        return toUnsignedBigInteger(toUnsignedLong(i)).floatValue();
+    }
+
+    /** Returns a float representing the same value as the unsigned long. */
+    public static float toFloat(@Unsigned long l) {
+        return toUnsignedBigInteger(l).floatValue();
+    }
+
+    /** Returns a double representing the same value as the unsigned byte. */
+    public static double toDouble(@Unsigned byte b) {
+        return toUnsignedBigInteger(toUnsignedLong(b)).doubleValue();
+    }
+
+    /** Returns a double representing the same value as the unsigned short. */
+    public static double toDouble(@Unsigned short s) {
+        return toUnsignedBigInteger(toUnsignedLong(s)).doubleValue();
+    }
+
+    /** Returns a double representing the same value as the unsigned int. */
+    public static double toDouble(@Unsigned int i) {
+        return toUnsignedBigInteger(toUnsignedLong(i)).doubleValue();
+    }
+
+    /** Returns a double representing the same value as the unsigned long. */
+    public static double toDouble(@Unsigned long l) {
+        return toUnsignedBigInteger(l).doubleValue();
     }
 }
