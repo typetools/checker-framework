@@ -325,7 +325,7 @@ public final class Short extends Number implements Comparable<Short> {
      * Returns the value of this {@code Short} as a
      * {@code byte}.
      */
-    public byte byteValue() {
+    public @PolyIndex byte byteValue(@PolyIndex Short this) {
         return (byte)value;
     }
 
@@ -333,7 +333,7 @@ public final class Short extends Number implements Comparable<Short> {
      * Returns the value of this {@code Short} as a
      * {@code short}.
      */
-    public short shortValue() {
+    public @PolyIndex short shortValue(@PolyIndex Short this) {
         return value;
     }
 
@@ -341,7 +341,7 @@ public final class Short extends Number implements Comparable<Short> {
      * Returns the value of this {@code Short} as an
      * {@code int}.
      */
-    public int intValue() {
+    public @PolyIndex int intValue(@PolyIndex Short this) {
         return (int)value;
     }
 
@@ -349,7 +349,7 @@ public final class Short extends Number implements Comparable<Short> {
      * Returns the value of this {@code Short} as a
      * {@code long}.
      */
-    public long longValue() {
+    public @PolyIndex long longValue(@PolyIndex Short this) {
         return (long)value;
     }
 
