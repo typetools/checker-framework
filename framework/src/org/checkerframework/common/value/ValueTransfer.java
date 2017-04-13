@@ -220,9 +220,10 @@ public class ValueTransfer extends CFTransfer {
     }
 
     /** a helper function to determine if this node is annotated with @UnknownVal */
-    private boolean isUnknownVal(Node subNode, TransferInput<CFValue, CFStore> p) {
-        CFValue value = p.getValueOfSubNode(subNode);
-        return AnnotationUtils.containsSameByClass(value.getAnnotations(), UnknownVal.class);
+    private boolean isIntegralUnknownVal(Node node, TransferInput<CFValue, CFStore> p) {
+        CFValue value = p.getValueOfSubNode(node);
+        return AnnotationUtils.containsSameByClass(value.getAnnotations(), UnknownVal.class)
+                && TypesUtils.isIntegral(node.getType());
     }
 
     /**
@@ -783,19 +784,16 @@ public class ValueTransfer extends CFTransfer {
             TransferInput<CFValue, CFStore> p,
             CFStore thenStore,
             CFStore elseStore) {
-        List<? extends Number> lefts = getNumericalValues(leftNode, p);
-        List<? extends Number> rights = getNumericalValues(rightNode, p);
-
         if (isIntRange(leftNode, p)
                 || isIntRange(rightNode, p)
-                || isUnknownVal(leftNode, p)
-                || isUnknownVal(rightNode, p)) {
-            if (TypesUtils.isIntegral(rightNode.getType())
-                    || TypesUtils.isIntegral(leftNode.getType())) {
-                return refineIntRanges(leftNode, rightNode, op, p, thenStore, elseStore);
-            }
+                || isIntegralUnknownVal(rightNode, p)
+                || isIntegralUnknownVal(leftNode, p)) {
+            return refineIntRanges(leftNode, rightNode, op, p, thenStore, elseStore);
         }
         List<Boolean> resultValues = new ArrayList<>();
+
+        List<? extends Number> lefts = getNumericalValues(leftNode, p);
+        List<? extends Number> rights = getNumericalValues(rightNode, p);
 
         if (lefts == null || rights == null) {
             // Appropriately handle bottom when something is compared to bottom.
