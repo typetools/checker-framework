@@ -4,9 +4,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * The Range class models a 64-bit two's-complement integral interval, such as all integers between
@@ -54,11 +52,6 @@ public class Range {
     /** Creates the singleton empty range. */
     private Range() {
         this(Long.MIN_VALUE, Long.MAX_VALUE);
-    }
-
-    public Range(AnnotationMirror rangeAnno) {
-        this.from = AnnotationUtils.getElementValue(rangeAnno, "from", Long.class, true);
-        this.to = AnnotationUtils.getElementValue(rangeAnno, "to", Long.class, true);
     }
 
     /**

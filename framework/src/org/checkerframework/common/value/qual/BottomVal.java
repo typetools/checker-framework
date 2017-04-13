@@ -20,7 +20,15 @@ import org.checkerframework.framework.qual.TypeUseLocation;
     literals = {LiteralKind.NULL},
     typeNames = {java.lang.Void.class}
 )
-@SubtypeOf({ArrayLen.class, BoolVal.class, DoubleVal.class, IntVal.class, StringVal.class})
+@SubtypeOf({
+    ArrayLen.class,
+    BoolVal.class,
+    DoubleVal.class,
+    IntVal.class,
+    StringVal.class,
+    ArrayLenRange.class,
+    IntRange.class
+})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
 public @interface BottomVal {}
