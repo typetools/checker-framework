@@ -162,10 +162,8 @@ class Refinement {
 
     void test_intrange_eq(@IntRange(from = 3, to = 10) int x, @IntRange(from = 1, to = 5) int y) {
         if (x == y) {
-            @IntRange(from = 3, to = 5)
-            int a = x;
-            @IntRange(from = 3, to = 5)
-            int b = y;
+            @IntRange(from = 3, to = 5) int a = x;
+            @IntRange(from = 3, to = 5) int b = y;
         } else {
             @IntRange(from = 6, to = 10)
             //:: error: (assignment.type.incompatible)
@@ -178,15 +176,11 @@ class Refinement {
 
     void test_intrange_eq2(@IntRange(from = 0, to = 10) int x, @IntRange(from = 0, to = 0) int y) {
         if (x == y) {
-            @IntRange(from = 0, to = 0)
-            int a = x;
-            @IntRange(from = 0, to = 0)
-            int b = y;
+            @IntRange(from = 0, to = 0) int a = x;
+            @IntRange(from = 0, to = 0) int b = y;
         } else {
-            @IntRange(from = 1, to = 10)
-            int a = x;
-            @IntRange(from = 0, to = 0)
-            int b = y;
+            @IntRange(from = 1, to = 10) int a = x;
+            @IntRange(from = 0, to = 0) int b = y;
         }
     }
 
@@ -195,14 +189,12 @@ class Refinement {
             @IntVal(0) int a = x;
             @IntVal(0) int b = y;
         } else {
-            @IntRange(from = 1, to = 10)
-            int a = x;
+            @IntRange(from = 1, to = 10) int a = x;
             @IntVal(0) int b = y;
         }
 
         if (y != x) {
-            @IntRange(from = 1, to = 10)
-            int a = x;
+            @IntRange(from = 1, to = 10) int a = x;
             @IntVal(0) int b = y;
         }
     }
@@ -216,48 +208,36 @@ class Refinement {
             //:: error: (assignment.type.incompatible)
             int b = y;
         } else {
-            @IntRange(from = 3, to = 5)
-            int a = x;
-            @IntRange(from = 3, to = 5)
-            int b = y;
+            @IntRange(from = 3, to = 5) int a = x;
+            @IntRange(from = 3, to = 5) int b = y;
         }
     }
 
     void test_intrange_neq2(
             @IntRange(from = 3, to = 10) int x, @IntRange(from = 10, to = 10) int y) {
         if (x != y) {
-            @IntRange(from = 3, to = 9)
-            int a = x;
-            @IntRange(from = 10, to = 10)
-            int b = y;
+            @IntRange(from = 3, to = 9) int a = x;
+            @IntRange(from = 10, to = 10) int b = y;
         } else {
-            @IntRange(from = 10, to = 10)
-            int a = x;
-            @IntRange(from = 10, to = 10)
-            int b = y;
+            @IntRange(from = 10, to = 10) int a = x;
+            @IntRange(from = 10, to = 10) int b = y;
         }
     }
 
     void test_intrange_gt(@IntRange(from = 0, to = 10) int x, @IntRange(from = 5, to = 20) int y) {
         if (x > y) {
-            @IntRange(from = 6, to = 10)
-            int a = x;
-            @IntRange(from = 5, to = 9)
-            int b = y;
+            @IntRange(from = 6, to = 10) int a = x;
+            @IntRange(from = 5, to = 9) int b = y;
         } else {
-            @IntRange(from = 0, to = 10)
-            int a = x;
-            @IntRange(from = 5, to = 20)
-            int b = y;
+            @IntRange(from = 0, to = 10) int a = x;
+            @IntRange(from = 5, to = 20) int b = y;
         }
     }
 
     void test_intrange_gt2(@IntRange(from = 5, to = 10) int x, @IntRange(from = 2, to = 7) int y) {
         if (x > y) {
-            @IntRange(from = 5, to = 10)
-            int a = x;
-            @IntRange(from = 2, to = 7)
-            int b = y;
+            @IntRange(from = 5, to = 10) int a = x;
+            @IntRange(from = 2, to = 7) int b = y;
 
             @IntRange(from = 5, to = 7)
             //:: error: (assignment.type.incompatible)
@@ -266,94 +246,68 @@ class Refinement {
             //:: error: (assignment.type.incompatible)
             int d = y;
         } else {
-            @IntRange(from = 5, to = 7)
-            int a = x;
-            @IntRange(from = 5, to = 7)
-            int b = y;
+            @IntRange(from = 5, to = 7) int a = x;
+            @IntRange(from = 5, to = 7) int b = y;
         }
     }
 
     void test_intrange_lte(@IntRange(from = 0, to = 10) int x, @IntRange(from = 2, to = 7) int y) {
         if (x <= y) {
-            @IntRange(from = 0, to = 7)
-            int a = x;
-            @IntRange(from = 2, to = 7)
-            int b = y;
+            @IntRange(from = 0, to = 7) int a = x;
+            @IntRange(from = 2, to = 7) int b = y;
         } else {
-            @IntRange(from = 3, to = 10)
-            int a = x;
-            @IntRange(from = 2, to = 7)
-            int b = y;
+            @IntRange(from = 3, to = 10) int a = x;
+            @IntRange(from = 2, to = 7) int b = y;
         }
     }
 
     void test_intrange_lte2(@IntRange(from = 2, to = 7) int x, @IntRange(from = 5, to = 10) int y) {
         if (x <= y) {
-            @IntRange(from = 2, to = 7)
-            int a = x;
-            @IntRange(from = 2, to = 10)
-            int b = y;
+            @IntRange(from = 2, to = 7) int a = x;
+            @IntRange(from = 2, to = 10) int b = y;
         } else {
-            @IntRange(from = 6, to = 7)
-            int a = x;
-            @IntRange(from = 5, to = 6)
-            int b = y;
+            @IntRange(from = 6, to = 7) int a = x;
+            @IntRange(from = 5, to = 6) int b = y;
         }
     }
 
     void test_intrange_lt(@IntRange(from = 5, to = 10) int x, @IntRange(from = 2, to = 7) int y) {
         if (x < y) {
-            @IntRange(from = 5, to = 6)
-            int a = x;
-            @IntRange(from = 6, to = 7)
-            int b = y;
+            @IntRange(from = 5, to = 6) int a = x;
+            @IntRange(from = 6, to = 7) int b = y;
         } else {
-            @IntRange(from = 5, to = 10)
-            int a = x;
-            @IntRange(from = 2, to = 7)
-            int b = y;
+            @IntRange(from = 5, to = 10) int a = x;
+            @IntRange(from = 2, to = 7) int b = y;
         }
     }
 
     void test_intrange_lt2(@IntRange(from = 2, to = 7) int x, @IntRange(from = 5, to = 10) int y) {
         if (x < y) {
-            @IntRange(from = 2, to = 7)
-            int a = x;
-            @IntRange(from = 2, to = 10)
-            int b = y;
+            @IntRange(from = 2, to = 7) int a = x;
+            @IntRange(from = 2, to = 10) int b = y;
         } else {
-            @IntRange(from = 5, to = 7)
-            int a = x;
-            @IntRange(from = 5, to = 7)
-            int b = y;
+            @IntRange(from = 5, to = 7) int a = x;
+            @IntRange(from = 5, to = 7) int b = y;
         }
     }
 
     void test_intrange_gte(@IntRange(from = 0, to = 10) int x, @IntRange(from = 2, to = 7) int y) {
         if (x >= y) {
-            @IntRange(from = 2, to = 10)
-            int a = x;
-            @IntRange(from = 2, to = 7)
-            int b = y;
+            @IntRange(from = 2, to = 10) int a = x;
+            @IntRange(from = 2, to = 7) int b = y;
         } else {
-            @IntRange(from = 0, to = 6)
-            int a = x;
-            @IntRange(from = 2, to = 7)
-            int b = y;
+            @IntRange(from = 0, to = 6) int a = x;
+            @IntRange(from = 2, to = 7) int b = y;
         }
     }
 
     void test_intrange_gte2(@IntRange(from = 3, to = 5) int x, @IntRange(from = 2, to = 6) int y) {
         if (x >= y) {
-            @IntRange(from = 3, to = 5)
-            int a = x;
-            @IntRange(from = 2, to = 6)
-            int b = y;
+            @IntRange(from = 3, to = 5) int a = x;
+            @IntRange(from = 2, to = 6) int b = y;
         } else {
-            @IntRange(from = 3, to = 5)
-            int a = x;
-            @IntRange(from = 4, to = 6)
-            int b = y;
+            @IntRange(from = 3, to = 5) int a = x;
+            @IntRange(from = 4, to = 6) int b = y;
         }
     }
 }
