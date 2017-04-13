@@ -246,9 +246,9 @@ warning message:
 \end{itemize}
 \end{sloppypar}
 
-\section{Overflow}
+\section{Overflow\label{value-checker-overflow}}
 \begin{sloppypar}
-The constant value checker normally takes Java's normal overflow rules into account when
+The Constant Value Checker normally takes Java's normal overflow rules into account when
 computing the possible values of expressions. However, the overflow rules can be turned off
 for range annotations (\<@IntRange>, for instance) if desired. This is achieved by passing the
 \code{-AignoreRangeOverflow} flag to the Value Checker. Ignoring overflow is useful for some checkers
