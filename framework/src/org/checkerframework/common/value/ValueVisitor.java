@@ -3,11 +3,13 @@ package org.checkerframework.common.value;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.qual.ArrayLen;
@@ -17,6 +19,7 @@ import org.checkerframework.common.value.qual.DoubleVal;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
+import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -133,6 +136,29 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         if (node.getExpression().getKind() == Kind.NULL_LITERAL) {
             return null;
         }
+
+        // Allow casts when the source is an integer to a short or byte if the range is larger than what can
+        // be held in an integer. This allows byte/short arithmetic (which gets implicitly converted to int
+        // arithmetic) to proceed as expected. If the cast would be unsafe, a type error will be issued when
+        // ValueAnnotatedTypeFactory#ValueAnnotatedTreeAnnotator#visitTypeCast assigns it an incompatible type.
+        if (node.getType().getKind() == Kind.PRIMITIVE_TYPE) {
+            PrimitiveTypeTree ptt = (PrimitiveTypeTree) node.getType();
+            if (ptt.getPrimitiveTypeKind() == TypeKind.BYTE
+                    || ptt.getPrimitiveTypeKind() == TypeKind.SHORT) {
+                AnnotationMirror intRange =
+                        atypeFactory
+                                .getAnnotatedType(node.getExpression())
+                                .getAnnotation(IntRange.class);
+                if (intRange != null) {
+                    Range range = ValueAnnotatedTypeFactory.getRange(intRange);
+                    if (range.to >= Long.valueOf(Integer.MAX_VALUE)
+                            || range.from <= Long.valueOf(Integer.MIN_VALUE)) {
+                        return null;
+                    }
+                }
+            }
+        }
+
         return super.visitTypeCast(node, p);
     }
 }

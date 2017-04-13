@@ -127,9 +127,7 @@ public class Range {
             return NOTHING;
         }
         if (IGNORE_OVERFLOW) {
-            return new Range(
-                    from < Integer.MIN_VALUE ? Integer.MIN_VALUE : from,
-                    to > Integer.MAX_VALUE ? Integer.MAX_VALUE : to);
+            return new Range(Math.max(from, Integer.MIN_VALUE), Math.min(to, Integer.MAX_VALUE));
         } else {
             if (this.isWiderThan(integerWidth)) {
                 return INT_EVERYTHING;
@@ -166,9 +164,7 @@ public class Range {
             return NOTHING;
         }
         if (IGNORE_OVERFLOW) {
-            return new Range(
-                    from < Short.MIN_VALUE ? Short.MIN_VALUE : from,
-                    to > Short.MAX_VALUE ? Short.MAX_VALUE : to);
+            return new Range(Math.max(from, Short.MIN_VALUE), Math.min(to, Short.MAX_VALUE));
         } else {
             if (this.isWiderThan(shortWidth)) {
                 // short is be promoted to int before the operation so no need for explicit casting
@@ -206,9 +202,7 @@ public class Range {
             return NOTHING;
         }
         if (IGNORE_OVERFLOW) {
-            return new Range(
-                    from < Byte.MIN_VALUE ? Byte.MIN_VALUE : from,
-                    to > Byte.MAX_VALUE ? Byte.MAX_VALUE : to);
+            return new Range(Math.max(from, Byte.MIN_VALUE), Math.min(to, Byte.MAX_VALUE));
         } else {
             if (this.isWiderThan(byteWidth)) {
                 // byte is be promoted to int before the operation so no need for explicit casting
@@ -905,27 +899,26 @@ public class Range {
      */
     private Range bigRangeToLongRange(BigInteger bigFrom, BigInteger bigTo) {
         BigInteger numValues = bigTo.subtract(bigFrom).add(BigInteger.ONE);
-        if (numValues.compareTo(longWidth) == 1) {
-            return EVERYTHING;
+        long resultFrom;
+        long resultTo;
+        if (IGNORE_OVERFLOW) {
+            BigInteger longMin = BigInteger.valueOf(Long.MIN_VALUE);
+            resultFrom = bigFrom.max(longMin).longValue();
+            BigInteger longMax = BigInteger.valueOf(Long.MAX_VALUE);
+            resultTo = bigTo.min(longMax).longValue();
         } else {
-            long resultFrom;
-            long resultTo;
-
-            if (IGNORE_OVERFLOW) {
-                BigInteger longMin = BigInteger.valueOf(Long.MIN_VALUE);
-                resultFrom = bigFrom.compareTo(longMin) < 0 ? Long.MIN_VALUE : bigFrom.longValue();
-                BigInteger longMax = BigInteger.valueOf(Long.MAX_VALUE);
-                resultTo = bigTo.compareTo(longMax) > 0 ? Long.MAX_VALUE : bigTo.longValue();
+            if (numValues.compareTo(longWidth) == 1) {
+                return EVERYTHING;
             } else {
                 resultFrom = bigFrom.longValue();
                 resultTo = bigTo.longValue();
             }
+        }
 
-            if (resultFrom <= resultTo) {
-                return new Range(resultFrom, resultTo);
-            } else {
-                return EVERYTHING;
-            }
+        if (resultFrom <= resultTo) {
+            return new Range(resultFrom, resultTo);
+        } else {
+            return EVERYTHING;
         }
     }
 }

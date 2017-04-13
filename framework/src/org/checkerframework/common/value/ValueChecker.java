@@ -14,7 +14,7 @@ import org.checkerframework.framework.source.SupportedOptions;
 @SupportedOptions({ValueChecker.REPORT_EVAL_WARNS, ValueChecker.IGNORE_OVERFLOW_OPTION})
 public class ValueChecker extends BaseTypeChecker {
     public static final String REPORT_EVAL_WARNS = "reportEvalWarns";
-    public static final String IGNORE_OVERFLOW_OPTION = "ignoreOverflow";
+    public static final String IGNORE_OVERFLOW_OPTION = "ignoreRangeOverflow";
 
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor() {
