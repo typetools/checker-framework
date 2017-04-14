@@ -1125,7 +1125,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.size() > MAX_VALUES) {
             long valMin = Collections.min(values);
             long valMax = Collections.max(values);
-            return createIntRangeAnnotation(new Range(valMin, valMax));
+            return createIntRangeAnnotation(valMin, valMax);
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntVal.class);
             builder.setValue("value", values);
@@ -1321,7 +1321,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Create an {@code @IntRange} annotation from the two (inclusive) bounds. Does not return
      * BOTTOMVAL or UNKNOWNVAL.
      */
-    public AnnotationMirror createIntRangeAnnotation(long from, long to) {
+    private AnnotationMirror createIntRangeAnnotation(long from, long to) {
         assert from <= to;
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntRange.class);
         builder.setValue("from", from);
@@ -1330,15 +1330,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Create an {@code @IntRange} annotation from the range. May return BOTTOMVAL or UNKNOWNVAL.
+     * Create an {@code @IntRange} or {@code @IntVal} annotation from the range. May return
+     * BOTTOMVAL or UNKNOWNVAL.
      */
     public AnnotationMirror createIntRangeAnnotation(Range range) {
         if (range.isNothing()) {
             return BOTTOMVAL;
         } else if (range.isEverything()) {
             return UNKNOWNVAL;
-        } else {
+        } else if (range.isWiderThan(MAX_VALUES)) {
             return createIntRangeAnnotation(range.from, range.to);
+        } else {
+            List<Long> newValues = ValueCheckerUtils.getValuesFromRange(range, Long.class);
+            return createIntValAnnotation(newValues);
         }
     }
 

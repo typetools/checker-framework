@@ -407,7 +407,7 @@ public class Range {
      * Returns a range that includes all possible values of the remainder of dividing an arbitrary
      * value in this range by an arbitrary value in the specified range.
      *
-     * <p>In the current implementtation, the result might not be the smallest range that includes
+     * <p>In the current implementation, the result might not be the smallest range that includes
      * all the possible values.
      *
      * @param right the specified range by which this range is divided
