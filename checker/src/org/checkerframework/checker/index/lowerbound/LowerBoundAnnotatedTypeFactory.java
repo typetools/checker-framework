@@ -19,15 +19,12 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
-import org.checkerframework.checker.index.minlen.MinLenAnnotatedTypeFactory;
-import org.checkerframework.checker.index.minlen.MinLenChecker;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.index.qual.IndexOrLow;
 import org.checkerframework.checker.index.qual.LengthOf;
 import org.checkerframework.checker.index.qual.LowerBoundUnknown;
-import org.checkerframework.checker.index.qual.MinLen;
 import org.checkerframework.checker.index.qual.NegativeIndexFor;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.PolyIndex;
@@ -38,7 +35,7 @@ import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
-import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.ValueIgnoreRangeOverflowChecker;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -158,12 +155,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Returns the Value Checker's annotated type factory. */
     public ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
-        return getTypeFactoryOfSubchecker(ValueChecker.class);
-    }
-
-    /** Returns the MinLen Checker's annotated type factory. */
-    public MinLenAnnotatedTypeFactory getMinLenAnnotatedTypeFactory() {
-        return getTypeFactoryOfSubchecker(MinLenChecker.class);
+        return getTypeFactoryOfSubchecker(ValueIgnoreRangeOverflowChecker.class);
     }
 
     /** Returns the SearchIndexFor Checker's annotated type factory. */
@@ -194,7 +186,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** Determine the annotation that should be associated with a literal. */
-    private AnnotationMirror anmFromVal(int val) {
+    private AnnotationMirror anmFromVal(long val) {
         if (val >= 1) {
             return POS;
         } else if (val >= 0) {
@@ -325,15 +317,14 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Looks up the minlen of a member select tree. Returns null if the tree doesn't represent
          * an array's length field.
          */
-        private Integer getMinLenFromMemberSelectTree(MemberSelectTree tree) {
+        private Long getMinLenFromMemberSelectTree(MemberSelectTree tree) {
             if (TreeUtils.isArrayLengthAccess(tree)) {
                 AnnotatedTypeMirror minLenType =
-                        getMinLenAnnotatedTypeFactory().getAnnotatedType(tree.getExpression());
-                AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
-                if (anm == null) {
-                    return 0;
-                }
-                return AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
+                        getValueAnnotatedTypeFactory().getAnnotatedType(tree);
+                System.out.println(tree + " " + minLenType);
+                Long a = getValueAnnotatedTypeFactory().getMinLenValueFromLengthType(minLenType);
+                System.out.println(tree + " " + a);
+                return a;
             }
             return null;
         }
@@ -345,7 +336,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
-            Integer minLen = getMinLenFromMemberSelectTree(tree);
+            Long minLen = getMinLenFromMemberSelectTree(tree);
             if (minLen != null) {
                 type.replaceAnnotation(anmFromVal(minLen));
             }
@@ -522,9 +513,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // this either NN or POS instead of GTEN1 or LBU.
                 if (leftExpr.getKind() == Kind.MEMBER_SELECT) {
                     MemberSelectTree mstree = (MemberSelectTree) leftExpr;
-                    Integer minLen = getMinLenFromMemberSelectTree(mstree);
+                    Long minLen = getMinLenFromMemberSelectTree(mstree);
                     if (minLen != null) {
-                        type.replaceAnnotation(anmFromVal(minLen - valRight.intValue()));
+                        type.replaceAnnotation(anmFromVal(minLen - valRight));
                     }
                 }
 

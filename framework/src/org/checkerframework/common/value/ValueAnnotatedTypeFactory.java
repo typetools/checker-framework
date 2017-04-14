@@ -12,8 +12,10 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -21,6 +23,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -33,6 +36,8 @@ import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.value.qual.MinLen;
+import org.checkerframework.common.value.qual.MinLenFieldInvariant;
 import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
@@ -52,6 +57,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.framework.util.FieldInvariantObject;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -122,6 +128,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         reportEvalWarnings = checker.hasOption(ValueChecker.REPORT_EVAL_WARNS);
         evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
+        addAliasedAnnotation(
+                MinLen.class,
+                BOTTOMVAL); // The actual ArrayLenRange is created later, this just registers the annotation.
+
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
             this.postInit();
         }
@@ -133,7 +143,34 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Range range = getRange(anno);
             return createIntRangeAnnotation(range);
         }
+
+        if (AnnotationUtils.areSameByClass(anno, MinLen.class)) {
+            Integer from = getMinLenValue(anno);
+            if (from != null) {
+                return createArrayLenRangeAnnotation(from, Integer.MAX_VALUE);
+            } else {
+                return createArrayLenRangeAnnotation(0, Integer.MAX_VALUE);
+            }
+        }
+
         return super.aliasedAnnotation(anno);
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        // Because the Value Checker includes its own alias annotations,
+        // the qualifiers have to be explicitly defined.
+        return new LinkedHashSet<>(
+                Arrays.asList(
+                        ArrayLen.class,
+                        ArrayLenRange.class,
+                        IntVal.class,
+                        IntRange.class,
+                        BoolVal.class,
+                        StringVal.class,
+                        DoubleVal.class,
+                        BottomVal.class,
+                        UnknownVal.class));
     }
 
     @Override
@@ -165,11 +202,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithoutPolyAll();
-    }
-
-    @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new ValueQualifierHierarchy(factory);
     }
@@ -177,6 +209,34 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected TypeAnnotator createTypeAnnotator() {
         return new ListTypeAnnotator(new ValueTypeAnnotator(this), super.createTypeAnnotator());
+    }
+
+    @Override
+    public FieldInvariantObject getFieldInvariants(TypeElement element) {
+        AnnotationMirror fieldInvarAnno = getDeclAnnotation(element, MinLenFieldInvariant.class);
+        if (fieldInvarAnno == null) {
+            return null;
+        }
+        List<String> fields =
+                AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, true);
+        List<Integer> minlens =
+                AnnotationUtils.getElementValueArray(fieldInvarAnno, "minLen", Integer.class, true);
+        List<AnnotationMirror> qualifiers = new ArrayList<>();
+        for (Integer minlen : minlens) {
+            qualifiers.add(createMinLen(minlen));
+        }
+
+        FieldInvariantObject superInvariants = super.getFieldInvariants(element);
+        return new FieldInvariantObject(superInvariants, fields, qualifiers);
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> getFieldInvariantDeclarationAnnotations() {
+        // include FieldInvariant so that @MinLenBottom can be used.
+        Set<Class<? extends Annotation>> set =
+                new HashSet<>(super.getFieldInvariantDeclarationAnnotations());
+        set.add(MinLenFieldInvariant.class);
+        return set;
     }
 
     /**
@@ -252,6 +312,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             if (anno != null && anno.getElementValues().size() > 0) {
+
+                // Do this first (outside the if-else chain below) so that the ArrayLenRange
+                // code also is checked.
+                /*  if (AnnotationUtils.areSameByClass(anno, MinLen.class)) {
+                                    int from = getMinLenValue(anno);
+                                    anno = createArrayLenRangeAnnotation(from, Integer.MAX_VALUE);
+                                    atm.replaceAnnotation(anno);
+                                }
+                */
                 if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
                     List<Long> values =
                             AnnotationUtils.getElementValueArray(anno, "value", Long.class, true);
@@ -287,7 +356,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     if (from > to || from < 0) {
                         atm.replaceAnnotation(BOTTOMVAL);
                     }
-                } else {
+                } else if (!AnnotationUtils.areSameByClass(anno, MinLen.class)) {
                     // In here the annotation is @*Val where (*) is not Int but other types (String, Double, etc).
                     // Therefore we extract its values in a generic way to check its size.
                     List<Object> values =
@@ -471,7 +540,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-
             if (AnnotationUtils.areSameByClass(superAnno, UnknownVal.class)
                     || AnnotationUtils.areSameByClass(subAnno, BottomVal.class)) {
                 return true;
@@ -1184,6 +1252,20 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
+     * Builds an ArrayLenRange annotation with from equal to its argument. This is called by the
+     * clients that used the old MinLen Checker, and provides the same interface.
+     *
+     * @param val The value to use as the from in the ArrayLenRange annotation created. This value
+     *     must be non-negative.
+     */
+    public AnnotationMirror createMinLen(int val) {
+        assert val >= 0;
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, ArrayLenRange.class);
+        builder.setValue("from", val);
+        return builder.build();
+    }
+
+    /**
      * Returns a {@link StringVal} annotation using the values. If {@code values} is null, then
      * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
      * sorted and duplicates are removed before the annotation is created.
@@ -1501,6 +1583,40 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ArrayList<>(boolSet);
     }
 
+    public Integer getMinLenValue(AnnotatedTypeMirror atm) {
+        return getMinLenValue(atm.getAnnotationInHierarchy(UNKNOWNVAL));
+    }
+
+    /**
+     * Used to find the minimum length of an array, which is useful for array bounds checking.
+     * Returns -1 if there is no minimum length known, or null if the passed annotation is null.
+     */
+    public static Integer getMinLenValue(AnnotationMirror annotation) {
+        System.out.println("fetching minlen from " + annotation);
+        if (annotation == null) {
+            return null;
+        }
+        if (AnnotationUtils.areSameByClass(annotation, ArrayLenRange.class)) {
+            return Long.valueOf(getRange(annotation).from).intValue();
+        } else if (AnnotationUtils.areSameByClass(annotation, ArrayLen.class)) {
+            return Collections.min(getArrayLength(annotation));
+        } else {
+            return null;
+        }
+    }
+
+    public Long getMinLenValueFromLengthType(AnnotatedTypeMirror atm) {
+        AnnotationMirror anm = atm.getAnnotationInHierarchy(UNKNOWNVAL);
+        if (AnnotationUtils.areSameByClass(anm, IntVal.class)) {
+            List<Long> res = getIntValues(anm);
+            return Collections.min(res);
+        } else if (AnnotationUtils.areSameByClass(anm, IntRange.class)) {
+            Range range = getRange(anm);
+            return range.from;
+        }
+        return null;
+    }
+
     /**
      * Empty list means dead code -- no values are possible. Null means no information in available
      * -- all values are possible.
@@ -1517,5 +1633,37 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         return getIntValues(intValAnno);
+    }
+
+    /**
+     * Returns the minimum length of an array expression or 0 if the min length is unknown.
+     *
+     * @param arrayExpression flow expression
+     * @param tree expression tree or variable declaration
+     * @param currentPath path to local scope
+     * @return min length of arrayExpression or 0
+     */
+    public int getMinLenFromString(String arrayExpression, Tree tree, TreePath currentPath) {
+        AnnotationMirror minLenAnno = null;
+        try {
+            minLenAnno =
+                    getAnnotationFromJavaExpressionString(
+                            arrayExpression, tree, currentPath, ArrayLenRange.class);
+
+            if (minLenAnno == null) {
+                minLenAnno =
+                        getAnnotationFromJavaExpressionString(
+                                arrayExpression, tree, currentPath, ArrayLen.class);
+            }
+        } catch (FlowExpressionParseException e) {
+            // ignore parse errors
+        }
+        if (minLenAnno == null) {
+            // Could not find a more precise type, so return 0;
+            return 0;
+        }
+
+        Integer minLenValue = getMinLenValue(minLenAnno);
+        return minLenValue == null ? 0 : minLenValue;
     }
 }

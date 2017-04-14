@@ -12,12 +12,12 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexUtil;
-import org.checkerframework.checker.index.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -37,10 +37,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * When the visitor reaches an array access, it needs to check a couple of things. First, it
      * checks if the index has been assigned a reasonable UpperBound type: only an index with type
      * LTLengthOf(arr) is safe to access arr. If that fails, it checks if the access is still safe.
-     * To do so, it checks if the MinLen checker knows the minimum length of arr by querying the
-     * MinLenATF. If the MinLen of the array is known, the visitor can check if the index is less
-     * than the MinLen, using the Value Checker. If so then the access is still safe. Otherwise,
-     * report a potential unsafe access.
+     * To do so, it checks if the value checker knows the minimum length of arr by querying the
+     * value ATF. If the MinLen of the array is known, the visitor can check if the index is less
+     * than the MinLen. If so then the access is still safe. Otherwise, report a potential unsafe
+     * access.
      */
     @Override
     public Void visitArrayAccess(ArrayAccessTree tree, Void type) {
@@ -80,8 +80,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         // minimum length of the array. If it could be any of several values, only the max is of
         // interest.
         Long valMax = IndexUtil.getMaxValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory());
-        int minLen = IndexUtil.getMinLen(arrTree, atypeFactory.getMinLenAnnotatedTypeFactory());
-        if (valMax != null && minLen != -1 && valMax < minLen) {
+        Integer minLen = IndexUtil.getMinLen(arrTree, atypeFactory.getValueAnnotatedTypeFactory());
+        if (valMax != null && minLen != null && valMax < minLen) {
             return;
         }
 
@@ -167,7 +167,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
 
         SameLenAnnotatedTypeFactory sameLenFactory = atypeFactory.getSameLenAnnotatedTypeFactory();
-        MinLenAnnotatedTypeFactory minLenFactory = atypeFactory.getMinLenAnnotatedTypeFactory();
+        ValueAnnotatedTypeFactory valueAnnotatedTypeFactory =
+                atypeFactory.getValueAnnotatedTypeFactory();
         for (String arrayName : varLtlQual.getArrays()) {
 
             List<String> sameLenArrays =
@@ -176,7 +177,12 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 continue;
             }
 
-            int minLen = minLenFactory.getMinLenFromString(arrayName, valueExp, getCurrentPath());
+            int minLen =
+                    valueAnnotatedTypeFactory.getMinLenFromString(
+                            arrayName, valueExp, getCurrentPath());
+
+            System.out.println("minlen of " + arrayName + " was " + minLen);
+
             if (testMinLen(value, minLen, arrayName, varLtlQual)) {
                 continue;
             }

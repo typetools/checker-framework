@@ -1,4 +1,4 @@
-import org.checkerframework.checker.index.qual.MinLen;
+import org.checkerframework.common.value.qual.*;
 
 @SuppressWarnings("lowerbound")
 class ArrayIntro {
@@ -15,5 +15,8 @@ class ArrayIntro {
         int @MinLen(7) [] arr4 = new int[4];
         //:: error: (assignment.type.incompatible)
         int @MinLen(16) [] arr5 = new int[a];
+
+        int @ArrayLenRange(from = 7, to = Integer.MAX_VALUE) [] arr8 = new int[4];
+        int @BottomVal [] arr6 = new int[4];
     }
 }

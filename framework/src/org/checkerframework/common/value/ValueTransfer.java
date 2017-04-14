@@ -158,6 +158,9 @@ public class ValueTransfer extends CFTransfer {
     private List<? extends Number> getNumericalValues(
             Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
+        if (value == null) {
+            return null;
+        }
         List<? extends Number> values = null;
         AnnotationMirror intValAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
@@ -236,9 +239,9 @@ public class ValueTransfer extends CFTransfer {
      */
     private TransferResult<CFValue, CFStore> createNewResult(
             TransferResult<CFValue, CFStore> result, AnnotationMirror resultAnno) {
+        CFValue value = result.getResultValue();
         CFValue newResultValue =
-                analysis.createSingleAnnotationValue(
-                        resultAnno, result.getResultValue().getUnderlyingType());
+                analysis.createSingleAnnotationValue(resultAnno, value.getUnderlyingType());
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
     }
 
@@ -925,7 +928,7 @@ public class ValueTransfer extends CFTransfer {
                 break;
             case GREATER_THAN_EQ:
                 thenRightRange = rightRange.refineLessThanEq(leftRange);
-                thenLeftRange = leftRange.refineGreaterThan(rightRange);
+                thenLeftRange = leftRange.refineGreaterThanEq(rightRange);
                 elseLeftRange = leftRange.refineLessThan(rightRange);
                 elseRightRange = rightRange.refineGreaterThan(leftRange);
                 break;

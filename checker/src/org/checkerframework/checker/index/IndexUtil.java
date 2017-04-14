@@ -4,8 +4,6 @@ import com.sun.source.tree.Tree;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.index.minlen.MinLenAnnotatedTypeFactory;
-import org.checkerframework.checker.index.qual.MinLen;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -84,23 +82,12 @@ public class IndexUtil {
     }
 
     /**
-     * Queries the MinLen Checker to determine if there is a known minimum length for the array
-     * represented by {@code tree}. If not, returns -1.
+     * Queries the Value Checker to determine if there is a known minimum length for the array
+     * represented by {@code tree}. If not, returns null.
      */
-    public static int getMinLen(Tree tree, MinLenAnnotatedTypeFactory minLenAnnotatedTypeFactory) {
-        AnnotatedTypeMirror minLenType = minLenAnnotatedTypeFactory.getAnnotatedType(tree);
-        AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
-        return getMinLen(anm);
-    }
-
-    /**
-     * Returns the MinLen value of the given annotation mirror, or -1 if the annotation mirror is
-     * null.
-     */
-    public static int getMinLen(AnnotationMirror anm) {
-        if (anm == null) {
-            return -1;
-        }
-        return AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
+    public static Integer getMinLen(
+            Tree tree, ValueAnnotatedTypeFactory valueAnnotatedTypeFactory) {
+        AnnotatedTypeMirror minLenType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
+        return valueAnnotatedTypeFactory.getMinLenValue(minLenType);
     }
 }
