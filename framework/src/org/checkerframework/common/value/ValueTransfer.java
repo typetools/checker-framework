@@ -217,27 +217,14 @@ public class ValueTransfer extends CFTransfer {
     /** a helper function to determine if this node is annotated with @IntRange */
     private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
-        return AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class) != null;
+        return AnnotationUtils.containsSameByClass(value.getAnnotations(), IntRange.class);
     }
 
     /** a helper function to determine if this node is annotated with @UnknownVal */
     private boolean isIntegralUnknownVal(Node node, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(node);
-        return AnnotationUtils.getAnnotationByClass(value.getAnnotations(), UnknownVal.class)
-                        != null
-                && isIntegral(node.getType().getKind());
-    }
-
-    private boolean isIntegral(TypeKind typeKind) {
-        switch (typeKind) {
-            case INT:
-            case SHORT:
-            case LONG:
-            case BYTE:
-                return true;
-            default:
-                return false;
-        }
+        return AnnotationUtils.containsSameByClass(value.getAnnotations(), UnknownVal.class)
+                && TypesUtils.isIntegral(node.getType());
     }
 
     /**
@@ -822,6 +809,12 @@ public class ValueTransfer extends CFTransfer {
                 || isIntRange(rightNode, p)
                 || isIntegralUnknownVal(rightNode, p)
                 || isIntegralUnknownVal(leftNode, p)) {
+
+            // If either is @UnknownVal, then refineIntRanges will treat it as the max range and
+            // thus refine it if possible.  Also, if either is an @IntVal, then it will be
+            // converted to a range.  This is less precise in some cases, but avoids the
+            // complexity of comparing a list of values to a range. (This could be implemented in
+            // the future.)
             return refineIntRanges(leftNode, rightNode, op, p, thenStore, elseStore);
         }
         List<Boolean> resultValues = new ArrayList<>();
