@@ -112,8 +112,8 @@ public class Range {
     /**
      * Converts a this range to a 32-bit integral range.
      *
-     * <p>If this range ignores overflow and the one of the bounds is outside the Integer range,
-     * then that bound is set to the bound of the Integer range.
+     * <p>If this range ignores overflow and one of the bounds is outside the Integer range, then
+     * that bound is set to the bound of the Integer range.
      *
      * <p>If this range does not ignore overflow and is too wide, i.e., wider than the full range of
      * the Integer class, return INT_EVERYTHING.
@@ -149,8 +149,8 @@ public class Range {
     /**
      * Converts a this range to a 16-bit short range.
      *
-     * <p>If this range ignores overflow and the one of the bounds is outside the Short range, then
-     * that bound is set to the bound of the Short range.
+     * <p>If this range ignores overflow and one of the bounds is outside the Short range, then that
+     * bound is set to the bound of the Short range.
      *
      * <p>If this range is too wide, i.e., wider than the full range of the Short class, return
      * SHORT_EVERYTHING.
@@ -187,8 +187,8 @@ public class Range {
     /**
      * Converts a this range to a 8-bit byte range.
      *
-     * <p>If this range ignores overflow and the one of the bounds is outside the Byte range, then
-     * that bound is set to the bound of the Byte range.
+     * <p>If this range ignores overflow and one of the bounds is outside the Byte range, then that
+     * bound is set to the bound of the Byte range.
      *
      * <p>If this range is too wide, i.e., wider than the full range of the Byte class, return
      * BYTE_EVERYTHING.
