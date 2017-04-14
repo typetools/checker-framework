@@ -332,12 +332,40 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public AnnotationMirror widenUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
             AnnotationMirror lub = leastUpperBound(a1, a2);
             if (AnnotationUtils.areSameByClass(lub, IntRange.class)) {
-                Range range = getRange(lub);
-                if (range.isWithin(Byte.MIN_VALUE, Byte.MAX_VALUE)) {
+                Range lubRange = getRange(lub);
+                if (Range.IGNORE_OVERFLOW) {
+                    Range range1 = getRangeOrConvertIntVal(a1);
+                    Range range2 = getRangeOrConvertIntVal(a2);
+                    if (range1 != null && range2 != null) {
+                        if (range1.from == range2.from) {
+                            if (lubRange.to < Byte.MAX_VALUE) {
+                                return createIntRangeAnnotation(range1.from, Byte.MAX_VALUE);
+                            } else if (lubRange.to < Short.MAX_VALUE) {
+                                return createIntRangeAnnotation(range1.from, Short.MAX_VALUE);
+                            } else if (lubRange.to < Integer.MAX_VALUE) {
+                                return createIntRangeAnnotation(range1.from, Integer.MAX_VALUE);
+                            } else {
+                                return createIntRangeAnnotation(range1.from, Long.MAX_VALUE);
+                            }
+                        } else if (range1.to == range2.to) {
+                            if (lubRange.from > Byte.MIN_VALUE) {
+                                return createIntRangeAnnotation(Byte.MIN_VALUE, range1.to);
+                            } else if (lubRange.from > Short.MIN_VALUE) {
+                                return createIntRangeAnnotation(Short.MIN_VALUE, range1.to);
+                            } else if (lubRange.from > Integer.MIN_VALUE) {
+                                return createIntRangeAnnotation(Integer.MIN_VALUE, range1.to);
+                            } else {
+                                return createIntRangeAnnotation(Long.MIN_VALUE, range1.to);
+                            }
+                        }
+                    }
+                }
+
+                if (lubRange.isWithin(Byte.MIN_VALUE, Byte.MAX_VALUE)) {
                     return createIntRangeAnnotation(Range.BYTE_EVERYTHING);
-                } else if (range.isWithin(Short.MIN_VALUE, Short.MAX_VALUE)) {
+                } else if (lubRange.isWithin(Short.MIN_VALUE, Short.MAX_VALUE)) {
                     return createIntRangeAnnotation(Range.SHORT_EVERYTHING);
-                } else if (range.isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+                } else if (lubRange.isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE)) {
                     return createIntRangeAnnotation(Range.INT_EVERYTHING);
                 } else {
                     return UNKNOWNVAL;
@@ -345,6 +373,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             return lub;
         }
+
         /**
          * Determines the least upper bound of a1 and a2, which contains the union of their sets of
          * possible values.
@@ -1386,7 +1415,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return createIntRangeAnnotation(Collections.min(intValues), Collections.max(intValues));
     }
 
-    /** Returns a {@code Range} bounded by the values specified in the given annotation. */
+    /** Returns a {@code Range} bounded by the values specified in the given Range annotation. */
     public static Range getRange(AnnotationMirror rangeAnno) {
         if (rangeAnno == null) {
             return null;
@@ -1401,6 +1430,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     AnnotationUtils.getElementValue(rangeAnno, "from", Integer.class, true),
                     AnnotationUtils.getElementValue(rangeAnno, "to", Integer.class, true));
         }
+    }
+
+    /**
+     * Returns a {@code Range} bounded by the values specified in the given IntRange or IntValue
+     * annotation*
+     */
+    public static Range getRangeOrConvertIntVal(AnnotationMirror anno) {
+        if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
+            return ValueCheckerUtils.getRangeFromValues(getIntValues(anno));
+        } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
+            return getRange(anno);
+        }
+        return null;
     }
 
     /**
