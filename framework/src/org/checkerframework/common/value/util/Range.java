@@ -886,12 +886,12 @@ public class Range {
      * <p>If the BigInteger range is too wide, i.e., wider than the full range of the Long class,
      * return EVERYTHING.
      *
-     * <p>If the BigInteger bounds are out of the Long type scope and this range does not ignore
+     * <p>If one of the BigInteger bounds is out of Long's range and this range does not ignore
      * overflow, convert the bounds to Long type in accordance with Java overflow rules, e.g.,
      * Long.MAX_VALUE + 1 is converted to Long.MIN_VALUE.
      *
-     * <p>If the BigInteger bounds are out of the Long type scope and this range ignores overflow,
-     * convert the bound that is outside the Long type scope to the bound on Long.
+     * <p>If one of the BigInteger bounds is out of Long's range and this range ignores overflow,
+     * convert the bound that is outside Long's range to max/min value of a Long.
      *
      * @param bigFrom the lower bound of the BigInteger range
      * @param bigTo the upper bound of the BigInteger range
