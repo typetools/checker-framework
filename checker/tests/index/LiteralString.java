@@ -4,6 +4,8 @@
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.common.value.qual.*;
 
+//@skip-test while string support is deferred
+
 public class LiteralString {
 
     private static final String[] finalField = {"This", "is", "an", "array"};

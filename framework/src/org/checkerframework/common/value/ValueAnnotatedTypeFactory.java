@@ -1591,12 +1591,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Used to find the minimum length of an array, which is useful for array bounds checking.
      * Returns -1 if there is no minimum length known, or null if the passed annotation is null.
      */
-    public static Integer getMinLenValue(AnnotationMirror annotation) {
+    public Integer getMinLenValue(AnnotationMirror annotation) {
         System.out.println("fetching minlen from " + annotation);
         if (annotation == null) {
             return null;
         }
-        if (AnnotationUtils.areSameByClass(annotation, ArrayLenRange.class)) {
+        if (AnnotationUtils.areSameByClass(annotation, MinLen.class)) {
+            return AnnotationUtils.getElementValue(annotation, "value", Integer.class, true);
+        } else if (AnnotationUtils.areSameByClass(annotation, ArrayLenRange.class)) {
             return Long.valueOf(getRange(annotation).from).intValue();
         } else if (AnnotationUtils.areSameByClass(annotation, ArrayLen.class)) {
             return Collections.min(getArrayLength(annotation));
@@ -1615,24 +1617,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return range.from;
         }
         return null;
-    }
-
-    /**
-     * Empty list means dead code -- no values are possible. Null means no information in available
-     * -- all values are possible.
-     */
-    public List<Long> getIntValuesFromExpression(
-            String expression, Tree tree, TreePath currentPath) {
-        AnnotationMirror intValAnno = null;
-        try {
-            intValAnno =
-                    getAnnotationFromJavaExpressionString(
-                            expression, tree, currentPath, IntVal.class);
-        } catch (FlowExpressionParseException e) {
-            // ignore parse errors
-            return null;
-        }
-        return getIntValues(intValAnno);
     }
 
     /**

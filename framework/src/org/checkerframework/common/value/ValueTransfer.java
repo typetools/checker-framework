@@ -29,6 +29,7 @@ import org.checkerframework.dataflow.cfg.node.BitwiseAndNode;
 import org.checkerframework.dataflow.cfg.node.BitwiseComplementNode;
 import org.checkerframework.dataflow.cfg.node.BitwiseOrNode;
 import org.checkerframework.dataflow.cfg.node.BitwiseXorNode;
+import org.checkerframework.dataflow.cfg.node.CaseNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalAndNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
@@ -1212,5 +1213,16 @@ public class ValueTransfer extends CFTransfer {
                 transferResult.getElseStore(),
                 resultValues,
                 transferResult.getResultValue().getUnderlyingType());
+    }
+
+    @Override
+    public TransferResult<CFValue, CFStore> visitCase(
+            CaseNode n, TransferInput<CFValue, CFStore> p) {
+        TransferResult<CFValue, CFStore> transferResult = super.visitCase(n, p);
+        if (n.getSwitchOperand() instanceof FieldAccessNode) {
+            refineArrayAtLengthAccess((FieldAccessNode) n.getSwitchOperand(), p.getThenStore());
+            refineArrayAtLengthAccess((FieldAccessNode) n.getSwitchOperand(), p.getElseStore());
+        }
+        return transferResult;
     }
 }
