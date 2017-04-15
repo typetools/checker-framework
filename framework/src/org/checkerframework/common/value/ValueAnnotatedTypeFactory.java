@@ -312,15 +312,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             if (anno != null && anno.getElementValues().size() > 0) {
-
-                // Do this first (outside the if-else chain below) so that the ArrayLenRange
-                // code also is checked.
-                /*  if (AnnotationUtils.areSameByClass(anno, MinLen.class)) {
-                                    int from = getMinLenValue(anno);
-                                    anno = createArrayLenRangeAnnotation(from, Integer.MAX_VALUE);
-                                    atm.replaceAnnotation(anno);
-                                }
-                */
                 if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
                     List<Long> values =
                             AnnotationUtils.getElementValueArray(anno, "value", Long.class, true);
@@ -540,6 +531,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+
             if (AnnotationUtils.areSameByClass(superAnno, UnknownVal.class)
                     || AnnotationUtils.areSameByClass(subAnno, BottomVal.class)) {
                 return true;

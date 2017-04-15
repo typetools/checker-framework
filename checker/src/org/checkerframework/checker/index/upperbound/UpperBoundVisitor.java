@@ -181,8 +181,6 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                     valueAnnotatedTypeFactory.getMinLenFromString(
                             arrayName, valueExp, getCurrentPath());
 
-            System.out.println("minlen of " + arrayName + " was " + minLen);
-
             if (testMinLen(value, minLen, arrayName, varLtlQual)) {
                 continue;
             }

@@ -1220,8 +1220,13 @@ public class ValueTransfer extends CFTransfer {
             CaseNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitCase(n, p);
         if (n.getSwitchOperand() instanceof FieldAccessNode) {
-            refineArrayAtLengthAccess((FieldAccessNode) n.getSwitchOperand(), p.getThenStore());
-            refineArrayAtLengthAccess((FieldAccessNode) n.getSwitchOperand(), p.getElseStore());
+            calculateBinaryComparison(
+                    n.getSwitchOperand(),
+                    n.getCaseOperand(),
+                    ComparisonOperators.EQUAL,
+                    p,
+                    transferResult.getThenStore(),
+                    transferResult.getElseStore());
         }
         return transferResult;
     }
