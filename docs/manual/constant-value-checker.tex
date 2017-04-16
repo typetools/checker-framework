@@ -259,37 +259,29 @@ The Constant Value Checker normally takes Java's normal overflow rules into acco
 computing the possible values of expressions.
 The \code{-AignoreRangeOverflow} command-line option
 makes it ignore the possibility of overflow
-for range annotations (\<@IntRange>, for instance).
-The \code{-AignoreRangeOverflow} command-line option should
-be supplied to the constant value checker when the user is
-confident that no overflow will occur. It allows range annotations
-to be more precise when one of their bounds is the maximum or minimum
-value for their type.
+for range annotations (\<@IntRange>, for instance), making them more precise.
+You can supply the \code{-AignoreRangeOverflow} command-line option
+when you are confident that no overflow will occur in the program (for
+instance, when you have an external proof of that fact).
+Figure~\ref{fig-value-ignore-overflow} gives an example.
+
 
 \begin{figure}
 \begin{Verbatim}
-public void foo(int i) {
-    if (i > 5) {
-        // i now has type:  @IntRange(from = 5, to = Integer.MAX_VALUE)
-        i = i + 1; // With overflow, i's type is @IntRange(from = Integer.MIN_VALUE, to = Integer.MAX_VALUE)
-                   // If overflow is ignored, i's type is @IntRange(from = 6, to = Integer.MAX_VALUE)
-    }
-}
+  ...
+  if (i > 5) {
+    // i now has type:  @IntRange(from=5, to=Integer.MAX_VALUE)
+    i = i + 1;
+    // Because of the possibility of overflow, i may be Integer.MIN_VALUE and
+    // i's type is @IntRange(from=Integer.MIN_VALUE, to=Integer.MAX_VALUE).
+    // If overflow is ignored, i's type is @IntRange(from=6, to=Integer.MAX_VALUE).
+  }
 \end{Verbatim}
-\caption{The Constant Value Checker can ignore overflow
-for range types, which allows range types to be more precise if
-the user is confident they will not overflow.}
+\caption{With the \code{-AignoreRangeOverflow} command-line option,
+the Constant Value Checker ignores overflow
+for range types, which makes range types more precise.}
 \label{fig-value-ignore-overflow}
 \end{figure}
-
-Consider the example in Figrue~\ref{fig-value-ignore-overflow}.
-Inside the \code{if} block, \code{i}'s type is \code{@IntRange(from = 5, to = Integer.MAX\_VALUE)}.
-When the line \code{i = i + 1} is executed, if overflow is taken into account then
-\code{i} could have any integer value (since \code{Integer.MAX\_VALUE + 1} is out of
-the possible integer range). If the checker is set to ignore overflow, \code{i}'s type
-is instead the more precise \code{@IntRange(from = 6, to = Integer.MAX\_VALUE)}.
-If the user has an external proof that there is no overflow (or is willing to make
-that assumption), then then the more precise type is preferable.
 
 
 %%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange
