@@ -58,6 +58,7 @@ import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
@@ -159,9 +160,6 @@ public class ValueTransfer extends CFTransfer {
     private List<? extends Number> getNumericalValues(
             Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
-        if (value == null) {
-            return null;
-        }
         List<? extends Number> values = null;
         AnnotationMirror intValAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
@@ -240,9 +238,9 @@ public class ValueTransfer extends CFTransfer {
      */
     private TransferResult<CFValue, CFStore> createNewResult(
             TransferResult<CFValue, CFStore> result, AnnotationMirror resultAnno) {
-        CFValue value = result.getResultValue();
         CFValue newResultValue =
-                analysis.createSingleAnnotationValue(resultAnno, value.getUnderlyingType());
+                analysis.createSingleAnnotationValue(
+                        resultAnno, result.getResultValue().getUnderlyingType());
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
     }
 
@@ -1215,6 +1213,14 @@ public class ValueTransfer extends CFTransfer {
                 transferResult.getResultValue().getUnderlyingType());
     }
 
+    /**
+     * The value checker doesn't override {@link
+     * org.checkerframework.framework.flow.CFAbstractTransfer#strengthenAnnotationOfEqualTo(TransferResult,
+     * Node, Node, CFAbstractValue, CFAbstractValue, boolean)}, which is called by {@link
+     * org.checkerframework.framework.flow.CFAbstractTransfer#visitCase(CaseNode, TransferInput)}.
+     * Therefore, we need to explicitly call the handling for binary comparison if we want to do the
+     * extra refinements that the Value Checker applies on switch statements.
+     */
     @Override
     public TransferResult<CFValue, CFStore> visitCase(
             CaseNode n, TransferInput<CFValue, CFStore> p) {

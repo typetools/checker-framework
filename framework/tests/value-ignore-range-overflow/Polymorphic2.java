@@ -1,7 +1,7 @@
 import org.checkerframework.common.value.qual.*;
 import org.checkerframework.framework.qual.PolyAll;
 
-//@skip-test
+//@skip-test until PolyValue is added (https://github.com/typetools/checker-framework/issues/1236)
 
 class Polymorphic2 {
     public static boolean flag = false;

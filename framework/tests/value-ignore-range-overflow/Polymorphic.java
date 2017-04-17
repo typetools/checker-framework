@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-//@skip-test
+//@skip-test until PolyValue is added (https://github.com/typetools/checker-framework/issues/1236)
 
 class Polymorphic {
 
