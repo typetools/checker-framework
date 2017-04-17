@@ -87,7 +87,7 @@ public interface Text extends CharacterData {
      *   than the number of 16-bit units in <code>data</code>.
      *   <br>NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
      */
-    public @Nullable Text splitText(int offset)
+    public Text splitText(int offset)
                           throws DOMException;
 
     /**
