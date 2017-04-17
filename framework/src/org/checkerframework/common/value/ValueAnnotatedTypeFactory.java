@@ -120,7 +120,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         UNKNOWNVAL = AnnotationUtils.fromClass(elements, UnknownVal.class);
 
         reportEvalWarnings = checker.hasOption(ValueChecker.REPORT_EVAL_WARNS);
-        Range.IGNORE_OVERFLOW = checker.hasOption(ValueChecker.IGNORE_OVERFLOW_OPTION);
+        Range.IGNORE_OVERFLOW = checker.hasOption(ValueChecker.IGNORE_RANGE_OVERFLOW);
         evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
@@ -1437,7 +1437,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Returns a {@code Range} bounded by the values specified in the given {@code @IntRange} or
-     * {@code @IntValue} annotation.
+     * {@code @IntVal} annotation. Returns null if the given annotations is not {@code IntRange} or
+     * {@code IntVal}.
      */
     public static Range getRangeOrConvertIntVal(AnnotationMirror anno) {
         if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {

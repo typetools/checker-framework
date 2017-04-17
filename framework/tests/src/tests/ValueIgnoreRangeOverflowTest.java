@@ -25,7 +25,7 @@ public class ValueIgnoreRangeOverflowTest extends CheckerFrameworkPerDirectoryTe
                 "-Anomsgtext",
                 "-Astubs=statically-executable.astub",
                 "-A" + ValueChecker.REPORT_EVAL_WARNS,
-                "-A" + ValueChecker.IGNORE_OVERFLOW_OPTION);
+                "-A" + ValueChecker.IGNORE_RANGE_OVERFLOW);
     }
 
     @Parameters

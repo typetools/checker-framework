@@ -34,8 +34,8 @@ Joe Darcy.
 Werner Dietl, Stephanie Dietzel, Michael~D. Ernst, K{\i}van{\c{c}} Mu{\c{s}}lu,
   and Todd Schiller.
 \newblock Building and using pluggable type-checkers.
-\newblock In {\em ICSE 2011, Proceedings of the 33rd International Conference
-  on Software Engineering}, pages 681--690, Waikiki, Hawaii, USA, May 2011.
+\newblock In {\em ICSE: Proceedings of the 33rd International Conference on
+  Software Engineering}, pages 681--690, Waikiki, Hawaii, USA, May 2011.
 
 \bibitem[DEM11]{DietlEM2011}
 Werner Dietl, Michael~D. Ernst, and Peter M{\"u}ller.
@@ -61,22 +61,22 @@ Michael~D. Ernst.
 \bibitem[Eva96]{Evans96}
 David Evans.
 \newblock Static detection of dynamic memory errors.
-\newblock In {\em PLDI '96: Proceedings of the SIGPLAN '96 Conference on
+\newblock In {\em PLDI: Proceedings of the SIGPLAN '96 Conference on
   Programming Language Design and Implementation}, pages 44--53, Philadelphia,
   PA, USA, May 1996.
 
 \bibitem[FL03]{FahndrichL2003}
 Manuel F{\"a}hndrich and K.~Rustan~M. Leino.
 \newblock Declaring and checking non-null types in an object-oriented language.
-\newblock In {\em OOPSLA 2003, Object-Oriented Programming Systems, Languages,
-  and Applications}, pages 302--312, Anaheim, CA, USA, November 2003.
+\newblock In {\em OOPSLA: Object-Oriented Programming Systems, Languages, and
+  Applications (OOPSLA 2003)}, pages 302--312, Anaheim, CA, USA, November 2003.
 
 \bibitem[FLL{\etalchar{+}}02]{FlanaganLLNSS02}
 Cormac Flanagan, K.~Rustan~M. Leino, Mark Lillibridge, Greg Nelson, James~B.
   Saxe, and Raymie Stata.
 \newblock Extended static checking for {Java}.
-\newblock In {\em PLDI 2002: Proceedings of the {ACM} {SIGPLAN} 2002 Conference
-  on Programming Language Design and Implementation}, pages 234--245, Berlin,
+\newblock In {\em PLDI: Proceedings of the {ACM} {SIGPLAN} 2002 Conference on
+  Programming Language Design and Implementation}, pages 234--245, Berlin,
   Germany, June 2002.
 
 \bibitem[GDEG13]{GordonDEG2013}
@@ -107,15 +107,15 @@ Wei Huang, Werner Dietl, Ana Milanova, and Michael~D. Ernst.
 Wei Huang, Ana Milanova, Werner Dietl, and Michael~D. Ernst.
 \newblock {ReIm} \& {ReImInfer}: Checking and inference of reference
   immutability and method purity.
-\newblock In {\em OOPSLA 2012, Object-Oriented Programming Systems, Languages,
-  and Applications}, pages 879--896, Tucson, AZ, USA, October 2012.
+\newblock In {\em OOPSLA: Object-Oriented Programming Systems, Languages, and
+  Applications (OOPSLA 2012)}, pages 879--896, Tucson, AZ, USA, October 2012.
 
 \bibitem[HP04]{HovemeyerP2004}
 David Hovemeyer and William Pugh.
 \newblock Finding bugs is easy.
 \newblock In {\em OOPSLA Companion: Companion to Object-Oriented Programming
-  Systems, Languages, and Applications}, pages 132--136, Vancouver, BC, Canada,
-  October 2004.
+  Systems, Languages, and Applications (OOPSLA Companion 2004)}, pages
+  132--136, Vancouver, BC, Canada, October 2004.
 
 \bibitem[HSP05]{HovemeyerSP2005}
 David Hovemeyer, Jaime Spacco, and William Pugh.
@@ -134,9 +134,8 @@ Gary~T. Leavens, Albert~L. Baker, and Clyde Ruby.
 Matthew~M. Papi, Mahmood Ali, Telmo~Luis {Correa~Jr.}, Jeff~H. Perkins, and
   Michael~D. Ernst.
 \newblock Practical pluggable types for {Java}.
-\newblock In {\em ISSTA 2008, Proceedings of the 2008 International Symposium
-  on Software Testing and Analysis}, pages 201--212, Seattle, WA, USA, July
-  2008.
+\newblock In {\em ISSTA: Proceedings of the 2008 International Symposium on
+  Software Testing and Analysis}, pages 201--212, Seattle, WA, USA, July 2008.
 
 \bibitem[QTE08]{QuinonezTE2008}
 Jaime Quinonez, Matthew~S. Tschantz, and Michael~D. Ernst.
@@ -155,22 +154,24 @@ Adrian Sampson, Werner Dietl, Emily Fortuna, Danushen Gnanapragasam, Luis Ceze,
   and Dan Grossman.
 \newblock {EnerJ}: Approximate data types for safe and general low-power
   computation.
-\newblock In {\em PLDI 2011: Proceedings of the {ACM} {SIGPLAN} 2011 Conference
-  on Programming Language Design and Implementation}, pages 164--174, San Jose,
+\newblock In {\em PLDI: Proceedings of the {ACM} {SIGPLAN} 2011 Conference on
+  Programming Language Design and Implementation}, pages 164--174, San Jose,
   CA, USA, June 2011.
 
 \bibitem[SM11]{SummersM2011}
 Alexander~J. Summers and Peter M{\"u}ller.
 \newblock Freedom before commitment: A lightweight type system for object
   initialisation.
-\newblock In {\em OOPSLA 2011, Object-Oriented Programming Systems, Languages,
-  and Applications}, pages 1013--1032, Portland, OR, USA, October 2011.
+\newblock In {\em OOPSLA: Object-Oriented Programming Systems, Languages, and
+  Applications (OOPSLA 2011)}, pages 1013--1032, Portland, OR, USA, October
+  2011.
 
 \bibitem[TE05]{TschantzE2005}
 Matthew~S. Tschantz and Michael~D. Ernst.
 \newblock Javari: Adding reference immutability to {Java}.
-\newblock In {\em OOPSLA 2005, Object-Oriented Programming Systems, Languages,
-  and Applications}, pages 211--230, San Diego, CA, USA, October 2005.
+\newblock In {\em OOPSLA: Object-Oriented Programming Systems, Languages, and
+  Applications (OOPSLA 2005)}, pages 211--230, San Diego, CA, USA, October
+  2005.
 
 \bibitem[TPV10]{TangPJ2010}
 Daniel Tang, Ales Plsek, and Jan Vitek.
@@ -188,9 +189,8 @@ Mohsen Vakilian, Amarin Phaosawasdi, Michael~D. Ernst, and Ralph~E. Johnson.
 \bibitem[WKSE14]{WeitzKSE2014}
 Konstantin Weitz, Gene Kim, Siwakorn Srisakaokul, and Michael~D. Ernst.
 \newblock A type system for format strings.
-\newblock In {\em ISSTA 2014, Proceedings of the 2014 International Symposium
-  on Software Testing and Analysis}, pages 127--137, San Jose, CA, USA, July
-  2014.
+\newblock In {\em ISSTA: Proceedings of the 2014 International Symposium on
+  Software Testing and Analysis}, pages 127--137, San Jose, CA, USA, July 2014.
 
 \bibitem[WPM{\etalchar{+}}09]{WrigstadPMZV2009}
 Tobias Wrigstad, Filip Pizlo, Fadi Meawad, Lei Zhao, and Jan Vitek.
@@ -202,7 +202,7 @@ Tobias Wrigstad, Filip Pizlo, Fadi Meawad, Lei Zhao, and Jan Vitek.
 Yoav Zibin, Alex Potanin, Mahmood Ali, Shay Artzi, Adam Kie{\.z}un, and
   Michael~D. Ernst.
 \newblock Object and reference immutability using {Java} generics.
-\newblock In {\em ESEC/FSE 2007: Proceedings of the 11th European Software
+\newblock In {\em ESEC/FSE: Proceedings of the 11th European Software
   Engineering Conference and the 15th {ACM} {SIGSOFT} Symposium on the
   Foundations of Software Engineering}, pages 75--84, Dubrovnik, Croatia,
   September 2007.
@@ -210,7 +210,7 @@ Yoav Zibin, Alex Potanin, Mahmood Ali, Shay Artzi, Adam Kie{\.z}un, and
 \bibitem[ZPL{\etalchar{+}}10]{ZibinPLAE2010}
 Yoav Zibin, Alex Potanin, Paley Li, Mahmood Ali, and Michael~D. Ernst.
 \newblock Ownership and immutability in generic {Java}.
-\newblock In {\em OOPSLA 2010, Object-Oriented Programming Systems, Languages,
-  and Applications}, pages 598--617, Revo, NV, USA, October 2010.
+\newblock In {\em OOPSLA: Object-Oriented Programming Systems, Languages, and
+  Applications (OOPSLA 2010)}, pages 598--617, Revo, NV, USA, October 2010.
 
 \end{thebibliography}

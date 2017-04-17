@@ -907,7 +907,7 @@ public class Range {
             BigInteger longMax = BigInteger.valueOf(Long.MAX_VALUE);
             resultTo = bigTo.min(longMax).longValue();
         } else {
-            if (numValues.compareTo(longWidth) == 1) {
+            if (numValues.compareTo(longWidth) > 0) {
                 return EVERYTHING;
             } else {
                 resultFrom = bigFrom.longValue();
