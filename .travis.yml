@@ -12,8 +12,6 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq nodejs
 
-hat needs to be done in `checker/bin-devel/Dockerfile-ubuntu-jdkany` (and the new Docker container built and uploaded).
-
 services:
   - docker
 
