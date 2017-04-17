@@ -373,17 +373,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     newValues.addAll(a2Values);
                     return createArrayLenAnnotation(newValues);
                 } else {
-                    List<Comparable> a1Values =
-                            AnnotationUtils.getElementValueArray(
-                                    a1, "value", Comparable.class, true);
-                    List<Comparable> a2Values =
-                            AnnotationUtils.getElementValueArray(
-                                    a2, "value", Comparable.class, true);
-                    List<Comparable> newValues = new ArrayList<>();
+                    List<Object> a1Values =
+                            AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
+                    List<Object> a2Values =
+                            AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
+                    TreeSet<Object> newValues = new TreeSet<>();
                     newValues.addAll(a1Values);
                     newValues.addAll(a2Values);
 
-                    ValueCheckerUtils.removeDuplicates(newValues);
                     if (newValues.size() == 0) {
                         return BOTTOMVAL;
                     }
@@ -392,7 +389,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                     AnnotationBuilder builder =
                             new AnnotationBuilder(processingEnv, a1.getAnnotationType().toString());
-                    List<Object> valuesList = new ArrayList<Object>(newValues);
+                    List<Object> valuesList = new ArrayList<>(newValues);
                     builder.setValue("value", valuesList);
                     return builder.build();
                 }
