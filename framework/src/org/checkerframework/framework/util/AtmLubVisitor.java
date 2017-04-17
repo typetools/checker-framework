@@ -114,6 +114,8 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         Set<? extends AnnotationMirror> lubSet;
         if (type1.getAnnotations().isEmpty()) {
             lubSet = type2.getAnnotations();
+        } else if (type2.getAnnotations().isEmpty()) {
+            lubSet = type1.getAnnotations();
         } else {
             lubSet =
                     qualifierHierarchy.leastUpperBounds(
