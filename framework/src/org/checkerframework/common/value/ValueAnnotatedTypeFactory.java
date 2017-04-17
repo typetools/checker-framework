@@ -142,28 +142,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ValueTransfer(analysis);
     }
 
-    /**
-     * Creates an annotation of the given name with the given set of values.
-     *
-     * <p>If values.size &gt; MAX_VALUES, issues a checker warning and returns UNKNOWNVAL.
-     *
-     * <p>If values.size == 0, issues a checker warning and returns BOTTOMVAL.
-     *
-     * @return annotation given by name with values=values, or UNKNOWNVAL
-     */
-    private AnnotationMirror createAnnotation(String name, Set<?> values) {
-        if (values.size() == 0) {
-            return BOTTOMVAL;
-        }
-        if (values.size() > MAX_VALUES) {
-            return UNKNOWNVAL;
-        }
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, name);
-        List<Object> valuesList = new ArrayList<Object>(values);
-        builder.setValue("value", valuesList);
-        return builder.build();
-    }
-
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return getBundledTypeQualifiersWithoutPolyAll();
@@ -395,16 +373,28 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     newValues.addAll(a2Values);
                     return createArrayLenAnnotation(newValues);
                 } else {
-                    List<Object> a1Values =
-                            AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
-                    List<Object> a2Values =
-                            AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
-                    Set<Object> newValues = new TreeSet<>();
+                    List<Comparable> a1Values =
+                            AnnotationUtils.getElementValueArray(
+                                    a1, "value", Comparable.class, true);
+                    List<Comparable> a2Values =
+                            AnnotationUtils.getElementValueArray(
+                                    a2, "value", Comparable.class, true);
+                    List<Comparable> newValues = new ArrayList<>();
                     newValues.addAll(a1Values);
                     newValues.addAll(a2Values);
 
-                    // createAnnotation returns @UnknownVal if the list is longer than MAX_VALUES
-                    return createAnnotation(a1.getAnnotationType().toString(), newValues);
+                    ValueCheckerUtils.removeDuplicates(newValues);
+                    if (newValues.size() == 0) {
+                        return BOTTOMVAL;
+                    }
+                    if (newValues.size() > MAX_VALUES) {
+                        return UNKNOWNVAL;
+                    }
+                    AnnotationBuilder builder =
+                            new AnnotationBuilder(processingEnv, a1.getAnnotationType().toString());
+                    List<Object> valuesList = new ArrayList<Object>(newValues);
+                    builder.setValue("value", valuesList);
+                    return builder.build();
                 }
             }
 
