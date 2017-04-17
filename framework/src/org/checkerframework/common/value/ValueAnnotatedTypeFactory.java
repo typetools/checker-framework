@@ -376,6 +376,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     Range range1 = getRange(a1);
                     Range range2 = getRange(a2);
                     return createArrayLenRangeAnnotation(range1.union(range2));
+                } else if (AnnotationUtils.areSameByClass(a1, IntVal.class)) {
+                    List<Long> a1Values =
+                            AnnotationUtils.getElementValueArray(a1, "value", Long.class, true);
+                    List<Long> a2Values =
+                            AnnotationUtils.getElementValueArray(a2, "value", Long.class, true);
+                    List<Long> newValues = new ArrayList<>();
+                    newValues.addAll(a1Values);
+                    newValues.addAll(a2Values);
+                    return createIntValAnnotation(newValues);
+                } else if (AnnotationUtils.areSameByClass(a1, ArrayLen.class)) {
+                    List<Integer> a1Values =
+                            AnnotationUtils.getElementValueArray(a1, "value", Integer.class, true);
+                    List<Integer> a2Values =
+                            AnnotationUtils.getElementValueArray(a2, "value", Integer.class, true);
+                    List<Integer> newValues = new ArrayList<>();
+                    newValues.addAll(a1Values);
+                    newValues.addAll(a2Values);
+                    return createArrayLenAnnotation(newValues);
                 } else {
                     List<Object> a1Values =
                             AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
