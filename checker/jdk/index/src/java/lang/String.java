@@ -162,7 +162,7 @@ public final class String
      * @param  original
      *         A {@code String}
      */
-    public @PolyMinLen @PolySameLen String(@PolyMinLen @PolySameLen String original) {
+    public /*@ PolyMinLen*/ @PolySameLen String(/*@ PolyMinLen*/ @PolySameLen String original) {
         int size = original.count;
         char[] originalValue = original.value;
         char[] v;
@@ -191,7 +191,7 @@ public final class String
      * @param  value
      *         The initial value of the string
      */
-    public @PolyMinLen @PolySameLen String(char @PolyMinLen @PolySameLen [] value) {
+    public /*@ PolyMinLen*/ @PolySameLen String(char /*@ PolyMinLen*/ @PolySameLen [] value) {
         int size = value.length;
         this.offset = 0;
         this.count = size;
@@ -394,7 +394,7 @@ public final class String
      * @see  #String(byte[])
      */
     @Deprecated
-    public @PolyMinLen @PolySameLen String(byte @PolyMinLen @PolySameLen [] ascii, int hibyte) {
+    public /*@ PolyMinLen*/ @PolySameLen String(byte /*@ PolyMinLen*/ @PolySameLen [] ascii, int hibyte) {
         this(ascii, hibyte, 0, ascii.length);
     }
 
@@ -2916,7 +2916,7 @@ public final class String
      * @return  a newly allocated string representing the same sequence of
      *          characters contained in the character array argument.
      */
-    public static @PolyMinLen @PolySameLen String valueOf(char @PolyMinLen @PolySameLen [] data) {
+    public static /*@ PolyMinLen*/ @PolySameLen String valueOf(char /*@ PolyMinLen*/ @PolySameLen [] data) {
         return new String(data);
     }
 
@@ -2968,7 +2968,7 @@ public final class String
      * @return  a <code>String</code> that contains the characters of the
      *          character array.
      */
-    public static @PolyMinLen @PolySameLen String copyValueOf(char @PolyMinLen @PolySameLen [] data) {
+    public static /*@ PolyMinLen*/ @PolySameLen String copyValueOf(char /*@ PolyMinLen*/ @PolySameLen [] data) {
         return copyValueOf(data, 0, data.length);
     }
 
