@@ -10,7 +10,7 @@ language: generic
 # Docker container and upload it.
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq nodejs maven
+  - sudo apt-get install -qq nodejs
 
 services:
   - docker
