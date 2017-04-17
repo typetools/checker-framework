@@ -49,9 +49,9 @@ Michael~D. Ernst, Ren{\'e} Just, Suzanne Millstein, Werner Dietl, Stuart
   Seungyeop Han, Paul Vines, and Edward~X. Wu.
 \newblock Collaborative verification of information flow for a high-assurance
   app store.
-\newblock In {\em CCS: Proceedings of the 21st ACM Conference on Computer and
-  Communications Security (CCS)}, pages 1092--1104, Scottsdale, AZ, USA,
-  November 2014.
+\newblock In {\em CCS 2014: Proceedings of the 21st ACM Conference on Computer
+  and Communications Security}, pages 1092--1104, Scottsdale, AZ, USA, November
+  2014.
 
 \bibitem[Ern08]{JSR308-2008-09-12}
 Michael~D. Ernst.
@@ -120,9 +120,9 @@ David Hovemeyer and William Pugh.
 \bibitem[HSP05]{HovemeyerSP2005}
 David Hovemeyer, Jaime Spacco, and William Pugh.
 \newblock Evaluating and tuning a static analysis to find null pointer bugs.
-\newblock In {\em PASTE: ACM SIGPLAN/SIGSOFT Workshop on Program Analysis for
-  Software Tools and Engineering (PASTE 2005)}, pages 13--19, Lisbon, Portugal,
-  September 2005.
+\newblock In {\em PASTE 2005: ACM SIGPLAN/SIGSOFT Workshop on Program Analysis
+  for Software Tools and Engineering (PASTE 2005)}, pages 13--19, Lisbon,
+  Portugal, September 2005.
 
 \bibitem[LBR06]{LeavensBR2006:JML}
 Gary~T. Leavens, Albert~L. Baker, and Clyde Ruby.
@@ -175,8 +175,8 @@ Matthew~S. Tschantz and Michael~D. Ernst.
 \bibitem[TPV10]{TangPJ2010}
 Daniel Tang, Ales Plsek, and Jan Vitek.
 \newblock Static checking of safety critical {Java} annotations.
-\newblock In {\em JTRES: 8th International Workshop on Java Technologies for
-  Real-time and Embedded Systems}, pages 148--154, Prague, Czech Republic,
+\newblock In {\em JTRES 2010: 8th International Workshop on Java Technologies
+  for Real-time and Embedded Systems}, pages 148--154, Prague, Czech Republic,
   August 2010.
 
 \bibitem[VPEJ14]{VakilianPEJ2014}
