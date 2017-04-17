@@ -5,7 +5,7 @@ language: generic
 # Alternative to "language: java", which has node installed
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq nodejs maven
+  - sudo apt-get install -qq nodejs
 
 services:
   - docker
