@@ -303,23 +303,27 @@ Index Checker depends not on a \<@MinLen> annotation but on \<i> being
 annotated as
 \refqualclasswithparams{checker/index/qual}{LTLengthOf}{"arr"}.
 
+The MinLen type system is implemented in practice by the Constant Value Checker
+(see \chapterpageref{constant-value-checker}), running in "ignore range overflow" mode.
+
 Array minimum lengths use the following type qualifiers
 (Figure~\ref{fig-index-array-types}):
 
 \begin{description}
-\item[\refqualclasswithparams{checker/index/qual}{MinLen}{int value}]
+\item[\refqualclasswithparams{common/value/qual}{MinLen}{int value}]
   The value of an expression of this type is a sequence with at least
   \code{value} elements.  The default annotation is
   \code{@MinLen(0)}, and it may be applied to non-sequences.
   \code{@MinLen($x$)} is a subtype of \code{@MinLen($x-1$)}.
-\item[\refqualclass{checker/index/qual}{MinLenBottom}]
+  An \code{@MinLen} annotation is treated internally as an
+  [\refqualclass{common/value/qual}{ArrayLenRange}] with only its
+  \code{from} field filled.
+\item[\refqualclass{common/value/qual}{BottomVal}]
   This is the bottom type for the MinLen type system.
   Programmers should rarely need to write it.
-  \code{null} has this type.
-\item[\refqualclass{checker/index/qual}{PolyMinLen}]
-  indicates qualifier polymorphism.
-  For a description of qualifier polymorphism, see
-  Section~\ref{qualifier-polymorphism}.
+  \code{null} has this type. This type is borrowed from
+  the Constant Value Checker, which implements the MinLen
+  hierarchy in practice.
 \end{description}
 
 \begin{figure}
