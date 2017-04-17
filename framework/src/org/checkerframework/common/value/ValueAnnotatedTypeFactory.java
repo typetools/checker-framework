@@ -1100,9 +1100,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                 }
                 return createCharAnnotation(charVals);
+            default:
+                throw new UnsupportedOperationException("Unexpected kind:" + resultType);
         }
-
-        throw new UnsupportedOperationException("Unexpected kind:" + resultType);
     }
 
     /**
