@@ -1415,7 +1415,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return createIntRangeAnnotation(Collections.min(intValues), Collections.max(intValues));
     }
 
-    /** Returns a {@code Range} bounded by the values specified in the given Range annotation. */
+    /**
+     * Returns a {@code Range} bounded by the values specified in the given {@code @Range}
+     * annotation.
+     */
     public static Range getRange(AnnotationMirror rangeAnno) {
         if (rangeAnno == null) {
             return null;
@@ -1433,8 +1436,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns a {@code Range} bounded by the values specified in the given IntRange or IntValue
-     * annotation*
+     * Returns a {@code Range} bounded by the values specified in the given {@code @IntRange} or
+     * {@code @IntValue} annotation.
      */
     public static Range getRangeOrConvertIntVal(AnnotationMirror anno) {
         if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
