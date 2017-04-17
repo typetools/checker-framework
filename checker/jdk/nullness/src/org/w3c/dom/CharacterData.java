@@ -72,7 +72,7 @@ public interface CharacterData extends Node {
      *   fit in a <code>DOMString</code> variable on the implementation
      *   platform.
      */
-    @Pure public @Nullable String getData()
+    @Pure public String getData()
                             throws DOMException;
     /**
      * The character data of the node that implements this interface. The DOM
@@ -85,7 +85,7 @@ public interface CharacterData extends Node {
      * @exception DOMException
      *   NO_MODIFICATION_ALLOWED_ERR: Raised when the node is readonly.
      */
-    public void setData(@Nullable String data)
+    public void setData(String data)
                             throws DOMException;
 
     /**
@@ -136,7 +136,7 @@ public interface CharacterData extends Node {
      *   <br>NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
      */
     public void insertData(int offset,
-                           @Nullable String arg)
+                            String arg)
                            throws DOMException;
 
     /**

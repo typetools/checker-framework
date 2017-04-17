@@ -126,7 +126,7 @@ public interface Text extends CharacterData {
      *
      * @since DOM Level 3
      */
-    @Pure public @Nullable String getWholeText();
+    @Pure public String getWholeText();
 
     /**
      * Replaces the text of the current node and all logically-adjacent text
@@ -184,7 +184,7 @@ public interface Text extends CharacterData {
      *   nodes being replaced is readonly.
      * @since DOM Level 3
      */
-    public Text replaceWholeText(String content)
+    public @Nullable Text replaceWholeText(String content)
                                  throws DOMException;
 
 }

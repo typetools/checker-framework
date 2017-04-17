@@ -219,7 +219,7 @@ public interface Attr extends Node {
      * mutation; in such case, the value on retrieval may differ from the
      * value on setting.
      */
-    @Pure public @Nullable String getValue();
+    @Pure public String getValue();
     /**
      * On retrieval, the value of the attribute is returned as a string.
      * Character and general entity references are replaced with their
