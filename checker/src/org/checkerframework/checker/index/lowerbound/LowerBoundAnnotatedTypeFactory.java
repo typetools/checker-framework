@@ -35,7 +35,7 @@ import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
-import org.checkerframework.common.value.ValueIgnoreRangeOverflowChecker;
+import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -155,7 +155,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Returns the Value Checker's annotated type factory. */
     public ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
-        return getTypeFactoryOfSubchecker(ValueIgnoreRangeOverflowChecker.class);
+        return getTypeFactoryOfSubchecker(ValueChecker.class);
     }
 
     /** Returns the SearchIndexFor Checker's annotated type factory. */
@@ -321,7 +321,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (TreeUtils.isArrayLengthAccess(tree)) {
                 AnnotatedTypeMirror minLenType =
                         getValueAnnotatedTypeFactory().getAnnotatedType(tree);
-                Long a = getValueAnnotatedTypeFactory().getMinLenValueFromLengthType(minLenType);
+                Integer a = getValueAnnotatedTypeFactory().getMinLenValueFromLengthType(minLenType);
                 return a;
             }
             return null;
