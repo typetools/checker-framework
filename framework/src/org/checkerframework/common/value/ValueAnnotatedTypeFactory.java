@@ -142,28 +142,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ValueTransfer(analysis);
     }
 
-    /**
-     * Creates an annotation of the given name with the given set of values.
-     *
-     * <p>If values.size &gt; MAX_VALUES, issues a checker warning and returns UNKNOWNVAL.
-     *
-     * <p>If values.size == 0, issues a checker warning and returns BOTTOMVAL.
-     *
-     * @return annotation given by name with values=values, or UNKNOWNVAL
-     */
-    private AnnotationMirror createAnnotation(String name, Set<?> values) {
-        if (values.size() == 0) {
-            return BOTTOMVAL;
-        }
-        if (values.size() > MAX_VALUES) {
-            return UNKNOWNVAL;
-        }
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, name);
-        List<Object> valuesList = new ArrayList<Object>(values);
-        builder.setValue("value", valuesList);
-        return builder.build();
-    }
-
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return getBundledTypeQualifiersWithoutPolyAll();
@@ -376,17 +354,44 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     Range range1 = getRange(a1);
                     Range range2 = getRange(a2);
                     return createArrayLenRangeAnnotation(range1.union(range2));
+                } else if (AnnotationUtils.areSameByClass(a1, IntVal.class)) {
+                    List<Long> a1Values =
+                            AnnotationUtils.getElementValueArray(a1, "value", Long.class, true);
+                    List<Long> a2Values =
+                            AnnotationUtils.getElementValueArray(a2, "value", Long.class, true);
+                    List<Long> newValues = new ArrayList<>();
+                    newValues.addAll(a1Values);
+                    newValues.addAll(a2Values);
+                    return createIntValAnnotation(newValues);
+                } else if (AnnotationUtils.areSameByClass(a1, ArrayLen.class)) {
+                    List<Integer> a1Values =
+                            AnnotationUtils.getElementValueArray(a1, "value", Integer.class, true);
+                    List<Integer> a2Values =
+                            AnnotationUtils.getElementValueArray(a2, "value", Integer.class, true);
+                    List<Integer> newValues = new ArrayList<>();
+                    newValues.addAll(a1Values);
+                    newValues.addAll(a2Values);
+                    return createArrayLenAnnotation(newValues);
                 } else {
                     List<Object> a1Values =
                             AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
                     List<Object> a2Values =
                             AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
-                    Set<Object> newValues = new TreeSet<>();
+                    TreeSet<Object> newValues = new TreeSet<>();
                     newValues.addAll(a1Values);
                     newValues.addAll(a2Values);
 
-                    // createAnnotation returns @UnknownVal if the list is longer than MAX_VALUES
-                    return createAnnotation(a1.getAnnotationType().toString(), newValues);
+                    if (newValues.size() == 0) {
+                        return BOTTOMVAL;
+                    }
+                    if (newValues.size() > MAX_VALUES) {
+                        return UNKNOWNVAL;
+                    }
+                    AnnotationBuilder builder =
+                            new AnnotationBuilder(processingEnv, a1.getAnnotationType().toString());
+                    List<Object> valuesList = new ArrayList<>(newValues);
+                    builder.setValue("value", valuesList);
+                    return builder.build();
                 }
             }
 
