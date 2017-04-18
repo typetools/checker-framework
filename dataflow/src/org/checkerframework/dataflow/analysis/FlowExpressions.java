@@ -507,8 +507,8 @@ public class FlowExpressions {
             }
             FieldAccess fa = (FieldAccess) other;
             return super.syntacticEquals(other)
-                    || fa.getField().equals(getField())
-                            && fa.getReceiver().syntacticEquals(getReceiver());
+                    || (fa.getField().equals(getField())
+                            && fa.getReceiver().syntacticEquals(getReceiver()));
         }
 
         @Override
