@@ -209,7 +209,7 @@ public class FlowExpressions {
             AnnotationProvider provider,
             ExpressionTree receiverTree,
             boolean allowNonDeterministic) {
-        Receiver receiver = null;
+        Receiver receiver;
         switch (receiverTree.getKind()) {
             case ARRAY_ACCESS:
                 ArrayAccessTree a = (ArrayAccessTree) receiverTree;
@@ -251,6 +251,8 @@ public class FlowExpressions {
                     }
                     TypeMirror type = InternalUtils.typeOf(mn);
                     receiver = new MethodCall(type, invokedMethod, methodReceiver, parameters);
+                } else {
+                    receiver = null;
                 }
                 break;
             case MEMBER_SELECT:
@@ -290,7 +292,13 @@ public class FlowExpressions {
                     case ANNOTATION_TYPE:
                     case INTERFACE:
                         receiver = new ClassName(ele.asType());
+                        break;
+                    default:
+                        receiver = null;
                 }
+                break;
+            default:
+                receiver = null;
         }
 
         if (receiver == null) {

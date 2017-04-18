@@ -1493,6 +1493,7 @@ So, use our own archived version.
 
     <target name="jdk.jar" depends="jar"
             description="Create the instrumented jdkX.jar using the JDK specified by JAVA_HOME">
+      <fail unless="env.JAVA_HOME" message="Environment variable JAVA_HOME is not set."/>
       <property name="annotation-file-utilities.jar" value="${annotation.tools}/annotation-file-utilities/annotation-file-utilities.jar"/>
       <available property="annotation-file-utilities.exist" file="${annotation-file-utilities.jar}" />
       <fail unless="annotation-file-utilities.exist" message="Could not find annotation-file-utilities.jar: ${annotation-file-utilities.jar}.  You must build Annotation Tools; see https://checkerframework.org/manual/#build-source" />
