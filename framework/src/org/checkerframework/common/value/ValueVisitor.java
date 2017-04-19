@@ -137,10 +137,12 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             return null;
         }
 
-        // Allow casts when the source is an integer to a short or byte if the range is larger than what can
-        // be held in an integer. This allows byte/short arithmetic (which gets implicitly converted to int
-        // arithmetic) to proceed as expected. If the cast would be unsafe, a type error will be issued when
-        // ValueAnnotatedTypeFactory#ValueAnnotatedTreeAnnotator#visitTypeCast assigns it an incompatible type.
+        // Allow casts when the source is an integer to a short or byte if the range is larger than
+        // what can be held in an integer. This allows byte/short arithmetic (which gets implicitly
+        // converted to int arithmetic) to proceed as expected. If the cast would be unsafe, a type
+        // error will be issued when
+        // ValueAnnotatedTypeFactory#ValueAnnotatedTreeAnnotator#visitTypeCast assigns it an
+        // incompatible type.
         if (node.getType().getKind() == Kind.PRIMITIVE_TYPE) {
             PrimitiveTypeTree ptt = (PrimitiveTypeTree) node.getType();
             if (ptt.getPrimitiveTypeKind() == TypeKind.BYTE
