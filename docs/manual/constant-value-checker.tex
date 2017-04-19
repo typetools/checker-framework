@@ -42,8 +42,9 @@ The main type annotations are
 \refqualclass{common/value/qual}{DoubleVal}, and
 \refqualclass{common/value/qual}{StringVal}.
 Additional type annotations for arrays are
-\refqualclass{common/value/qual}{ArrayLen} and
-\refqualclass{common/value/qual}{ArrayLenRange}.
+\refqualclass{common/value/qual}{ArrayLen},
+\refqualclass{common/value/qual}{ArrayLenRange}
+an \refqualclass{common/value/qual}{MinLen}.
 
 Each \<*Val> type annotation takes as an argument a set of values, and its
 meaning is that at run time, the expression evaluates to one of the values.  For
@@ -75,6 +76,11 @@ have exactly the same meaning, and using either one has the same effect.
 to \refqualclass{common/value/qual}{ArrayLen} that
 \refqualclass{common/value/qual}{IntRange} has to
 \refqualclass{common/value/qual}{IntVal}.
+The \<@MinLen> annotation is an alias for \<@ArrayLenRange> (meaning that every \<@MinLen> annotation
+ is automatically converted to an \<@ArrayLenRange> annotation) that only takes
+one argument, which is the lower bound of the range. The upper bound of the
+range is the maximum integer value. For an example of how the \<@MinLen>
+annotation is used, see \chapterpageref{index-checker}.
 
 Figure~\ref{fig-value-hierarchy} shows the
 subtyping relationship among the type annotations.
