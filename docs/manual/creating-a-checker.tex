@@ -20,6 +20,11 @@ Writing a simple checker is easy!  For example, here is a complete, useful
 type-checker:
 
 \begin{Verbatim}
+import java.lang.annotation.Target;
+import java.lang.annotation.ElementType;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.Unqualified;
+
 @SubtypeOf(Unqualified.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Encrypted {}
