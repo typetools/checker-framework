@@ -1593,7 +1593,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * MinLen} annotations into {@link ArrayLenRange} annotations.
      */
     public Integer getMinLenValue(AnnotationMirror annotation) {
-        System.out.println("fetching minlen from " + annotation);
         if (annotation == null) {
             return null;
         }
