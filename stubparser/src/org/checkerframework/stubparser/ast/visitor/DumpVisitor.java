@@ -940,6 +940,8 @@ public final class DumpVisitor implements VoidVisitor<Object> {
             case preDecrement:
                 printer.print("--");
                 break;
+            default:
+                // Postfix operations handled below
         }
 
         n.getExpr().accept(this, arg);
@@ -951,6 +953,8 @@ public final class DumpVisitor implements VoidVisitor<Object> {
             case posDecrement:
                 printer.print("--");
                 break;
+            default:
+                // Prefix operations handled above
         }
     }
 

@@ -113,6 +113,9 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   ant -d check-style
   release/checkPluginUtil.sh
 
+  # Run error-prone
+  (cd checker; ant check-errorprone)
+
   # Documentation
   ant javadoc-private
   make -C docs/manual all

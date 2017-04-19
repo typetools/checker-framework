@@ -399,11 +399,11 @@ public class Operators {
     }
 
     public static boolean AND(Boolean a, Boolean b) {
-        return a & b;
+        return a && b;
     }
 
     public static boolean AND(boolean a, boolean b) {
-        return a & b;
+        return a && b;
     }
 
     public static long AND(Long a, Long b) {
@@ -423,7 +423,7 @@ public class Operators {
     }
 
     public static boolean OR(Boolean a, Boolean b) {
-        return a | b;
+        return a || b;
     }
 
     public static long OR(Long a, Long b) {
@@ -435,7 +435,7 @@ public class Operators {
     }
 
     public static boolean OR(boolean a, boolean b) {
-        return a | b;
+        return a || b;
     }
 
     public static long OR(long a, long b) {

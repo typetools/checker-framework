@@ -59,7 +59,7 @@ public interface Store<S extends Store<S>> {
      * computations in {@link Analysis}.
      *
      * <p>A particular analysis might not require widening and should implement this method by
-     * calling leastUpperBound)
+     * calling leastUpperBound.
      *
      * <p><em>Important</em>: This method must fulfill the following contract:
      *

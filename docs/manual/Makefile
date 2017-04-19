@@ -48,7 +48,7 @@ figures-all:
 
 manual.pdf: bib-update figures-all check-labels
 	pdflatex manual.tex
-	bibtex manual
+	bibtex -min-crossrefs=9999 manual
 	pdflatex manual.tex
 	while grep "Rerun to get" manual.log; do pdflatex manual.tex; done
 

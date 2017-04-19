@@ -45,7 +45,7 @@ public abstract class AggregateChecker extends SourceChecker {
         checkers = new ArrayList<SourceChecker>(checkerClasses.size());
         for (Class<? extends SourceChecker> checkerClass : checkerClasses) {
             try {
-                SourceChecker instance = checkerClass.newInstance();
+                SourceChecker instance = checkerClass.getDeclaredConstructor().newInstance();
                 instance.setParentChecker(this);
                 checkers.add(instance);
             } catch (Exception e) {
