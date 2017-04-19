@@ -138,8 +138,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * once.
      *
      * <p>Though each checker is run on a whole compilation unit before the next checker is run,
-     * error and warning messages collected and sorted based on location in the source file before
-     * being printed. (See {@link #printMessage(Kind, String, Tree, CompilationUnitTree)}.
+     * error and warning messages are collected and sorted based on the location in the source file
+     * before being printed. (See {@link #printMessage(Kind, String, Tree, CompilationUnitTree)}.)
      *
      * <p>WARNING: Circular dependencies are not supported nor do checkers verify that their
      * dependencies are not circular. Make sure no circular dependencies are created when overriding
@@ -459,6 +459,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
         if (getSubcheckers().size() > 0) {
             printCollectedMessages(tree.getCompilationUnit());
+            // Update errsOnLastExit to reflect the errors issued.
             this.errsOnLastExit = log.nerrors;
         }
     }
@@ -467,13 +468,13 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * Stores all messages issued by this checker and its subcheckers for the current compilation
      * unit. The messages are printed after all checkers have processed the current compilation
      * unit. If this checker has no subcheckers and is not a subchecker for any other checker, then
-     * messageStore is null and messages will printed as they are issued by this checker.
+     * messageStore is null and messages will be printed as they are issued by this checker.
      */
     private TreeSet<CheckerMessage> messageStore = null;
 
     /**
      * If this is a compound checker or a subchecker of a compound checker, then the message is
-     * stored until all message from all checkers for the compilation unit are issued.
+     * stored until all messages from all checkers for the compilation unit are issued.
      *
      * <p>Otherwise, it prints the message.
      */
@@ -498,8 +499,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      */
     private void printCollectedMessages(CompilationUnitTree unit) {
         if (messageStore != null) {
-            for (CheckerMessage pos : messageStore) {
-                super.printMessage(pos.kind, pos.message, pos.source, unit);
+            for (CheckerMessage msg : messageStore) {
+                super.printMessage(msg.kind, msg.message, msg.source, unit);
             }
         }
     }
@@ -518,16 +519,16 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                         return byPos;
                     }
 
-                    int o1Checker = BaseTypeChecker.this.getSubcheckers().indexOf(o1.checker);
-                    int o2Checker = BaseTypeChecker.this.getSubcheckers().indexOf(o2.checker);
-                    if (o1Checker != o2Checker) {
-                        if (o1Checker == -1) {
-                            o1Checker = BaseTypeChecker.this.getSubcheckers().size();
+                    int o1Index = BaseTypeChecker.this.getSubcheckers().indexOf(o1.checker);
+                    int o2Index = BaseTypeChecker.this.getSubcheckers().indexOf(o2.checker);
+                    if (o1Index != o2Index) {
+                        if (o1Index == -1) {
+                            o1Index = BaseTypeChecker.this.getSubcheckers().size();
                         }
-                        if (o2Checker == -1) {
-                            o2Checker = BaseTypeChecker.this.getSubcheckers().size();
+                        if (o2Index == -1) {
+                            o2Index = BaseTypeChecker.this.getSubcheckers().size();
                         }
-                        return Integer.compare(o1Checker, o2Checker);
+                        return Integer.compare(o1Index, o2Index);
                     }
 
                     int kind = o1.kind.compareTo(o2.kind);
@@ -540,11 +541,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             };
 
     /** Represents a message (e.g., an error message) issued by a checker. */
-    private class CheckerMessage {
-        Diagnostic.Kind kind;
-        String message;
-        Tree source;
-        BaseTypeChecker checker;
+    private static class CheckerMessage {
+        final Diagnostic.Kind kind;
+        final String message;
+        final Tree source;
+        final BaseTypeChecker checker;
 
         private CheckerMessage(
                 Diagnostic.Kind kind, String message, Tree source, BaseTypeChecker checker) {
@@ -571,10 +572,10 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             if (!message.equals(that.message)) {
                 return false;
             }
-            if (!source.equals(that.source)) {
+            if (source == that.source) {
                 return false;
             }
-            return checker.equals(that.checker);
+            return checker == that.checker;
         }
 
         @Override

@@ -1837,7 +1837,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected final Collection<String> getStandardSuppressWarningsKeys() {
         SuppressWarningsKeys annotation = this.getClass().getAnnotation(SuppressWarningsKeys.class);
 
-        // This ensures keys are printed consistently
+        // TreeSet ensures keys are returned in a consistent order.
         Set<String> result = new TreeSet<>();
         result.add(SUPPRESS_ALL_KEY);
 
