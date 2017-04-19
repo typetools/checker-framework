@@ -1442,7 +1442,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Returns a {@code Range} bounded by the values specified in the given {@code @IntRange} or
-     * {@code @IntVal} annotation. Returns null if the given annotations is not {@code IntRange} or
+     * {@code @IntVal} annotation. Returns null if the given annotation is not {@code IntRange} or
      * {@code IntVal}.
      */
     public static Range getRangeOrConvertIntVal(AnnotationMirror anno) {
