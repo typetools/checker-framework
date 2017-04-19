@@ -131,9 +131,25 @@ You usually want to build your checker on the Base Checker.
 The Checker Framework provides abstract base classes (default
 implementations), and a specific checker overrides as little or as much of
 the default implementations as necessary.
+To simplify checker implementations, by default the Checker Framework
+automatically discovers the parts of a checker by looking for specific files.
+Thus, checker implementations follow a very formulaic structure.
+To illustrate, a checker for MyProp must be laid out as follows:
 %
+\begin{Verbatim}
+javapackage/
+  | qual/                               type qualifiers
+  | MyPropVisitor.java                  [optional] type rules
+  | MyPropAnnotatedTypeFactory.java     [optional] type introduction and dataflow rules
+  | MyPropChecker.java                  [optional] interface to the compiler
+\end{Verbatim}
+%
+Note that \<MyPropChecker.java> is required unless you are building on the
+Subtyping Checker.
+
 Sections~\ref{creating-typequals}--\ref{creating-compiler-interface} describe
-the components of a type system as written using the Checker Framework:
+the individual components of a type system as written using the Checker
+Framework:
 
 \begin{description}
 
