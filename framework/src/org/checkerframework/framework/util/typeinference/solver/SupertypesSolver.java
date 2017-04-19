@@ -176,7 +176,7 @@ public class SupertypesSolver {
     }
 
     /** Holds the least upper bounds for every target type parameter. */
-    class Lubs {
+    static class Lubs {
         public final Map<TypeVariable, AnnotatedTypeMirror> types = new LinkedHashMap<>();
         public final Map<TypeVariable, AnnotationMirrorMap<AnnotationMirror>> primaries =
                 new LinkedHashMap<>();

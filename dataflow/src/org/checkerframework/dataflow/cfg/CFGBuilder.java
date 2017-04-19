@@ -701,7 +701,7 @@ public class CFGBuilder {
     }
 
     /** A TryFinallyFrame applies to exceptions of any type */
-    protected class TryFinallyFrame implements TryFrame {
+    protected static class TryFinallyFrame implements TryFrame {
         protected Label finallyLabel;
 
         public TryFinallyFrame(Label finallyLabel) {

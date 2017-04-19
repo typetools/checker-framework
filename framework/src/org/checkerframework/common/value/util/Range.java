@@ -807,8 +807,8 @@ public class Range {
      * @return true if wider than the given value
      */
     public boolean isWiderThan(long value) {
-        if (this.isWithin(Long.MIN_VALUE >> 1 + 1, Long.MAX_VALUE >> 1)) {
-            // This bound is adequate to guarantee no overflow when using long to evaluate
+        if (this.isWithin((Long.MIN_VALUE >> 1) + 1, Long.MAX_VALUE >> 1)) {
+            // This bound is adequate to guarantee no overflow when using long to evaluate.
             // Long.MIN_VALUE >> 1 + 1 = -4611686018427387903
             // Long.MAX_VALUE >> 1 = 4611686018427387903
             return to - from + 1 > value;
