@@ -925,7 +925,7 @@ public class ValueTransfer extends CFTransfer {
                 break;
             case GREATER_THAN_EQ:
                 thenRightRange = rightRange.refineLessThanEq(leftRange);
-                thenLeftRange = leftRange.refineGreaterThan(rightRange);
+                thenLeftRange = leftRange.refineGreaterThanEq(rightRange);
                 elseLeftRange = leftRange.refineLessThan(rightRange);
                 elseRightRange = rightRange.refineGreaterThan(leftRange);
                 break;
