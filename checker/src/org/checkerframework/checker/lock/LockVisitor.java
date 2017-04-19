@@ -1314,7 +1314,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
     }
 
-    private class LockExpression {
+    private static class LockExpression {
         final String expressionString;
         Receiver lockExpression = null;
         DependentTypesError error = null;

@@ -5,6 +5,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -303,13 +304,27 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 if (!getUnitsRel().containsKey(classname)) {
                     try {
-                        unitsRel.put(classname, theclass.newInstance().init(processingEnv));
+                        unitsRel.put(
+                                classname,
+                                theclass.getDeclaredConstructor()
+                                        .newInstance()
+                                        .init(processingEnv));
+                    } catch (NoSuchMethodException e) {
+                        // TODO
+                        e.printStackTrace();
+                        ErrorReporter.errorAbort("Exception NoSuchMethodException");
+                    } catch (InvocationTargetException e) {
+                        // TODO
+                        e.printStackTrace();
+                        ErrorReporter.errorAbort("Exception InvocationTargetException");
                     } catch (InstantiationException e) {
                         // TODO
                         e.printStackTrace();
+                        ErrorReporter.errorAbort("Exception InstantiationException");
                     } catch (IllegalAccessException e) {
                         // TODO
                         e.printStackTrace();
+                        ErrorReporter.errorAbort("Exception IllegalAccessException");
                     }
                 }
             }

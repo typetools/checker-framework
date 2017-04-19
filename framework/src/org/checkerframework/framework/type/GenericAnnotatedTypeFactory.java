@@ -1393,6 +1393,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @see BaseTypeChecker#getTypeFactoryOfSubchecker(Class)
      */
+    @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
     public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker>
             T getTypeFactoryOfSubchecker(Class<U> checkerClass) {
         T subFactory = checker.getTypeFactoryOfSubchecker(checkerClass);
