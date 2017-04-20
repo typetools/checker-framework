@@ -20,7 +20,7 @@ public class Range {
     /** The upper bound of the interval, inclusive. */
     public final long to;
 
-    /** Should this range take overflow into account or ignore it? */
+    /** Should ranges take overflow into account or ignore it? */
     public static boolean IGNORE_OVERFLOW = false;
 
     /** A range containing all possible 64-bit values. */
@@ -112,15 +112,15 @@ public class Range {
     /**
      * Converts a this range to a 32-bit integral range.
      *
-     * <p>If this range ignores overflow and one of the bounds is outside the Integer range, then
-     * that bound is set to the bound of the Integer range.
+     * <p>If {@link #Range().IGNORE_OVERFLOW} is true and one of the bounds is outside the Integer
+     * range, then that bound is set to the bound of the Integer range.
      *
-     * <p>If this range does not ignore overflow and is too wide, i.e., wider than the full range of
-     * the Integer class, return INT_EVERYTHING.
+     * <p>If {@link #Range().IGNORE_OVERFLOW} is false and this range is too wide, i.e., wider than
+     * the full range of the Integer class, return INT_EVERYTHING.
      *
-     * <p>If this range does not ignore overflow and the bounds of this range are not representable
-     * as 32-bit integers, convert the bounds to Integer type in accordance with Java overflow
-     * rules, e.g., Integer.MAX_VALUE + 1 is converted to Integer.MIN_VALUE.
+     * <p>If {@link #Range().IGNORE_OVERFLOW} is false and the bounds of this range are not
+     * representable as 32-bit integers, convert the bounds to Integer type in accordance with Java
+     * overflow rules, e.g., Integer.MAX_VALUE + 1 is converted to Integer.MIN_VALUE.
      */
     public Range intRange() {
         if (this.isNothing()) {
@@ -149,15 +149,15 @@ public class Range {
     /**
      * Converts a this range to a 16-bit short range.
      *
-     * <p>If this range ignores overflow and one of the bounds is outside the Short range, then that
-     * bound is set to the bound of the Short range.
+     * <p>If {@link #Range().IGNORE_OVERFLOW} is true and one of the bounds is outside the Short
+     * range, then that bound is set to the bound of the Short range.
      *
-     * <p>If this range is too wide, i.e., wider than the full range of the Short class, return
-     * SHORT_EVERYTHING.
+     * <p>If {@link #Range().IGNORE_OVERFLOW} is false and this range is too wide, i.e., wider than
+     * the full range of the Short class, return SHORT_EVERYTHING.
      *
-     * <p>If the bounds of this range are not representable as 16-bit integers, convert the bounds
-     * to Integer type in accordance with Java overflow rules, e.g., Short.MAX_VALUE + 1 is
-     * converted to Short.MIN_VALUE.
+     * <p>If {@link #Range().IGNORE_OVERFLOW} is false and the bounds of this range are not
+     * representable as 16-bit integers, convert the bounds to Integer type in accordance with Java
+     * overflow rules, e.g., Short.MAX_VALUE + 1 is converted to Short.MIN_VALUE.
      */
     public Range shortRange() {
         if (this.isNothing()) {
@@ -187,15 +187,15 @@ public class Range {
     /**
      * Converts a this range to a 8-bit byte range.
      *
-     * <p>If this range ignores overflow and one of the bounds is outside the Byte range, then that
-     * bound is set to the bound of the Byte range.
+     * <p>If {@link #Range().IGNORE_OVERFLOW} is true and one of the bounds is outside the Byte
+     * range, then that bound is set to the bound of the Byte range.
      *
-     * <p>If this range is too wide, i.e., wider than the full range of the Byte class, return
-     * BYTE_EVERYTHING.
+     * <p>If {@link #Range().IGNORE_OVERFLOW} is false and this range is too wide, i.e., wider than
+     * the full range of the Byte class, return BYTE_EVERYTHING.
      *
-     * <p>If the bounds of this range are not representable as 8-bit integers, convert the bounds to
-     * Integer type in accordance with Java overflow rules, e.g., Byte.MAX_VALUE + 1 is converted to
-     * Byte.MIN_VALUE.
+     * <p>If {@link #Range().IGNORE_OVERFLOW} is false and the bounds of this range are not
+     * representable as 8-bit integers, convert the bounds to Integer type in accordance with Java
+     * overflow rules, e.g., Byte.MAX_VALUE + 1 is converted to Byte.MIN_VALUE.
      */
     public Range byteRange() {
         if (this.isNothing()) {
@@ -886,12 +886,13 @@ public class Range {
      * <p>If the BigInteger range is too wide, i.e., wider than the full range of the Long class,
      * return EVERYTHING.
      *
-     * <p>If one of the BigInteger bounds is out of Long's range and this range does not ignore
-     * overflow, convert the bounds to Long type in accordance with Java overflow rules, e.g.,
-     * Long.MAX_VALUE + 1 is converted to Long.MIN_VALUE.
+     * <p>If one of the BigInteger bounds is out of Long's range and {@link
+     * #Range().IGNORE_OVERFLOW} is false, convert the bounds to Long type in accordance with Java
+     * overflow rules, e.g., Long.MAX_VALUE + 1 is converted to Long.MIN_VALUE.
      *
-     * <p>If one of the BigInteger bounds is out of Long's range and this range ignores overflow,
-     * convert the bound that is outside Long's range to max/min value of a Long.
+     * <p>If one of the BigInteger bounds is out of Long's range and {@link
+     * #Range().IGNORE_OVERFLOW} is true, convert the bound that is outside Long's range to max/min
+     * value of a Long.
      *
      * @param bigFrom the lower bound of the BigInteger range
      * @param bigTo the upper bound of the BigInteger range
