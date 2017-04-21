@@ -3,6 +3,7 @@
 // @skip-test until the issue is fixed
 
 import java.util.function.Predicate;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class RefinedLocalInLambda {
@@ -15,7 +16,11 @@ public class RefinedLocalInLambda {
         if (limit == null) {
             return;
         }
-        printIntegersWithPredicate(i -> i > limit);
+        printIntegersWithPredicate(i -> i > limit); // type-checking fails
+        @NonNull Integer limit2 = limit;
+        printIntegersWithPredicate(i -> i > limit2); // type-checking succeeds
+        Integer limit3 = limit;
+        printIntegersWithPredicate(i -> i > limit3); // type-checking succeeds
     }
 
     public static void printIntegersWithPredicate(Predicate<Integer> tester) {
