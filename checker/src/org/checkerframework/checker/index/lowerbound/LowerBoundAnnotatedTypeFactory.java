@@ -24,6 +24,7 @@ import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.index.qual.IndexOrLow;
 import org.checkerframework.checker.index.qual.LengthOf;
+import org.checkerframework.checker.index.qual.LowerBoundBottom;
 import org.checkerframework.checker.index.qual.LowerBoundUnknown;
 import org.checkerframework.checker.index.qual.NegativeIndexFor;
 import org.checkerframework.checker.index.qual.NonNegative;
@@ -75,7 +76,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The canonical @{@link Positive} annotation. */
     public final AnnotationMirror POS = AnnotationUtils.fromClass(elements, Positive.class);
     /** The bottom annotation. */
-    public final AnnotationMirror BOTTOM = POS;
+    public final AnnotationMirror BOTTOM =
+            AnnotationUtils.fromClass(elements, LowerBoundBottom.class);
     /** The canonical @{@link LowerBoundUnknown} annotation. */
     public final AnnotationMirror UNKNOWN =
             AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);
@@ -107,7 +109,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         NonNegative.class,
                         GTENegativeOne.class,
                         LowerBoundUnknown.class,
-                        PolyLowerBound.class));
+                        PolyLowerBound.class,
+                        LowerBoundBottom.class));
     }
 
     /**
@@ -171,7 +174,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // possibleValues is null if there is no IntVal annotation on the type - such as
             // when there is a BottomVal annotation. In that case, give this the LBC's bottom type.
             if (AnnotationUtils.containsSameByClass(valueType.getAnnotations(), BottomVal.class)) {
-                return POS;
+                return BOTTOM;
             }
             return UNKNOWN;
         }
@@ -650,10 +653,10 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 int val, AnnotatedTypeMirror leftType, AnnotatedTypeMirror type) {
             if (val == 0) {
                 // Reaching this indicates a divide by zero error. If the value is zero, then this is
-                // division by zero. Division by zero is treated as bottom (i.e. Positive) so that users
+                // division by zero. Division by zero is treated as bottom so that users
                 // aren't warned about dead code that's dividing by zero. This code assumes that non-dead
                 // code won't include literal divide by zeros...
-                type.addAnnotation(POS);
+                type.addAnnotation(BOTTOM);
             } else if (val == 1) {
                 type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
             } else if (val >= 2) {

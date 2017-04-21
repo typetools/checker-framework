@@ -12,7 +12,6 @@ import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
-import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
@@ -144,8 +143,12 @@ public class ValueTransfer extends CFTransfer {
             return ValueAnnotatedTypeFactory.getCharValues(intAnno);
         }
 
-        intAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
-        if (intAnno != null) {
+        if (atypefactory.isIntRange(value.getAnnotations())) {
+            intAnno =
+                    atypefactory
+                            .getQualifierHierarchy()
+                            .findAnnotationInHierarchy(
+                                    value.getAnnotations(), atypefactory.UNKNOWNVAL);
             Range range = ValueAnnotatedTypeFactory.getRange(intAnno);
             return ValueCheckerUtils.getValuesFromRange(range, Character.class);
         }
@@ -188,9 +191,12 @@ public class ValueTransfer extends CFTransfer {
     private Range getIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         Range range = Range.EVERYTHING;
-        AnnotationMirror intRangeAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
-        if (intRangeAnno != null) {
+        if (atypefactory.isIntRange(value.getAnnotations())) {
+            AnnotationMirror intRangeAnno =
+                    atypefactory
+                            .getQualifierHierarchy()
+                            .findAnnotationInHierarchy(
+                                    value.getAnnotations(), atypefactory.UNKNOWNVAL);
             range = ValueAnnotatedTypeFactory.getRange(intRangeAnno);
         }
         AnnotationMirror intValAnno =
@@ -219,7 +225,7 @@ public class ValueTransfer extends CFTransfer {
     /** a helper function to determine if this node is annotated with @IntRange */
     private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
-        return AnnotationUtils.containsSameByClass(value.getAnnotations(), IntRange.class);
+        return atypefactory.isIntRange(value.getAnnotations());
     }
 
     /** a helper function to determine if this node is annotated with @UnknownVal */
@@ -283,60 +289,54 @@ public class ValueTransfer extends CFTransfer {
             return;
         }
 
-        boolean isIntRange = false;
+        boolean isIntRange = atypefactory.isIntRange(value.getAnnotations());
 
         AnnotationMirror lengthAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
-
-        if (lengthAnno == null) {
-            lengthAnno =
-                    AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
-            isIntRange = true;
-        }
+                atypefactory
+                        .getQualifierHierarchy()
+                        .findAnnotationInHierarchy(value.getAnnotations(), atypefactory.UNKNOWNVAL);
 
         if (lengthAnno != null) {
-            RangeOrListOfValues rolv;
+            RangeOrListOfValues rolv = null;
             if (isIntRange) {
                 rolv = new RangeOrListOfValues(ValueAnnotatedTypeFactory.getRange(lengthAnno));
-            } else {
+            } else if (AnnotationUtils.areSameByClass(lengthAnno, IntVal.class)) {
                 List<Long> lengthValues = ValueAnnotatedTypeFactory.getIntValues(lengthAnno);
                 rolv =
                         new RangeOrListOfValues(
                                 RangeOrListOfValues.convertLongsToInts(lengthValues));
             }
-            AnnotationMirror newArrayAnno = rolv.createAnnotation(atypefactory);
-            AnnotationMirror oldArrayAnno =
-                    atypefactory.getAnnotationMirror(
-                            arrayLengthNode.getReceiver().getTree(), ArrayLen.class);
-
-            if (oldArrayAnno == null) {
-                oldArrayAnno =
+            if (rolv != null) {
+                AnnotationMirror newArrayAnno = rolv.createAnnotation(atypefactory);
+                AnnotationMirror oldArrayAnno =
                         atypefactory.getAnnotationMirror(
-                                arrayLengthNode.getReceiver().getTree(), ArrayLenRange.class);
-            }
+                                arrayLengthNode.getReceiver().getTree(), ArrayLen.class);
 
-            AnnotationMirror combinedAnno;
-            // If the array doesn't have an @ArrayLen annotation, use the new annotation.
-            // If it does have an annotation, combine the facts known about the array
-            // with the facts known about its length using GLB.
-            if (oldArrayAnno == null) {
-                combinedAnno = newArrayAnno;
-            } else {
-                combinedAnno =
-                        atypefactory
-                                .getQualifierHierarchy()
-                                .greatestLowerBound(oldArrayAnno, newArrayAnno);
-            }
-            Receiver arrayRec =
-                    FlowExpressions.internalReprOf(
-                            analysis.getTypeFactory(), arrayLengthNode.getReceiver());
-            store.insertValue(arrayRec, combinedAnno);
-        } else {
-            // If the array's length is bottom, then this is dead code, so the array's type
-            // should also be bottom.
-            lengthAnno =
-                    AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
-            if (lengthAnno != null) {
+                if (oldArrayAnno == null) {
+                    oldArrayAnno =
+                            atypefactory.getAnnotationMirror(
+                                    arrayLengthNode.getReceiver().getTree(), ArrayLenRange.class);
+                }
+
+                AnnotationMirror combinedAnno;
+                // If the array doesn't have an @ArrayLen annotation, use the new annotation.
+                // If it does have an annotation, combine the facts known about the array
+                // with the facts known about its length using GLB.
+                if (oldArrayAnno == null) {
+                    combinedAnno = newArrayAnno;
+                } else {
+                    combinedAnno =
+                            atypefactory
+                                    .getQualifierHierarchy()
+                                    .greatestLowerBound(oldArrayAnno, newArrayAnno);
+                }
+                Receiver arrayRec =
+                        FlowExpressions.internalReprOf(
+                                analysis.getTypeFactory(), arrayLengthNode.getReceiver());
+                store.insertValue(arrayRec, combinedAnno);
+            } else if (AnnotationUtils.areSameByClass(lengthAnno, BottomVal.class)) {
+                // If the array's length is bottom, then this is dead code, so the array's type
+                // should also be bottom.
                 Receiver arrayRec =
                         FlowExpressions.internalReprOf(
                                 analysis.getTypeFactory(), arrayLengthNode.getReceiver());

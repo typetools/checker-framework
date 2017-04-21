@@ -8,6 +8,7 @@ import com.sun.source.tree.TypeCastTree;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.qual.ArrayLen;
@@ -15,9 +16,11 @@ import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.DoubleVal;
 import org.checkerframework.common.value.qual.IntRange;
+import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 
@@ -49,6 +52,29 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         }
     }
 
+    /**
+     * ValueVisitor overrides this method so that it does not have to check variables annotated with
+     * the {@link IntRangeFromPositive} annotation. This annotation is only introduced by the Index
+     * Checker's {@link org.checkerframework.checker.index.qual.Positive} annotation. It is safe to
+     * defer checking of these values to the Index Checker because this is only introduced for
+     * explicitly-written {@link org.checkerframework.checker.index.qual.Positive} annotations,
+     * which must be checked by the Lower Bound Checker.
+     *
+     * @param varType the annotated type of the lvalue (usually a variable)
+     * @param valueExp the AST node for the rvalue (the new value)
+     * @param errorKey the error message to use if the check fails (must be a compiler message key,
+     */
+    @Override
+    protected void commonAssignmentCheck(
+            AnnotatedTypeMirror varType,
+            ExpressionTree valueExp,
+            @CompilerMessageKey String errorKey) {
+        AnnotationMirror anm = varType.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
+        if (anm == null || !AnnotationUtils.areSameByClass(anm, IntRangeFromPositive.class)) {
+            super.commonAssignmentCheck(varType, valueExp, errorKey);
+        }
+    }
+
     @Override
     protected ValueAnnotatedTypeFactory createTypeFactory() {
         return new ValueAnnotatedTypeFactory(checker);
@@ -60,17 +86,26 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      * <p>Issues an error if any @IntRange annotation has its 'from' value greater than 'to' value.
      *
      * <p>Issues a warning if any constant-value annotation has &gt; MAX_VALUES arguments.
+     *
+     * <p>Issues a warning if an {@link IntRangeFromPositive} annotation is written by the user.
+     * This special annotation should only be added if an {@link
+     * org.checkerframework.checker.index.qual.Positive} annotation was written by the user.
      */
     @Override
     public Void visitAnnotation(AnnotationTree node, Void p) {
+
+        AnnotationMirror anno = InternalUtils.annotationFromAnnotationTree(node);
+        if (AnnotationUtils.areSameByClass(anno, IntRangeFromPositive.class)) {
+            checker.report(Result.failure("illegal.int.range.from.positive"), node);
+            return null;
+        }
+
         List<? extends ExpressionTree> args = node.getArguments();
 
         if (args.isEmpty()) {
             // Nothing to do if there are no annotation arguments.
             return super.visitAnnotation(node, p);
         }
-
-        AnnotationMirror anno = InternalUtils.annotationFromAnnotationTree(node);
 
         if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
             // If there are 2 arguments, issue an error if from.greater.than.to.

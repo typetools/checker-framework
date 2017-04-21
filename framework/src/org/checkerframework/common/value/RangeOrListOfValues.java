@@ -116,4 +116,22 @@ class RangeOrListOfValues {
             values = null;
         }
     }
+
+    @Override
+    public String toString() {
+        if (isRange) {
+            return range.toString();
+        } else {
+            if (values.size() == 0) {
+                return "[]";
+            }
+            String res = "[";
+            for (Integer l : values) {
+                res += l.toString() + ", ";
+            }
+            res = res.substring(0, res.length() - 2);
+            res += "]";
+            return res;
+        }
+    }
 }

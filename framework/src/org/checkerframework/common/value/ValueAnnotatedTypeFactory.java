@@ -35,6 +35,7 @@ import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
 import org.checkerframework.common.value.qual.IntRange;
+import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.value.qual.MinLenFieldInvariant;
@@ -133,6 +134,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // this line just registers the alias. The BottomVal is never used.
         addAliasedAnnotation(MinLen.class, BOTTOMVAL);
 
+        addAliasedAnnotation(
+                "org.checkerframework.checker.index.qual.Positive", createIntRangeFromPositive());
+
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
             this.postInit();
         }
@@ -171,7 +175,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         StringVal.class,
                         DoubleVal.class,
                         BottomVal.class,
-                        UnknownVal.class));
+                        UnknownVal.class,
+                        IntRangeFromPositive.class));
     }
 
     @Override
@@ -397,6 +402,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return null;
             }
 
+            if (AnnotationUtils.areSameByClass(a1, IntRangeFromPositive.class)) {
+                a1 = createIntRangeAnnotation(1, Integer.MAX_VALUE);
+            }
+            if (AnnotationUtils.areSameByClass(a2, IntRangeFromPositive.class)) {
+                a2 = createIntRangeAnnotation(1, Integer.MAX_VALUE);
+            }
+
             if (isSubtype(a1, a2)) {
                 return a2;
             } else if (isSubtype(a2, a1)) {
@@ -537,6 +549,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+
+            if (AnnotationUtils.areSameByClass(subAnno, IntRangeFromPositive.class)) {
+                subAnno = createIntRangeAnnotation(1, Integer.MAX_VALUE);
+            }
+
+            if (AnnotationUtils.areSameByClass(superAnno, IntRangeFromPositive.class)) {
+                superAnno = createIntRangeAnnotation(1, Integer.MAX_VALUE);
+            }
 
             if (AnnotationUtils.areSameByClass(superAnno, UnknownVal.class)
                     || AnnotationUtils.areSameByClass(subAnno, BottomVal.class)) {
@@ -703,7 +723,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 type.replaceAnnotation(BOTTOMVAL);
             } else {
                 RangeOrListOfValues rolv = null;
-                if (AnnotationUtils.areSameByClass(dimType, IntRange.class)) {
+                if (isIntRange(dimType)) {
                     rolv = new RangeOrListOfValues(getRange(dimType));
                 } else if (AnnotationUtils.areSameByClass(dimType, IntVal.class)) {
                     rolv =
@@ -838,7 +858,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     TypeMirror newType = atm.getUnderlyingType();
                     AnnotationMirror newAnno;
                     Range range;
-                    if (AnnotationUtils.areSameByClass(oldAnno, IntRange.class)
+                    if (isIntRange(oldAnno)
                             && (range = getRange(oldAnno)).isWiderThan(MAX_VALUES)) {
                         Class<?> newClass = ValueCheckerUtils.getClassFromType(newType);
                         if (newClass == String.class) {
@@ -1427,6 +1447,18 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
+     * Creates the special {@link IntRangeFromPositive} annotation, which is only used as an alias
+     * for the Index Checker's {@link org.checkerframework.checker.index.qual.Positive} annotation.
+     * It is treated everywhere as an IntRange annotation, but is not checked when it appears as the
+     * left hand side of an assignment (because the Lower Bound Checker will check it).
+     */
+    private AnnotationMirror createIntRangeFromPositive() {
+        AnnotationBuilder builder =
+                new AnnotationBuilder(processingEnv, IntRangeFromPositive.class);
+        return builder.build();
+    }
+
+    /**
      * Create an {@code @ArrayLenRange} annotation from the two (inclusive) bounds. Does not return
      * BOTTOMVAL or UNKNOWNVAL.
      */
@@ -1470,6 +1502,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (rangeAnno == null) {
             return null;
         }
+
+        if (AnnotationUtils.areSameByClass(rangeAnno, IntRangeFromPositive.class)) {
+            return new Range(1, Integer.MAX_VALUE);
+        }
+
         // Assume rangeAnno is well-formed, i.e., 'from' is less than or equal to 'to'.
         if (AnnotationUtils.areSameByClass(rangeAnno, IntRange.class)) {
             return new Range(
@@ -1581,6 +1618,20 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ArrayList<>(boolSet);
     }
 
+    public boolean isIntRange(Set<AnnotationMirror> anmSet) {
+        for (AnnotationMirror anm : anmSet) {
+            if (isIntRange(anm)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isIntRange(AnnotationMirror anm) {
+        return AnnotationUtils.areSameByClass(anm, IntRange.class)
+                || AnnotationUtils.areSameByClass(anm, IntRangeFromPositive.class);
+    }
+
     public Integer getMinLenValue(AnnotatedTypeMirror atm) {
         return getMinLenValue(atm.getAnnotationInHierarchy(UNKNOWNVAL));
     }
@@ -1622,7 +1673,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else {
                 return minlen.intValue();
             }
-        } else if (AnnotationUtils.areSameByClass(anm, IntRange.class)) {
+        } else if (isIntRange(anm)) {
             Range range = getRange(anm);
             if (range.from < 0) {
                 return 0;
