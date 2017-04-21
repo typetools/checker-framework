@@ -25,7 +25,7 @@
 
 package java.lang;
 import org.checkerframework.checker.index.qual.*;
-import org.checkerframework.checker.value.qual.*;
+import org.checkerframework.common.value.qual.*;
 
 import java.io.ObjectStreamClass;
 import java.io.ObjectStreamField;
