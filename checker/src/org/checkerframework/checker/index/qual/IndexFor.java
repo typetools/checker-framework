@@ -1,5 +1,8 @@
 package org.checkerframework.checker.index.qual;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
+
 /**
  * An integer that can be used to index any of the given sequences.
  *
@@ -25,6 +28,7 @@ package org.checkerframework.checker.index.qual;
  * @see LTLengthOf
  * @checker_framework.manual #index-checker Index Checker
  */
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface IndexFor {
     /** Sequences that the annotated expression is a valid index for. */
     String[] value() default {};
