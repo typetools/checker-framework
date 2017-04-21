@@ -25,6 +25,7 @@
 
 package java.util.regex;
 import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.common.value.qual.*;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
