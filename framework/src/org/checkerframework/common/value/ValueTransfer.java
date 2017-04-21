@@ -1218,22 +1218,20 @@ public class ValueTransfer extends CFTransfer {
      * org.checkerframework.framework.flow.CFAbstractTransfer#strengthenAnnotationOfEqualTo(TransferResult,
      * Node, Node, CFAbstractValue, CFAbstractValue, boolean)}, which is called by {@link
      * org.checkerframework.framework.flow.CFAbstractTransfer#visitCase(CaseNode, TransferInput)}.
-     * Therefore, we need to explicitly call the handling for binary comparison if we want to do the
-     * extra refinements that the Value Checker applies on switch statements.
+     * Therefore, this needs to explicitly call the handling for binary comparison to do the extra
+     * refinements that the Value Checker applies on switch statements.
      */
     @Override
     public TransferResult<CFValue, CFStore> visitCase(
             CaseNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitCase(n, p);
-        if (n.getSwitchOperand() instanceof FieldAccessNode) {
-            calculateBinaryComparison(
-                    n.getSwitchOperand(),
-                    n.getCaseOperand(),
-                    ComparisonOperators.EQUAL,
-                    p,
-                    transferResult.getThenStore(),
-                    transferResult.getElseStore());
-        }
+        calculateBinaryComparison(
+                n.getSwitchOperand(),
+                n.getCaseOperand(),
+                ComparisonOperators.EQUAL,
+                p,
+                transferResult.getThenStore(),
+                transferResult.getElseStore());
         return transferResult;
     }
 }

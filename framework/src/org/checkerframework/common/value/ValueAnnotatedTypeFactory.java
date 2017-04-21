@@ -1250,8 +1250,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Builds an ArrayLenRange annotation with from equal to its argument. This is called by the
-     * clients that used the old MinLen Checker, and provides the same interface.
+     * Builds an ArrayLenRange annotation with {@code from} equal to its argument. The {@code to}
+     * field is set to Integer.MAX_VALUE, the default.
      *
      * @param val The value to use as the from in the ArrayLenRange annotation created. This value
      *     must be non-negative.
@@ -1593,7 +1593,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * MinLen} annotations into {@link ArrayLenRange} annotations.
      */
     public Integer getMinLenValue(AnnotationMirror annotation) {
-        System.out.println("fetching minlen from " + annotation);
         if (annotation == null) {
             return null;
         }

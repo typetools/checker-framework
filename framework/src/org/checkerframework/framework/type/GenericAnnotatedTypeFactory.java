@@ -707,13 +707,10 @@ public abstract class GenericAnnotatedTypeFactory<
 
         AnnotationMirror annotationMirror = null;
         if (CFAbstractStore.canInsertReceiver(expressionObj)) {
-            Store store = getStoreBefore(tree);
-            if (store != null) {
-                Value value = store.getValue(expressionObj);
-                if (value != null) {
-                    annotationMirror =
-                            AnnotationUtils.getAnnotationByClass(value.getAnnotations(), clazz);
-                }
+            Value value = getStoreBefore(tree).getValue(expressionObj);
+            if (value != null) {
+                annotationMirror =
+                        AnnotationUtils.getAnnotationByClass(value.getAnnotations(), clazz);
             }
         }
         if (annotationMirror == null) {
