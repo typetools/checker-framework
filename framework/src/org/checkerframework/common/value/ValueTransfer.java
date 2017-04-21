@@ -1225,13 +1225,17 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitCase(
             CaseNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitCase(n, p);
-        calculateBinaryComparison(
-                n.getSwitchOperand(),
-                n.getCaseOperand(),
-                ComparisonOperators.EQUAL,
-                p,
-                transferResult.getThenStore(),
-                transferResult.getElseStore());
+        // TODO: this should work for chars too, but it is causing a crash when building the
+        // annotated jdks.
+        if (n.getCaseOperand().getType().getKind() != TypeKind.CHAR) {
+            calculateBinaryComparison(
+                    n.getSwitchOperand(),
+                    n.getCaseOperand(),
+                    ComparisonOperators.EQUAL,
+                    p,
+                    transferResult.getThenStore(),
+                    transferResult.getElseStore());
+        }
         return transferResult;
     }
 }
