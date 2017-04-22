@@ -18,7 +18,4 @@ class MinLenFromPositive {
         //:: error: (argument.type.incompatible)
         test(x);
     }
-
-    //:: error: (illegal.int.range.from.positive)
-    void illegal_anno(@IntRangeFromPositive int x) {}
 }

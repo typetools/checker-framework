@@ -95,10 +95,6 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     public Void visitAnnotation(AnnotationTree node, Void p) {
 
         AnnotationMirror anno = InternalUtils.annotationFromAnnotationTree(node);
-        if (AnnotationUtils.areSameByClass(anno, IntRangeFromPositive.class)) {
-            checker.report(Result.failure("illegal.int.range.from.positive"), node);
-            return null;
-        }
 
         List<? extends ExpressionTree> args = node.getArguments();
 
