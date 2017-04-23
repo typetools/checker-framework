@@ -65,8 +65,6 @@ public final class NullnessUtil {
      * is {@code null}. If the exception is ever thrown, then that indicates that the programmer
      * misused the method by using it in a circumstance where its argument can be null.
      *
-     * <p>
-     *
      * @param ref a reference of @Nullable type
      * @return the argument, casted to have the type qualifier @NonNull
      */
