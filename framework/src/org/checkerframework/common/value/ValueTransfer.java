@@ -195,21 +195,23 @@ public class ValueTransfer extends CFTransfer {
     }
 
     private Range getIntRangeFromAnnotation(Node node, AnnotationMirror val) {
-        Range range = Range.EVERYTHING;
+        Range range;
         if (val == null || AnnotationUtils.areSameByClass(val, UnknownVal.class)) {
-            return Range.EVERYTHING;
+            range = Range.EVERYTHING;
         } else if (AnnotationUtils.areSameByClass(val, IntRange.class)) {
-            return ValueAnnotatedTypeFactory.getRange(val);
+            range = ValueAnnotatedTypeFactory.getRange(val);
         } else if (AnnotationUtils.areSameByClass(val, IntVal.class)) {
             List<Long> values =
                     AnnotationUtils.getElementValueArray(val, "value", Long.class, true);
-            return ValueCheckerUtils.getRangeFromValues(values);
+            range = ValueCheckerUtils.getRangeFromValues(values);
         } else if (AnnotationUtils.areSameByClass(val, DoubleVal.class)) {
             List<Double> values =
                     AnnotationUtils.getElementValueArray(val, "value", Double.class, true);
-            return ValueCheckerUtils.getRangeFromValues(values);
+            range = ValueCheckerUtils.getRangeFromValues(values);
         } else if (AnnotationUtils.areSameByClass(val, BottomVal.class)) {
-            return Range.NOTHING;
+            range = Range.NOTHING;
+        } else {
+            range = Range.EVERYTHING;
         }
         return NumberUtils.castRange(node.getType(), range);
     }
@@ -799,23 +801,6 @@ public class ValueTransfer extends CFTransfer {
 
     private List<Boolean> calculateBinaryComparison(
             Node leftNode,
-            Node rightNode,
-            ComparisonOperators op,
-            TransferInput<CFValue, CFStore> p,
-            CFStore thenStore,
-            CFStore elseStore) {
-        return calculateBinaryComparison(
-                leftNode,
-                p.getValueOfSubNode(leftNode),
-                rightNode,
-                p.getValueOfSubNode(rightNode),
-                op,
-                thenStore,
-                elseStore);
-    }
-
-    private List<Boolean> calculateBinaryComparison(
-            Node leftNode,
             CFValue leftValue,
             Node rightNode,
             CFValue rightValue,
@@ -1023,9 +1008,10 @@ public class ValueTransfer extends CFTransfer {
         List<Boolean> resultValues =
                 calculateBinaryComparison(
                         n.getLeftOperand(),
+                        p.getValueOfSubNode(n.getLeftOperand()),
                         n.getRightOperand(),
+                        p.getValueOfSubNode(n.getRightOperand()),
                         ComparisonOperators.LESS_THAN,
-                        p,
                         thenStore,
                         elseStore);
         TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
@@ -1041,9 +1027,10 @@ public class ValueTransfer extends CFTransfer {
         List<Boolean> resultValues =
                 calculateBinaryComparison(
                         n.getLeftOperand(),
+                        p.getValueOfSubNode(n.getLeftOperand()),
                         n.getRightOperand(),
+                        p.getValueOfSubNode(n.getRightOperand()),
                         ComparisonOperators.LESS_THAN_EQ,
-                        p,
                         thenStore,
                         elseStore);
         TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
@@ -1059,9 +1046,10 @@ public class ValueTransfer extends CFTransfer {
         List<Boolean> resultValues =
                 calculateBinaryComparison(
                         n.getLeftOperand(),
+                        p.getValueOfSubNode(n.getLeftOperand()),
                         n.getRightOperand(),
+                        p.getValueOfSubNode(n.getRightOperand()),
                         ComparisonOperators.GREATER_THAN,
-                        p,
                         thenStore,
                         elseStore);
         TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
@@ -1077,9 +1065,10 @@ public class ValueTransfer extends CFTransfer {
         List<Boolean> resultValues =
                 calculateBinaryComparison(
                         n.getLeftOperand(),
+                        p.getValueOfSubNode(n.getLeftOperand()),
                         n.getRightOperand(),
+                        p.getValueOfSubNode(n.getRightOperand()),
                         ComparisonOperators.GREATER_THAN_EQ,
-                        p,
                         thenStore,
                         elseStore);
         TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
