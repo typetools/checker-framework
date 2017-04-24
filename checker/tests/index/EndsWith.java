@@ -3,7 +3,7 @@
 
 // @skip-test until the issue is fixed
 
-import org.checkerframework.common.value.qual.*;
+import org.checkerframework.common.value.qual.MinLen;
 
 public class EndsWith {
 

@@ -1,4 +1,4 @@
-import org.checkerframework.common.value.qual.*;
+import org.checkerframework.common.value.qual.MinLen;
 
 class LengthTransferForMinLen {
     void exceptional_control_flow(int[] a) {

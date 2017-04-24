@@ -2,7 +2,7 @@
 // https://github.com/kelloggm/checker-framework/issues/62
 
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
-import org.checkerframework.common.value.qual.*;
+import org.checkerframework.common.value.qual.MinLen;
 
 @SuppressWarnings("lowerbound")
 public class RefineLTE2 {
