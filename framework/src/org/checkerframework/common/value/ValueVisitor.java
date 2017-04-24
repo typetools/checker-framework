@@ -1,5 +1,7 @@
 package org.checkerframework.common.value;
-
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+*/
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
@@ -8,7 +10,6 @@ import com.sun.source.tree.TypeCastTree;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.qual.ArrayLen;
@@ -68,7 +69,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             ExpressionTree valueExp,
-            @CompilerMessageKey String errorKey) {
+            /*@CompilerMessageKey*/ String errorKey) {
         AnnotationMirror anm = varType.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
         if (anm == null || !AnnotationUtils.areSameByClass(anm, IntRangeFromPositive.class)) {
             super.commonAssignmentCheck(varType, valueExp, errorKey);
