@@ -1587,10 +1587,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Used to find the minimum length of an array, which is useful for array bounds checking.
-     * Returns null there is no minimum length known, or if the passed annotation is null. Note that
-     * this routine handles actual {@link MinLen} annotations, because it is called by {@link
-     * ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)}, which transforms {@link
-     * MinLen} annotations into {@link ArrayLenRange} annotations.
+     * Returns null if there is no minimum length known, or if the passed annotation is null.
+     *
+     * <p>Note that this routine handles actual {@link MinLen} annotations, because it is called by
+     * {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)}, which transforms
+     * {@link MinLen} annotations into {@link ArrayLenRange} annotations.
      */
     public Integer getMinLenValue(AnnotationMirror annotation) {
         if (annotation == null) {
@@ -1642,26 +1643,26 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return min length of arrayExpression or 0
      */
     public int getMinLenFromString(String arrayExpression, Tree tree, TreePath currentPath) {
-        AnnotationMirror minLenAnno = null;
+        AnnotationMirror lengthAnno = null;
         try {
-            minLenAnno =
+            lengthAnno =
                     getAnnotationFromJavaExpressionString(
                             arrayExpression, tree, currentPath, ArrayLenRange.class);
 
-            if (minLenAnno == null) {
-                minLenAnno =
+            if (lengthAnno == null) {
+                lengthAnno =
                         getAnnotationFromJavaExpressionString(
                                 arrayExpression, tree, currentPath, ArrayLen.class);
             }
         } catch (FlowExpressionParseException e) {
             // ignore parse errors
         }
-        if (minLenAnno == null) {
+        if (lengthAnno == null) {
             // Could not find a more precise type, so return 0;
             return 0;
         }
 
-        Integer minLenValue = getMinLenValue(minLenAnno);
+        Integer minLenValue = getMinLenValue(lengthAnno);
         return minLenValue == null ? 0 : minLenValue;
     }
 }
