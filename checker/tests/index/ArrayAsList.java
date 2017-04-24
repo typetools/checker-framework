@@ -1,7 +1,6 @@
-import org.checkerframework.common.value.qual.MinLen;
-
 import java.util.Arrays;
 import java.util.List;
+import org.checkerframework.common.value.qual.MinLen;
 
 // @skip-test until we bring list support back
 
