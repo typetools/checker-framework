@@ -37,10 +37,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * When the visitor reaches an array access, it needs to check a couple of things. First, it
      * checks if the index has been assigned a reasonable UpperBound type: only an index with type
      * LTLengthOf(arr) is safe to access arr. If that fails, it checks if the access is still safe.
-     * To do so, it checks if the value checker knows the minimum length of arr by querying the
-     * value ATF. If the MinLen of the array is known, the visitor can check if the index is less
-     * than the MinLen. If so then the access is still safe. Otherwise, report a potential unsafe
-     * access.
+     * To do so, it checks if the Value Checker knows the minimum length of arr by querying the
+     * Value Annotated Type Factory. If the minimum length of the array is known, the visitor can
+     * check if the index is less than that minimum length. If so, then the access is still safe.
+     * Otherwise, report a potential unsafe access.
      */
     @Override
     public Void visitArrayAccess(ArrayAccessTree tree, Void type) {

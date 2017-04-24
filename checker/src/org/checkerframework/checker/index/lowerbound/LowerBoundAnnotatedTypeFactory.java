@@ -321,8 +321,14 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (TreeUtils.isArrayLengthAccess(tree)) {
                 AnnotatedTypeMirror minLenType =
                         getValueAnnotatedTypeFactory().getAnnotatedType(tree);
-                Integer a = getValueAnnotatedTypeFactory().getMinLenValueFromLengthType(minLenType);
-                return a;
+                Long min = getValueAnnotatedTypeFactory().getMinimumIntegralValue(minLenType);
+                if (min == null) {
+                    return null;
+                }
+                if (min < 0 || min > Integer.MAX_VALUE) {
+                    min = 0L;
+                }
+                return min.intValue();
             }
             return null;
         }

@@ -202,7 +202,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationUtils.getElementValueArray(fieldInvarAnno, "minLen", Integer.class, true);
         List<AnnotationMirror> qualifiers = new ArrayList<>();
         for (Integer minlen : minlens) {
-            qualifiers.add(createMinLen(minlen));
+            qualifiers.add(createArrayLenRangeAnnotation(minlen, Integer.MAX_VALUE));
         }
 
         FieldInvariantObject superInvariants = super.getFieldInvariants(element);
@@ -1250,20 +1250,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Builds an ArrayLenRange annotation with {@code from} equal to its argument. The {@code to}
-     * field is set to Integer.MAX_VALUE, the default.
-     *
-     * @param val The value to use as the from in the ArrayLenRange annotation created. This value
-     *     must be non-negative.
-     */
-    public AnnotationMirror createMinLen(int val) {
-        assert val >= 0;
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, ArrayLenRange.class);
-        builder.setValue("from", val);
-        return builder.build();
-    }
-
-    /**
      * Returns a {@link StringVal} annotation using the values. If {@code values} is null, then
      * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
      * sorted and duplicates are removed before the annotation is created.
@@ -1609,27 +1595,18 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns the minimum value of an integral type. This is used by the Index Checker's array
-     * bounds checking routines when determining the minimum length of an array from the annotation
-     * on the length of the array.
+     * Returns the smallest possible value that an integral annotation might take on. The passed
+     * {@code AnnotatedTypeMirror} should contain either an {@code @IntRange} annotation or an
+     * {@code @IntVal} annotation. Returns null if it does not.
      */
-    public Integer getMinLenValueFromLengthType(AnnotatedTypeMirror atm) {
+    public Long getMinimumIntegralValue(AnnotatedTypeMirror atm) {
         AnnotationMirror anm = atm.getAnnotationInHierarchy(UNKNOWNVAL);
         if (AnnotationUtils.areSameByClass(anm, IntVal.class)) {
             List<Long> possibleValues = getIntValues(anm);
-            Long minlen = Collections.min(possibleValues);
-            if (minlen < 0) {
-                return 0;
-            } else {
-                return minlen.intValue();
-            }
+            return Collections.min(possibleValues);
         } else if (AnnotationUtils.areSameByClass(anm, IntRange.class)) {
             Range range = getRange(anm);
-            if (range.from < 0) {
-                return 0;
-            } else {
-                return Long.valueOf(range.from).intValue();
-            }
+            return range.from;
         }
         return null;
     }
