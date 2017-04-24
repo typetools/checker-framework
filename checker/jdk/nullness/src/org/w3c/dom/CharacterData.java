@@ -110,7 +110,7 @@ public interface CharacterData extends Node {
      *   <br>DOMSTRING_SIZE_ERR: Raised if the specified range of text does
      *   not fit into a <code>DOMString</code>.
      */
-    public String substringData(int offset,
+    @SideEffectFree public String substringData(int offset,
                                 int count)
                                 throws DOMException;
 
