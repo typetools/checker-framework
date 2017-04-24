@@ -1072,6 +1072,13 @@
         </antcall>
     </target>
 
+    <target name="value-index-interaction-tests" depends="jar,build-tests"
+            description="Run tests for the interaction between the Value Checker and the Index Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.ValueIndexInteractionTest"/>
+        </antcall>
+    </target>
+
     <target name="guieffect-tests" depends="jar,build-tests"
             description="Run tests for the GUI Effect Checker">
         <antcall target="-run-tests">
