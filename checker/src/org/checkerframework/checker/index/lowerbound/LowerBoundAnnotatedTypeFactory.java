@@ -12,9 +12,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -38,6 +36,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.BottomVal;
+import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -168,7 +167,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Returns the type in the lower bound hierarchy that a Value Checker type corresponds to. */
     private AnnotationMirror getLowerBoundAnnotationFromValueType(AnnotatedTypeMirror valueType) {
-        List<Long> possibleValues = getPossibleValues(valueType);
+        Range possibleValues = getPossibleValues(valueType, getValueAnnotatedTypeFactory());
         // possibleValues is null if the Value Checker does not have any estimate.
         if (possibleValues == null) {
             // possibleValues is null if there is no IntVal annotation on the type - such as
@@ -178,11 +177,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             return UNKNOWN;
         }
-        if (possibleValues.size() == 0) {
-            return BOTTOM;
-        }
         // The annotation of the whole list is the min of the list.
-        long lvalMin = Collections.min(possibleValues);
+        long lvalMin = possibleValues.from;
         // Turn it into an integer.
         int valMin = (int) Math.max(Math.min(Integer.MAX_VALUE, lvalMin), Integer.MIN_VALUE);
         return anmFromVal(valMin);

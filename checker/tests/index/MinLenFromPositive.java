@@ -18,4 +18,36 @@ class MinLenFromPositive {
         //:: error: (argument.type.incompatible)
         test(x);
     }
+
+    void test_lub1(boolean flag, @Positive int x, @IntRange(from = 6, to = 25) int y) {
+        int z;
+        if (flag) {
+            z = x;
+        } else {
+            z = y;
+        }
+        @Positive int q = z;
+        @IntRange(from = 1) int w = z;
+    }
+
+    void test_lub2(boolean flag, @Positive int x, @IntRange(from = -1, to = 11) int y) {
+        int z;
+        if (flag) {
+            z = x;
+        } else {
+            z = y;
+        }
+        //:: error: (assignment.type.incompatible)
+        @Positive int q = z;
+        @IntRange(from = -1) int w = z;
+    }
+
+    @Positive int id(@Positive int x) {
+        return x;
+    }
+
+    void test_id() {
+        @Positive int x = id(5);
+        @IntRange(from = 1) int y = id(5);
+    }
 }

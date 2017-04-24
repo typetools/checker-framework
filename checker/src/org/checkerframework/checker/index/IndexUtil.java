@@ -5,7 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -31,8 +33,19 @@ public class IndexUtil {
      * means no possible values (dead code). Returns null if the AnnotatedTypeMirror doesn't contain
      * an IntVal.
      */
-    public static List<Long> getPossibleValues(AnnotatedTypeMirror valueType) {
-        return ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
+    public static Range getPossibleValues(
+            AnnotatedTypeMirror valueType, ValueAnnotatedTypeFactory valueAnnotatedTypeFactory) {
+        if (valueAnnotatedTypeFactory.isIntRange(valueType.getAnnotations())) {
+            return ValueAnnotatedTypeFactory.getRange(valueType.getAnnotation(IntRange.class));
+        } else {
+            List<Long> values =
+                    ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
+            if (values != null) {
+                return new Range(Collections.min(values), Collections.max(values));
+            } else {
+                return null;
+            }
+        }
     }
 
     /**
@@ -43,9 +56,9 @@ public class IndexUtil {
      */
     public static Long getExactValue(Tree tree, ValueAnnotatedTypeFactory factory) {
         AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
-        List<Long> possibleValues = getPossibleValues(valueType);
-        if (possibleValues != null && possibleValues.size() == 1) {
-            return possibleValues.get(0);
+        Range possibleValues = getPossibleValues(valueType, factory);
+        if (possibleValues != null && possibleValues.from == possibleValues.to) {
+            return possibleValues.from;
         } else {
             return null;
         }
@@ -58,9 +71,9 @@ public class IndexUtil {
      */
     public static Long getMinValue(Tree tree, ValueAnnotatedTypeFactory factory) {
         AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
-        List<Long> possibleValues = getPossibleValues(valueType);
-        if (possibleValues != null && possibleValues.size() != 0) {
-            return Collections.min(possibleValues);
+        Range possibleValues = getPossibleValues(valueType, factory);
+        if (possibleValues != null) {
+            return possibleValues.from;
         } else {
             return null;
         }
@@ -73,9 +86,9 @@ public class IndexUtil {
      */
     public static Long getMaxValue(Tree tree, ValueAnnotatedTypeFactory factory) {
         AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
-        List<Long> possibleValues = getPossibleValues(valueType);
-        if (possibleValues != null && possibleValues.size() != 0) {
-            return Collections.max(possibleValues);
+        Range possibleValues = getPossibleValues(valueType, factory);
+        if (possibleValues != null) {
+            return possibleValues.to;
         } else {
             return null;
         }

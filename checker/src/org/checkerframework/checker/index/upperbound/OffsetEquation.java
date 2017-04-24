@@ -387,7 +387,7 @@ public class OffsetEquation {
         if (intLiteral.isEmpty()) {
             return 0;
         }
-        return Integer.valueOf(intLiteral);
+        return Long.valueOf(intLiteral).intValue();
     }
 
     /** Returns the first index of a or b in string, or -1 if neither char is in string. */
@@ -420,9 +420,9 @@ public class OffsetEquation {
         if (node.getTree() != null && TreeUtils.isExpressionTree(node.getTree())) {
             Long i;
             if (op == '+') {
-                i = IndexUtil.getMinValue(node.getTree(), factory.getValueAnnotatedTypeFactory());
+                i = IndexUtil.getExactValue(node.getTree(), factory.getValueAnnotatedTypeFactory());
             } else {
-                i = IndexUtil.getMaxValue(node.getTree(), factory.getValueAnnotatedTypeFactory());
+                i = IndexUtil.getExactValue(node.getTree(), factory.getValueAnnotatedTypeFactory());
                 i = i == null ? null : -i;
             }
             if (i != null) {
