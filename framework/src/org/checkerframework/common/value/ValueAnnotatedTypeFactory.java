@@ -134,6 +134,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // this line just registers the alias. The BottomVal is never used.
         addAliasedAnnotation(MinLen.class, BOTTOMVAL);
 
+        // Only @Positive is aliased here (instead of the related lower bound checker annotations
+        // like @NonNegative, @IndexFor, etc.) because only @Positive provides useful
+        // information about @MinLen annotations. A similar annotation to @IntRangeFromPositive could
+        // be created for @NonNegative in the future.
         addAliasedAnnotation(
                 "org.checkerframework.checker.index.qual.Positive", createIntRangeFromPositive());
 
