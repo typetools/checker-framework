@@ -1,4 +1,4 @@
-import org.checkerframework.common.value.qual.*;
+import org.checkerframework.common.value.qual.IntVal;
 
 public class SwitchTest {
 

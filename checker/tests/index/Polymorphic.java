@@ -1,5 +1,12 @@
-import org.checkerframework.checker.index.qual.*;
-import org.checkerframework.common.value.qual.*;
+import org.checkerframework.checker.index.qual.GTENegativeOne;
+import org.checkerframework.checker.index.qual.LTEqLengthOf;
+import org.checkerframework.checker.index.qual.LTLengthOf;
+import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.checker.index.qual.PolyLowerBound;
+import org.checkerframework.checker.index.qual.PolySameLen;
+import org.checkerframework.checker.index.qual.PolyUpperBound;
+import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.checker.index.qual.SameLen;
 
 class Polymorphic {
 

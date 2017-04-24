@@ -1,8 +1,7 @@
+import java.util.List;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.common.value.qual.MinLen;
-
-import java.util.List;
 
 @SuppressWarnings("lowerbound")
 public class OffsetExample {
