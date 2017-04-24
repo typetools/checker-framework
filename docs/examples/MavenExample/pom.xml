@@ -80,7 +80,7 @@
       </plugin>
       <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.3</version>
+          <version>3.6.1</version>
           <configuration>
               <!-- Change source and target to 1.7 if using Java 7 -->
               <source>1.8</source>
