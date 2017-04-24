@@ -1,5 +1,5 @@
 import org.checkerframework.checker.index.qual.IndexFor;
-import org.checkerframework.common.value.qual.*;
+import org.checkerframework.common.value.qual.MinLen;
 
 public class ZeroMinLen {
 

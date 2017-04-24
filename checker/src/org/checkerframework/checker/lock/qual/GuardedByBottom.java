@@ -17,8 +17,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * <p>If a variable {@code x} has type {@code @GuardedByBottom}, then the value referred to by
  * {@code x} is {@code null} (or dead code) and can never be dereferenced.
  *
- * <p>
- *
  * @checker_framework.manual #lock-checker Lock Checker
  * @checker_framework.manual #bottom-type the bottom type
  */

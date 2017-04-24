@@ -12,8 +12,6 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * Indicates that the given expressions are held if the method terminates successfully and returns
  * the given result (either true or false).
  *
- * <p>
- *
  * @see EnsuresLockHeld
  * @checker_framework.manual #lock-checker Lock Checker
  * @checker_framework.manual #ensureslockheld-examples Example use of @EnsuresLockHeldIf

@@ -211,7 +211,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationUtils.getElementValueArray(fieldInvarAnno, "minLen", Integer.class, true);
         List<AnnotationMirror> qualifiers = new ArrayList<>();
         for (Integer minlen : minlens) {
-            qualifiers.add(createMinLen(minlen));
+            qualifiers.add(createArrayLenRangeAnnotation(minlen, Integer.MAX_VALUE));
         }
 
         FieldInvariantObject superInvariants = super.getFieldInvariants(element);
@@ -1274,20 +1274,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Builds an ArrayLenRange annotation with {@code from} equal to its argument. The {@code to}
-     * field is set to Integer.MAX_VALUE, the default.
-     *
-     * @param val The value to use as the from in the ArrayLenRange annotation created. This value
-     *     must be non-negative.
-     */
-    public AnnotationMirror createMinLen(int val) {
-        assert val >= 0;
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, ArrayLenRange.class);
-        builder.setValue("from", val);
-        return builder.build();
-    }
-
-    /**
      * Returns a {@link StringVal} annotation using the values. If {@code values} is null, then
      * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
      * sorted and duplicates are removed before the annotation is created.
@@ -1642,10 +1628,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Used to find the minimum length of an array, which is useful for array bounds checking.
-     * Returns null there is no minimum length known, or if the passed annotation is null. Note that
-     * this routine handles actual {@link MinLen} annotations, because it is called by {@link
-     * ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)}, which transforms {@link
-     * MinLen} annotations into {@link ArrayLenRange} annotations.
+     * Returns null if there is no minimum length known, or if the passed annotation is null.
+     *
+     * <p>Note that this routine handles actual {@link MinLen} annotations, because it is called by
+     * {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)}, which transforms
+     * {@link MinLen} annotations into {@link ArrayLenRange} annotations.
      */
     public Integer getMinLenValue(AnnotationMirror annotation) {
         if (annotation == null) {
@@ -1663,27 +1650,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns the minimum value of an integral type. This is used by the Index Checker's array
-     * bounds checking routines when determining the minimum length of an array from the annotation
-     * on the length of the array.
+     * Returns the smallest possible value that an integral annotation might take on. The passed
+     * {@code AnnotatedTypeMirror} should contain either an {@code @IntRange} annotation or an
+     * {@code @IntVal} annotation. Returns null if it does not.
      */
-    public Integer getMinLenValueFromLengthType(AnnotatedTypeMirror atm) {
+    public Long getMinimumIntegralValue(AnnotatedTypeMirror atm) {
         AnnotationMirror anm = atm.getAnnotationInHierarchy(UNKNOWNVAL);
         if (AnnotationUtils.areSameByClass(anm, IntVal.class)) {
             List<Long> possibleValues = getIntValues(anm);
-            Long minlen = Collections.min(possibleValues);
-            if (minlen < 0) {
-                return 0;
-            } else {
-                return minlen.intValue();
-            }
+            return Collections.min(possibleValues);
+
         } else if (isIntRange(anm)) {
             Range range = getRange(anm);
-            if (range.from < 0) {
-                return 0;
-            } else {
-                return Long.valueOf(range.from).intValue();
-            }
+            return range.from;
         }
         return null;
     }
@@ -1697,26 +1676,26 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return min length of arrayExpression or 0
      */
     public int getMinLenFromString(String arrayExpression, Tree tree, TreePath currentPath) {
-        AnnotationMirror minLenAnno = null;
+        AnnotationMirror lengthAnno = null;
         try {
-            minLenAnno =
+            lengthAnno =
                     getAnnotationFromJavaExpressionString(
                             arrayExpression, tree, currentPath, ArrayLenRange.class);
 
-            if (minLenAnno == null) {
-                minLenAnno =
+            if (lengthAnno == null) {
+                lengthAnno =
                         getAnnotationFromJavaExpressionString(
                                 arrayExpression, tree, currentPath, ArrayLen.class);
             }
         } catch (FlowExpressionParseException e) {
             // ignore parse errors
         }
-        if (minLenAnno == null) {
+        if (lengthAnno == null) {
             // Could not find a more precise type, so return 0;
             return 0;
         }
 
-        Integer minLenValue = getMinLenValue(minLenAnno);
+        Integer minLenValue = getMinLenValue(lengthAnno);
         return minLenValue == null ? 0 : minLenValue;
     }
 }

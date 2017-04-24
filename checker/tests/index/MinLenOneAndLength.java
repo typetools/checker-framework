@@ -1,4 +1,4 @@
-import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.common.value.qual.MinLen;
 
 public class MinLenOneAndLength {

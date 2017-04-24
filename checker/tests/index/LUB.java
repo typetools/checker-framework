@@ -1,5 +1,5 @@
-
-import org.checkerframework.common.value.qual.*;
+import org.checkerframework.common.value.qual.BottomVal;
+import org.checkerframework.common.value.qual.MinLen;
 
 public class LUB {
 

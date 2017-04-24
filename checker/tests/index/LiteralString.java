@@ -2,7 +2,7 @@
 // https://github.com/kelloggm/checker-framework/issues/55
 
 import org.checkerframework.checker.index.qual.IndexFor;
-import org.checkerframework.common.value.qual.*;
+import org.checkerframework.common.value.qual.MinLen;
 
 //@skip-test while string support is deferred
 
