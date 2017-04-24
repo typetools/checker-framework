@@ -46,30 +46,30 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * constructor (with the exception of final classes; but this is currently not implemented), because
  * there might be subclasses with uninitialized fields. The following example shows why:
  *
- * <pre>{@code
+ * <pre><code>
  * class A {
- *    &#64;NonNull String a;
+ *   {@literal @}NonNull String a;
  *    public A() {
  *        a = "";
  *        // Now, all fields of A are initialized.
  *        // However, if this constructor is invoked as part of 'new B()', then
  *        // the fields of B are not yet initialized.
- *        // If we would type 'this' as &#64;NonRaw, then the following call is valid:
+ *        // If we would type 'this' as @NonRaw, then the following call is valid:
  *        foo();
  *    }
  *    void foo() {}
  * }
  *
  * class B extends A {
- *    &#64;NonNull String b;
- *    &#64;Override
+ *   {@literal @}NonNull String b;
+ *   {@literal @}Override
  *    void foo() {
- *        // Dereferencing 'b' is ok, since 'this' is &#64;NonRaw and 'b' &#64;NonNull.
+ *        // Dereferencing 'b' is ok, since 'this' is @NonRaw and 'b' @NonNull.
  *        // However, when executing 'new B()', this line throws a null-pointer exception.
  *        b.toString();
  *    }
  * }
- * }</pre>
+ * </code></pre>
  *
  * @checker_framework.manual #nullness-checker Nullness Checker
  */

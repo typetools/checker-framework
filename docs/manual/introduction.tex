@@ -208,7 +208,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.1.9.zip}
+  \url{https://checkerframework.org/checker-framework-2.1.10.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -1277,7 +1277,11 @@ errors.  Don't panic!  There are three general causes for the warnings:
 \item
   There is a weakness in the type-checker.  Your code is safe --- it never
   suffers the error at run time --- but the checker cannot prove this fact.
-  Suppress the warning.
+  If possible, rewrite your code to be simpler for the checker to analyze;
+  this is likely to make it easier for people to understand, too.
+  If that is not possible, suppress the warning; be sure to include a code
+  comment explaining how you know the code is correct even though the
+  type-checker cannot deduce that fact.
 \end{enumerate}
 
 For each warning issued by the checker, you need to determine which of the

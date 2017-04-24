@@ -777,6 +777,9 @@
         <antcall target="check-compilermsgs"/>
         <antcall target="check-purity"/>
 
+        <!-- Eventually we would also want this:
+          <antcall target="check-nullness"/>
+        -->
     </target>
 
     <target name="aggregate-tests" depends="jar,build-tests"
@@ -1237,7 +1240,6 @@ So, use our own archived version.
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
                     <exclude name="${checker.jdk8orhigher.sources}"/>
-                    <exclude name=""/>
                 </fileset>
                 <fileset dir="${javacutil.loc}/${src}">
                     <include name="**/*.java"/>
@@ -1262,6 +1264,11 @@ So, use our own archived version.
                 <fileset dir="${framework.loc}/${src}">
                     <include name="**/*.java"/>
                 </fileset>
+                <!-- TODO: check-nullness doesn't properly work with this.
+                <fileset dir="${checker-jdk}" erroronmissingdir="false">
+                    <include name="**/*.java"/>
+                </fileset>
+                -->
             </path>
         </pathconvert>
 
@@ -1270,6 +1277,11 @@ So, use our own archived version.
         </condition>
 
         <echo message="${src.files}" file="${tmpdir}/srcfiles-checker.txt"/>
+
+        <echo message="Applying ${checker-name} to the Checker Framework sources."/>
+        <!-- Use this if you want to see the file names:
+        <echo message="Applying ${checker-name} to: ${src.files}"/>
+        -->
         <java fork="true"
               failonerror="true"
               classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
@@ -1277,21 +1289,16 @@ So, use our own archived version.
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg line="${maybeDebug}"/>
             <arg value="-g"/>
-            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
-            <arg value="-source"/>
-            <arg value="7"/>
-            <arg value="-target"/>
-            <arg value="7"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
-            <arg line="-sourcepath ${src}:${checker-jdk}"/>
             <arg line="-d ${build}"/>
             <arg line="@${tmpdir}/srcfiles-checker.txt"/>
             <arg line="-version"/>
             <arg line="-proc:only"/>
             <arg line="-processor ${checker-name}"/>
+            <arg line="-AprintErrorStack"/>
             <arg line="${checker-args}"/>
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
@@ -1302,7 +1309,7 @@ So, use our own archived version.
         <antcall target="-run-checker">
             <param name="checker-name" value="org.checkerframework.checker.nullness.NullnessChecker"/>
             <param name="checker-jdk" value="jdk/nullness/src"/>
-            <param name="checker-args" value="-Awarns"/>
+            <param name="checker-args" value="-Awarns -Xmaxwarns 10000"/>
         </antcall>
     </target>
 
@@ -1325,7 +1332,7 @@ So, use our own archived version.
             description="Run the Purity Checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="org.checkerframework.framework.util.PurityChecker"/>
-            <param name="checker-args" value="-AprintErrorStack"/>
+            <param name="checker-args" value=""/>
         </antcall>
     </target>
 
@@ -1382,6 +1389,7 @@ So, use our own archived version.
 
       <exec executable="mvn" dir="${errorprone.home}" failonerror="true">
         <arg line="package"/>
+        <arg line="-Dmaven.test.skip=true"/>
       </exec>
     </target>
 
@@ -1486,6 +1494,7 @@ So, use our own archived version.
 
     <target name="jdk.jar" depends="jar"
             description="Create the instrumented jdkX.jar using the JDK specified by JAVA_HOME">
+      <fail unless="env.JAVA_HOME" message="Environment variable JAVA_HOME is not set."/>
       <property name="annotation-file-utilities.jar" value="${annotation.tools}/annotation-file-utilities/annotation-file-utilities.jar"/>
       <available property="annotation-file-utilities.exist" file="${annotation-file-utilities.jar}" />
       <fail unless="annotation-file-utilities.exist" message="Could not find annotation-file-utilities.jar: ${annotation-file-utilities.jar}.  You must build Annotation Tools; see https://checkerframework.org/manual/#build-source" />

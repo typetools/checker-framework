@@ -48,7 +48,7 @@ figures-all:
 
 manual.pdf: bib-update figures-all check-labels
 	pdflatex manual.tex
-	bibtex manual
+	bibtex -min-crossrefs=9999 manual
 	pdflatex manual.tex
 	while grep "Rerun to get" manual.log; do pdflatex manual.tex; done
 
@@ -71,7 +71,7 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 	sed -i -e "s%<style type=\"text/css\">%<style type=\"text/css\">\nimg { max-width: 100\%; max-height: 100\%; }%" manual.html
 
 ../api:
-	cd .. && ln -s ../checker/api api
+	cd .. && ln -fs ../checker/api api
 
 CFLogo.png: ../logo/Logo/CFLogo.png
 	cp -p $< $@

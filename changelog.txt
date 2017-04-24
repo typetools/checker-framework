@@ -1,3 +1,24 @@
+Version 2.2.0, 2 April 2017
+
+The manual contains new FAQ (frequently asked questions) sections about
+false positive warnings and about inference for field types.
+
+---------------------------------------------------------------------------
+
+Version 2.1.10, 3 April 2017
+
+The Constant Value Checker, which performs constant propagation, has been
+extended to perform interval analysis -- that is, it determines, for each
+expression, a statically-known lower and upper bound.  Use the new
+@IntRange annotation to express this.  Thanks to Jiasen (Jason) Xu for this
+feature.
+
+Closed issues:
+134, 216, 227, 307, 334, 437, 445, 718, 1044, 1045, 1051, 1052, 1054, 1055,
+1059, 1077, 1087, 1102, 1108, 1110, 1111, 1120, 1124, 1127, 1132.
+
+---------------------------------------------------------------------------
+
 Version 2.1.9, 1 March 2017
 
 By default, uninferred method type arguments, which can happen with Java 8
@@ -8,16 +29,6 @@ get the conservative behavior.
 Closed issues:
 1006, 1011, 1015, 1027, 1035, 1036, 1037, 1039, 1043, 1046, 1049, 1053, 1072,
 1084.
-
----------------------------------------------------------------------------
-
-Version 2.1.9, 3 April 2017
-
-The Constant Value Checker, which performs constant propagation, has been
-extended to perform interval analysis -- that is, it determines, for each
-expression, a statically-known lower and upper bound.  Use the new
-@IntRange annotation to express this.  Thanks to Jiasen (Jason) Xu for this
-feature.
 
 ---------------------------------------------------------------------------
 

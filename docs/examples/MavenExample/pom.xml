@@ -15,7 +15,7 @@
     <!-- These properties will be set by the Maven Dependency plugin -->
     <!-- Change to jdk7 if using Java 7 -->
     <annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>
-    <checkerFrameworkVersion><!-- checker-framework-version -->2.1.9<!-- /checker-framework-version --></checkerFrameworkVersion>
+    <checkerFrameworkVersion><!-- checker-framework-version -->2.1.10<!-- /checker-framework-version --></checkerFrameworkVersion>
      <!-- The type annotations compiler is required if using Java 7. -->
      <!-- Uncomment the following line if using Java 7. -->
      <!--<typeAnnotationsJavac>${org.checkerframework:compiler:jar}</typeAnnotationsJavac>-->
@@ -70,7 +70,6 @@
           <!-- This plugin will set properties values using dependency information -->
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>2.3</version>
           <executions>
               <execution>
                   <goals>
@@ -81,7 +80,7 @@
       </plugin>
       <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.3</version>
+          <version>3.6.1</version>
           <configuration>
               <!-- Change source and target to 1.7 if using Java 7 -->
               <source>1.8</source>
