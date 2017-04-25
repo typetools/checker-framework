@@ -20,6 +20,11 @@ Writing a simple checker is easy!  For example, here is a complete, useful
 type-checker:
 
 \begin{Verbatim}
+import java.lang.annotation.Target;
+import java.lang.annotation.ElementType;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.Unqualified;
+
 @SubtypeOf(Unqualified.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Encrypted {}
@@ -44,15 +49,6 @@ one distributed with the Checker Framework or a third-party one.
 (One good choice to copy and modify is the Regex Checker
 (\chapterpageref{regex-checker}); a bad choice is the Nullness Checker,
 which is more sophisticated than anything you want to start out building.)
-
-\begin{sloppypar}
-You can place your checker's source files wherever you like.  When you
-compile your checker, \<\$CHECKERFRAMEWORK/framework/dist/framework.jar> and \<\$CHECKERFRAMEWORK/framework/dist/javac.jar>
-should be on your classpath.  (If you wish to modify an existing checker in place,
-or to place the source code for your new checker in your own private copy of the
-Checker Framework source code, then you need to be able to re-compile the
-Checker Framework, as described in Section~\ref{build-source}.)
-\end{sloppypar}
 
 The rest of this chapter contains many details for people who want to write more powerful
 checkers.
@@ -126,9 +122,25 @@ You usually want to build your checker on the Base Checker.
 The Checker Framework provides abstract base classes (default
 implementations), and a specific checker overrides as little or as much of
 the default implementations as necessary.
+To simplify checker implementations, by default the Checker Framework
+automatically discovers the parts of a checker by looking for specific files.
+Thus, checker implementations follow a very formulaic structure.
+To illustrate, a checker for MyProp must be laid out as follows:
 %
+\begin{Verbatim}
+mymodule/
+  | qual/                               type qualifiers
+  | MyPropVisitor.java                  [optional] type rules
+  | MyPropAnnotatedTypeFactory.java     [optional] type introduction and dataflow rules
+  | MyPropChecker.java                  [optional] interface to the compiler
+\end{Verbatim}
+%
+Note that \<MyPropChecker.java> is required unless you are building on the
+Subtyping Checker.
+
 Sections~\ref{creating-typequals}--\ref{creating-compiler-interface} describe
-the components of a type system as written using the Checker Framework:
+the individual components of a type system as written using the Checker
+Framework:
 
 \begin{description}
 
@@ -172,6 +184,51 @@ the components of a type system as written using the Checker Framework:
   which annotations are part of the type system, which command-line options
   and \<@SuppressWarnings> annotations the checker recognizes, etc.
 \end{description}
+
+
+
+
+\section{Compiling and using a custom checker\label{creating-compiling}}
+
+\begin{sloppypar}
+You can place your checker's source files wherever you like.  When you
+compile your checker,
+\<\$CHECKERFRAMEWORK/checker/dist/checker.jar> and
+\<\$CHECKERFRAMEWORK/checker/dist/javac.jar>
+should be on your classpath.  (If you wish to modify an existing checker in place,
+or to place the source code for your new checker in your own private copy of the
+Checker Framework source code, then you need to be able to re-compile the
+Checker Framework, as described in Section~\ref{build-source}.)
+\end{sloppypar}
+
+You may also wish to consult Section~\ref{creating-testing-framework} for
+information on testing a checker and
+Section~\ref{creating-debugging-options} for information on debugging a
+checker.
+
+Once your custom checker is written, using it is very similar to using a
+built-in checker (Section~\ref{running}).  Note that your custom checker's
+compiled files must be on the Java classpath.  If your custom checker builds on
+the Subtyping Checker, use the \<-Aquals> option to indicate the classes in
+your qualifier heirarchy:
+%
+\begin{alltt}
+$ javac \textbackslash
+    -processor org.checkerframework.common.subtyping.SubtypingChecker \textbackslash
+    -Aquals=\textit{mymodule.qual.Qual1},\textit{mymodule.qual.Qual2},\textit{...} \textbackslash
+    SourceFile.java
+\end{alltt}
+%
+Otherwise, simply pass the fully-qualified name of your \<BaseTypeChecker>
+subclass to the \<-process> flag instead:
+%
+\begin{alltt}
+$ javac \textbackslash
+    -processor \textit{mymodule.MyPropChecker} \textbackslash
+    SourceFile.java
+\end{alltt}
+
+
 
 
 \subsection{Tips for creating a checker\label{creating-tips}}
@@ -1746,7 +1803,7 @@ can step into its source code if needed.
 You can also set up remote (or local) debugging using the following command as a template:
 
 \begin{Verbatim}
-java -jar "$CHECKERFRAMEWORK/framework/dist/framework.jar" \
+java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar" \
     -J-Xdebug -J-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005 \
     -processor org.checkerframework.checker.nullness.NullnessChecker \
     src/sandbox/FileToCheck.java
