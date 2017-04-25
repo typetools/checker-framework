@@ -807,8 +807,8 @@ public class ValueTransfer extends CFTransfer {
         AnnotationMirror leftAnno = getValueAnnotation(leftValue);
         AnnotationMirror rightAnno = getValueAnnotation(rightValue);
 
-        if (AnnotationUtils.areSameByClass(leftAnno, IntRange.class)
-                || AnnotationUtils.areSameByClass(rightAnno, IntRange.class)
+        if (atypefactory.isIntRange(leftAnno)
+                || atypefactory.isIntRange(rightAnno)
                 || isIntegralUnknownVal(rightNode, rightAnno)
                 || isIntegralUnknownVal(leftNode, leftAnno)) {
             // If either is @UnknownVal, then refineIntRanges will treat it as the max range and
