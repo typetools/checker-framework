@@ -94,4 +94,48 @@ class Switch {
         //:: error: (assignment.type.incompatible)
         @IntVal(4) int y2 = x;
     }
+
+    void testInts(@IntRange(from = 0, to = 100) int x) {
+        switch (x) {
+            case 0:
+            case 1:
+            case 2:
+                @IntVal({0, 1, 2}) int z = x;
+                return;
+            default:
+        }
+
+        @IntRange(from = 1, to = 100) int z = x;
+    }
+
+    void testChars(char x) {
+        switch (x) {
+            case 'a':
+            case 2:
+                @IntVal({'a', 2}) int z = x;
+                break;
+            case 'b':
+                @IntVal('b') int v = x;
+                break;
+            default:
+                return;
+        }
+        @IntVal({'a', 2, 'b'}) int y = x;
+    }
+
+    void testStrings(String s) {
+        switch (s) {
+            case "Good":
+                @StringVal("Good") String x = s;
+            case "Bye":
+                @StringVal({"Good", "Bye"}) String y = s;
+                break;
+            case "Hello":
+                @StringVal("Hello") String z = s;
+                break;
+            default:
+                return;
+        }
+        @StringVal({"Good", "Bye", "Hello"}) String q = s;
+    }
 }
