@@ -5,7 +5,6 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.TargetType;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
@@ -24,16 +23,10 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
     public static void annotateSupers(
             List<AnnotatedTypeMirror.AnnotatedDeclaredType> supertypes,
             TypeElement subtypeElement) {
-
-        final boolean isInterface = subtypeElement.getSuperclass().getKind() == TypeKind.NONE;
-
-        final int typeOffset = isInterface ? 0 : -1;
-
         for (int i = 0; i < supertypes.size(); i++) {
             final AnnotatedTypeMirror supertype = supertypes.get(i);
-            final int typeIndex = i + typeOffset;
-
-            (new SuperTypeApplier(supertype, subtypeElement, typeIndex)).extractAndApply();
+            final int typeIndex = i - 1;
+            new SuperTypeApplier(supertype, subtypeElement, typeIndex).extractAndApply();
         }
     }
 
