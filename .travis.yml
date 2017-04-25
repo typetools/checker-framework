@@ -80,16 +80,19 @@ after_script:
   - |
       set +e
       declare exitCode;
+      SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
+      if [[ "$SLUGOWNER" == "" ]]; then
+        SLUGOWNER=typetools
+      fi
 
-      curl -sSL https://raw.githubusercontent.com/mernst/travis-after-all/master/lib/travis-after-all.js | tac | tac | nodejs
+      curl -sSL https://raw.githubusercontent.com/${SLUGOWNER}/travis-after-all/master/lib/travis-after-all.js | tac | tac | nodejs
       exitCode=$?
       echo "exitCode=$exitCode TRAVIS_BRANCH=$TRAVIS_BRANCH TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST"
 
       if [ "$exitCode" -eq 0 ]; then
         if [[ ($TRAVIS_BRANCH == master) &&
               ($TRAVIS_PULL_REQUEST == false) ]] ; then
-          curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
-          SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
+          curl -LO https://raw.github.com/${SLUGOWNER}/plume-lib/master/bin/trigger-travis.sh
           sh trigger-travis.sh ${SLUGOWNER} checker-framework.demos $TRAVISTOKEN
           sh trigger-travis.sh ${SLUGOWNER} checker-framework-inference $TRAVISTOKEN
           sh trigger-travis.sh typetests daikon-typecheck $TRAVISTOKEN
