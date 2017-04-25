@@ -1255,7 +1255,8 @@ parameter in comments (see Section~\ref{annotations-in-comments}):
 % mastered the rest of the Nullness Checker.
 
 Note that it would not be sound to type {@code this} as fully {@link Initialized} anywhere in
-a constructor (with the exception of final classes; but this is currently not implemented),
+a constructor (with the exception of final classes, for which the set
+of all fields is known),
 because there might be subclasses with uninitialized fields. The following example shows why:
 
 \begin{Verbatim}
