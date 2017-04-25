@@ -6,8 +6,8 @@
 # previous iteration (which means there is nothing new to infer anymore).
 
 # To use this script, the $CHECKERFRAMEWORK variable must be set to the
-# Checker Framework's directory. Also, insert-annotations-to-source must
-# be available from the $PATH.
+# Checker Framework's directory. Also, the AFU's insert-annotations-to-source
+# program must be on the search path (that is, in the PATH environment variable).
 
 # This script receives as arguments:
 # 0. Any number of cmd-line arguments to insert-annotations-to-source (optional).

@@ -209,8 +209,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         AnnotationMirror targetPolyP = atypeFactory.getDeclAnnotation(methElt, PolyUIEffect.class);
         TypeElement targetClassElt = (TypeElement) methElt.getEnclosingElement();
 
-        if (targetUIP != null && (targetSafeP != null || targetPolyP != null)
-                || targetSafeP != null && targetPolyP != null) {
+        if ((targetUIP != null && (targetSafeP != null || targetPolyP != null))
+                || (targetSafeP != null && targetPolyP != null)) {
             checker.report(Result.failure("annotations.conflicts"), node);
         }
         if (targetPolyP != null && !atypeFactory.isPolymorphicType(targetClassElt)) {

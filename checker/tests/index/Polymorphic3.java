@@ -4,8 +4,7 @@ class Polymorphic3 {
 
     //Identity functions
 
-    @PolyIndex
-    int identity(@PolyIndex int a) {
+    @PolyIndex int identity(@PolyIndex int a) {
         return a;
     }
 
