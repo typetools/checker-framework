@@ -1,7 +1,7 @@
 // Test case for Issue 376:
 // https://github.com/typetools/checker-framework/issues/376
 
-class Test {
+class Issue376Test {
 
     interface I {}
 
