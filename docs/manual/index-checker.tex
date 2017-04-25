@@ -278,7 +278,7 @@ or \code{@LTOMLengthOf("arr")}.
 \section{Array minimum lengths\label{index-minlen}}
 
 The Index Checker estimates, for each sequence expression, how long its value
-might be at run time.  The Index Checker computes a minimum length that
+might be at run time by computing a minimum length that
 the sequence is guaranteed to have.  This enables the Index Checker to
 verify indices that are compile-time constants.  For example, this code:
 
@@ -303,11 +303,21 @@ Index Checker depends not on a \<@MinLen> annotation but on \<i> being
 annotated as
 \refqualclasswithparams{checker/index/qual}{LTLengthOf}{"arr"}.
 
-The MinLen type system is implemented in practice by the Constant Value Checker,
+The MinLen type qualifier is implemented in practice by the Constant Value Checker,
 using \<@ArrayLenRange> annotations (see \chapterpageref{constant-value-checker}).
+[\refqualclass{common/value/qual}{ArrayLenRange}] and [\refqualclass{common/value/qual}{ArrayLen}]
+annotations can also be used to establish the minimum length of an array, if the
+precise length (as opposed to just a lower bound on the length) is known. For example,
+if \<arr> is known to have exactly three elements:
 
-Array minimum lengths use the following type qualifiers
-(Figure~\ref{fig-index-array-types}):
+\begin{Verbatim}
+  String getThirdElement(String @ArrayLen(3) [] arr) {
+    return arr[2];
+  }
+\end{Verbatim}
+
+The following type qualifiers (from the \chapterpageref{constant-value-checker})
+can establish the minimum length of an array:
 
 \begin{description}
 \item[\refqualclasswithparams{common/value/qual}{MinLen}{int value}]
@@ -318,25 +328,30 @@ Array minimum lengths use the following type qualifiers
   An \code{@MinLen} annotation is treated internally as an
   [\refqualclass{common/value/qual}{ArrayLenRange}] with only its
   \code{from} field filled.
+\item[\refqualclasswithparams{common/value/qual}{ArrayLen}{int[] value}]
+  The value of an expression of this type is a sequence whose
+  length is exactly one of the integers listed in its argument.
+  The argument can contain at most ten integers; larger collections of
+  integers are converted to [\refqualclass{common/value/qual}{ArrayLenRange}]
+  annotations. The minimum length of a sequence with this annotation
+  is the smallest element of the argument.
+\item[\refqualclasswithparams{common/value/qual}{ArrayLenRange}{int from, int to}]
+  The value of an expression of this type is a sequence whose
+  length is bounded by its arguments, inclusive.
+  The minimum length of a sequence with this annotation      is its \<from> argument.
 \item[\refqualclass{common/value/qual}{BottomVal}]
-  This is the bottom type for the MinLen type system.
+  This is the bottom type for the MinLen, ArrayLenRange, and ArrayLen.
   Programmers should rarely need to write it.
-  \code{null} has this type. This type is borrowed from
-  the Constant Value Checker, which implements the MinLen
-  hierarchy in practice.
+  \code{null} has this type.
 \end{description}
 
 \begin{figure}
 \begin{center}
   \hfill
-  \includeimagenocentering{minlen}{7cm}
-  ~~~~\hfill~~~~
   \includeimagenocentering{samelen}{3.5cm}
   \hfill
 \end{center}
-  \caption{The two type hierarchies for array types used by the Index
-    Checker.  On the left is a type system for minimum array lengths.  On
-    the right is a type system for arrays of equal length ("a" and "b" are
+  \caption{The type hierarchy for arrays of equal length ("a" and "b" are
     assumed to be in-scope arrays).  Qualifiers
     written in gray should never be written in source code; they are used
     internally by the type system.}
