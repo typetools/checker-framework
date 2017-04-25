@@ -29,7 +29,6 @@ import org.checkerframework.dataflow.cfg.node.BitwiseAndNode;
 import org.checkerframework.dataflow.cfg.node.BitwiseComplementNode;
 import org.checkerframework.dataflow.cfg.node.BitwiseOrNode;
 import org.checkerframework.dataflow.cfg.node.BitwiseXorNode;
-import org.checkerframework.dataflow.cfg.node.CaseNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalAndNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
@@ -56,7 +55,6 @@ import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
-import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
@@ -1203,31 +1201,5 @@ public class ValueTransfer extends CFTransfer {
                 transferResult.getElseStore(),
                 resultValues,
                 transferResult.getResultValue().getUnderlyingType());
-    }
-
-    /**
-     * The value checker doesn't override {@link
-     * org.checkerframework.framework.flow.CFAbstractTransfer#strengthenAnnotationOfEqualTo(TransferResult,
-     * Node, Node, CFAbstractValue, CFAbstractValue, boolean)}, which is called by {@link
-     * org.checkerframework.framework.flow.CFAbstractTransfer#visitCase(CaseNode, TransferInput)}.
-     * Therefore, this needs to explicitly call the handling for binary comparison to do the extra
-     * refinements that the Value Checker applies on switch statements.
-     */
-    @Override
-    public TransferResult<CFValue, CFStore> visitCase(
-            CaseNode n, TransferInput<CFValue, CFStore> p) {
-        TransferResult<CFValue, CFStore> transferResult = super.visitCase(n, p);
-        // TODO: this should work for chars too, but it is causing a crash when building the
-        // annotated jdks.
-        if (n.getCaseOperand().getType().getKind() != TypeKind.CHAR) {
-            calculateBinaryComparison(
-                    n.getSwitchOperand(),
-                    n.getCaseOperand(),
-                    ComparisonOperators.EQUAL,
-                    p,
-                    transferResult.getThenStore(),
-                    transferResult.getElseStore());
-        }
-        return transferResult;
     }
 }
