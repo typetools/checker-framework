@@ -75,13 +75,33 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   ##  * daikon-typecheck: (takes 2 hours)
 
   # checker-framework-inference: 18 minutes
+  set +e
+  echo "Running: git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-"
+  git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-
+  if [ "$?" -ne 0 ]; then
+    SLUGOWNER=typetools
+  fi
+  set -e
+  echo "Running:  (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/checker-framework-inference.git)"
   (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/checker-framework-inference.git)
+  echo "... done: (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/checker-framework-inference.git)"
+
   export AFU=`pwd`/../annotation-tools/annotation-file-utilities
   export PATH=$AFU/scripts:$PATH
   (cd ../checker-framework-inference && gradle dist && ant -f tests.xml run-tests)
 
   # plume-lib-typecheck: 30 minutes
+  set +e
+  echo "Running: git ls-remote https://github.com/${SLUGOWNER}/plume-lib.git &>-"
+  git ls-remote https://github.com/${SLUGOWNER}/plume-lib.git &>-
+  if [ "$?" -ne 0 ]; then
+    SLUGOWNER=typetools
+  fi
+  set -e
+  echo "Running:  (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/plume-lib.git)"
   (cd .. && git clone https://github.com/${SLUGOWNER}/plume-lib.git)
+  echo "... done: (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/plume-lib.git)"
+
   export CHECKERFRAMEWORK=`pwd`
   (cd ../plume-lib/java && make check-types)
 
