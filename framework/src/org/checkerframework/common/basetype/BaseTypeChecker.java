@@ -225,7 +225,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * @return the result of the constructor invocation on {@code args}, or null if the constructor
      *     does not exist or could not be invoked
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"}) // Intentional abuse
     public static <T> T invokeConstructorFor(String name, Class<?>[] paramTypes, Object[] args) {
 
         // Load the class.
@@ -332,7 +332,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * @param checkerClass the class of the subchecker
      * @return the type factory of the requested subchecker or null if not found
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"}) // Intentional abuse
     public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker>
             T getTypeFactoryOfSubchecker(Class<U> checkerClass) {
         BaseTypeChecker checker = getSubchecker(checkerClass);
@@ -368,7 +368,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             }
 
             try {
-                BaseTypeChecker instance = subcheckerClass.newInstance();
+                BaseTypeChecker instance = subcheckerClass.getDeclaredConstructor().newInstance();
                 instance.setProcessingEnvironment(this.processingEnv);
                 // Prevent the new checker from storing non-immediate subcheckers
                 instance.subcheckers =

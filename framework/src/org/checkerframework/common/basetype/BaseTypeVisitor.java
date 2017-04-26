@@ -656,8 +656,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 expr,
                                 ((ConditionalPostcondition) contract).annoResult);
                         break;
-                        // case PRECONDITION:
+                    case PRECONDITION:
                         // Preconditions are checked at method invocations, not declarations
+                        break;
                 }
             }
 

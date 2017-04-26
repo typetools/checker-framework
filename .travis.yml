@@ -2,7 +2,12 @@ sudo: false
 
 language: generic
 
-# Alternative to "language: java", which has node installed
+# These are packages for use by the Travis process.  Currently, that is just
+# node.  An alternative is to use "language: java", which has node installed.
+#
+# To install a package for use by the Checker Framework tests, which run in a
+# Docker container, edit a Dockerfile in `checker/bin-devel/`, then build a new
+# Docker container and upload it.
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq nodejs

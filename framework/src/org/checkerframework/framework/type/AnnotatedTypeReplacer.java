@@ -68,11 +68,11 @@ public class AnnotatedTypeReplacer {
                 originalToCopy.put(original, copy);
 
                 if (original.getUpperBoundField() != null) {
-                    copy.setUpperBoundField(visit(original.getUpperBoundField(), originalToCopy));
+                    copy.setUpperBound(visit(original.getUpperBoundField(), originalToCopy));
                 }
 
                 if (original.getLowerBoundField() != null) {
-                    copy.setLowerBoundField(visit(original.getLowerBoundField(), originalToCopy));
+                    copy.setLowerBound(visit(original.getLowerBoundField(), originalToCopy));
                 }
                 return copy;
             }
