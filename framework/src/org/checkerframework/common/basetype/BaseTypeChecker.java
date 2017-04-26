@@ -422,46 +422,46 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         return subcheckers;
     }
 
+    /**
+     * Sort by position at which the error will be printed, then by the order in which the checkers
+     * run, then by kind of message, and finally by the message string.
+     */
+    private final Comparator<CheckerMessage> checkerMessageComparator =
+            new Comparator<CheckerMessage>() {
+                @Override
+                public int compare(CheckerMessage o1, CheckerMessage o2) {
+                    int byPos = InternalUtils.compareDiagnosticPosition(o1.source, o2.source);
+                    if (byPos != 0) {
+                        return byPos;
+                    }
+
+                    // Sort by order in which the checkers are run. (All the subcheckers in
+                    // followed by the checker.)
+                    int o1Index = BaseTypeChecker.this.getSubcheckers().indexOf(o1.checker);
+                    int o2Index = BaseTypeChecker.this.getSubcheckers().indexOf(o2.checker);
+                    if (o1Index != o2Index) {
+                        if (o1Index == -1) {
+                            o1Index = BaseTypeChecker.this.getSubcheckers().size();
+                        }
+                        if (o2Index == -1) {
+                            o2Index = BaseTypeChecker.this.getSubcheckers().size();
+                        }
+                        return Integer.compare(o1Index, o2Index);
+                    }
+
+                    int kind = o1.kind.compareTo(o2.kind);
+                    if (kind != 0) {
+                        return kind;
+                    }
+
+                    return o1.message.compareTo(o2.message);
+                }
+            };
+
     // AbstractTypeProcessor delegation
     @Override
     public void typeProcess(TypeElement element, TreePath tree) {
         if (getSubcheckers().size() > 0) {
-            /**
-             * Sort by position at which the error will be printed, then by the order in which the
-             * checkers run, then by kind of message, and finally by the message string.
-             */
-            Comparator<CheckerMessage> checkerMessageComparator =
-                    new Comparator<CheckerMessage>() {
-                        @Override
-                        public int compare(CheckerMessage o1, CheckerMessage o2) {
-                            int byPos =
-                                    InternalUtils.compareDiagnosticPosition(o1.source, o2.source);
-                            if (byPos != 0) {
-                                return byPos;
-                            }
-
-                            // Sort by order in which the checkers are run. (All the subcheckers in
-                            // followed by the checker.)
-                            int o1Index = BaseTypeChecker.this.getSubcheckers().indexOf(o1.checker);
-                            int o2Index = BaseTypeChecker.this.getSubcheckers().indexOf(o2.checker);
-                            if (o1Index != o2Index) {
-                                if (o1Index == -1) {
-                                    o1Index = BaseTypeChecker.this.getSubcheckers().size();
-                                }
-                                if (o2Index == -1) {
-                                    o2Index = BaseTypeChecker.this.getSubcheckers().size();
-                                }
-                                return Integer.compare(o1Index, o2Index);
-                            }
-
-                            int kind = o1.kind.compareTo(o2.kind);
-                            if (kind != 0) {
-                                return kind;
-                            }
-
-                            return o1.message.compareTo(o2.message);
-                        }
-                    };
             messageStore = new TreeSet<>(checkerMessageComparator);
         }
 
@@ -546,7 +546,10 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         final Diagnostic.Kind kind;
         final String message;
         final Tree source;
-        /** Used to sort messages by the order in which checkers are run. */
+        /**
+         * This checker that issued this message. The compound checker that depends on this checker
+         * uses this to sort the messages.
+         */
         final BaseTypeChecker checker;
 
         private CheckerMessage(
