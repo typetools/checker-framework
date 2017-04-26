@@ -305,9 +305,9 @@ annotated as
 
 The MinLen type qualifier is implemented in practice by the Constant Value Checker,
 using \<@ArrayLenRange> annotations (see \chapterpageref{constant-value-checker}).
-[\refqualclass{common/value/qual}{ArrayLenRange}] and [\refqualclass{common/value/qual}{ArrayLen}]
-annotations can also be used to establish the minimum length of an array, if the
-precise length (as opposed to just a lower bound on the length) is known. For example,
+\refqualclass{common/value/qual}{ArrayLenRange} and \refqualclass{common/value/qual}{ArrayLen}
+annotations can also be used to establish the minimum length of an array, if a
+more precise estimate of length is known. For example,
 if \<arr> is known to have exactly three elements:
 
 \begin{Verbatim}
@@ -339,16 +339,12 @@ can establish the minimum length of an array:
   The value of an expression of this type is a sequence whose
   length is bounded by its arguments, inclusive.
   The minimum length of a sequence with this annotation      is its \<from> argument.
-\item[\refqualclass{common/value/qual}{BottomVal}]
-  This is the bottom type for the MinLen, ArrayLenRange, and ArrayLen.
-  Programmers should rarely need to write it.
-  \code{null} has this type.
 \end{description}
 
 \begin{figure}
 \begin{center}
   \hfill
-  \includeimagenocentering{samelen}{3.5cm}
+  \includeimage{samelen}{5cm}
   \hfill
 \end{center}
   \caption{The type hierarchy for arrays of equal length ("a" and "b" are
