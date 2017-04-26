@@ -101,7 +101,7 @@ import org.checkerframework.framework.util.ContractsUtils.ConditionalPostconditi
 import org.checkerframework.framework.util.ContractsUtils.Contract;
 import org.checkerframework.framework.util.ContractsUtils.Postcondition;
 import org.checkerframework.framework.util.ContractsUtils.Precondition;
-import org.checkerframework.framework.util.FieldInvariantObject;
+import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -355,7 +355,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected void checkFieldInvariantDeclarations(ClassTree classTree) {
         TypeElement elt = TreeUtils.elementFromDeclaration(classTree);
-        FieldInvariantObject invariants = atypeFactory.getFieldInvariants(elt);
+        FieldInvariants invariants = atypeFactory.getFieldInvariants(elt);
         if (invariants == null) {
             // No invariants to check
             return;
@@ -388,7 +388,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             checker.report(Result.failure("field.invariant.not.found", notFoundString), errorTree);
         }
 
-        FieldInvariantObject superInvar =
+        FieldInvariants superInvar =
                 atypeFactory.getFieldInvariants(InternalUtils.getTypeElement(superClass));
         if (superInvar != null) {
             // Checks #3 (see method Javadoc)

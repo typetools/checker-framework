@@ -1216,8 +1216,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *       {@link #getSuppressWarningsKeys()} (e.g., {@code "nullness"} for Nullness, {@code
      *       "regex"} for Regex)
      *   <li>{@code "suppress-key:error-key}, where the suppress-key is as above, and error-key is a
-     *       prefix of the errors that it may suppress. So "nullness:generic.argument", would
-     *       suppress any errors in the Nullness Checker related to generic.argument.
+     *       prefix or suffix of the errors that it may suppress. So "nullness:generic.argument",
+     *       would suppress any errors in the Nullness Checker related to generic.argument.
      * </ol>
      *
      * @param anno the @SuppressWarnings annotation written by the user
