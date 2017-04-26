@@ -36,7 +36,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
-import org.checkerframework.framework.util.FieldInvariantObject;
+import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -338,7 +338,7 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public FieldInvariantObject getFieldInvariants(TypeElement element) {
+    public FieldInvariants getFieldInvariants(TypeElement element) {
         AnnotationMirror fieldInvarAnno = getDeclAnnotation(element, MinLenFieldInvariant.class);
         if (fieldInvarAnno == null) {
             return null;
@@ -352,8 +352,8 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             qualifiers.add(createMinLen(minlen));
         }
 
-        FieldInvariantObject superInvariants = super.getFieldInvariants(element);
-        return new FieldInvariantObject(superInvariants, fields, qualifiers);
+        FieldInvariants superInvariants = super.getFieldInvariants(element);
+        return new FieldInvariants(superInvariants, fields, qualifiers);
     }
 
     @Override
