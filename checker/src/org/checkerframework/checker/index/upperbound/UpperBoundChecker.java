@@ -20,10 +20,10 @@ public class UpperBoundChecker extends BaseTypeChecker {
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
                 super.getImmediateSubcheckerClasses();
+        checkers.add(SearchIndexChecker.class);
+        checkers.add(SameLenChecker.class);
         checkers.add(LowerBoundChecker.class);
         checkers.add(ValueChecker.class);
-        checkers.add(SameLenChecker.class);
-        checkers.add(SearchIndexChecker.class);
         return checkers;
     }
 }
