@@ -1,7 +1,6 @@
 package index;
 
 import org.checkerframework.checker.index.qual.GTENegativeOne;
-import org.checkerframework.checker.index.qual.MinLenBottom;
 import org.checkerframework.checker.index.qual.SameLenBottom;
 import org.checkerframework.checker.index.qual.SearchIndexBottom;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
@@ -12,6 +11,6 @@ public class OrderOfCheckers {
     void test(int[] y) {
         @GTENegativeOne @UpperBoundBottom
         @SearchIndexBottom
-        int @MinLenBottom @BottomVal @SameLenBottom [] x = y;
+        @BottomVal int @BottomVal @SameLenBottom [] x = y;
     }
 }
