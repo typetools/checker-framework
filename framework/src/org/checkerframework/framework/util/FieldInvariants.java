@@ -32,7 +32,7 @@ public class FieldInvariants {
      * @param qualifiers list of qualifiers
      */
     public FieldInvariants(
-        FieldInvariants other, List<String> fields, List<AnnotationMirror> qualifiers) {
+            FieldInvariants other, List<String> fields, List<AnnotationMirror> qualifiers) {
         if (fields.size() > qualifiers.size() && qualifiers.size() == 1) {
             int difference = fields.size() - qualifiers.size();
             for (int i = 0; i < difference; i++) {
