@@ -167,7 +167,8 @@ public class InitializationVisitor<
             AnnotationMirror inferredAnnotation,
             CFAbstractStore<?, ?> store) {
         // also use the information about initialized fields to check contracts
-        AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
+        final AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
+
         if (atypeFactory.getQualifierHierarchy().isSubtype(invariantAnno, necessaryAnnotation)) {
             if (expr instanceof FieldAccess) {
                 FieldAccess fa = (FieldAccess) expr;
@@ -184,15 +185,31 @@ public class InitializationVisitor<
                             return true;
                         }
                     }
-                } else if (fa.getReceiver() instanceof LocalVariable) {
-                    // TODO: what is the best way to handle other types of
-                    // receivers?
-                    Element elem = ((LocalVariable) fa.getReceiver()).getElement();
-                    AnnotatedTypeMirror recvType = atypeFactory.getAnnotatedType(elem);
+                } else {
+                    Set<AnnotationMirror> recvAnnoSet;
+                    @SuppressWarnings("unchecked")
+                    Value value = (Value) store.getValue(fa.getReceiver());
+                    if (value != null) {
+                        recvAnnoSet = value.getAnnotations();
+                    } else if (fa.getReceiver() instanceof LocalVariable) {
+                        Element elem = ((LocalVariable) fa.getReceiver()).getElement();
+                        AnnotatedTypeMirror recvType = atypeFactory.getAnnotatedType(elem);
+                        recvAnnoSet = recvType.getAnnotations();
+                    } else {
+                        // Is there anything better we could do?
+                        return false;
+                    }
+                    boolean isRecvCommitted = false;
+                    for (AnnotationMirror anno : recvAnnoSet) {
+                        if (atypeFactory.isCommitted(anno)) {
+                            isRecvCommitted = true;
+                        }
+                    }
+
                     AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fa.getField());
                     // The receiver is fully initialized and the field type
                     // has the invariant type.
-                    if (atypeFactory.isCommitted(recvType)
+                    if (isRecvCommitted
                             && AnnotationUtils.containsSame(
                                     fieldType.getAnnotations(), invariantAnno)) {
                         return true;
