@@ -154,8 +154,7 @@ class ArrayInit {
 
     public void refine(int[] q) {
         if (q.length < 20) {
-            @IntRange(from = 0, to = 19)
-            int x = q.length;
+            @IntRange(from = 0, to = 19) int x = q.length;
             int @ArrayLenRange(from = 0, to = 19) [] b = q;
             if (q.length < 5) {
                 int @ArrayLen({0, 1, 2, 3, 4}) [] c = q;
