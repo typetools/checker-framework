@@ -1,4 +1,5 @@
 import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.MinLen;
 
@@ -12,8 +13,14 @@ class MinLenFromPositive {
         int @MinLen(1) [] y = new int[x];
     }
 
-    void testArray(@Positive int[] x) {
+    void testArray(@Positive int @ArrayLen(1) [] x) {
         int @MinLen(1) [] array = new int[x[0]];
+    }
+
+    void useTestArray(int @ArrayLen(1) [] x, int[] y) {
+        testArray(x);
+        //:: error: (assignment.type.incompatible)
+        testArray(y);
     }
 
     void test(@Positive int x) {
