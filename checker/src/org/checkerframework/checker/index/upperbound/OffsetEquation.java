@@ -418,14 +418,12 @@ public class OffsetEquation {
             Node node, UpperBoundAnnotatedTypeFactory factory, char op) {
         assert op == '+' || op == '-';
         if (node.getTree() != null && TreeUtils.isExpressionTree(node.getTree())) {
-            Long i;
-            if (op == '+') {
-                i = IndexUtil.getExactValue(node.getTree(), factory.getValueAnnotatedTypeFactory());
-            } else {
-                i = IndexUtil.getExactValue(node.getTree(), factory.getValueAnnotatedTypeFactory());
-                i = i == null ? null : -i;
-            }
+            Long i =
+                    IndexUtil.getExactValue(node.getTree(), factory.getValueAnnotatedTypeFactory());
             if (i != null) {
+                if (op == '-') {
+                    i = -i;
+                }
                 OffsetEquation eq = new OffsetEquation();
                 eq.addInt(i.intValue());
                 return eq;
