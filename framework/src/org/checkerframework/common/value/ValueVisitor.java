@@ -22,6 +22,7 @@ import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 
@@ -70,10 +71,20 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             AnnotatedTypeMirror varType,
             ExpressionTree valueExp,
             /*@CompilerMessageKey*/ String errorKey) {
-        AnnotationMirror anm = varType.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
-        if (anm == null || !AnnotationUtils.areSameByClass(anm, IntRangeFromPositive.class)) {
-            super.commonAssignmentCheck(varType, valueExp, errorKey);
-        }
+
+        SimpleAnnotatedTypeScanner<Void, Void> replaceIntRangeFromPositive =
+                new SimpleAnnotatedTypeScanner<Void, Void>() {
+                    @Override
+                    protected Void defaultAction(AnnotatedTypeMirror type, Void p) {
+                        if (type.hasAnnotation(IntRangeFromPositive.class)) {
+                            type.replaceAnnotation(atypeFactory.UNKNOWNVAL);
+                        }
+                        return null;
+                    }
+                };
+
+        replaceIntRangeFromPositive.visit(varType);
+        super.commonAssignmentCheck(varType, valueExp, errorKey);
     }
 
     @Override
@@ -94,15 +105,14 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      */
     @Override
     public Void visitAnnotation(AnnotationTree node, Void p) {
-
-        AnnotationMirror anno = InternalUtils.annotationFromAnnotationTree(node);
-
         List<? extends ExpressionTree> args = node.getArguments();
 
         if (args.isEmpty()) {
             // Nothing to do if there are no annotation arguments.
             return super.visitAnnotation(node, p);
         }
+
+        AnnotationMirror anno = InternalUtils.annotationFromAnnotationTree(node);
 
         if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
             // If there are 2 arguments, issue an error if from.greater.than.to.

@@ -19,7 +19,7 @@ class MinLenFromPositive {
 
     void useTestArray(int @ArrayLen(1) [] x, int[] y) {
         testArray(x);
-        //:: error: (assignment.type.incompatible)
+        //:: error: (argument.type.incompatible)
         testArray(y);
     }
 
@@ -46,5 +46,11 @@ class MinLenFromPositive {
         @IntRange(from = 1) int q = x + y;
 
         return x + y;
+    }
+
+    // Ensure that LHS warnings aren't issued even for arrays of Positives
+    @Positive int[] array_test() {
+        int[] a = {-1, 2, 3};
+        return a;
     }
 }
