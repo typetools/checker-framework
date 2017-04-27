@@ -438,4 +438,60 @@ public final class SignednessUtil {
     public static double toDouble(@Unsigned long l) {
         return toUnsignedBigInteger(l).doubleValue();
     }
+
+    /** Returns an unsigned byte representing the same value as the float. */
+    @SuppressWarnings("signedness")
+    public static @Unsigned byte byteFromFloat(float f) {
+        assert f >= 0;
+        return (byte) f;
+    }
+
+    /** Returns an unsigned short representing the same value as the float. */
+    @SuppressWarnings("signedness")
+    public static @Unsigned short shortFromFloat(float f) {
+        assert f >= 0;
+        return (short) f;
+    }
+
+    /** Returns an unsigned int representing the same value as the float. */
+    @SuppressWarnings("signedness")
+    public static @Unsigned int intFromFloat(float f) {
+        assert f >= 0;
+        return (int) f;
+    }
+
+    /** Returns an unsigned long representing the same value as the float. */
+    @SuppressWarnings("signedness")
+    public static @Unsigned long longFromFloat(float f) {
+        assert f >= 0;
+        return (long) f;
+    }
+
+    /** Returns an unsigned byte representing the same value as the double. */
+    @SuppressWarnings("signedness")
+    public static @Unsigned byte byteFromDouble(double d) {
+        assert d >= 0;
+        return (byte) d;
+    }
+
+    /** Returns an unsigned short representing the same value as the double. */
+    @SuppressWarnings("signedness")
+    public static @Unsigned short shortFromDouble(double d) {
+        assert d >= 0;
+        return (short) d;
+    }
+
+    /** Returns an unsigned int representing the same value as the double. */
+    @SuppressWarnings("signedness")
+    public static @Unsigned int intFromDouble(double d) {
+        assert d >= 0;
+        return (int) d;
+    }
+
+    /** Returns an unsigned long representing the same value as the double. */
+    @SuppressWarnings("signedness")
+    public static @Unsigned long longFromDouble(double d) {
+        assert d >= 0;
+        return (long) d;
+    }
 }
