@@ -251,9 +251,8 @@ public class ElementUtils {
      * Returns the elements of the fields whose simple names are {@code names} and are declared in
      * {@code type}.
      *
-     * <p>If a field or fields isn't declared in {@code type}, its element isn't included in the
-     * returned set. If none of the fields is declared in {@code type} found, the empty set is
-     * returned.
+     * <p>If a field isn't declared in {@code type}, its element isn't included in the returned set.
+     * If none of the fields is declared in {@code type}, the empty set is returned.
      *
      * @param type where to look for fields
      * @param names simple names of fields that might be declared in {@code type}
@@ -289,7 +288,7 @@ public class ElementUtils {
     public static Set<VariableElement> findFieldsInTypeOrSuperType(
             TypeMirror type, Collection<String> names) {
         Set<VariableElement> elements = new HashSet<>();
-        findFieldsInTypeOrSuperType(elements, names, type);
+        findFieldsInTypeOrSuperType(type, names, elements);
         return elements;
     }
 
@@ -298,22 +297,24 @@ public class ElementUtils {
      * moving elements from {@code notFound} to {@code foundFields}.
      */
     private static void findFieldsInTypeOrSuperType(
-            Set<VariableElement> foundFields, Collection<String> notFound, TypeMirror type) {
+            TypeMirror type, Collection<String> notFound, Set<VariableElement> foundFields) {
         if (TypesUtils.isObject(type)) {
             return;
         }
         TypeElement elt = InternalUtils.getTypeElement(type);
 
         Set<VariableElement> fieldElts = findFieldsInType(elt, notFound);
-        for (VariableElement field : fieldElts) {
+        for (VariableElement field : new HashSet<>(fieldElts)) {
             if (!field.getModifiers().contains(Modifier.PRIVATE)) {
                 notFound.remove(field.getSimpleName().toString());
+            } else {
+                fieldElts.remove(field);
             }
         }
         foundFields.addAll(fieldElts);
 
         if (!notFound.isEmpty()) {
-            findFieldsInTypeOrSuperType(foundFields, notFound, elt.getSuperclass());
+            findFieldsInTypeOrSuperType(elt.getSuperclass(), notFound, foundFields);
         }
     }
 

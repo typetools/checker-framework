@@ -319,6 +319,8 @@ public class DependentTypesHelper {
                         new FlowExpressionContext(receiverF, null, factory.getContext());
                 standardizeDoNotUseLocals(fieldContext, path, type);
                 break;
+            default:
+                // Nothing to do.
         }
     }
 
@@ -395,6 +397,9 @@ public class DependentTypesHelper {
                 }
 
                 standardizeVariable(tree, type, elt);
+                break;
+            default:
+                // Nothing to do.
         }
     }
 

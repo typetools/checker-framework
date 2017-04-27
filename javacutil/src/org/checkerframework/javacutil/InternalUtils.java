@@ -30,6 +30,7 @@ import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -433,5 +434,21 @@ public class InternalUtils {
     public static ClassLoader getClassLoaderForClass(Class<? extends Object> clazz) {
         ClassLoader classLoader = clazz.getClassLoader();
         return classLoader == null ? ClassLoader.getSystemClassLoader() : classLoader;
+    }
+
+    /**
+     * Compares tree1 to tree2 by the position at which a diagnostic (e.g., an error message) for
+     * the tree should be printed.
+     */
+    public static int compareDiagnosticPosition(Tree tree1, Tree tree2) {
+        DiagnosticPosition pos1 = (DiagnosticPosition) tree1;
+        DiagnosticPosition pos2 = (DiagnosticPosition) tree2;
+
+        int preferred = Integer.compare(pos1.getPreferredPosition(), pos2.getPreferredPosition());
+        if (preferred != 0) {
+            return preferred;
+        }
+
+        return Integer.compare(pos1.getStartPosition(), pos2.getStartPosition());
     }
 }

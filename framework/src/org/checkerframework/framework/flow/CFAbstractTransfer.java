@@ -1123,6 +1123,7 @@ public abstract class CFAbstractTransfer<
     }
 
     /** @see CFAbstractAnalysis#getTypeFactoryOfSubchecker(Class) */
+    @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
     public <W extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker>
             W getTypeFactoryOfSubchecker(Class<U> checkerClass) {
         return analysis.getTypeFactoryOfSubchecker(checkerClass);

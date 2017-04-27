@@ -142,28 +142,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ValueTransfer(analysis);
     }
 
-    /**
-     * Creates an annotation of the given name with the given set of values.
-     *
-     * <p>If values.size &gt; MAX_VALUES, issues a checker warning and returns UNKNOWNVAL.
-     *
-     * <p>If values.size == 0, issues a checker warning and returns BOTTOMVAL.
-     *
-     * @return annotation given by name with values=values, or UNKNOWNVAL
-     */
-    private AnnotationMirror createAnnotation(String name, Set<?> values) {
-        if (values.size() == 0) {
-            return BOTTOMVAL;
-        }
-        if (values.size() > MAX_VALUES) {
-            return UNKNOWNVAL;
-        }
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, name);
-        List<Object> valuesList = new ArrayList<Object>(values);
-        builder.setValue("value", valuesList);
-        return builder.build();
-    }
-
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return getBundledTypeQualifiersWithoutPolyAll();
@@ -376,17 +354,44 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     Range range1 = getRange(a1);
                     Range range2 = getRange(a2);
                     return createArrayLenRangeAnnotation(range1.union(range2));
+                } else if (AnnotationUtils.areSameByClass(a1, IntVal.class)) {
+                    List<Long> a1Values =
+                            AnnotationUtils.getElementValueArray(a1, "value", Long.class, true);
+                    List<Long> a2Values =
+                            AnnotationUtils.getElementValueArray(a2, "value", Long.class, true);
+                    List<Long> newValues = new ArrayList<>();
+                    newValues.addAll(a1Values);
+                    newValues.addAll(a2Values);
+                    return createIntValAnnotation(newValues);
+                } else if (AnnotationUtils.areSameByClass(a1, ArrayLen.class)) {
+                    List<Integer> a1Values =
+                            AnnotationUtils.getElementValueArray(a1, "value", Integer.class, true);
+                    List<Integer> a2Values =
+                            AnnotationUtils.getElementValueArray(a2, "value", Integer.class, true);
+                    List<Integer> newValues = new ArrayList<>();
+                    newValues.addAll(a1Values);
+                    newValues.addAll(a2Values);
+                    return createArrayLenAnnotation(newValues);
                 } else {
                     List<Object> a1Values =
                             AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
                     List<Object> a2Values =
                             AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
-                    Set<Object> newValues = new TreeSet<>();
+                    TreeSet<Object> newValues = new TreeSet<>();
                     newValues.addAll(a1Values);
                     newValues.addAll(a2Values);
 
-                    // createAnnotation returns @UnknownVal if the list is longer than MAX_VALUES
-                    return createAnnotation(a1.getAnnotationType().toString(), newValues);
+                    if (newValues.size() == 0) {
+                        return BOTTOMVAL;
+                    }
+                    if (newValues.size() > MAX_VALUES) {
+                        return UNKNOWNVAL;
+                    }
+                    AnnotationBuilder builder =
+                            new AnnotationBuilder(processingEnv, a1.getAnnotationType().toString());
+                    List<Object> valuesList = new ArrayList<>(newValues);
+                    builder.setValue("value", valuesList);
+                    return builder.build();
                 }
             }
 
@@ -1100,9 +1105,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                 }
                 return createCharAnnotation(charVals);
+            default:
+                throw new UnsupportedOperationException("Unexpected kind:" + resultType);
         }
-
-        throw new UnsupportedOperationException("Unexpected kind:" + resultType);
     }
 
     /**
@@ -1125,7 +1130,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.size() > MAX_VALUES) {
             long valMin = Collections.min(values);
             long valMax = Collections.max(values);
-            return createIntRangeAnnotation(new Range(valMin, valMax));
+            return createIntRangeAnnotation(valMin, valMax);
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntVal.class);
             builder.setValue("value", values);
@@ -1321,7 +1326,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Create an {@code @IntRange} annotation from the two (inclusive) bounds. Does not return
      * BOTTOMVAL or UNKNOWNVAL.
      */
-    public AnnotationMirror createIntRangeAnnotation(long from, long to) {
+    private AnnotationMirror createIntRangeAnnotation(long from, long to) {
         assert from <= to;
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntRange.class);
         builder.setValue("from", from);
@@ -1330,15 +1335,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Create an {@code @IntRange} annotation from the range. May return BOTTOMVAL or UNKNOWNVAL.
+     * Create an {@code @IntRange} or {@code @IntVal} annotation from the range. May return
+     * BOTTOMVAL or UNKNOWNVAL.
      */
     public AnnotationMirror createIntRangeAnnotation(Range range) {
         if (range.isNothing()) {
             return BOTTOMVAL;
         } else if (range.isEverything()) {
             return UNKNOWNVAL;
-        } else {
+        } else if (range.isWiderThan(MAX_VALUES)) {
             return createIntRangeAnnotation(range.from, range.to);
+        } else {
+            List<Long> newValues = ValueCheckerUtils.getValuesFromRange(range, Long.class);
+            return createIntValAnnotation(newValues);
         }
     }
 

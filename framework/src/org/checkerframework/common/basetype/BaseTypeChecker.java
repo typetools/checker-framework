@@ -1,5 +1,7 @@
 package org.checkerframework.common.basetype;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -10,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -18,8 +21,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
+import javax.tools.Diagnostic.Kind;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -31,6 +37,7 @@ import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.InternalUtils;
 
 /**
  * An abstract {@link SourceChecker} that provides a simple {@link
@@ -118,23 +125,29 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     private List<BaseTypeChecker> immediateSubcheckers;
 
     /**
-     * Returns the set of subchecker classes this checker depends on. Returns an empty set if this
-     * checker does not depend on any others. Subclasses need to override this method if they have
-     * dependencies.
+     * Returns the set of subchecker classes on which this checker depends. Returns an empty set if
+     * this checker does not depend on any others.
      *
-     * <p>Each subclass of BaseTypeChecker must declare all dependencies it relies on if there are
-     * any. Each subchecker of this checker is in turn free to change its own dependencies. It's OK
-     * for various checkers to declare a dependency on the same subchecker, since the
-     * BaseTypeChecker will ensure that each subchecker is instantiated only once.
+     * <p>Subclasses should override this method to specify subcheckers. If they do so, they should
+     * call the super implementation of this method and add dependencies to the returned set so that
+     * checkers required for reflection resolution are included if reflection resolution is
+     * requested.
      *
-     * <p>WARNING: Circular dependencies are not supported. We do not check for their absence. Make
-     * sure no circular dependencies are created when overriding this method.
+     * <p>Each subchecker of this checker may also depend on other checkers. If this checker and one
+     * of its subcheckers both depend on a third checker, that checker will only be instantiated
+     * once.
      *
-     * <p>This method is protected so it can be overridden, but it is only intended to be called
-     * internally by the BaseTypeChecker. Please override this method but do not call it from
-     * classes other than BaseTypeChecker. Subclasses that override this method should call super
-     * and added dependencies so that checkers required for reflection resolution are included if
-     * reflection resolution is requested.
+     * <p>Though each checker is run on a whole compilation unit before the next checker is run,
+     * error and warning messages are collected and sorted based on the location in the source file
+     * before being printed. (See {@link #printMessage(Kind, String, Tree, CompilationUnitTree)}.)
+     *
+     * <p>WARNING: Circular dependencies are not supported nor do checkers verify that their
+     * dependencies are not circular. Make sure no circular dependencies are created when overriding
+     * this method. (In other words, if checker A depends on checker B, checker B cannot depend on
+     * checker A.)
+     *
+     * <p>This method is protected so it can be overridden, but it should only be called internally
+     * by the BaseTypeChecker.
      *
      * <p>The BaseTypeChecker will not modify the list returned by this method.
      */
@@ -225,7 +238,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * @return the result of the constructor invocation on {@code args}, or null if the constructor
      *     does not exist or could not be invoked
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"}) // Intentional abuse
     public static <T> T invokeConstructorFor(String name, Class<?>[] paramTypes, Object[] args) {
 
         // Load the class.
@@ -332,7 +345,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * @param checkerClass the class of the subchecker
      * @return the type factory of the requested subchecker or null if not found
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"}) // Intentional abuse
     public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker>
             T getTypeFactoryOfSubchecker(Class<U> checkerClass) {
         BaseTypeChecker checker = getSubchecker(checkerClass);
@@ -368,7 +381,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             }
 
             try {
-                BaseTypeChecker instance = subcheckerClass.newInstance();
+                BaseTypeChecker instance = subcheckerClass.getDeclaredConstructor().newInstance();
                 instance.setProcessingEnvironment(this.processingEnv);
                 // Prevent the new checker from storing non-immediate subcheckers
                 instance.subcheckers =
@@ -409,38 +422,190 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         return subcheckers;
     }
 
+    /**
+     * Sort by position at which the error will be printed, then by the order in which the checkers
+     * run, then by kind of message, and finally by the message string.
+     */
+    private final Comparator<CheckerMessage> checkerMessageComparator =
+            new Comparator<CheckerMessage>() {
+                @Override
+                public int compare(CheckerMessage o1, CheckerMessage o2) {
+                    int byPos = InternalUtils.compareDiagnosticPosition(o1.source, o2.source);
+                    if (byPos != 0) {
+                        return byPos;
+                    }
+
+                    // Sort by order in which the checkers are run. (All the subcheckers in
+                    // followed by the checker.)
+                    int o1Index = BaseTypeChecker.this.getSubcheckers().indexOf(o1.checker);
+                    int o2Index = BaseTypeChecker.this.getSubcheckers().indexOf(o2.checker);
+                    if (o1Index != o2Index) {
+                        if (o1Index == -1) {
+                            o1Index = BaseTypeChecker.this.getSubcheckers().size();
+                        }
+                        if (o2Index == -1) {
+                            o2Index = BaseTypeChecker.this.getSubcheckers().size();
+                        }
+                        return Integer.compare(o1Index, o2Index);
+                    }
+
+                    int kind = o1.kind.compareTo(o2.kind);
+                    if (kind != 0) {
+                        return kind;
+                    }
+
+                    return o1.message.compareTo(o2.message);
+                }
+            };
+
     // AbstractTypeProcessor delegation
     @Override
     public void typeProcess(TypeElement element, TreePath tree) {
+        if (getSubcheckers().size() > 0) {
+            messageStore = new TreeSet<>(checkerMessageComparator);
+        }
 
-        // If Java has issued errors, don't run any checkers on this compilation unit.
-        // If a sub checker issued errors, run the next checker on this compilation unit.
-
-        // Log.nerrors counts the number of Java and checker errors have been issued.
-        // super.typeProcess does not typeProcess if log.nerrors > errorsOnLastExit
+        // Errors (or other messages) issued via
+        // SourceChecker#message(Diagnostic.Kind, Object, String, Object...)
+        // are stored in messageStore until all checkers have processed this compilation unit.
+        // All other messages are printed immediately.  This includes errors issued because the
+        // checker threw an exception or called ErrorReporter.errorAbort().
 
         // In order to run the next checker on this compilation unit even if the previous
         // issued errors, the next checker's errsOnLastExit needs to include all errors
         // issued by previous checkers.
 
-        // To prevent any checkers from running if a Java error was issued for this compilation unit,
-        // errsOnLastExit should not include any Java errors.
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
         Log log = Log.instance(context);
-        // Start with this.errsOnLastExit which will account for errors seen by
-        // by a previous checker run in an aggregate checker.
+
         int nerrorsOfAllPreviousCheckers = this.errsOnLastExit;
-        for (BaseTypeChecker checker : getSubcheckers()) {
-            checker.errsOnLastExit = nerrorsOfAllPreviousCheckers;
+        for (BaseTypeChecker subchecker : getSubcheckers()) {
+            subchecker.errsOnLastExit = nerrorsOfAllPreviousCheckers;
+            subchecker.messageStore = messageStore;
             int errorsBeforeTypeChecking = log.nerrors;
 
-            checker.typeProcess(element, tree);
+            subchecker.typeProcess(element, tree);
 
             int errorsAfterTypeChecking = log.nerrors;
             nerrorsOfAllPreviousCheckers += errorsAfterTypeChecking - errorsBeforeTypeChecking;
         }
+
         this.errsOnLastExit = nerrorsOfAllPreviousCheckers;
         super.typeProcess(element, tree);
+
+        if (getSubcheckers().size() > 0) {
+            printCollectedMessages(tree.getCompilationUnit());
+            // Update errsOnLastExit to reflect the errors issued.
+            this.errsOnLastExit = log.nerrors;
+        }
+    }
+
+    /**
+     * Stores all messages issued by this checker and its subcheckers for the current compilation
+     * unit. The messages are printed after all checkers have processed the current compilation
+     * unit. If this checker has no subcheckers and is not a subchecker for any other checker, then
+     * messageStore is null and messages will be printed as they are issued by this checker.
+     */
+    private TreeSet<CheckerMessage> messageStore = null;
+
+    /**
+     * If this is a compound checker or a subchecker of a compound checker, then the message is
+     * stored until all messages from all checkers for the compilation unit are issued.
+     *
+     * <p>Otherwise, it prints the message.
+     */
+    @Override
+    protected void printMessage(
+            Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
+        assert this.currentRoot == root;
+        if (messageStore == null) {
+            super.printMessage(kind, message, source, root);
+        } else {
+            CheckerMessage checkerMessage = new CheckerMessage(kind, message, source, this);
+            messageStore.add(checkerMessage);
+        }
+    }
+
+    /**
+     * Prints error messages for this checker and all subcheckers such that the errors are ordered
+     * by line and column number and then by checker. (See checkerMessageComparator for more precise
+     * order.)
+     *
+     * @param unit Current compilation unit
+     */
+    private void printCollectedMessages(CompilationUnitTree unit) {
+        if (messageStore != null) {
+            for (CheckerMessage msg : messageStore) {
+                super.printMessage(msg.kind, msg.message, msg.source, unit);
+            }
+        }
+    }
+
+    /** Represents a message (e.g., an error message) issued by a checker. */
+    private static class CheckerMessage {
+        final Diagnostic.Kind kind;
+        final String message;
+        final Tree source;
+        /**
+         * This checker that issued this message. The compound checker that depends on this checker
+         * uses this to sort the messages.
+         */
+        final BaseTypeChecker checker;
+
+        private CheckerMessage(
+                Diagnostic.Kind kind, String message, Tree source, BaseTypeChecker checker) {
+            this.kind = kind;
+            this.message = message;
+            this.source = source;
+            this.checker = checker;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            CheckerMessage that = (CheckerMessage) o;
+
+            if (kind != that.kind) {
+                return false;
+            }
+            if (!message.equals(that.message)) {
+                return false;
+            }
+            if (source == that.source) {
+                return false;
+            }
+            return checker == that.checker;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = kind.hashCode();
+            result = 31 * result + message.hashCode();
+            result = 31 * result + source.hashCode();
+            result = 31 * result + checker.hashCode();
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "CheckerMessage{"
+                    + "kind="
+                    + kind
+                    + ", checker="
+                    + checker.getClass().getSimpleName()
+                    + ", message='"
+                    + message
+                    + '\''
+                    + ", source="
+                    + source
+                    + '}';
+        }
     }
 
     @Override

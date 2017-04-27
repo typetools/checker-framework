@@ -920,7 +920,8 @@ Usually, you only need to use \refqualclass{dataflow/qual}{SideEffectFree}.
 
 \item[\refqualclass{dataflow/qual}{Deterministic}]
   indicates that if the method is called multiple times with identical
-  arguments, then it returns the identical result.
+  arguments, then it returns the identical result according to \<==>
+  (not just according to \<equals()>).
 
 \item[\refqualclass{dataflow/qual}{Pure}]
   indicates that the method is both \<@SideEffectFree> and \<@Deterministic>.
