@@ -43,6 +43,7 @@ package org.w3c.dom;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * The <code>Text</code> interface inherits from <code>CharacterData</code>
