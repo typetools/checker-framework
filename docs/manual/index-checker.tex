@@ -156,12 +156,16 @@ are some annotations that give multiple types of information:
 
 The Index Checker issues an error when
 a sequence is indexed by an integer that might be negative.
-It uses a type system (Figure~\ref{fig-index-int-types}) with the following
+The Lower Bound Checker uses a type system (Figure~\ref{fig-index-int-types}) with the following
 qualifiers:
 
 \begin{description}
 \item[\refqualclass{checker/index/qual}{Positive}]
   The value is 1 or greater, so it is not too low to be used as an index.
+  Note that this annotation is trusted by the Constant Value Checker,
+  so if the Constant Value Checker is run on code containing this annotation,
+  the Lower Bound Checker must be run on the same code in order to
+  guarantee soundness.
 \item[\refqualclass{checker/index/qual}{NonNegative}]
   The value is 0 or greater, so it is not too low to be used as an index.
 \item[\refqualclass{checker/index/qual}{GTENegativeOne}]
