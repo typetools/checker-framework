@@ -29,9 +29,9 @@ public class IndexUtil {
     }
 
     /**
-     * Get the list of possible values from an AnnotatedTypeMirror containing an IntVal. Empty list
-     * means no possible values (dead code). Returns null if the AnnotatedTypeMirror doesn't contain
-     * an IntVal.
+     * Returns a range representing the possible integral values represented by the passed {@code
+     * AnnotatedTypeMirror}. If the passed {@code AnnotatedTypeMirror} does not contain an {@code
+     * IntRange} annotation or an {@code IntVal} annotation, returns null.
      */
     public static Range getPossibleValues(
             AnnotatedTypeMirror valueType, ValueAnnotatedTypeFactory valueAnnotatedTypeFactory) {
