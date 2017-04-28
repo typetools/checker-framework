@@ -30,6 +30,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -146,7 +147,9 @@ public class InitializationVisitor<
             // Fields cannot have commitment annotations.
             for (Class<? extends Annotation> c : atypeFactory.getInitializationAnnotations()) {
                 for (AnnotationMirror a : annotationMirrors) {
-                    if (atypeFactory.isUnclassified(a)) continue; // unclassified is allowed
+                    if (atypeFactory.isUnclassified(a)) {
+                        continue; // unclassified is allowed
+                    }
                     if (AnnotationUtils.areSameByClass(a, c)) {
                         checker.report(Result.failure(COMMITMENT_INVALID_FIELD_TYPE, node), node);
                         break;
@@ -164,7 +167,8 @@ public class InitializationVisitor<
             AnnotationMirror inferredAnnotation,
             CFAbstractStore<?, ?> store) {
         // also use the information about initialized fields to check contracts
-        AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
+        final AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
+
         if (atypeFactory.getQualifierHierarchy().isSubtype(invariantAnno, necessaryAnnotation)) {
             if (expr instanceof FieldAccess) {
                 FieldAccess fa = (FieldAccess) expr;
@@ -180,6 +184,35 @@ public class InitializationVisitor<
                                 fieldType.getAnnotations(), invariantAnno)) {
                             return true;
                         }
+                    }
+                } else {
+                    Set<AnnotationMirror> recvAnnoSet;
+                    @SuppressWarnings("unchecked")
+                    Value value = (Value) store.getValue(fa.getReceiver());
+                    if (value != null) {
+                        recvAnnoSet = value.getAnnotations();
+                    } else if (fa.getReceiver() instanceof LocalVariable) {
+                        Element elem = ((LocalVariable) fa.getReceiver()).getElement();
+                        AnnotatedTypeMirror recvType = atypeFactory.getAnnotatedType(elem);
+                        recvAnnoSet = recvType.getAnnotations();
+                    } else {
+                        // Is there anything better we could do?
+                        return false;
+                    }
+                    boolean isRecvCommitted = false;
+                    for (AnnotationMirror anno : recvAnnoSet) {
+                        if (atypeFactory.isCommitted(anno)) {
+                            isRecvCommitted = true;
+                        }
+                    }
+
+                    AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fa.getField());
+                    // The receiver is fully initialized and the field type
+                    // has the invariant type.
+                    if (isRecvCommitted
+                            && AnnotationUtils.containsSame(
+                                    fieldType.getAnnotations(), invariantAnno)) {
+                        return true;
                     }
                 }
             }

@@ -28,7 +28,7 @@ import javax.lang.model.element.TypeElement;
 public @interface FieldInvariant {
 
     /**
-     * The qualifier on the field. Must be a subtype of the annotation on the declaration of the
+     * The qualifier on the field. Must be a subtype of the qualifier on the declaration of the
      * field.
      */
     Class<? extends Annotation>[] qualifier();
