@@ -26,8 +26,5 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @InvisibleQualifier
 @SubtypeOf(KeyFor.class)
 @DefaultFor({TypeUseLocation.LOWER_BOUND})
-@ImplicitFor(
-    literals = {LiteralKind.NULL},
-    typeNames = {java.lang.Void.class}
-)
+@ImplicitFor(literals = LiteralKind.NULL, typeNames = java.lang.Void.class)
 public @interface KeyForBottom {}
