@@ -23,6 +23,12 @@ public class NumberUtils {
                     bytes.add(l.byteValue());
                 }
                 return bytes;
+            case CHAR:
+                List<Integer> chars = new ArrayList<>();
+                for (Number l : numbers) {
+                    chars.add(l.intValue());
+                }
+                return chars;
             case DOUBLE:
                 List<Double> doubles = new ArrayList<>();
                 for (Number l : numbers) {

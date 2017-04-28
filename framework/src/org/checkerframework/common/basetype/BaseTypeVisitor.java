@@ -101,7 +101,7 @@ import org.checkerframework.framework.util.ContractsUtils.ConditionalPostconditi
 import org.checkerframework.framework.util.ContractsUtils.Contract;
 import org.checkerframework.framework.util.ContractsUtils.Postcondition;
 import org.checkerframework.framework.util.ContractsUtils.Precondition;
-import org.checkerframework.framework.util.FieldInvariantObject;
+import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -355,7 +355,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected void checkFieldInvariantDeclarations(ClassTree classTree) {
         TypeElement elt = TreeUtils.elementFromDeclaration(classTree);
-        FieldInvariantObject invariants = atypeFactory.getFieldInvariants(elt);
+        FieldInvariants invariants = atypeFactory.getFieldInvariants(elt);
         if (invariants == null) {
             // No invariants to check
             return;
@@ -373,7 +373,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // Checks #4 (see method Javadoc)
         if (!invariants.isWellFormed()) {
-            checker.report(Result.failure("field.invar.not.wellformed"), errorTree);
+            checker.report(Result.failure("field.invariant.not.wellformed"), errorTree);
             return;
         }
 
@@ -385,10 +385,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Checks that fields are declared in super class. (#2b)
         if (!fieldsNotFound.isEmpty()) {
             String notFoundString = PluginUtil.join(", ", fieldsNotFound);
-            checker.report(Result.failure("field.invar.not.found", notFoundString), errorTree);
+            checker.report(Result.failure("field.invariant.not.found", notFoundString), errorTree);
         }
 
-        FieldInvariantObject superInvar =
+        FieldInvariants superInvar =
                 atypeFactory.getFieldInvariants(InternalUtils.getTypeElement(superClass));
         if (superInvar != null) {
             // Checks #3 (see method Javadoc)
@@ -419,7 +419,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // Checks #3
                     checker.report(
                             Result.failure(
-                                    "field.invar.not.subtype",
+                                    "field.invariant.not.subtype",
                                     fieldName,
                                     invariantAnno,
                                     declaredAnno),
@@ -431,7 +431,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Checks #2a
         if (!notFinal.isEmpty()) {
             String notFinalString = PluginUtil.join(", ", notFinal);
-            checker.report(Result.failure("field.invar.not.final", notFinalString), errorTree);
+            checker.report(Result.failure("field.invariant.not.final", notFinalString), errorTree);
         }
     }
 
@@ -676,7 +676,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         node);
             }
 
-            checkParametersAreEffectivelyFinal(methodElement, expression);
+            checkParametersAreEffectivelyFinal(node, methodElement, expression);
         }
     }
 
@@ -684,7 +684,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Check that the parameters used in {@code stringExpr} are effectively final for method {@code
      * method}.
      */
-    private void checkParametersAreEffectivelyFinal(ExecutableElement method, String stringExpr) {
+    private void checkParametersAreEffectivelyFinal(
+            MethodTree node, ExecutableElement method, String stringExpr) {
         // check that all parameters used in the expression are
         // effectively final, so that they cannot be modified
         List<Integer> parameterIndices = FlowExpressionParseUtil.parameterIndices(stringExpr);
@@ -697,7 +698,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!ElementUtils.isEffectivelyFinal(parameter)) {
                 checker.report(
                         Result.failure("flowexpr.parameter.not.final", "#" + idx, stringExpr),
-                        method);
+                        node);
             }
         }
     }

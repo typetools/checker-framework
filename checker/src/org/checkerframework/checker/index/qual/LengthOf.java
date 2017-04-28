@@ -1,5 +1,8 @@
 package org.checkerframework.checker.index.qual;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
+
 /**
  * An integer that, for each of the given sequences, is equal to the sequence's length.
  *
@@ -9,6 +12,7 @@ package org.checkerframework.checker.index.qual;
  *
  * @checker_framework.manual #index-checker Index Checker
  */
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface LengthOf {
     /** Sequences that the annotated expression is equal to the lengeth of. */
     String[] value() default {};

@@ -16,10 +16,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @checker_framework.manual #bottom-type the bottom type
  */
 @InvisibleQualifier
-@ImplicitFor(
-    literals = {LiteralKind.NULL},
-    typeNames = {java.lang.Void.class}
-)
+@ImplicitFor(literals = LiteralKind.NULL, typeNames = java.lang.Void.class)
 @SubtypeOf({ClassVal.class, ClassBound.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
