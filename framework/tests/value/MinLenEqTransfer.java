@@ -21,6 +21,10 @@ class MinLenEqTransfer {
         if (a.length == 100 || a.length == 3) {
             int x = a.length;
             return a;
+        } else if (a.length == 0 || a.length == 1) {
+            int x = a.length;
+            //:: error: (return.type.incompatible)
+            return a;
         }
         return new int[] {1, 2};
     }
