@@ -324,7 +324,7 @@ public class ValueTransfer extends CFTransfer {
                     combinedAnno =
                             atypefactory
                                     .getQualifierHierarchy()
-                                    .greatestLowerBound(oldArrayAnno, newArrayAnno);
+                                    .leastUpperBound(oldArrayAnno, newArrayAnno);
                 }
                 Receiver arrayRec =
                         FlowExpressions.internalReprOf(
