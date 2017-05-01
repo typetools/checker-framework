@@ -16,4 +16,13 @@ class MinLenEqTransfer {
             int @MinLen(2) [] b = a;
         }
     }
+
+    int @MinLen(2) [] test(int[] a) {
+        if (a.length == 100 || a.length == 3) {
+            int x = a.length;
+            //:: error: (return.type.incompatible)
+            return a;
+        }
+        return new int[] {1, 2};
+    }
 }
