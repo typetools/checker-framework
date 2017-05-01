@@ -148,16 +148,18 @@ $\Rightarrow$
 \label{fig-constant-value-refactoring}
 \end{figure}
 
-% If your code contains the \refqualclass{checker/index/qual}{Positive}
-% annotation from the Index Checker, note that the Constant Value Checker treats
-% the \refqualclass{checker/index/qual}{Positive} annotation as trusted.
-% Due to this, to ensure the soundness of the Constant Value Checker's analysis when
-% the \refqualclass{checker/index/qual}{Positive} annotation is present, the Index
-% Checker must be run. This is a form of rely-guarantee reasoning: the Value Checker
-% assumes that the Index Checker's annotations are correct, and then the Index Checker
-% actually checks them (even though it runs later, with the Value Checker as a subchecker).
-% These annotations are trusted to allow the Value Checker to infer array length
-% annotations based on them.
+\ifonbuffalo{\relax}\else{
+ If your code contains the \refqualclass{checker/index/qual}{Positive}
+ annotation from the Index Checker, note that the Constant Value Checker treats
+ the \refqualclass{checker/index/qual}{Positive} annotation as trusted.
+ Due to this, to ensure the soundness of the Constant Value Checker's analysis when
+ the \refqualclass{checker/index/qual}{Positive} annotation is present, the Index
+ Checker must be run. This is a form of rely-guarantee reasoning: the Value Checker
+ assumes that the Index Checker's annotations are correct, and then the Index Checker
+ actually checks them (even though it runs later, with the Value Checker as a subchecker).
+ These annotations are trusted to allow the Value Checker to infer array length
+ annotations based on them.
+}\fi
 
 \subsection{Compile-time execution of expressions\label{staticallyexecutable-annotation}}
 
