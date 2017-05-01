@@ -1,4 +1,4 @@
-Version 2.2.0, 2 April 2017
+Version 2.1.11, 1 May 2017
 
 The manual contains new FAQ (frequently asked questions) sections about
 false positive warnings and about inference for field types.
