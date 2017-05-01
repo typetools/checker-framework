@@ -387,7 +387,7 @@ public class OffsetEquation {
         if (intLiteral.isEmpty()) {
             return 0;
         }
-        return Long.valueOf(intLiteral).intValue();
+        return Integer.valueOf(intLiteral);
     }
 
     /** Returns the first index of a or b in string, or -1 if neither char is in string. */
