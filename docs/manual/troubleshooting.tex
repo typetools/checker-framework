@@ -540,6 +540,36 @@ You want the one with a name like
 Add this .jar file to your build path.
 
 
+\item
+When one formal parameter's annotation references another formal
+parameter's name, as in this constructor:
+
+\begin{smaller}
+\begin{Verbatim}
+public String(char value[], @IndexFor("value") int offset, @IndexOrHigh("value") int count) { ... }
+\end{Verbatim}
+\end{smaller}
+
+\noindent
+you will get an error such as
+
+\begin{smaller}
+\begin{Verbatim}[]
+[expression.unparsable.type.invalid] Expression in dependent type annotation invalid:
+[error for expression: myParamName error: myParamName: identifier not found]
+\end{Verbatim}
+\end{smaller}
+
+Section~\ref{java-expressions-as-arguments} explains that you need to use
+a different syntax to refer to a formal parameter:
+
+\begin{smaller}
+\begin{Verbatim}
+public String(char value[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int count) { ... }
+\end{Verbatim}
+\end{smaller}
+
+
 \end{itemize}
 
 
