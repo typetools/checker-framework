@@ -78,6 +78,9 @@ public class ShortMath extends NumberMath<Integer> {
 
     @Override
     public Number divide(Number right) {
+        if (isIntegralZero(right)) {
+            return null;
+        }
         if (right instanceof Byte) {
             return number / right.byteValue();
         }
@@ -101,6 +104,9 @@ public class ShortMath extends NumberMath<Integer> {
 
     @Override
     public Number remainder(Number right) {
+        if (isIntegralZero(right)) {
+            return null;
+        }
         if (right instanceof Byte) {
             return number % right.byteValue();
         }
