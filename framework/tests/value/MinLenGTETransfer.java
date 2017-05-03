@@ -1,6 +1,6 @@
-import org.checkerframework.common.value.qual.MinLen;
+import org.checkerframework.common.value.qual.*;
 
-class GreaterThanOrEqualTransfer {
+class MinLenGTETransfer {
     void gte_check(int[] a) {
         if (a.length >= 1) {
             int @MinLen(1) [] b = a;

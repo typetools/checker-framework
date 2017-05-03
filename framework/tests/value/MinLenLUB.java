@@ -1,7 +1,7 @@
-import org.checkerframework.common.value.qual.BottomVal;
-import org.checkerframework.common.value.qual.MinLen;
 
-public class LUB {
+import org.checkerframework.common.value.qual.*;
+
+public class MinLenLUB {
 
     public static void MinLen(int @MinLen(10) [] arg, int @MinLen(4) [] arg2) {
         int[] arr;

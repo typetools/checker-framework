@@ -1,4 +1,4 @@
-import org.checkerframework.common.value.qual.MinLen;
+import org.checkerframework.common.value.qual.*;
 
 class MLEqualTo {
 

@@ -1,6 +1,5 @@
-import org.checkerframework.common.value.qual.MinLen;
+import org.checkerframework.common.value.qual.*;
 
-@SuppressWarnings("lowerbound")
 class ArrayIntro {
     void test() {
         int @MinLen(5) [] arr = new int[5];

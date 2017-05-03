@@ -1,6 +1,6 @@
-import org.checkerframework.common.value.qual.MinLen;
+import org.checkerframework.common.value.qual.*;
 
-class LessThanOrEqualTransfer {
+class MinLenLTETransfer {
     void lte_check(int[] a) {
         if (1 <= a.length) {
             int @MinLen(1) [] b = a;

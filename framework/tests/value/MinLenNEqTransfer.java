@@ -1,6 +1,6 @@
-import org.checkerframework.common.value.qual.MinLen;
+import org.checkerframework.common.value.qual.*;
 
-class NotEqualTransfer {
+class MinLenNEqTransfer {
     void neq_check(int[] a) {
         if (1 != a.length) {
             int x = 1; // do nothing.
