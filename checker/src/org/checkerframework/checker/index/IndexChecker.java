@@ -13,9 +13,7 @@ import org.checkerframework.checker.index.upperbound.UpperBoundChecker;
  * <p>Constant Value Checker, SameLen Checker, SearchIndex Checker, Lower Bound Checker, Upper Bound
  * Checker
  *
- * <p>The Constant Value Checker has no dependencies, but it does trust Positive annotations from
- * the Lower Bound Checker. This means that if the Value Checker is run on code containing Positive
- * annotations, then the Lower Bound Checker also needs to be run to guarantee soundness.
+ * <p>The Constant Value Checker has no dependencies.
  *
  * <p>The SameLen Checker has no dependencies.
  *
