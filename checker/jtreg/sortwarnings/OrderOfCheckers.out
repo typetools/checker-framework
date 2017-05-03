@@ -1,19 +1,16 @@
-OrderOfCheckers.java:15:60: compiler.err.proc.messager: [[all, value]:assignment.type.incompatible] incompatible types in assignment.
+OrderOfCheckers.java:14:57: compiler.err.proc.messager: [[all, value]:assignment.type.incompatible] incompatible types in assignment.
 found   : @UnknownVal int @UnknownVal []
-required: @UnknownVal int []
-OrderOfCheckers.java:15:60: compiler.err.proc.messager: [[all, index, searchindex]:assignment.type.incompatible] incompatible types in assignment.
+required: int []
+OrderOfCheckers.java:14:57: compiler.err.proc.messager: [[all, index, searchindex]:assignment.type.incompatible] incompatible types in assignment.
 found   : @SearchIndexUnknown int @SearchIndexUnknown []
 required: @SearchIndexBottom int @SearchIndexUnknown []
-OrderOfCheckers.java:15:60: compiler.err.proc.messager: [[all, index, samelen]:assignment.type.incompatible] incompatible types in assignment.
+OrderOfCheckers.java:14:57: compiler.err.proc.messager: [[all, index, samelen]:assignment.type.incompatible] incompatible types in assignment.
 found   : @SameLenUnknown int @SameLen("y") []
 required: @SameLenUnknown int @SameLenBottom []
-OrderOfCheckers.java:15:60: compiler.err.proc.messager: [[all, index, menlen]:assignment.type.incompatible] incompatible types in assignment.
-found   : @MinLen(0) int @MinLen(0) []
-required: @MinLen(0) int @MinLenBottom []
-OrderOfCheckers.java:15:60: compiler.err.proc.messager: [[all, index, lowerbound]:assignment.type.incompatible] incompatible types in assignment.
+OrderOfCheckers.java:14:57: compiler.err.proc.messager: [[all, index, lowerbound]:assignment.type.incompatible] incompatible types in assignment.
 found   : @LowerBoundUnknown int @LowerBoundUnknown []
 required: @GTENegativeOne int @LowerBoundUnknown []
-OrderOfCheckers.java:15:60: compiler.err.proc.messager: [[all, index, upperbound]:assignment.type.incompatible] incompatible types in assignment.
+OrderOfCheckers.java:14:57: compiler.err.proc.messager: [[all, index, upperbound]:assignment.type.incompatible] incompatible types in assignment.
 found   : @UpperBoundUnknown int @UpperBoundUnknown []
 required: @UpperBoundBottom int @UpperBoundUnknown []
-6 errors
+5 errors

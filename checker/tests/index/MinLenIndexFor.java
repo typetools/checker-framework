@@ -1,6 +1,6 @@
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
-import org.checkerframework.checker.index.qual.MinLen;
+import org.checkerframework.common.value.qual.MinLen;
 
 public class MinLenIndexFor {
     int @MinLen(2) [] arrayLen2 = {0, 1, 2};

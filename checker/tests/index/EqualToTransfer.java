@@ -1,4 +1,4 @@
-import org.checkerframework.checker.index.qual.MinLen;
+import org.checkerframework.common.value.qual.MinLen;
 
 class EqualToTransfer {
     void eq_check(int[] a) {

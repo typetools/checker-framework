@@ -1,6 +1,5 @@
-
-import org.checkerframework.checker.index.qual.MinLen;
-import org.checkerframework.checker.index.qual.MinLenBottom;
+import org.checkerframework.common.value.qual.BottomVal;
+import org.checkerframework.common.value.qual.MinLen;
 
 public class LUB {
 
@@ -15,10 +14,10 @@ public class LUB {
         int @MinLen(10) [] res = arr;
         int @MinLen(4) [] res2 = arr;
         //:: error: (assignment.type.incompatible)
-        int @MinLenBottom [] res3 = arr;
+        int @BottomVal [] res3 = arr;
     }
 
-    public static void Bottom(int @MinLenBottom [] arg, int @MinLen(4) [] arg2) {
+    public static void Bottom(int @BottomVal [] arg, int @MinLen(4) [] arg2) {
         int[] arr;
         if (true) {
             arr = arg;
@@ -29,10 +28,10 @@ public class LUB {
         int @MinLen(10) [] res = arr;
         int @MinLen(4) [] res2 = arr;
         //:: error: (assignment.type.incompatible)
-        int @MinLenBottom [] res3 = arr;
+        int @BottomVal [] res3 = arr;
     }
 
-    public static void BothBottom(int @MinLenBottom [] arg, int @MinLenBottom [] arg2) {
+    public static void BothBottom(int @BottomVal [] arg, int @BottomVal [] arg2) {
         int[] arr;
         if (true) {
             arr = arg;
@@ -40,6 +39,6 @@ public class LUB {
             arr = arg2;
         }
         int @MinLen(10) [] res = arr;
-        int @MinLenBottom [] res2 = arr;
+        int @BottomVal [] res2 = arr;
     }
 }
