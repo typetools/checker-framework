@@ -1,8 +1,10 @@
-Version 2.2.0, 2 April 2017
+Version 2.1.11, 1 May 2017
 
 The manual contains new FAQ (frequently asked questions) sections about
 false positive warnings and about inference for field types.
 
+Closed issues:
+989, 1096, 1136, 1228.
 ---------------------------------------------------------------------------
 
 Version 2.1.10, 3 April 2017

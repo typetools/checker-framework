@@ -1659,7 +1659,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (AnnotationUtils.areSameByClass(anm, IntVal.class)) {
             List<Long> possibleValues = getIntValues(anm);
             return Collections.min(possibleValues);
-
         } else if (isIntRange(anm)) {
             Range range = getRange(anm);
             return range.from;
