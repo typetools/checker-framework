@@ -98,10 +98,6 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      * <p>Issues an error if any @IntRange annotation has its 'from' value greater than 'to' value.
      *
      * <p>Issues a warning if any constant-value annotation has &gt; MAX_VALUES arguments.
-     *
-     * <p>Issues a warning if an {@link IntRangeFromPositive} annotation is written by the user.
-     * This special annotation should only be added if an {@link
-     * org.checkerframework.checker.index.qual.Positive} annotation was written by the user.
      */
     @Override
     public Void visitAnnotation(AnnotationTree node, Void p) {
