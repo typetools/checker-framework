@@ -1442,12 +1442,8 @@ So, use our own archived version.
     </target>
 
     <target name="download-jdk" description="Downloads jdk7.jar and jdk8.jar from checkerframework.org/dev-jdk to checker/jdk and checker/dist">
-<!--
         <get src="https://checkerframework.org/dev-jdk/jdk7.jar" dest="jdk/jdk7.jar"/>
         <get src="https://checkerframework.org/dev-jdk/jdk8.jar" dest="jdk/jdk8.jar"/>
--->
-        <get src="https://github.com/smillst/checker-framework-jdk/releases/download/kelloggm%2Frepeal-and-replace-with-overflow/jdk7.jar" dest="jdk/jdk7.jar"/>
-        <get src="https://github.com/smillst/checker-framework-jdk/releases/download/kelloggm%2Frepeal-and-replace-with-overflow/jdk8.jar" dest="jdk/jdk8.jar"/>
         <!-- Copy jars to dist. If dist doesn't exist then the copy task creates it.-->
         <copy file="jdk/jdk7.jar" tofile="dist/jdk7.jar"/>
         <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar"/>
