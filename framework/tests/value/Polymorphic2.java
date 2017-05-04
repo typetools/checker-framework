@@ -1,8 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 import org.checkerframework.framework.qual.PolyAll;
 
-//@skip-test until PolyValue is added (https://github.com/typetools/checker-framework/issues/1236)
-
 class Polymorphic2 {
     public static boolean flag = false;
 
@@ -14,7 +12,7 @@ class Polymorphic2 {
         return flag ? a : b;
     }
 
-    int @PolyMinLen [] mergeMinLen(int @PolyMinLen [] a, int @PolyMinLen [] b) {
+    int @PolyValue [] mergeMinLen(int @PolyValue [] a, int @PolyValue [] b) {
         return flag ? a : b;
     }
 
@@ -26,5 +24,25 @@ class Polymorphic2 {
         int @MinLen(2) [] z = mergeMinLen(a, b);
         //:: error: (assignment.type.incompatible)
         int @MinLen(5) [] zz = mergeMinLen(a, b);
+    }
+
+    void testArrayLen(int @ArrayLen(2) [] a, int @ArrayLen(5) [] b) {
+        int @ArrayLen(2) [] x = merge(a, b);
+        //:: error: (assignment.type.incompatible)
+        int @ArrayLen(5) [] y = merge(a, b);
+
+        int @ArrayLen(2) [] z = mergeMinLen(a, b);
+        //:: error: (assignment.type.incompatible)
+        int @ArrayLen(5) [] zz = mergeMinLen(a, b);
+    }
+
+    void testIntVal(@IntVal(2) int a, @IntVal(5) int b) {
+        @IntVal(2) int x = merge(a, b);
+        //:: error: (assignment.type.incompatible)
+        @IntVal(5) int y = merge(a, b);
+
+        @IntVal(2) int z = mergeMinLen(a, b);
+        //:: error: (assignment.type.incompatible)
+        @IntVal(5) int zz = mergeMinLen(a, b);
     }
 }
