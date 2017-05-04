@@ -12,8 +12,7 @@ class Polymorphic2 {
         return flag ? a : b;
     }
 
-    @PolyValue
-    int mergeValue(@PolyValue int a, @PolyValue int b) {
+    @PolyValue int mergeValue(@PolyValue int a, @PolyValue int b) {
         return flag ? a : b;
     }
 

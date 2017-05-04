@@ -977,6 +977,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // Evaluate method
                 List<?> returnValues =
                         evaluator.evaluateMethodCall(argValues, receiverValues, tree);
+                if (returnValues == null) {
+                    return null;
+                }
                 AnnotationMirror returnType =
                         createResultingAnnotation(type.getUnderlyingType(), returnValues);
                 type.replaceAnnotation(returnType);
@@ -1014,7 +1017,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 // Evaluate method
                 List<?> returnValues =
-                        evaluator.evaluteConstrutorCall(argValues, tree, type.getUnderlyingType());
+                        evaluator.evaluteConstructorCall(argValues, tree, type.getUnderlyingType());
+                if (returnValues == null) {
+                    return null;
+                }
                 AnnotationMirror returnType =
                         createResultingAnnotation(type.getUnderlyingType(), returnValues);
                 type.replaceAnnotation(returnType);

@@ -209,7 +209,7 @@ public class ValueTransfer extends CFTransfer {
                     AnnotationUtils.getElementValueArray(val, "value", Double.class, true);
             range = ValueCheckerUtils.getRangeFromValues(values);
         } else if (AnnotationUtils.areSameByClass(val, BottomVal.class)) {
-            range = Range.NOTHING;
+            return Range.NOTHING;
         } else {
             range = Range.EVERYTHING;
         }

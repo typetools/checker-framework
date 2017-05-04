@@ -117,6 +117,9 @@ public class Range {
      * converted to Integer.MIN_VALUE.
      */
     public Range intRange() {
+        if (this.isNothing()) {
+            return this;
+        }
         if (this.isWiderThan(integerWidth)) {
             return INT_EVERYTHING;
         } else {
@@ -144,6 +147,9 @@ public class Range {
      * converted to Short.MIN_VALUE.
      */
     public Range shortRange() {
+        if (this.isNothing()) {
+            return this;
+        }
         if (this.isWiderThan(shortWidth)) {
             // short is be promoted to int before the operation so no need for explicit casting
             return SHORT_EVERYTHING;
@@ -172,6 +178,9 @@ public class Range {
      * Byte.MIN_VALUE.
      */
     public Range byteRange() {
+        if (this.isNothing()) {
+            return this;
+        }
         if (this.isWiderThan(byteWidth)) {
             // byte is be promoted to int before the operation so no need for explicit casting
             return BYTE_EVERYTHING;

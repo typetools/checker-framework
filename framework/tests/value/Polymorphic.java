@@ -8,8 +8,7 @@ class Polymorphic {
         return a;
     }
 
-    @PolyValue
-    int identity_int(@PolyValue int a) {
+    @PolyValue int identity_int(@PolyValue int a) {
         return a;
     }
 
