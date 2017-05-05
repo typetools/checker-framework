@@ -369,6 +369,11 @@ public class AnnotationUtils {
             new Comparator<AnnotationMirror>() {
                 @Override
                 public int compare(AnnotationMirror a1, AnnotationMirror a2) {
+                    // AnnotationMirror.toString() prints the elements of an annotation in the
+                    // order in which they were written. So, use areSame to check for equality.
+                    if (AnnotationUtils.areSame(a1, a2)) {
+                        return 0;
+                    }
                     String n1 = a1.toString();
                     String n2 = a2.toString();
 
