@@ -631,6 +631,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
+        // Only use the PropagationTreeAnnotator for typing new arrays.  The Value Checker
+        // computes types differently for all other trees normally typed by the
+        // PropagationTreeAnnotator.
         TreeAnnotator arrayCreation =
                 new TreeAnnotator(this) {
                     PropagationTreeAnnotator propagationTreeAnnotator =
@@ -641,8 +644,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         return propagationTreeAnnotator.visitNewArray(node, mirror);
                     }
                 };
-        // The ValueTreeAnnotator handles propagation differently,
-        // so it doesn't need PropgationTreeAnnotator.
         return new ListTreeAnnotator(
                 new ValueTreeAnnotator(this), new ImplicitsTreeAnnotator(this), arrayCreation);
     }
