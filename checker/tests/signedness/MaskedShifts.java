@@ -161,6 +161,12 @@ public class MaskedShifts {
         //:: error: (shift.unsigned)
         testRes = signed >>> 8 & ((0xFFFFFFFF));
         testRes = signed >> 8 & ((0xFFFFFFFF));
+
+        // Tests that shift by zero passes
+        testRes = (unsigned >>> 0) & 0xFFFFFFFF;
+        testRes = (unsigned >> 0) & 0xFFFFFFFF;
+        testRes = (signed >>> 0) & 0xFFFFFFFF;
+        testRes = (signed >> 0) & 0xFFFFFFFF;
     }
 
     public void MaskedOrShifts(@Unsigned int unsigned, @Signed int signed) {
@@ -322,5 +328,11 @@ public class MaskedShifts {
         //:: error: (shift.unsigned)
         testRes = signed >>> 8 | ((0x0));
         testRes = signed >> 8 | ((0x0));
+
+        // Tests that shift by zero passes
+        testRes = (unsigned >>> 0) | 0x0;
+        testRes = (unsigned >> 0) | 0x0;
+        testRes = (signed >>> 0) | 0x0;
+        testRes = (signed >> 0) | 0x0;
     }
 }

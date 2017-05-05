@@ -1,10 +1,12 @@
 package org.checkerframework.checker.signedness;
 
 import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import org.checkerframework.checker.signedness.qual.Unsigned;
 
 /**
@@ -72,6 +74,151 @@ public final class SignednessUtil {
     @SuppressWarnings("signedness")
     public static @Unsigned byte getUnsigned(ByteBuffer b) {
         return b.get();
+    }
+
+    /**
+     * Places an unsigned byte into the ByteBuffer b. Wraps {@link java.nio.ByteBuffer#put() put()},
+     * but assumes that the input should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static ByteBuffer putUnsigned(ByteBuffer b, @Unsigned byte ubyte) {
+        return b.put(ubyte);
+    }
+
+    /**
+     * Places an unsigned byte into the ByteBuffer b at i. Wraps {@link java.nio.ByteBuffer#put()
+     * put()}, but assumes that the input should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static ByteBuffer putUnsigned(ByteBuffer b, int i, @Unsigned byte ubyte) {
+        return b.put(i, ubyte);
+    }
+
+    /**
+     * Places an unsigned int into the IntBuffer b. Wraps {@link java.nio.IntBuffer#put() put()},
+     * but assumes that the input should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static IntBuffer putUnsigned(IntBuffer b, @Unsigned int uint) {
+        return b.put(uint);
+    }
+
+    /**
+     * Places an unsigned int into the IntBuffer b at i. Wraps {@link java.nio.IntBuffer#put()
+     * put()}, but assumes that the input should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static IntBuffer putUnsigned(IntBuffer b, int i, @Unsigned int uint) {
+        return b.put(i, uint);
+    }
+
+    /**
+     * Places an unsigned int array into the IntBuffer b. Wraps {@link java.nio.IntBuffer#put()
+     * put()}, but assumes that the input should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static IntBuffer putUnsigned(IntBuffer b, @Unsigned int[] uints) {
+        return b.put(uints);
+    }
+
+    /**
+     * Places an unsigned int array into the IntBuffer b at i with length l. Wraps {@link
+     * java.nio.IntBuffer#put() put()}, but assumes that the input should be interpreted as
+     * unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static IntBuffer putUnsigned(IntBuffer b, @Unsigned int[] uints, int i, int l) {
+        return b.put(uints, i, l);
+    }
+
+    /**
+     * Gets an unsigned int from the IntBuffer b at i. Wraps {@link java.nio.IntBuffer#get() get()},
+     * but assumes that the output should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static @Unsigned int getUnsigned(IntBuffer b, int i) {
+        return b.get(i);
+    }
+
+    /**
+     * Places an unsigned short into the ByteBuffer b. Wraps {@link java.nio.ByteBuffer#putShort()
+     * putShort()}, but assumes that the input should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static ByteBuffer putUnsignedShort(ByteBuffer b, @Unsigned short ushort) {
+        return b.putShort(ushort);
+    }
+
+    /**
+     * Places an unsigned short into the ByteBuffer b at i. Wraps {@link
+     * java.nio.ByteBuffer#putShort() putShort()}, but assumes that the input should be interpreted
+     * as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static ByteBuffer putUnsignedShort(ByteBuffer b, int i, @Unsigned short ushort) {
+        return b.putShort(i, ushort);
+    }
+
+    /**
+     * Places an unsigned int into the ByteBuffer b. Wraps {@link java.nio.ByteBuffer#putInt()
+     * putInt()}, but assumes that the input should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static ByteBuffer putUnsignedInt(ByteBuffer b, @Unsigned int uint) {
+        return b.putInt(uint);
+    }
+
+    /**
+     * Places an unsigned int into the ByteBuffer b at i. Wraps {@link java.nio.ByteBuffer#putInt()
+     * putInt()}, but assumes that the input should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static ByteBuffer putUnsignedInt(ByteBuffer b, int i, @Unsigned int uint) {
+        return b.putInt(i, uint);
+    }
+
+    /**
+     * Places an unsigned long into the ByteBuffer b at i. Wraps {@link
+     * java.nio.ByteBuffer#putLong() putLong()}, but assumes that the input should be interpreted as
+     * unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static ByteBuffer putUnsignedLong(ByteBuffer b, int i, @Unsigned long ulong) {
+        return b.putLong(i, ulong);
+    }
+
+    /**
+     * Sets rgb of BufferedImage b given unsigned ints. Wraps {@link java.awt.BufferedImage#setRGB()
+     * setRGB}, but assumes that the input should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static void setUnsignedRGB(
+            BufferedImage b,
+            int startX,
+            int startY,
+            int w,
+            int h,
+            @Unsigned int[] rgbArray,
+            int offset,
+            int scansize) {
+        b.setRGB(startX, startY, w, h, rgbArray, offset, scansize);
+    }
+
+    /**
+     * Gets rgb of BufferedImage b as unsigned ints. Wraps {@link java.awt.BufferedImage#getRGB()
+     * getRGB}, but assumes that the output should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static @Unsigned int[] getUnsignedRGB(
+            BufferedImage b,
+            int startX,
+            int startY,
+            int w,
+            int h,
+            @Unsigned int[] rgbArray,
+            int offset,
+            int scansize) {
+        return b.getRGB(startX, startY, w, h, rgbArray, offset, scansize);
     }
 
     /**
