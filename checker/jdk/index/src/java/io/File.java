@@ -195,7 +195,7 @@ public class File
      * string for convenience.  This string contains a single character, namely
      * <code>{@link #separatorChar}</code>.
      */
-    public static final @MinLen(1) String separator = "" + separatorChar;
+    public static final /*!MinLen(1)*/ String separator = "" + separatorChar;
 
     /**
      * The system-dependent path-separator character.  This field is
@@ -214,7 +214,7 @@ public class File
      * for convenience.  This string contains a single character, namely
      * <code>{@link #pathSeparatorChar}</code>.
      */
-    public static final @MinLen() String pathSeparator = "" + pathSeparatorChar;
+    public static final String pathSeparator = "" + pathSeparatorChar;
 
 
     /* -- Constructors -- */
