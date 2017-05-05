@@ -55,6 +55,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
@@ -641,10 +642,21 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
-        // The ValueTreeAnnotator handles propagation differently,
-        // so it doesn't need PropgationTreeAnnotator.
+        // Only use the PropagationTreeAnnotator for typing new arrays.  The Value Checker
+        // computes types differently for all other trees normally typed by the
+        // PropagationTreeAnnotator.
+        TreeAnnotator arrayCreation =
+                new TreeAnnotator(this) {
+                    PropagationTreeAnnotator propagationTreeAnnotator =
+                            new PropagationTreeAnnotator(atypeFactory);
+
+                    @Override
+                    public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror mirror) {
+                        return propagationTreeAnnotator.visitNewArray(node, mirror);
+                    }
+                };
         return new ListTreeAnnotator(
-                new ValueTreeAnnotator(this), new ImplicitsTreeAnnotator(this));
+                new ValueTreeAnnotator(this), new ImplicitsTreeAnnotator(this), arrayCreation);
     }
 
     /** The TreeAnnotator for this AnnotatedTypeFactory. It adds/replaces annotations. */
