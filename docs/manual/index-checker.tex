@@ -172,16 +172,16 @@ qualifiers:
   The value is -1 or greater.
   It may not be used as an index for a sequence, because it might be too low.
   (``\<GTE>'' stands for ``Greater Than or Equal to''.)
+\item[\refqualclass{checker/index/qual}{PolyLowerBound}]
+  indicates qualifier polymorphism.
+  For a description of qualifier polymorphism, see
+  Section~\ref{qualifier-polymorphism}.
 \item[\refqualclass{checker/index/qual}{LowerBoundUnknown}]
   There is no information about the value.
   It may not be used as an index for a sequence, because it might be too low.
 \item[\refqualclass{checker/index/qual}{LowerBoundBottom}]
     The value cannot take on any integral types. The bottom type, which
     should not need to be written by the programmer.
-\item[\refqualclass{checker/index/qual}{PolyLowerBound}]
-  indicates qualifier polymorphism.
-  For a description of qualifier polymorphism, see
-  Section~\ref{qualifier-polymorphism}.
 \end{description}
 
 \begin{figure}
@@ -243,6 +243,11 @@ or \code{@LTOMLengthOf("arr")}.
   \code{@LTEqLengthOf("a")} and \code{@LTEqLengthOf("b")}.
   (``\<LTEq>'' stands for ``Less Than or Equal to''.)
 
+ \item[\refqualclass{checker/index/qual}{PolyUpperBound}]
+   indicates qualifier polymorphism.
+   For a description of qualifier polymorphism, see
+   Section~\ref{qualifier-polymorphism}.
+
 \item[\refqualclasswithparams{checker/index/qual}{LTOMLengthOf}{String[] names}]
   An expression with this type
   has value at least 2 less than the length of each sequence listed in \<names>.
@@ -273,11 +278,6 @@ or \code{@LTOMLengthOf("arr")}.
 \item[\refqualclass{checker/index/qual}{UpperBoundBottom}]
   This is the bottom type for the upper bound type system. It should
   never need to be written by the programmer.
-
- \item[\refqualclass{checker/index/qual}{PolyUpperBound}]
-   indicates qualifier polymorphism.
-   For a description of qualifier polymorphism, see
-   Section~\ref{qualifier-polymorphism}.
 
 \end{description}
 
@@ -390,6 +390,10 @@ When needed, you can specify which sequences have the same length using the foll
   are \textit{not} subtypes of each other. However, if at least one
   sequence is named by both types, the types are actually the same,
   because all the named sequences must have the same length.
+\item[\refqualclass{checker/index/qual}{PolySameLen}]
+  indicates qualifier polymorphism.
+  For a description of qualifier polymorphism, see
+  Section~\ref{qualifier-polymorphism}.
 \item[\refqualclass{checker/index/qual}{SameLenUnknown}]
   No information is known about which other sequences have the same length
   as this one.
@@ -397,10 +401,6 @@ When needed, you can specify which sequences have the same length using the foll
 \item[\refqualclass{checker/index/qual}{SameLenBottom}]
   This is the bottom type, and programmers should rarely need to write it.
   \code{null} has this type.
-\item[\refqualclass{checker/index/qual}{PolySameLen}]
-  indicates qualifier polymorphism.
-  For a description of qualifier polymorphism, see
-  Section~\ref{qualifier-polymorphism}.
 \end{description}
 
 
