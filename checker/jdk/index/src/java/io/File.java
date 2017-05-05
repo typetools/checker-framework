@@ -195,7 +195,7 @@ public class File
      * string for convenience.  This string contains a single character, namely
      * <code>{@link #separatorChar}</code>.
      */
-    public static final /*!MinLen(1)*/ String separator = "" + separatorChar;
+    public static final String separator = "" + separatorChar;
 
     /**
      * The system-dependent path-separator character.  This field is
