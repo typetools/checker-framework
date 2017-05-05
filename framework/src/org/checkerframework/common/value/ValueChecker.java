@@ -10,8 +10,8 @@ import org.checkerframework.framework.source.SupportedOptions;
  * The Constant Value Checker is a constant propagation analysis: for each variable, it determines
  * whether that variable's value can be known at compile time.
  *
- * <p>The Constant Value Checker has no dependencies, but it does trust {@code
- * org.checkerframework.checker.index.qual.Positive} annotations from the {@code
+ * <p>The Constant Value Checker has no dependencies, but it does trust {@link
+ * org.checkerframework.checker.index.qual.Positive} annotations from the {@link
  * org.checkerframework.checker.index.IndexChecker}. This means that if the Value Checker is run on
  * code containing {@code Positive} annotations, then the Index Checker also needs to be run to
  * guarantee soundness.
