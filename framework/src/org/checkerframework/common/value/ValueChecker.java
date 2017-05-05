@@ -1,12 +1,21 @@
 package org.checkerframework.common.value;
 
 import java.util.LinkedHashSet;
+import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedOptions;
 
 /**
+ * The Constant Value Checker is a constant propagation analysis: for each variable, it determines
+ * whether that variable's value can be known at compile time.
+ *
+ * <p>The Constant Value Checker has no dependencies, but it does trust {@link Positive} annotations
+ * from the {@link org.checkerframework.checker.index.IndexChecker}. This means that if the Value
+ * Checker is run on code containing {@code Positive} annotations, then the Index Checker also needs
+ * to be run to guarantee soundness.
+ *
  * @author plvines
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
