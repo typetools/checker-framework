@@ -48,7 +48,6 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -137,8 +136,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)};
         // this line just registers the alias. The BottomVal is never used.
         addAliasedAnnotation(MinLen.class, BOTTOMVAL);
-
-        addAliasedAnnotation(PolyAll.class, POLY);
 
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
             this.postInit();
