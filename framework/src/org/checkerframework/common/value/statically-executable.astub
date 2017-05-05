@@ -291,8 +291,8 @@ class String{
     @StaticallyExecutable String replace(CharSequence target, CharSequence replacement);
     @StaticallyExecutable String replaceAll(String regex, String replacement);
     @StaticallyExecutable String replaceFirst(String regex, String replacement);
-    @StaticallyExecutable String[] split(String regex);
-    @StaticallyExecutable String[] split(String regex, int limit);
+    @StaticallyExecutable String @MinLen(1) [] split(String regex);
+    @StaticallyExecutable String @MinLen(1) [] split(String regex, int limit);
     @StaticallyExecutable boolean  startsWith(String prefix);
     @StaticallyExecutable boolean  startsWith(String prefix, int toffset);
     @StaticallyExecutable CharSequence subSequence(int beginIndex, int endIndex);
@@ -314,4 +314,11 @@ class String{
     @StaticallyExecutable static String valueOf(int i);
     @StaticallyExecutable static String valueOf(long l);
     @StaticallyExecutable static String valueOf(Object obj) ;
+}
+
+package java.util.regex
+
+class Pattern {
+    String @MinLen(1) [] split(CharSequence input, int limit) ;
+    String @MinLen(1) [] split(CharSequence input) ;
 }
