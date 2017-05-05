@@ -7,7 +7,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 /**
  * A polymorphic qualifier for the Constant Value Checker.
  *
- * @checker_framework.manual #index-checker Index Checker
+ * @checker_framework.manual #constant-value-checker Constant Value Checker
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @PolymorphicQualifier(UnknownVal.class)
