@@ -138,8 +138,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // this line just registers the alias. The BottomVal is never used.
         addAliasedAnnotation(MinLen.class, BOTTOMVAL);
 
-        addAliasedAnnotation(PolyAll.class, POLY);
-
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
             this.postInit();
         }
@@ -179,7 +177,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         DoubleVal.class,
                         BottomVal.class,
                         UnknownVal.class,
-                        PolyValue.class));
+                        PolyValue.class,
+                        PolyAll.class));
     }
 
     @Override
