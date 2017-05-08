@@ -2960,6 +2960,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             try {
                 results.add(annotation);
             } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
+                // If a CompletionFailure occurs, issue a warning.
                 checker.message(
                         Kind.WARNING,
                         annotation.getAnnotationType().asElement(),
