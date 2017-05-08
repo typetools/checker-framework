@@ -316,7 +316,7 @@ class String{
     @StaticallyExecutable static String valueOf(Object obj) ;
 }
 
-package java.util.regex
+package java.util.regex;
 
 class Pattern {
     String @MinLen(1) [] split(CharSequence input, int limit) ;
