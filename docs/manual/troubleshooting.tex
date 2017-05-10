@@ -741,6 +741,11 @@ the Checker Framework, rather than an official release.
 % checkers and of the checker framework.  It may also help you to debug
 % problems more effectively.
 
+The Checker Framework can be easily built on Unix (Linux and Mac).  You
+might have trouble building on Windows.  If so, you can switch to Unix (at
+least for building, if not for running, the Checker Framework) or you can
+report the problems to the Checker Framework developers.
+
 
 \subsection{Install prerequisites\label{building-prerequisites}}
 
@@ -750,6 +755,13 @@ Framework.  The following command installs them for Ubuntu:
 \begin{Verbatim}
 sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial openjdk-8-jdk unzip
 \end{Verbatim}
+
+If you are building on Windows, here is an incomplete list of needed
+prerequisites:
+\begin{itemize}
+\item
+  Install MSYS to obtain the \<cp> and \<make> commands.
+\end{itemize}
 
 
 \subsection{Obtain the source\label{building-obtain-source}}

@@ -38,6 +38,7 @@ import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.value.qual.MinLenFieldInvariant;
+import org.checkerframework.common.value.qual.PolyValue;
 import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
@@ -47,12 +48,14 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
@@ -89,6 +92,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The bottom type for this hierarchy. */
     protected final AnnotationMirror BOTTOMVAL;
+
+    /** The canonical @{@link PolyValue} annotation. */
+    public final AnnotationMirror POLY = AnnotationUtils.fromClass(elements, PolyValue.class);
 
     /** Should this type factory report warnings? */
     private final boolean reportEvalWarnings;
@@ -171,7 +177,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         StringVal.class,
                         DoubleVal.class,
                         BottomVal.class,
-                        UnknownVal.class));
+                        UnknownVal.class,
+                        PolyValue.class,
+                        PolyAll.class));
     }
 
     @Override
@@ -544,6 +552,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (AnnotationUtils.areSameByClass(subAnno, UnknownVal.class)
                     || AnnotationUtils.areSameByClass(superAnno, BottomVal.class)) {
                 return false;
+            } else if (AnnotationUtils.areSameByClass(subAnno, PolyValue.class)) {
+                return AnnotationUtils.areSameByClass(superAnno, PolyValue.class);
+            } else if (AnnotationUtils.areSameByClass(superAnno, PolyValue.class)) {
+                return AnnotationUtils.areSameByClass(subAnno, PolyValue.class);
             } else if (AnnotationUtils.areSameIgnoringValues(superAnno, subAnno)) {
                 // Same type, so might be subtype
                 if (AnnotationUtils.areSameByClass(subAnno, IntRange.class)
@@ -630,10 +642,21 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
-        // The ValueTreeAnnotator handles propagation differently,
-        // so it doesn't need PropgationTreeAnnotator.
+        // Only use the PropagationTreeAnnotator for typing new arrays.  The Value Checker
+        // computes types differently for all other trees normally typed by the
+        // PropagationTreeAnnotator.
+        TreeAnnotator arrayCreation =
+                new TreeAnnotator(this) {
+                    PropagationTreeAnnotator propagationTreeAnnotator =
+                            new PropagationTreeAnnotator(atypeFactory);
+
+                    @Override
+                    public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror mirror) {
+                        return propagationTreeAnnotator.visitNewArray(node, mirror);
+                    }
+                };
         return new ListTreeAnnotator(
-                new ValueTreeAnnotator(this), new ImplicitsTreeAnnotator(this));
+                new ValueTreeAnnotator(this), new ImplicitsTreeAnnotator(this), arrayCreation);
     }
 
     /** The TreeAnnotator for this AnnotatedTypeFactory. It adds/replaces annotations. */
@@ -965,6 +988,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // Evaluate method
                 List<?> returnValues =
                         evaluator.evaluateMethodCall(argValues, receiverValues, tree);
+                if (returnValues == null) {
+                    return null;
+                }
                 AnnotationMirror returnType =
                         createResultingAnnotation(type.getUnderlyingType(), returnValues);
                 type.replaceAnnotation(returnType);
@@ -1002,7 +1028,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 // Evaluate method
                 List<?> returnValues =
-                        evaluator.evaluteConstrutorCall(argValues, tree, type.getUnderlyingType());
+                        evaluator.evaluteConstructorCall(argValues, tree, type.getUnderlyingType());
+                if (returnValues == null) {
+                    return null;
+                }
                 AnnotationMirror returnType =
                         createResultingAnnotation(type.getUnderlyingType(), returnValues);
                 type.replaceAnnotation(returnType);
