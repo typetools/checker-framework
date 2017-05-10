@@ -72,7 +72,7 @@
         <java fork="true"
               outputproperty="compiler.version"
               classname="com.sun.tools.javac.Main">
-            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-version"/>
         </java>
 
@@ -125,7 +125,7 @@ points to version ${build.version} of the 'javac.jar' library."/>
               failonerror="true"
               classpath="${javac.lib}:${javadoc.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg value="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
