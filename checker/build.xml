@@ -1305,14 +1305,12 @@ So, use our own archived version.
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
-            <arg value="-d"/>
-            <arg value="${build}"/>
-            <arg value="@${tmpdir}/srcfiles-checker.txt"/>
-            <arg value="-version"/>
-            <arg value="-proc:only"/>
-            <arg value="-processor"/>
-            <arg value="${checker-name}"/>
-            <arg value="-AprintErrorStack"/>
+            <arg line="-d ${build}"/>
+            <arg line="@${tmpdir}/srcfiles-checker.txt"/>
+            <arg line="-version"/>
+            <arg line="-proc:only"/>
+            <arg line="-processor ${checker-name}"/>
+            <arg line="-AprintErrorStack"/>
             <arg line="${checker-args}"/>
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
