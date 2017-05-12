@@ -29,6 +29,7 @@ import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Finds the direct supertypes of an input AnnotatedTypeMirror. See
@@ -162,7 +163,13 @@ class SupertypeFinder {
             }
 
             for (int i = 0; i < type.getTypeArguments().size(); ++i) {
-                mapping.put(typeElement.getTypeParameters().get(i), type.getTypeArguments().get(i));
+                AnnotatedTypeMirror typArg = type.getTypeArguments().get(i);
+                TypeParameterElement ele = typeElement.getTypeParameters().get(i);
+                if (typArg.getKind() == TypeKind.WILDCARD) {
+                    typArg = method(ele, (AnnotatedWildcardType) typArg);
+                }
+
+                mapping.put(ele, typArg);
             }
 
             ClassTree classTree = atypeFactory.trees.getTree(typeElement);
@@ -187,6 +194,23 @@ class SupertypeFinder {
             }
 
             return supertypes;
+        }
+
+        private AnnotatedWildcardType method(
+                TypeParameterElement element, AnnotatedWildcardType mirror) {
+            if (TypesUtils.isErasedSubtype(types, mirror.getUnderlyingType(), element.asType())) {
+                return mirror;
+            }
+            AnnotatedTypeMirror bound = mirror.getExtendsBound();
+            AnnotatedTypeVariable atv = (AnnotatedTypeVariable) atypeFactory.fromElement(element);
+            mirror.setExtendsBound(atv.getUpperBound());
+            mirror.getExtendsBound().replaceAnnotations(bound.getAnnotations());
+            Map<TypeParameterElement, AnnotatedTypeMirror> mapping = new HashMap<>();
+            mapping.put(element, mirror);
+
+            typeParamReplacer.visit(mirror, mapping);
+
+            return mirror;
         }
 
         private List<AnnotatedDeclaredType> supertypesFromElement(
