@@ -166,7 +166,7 @@ class SupertypeFinder {
                 AnnotatedTypeMirror typArg = type.getTypeArguments().get(i);
                 TypeParameterElement ele = typeElement.getTypeParameters().get(i);
                 if (typArg.getKind() == TypeKind.WILDCARD) {
-                    typArg = method(ele, (AnnotatedWildcardType) typArg);
+                    fixWildcardBound(ele, (AnnotatedWildcardType) typArg);
                 }
 
                 mapping.put(ele, typArg);
@@ -196,21 +196,49 @@ class SupertypeFinder {
             return supertypes;
         }
 
-        private AnnotatedWildcardType method(
-                TypeParameterElement element, AnnotatedWildcardType mirror) {
-            if (TypesUtils.isErasedSubtype(types, mirror.getUnderlyingType(), element.asType())) {
-                return mirror;
+        /**
+         * If the upper bound of the wildcard is not a subtype of the upper bound of the type
+         * parameter, then this method fixes that.
+         *
+         * <p>This method is needed because, the Java compiler allows wildcards to have upper bounds
+         * above the type variable upper bounds for which they are type arguments. For example,
+         * given the following parametric type:
+         *
+         * <pre>
+         * {@code class MyClass<T extends Number>}
+         * </pre>
+         *
+         * the following is legal:
+         *
+         * <pre>
+         * {@code MyClass<? extends Object>}
+         * </pre>
+         *
+         * This is sound because in Java the wildcard is capture converted to: {@code CAP#1 extends
+         * Number from capture of ? extends Object}.
+         *
+         * <p>Because the Checker Framework does not implement capture conversion, the wildcard's
+         * upper bound may not be within the type parameter. This method fixes that.
+         *
+         * @param element type parameter to which {@code wildcard} is an argument
+         * @param wildcard wildcard type whose upper bound may be modified.
+         * @return
+         */
+        private void fixWildcardBound(
+                TypeParameterElement element, AnnotatedWildcardType wildcard) {
+            if (TypesUtils.isErasedSubtype(types, wildcard.getUnderlyingType(), element.asType())) {
+                return;
             }
-            AnnotatedTypeMirror bound = mirror.getExtendsBound();
+            AnnotatedTypeMirror bound = wildcard.getExtendsBound();
             AnnotatedTypeVariable atv = (AnnotatedTypeVariable) atypeFactory.fromElement(element);
-            mirror.setExtendsBound(atv.getUpperBound());
-            mirror.getExtendsBound().replaceAnnotations(bound.getAnnotations());
+            wildcard.setExtendsBound(atv.getUpperBound());
+            wildcard.getExtendsBound().replaceAnnotations(bound.getAnnotations());
+
+            // If the upper bound of the type parameter refers to itself, then can those
+            // references to the wildcard.
             Map<TypeParameterElement, AnnotatedTypeMirror> mapping = new HashMap<>();
-            mapping.put(element, mirror);
-
-            typeParamReplacer.visit(mirror, mapping);
-
-            return mirror;
+            mapping.put(element, wildcard);
+            typeParamReplacer.visit(wildcard, mapping);
         }
 
         private List<AnnotatedDeclaredType> supertypesFromElement(
