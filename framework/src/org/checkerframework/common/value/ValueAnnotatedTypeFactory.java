@@ -38,6 +38,7 @@ import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.value.qual.MinLenFieldInvariant;
+import org.checkerframework.common.value.qual.PolyValue;
 import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
@@ -47,6 +48,7 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -90,6 +92,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The bottom type for this hierarchy. */
     protected final AnnotationMirror BOTTOMVAL;
+
+    /** The canonical @{@link PolyValue} annotation. */
+    public final AnnotationMirror POLY = AnnotationUtils.fromClass(elements, PolyValue.class);
 
     /** Should this type factory report warnings? */
     private final boolean reportEvalWarnings;
@@ -172,7 +177,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         StringVal.class,
                         DoubleVal.class,
                         BottomVal.class,
-                        UnknownVal.class));
+                        UnknownVal.class,
+                        PolyValue.class,
+                        PolyAll.class));
     }
 
     @Override
@@ -545,6 +552,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (AnnotationUtils.areSameByClass(subAnno, UnknownVal.class)
                     || AnnotationUtils.areSameByClass(superAnno, BottomVal.class)) {
                 return false;
+            } else if (AnnotationUtils.areSameByClass(subAnno, PolyValue.class)) {
+                return AnnotationUtils.areSameByClass(superAnno, PolyValue.class);
+            } else if (AnnotationUtils.areSameByClass(superAnno, PolyValue.class)) {
+                return AnnotationUtils.areSameByClass(subAnno, PolyValue.class);
             } else if (AnnotationUtils.areSameIgnoringValues(superAnno, subAnno)) {
                 // Same type, so might be subtype
                 if (AnnotationUtils.areSameByClass(subAnno, IntRange.class)
