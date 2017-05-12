@@ -241,9 +241,9 @@
             <arg line="-sourcepath ${src}"/>
             <arg line="-d ${build}"/>
             <arg line="@${tmpdir}/srcfiles-checker.txt"/>
-            <arg line="-version"/>
-            <arg line="-Xlint"/>
-            <arg line="-Werror"/>
+            <arg value="-version"/>
+            <arg value="-Xlint"/>
+            <arg value="-Werror"/>
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
 
@@ -265,8 +265,8 @@
     </target>
     <target name="-force-compile-java8" if="should-force-compile-java8">
         <exec executable="ant" failonerror="true">
-            <arg line="compile-java8-sources"/>
-            <arg line="-Djava8-output=${build}"/>
+            <arg value="compile-java8-sources"/>
+            <arg value="-Djava8-output=${build}"/>
             <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
         </exec>
     </target>
@@ -331,7 +331,7 @@
 
     <target name="-javadoc-force-java8" if="${should-force-compile-java8}">
         <exec executable="ant" failonerror="true">
-            <arg line="javadoc"/>
+            <arg value="javadoc"/>
             <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
         </exec>
     </target>
@@ -445,9 +445,9 @@
             <arg value="-Xlint:-options"/>
             <arg line="-d ${checker-qual-classes-tmp}"/>
             <arg line="@${tmpdir}/srcfiles-checker.txt"/>
-            <arg line="-version"/>
-            <arg line="-Xlint"/>
-            <arg line="-Werror"/>
+            <arg value="-version"/>
+            <arg value="-Xlint"/>
+            <arg value="-Werror"/>
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
 
@@ -486,8 +486,8 @@
     </target>
     <target name="-force-checker-qual-java8" if="${should-force-compile-java8}">
         <exec executable="ant" failonerror="true">
-            <arg line="compile-java8-sources"/>
-            <arg line="-Djava8-output=${checker-qual-classes-tmp}"/>
+            <arg value="compile-java8-sources"/>
+            <arg value="-Djava8-output=${checker-qual-classes-tmp}"/>
             <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
         </exec>
     </target>
@@ -510,8 +510,8 @@
             <arg value="-Xlint:-options"/>
             <arg line="-d ${java8-output}"/>
             <arg line="${checker.loc}/${src}/${checker.jdk8orhigher.sources}"/>
-            <arg line="-Xlint"/>
-            <arg line="-Werror"/>
+            <arg value="-Xlint"/>
+            <arg value="-Werror"/>
         </java>
     </target>
 
@@ -557,9 +557,9 @@
             <arg value="utf-8"/>
             <arg line="-d ${checker-compat-qual-classes-tmp}"/>
             <arg line="@${tmpdir}/srcfiles-checker.txt"/>
-            <arg line="-version"/>
-            <arg line="-Xlint"/>
-            <arg line="-Werror"/>
+            <arg value="-version"/>
+            <arg value="-Xlint"/>
+            <arg value="-Werror"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
         </java>
@@ -651,7 +651,7 @@
                printsummary="withOutAndErr"
                >
             <formatter type="plain" usefile="false"/>
-            <jvmarg line="-Demit.test.debug=true"/>
+            <jvmarg value="-Demit.test.debug=true"/>
     <!-- end of debugging version. -->
 
             <!-- plain output for debugging -->
@@ -661,7 +661,7 @@
 
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
             <sysproperty key="emit.test.debug" value="${should.emit.debug.str}"/>
-            <jvmarg line="-ea"/>
+            <jvmarg value="-ea"/>
 
             <classpath>
                 <pathelement path="${build}"/>
@@ -721,7 +721,7 @@
                haltonerror="${halt.on.test.failure}"
                haltonfailure="${halt.on.test.failure}">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
-            <jvmarg line="-ea"/>
+            <jvmarg value="-ea"/>
             <jvmarg line="${debugger.str}"/>
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
             <sysproperty key="emit.test.debug" value="${should.emit.debug.str}"/>
@@ -1295,10 +1295,10 @@ So, use our own archived version.
             <arg value="-Xlint:-options"/>
             <arg line="-d ${build}"/>
             <arg line="@${tmpdir}/srcfiles-checker.txt"/>
-            <arg line="-version"/>
-            <arg line="-proc:only"/>
+            <arg value="-version"/>
+            <arg value="-proc:only"/>
             <arg line="-processor ${checker-name}"/>
-            <arg line="-AprintErrorStack"/>
+            <arg value="-AprintErrorStack"/>
             <arg line="${checker-args}"/>
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
@@ -1356,7 +1356,7 @@ So, use our own archived version.
 
     <target name="-demos.pull" depends="demos.check" if="demos.exists">
       <exec executable="git" dir="${basedir}/../../checker-framework-demos" failonerror="true">
-        <arg line="pull"/>
+        <arg value="pull"/>
       </exec>
     </target>
 
@@ -1388,8 +1388,8 @@ So, use our own archived version.
         compression="gzip" />
 
       <exec executable="mvn" dir="${errorprone.home}" failonerror="true">
-        <arg line="package"/>
-        <arg line="-Dmaven.test.skip=true"/>
+        <arg value="package"/>
+        <arg value="-Dmaven.test.skip=true"/>
       </exec>
     </target>
 
@@ -1473,19 +1473,19 @@ So, use our own archived version.
         <!--<fail unless="env.JAVA_9_HOME" message="Environment variable  &quot;JAVA_9_HOME&quot; needs to be set!"/>-->
 
         <exec executable="ant" failonerror="true">
-            <arg line="jdk.jar"/>
+            <arg value="jdk.jar"/>
             <env key="JAVA_HOME"  value="${env.JAVA_7_HOME}"/>
             <env key="LT_BIN" value="${LT_BIN}"/>
         </exec>
 
         <exec executable="ant" failonerror="true">
-            <arg line="jdk.jar"/>
+            <arg value="jdk.jar"/>
             <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
             <env key="LT_BIN" value="${LT_BIN}"/>
         </exec>
 
         <!--<exec executable="ant" failonerror="true">
-            <arg line="jdk.jar"/>
+            <arg value="jdk.jar"/>
             <env key="JAVA_HOME"  value="${env.JAVA_9_HOME}"/>
         </exec>-->
 
