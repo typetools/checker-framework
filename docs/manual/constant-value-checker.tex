@@ -42,8 +42,11 @@ The main type annotations are
 \refqualclass{common/value/qual}{DoubleVal}, and
 \refqualclass{common/value/qual}{StringVal}.
 Additional type annotations for arrays are
-\refqualclass{common/value/qual}{ArrayLen} and
-\refqualclass{common/value/qual}{ArrayLenRange}.
+\refqualclass{common/value/qual}{ArrayLen},
+\refqualclass{common/value/qual}{ArrayLenRange},
+and \refqualclass{common/value/qual}{MinLen}.
+A polymorphic qualifier (\refqualclass{common/value/qual}{PolyValue})
+is also supported (see Section~\ref{qualifier-polymorphism}).
 
 Each \<*Val> type annotation takes as an argument a set of values, and its
 meaning is that at run time, the expression evaluates to one of the values.  For
@@ -75,6 +78,10 @@ have exactly the same meaning, and using either one has the same effect.
 to \refqualclass{common/value/qual}{ArrayLen} that
 \refqualclass{common/value/qual}{IntRange} has to
 \refqualclass{common/value/qual}{IntVal}.
+The \<@MinLen> annotation is an alias for \<@ArrayLenRange> (meaning that every \<@MinLen> annotation
+ is automatically converted to an \<@ArrayLenRange> annotation) that only takes
+one argument, which is the lower bound of the range. The upper bound of the
+range is the maximum integer value.
 
 Figure~\ref{fig-value-hierarchy} shows the
 subtyping relationship among the type annotations.
@@ -84,7 +91,7 @@ Because \<int> can be casted to \<double>, an \<@IntVal> annotation is a
 subtype of a \<@DoubleVal> annotation with the same values.
 
 \begin{figure}
-\includeimage{value-subtyping}{5.7cm}
+\includeimage{value-subtyping}{7cm}
 \caption{At the top, the type qualifier hierarchy of the Constant Value Checker
 annotations. Qualifiers in gray are used
 internally by the type system but should never be written by a

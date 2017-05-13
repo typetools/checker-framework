@@ -16,10 +16,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @checker_framework.manual #bottom-type the bottom type
  */
 @InvisibleQualifier
-@ImplicitFor(
-    literals = {LiteralKind.NULL},
-    typeNames = {java.lang.Void.class}
-)
+@ImplicitFor(literals = LiteralKind.NULL, typeNames = java.lang.Void.class)
 @SubtypeOf({
     ArrayLen.class,
     BoolVal.class,

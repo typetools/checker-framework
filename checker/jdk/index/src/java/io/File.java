@@ -25,6 +25,7 @@
 
 package java.io;
 import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.common.value.qual.*;
 
 import java.net.URI;
 import java.net.URL;
@@ -194,7 +195,7 @@ public class File
      * string for convenience.  This string contains a single character, namely
      * <code>{@link #separatorChar}</code>.
      */
-    public static final @MinLen(1) String separator = "" + separatorChar;
+    public static final String separator = "" + separatorChar;
 
     /**
      * The system-dependent path-separator character.  This field is
@@ -213,7 +214,7 @@ public class File
      * for convenience.  This string contains a single character, namely
      * <code>{@link #pathSeparatorChar}</code>.
      */
-    public static final @MinLen() String pathSeparator = "" + pathSeparatorChar;
+    public static final String pathSeparator = "" + pathSeparatorChar;
 
 
     /* -- Constructors -- */

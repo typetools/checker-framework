@@ -2,7 +2,6 @@ package index;
 
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.index.qual.IndexFor;
-import org.checkerframework.checker.index.qual.MinLenBottom;
 import org.checkerframework.checker.index.qual.SameLenBottom;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.common.value.qual.BottomVal;
@@ -17,7 +16,7 @@ public class ErrorOrders {
     int test4(
             @GTENegativeOne @UpperBoundBottom int p1,
             @UpperBoundBottom @GTENegativeOne int p2,
-            int @MinLenBottom [] p3,
+            int @BottomVal [] p3,
             int @SameLenBottom [] p4,
             @BottomVal int p5) {
 
@@ -49,7 +48,7 @@ class InSameCompilationUnit {
     int test4(
             @GTENegativeOne @UpperBoundBottom int p1,
             @UpperBoundBottom @GTENegativeOne int p2,
-            int @MinLenBottom [] p3,
+            int @BottomVal [] p3,
             int @SameLenBottom [] p4,
             @BottomVal int p5) {
 

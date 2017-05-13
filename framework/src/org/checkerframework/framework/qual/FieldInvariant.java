@@ -18,7 +18,7 @@ import javax.lang.model.element.TypeElement;
  * org.checkerframework.framework.type.AnnotatedTypeFactory#getFieldInvariantDeclarationAnnotations()}
  * and {@link
  * org.checkerframework.framework.type.AnnotatedTypeFactory#getFieldInvariants(TypeElement)}. See
- * {@link org.checkerframework.checker.index.qual.MinLenFieldInvariant} for example.
+ * {@link org.checkerframework.common.value.qual.MinLenFieldInvariant} for example.
  *
  * @checker_framework.manual #field-invariants Field invariants
  */

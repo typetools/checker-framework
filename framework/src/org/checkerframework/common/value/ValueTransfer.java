@@ -209,7 +209,7 @@ public class ValueTransfer extends CFTransfer {
                     AnnotationUtils.getElementValueArray(val, "value", Double.class, true);
             range = ValueCheckerUtils.getRangeFromValues(values);
         } else if (AnnotationUtils.areSameByClass(val, BottomVal.class)) {
-            range = Range.NOTHING;
+            return Range.NOTHING;
         } else {
             range = Range.EVERYTHING;
         }
@@ -505,13 +505,19 @@ public class ValueTransfer extends CFTransfer {
                         resultValues.add(nmLeft.plus(right));
                         break;
                     case DIVISION:
-                        resultValues.add(nmLeft.divide(right));
+                        Number result = nmLeft.divide(right);
+                        if (result != null) {
+                            resultValues.add(result);
+                        }
                         break;
                     case MULTIPLICATION:
                         resultValues.add(nmLeft.times(right));
                         break;
                     case REMAINDER:
-                        resultValues.add(nmLeft.remainder(right));
+                        Number resultR = nmLeft.remainder(right);
+                        if (resultR != null) {
+                            resultValues.add(resultR);
+                        }
                         break;
                     case SUBTRACTION:
                         resultValues.add(nmLeft.minus(right));

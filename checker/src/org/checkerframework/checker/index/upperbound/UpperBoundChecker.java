@@ -2,7 +2,6 @@ package org.checkerframework.checker.index.upperbound;
 
 import java.util.LinkedHashSet;
 import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
-import org.checkerframework.checker.index.minlen.MinLenChecker;
 import org.checkerframework.checker.index.samelen.SameLenChecker;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -24,7 +23,6 @@ public class UpperBoundChecker extends BaseTypeChecker {
         checkers.add(SearchIndexChecker.class);
         checkers.add(SameLenChecker.class);
         checkers.add(LowerBoundChecker.class);
-        checkers.add(MinLenChecker.class);
         checkers.add(ValueChecker.class);
         return checkers;
     }

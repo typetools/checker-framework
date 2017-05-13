@@ -12,8 +12,10 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -21,6 +23,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -33,6 +36,9 @@ import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.value.qual.MinLen;
+import org.checkerframework.common.value.qual.MinLenFieldInvariant;
+import org.checkerframework.common.value.qual.PolyValue;
 import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
@@ -42,16 +48,19 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -83,6 +92,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The bottom type for this hierarchy. */
     protected final AnnotationMirror BOTTOMVAL;
+
+    /** The canonical @{@link PolyValue} annotation. */
+    public final AnnotationMirror POLY = AnnotationUtils.fromClass(elements, PolyValue.class);
 
     /** Should this type factory report warnings? */
     private final boolean reportEvalWarnings;
@@ -122,6 +134,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         reportEvalWarnings = checker.hasOption(ValueChecker.REPORT_EVAL_WARNS);
         evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
+        // The actual ArrayLenRange is created by
+        // {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)};
+        // this line just registers the alias. The BottomVal is never used.
+        addAliasedAnnotation(MinLen.class, BOTTOMVAL);
+
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
             this.postInit();
         }
@@ -133,18 +150,42 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Range range = getRange(anno);
             return createIntRangeAnnotation(range);
         }
+
+        if (AnnotationUtils.areSameByClass(anno, MinLen.class)) {
+            Integer from = getMinLenValue(anno);
+            if (from != null && from >= 0) {
+                return createArrayLenRangeAnnotation(from, Integer.MAX_VALUE);
+            } else {
+                return createArrayLenRangeAnnotation(0, Integer.MAX_VALUE);
+            }
+        }
+
         return super.aliasedAnnotation(anno);
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        // Because the Value Checker includes its own alias annotations,
+        // the qualifiers have to be explicitly defined.
+        return new LinkedHashSet<>(
+                Arrays.asList(
+                        ArrayLen.class,
+                        ArrayLenRange.class,
+                        IntVal.class,
+                        IntRange.class,
+                        BoolVal.class,
+                        StringVal.class,
+                        DoubleVal.class,
+                        BottomVal.class,
+                        UnknownVal.class,
+                        PolyValue.class,
+                        PolyAll.class));
     }
 
     @Override
     public CFTransfer createFlowTransferFunction(
             CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         return new ValueTransfer(analysis);
-    }
-
-    @Override
-    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithoutPolyAll();
     }
 
     @Override
@@ -155,6 +196,34 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected TypeAnnotator createTypeAnnotator() {
         return new ListTypeAnnotator(new ValueTypeAnnotator(this), super.createTypeAnnotator());
+    }
+
+    @Override
+    public FieldInvariants getFieldInvariants(TypeElement element) {
+        AnnotationMirror fieldInvarAnno = getDeclAnnotation(element, MinLenFieldInvariant.class);
+        if (fieldInvarAnno == null) {
+            return null;
+        }
+        List<String> fields =
+                AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, true);
+        List<Integer> minlens =
+                AnnotationUtils.getElementValueArray(fieldInvarAnno, "minLen", Integer.class, true);
+        List<AnnotationMirror> qualifiers = new ArrayList<>();
+        for (Integer minlen : minlens) {
+            qualifiers.add(createArrayLenRangeAnnotation(minlen, Integer.MAX_VALUE));
+        }
+
+        FieldInvariants superInvariants = super.getFieldInvariants(element);
+        return new FieldInvariants(superInvariants, fields, qualifiers);
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> getFieldInvariantDeclarationAnnotations() {
+        // include FieldInvariant so that @MinLenBottom can be used.
+        Set<Class<? extends Annotation>> set =
+                new HashSet<>(super.getFieldInvariantDeclarationAnnotations());
+        set.add(MinLenFieldInvariant.class);
+        return set;
     }
 
     /**
@@ -483,6 +552,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (AnnotationUtils.areSameByClass(subAnno, UnknownVal.class)
                     || AnnotationUtils.areSameByClass(superAnno, BottomVal.class)) {
                 return false;
+            } else if (AnnotationUtils.areSameByClass(subAnno, PolyValue.class)) {
+                return AnnotationUtils.areSameByClass(superAnno, PolyValue.class);
+            } else if (AnnotationUtils.areSameByClass(superAnno, PolyValue.class)) {
+                return AnnotationUtils.areSameByClass(subAnno, PolyValue.class);
             } else if (AnnotationUtils.areSameIgnoringValues(superAnno, subAnno)) {
                 // Same type, so might be subtype
                 if (AnnotationUtils.areSameByClass(subAnno, IntRange.class)
@@ -569,10 +642,21 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
-        // The ValueTreeAnnotator handles propagation differently,
-        // so it doesn't need PropgationTreeAnnotator.
+        // Only use the PropagationTreeAnnotator for typing new arrays.  The Value Checker
+        // computes types differently for all other trees normally typed by the
+        // PropagationTreeAnnotator.
+        TreeAnnotator arrayCreation =
+                new TreeAnnotator(this) {
+                    PropagationTreeAnnotator propagationTreeAnnotator =
+                            new PropagationTreeAnnotator(atypeFactory);
+
+                    @Override
+                    public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror mirror) {
+                        return propagationTreeAnnotator.visitNewArray(node, mirror);
+                    }
+                };
         return new ListTreeAnnotator(
-                new ValueTreeAnnotator(this), new ImplicitsTreeAnnotator(this));
+                new ValueTreeAnnotator(this), new ImplicitsTreeAnnotator(this), arrayCreation);
     }
 
     /** The TreeAnnotator for this AnnotatedTypeFactory. It adds/replaces annotations. */
@@ -904,6 +988,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // Evaluate method
                 List<?> returnValues =
                         evaluator.evaluateMethodCall(argValues, receiverValues, tree);
+                if (returnValues == null) {
+                    return null;
+                }
                 AnnotationMirror returnType =
                         createResultingAnnotation(type.getUnderlyingType(), returnValues);
                 type.replaceAnnotation(returnType);
@@ -941,7 +1028,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 // Evaluate method
                 List<?> returnValues =
-                        evaluator.evaluteConstrutorCall(argValues, tree, type.getUnderlyingType());
+                        evaluator.evaluteConstructorCall(argValues, tree, type.getUnderlyingType());
+                if (returnValues == null) {
+                    return null;
+                }
                 AnnotationMirror returnType =
                         createResultingAnnotation(type.getUnderlyingType(), returnValues);
                 type.replaceAnnotation(returnType);
@@ -1506,21 +1596,79 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ArrayList<>(boolSet);
     }
 
+    public Integer getMinLenValue(AnnotatedTypeMirror atm) {
+        return getMinLenValue(atm.getAnnotationInHierarchy(UNKNOWNVAL));
+    }
+
     /**
-     * Empty list means dead code -- no values are possible. Null means no information in available
-     * -- all values are possible.
+     * Used to find the minimum length of an array, which is useful for array bounds checking.
+     * Returns null if there is no minimum length known, or if the passed annotation is null.
+     *
+     * <p>Note that this routine handles actual {@link MinLen} annotations, because it is called by
+     * {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)}, which transforms
+     * {@link MinLen} annotations into {@link ArrayLenRange} annotations.
      */
-    public List<Long> getIntValuesFromExpression(
-            String expression, Tree tree, TreePath currentPath) {
-        AnnotationMirror intValAnno = null;
-        try {
-            intValAnno =
-                    getAnnotationFromJavaExpressionString(
-                            expression, tree, currentPath, IntVal.class);
-        } catch (FlowExpressionParseException e) {
-            // ignore parse errors
+    public Integer getMinLenValue(AnnotationMirror annotation) {
+        if (annotation == null) {
             return null;
         }
-        return getIntValues(intValAnno);
+        if (AnnotationUtils.areSameByClass(annotation, MinLen.class)) {
+            return AnnotationUtils.getElementValue(annotation, "value", Integer.class, true);
+        } else if (AnnotationUtils.areSameByClass(annotation, ArrayLenRange.class)) {
+            return Long.valueOf(getRange(annotation).from).intValue();
+        } else if (AnnotationUtils.areSameByClass(annotation, ArrayLen.class)) {
+            return Collections.min(getArrayLength(annotation));
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the smallest possible value that an integral annotation might take on. The passed
+     * {@code AnnotatedTypeMirror} should contain either an {@code @IntRange} annotation or an
+     * {@code @IntVal} annotation. Returns null if it does not.
+     */
+    public Long getMinimumIntegralValue(AnnotatedTypeMirror atm) {
+        AnnotationMirror anm = atm.getAnnotationInHierarchy(UNKNOWNVAL);
+        if (AnnotationUtils.areSameByClass(anm, IntVal.class)) {
+            List<Long> possibleValues = getIntValues(anm);
+            return Collections.min(possibleValues);
+        } else if (AnnotationUtils.areSameByClass(anm, IntRange.class)) {
+            Range range = getRange(anm);
+            return range.from;
+        }
+        return null;
+    }
+
+    /**
+     * Returns the minimum length of an array expression or 0 if the min length is unknown.
+     *
+     * @param arrayExpression flow expression
+     * @param tree expression tree or variable declaration
+     * @param currentPath path to local scope
+     * @return min length of arrayExpression or 0
+     */
+    public int getMinLenFromString(String arrayExpression, Tree tree, TreePath currentPath) {
+        AnnotationMirror lengthAnno = null;
+        try {
+            lengthAnno =
+                    getAnnotationFromJavaExpressionString(
+                            arrayExpression, tree, currentPath, ArrayLenRange.class);
+
+            if (lengthAnno == null) {
+                lengthAnno =
+                        getAnnotationFromJavaExpressionString(
+                                arrayExpression, tree, currentPath, ArrayLen.class);
+            }
+        } catch (FlowExpressionParseException e) {
+            // ignore parse errors
+        }
+        if (lengthAnno == null) {
+            // Could not find a more precise type, so return 0;
+            return 0;
+        }
+
+        Integer minLenValue = getMinLenValue(lengthAnno);
+        return minLenValue == null ? 0 : minLenValue;
     }
 }
