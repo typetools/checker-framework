@@ -227,7 +227,7 @@
               failonerror="true"
               classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
@@ -432,7 +432,7 @@
         <java fork="true"
               failonerror="true"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
@@ -498,7 +498,7 @@
               failonerror="true"
               classname="com.sun.tools.javac.Main"
               classpath="${java8-output}">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <arg value="-source"/>
             <arg value="8"/>
@@ -546,7 +546,7 @@
         <java fork="true"
               failonerror="true"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only generate Java 6 bytecode. -->
             <arg value="-source"/>
@@ -597,7 +597,7 @@
               failonerror="true"
               classpath="${build}:${javac.lib}:${junit.lib}:${hamcrest.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
@@ -656,7 +656,7 @@
 
             <!-- plain output for debugging -->
 
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg line="${debugger.str}"/>
 
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
@@ -720,7 +720,7 @@
                printsummary="false"
                haltonerror="${halt.on.test.failure}"
                haltonfailure="${halt.on.test.failure}">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg value="-ea"/>
             <jvmarg line="${debugger.str}"/>
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
@@ -1286,7 +1286,7 @@ So, use our own archived version.
               failonerror="true"
               classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg line="${maybeDebug}"/>
             <arg value="-g"/>
             <arg value="-encoding"/>
