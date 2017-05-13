@@ -4,7 +4,8 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 class InLambdaAnnotated {
-    class Mine<T> {
+    static class Mine<T> {
+        @SuppressWarnings("nullness") // just a utility
         static <S> Mine<S> some() {
             return null;
         }
@@ -16,7 +17,7 @@ class InLambdaAnnotated {
 
     interface Box<V> {}
 
-    class Boxes {
+    static class Boxes {
         @SuppressWarnings("nullness") // just a utility
         static <O> Box<O> transform(Function<String, ? extends O> function) {
             return null;

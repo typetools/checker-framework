@@ -1,7 +1,8 @@
 // @below-java8-jdk-skip-test
 
 class InLambda {
-    class Mine<T> {
+    static class Mine<T> {
+        @SuppressWarnings("nullness") // just a utility
         static <S> Mine<S> some() {
             return null;
         }
@@ -13,7 +14,7 @@ class InLambda {
 
     interface Box<V> {}
 
-    class Boxes {
+    static class Boxes {
         @SuppressWarnings("nullness") // just a utility
         static <O> Box<O> transform(Function<String, ? extends O> function) {
             return null;
