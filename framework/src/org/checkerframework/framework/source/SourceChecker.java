@@ -264,6 +264,10 @@ import org.checkerframework.javacutil.TreeUtils;
     // org.checkerframework.common.basetype.BaseTypeVisitor
     "showchecks",
 
+    // Output information about intermediate steps in method type argument inference
+    // org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference
+    "showInferenceSteps",
+
     /// Visualizing the CFG
 
     // Implemented in the wrapper rather than this file, but worth noting here.
