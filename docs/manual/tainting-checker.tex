@@ -49,10 +49,10 @@ The Tainting type system uses the following annotations:
 \begin{itemize}
 \item
   \refqualclass{checker/tainting/qual}{Untainted} indicates
-  a type that includes only untainted, trusted values.
+  a type that includes only untainted (trusted) values.
 \item
   \refqualclass{checker/tainting/qual}{Tainted} indicates
-  a type that may include only tainted, untrusted values.
+  a type that may include tainted (untrusted) or untainted (trusted) values.
   \code{@Tainted} is a supertype of \code{@Untainted}.
   It is the default qualifier.
 \item

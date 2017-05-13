@@ -258,7 +258,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return true;
     }
 
-    private class RegexPropagationAnnotator extends PropagationTreeAnnotator {
+    private static class RegexPropagationAnnotator extends PropagationTreeAnnotator {
 
         public RegexPropagationAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
@@ -327,7 +327,9 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     type.removeAnnotationInHierarchy(REGEX);
                     // ...and add a new one with the correct group count value.
                     type.addAnnotation(createRegexAnnotation(lGroupCount + rGroupCount));
-                } else if (lExprPoly && rExprPoly || lExprPoly && rExprRE || lExprRE && rExprPoly) {
+                } else if ((lExprPoly && rExprPoly)
+                        || (lExprPoly && rExprRE)
+                        || (lExprRE && rExprPoly)) {
                     type.addAnnotation(PolyRegex.class);
                 } else if (lExprPart && rExprPart) {
                     String lRegex = getPartialRegexValue(lExpr);

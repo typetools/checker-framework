@@ -2,7 +2,7 @@
 // https://github.com/kelloggm/checker-framework/issues/14
 
 import org.checkerframework.checker.index.qual.LTLengthOf;
-import org.checkerframework.checker.index.qual.MinLen;
+import org.checkerframework.common.value.qual.MinLen;
 
 public class ArrayLength2 {
     public static void main(String[] args) {

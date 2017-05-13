@@ -320,7 +320,7 @@ public final class Byte extends Number implements Comparable<Byte> {
      * Returns the value of this {@code Byte} as a
      * {@code byte}.
      */
-    public byte byteValue() {
+    public @PolyIndex byte byteValue(@PolyIndex Byte this) {
         return value;
     }
 
@@ -328,7 +328,7 @@ public final class Byte extends Number implements Comparable<Byte> {
      * Returns the value of this {@code Byte} as a
      * {@code short}.
      */
-    public short shortValue() {
+    public @PolyIndex short shortValue(@PolyIndex Byte this) {
         return (short)value;
     }
 
@@ -336,7 +336,7 @@ public final class Byte extends Number implements Comparable<Byte> {
      * Returns the value of this {@code Byte} as an
      * {@code int}.
      */
-    public int intValue() {
+    public @PolyIndex int intValue(@PolyIndex Byte this) {
         return (int)value;
     }
 
@@ -344,7 +344,7 @@ public final class Byte extends Number implements Comparable<Byte> {
      * Returns the value of this {@code Byte} as a
      * {@code long}.
      */
-    public long longValue() {
+    public @PolyIndex long longValue(@PolyIndex Byte this) {
         return (long)value;
     }
 

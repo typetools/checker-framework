@@ -386,7 +386,7 @@ public class NullnessAnnotatedTypeFactory
      *
      * <p>Would this be valid to move into CommitmentTreeAnnotator.
      */
-    protected class NullnessPropagationAnnotator extends PropagationTreeAnnotator {
+    protected static class NullnessPropagationAnnotator extends PropagationTreeAnnotator {
 
         public NullnessPropagationAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);

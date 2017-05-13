@@ -121,7 +121,7 @@ Framework.
 You can find installation instructions and a video tutorial at \url{https://github.com/reprogrammer/cascade}.
 
 
-\subsection{Whole-program inference\label{whole-program-inference}}
+\section{Whole-program inference\label{whole-program-inference}}
 
 Whole-program inference is an interprocedural inference that
 infers types for fields, method parameters, and method return types that do not
@@ -189,7 +189,7 @@ or a supertype of the default type, by contrast with type refinement which
 always refines the current type to a subtype.
 
 
-\subsubsection{Whole-program inference ignores some code\label{whole-program-inference-ignores-some-code}}
+\subsection{Whole-program inference ignores some code\label{whole-program-inference-ignores-some-code}}
 
 Whole-program inference ignores code within the scope of a
 \<@SuppressWarnings> annotation with an appropriate key
@@ -221,7 +221,7 @@ Whole-program inference, for a type-checker other than the Nullness Checker,
 ignores (pseudo-)assignments where the right-hand-side is the \<null> literal.
 
 
-\subsubsection{Manually checking whole-program inference results\label{whole-program-inference-manual-checking}}
+\subsection{Manually checking whole-program inference results\label{whole-program-inference-manual-checking}}
 
 As with any type inference tool, it is a good idea to manually examine the
 results.
@@ -241,7 +241,7 @@ to the corresponding upper bounds of the type variable declaration.
 \end{itemize}
 
 
-\paragraph{Poor whole-program inference results due to non-representative uses\label{whole-program-inference-non-representative-uses}}
+\subsubsection{Poor whole-program inference results due to non-representative uses\label{whole-program-inference-non-representative-uses}}
 
 Whole-program inference determines a method parameter's type
 annotation based on what arguments are passed to the method, but not on how the
@@ -281,7 +281,7 @@ and re-run inference.
 \end{itemize}
 
 
-\subsubsection{How whole-program inference works\label{how-whole-program-inference-works}}
+\subsection{How whole-program inference works\label{how-whole-program-inference-works}}
 
 This section explains how the \<infer-and-annotate.sh> script works.  If you
 merely want to run the script and you are not encountering trouble, you can

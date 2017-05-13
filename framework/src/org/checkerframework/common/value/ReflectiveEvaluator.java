@@ -20,15 +20,16 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-public class ReflectiveEvalutator {
+public class ReflectiveEvaluator {
     private BaseTypeChecker checker;
     private boolean reportWarnings;
 
-    public ReflectiveEvalutator(
+    public ReflectiveEvaluator(
             BaseTypeChecker checker, ValueAnnotatedTypeFactory factory, boolean reportWarnings) {
         this.checker = checker;
         this.reportWarnings = reportWarnings;
@@ -40,13 +41,14 @@ public class ReflectiveEvalutator {
      * @param receiverValues a list of possible receiver values. null indicates that the method has
      *     no receiver.
      * @param tree location to report any errors
-     * @return all possible values that the method may return
+     * @return all possible values that the method may return, or null if the method could not be
+     *     evaluated
      */
     public List<?> evaluateMethodCall(
             List<List<?>> allArgValues, List<?> receiverValues, MethodInvocationTree tree) {
         Method method = getMethodObject(tree);
         if (method == null) {
-            return new ArrayList<>();
+            return null;
         }
 
         if (receiverValues == null) {
@@ -65,6 +67,15 @@ public class ReflectiveEvalutator {
             listOfArguments = cartesianProduct(allArgValues, allArgValues.size() - 1);
         }
 
+        if (method.isVarArgs()) {
+            List<Object[]> newList = new ArrayList<>();
+            int numberOfParameters = method.getParameterTypes().length;
+            for (Object[] args : listOfArguments) {
+                newList.add(normalizeVararg(args, numberOfParameters));
+            }
+            listOfArguments = newList;
+        }
+
         List<Object> results = new ArrayList<>();
         for (Object[] arguments : listOfArguments) {
             for (Object receiver : receiverValues) {
@@ -81,16 +92,68 @@ public class ReflectiveEvalutator {
                     }
                     // Method evaluation will always fail, so don't bother
                     // trying again
-                    return new ArrayList<Object>();
-
-                } catch (ReflectiveOperationException e) {
+                    return null;
+                } catch (ExceptionInInitializerError e) {
+                    if (reportWarnings) {
+                        checker.report(
+                                Result.warning(
+                                        "method.evaluation.exception",
+                                        method,
+                                        e.getCause().toString()),
+                                tree);
+                    }
+                    return null;
+                } catch (IllegalArgumentException e) {
+                    if (reportWarnings) {
+                        String args = PluginUtil.join(", ", arguments);
+                        checker.report(
+                                Result.warning(
+                                        "method.evaluation.exception",
+                                        method,
+                                        e.getLocalizedMessage() + ": " + args),
+                                tree);
+                    }
+                    return null;
+                } catch (Throwable e) {
+                    // Catch any exception thrown because they shouldn't crash the type checker.
                     if (reportWarnings) {
                         checker.report(Result.warning("method.evaluation.failed", method), tree);
                     }
+                    return null;
                 }
             }
         }
         return results;
+    }
+
+    /**
+     * This method normalizes an array of arguments to a varargs method by changing the arguments
+     * associated with the varargs parameter into an array.
+     *
+     * @param arguments an array of arguments for {@code method}. The length is at least {@code
+     *     numberOfParameters - 1}.
+     * @param numberOfParameters number of parameters of the vararg method
+     * @return the length of the array is exactly {@code numberOfParameters}
+     */
+    private Object[] normalizeVararg(Object[] arguments, int numberOfParameters) {
+
+        if (arguments == null) {
+            // null means no arguments.  For varargs no arguments is an empty array.
+            arguments = new Object[] {};
+        }
+        Object[] newArgs = new Object[numberOfParameters];
+        Object[] varArgsArray;
+        int numOfVarArgs = arguments.length - numberOfParameters + 1;
+        if (numOfVarArgs > 0) {
+            System.arraycopy(arguments, 0, newArgs, 0, numberOfParameters - 1);
+            varArgsArray = new Object[numOfVarArgs];
+            System.arraycopy(arguments, numberOfParameters - 1, varArgsArray, 0, numOfVarArgs);
+        } else {
+            System.arraycopy(arguments, 0, newArgs, 0, numberOfParameters - 1);
+            varArgsArray = new Object[] {};
+        }
+        newArgs[numberOfParameters - 1] = varArgsArray;
+        return newArgs;
     }
 
     /**
@@ -202,13 +265,13 @@ public class ReflectiveEvalutator {
         }
     }
 
-    public List<?> evaluteConstrutorCall(
+    public List<?> evaluteConstructorCall(
             ArrayList<List<?>> argValues, NewClassTree tree, TypeMirror typeToCreate) {
         try {
             // get the constructor
-            Constructor<?> constructor = getConstrutorObject(tree, typeToCreate);
+            Constructor<?> constructor = getConstructorObject(tree, typeToCreate);
             if (constructor == null) {
-                return new ArrayList<>();
+                return null;
             }
 
             List<Object[]> listOfArguments;
@@ -229,20 +292,20 @@ public class ReflectiveEvalutator {
                     if (reportWarnings) {
                         checker.report(Result.warning("constructor.invocation.failed"), tree);
                     }
-                    return new ArrayList<Object>();
+                    return null;
                 }
-                return results;
             }
+            return results;
 
         } catch (ReflectiveOperationException e) {
             if (reportWarnings) {
                 checker.report(Result.warning("constructor.evaluation.failed"), tree);
             }
+            return null;
         }
-        return new ArrayList<>();
     }
 
-    private Constructor<?> getConstrutorObject(NewClassTree tree, TypeMirror typeToCreate)
+    private Constructor<?> getConstructorObject(NewClassTree tree, TypeMirror typeToCreate)
             throws ClassNotFoundException, NoSuchMethodException {
         ExecutableElement ele = TreeUtils.elementFromUse(tree);
         List<Class<?>> paramClasses = getParameterClasses(tree, ele);

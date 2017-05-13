@@ -15,12 +15,12 @@ import java.lang.annotation.Target;
  *
  * <p>Here is an example use:
  *
- * <pre>
+ * <pre><code>
  *  {@literal @}EnsuresQualifier(expression = "p.f1", qualifier = Odd.class)
  *   void oddF1_1() {
  *       p.f1 = null;
  *   }
- * </pre>
+ * </code></pre>
  *
  * @author Stefan Heule
  * @see EnsuresQualifiers

@@ -529,7 +529,7 @@ public class BoundsInitializer {
          * that of sourceType
          */
         @SuppressWarnings("serial")
-        private class ReferenceMap extends LinkedHashMap<BoundPath, AnnotatedTypeVariable> {
+        private static class ReferenceMap extends LinkedHashMap<BoundPath, AnnotatedTypeVariable> {
             //TODO: EXPLAINED LINK DUE TO TYPEVAR SLED
         }
 

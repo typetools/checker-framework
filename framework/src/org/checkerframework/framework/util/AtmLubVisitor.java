@@ -20,7 +20,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.type.visitor.VisitHistory;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 
@@ -35,8 +34,6 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     private final AnnotatedTypeFactory atypeFactory;
     private final QualifierHierarchy qualifierHierarchy;
     private final VisitHistory visitHistory = new VisitHistory();
-
-    private boolean visitingUninferedWildcard = false;
 
     AtmLubVisitor(AnnotatedTypeFactory atypeFactory) {
         this.atypeFactory = atypeFactory;
@@ -115,34 +112,16 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     private void lubPrimaryAnnotations(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, AnnotatedTypeMirror lub) {
         Set<? extends AnnotationMirror> lubSet;
-        if (visitingUninferedWildcard
-                        && type1.getAnnotations().size() != type1.getAnnotations().size()
-                || type1.getAnnotations().isEmpty()) {
-            if (type1.getAnnotations().size() > type2.getAnnotations().size()) {
-                lubSet = partialQualifierLub(type1.getAnnotations(), type2.getAnnotations());
-            } else {
-                lubSet = partialQualifierLub(type2.getAnnotations(), type1.getAnnotations());
-            }
+        if (type1.getAnnotations().isEmpty()) {
+            lubSet = type2.getAnnotations();
+        } else if (type2.getAnnotations().isEmpty()) {
+            lubSet = type1.getAnnotations();
         } else {
             lubSet =
                     qualifierHierarchy.leastUpperBounds(
                             type1.getAnnotations(), type2.getAnnotations());
         }
         lub.replaceAnnotations(lubSet);
-    }
-
-    private Set<AnnotationMirror> partialQualifierLub(
-            Set<AnnotationMirror> bigger, Set<AnnotationMirror> smaller) {
-        Set<AnnotationMirror> lub = AnnotationUtils.createAnnotationSet();
-        for (AnnotationMirror anno : bigger) {
-            AnnotationMirror same = qualifierHierarchy.findAnnotationInSameHierarchy(smaller, anno);
-            if (same != null) {
-                lub.add(qualifierHierarchy.leastUpperBound(anno, same));
-            } else {
-                lub.add(anno);
-            }
-        }
-        return lub;
     }
 
     /** Casts lub to the type of type and issues an error if type and lub are not the same kind. */
@@ -180,8 +159,6 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     public Void visitDeclared_Declared(
             AnnotatedDeclaredType type1, AnnotatedDeclaredType type2, AnnotatedTypeMirror lub) {
         AnnotatedDeclaredType castedLub = castLub(type1, lub);
-        boolean oldVisitingUninferedWildcard = visitingUninferedWildcard;
-        visitingUninferedWildcard = visitingUninferedWildcard || type1.wasRaw() || type2.wasRaw();
 
         lubPrimaryAnnotations(type1, type2, lub);
         List<AnnotatedTypeMirror> lubTypArgs = new ArrayList<>();
@@ -205,7 +182,6 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         if (lubTypArgs.size() > 0) {
             castedLub.setTypeArguments(lubTypArgs);
         }
-        visitingUninferedWildcard = oldVisitingUninferedWildcard;
         return null;
     }
 

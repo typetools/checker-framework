@@ -1,5 +1,8 @@
 package org.checkerframework.checker.index.qual;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
+
 /**
  * An integer that, for each of the given sequences, is either a valid index or is equal to the
  * sequence's length.
@@ -23,6 +26,7 @@ package org.checkerframework.checker.index.qual;
  * @see LTLengthOf
  * @checker_framework.manual #index-checker Index Checker
  */
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface IndexOrHigh {
     /**
      * Sequences that the annotated expression is a valid index for or is equal to the lengeth of.

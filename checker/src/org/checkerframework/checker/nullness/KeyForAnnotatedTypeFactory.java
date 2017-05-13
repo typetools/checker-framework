@@ -126,7 +126,7 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 new KeyForPropagationTreeAnnotator(this, keyForPropagator));
     }
 
-    protected class KeyForTypeHierarchy extends DefaultTypeHierarchy {
+    protected static class KeyForTypeHierarchy extends DefaultTypeHierarchy {
 
         public KeyForTypeHierarchy(
                 BaseTypeChecker checker,

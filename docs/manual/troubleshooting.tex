@@ -540,6 +540,36 @@ You want the one with a name like
 Add this .jar file to your build path.
 
 
+\item
+When one formal parameter's annotation references another formal
+parameter's name, as in this constructor:
+
+\begin{smaller}
+\begin{Verbatim}
+public String(char value[], @IndexFor("value") int offset, @IndexOrHigh("value") int count) { ... }
+\end{Verbatim}
+\end{smaller}
+
+\noindent
+you will get an error such as
+
+\begin{smaller}
+\begin{Verbatim}[]
+[expression.unparsable.type.invalid] Expression in dependent type annotation invalid:
+[error for expression: myParamName error: myParamName: identifier not found]
+\end{Verbatim}
+\end{smaller}
+
+Section~\ref{java-expressions-as-arguments} explains that you need to use
+a different syntax to refer to a formal parameter:
+
+\begin{smaller}
+\begin{Verbatim}
+public String(char value[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int count) { ... }
+\end{Verbatim}
+\end{smaller}
+
+
 \end{itemize}
 
 
@@ -711,6 +741,11 @@ the Checker Framework, rather than an official release.
 % checkers and of the checker framework.  It may also help you to debug
 % problems more effectively.
 
+The Checker Framework can be easily built on Unix (Linux and Mac).  You
+might have trouble building on Windows.  If so, you can switch to Unix (at
+least for building, if not for running, the Checker Framework) or you can
+report the problems to the Checker Framework developers.
+
 
 \subsection{Install prerequisites\label{building-prerequisites}}
 
@@ -720,6 +755,13 @@ Framework.  The following command installs them for Ubuntu:
 \begin{Verbatim}
 sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial openjdk-8-jdk unzip
 \end{Verbatim}
+
+If you are building on Windows, here is an incomplete list of needed
+prerequisites:
+\begin{itemize}
+\item
+  Install MSYS to obtain the \<cp> and \<make> commands.
+\end{itemize}
 
 
 \subsection{Obtain the source\label{building-obtain-source}}

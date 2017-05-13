@@ -99,7 +99,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
-import org.checkerframework.framework.util.FieldInvariantObject;
+import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -1313,7 +1313,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return;
         }
 
-        FieldInvariantObject invariants = getFieldInvariants(typeElement);
+        FieldInvariants invariants = getFieldInvariants(typeElement);
         if (invariants == null) {
             return;
         }
@@ -1332,7 +1332,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param element class for which to get invariants
      * @return fields invariants for {@code element}
      */
-    public FieldInvariantObject getFieldInvariants(TypeElement element) {
+    public FieldInvariants getFieldInvariants(TypeElement element) {
         if (element == null) {
             return null;
         }
@@ -1357,7 +1357,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (fields.size() != qualifiers.size()) {
             // FieldInvariant wasn't written correctly, so just return the object, the
             // BaseTypeVisitor will issue an error.
-            return new FieldInvariantObject(fields, qualifiers);
+            return new FieldInvariants(fields, qualifiers);
         }
 
         // Only keep qualifiers that are supported by this checker.  (The other qualifiers cannot
@@ -1374,7 +1374,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return null;
         }
 
-        return new FieldInvariantObject(supportFields, supportedQualifiers);
+        return new FieldInvariants(supportFields, supportedQualifiers);
     }
 
     /**

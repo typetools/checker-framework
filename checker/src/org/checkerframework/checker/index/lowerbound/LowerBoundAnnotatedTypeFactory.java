@@ -19,18 +19,19 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
-import org.checkerframework.checker.index.minlen.MinLenAnnotatedTypeFactory;
-import org.checkerframework.checker.index.minlen.MinLenChecker;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.index.qual.IndexOrLow;
+import org.checkerframework.checker.index.qual.LengthOf;
 import org.checkerframework.checker.index.qual.LowerBoundUnknown;
-import org.checkerframework.checker.index.qual.MinLen;
+import org.checkerframework.checker.index.qual.NegativeIndexFor;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.PolyIndex;
 import org.checkerframework.checker.index.qual.PolyLowerBound;
 import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.checker.index.searchindex.SearchIndexAnnotatedTypeFactory;
+import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -88,6 +89,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(IndexFor.class, NN);
         addAliasedAnnotation(IndexOrLow.class, GTEN1);
         addAliasedAnnotation(IndexOrHigh.class, NN);
+        addAliasedAnnotation(LengthOf.class, NN);
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyIndex.class, POLY);
 
@@ -156,9 +158,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return getTypeFactoryOfSubchecker(ValueChecker.class);
     }
 
-    /** Returns the MinLen Checker's annotated type factory. */
-    public MinLenAnnotatedTypeFactory getMinLenAnnotatedTypeFactory() {
-        return getTypeFactoryOfSubchecker(MinLenChecker.class);
+    /** Returns the SearchIndexFor Checker's annotated type factory. */
+    public SearchIndexAnnotatedTypeFactory getSearchIndexAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(SearchIndexChecker.class);
     }
 
     /** Returns the type in the lower bound hierarchy that a Value Checker type corresponds to. */
@@ -184,7 +186,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** Determine the annotation that should be associated with a literal. */
-    private AnnotationMirror anmFromVal(int val) {
+    private AnnotationMirror anmFromVal(long val) {
         if (val >= 1) {
             return POS;
         } else if (val >= 0) {
@@ -267,10 +269,34 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case POSTFIX_DECREMENT:
                     // Do nothing. The CF should take care of these itself.
                     break;
+                case BITWISE_COMPLEMENT:
+                    handleBitWiseComplement(
+                            getSearchIndexAnnotatedTypeFactory()
+                                    .getAnnotatedType(tree.getExpression()),
+                            typeDst);
+                    break;
                 default:
                     break;
             }
             return super.visitUnary(tree, typeDst);
+        }
+
+        /**
+         * Bitwise complement converts between {@code @NegativeIndexFor} and {@code @IndexOrHigh}.
+         * This handles the lowerbound part of that type, so the result is converted to
+         * {@code @NonNegative}.
+         *
+         * @param searchIndexType The type of an expression in a bitwise complement. For instance,
+         *     in {@code ~x}, this is the type of {@code x}.
+         * @param typeDst The type of the entire bitwise complement expression. It is modified by
+         *     this method.
+         */
+        private void handleBitWiseComplement(
+                AnnotatedTypeMirror searchIndexType, AnnotatedTypeMirror typeDst) {
+            if (AnnotationUtils.containsSameByClass(
+                    searchIndexType.getAnnotations(), NegativeIndexFor.class)) {
+                typeDst.addAnnotation(NN);
+            }
         }
 
         /** Special handling for Math.max. The return is the GLB of the arguments. */
@@ -294,12 +320,15 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private Integer getMinLenFromMemberSelectTree(MemberSelectTree tree) {
             if (TreeUtils.isArrayLengthAccess(tree)) {
                 AnnotatedTypeMirror minLenType =
-                        getMinLenAnnotatedTypeFactory().getAnnotatedType(tree.getExpression());
-                AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
-                if (anm == null) {
-                    return 0;
+                        getValueAnnotatedTypeFactory().getAnnotatedType(tree);
+                Long min = getValueAnnotatedTypeFactory().getMinimumIntegralValue(minLenType);
+                if (min == null) {
+                    return null;
                 }
-                return AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
+                if (min < 0 || min > Integer.MAX_VALUE) {
+                    min = 0L;
+                }
+                return min.intValue();
             }
             return null;
         }
@@ -490,7 +519,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     MemberSelectTree mstree = (MemberSelectTree) leftExpr;
                     Integer minLen = getMinLenFromMemberSelectTree(mstree);
                     if (minLen != null) {
-                        type.replaceAnnotation(anmFromVal(minLen - valRight.intValue()));
+                        type.replaceAnnotation(anmFromVal(minLen - valRight));
                     }
                 }
 

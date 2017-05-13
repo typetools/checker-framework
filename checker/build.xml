@@ -48,7 +48,7 @@
         <mkdir dir="${tests.build}/testclasses"/>
         <mkdir dir="${api.doc}" />
 
-        <symlink link="${checkerframework}/docs/api" resource="../checker/${api.doc}" overwrite="true"/>
+        <symlink link="${checkerframework}/docs/api" resource="../checker/${api.doc}" overwrite="true" failonerror="false"/>
 
         <available property="framework.project"
                    file="${framework.loc}/build.xml"/>
@@ -1389,6 +1389,7 @@ So, use our own archived version.
 
       <exec executable="mvn" dir="${errorprone.home}" failonerror="true">
         <arg line="package"/>
+        <arg line="-Dmaven.test.skip=true"/>
       </exec>
     </target>
 
@@ -1443,7 +1444,6 @@ So, use our own archived version.
     <target name="download-jdk" description="Downloads jdk7.jar and jdk8.jar from checkerframework.org/dev-jdk to checker/jdk and checker/dist">
         <get src="https://checkerframework.org/dev-jdk/jdk7.jar" dest="jdk/jdk7.jar"/>
         <get src="https://checkerframework.org/dev-jdk/jdk8.jar" dest="jdk/jdk8.jar"/>
-
         <!-- Copy jars to dist. If dist doesn't exist then the copy task creates it.-->
         <copy file="jdk/jdk7.jar" tofile="dist/jdk7.jar"/>
         <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar"/>
@@ -1493,6 +1493,7 @@ So, use our own archived version.
 
     <target name="jdk.jar" depends="jar"
             description="Create the instrumented jdkX.jar using the JDK specified by JAVA_HOME">
+      <fail unless="env.JAVA_HOME" message="Environment variable JAVA_HOME is not set."/>
       <property name="annotation-file-utilities.jar" value="${annotation.tools}/annotation-file-utilities/annotation-file-utilities.jar"/>
       <available property="annotation-file-utilities.exist" file="${annotation-file-utilities.jar}" />
       <fail unless="annotation-file-utilities.exist" message="Could not find annotation-file-utilities.jar: ${annotation-file-utilities.jar}.  You must build Annotation Tools; see https://checkerframework.org/manual/#build-source" />

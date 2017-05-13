@@ -14,12 +14,13 @@ import java.lang.annotation.Target;
  *
  * <p>Here is an example use:
  *
- * <pre>{@code      @AssertNonNullIfNonNull("id")
+ * <pre><code>
+ *    {@literal @}AssertNonNullIfNonNull("id")
  *    {@literal @}Pure
  *     public @Nullable Long getId() {
  *         return id;
  *     }
- * }</pre>
+ * </code></pre>
  *
  * Note the direction of the implication. This annotation says that if the result is non-null, then
  * the variable {@code id} is also non-null. The annotation does not say that if {@code id} is

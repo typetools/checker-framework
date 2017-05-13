@@ -87,8 +87,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * Node is known to be {@code typeOfNode}. If the node is a plus or a minus then the types of
-     * the left and right operands can be refined to include offsets. If the node is a
+     * {@code node} is known to be {@code typeOfNode}. If the node is a plus or a minus then the
+     * types of the left and right operands can be refined to include offsets. If the node is a
      * multiplication, its operands can also be refined. See {@link
      * #propagateToAdditionOperand(LessThanLengthOf, Node, Node, TransferInput, CFStore)}, {@link
      * #propagateToSubtractionOperands(LessThanLengthOf, NumericalSubtractionNode, TransferInput,
