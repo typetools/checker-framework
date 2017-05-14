@@ -1,8 +1,6 @@
 package org.checkerframework.checker.signedness;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.*;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -110,7 +108,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * This TreeAnnotator ensures that booleans expressions are not given Unsigned or Signed
-     * annotations by {@link PropagationTreeAnnotator}
+     * annotations by {@link PropagationTreeAnnotator} and that shift results take on the type of
+     * their left operand.
      */
     private class SignednessTreeAnnotator extends TreeAnnotator {
 
@@ -122,7 +121,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Change the type of booleans to @UnknownSignedness so that the {@link
          * PropagationTreeAnnotator} does not change the type of them.
          */
-        private Void annotateBoolean(AnnotatedTypeMirror type) {
+        private void annotateBoolean(AnnotatedTypeMirror type) {
             switch (type.getKind()) {
                 case BOOLEAN:
                     type.addAnnotation(UNKNOWN_SIGNEDNESS);
@@ -130,18 +129,28 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 default:
                     // Nothing for other cases.
             }
-
-            return null;
         }
 
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
-            return annotateBoolean(type);
+            switch (tree.getKind()) {
+                case LEFT_SHIFT:
+                case RIGHT_SHIFT:
+                case UNSIGNED_RIGHT_SHIFT:
+                    AnnotatedTypeMirror lht = getAnnotatedType(tree.getLeftOperand());
+                    type.replaceAnnotations(lht.getAnnotations());
+                    break;
+                default:
+                    // Do nothing
+            }
+            annotateBoolean(type);
+            return null;
         }
 
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
-            return annotateBoolean(type);
+            annotateBoolean(type);
+            return null;
         }
     }
 }
