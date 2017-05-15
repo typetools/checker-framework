@@ -78,6 +78,15 @@ public final class SignednessUtil {
     }
 
     /**
+     * Gets an unsigned byte from the ByteBuffer b at i. Wraps {@link java.nio.ByteBuffer#get(int)
+     * get(int)}, but assumes that the result should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static @Unsigned byte getUnsigned(ByteBuffer b, int i) {
+        return b.get(i);
+    }
+
+    /**
      * Places an unsigned byte into the ByteBuffer b. Wraps {@link java.nio.ByteBuffer#put(byte)
      * put(byte)}, but assumes that the input should be interpreted as unsigned.
      */
@@ -549,6 +558,21 @@ public final class SignednessUtil {
     /** Returns an unsigned short representing the same value as an unsigned byte. */
     public static @Unsigned short toUnsignedShort(@Unsigned byte b) {
         return (short) (((int) b) & 0xff);
+    }
+
+    /** Returns an unsigned long representing the same value as an unsigned char. */
+    public static @Unsigned long toUnsignedLong(@Unsigned char c) {
+        return ((long) c) & 0xffL;
+    }
+
+    /** Returns an unsigned int representing the same value as an unsigned char. */
+    public static @Unsigned int toUnsignedInt(@Unsigned char c) {
+        return ((int) c) & 0xff;
+    }
+
+    /** Returns an unsigned short representing the same value as an unsigned char. */
+    public static @Unsigned short toUnsignedShort(@Unsigned char c) {
+        return (short) (((int) c) & 0xff);
     }
 
     /** Returns a float representing the same value as the unsigned byte. */
