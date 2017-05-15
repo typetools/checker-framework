@@ -222,7 +222,6 @@ class SupertypeFinder {
          *
          * @param element type parameter to which {@code wildcard} is an argument
          * @param wildcard wildcard type whose upper bound may be modified.
-         * @return
          */
         private void fixWildcardBound(
                 TypeParameterElement element, AnnotatedWildcardType wildcard) {
