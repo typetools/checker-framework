@@ -32,8 +32,8 @@ public final class SignednessUtil {
     }
 
     /**
-     * Wraps an unsigned byte array into a ByteBuffer. Wraps {@link java.nio.ByteBuffer#wrap()
-     * wrap()}, but assumes that the input should be interpreted as unsigned.
+     * Wraps an unsigned byte array into a ByteBuffer. Wraps {@link java.nio.ByteBuffer#wrap(byte[])
+     * wrap(byte[])}, but assumes that the input should be interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static ByteBuffer wrapUnsigned(@Unsigned byte[] array) {
@@ -41,8 +41,9 @@ public final class SignednessUtil {
     }
 
     /**
-     * Wraps an unsigned byte array into a ByteBuffer. Wraps {@link java.nio.ByteBuffer#wrap()
-     * wrap()}, but assumes that the input should be interpreted as unsigned.
+     * Wraps an unsigned byte array into a ByteBuffer. Wraps {@link java.nio.ByteBuffer#wrap(byte[],
+     * int, int) wrap(byte[], int, int)}, but assumes that the input should be interpreted as
+     * unsigned.
      */
     @SuppressWarnings("signedness")
     public static ByteBuffer wrapUnsigned(@Unsigned byte[] array, int offset, int length) {
@@ -77,8 +78,8 @@ public final class SignednessUtil {
     }
 
     /**
-     * Places an unsigned byte into the ByteBuffer b. Wraps {@link java.nio.ByteBuffer#put() put()},
-     * but assumes that the input should be interpreted as unsigned.
+     * Places an unsigned byte into the ByteBuffer b. Wraps {@link java.nio.ByteBuffer#put(byte)
+     * put(byte)}, but assumes that the input should be interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static ByteBuffer putUnsigned(ByteBuffer b, @Unsigned byte ubyte) {
@@ -86,8 +87,8 @@ public final class SignednessUtil {
     }
 
     /**
-     * Places an unsigned byte into the ByteBuffer b at i. Wraps {@link java.nio.ByteBuffer#put()
-     * put()}, but assumes that the input should be interpreted as unsigned.
+     * Places an unsigned byte into the ByteBuffer b at i. Wraps {@link java.nio.ByteBuffer#put(int,
+     * byte) put(int, byte)}, but assumes that the input should be interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static ByteBuffer putUnsigned(ByteBuffer b, int i, @Unsigned byte ubyte) {
@@ -95,8 +96,8 @@ public final class SignednessUtil {
     }
 
     /**
-     * Places an unsigned int into the IntBuffer b. Wraps {@link java.nio.IntBuffer#put() put()},
-     * but assumes that the input should be interpreted as unsigned.
+     * Places an unsigned int into the IntBuffer b. Wraps {@link java.nio.IntBuffer#put(int)
+     * put(int)}, but assumes that the input should be interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static IntBuffer putUnsigned(IntBuffer b, @Unsigned int uint) {
@@ -104,8 +105,8 @@ public final class SignednessUtil {
     }
 
     /**
-     * Places an unsigned int into the IntBuffer b at i. Wraps {@link java.nio.IntBuffer#put()
-     * put()}, but assumes that the input should be interpreted as unsigned.
+     * Places an unsigned int into the IntBuffer b at i. Wraps {@link java.nio.IntBuffer#put(int,
+     * int) put(int, int)}, but assumes that the input should be interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static IntBuffer putUnsigned(IntBuffer b, int i, @Unsigned int uint) {
@@ -113,8 +114,8 @@ public final class SignednessUtil {
     }
 
     /**
-     * Places an unsigned int array into the IntBuffer b. Wraps {@link java.nio.IntBuffer#put()
-     * put()}, but assumes that the input should be interpreted as unsigned.
+     * Places an unsigned int array into the IntBuffer b. Wraps {@link java.nio.IntBuffer#put(int[])
+     * put(int[])}, but assumes that the input should be interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static IntBuffer putUnsigned(IntBuffer b, @Unsigned int[] uints) {
@@ -123,8 +124,8 @@ public final class SignednessUtil {
 
     /**
      * Places an unsigned int array into the IntBuffer b at i with length l. Wraps {@link
-     * java.nio.IntBuffer#put() put()}, but assumes that the input should be interpreted as
-     * unsigned.
+     * java.nio.IntBuffer#put(int[], int, int) put(int[], int, int)}, but assumes that the input
+     * should be interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static IntBuffer putUnsigned(IntBuffer b, @Unsigned int[] uints, int i, int l) {
@@ -132,8 +133,8 @@ public final class SignednessUtil {
     }
 
     /**
-     * Gets an unsigned int from the IntBuffer b at i. Wraps {@link java.nio.IntBuffer#get() get()},
-     * but assumes that the output should be interpreted as unsigned.
+     * Gets an unsigned int from the IntBuffer b at i. Wraps {@link java.nio.IntBuffer#get(int)
+     * get(int)}, but assumes that the output should be interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static @Unsigned int getUnsigned(IntBuffer b, int i) {
@@ -141,8 +142,9 @@ public final class SignednessUtil {
     }
 
     /**
-     * Places an unsigned short into the ByteBuffer b. Wraps {@link java.nio.ByteBuffer#putShort()
-     * putShort()}, but assumes that the input should be interpreted as unsigned.
+     * Places an unsigned short into the ByteBuffer b. Wraps {@link
+     * java.nio.ByteBuffer#putShort(short) putShort(short)}, but assumes that the input should be
+     * interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static ByteBuffer putUnsignedShort(ByteBuffer b, @Unsigned short ushort) {
@@ -151,8 +153,8 @@ public final class SignednessUtil {
 
     /**
      * Places an unsigned short into the ByteBuffer b at i. Wraps {@link
-     * java.nio.ByteBuffer#putShort() putShort()}, but assumes that the input should be interpreted
-     * as unsigned.
+     * java.nio.ByteBuffer#putShort(int, short) putShort(int, short)}, but assumes that the input
+     * should be interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static ByteBuffer putUnsignedShort(ByteBuffer b, int i, @Unsigned short ushort) {
@@ -160,8 +162,8 @@ public final class SignednessUtil {
     }
 
     /**
-     * Places an unsigned int into the ByteBuffer b. Wraps {@link java.nio.ByteBuffer#putInt()
-     * putInt()}, but assumes that the input should be interpreted as unsigned.
+     * Places an unsigned int into the ByteBuffer b. Wraps {@link java.nio.ByteBuffer#putInt(int)
+     * putInt(int)}, but assumes that the input should be interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static ByteBuffer putUnsignedInt(ByteBuffer b, @Unsigned int uint) {
@@ -169,8 +171,9 @@ public final class SignednessUtil {
     }
 
     /**
-     * Places an unsigned int into the ByteBuffer b at i. Wraps {@link java.nio.ByteBuffer#putInt()
-     * putInt()}, but assumes that the input should be interpreted as unsigned.
+     * Places an unsigned int into the ByteBuffer b at i. Wraps {@link
+     * java.nio.ByteBuffer#putInt(int, int) putInt(int, int)}, but assumes that the input should be
+     * interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static ByteBuffer putUnsignedInt(ByteBuffer b, int i, @Unsigned int uint) {
@@ -179,8 +182,8 @@ public final class SignednessUtil {
 
     /**
      * Places an unsigned long into the ByteBuffer b at i. Wraps {@link
-     * java.nio.ByteBuffer#putLong() putLong()}, but assumes that the input should be interpreted as
-     * unsigned.
+     * java.nio.ByteBuffer#putLong(int, long) putLong(int, long)}, but assumes that the input should
+     * be interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static ByteBuffer putUnsignedLong(ByteBuffer b, int i, @Unsigned long ulong) {
@@ -188,8 +191,9 @@ public final class SignednessUtil {
     }
 
     /**
-     * Sets rgb of BufferedImage b given unsigned ints. Wraps {@link java.awt.BufferedImage#setRGB()
-     * setRGB}, but assumes that the input should be interpreted as unsigned.
+     * Sets rgb of BufferedImage b given unsigned ints. Wraps {@link
+     * java.awt.image.BufferedImage#setRGB(int, int, int, int, int[], int, int) setRGB(int, int,
+     * int, int, int[], int, int)}, but assumes that the input should be interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static void setUnsignedRGB(
@@ -205,8 +209,9 @@ public final class SignednessUtil {
     }
 
     /**
-     * Gets rgb of BufferedImage b as unsigned ints. Wraps {@link java.awt.BufferedImage#getRGB()
-     * getRGB}, but assumes that the output should be interpreted as unsigned.
+     * Gets rgb of BufferedImage b as unsigned ints. Wraps {@link
+     * java.awt.image.BufferedImage#getRGB(int, int, int, int, int[], int, int) getRGB(int, int,
+     * int, int, int[], int, int)}, but assumes that the output should be interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static @Unsigned int[] getUnsignedRGB(
@@ -273,8 +278,8 @@ public final class SignednessUtil {
 
     /**
      * Reads up to {@code len} bytes of data from this file into an unsigned array of bytes. Wraps
-     * {@link java.io.RandomAccessFile#read() read()}, but assumes the output should be interpreted
-     * as unsigned.
+     * {@link java.io.RandomAccessFile#read(byte[], int, int) read(byte[], int, int)}, but assumes
+     * the output should be interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static int readUnsigned(RandomAccessFile f, @Unsigned byte b[], int off, int len)
@@ -284,8 +289,8 @@ public final class SignednessUtil {
 
     /**
      * Reads a file fully into an unsigned byte array. Wraps {@link
-     * java.io.RandomAccessFile#readFully() readFully()}, but assumes the output should be
-     * interpreted as unsigned.
+     * java.io.RandomAccessFile#readFully(byte[]) readFully(byte[])}, but assumes the output should
+     * be interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static void readFullyUnsigned(RandomAccessFile f, @Unsigned byte b[])
@@ -295,8 +300,8 @@ public final class SignednessUtil {
 
     /**
      * Writes len unsigned bytes to the RandomAccessFile f at offset off. Wraps {@link
-     * java.io.RandomAccessFile#write() write()}, but assumes the input should be interpreted as
-     * unsigned.
+     * java.io.RandomAccessFile#write(byte[], int, int) write(byte[], int, int)}, but assumes the
+     * input should be interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static void writeUnsigned(RandomAccessFile f, @Unsigned byte[] bs, int off, int len)
@@ -306,39 +311,39 @@ public final class SignednessUtil {
 
     /**
      * Writes an unsigned byte to the RandomAccessFile f. Wraps {@link
-     * java.io.RandomAccessFile#writeByte() writeByte()}, but assumes the input should be
+     * java.io.RandomAccessFile#writeByte(int) writeByte(int)}, but assumes the input should be
      * interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static void writeUnsignedByte(RandomAccessFile f, @Unsigned byte b) throws IOException {
-        f.writeByte(b);
+        f.writeByte(toUnsignedInt(b));
     }
 
     /**
      * Writes an unsigned char to the RandomAccessFile f. Wraps {@link
-     * java.io.RandomAccessFile#writeChar() writeChar()}, but assumes the input should be
+     * java.io.RandomAccessFile#writeChar(int) writeChar(int)}, but assumes the input should be
      * interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static void writeUnsignedChar(RandomAccessFile f, @Unsigned char c) throws IOException {
-        f.writeChar(c);
+        f.writeChar(toUnsignedInt(c));
     }
 
     /**
      * Writes an unsigned short to the RandomAccessFile f. Wraps {@link
-     * java.io.RandomAccessFile#writeShort() writeShort()}, but assumes the input should be
+     * java.io.RandomAccessFile#writeShort(int) writeShort(int)}, but assumes the input should be
      * interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static void writeUnsignedShort(RandomAccessFile f, @Unsigned short s)
             throws IOException {
-        f.writeShort(s);
+        f.writeShort(toUnsignedInt(s));
     }
 
     /**
      * Writes an unsigned byte to the RandomAccessFile f. Wraps {@link
-     * java.io.RandomAccessFile#writeInt() writeInt()}, but assumes the input should be interpreted
-     * as unsigned.
+     * java.io.RandomAccessFile#writeInt(int) writeInt(int)}, but assumes the input should be
+     * interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
     public static void writeUnsignedInt(RandomAccessFile f, @Unsigned int i) throws IOException {
@@ -347,7 +352,7 @@ public final class SignednessUtil {
 
     /**
      * Writes an unsigned byte to the RandomAccessFile f. Wraps {@link
-     * java.io.RandomAccessFile#writeLong() writeLong()}, but assumes the input should be
+     * java.io.RandomAccessFile#writeLong(long) writeLong(long)}, but assumes the input should be
      * interpreted as unsigned.
      */
     @SuppressWarnings("signedness")
