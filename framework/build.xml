@@ -161,7 +161,7 @@
               failonerror="true"
               classpath="${javac.lib}:${stubparser.lib}:${javacutil.lib}:${dataflow.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
@@ -275,7 +275,7 @@
               failonerror="true"
               classpath="${javac.lib}:${junit.lib}:${hamcrest.lib}:${build}:${javacutil.lib}:${dataflow.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
@@ -304,7 +304,7 @@
                printsummary="false"
                haltonerror="${halt.on.test.failure}"
                haltonfailure="${halt.on.test.failure}">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg value="-ea"/>
             <jvmarg value="-Dorg.checkerframework.common.reflection.debug=false"/>
 
@@ -351,7 +351,7 @@
              haltonerror="${halt.on.test.failure}"
              haltonfailure="${halt.on.test.failure}"
              showoutput="true">
-          <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+          <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
           <jvmarg value="-ea"/>
 
           <classpath>
@@ -751,7 +751,7 @@
               failonerror="true"
               classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
