@@ -374,9 +374,14 @@ public class AnnotationUtils {
                     if (AnnotationUtils.areSame(a1, a2)) {
                         return 0;
                     }
+
                     String n1 = a1.toString();
                     String n2 = a2.toString();
 
+                    // Because the AnnotationMirror.toString prints the annotation as it appears
+                    // in source code, the order in which annotations of the same class are
+                    // sorted may be confusing.  For example, it might order
+                    // @IntRange(from=1, to=MAX) before @IntRange(to=MAX,from=0).
                     return n1.compareTo(n2);
                 }
             };
