@@ -5,7 +5,12 @@ class OneOrTwo {
         return 1;
     }
 
-    void test() {
-        int[] a = new int[getOneOrTwo()];
+    void test(@BottomVal int x) {
+        int[] a = new int[Integer.valueOf(getOneOrTwo())];
+        int[] b = new int[Integer.valueOf(x)];
+    }
+
+    @PolyValue int poly(@PolyValue int y) {
+        return y;
     }
 }

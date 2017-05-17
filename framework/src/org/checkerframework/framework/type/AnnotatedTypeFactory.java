@@ -2963,7 +2963,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         Set<AnnotationMirror> results = AnnotationUtils.createAnnotationSet();
         // Retrieving the annotations from the element.
-        results.addAll(elements.getAllAnnotationMirrors(elt));
+        List<? extends AnnotationMirror> fromEle = elements.getAllAnnotationMirrors(elt);
+        for (AnnotationMirror annotation : fromEle) {
+            try {
+                results.add(annotation);
+            } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
+                // If a CompletionFailure occurs, issue a warning.
+                checker.message(
+                        Kind.WARNING,
+                        annotation.getAnnotationType().asElement(),
+                        "annotation.not.completed",
+                        ElementUtils.getVerboseName(elt),
+                        annotation);
+            }
+        }
+
         // If declAnnosFromStubFiles == null, return the annotations in the element.
         if (declAnnosFromStubFiles != null) {
             // Adding @FromByteCode annotation to declAnnosFromStubFiles entry with key
