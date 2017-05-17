@@ -261,6 +261,7 @@
     <!-- Testing -->
 
     <target name="build-tests" depends="prep" description="Compile tests">
+        <!-- quoting is OK: the CF repo doesn't use spaces in file names -->
         <pathconvert pathsep=" " property="framework.src.tests">
             <path>
                 <fileset dir="${tests}">
@@ -290,7 +291,7 @@
             <arg value="${tests}"/>
             <arg value="-d"/>
             <arg value="${tests.build}"/>
-            <arg line="${framework.src.tests}"/>
+            <arg line="${framework.src.tests}"/> <!-- quoting OK -->
         </java>
     </target>
 

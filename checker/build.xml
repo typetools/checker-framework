@@ -664,7 +664,7 @@
             <!-- plain output for debugging -->
 
             <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
-            <jvmarg line="${debugger.str}"/>
+            <jvmarg line="${debugger.str}"/> <!-- may be empty string -->
 
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
             <sysproperty key="emit.test.debug" value="${should.emit.debug.str}"/>
@@ -729,7 +729,7 @@
                haltonfailure="${halt.on.test.failure}">
             <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg value="-ea"/>
-            <jvmarg line="${debugger.str}"/>
+            <jvmarg line="${debugger.str}"/>  <!-- may be empty string -->
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
             <sysproperty key="emit.test.debug" value="${should.emit.debug.str}"/>
 
@@ -1299,7 +1299,7 @@ So, use our own archived version.
               classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
-            <jvmarg line="${maybeDebug}"/>
+            <jvmarg line="${maybeDebug}"/>  <!-- may be empty string -->
             <arg value="-g"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
