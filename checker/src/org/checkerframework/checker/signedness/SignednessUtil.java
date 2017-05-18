@@ -87,6 +87,16 @@ public final class SignednessUtil {
     }
 
     /**
+     * Populates an unsigned byte array from the ByteBuffer b at i with l bytes. Wraps {@link
+     * java.nio.ByteBuffer#get(byte[] bs, int, int) get(byte[], int, int)}, but assumes that the
+     * bytes should be interpreted as unsigned.
+     */
+    @SuppressWarnings("signedness")
+    public static ByteBuffer getUnsigned(ByteBuffer b, byte[] bs, int i, int l) {
+        return b.get(bs, i, l);
+    }
+
+    /**
      * Places an unsigned byte into the ByteBuffer b. Wraps {@link java.nio.ByteBuffer#put(byte)
      * put(byte)}, but assumes that the input should be interpreted as unsigned.
      */
