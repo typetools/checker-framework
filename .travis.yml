@@ -19,12 +19,11 @@ matrix:
 env:
 ## Jobs used when downloading JDK during testing.
 ## all-tests = junit + nonjunit + demos.  Separately, test building the JDK.
-# Temporarily comment out jdk7 jobs to make this run faster during testing
-#  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=all-tests
-#  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=jdk.jar
+  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=all-tests
+  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=jdk.jar
   - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=all-tests
   - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=jdk.jar
-#  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=downstream
+  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=downstream
   - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=downstream
   - BUILDJDK=downloadjdk JDKVER=jdkany GROUP=misc
 ## Jobs used when building JDK during testing.
