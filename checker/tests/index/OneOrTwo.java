@@ -6,8 +6,8 @@ class OneOrTwo {
     }
 
     void test(@BottomVal int x) {
-        //:: error: (array.length.negative)
         int[] a = new int[Integer.valueOf(getOneOrTwo())];
+        //:: error: (array.length.negative)
         int[] b = new int[Integer.valueOf(x)];
     }
 
