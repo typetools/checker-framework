@@ -110,7 +110,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
 
         final List<AnnotatedTypeMirror> argTypes = getArgumentTypes(expressionTree, typeFactory);
-        final AnnotatedTypeMirror assignedTo = getAssignedTo(expressionTree, typeFactory);
+        final AnnotatedTypeMirror assignedTo =
+                TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expressionTree));
 
         final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
         final Map<TypeVariable, AnnotatedTypeMirror> inferredArgs =
@@ -213,19 +214,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         List<AnnotatedTypeMirror> argtypes =
                 TypeArgInferenceUtil.treesToTypes(argTrees, typeFactory);
         return boxPrimitives(typeFactory, argtypes);
-    }
-
-    protected AnnotatedTypeMirror getAssignedTo(
-            ExpressionTree expression, AnnotatedTypeFactory typeFactory) {
-        AnnotatedTypeMirror assignedTo =
-                TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expression));
-        if (assignedTo == null) {
-            return null;
-        } else if (TypesUtils.isPrimitive(assignedTo.getUnderlyingType())) {
-            return typeFactory.getBoxedType((AnnotatedPrimitiveType) assignedTo);
-        } else {
-            return assignedTo;
-        }
     }
 
     /**
