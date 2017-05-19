@@ -227,7 +227,7 @@ public class NullnessTransfer
 
         // Refine result to @NonNull if n is an invocation of Map.get and the argument is a key for
         // the map.
-        if (keyForTypeFactory.isInvocationOfMapMethod(n, "get")) {
+        if (keyForTypeFactory != null && keyForTypeFactory.isInvocationOfMapMethod(n, "get")) {
             Node receiver = n.getTarget().getReceiver();
             String mapName =
                     FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiver).toString();

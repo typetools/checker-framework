@@ -95,6 +95,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     private final SubtypesSolver subtypesSolver = new SubtypesSolver();
     private final ConstraintMapBuilder constraintMapBuilder = new ConstraintMapBuilder();
 
+    private final boolean showInferenceSteps;
+
+    public DefaultTypeArgumentInference(AnnotatedTypeFactory typeFactory) {
+        this.showInferenceSteps =
+                typeFactory.getContext().getChecker().hasOption("showInferenceSteps");
+    }
+
     @Override
     public Map<TypeVariable, AnnotatedTypeMirror> inferTypeArgs(
             AnnotatedTypeFactory typeFactory,
@@ -110,16 +117,35 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
 
         final List<AnnotatedTypeMirror> argTypes = getArgumentTypes(expressionTree, typeFactory);
-        final AnnotatedTypeMirror assignedTo = getAssignedTo(expressionTree, typeFactory);
+        final AnnotatedTypeMirror assignedTo =
+                TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expressionTree));
+
+        if (showInferenceSteps) {
+            System.err.println("DTAI: expression: " + expressionTree.toString().replace("\n", " "));
+            System.err.println("  argTypes: " + argTypes);
+            System.err.println("  assignedTo: " + assignedTo);
+        }
 
         final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
         final Map<TypeVariable, AnnotatedTypeMirror> inferredArgs =
                 infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets, true);
 
+        if (showInferenceSteps) {
+            System.err.println("  after infer: " + inferredArgs);
+        }
+
         handleNullTypeArguments(
                 typeFactory, methodElem, methodType, argTypes, assignedTo, targets, inferredArgs);
 
+        if (showInferenceSteps) {
+            System.err.println("  after handleNull: " + inferredArgs);
+        }
+
         handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
+
+        if (showInferenceSteps) {
+            System.err.println("  results: " + inferredArgs);
+        }
 
         return inferredArgs;
     }
@@ -213,19 +239,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         List<AnnotatedTypeMirror> argtypes =
                 TypeArgInferenceUtil.treesToTypes(argTrees, typeFactory);
         return boxPrimitives(typeFactory, argtypes);
-    }
-
-    protected AnnotatedTypeMirror getAssignedTo(
-            ExpressionTree expression, AnnotatedTypeFactory typeFactory) {
-        AnnotatedTypeMirror assignedTo =
-                TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expression));
-        if (assignedTo == null) {
-            return null;
-        } else if (TypesUtils.isPrimitive(assignedTo.getUnderlyingType())) {
-            return typeFactory.getBoxedType((AnnotatedPrimitiveType) assignedTo);
-        } else {
-            return assignedTo;
-        }
     }
 
     /**
