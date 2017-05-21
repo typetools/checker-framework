@@ -1,6 +1,6 @@
 // Test case for Issue 409:
 // https://github.com/typetools/checker-framework/issues/409
-//@skip-test
+// @skip-test
 
 public class Issue409 {
     static interface Proc {
