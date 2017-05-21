@@ -1,7 +1,6 @@
 @SuppressWarnings("")
 class SuperThis {
-    class Super {
-    }
+    class Super {}
 
     // Test super() and this()
     class Inner extends Super {

@@ -4,28 +4,28 @@
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.Raw;
 
-class Foo {
-  static class Bar {
-    Bar() {
-      doFoo();
+class Issue408 {
+    static class Bar {
+        Bar() {
+            doIssue408();
+        }
+
+        String doIssue408(@UnderInitialization @Raw(Issue408.Bar.class) Bar this) {
+            return "";
+        }
     }
 
-    String doFoo(@UnderInitialization @Raw(Foo.Bar.class)  Bar this) {
-      return "";
+    static class Baz extends Bar {
+        String myString = "hello";
+
+        @Override
+        String doIssue408(@UnderInitialization @Raw Baz this) {
+            //:: error: (dereference.of.nullable)
+            return myString.toLowerCase();
+        }
     }
-  }
 
-  static class Baz extends Bar {
-    String myString = "hello";
-
-    @Override
-    String doFoo(@UnderInitialization @Raw Baz this) {
-      //:: error: (dereference.of.nullable)
-      return myString.toLowerCase();
+    public static void main(String[] args) {
+        new Baz();
     }
-  }
-
-  public static void main(String[] args) {
-    new Baz();
-  }
 }

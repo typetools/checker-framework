@@ -5,6 +5,6 @@ public class WildcardIn {
     }
 }
 
-interface GenericObject <T> {
+interface GenericObject<T> {
     public abstract T get();
 }

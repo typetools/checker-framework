@@ -1,0 +1,280 @@
+\htmlhr
+
+% Arguments are: class name, formal parameter list
+\def\reflectionAnno#1#2{\refqualclass{common/reflection/qual}{#1}\code{#2}}
+
+
+\chapter{Reflection resolution\label{reflection-resolution}}
+
+A call to
+\sunjavadoc{java/lang/reflect/Method.html\#invoke-java.lang.Object-java.lang.Object...-}{Method.invoke}
+might reflectively invoke any method.  That method might place requirements
+on its formal parameters, and it might return any value.  To reflect these
+facts, the annotated JDK contains
+conservative annotations for \<Method.invoke>.
+These conservative library annotations often cause a checker to issue false
+positive warnings when type-checking code that uses reflection.
+
+If you supply the \<-AresolveReflection> command-line option, the Checker
+Framework attempts to resolve reflection.  At each call to \<Method.invoke>
+or \<Constructor.newInstance>, the Checker Framework first soundly estimates
+which methods might be invoked at runtime.  When type-checking the call, the
+Checker Framework uses a library annotation that indicates the parameter
+and return types of the possibly-invoked methods.
+
+If the estimate of invoked methods is small, these types are precise and
+the checker issues fewer false positive warnings.
+If the estimate of invoked methods is large, these types are no better than the
+conservative library annotations.
+
+Reflection resolution is disabled by default, because it increases the time
+to type-check a program.
+% TODO: By how much, and how and when was that computed?
+You should enable reflection resolution with the \<-AresolveReflection>
+command-line option if, for some call site of \<Method.invoke> or
+\<Constructor.newInstance> in your program:
+\begin{enumerate}
+\item
+  the conservative library annotations on \<Method.invoke> or
+  \<Constructor.newInstance> cause false positive warnings,
+\item
+  the set of possibly-invoked methods or constructors can be known at
+  compile time,
+  and
+\item
+  the reflectively invoked methods/constructors are on the class path at
+  compile time.
+\end{enumerate}
+
+Reflection resolution does not change your source code or generated code.
+In particular, it does not replace the \<Method.invoke> or
+\<Constructor.newInstance> calls.
+
+The command-line option \<-AresolveReflection=debug> outputs verbose information about the reflection resolution process.
+
+
+Section~\ref{methodval-and-classval-checkers} first describes the MethodVal
+and ClassVal Checkers, which reflection resolution uses internally.  Then,
+Section~\ref{reflection-examples} gives examples of reflection resolution.
+
+
+\section{MethodVal and ClassVal Checkers\label{methodval-and-classval-checkers}}
+
+The implementation of reflection resolution internally uses the ClassVal
+Checker (Section~\ref{classval-checker}) and the MethodVal Checker
+(Section~\ref{methodval-checker}).  They are very similar to the Constant
+Value Checker (Section~\ref{constant-value-checker}) in that their
+annotations estimate the run-time value of an expression.
+
+In some cases, you may need to write annotations such as \<@ClassVal>,
+\<@MethodVal>, \refqualclass{common/value/qual}{StringVal}, and \refqualclass{common/value/qual}{ArrayLen} to aid in reflection resolution.
+Often, though, these annotations can be inferred
+(Section~\ref{methodval-and-classval-inference}).
+
+
+\subsection{ClassVal Checker\label{classval-checker}}
+
+The ClassVal Checker defines the following annotations:
+
+\begin{description}
+\item[\reflectionAnno{ClassVal}{(String[] value)}]
+If an expression has \<@ClassVal> type with a single argument,
+then its exact run-time value is known at compile time.
+For example, \<@ClassVal("java.util.HashMap")>
+indicates that the \<Class> object represents the \<java.util.HashMap> class.
+
+If multiple arguments are given, then the expression's run-time value is
+known to be in that set.
+
+The arguments are binary names
+(\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1}{JLS \S 13.1}).
+
+\item[\reflectionAnno{ClassBound}{(String[] value)}]
+If an expression has \<@ClassBound> type, then its run-time value is known
+to be upper-bounded by that type.
+For example,
+\<@ClassBound("java.util.HashMap")> indicates that the \<Class> object
+represents \<java.util.HashMap> or a subclass of it.
+
+If multiple arguments are given, then the run-time value is equal to or a
+subclass of some class in that set.
+
+The arguments are binary names
+(\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1}{JLS \S 13.1}).
+
+\item[\reflectionAnno{UnknownClass}{}] Indicates that there is no
+  compile-time information about the run-time value of the class --- or
+  that the Java type is not \<Class>.
+  This is the default qualifier, and it may not be written in source code.
+
+\item[\reflectionAnno{ClassValBottom}{}] Type given to the \<null> literal.
+  It may not be written in source code.
+\end{description}
+\begin{figure}
+\includeimage{classval}{6cm}
+\caption{Partial type hierarchy for the ClassVal type system. The type qualifiers in gray (\<@UnknownClass>
+and \<@ClassValBottom>) should never be written in source code; they are used internally by the type system.}
+\label{fig-classval-hierarchy}
+\end{figure}
+
+\subsubsection{Subtyping rules\label{classval-subtyping-rules}}
+Figure~\ref{fig-classval-hierarchy} shows part of the type hierarchy of  the
+ClassVal type system.
+\<@ClassVal(A)> is a subtype of \<@ClassVal(B)> if A is a subset of B.
+\<@ClassBound(A)> is a subtype of \<@ClassBound(B)> if A is a subset of B.
+\<@ClassVal(A)> is a subtype of \<@ClassBound(B)> if A is a subset of B.
+
+
+\subsection{MethodVal Checker\label{methodval-checker}}
+
+The MethodVal Checker defines the following annotations:
+
+\begin{description}
+\item[\reflectionAnno{MethodVal}{(String[] className, String[] methodName, int[] params)}]
+Indicates that an expression of type \<Method> or \<Constructor> has a
+run-time value in a given set.  If the set has size $n$, then each of
+\<@MethodVal>'s arguments is an array of size $n$, and the $i$th method in the set is
+represented by \{ className[i], methodName[i], params[i] \}.
+For a constructor, the method name is ``\code{<init>}''.
+% to avoid an additional annotation for constructors.
+
+Consider the following example:
+
+\begin{Verbatim}
+@MethodVal(className={"java.util.HashMap", "java.util.HashMap"},
+           methodName={"containsKey", "containsValue"},
+           params={1, 1})
+\end{Verbatim}
+
+\noindent
+This \<@MethodVal> annotation indicates that the \<Method>
+is either \<HashMap.containsKey> with 1 formal parameter or
+\<HashMap.containsValue> with 1 formal parameter.
+
+The \<@MethodVal> type qualifier indicates the number of
+parameters that the method takes, but not their type.  This means that the
+Checker Framework's reflection resolution cannot distinguish among
+overloaded methods.
+
+\item[\reflectionAnno{UnknownMethod}{}] Indicates that there is no
+  compile-time information about the run-time value of the method --- or
+  that the Java type is not \<Method> or \<Constructor>.
+  This is the default qualifier, and it may not be written in source code.
+
+\item[\reflectionAnno{MethodValBottom}{}] Type given to the \<null> literal.
+  It may not be written in source code.
+\end{description}
+
+\begin{figure}
+\includeimage{methodval}{3.5cm}
+\caption{Partial type hierarchy for the MethodVal type system. The type qualifiers in gray (\<@UnknownMethod>
+and \<@MethodValBottom>) should never be written in source code; they are used internally by the type system.}
+\label{fig-methodval-hierarchy}
+\end{figure}
+
+\subsubsection{Subtyping rules\label{methodval-subtyping-rules}}
+Figure~\ref{fig-methodval-hierarchy} shows part of the type hierarchy of  the
+MethodVal type system.  \<@MethodVal(classname=CA, methodname=MA, params=PA)> is a subtype of
+\<@MethodVal(classname=CB, methodname=MB, params=PB)> if
+
+\[\forall \textrm{indexes} i \exists \textrm{an index} j:  CA[i] = CB[j], MA[i] = MA[j], and PA[i] = PB[j]\]
+
+\noindent
+where CA, MA, and PA are lists of equal size and CB, MB, and PB are lists of equal size.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{MethodVal and ClassVal inference\label{methodval-and-classval-inference}}
+
+The developer rarely has to write \<@ClassVal> or \<@MethodVal>
+annotations, because the Checker Framework infers them according to
+Figure~\ref{fig:reflection-inference}.  Most readers can skip this
+section, which explains the inference rules.
+
+\input{reflection-inference-rules}
+
+The ClassVal Checker infers the exact class name (\<@ClassVal>) for a
+\<Class> literal (\<C.class>), and for a static method call (e.g.,
+\<Class.forName(arg)>, \<ClassLoader.loadClass(arg)>, ...) if the argument is a
+statically computable expression.  In contrast, it infers an upper bound
+(\<@ClassBound>) for instance method calls (e.g., \<obj.getClass()>).
+
+The MethodVal Checker infers \<@MethodVal> annotations for \<Method> and
+\<Constructor> types that have been created using a method call to Java's Reflection
+API\@:
+\begin{itemize}
+    \item \code{Class.getMethod(String name, Class<?>...~paramTypes)}
+    \item \code{Class.getConstructor(Class<?>...~paramTypes)}
+\end{itemize}
+
+Note that an exact class name is necessary to precisely resolve
+reflectively-invoked constructors since a constructor in a subclass does not
+override a constructor in its superclass. This means that the MethodVal Checker
+does not infer a \<@MethodVal> annotation for \<Class.getConstructor> if the
+type of that class is \<@ClassBound>. In contrast, either an exact class name or a bound
+is adequate to resolve reflectively-invoked methods because of the subtyping
+rules for overridden methods.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Reflection resolution example\label{reflection-examples}}
+
+Consider the following example, in which the Nullness Checker employs
+reflection resolution to avoid issuing a false positive warning.
+
+\begin{Verbatim}
+public class LocationInfo {
+    @NonNull Location getCurrentLocation() {  ...  }
+}
+
+public class Example {
+    LocationInfo privateLocation = ... ;
+    String getCurrentCity() throws Exception {
+        Method getCurrentLocationObj = LocationInfo.class.getMethod("getCurrentLocation");
+        Location currentLocation = (Location) getCurrentLocationObj.invoke(privateLocation);
+        return currentLocation.nameOfCity();
+    }
+}
+\end{Verbatim}
+
+When reflection resolution is not enabled, the Nullness Checker uses conservative
+annotations on the \<Method.invoke> method signature:
+
+\quad \<{\bfseries @Nullable} Object invoke({\bfseries @NonNull} Object recv, {\bfseries @NonNull} Object ... args)>
+
+
+This causes the Nullness Checker to issue the following warning even though
+\<currentLocation> cannot be null.
+
+\begin{Verbatim}
+error: [dereference.of.nullable] dereference of possibly-null reference currentLocation
+        return currentLocation.nameOfCity();
+               ^
+1 error
+\end{Verbatim}
+
+\begin{sloppypar}
+When reflection resolution is enabled, the MethodVal Checker infers that the \<@MethodVal> annotation for \<getCurrentLocationObj>  is:
+\end{sloppypar}
+
+\quad \<@MethodVal(className="LocationInfo", methodName="getCurrentLocation", params=0)>
+
+Based on this \<@MethodVal> annotation, the reflection resolver determines that
+the reflective method call represents a call to \<getCurrentLocation> in class
+\<LocationInfo>.
+The reflection resolver uses this information to provide the
+following precise procedure summary to the Nullness Checker, for this
+call site only:
+
+\quad \<{\bfseries @NonNull} Object invoke({\bfseries @NonNull} Object recv, {\bfseries @Nullable} Object ... args)>
+
+Using this more precise signature, the Nullness Checker does not issue the false positive warning shown above.
+
+%%  LocalWords:  java AresolveReflection newInstance MethodVal ClassVal
+%%  LocalWords:  StringVal ArrayLen jls ClassBound UnknownClass params
+%%  LocalWords:  ClassValBottom className methodName init containsKey arg
+%%  LocalWords:  containsValue UnknownMethod MethodValBottom classname
+%%  LocalWords:  methodname forName ClassLoader loadClass getClass recv
+%%  LocalWords:  getMethod paramTypes getConstructor args currentLocation
+%%  LocalWords:  getCurrentLocationObj LocationInfo getCurrentLocation

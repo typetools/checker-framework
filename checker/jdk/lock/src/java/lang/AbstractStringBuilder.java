@@ -29,8 +29,6 @@ package java.lang;
 import java.util.Arrays;
 
 import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * A mutable sequence of characters.

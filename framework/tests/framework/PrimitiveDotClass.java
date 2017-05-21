@@ -1,4 +1,3 @@
-import org.checkerframework.framework.qual.*;
 
 class PrimitiveDotClass {
 
@@ -7,7 +6,5 @@ class PrimitiveDotClass {
         doStuff(int[].class);
     }
 
-    void doStuff(Class<?> cl) {
-
-    }
+    void doStuff(Class<?> cl) {}
 }

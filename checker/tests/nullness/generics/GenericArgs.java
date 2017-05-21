@@ -1,7 +1,9 @@
-import org.checkerframework.dataflow.qual.*;
-import org.checkerframework.checker.nullness.qual.*;
 import java.io.*;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
+import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.dataflow.qual.*;
 
 @org.checkerframework.framework.qual.DefaultQualifier(Nullable.class)
 public class GenericArgs {
@@ -27,9 +29,7 @@ public class GenericArgs {
         Object o = new X<Object>().value();
     }
 
-    static <@NonNull Z extends @NonNull Object> void test3(Z z) {
-
-    }
+    static <@NonNull Z extends @NonNull Object> void test3(Z z) {}
 
     void test4() {
         //:: error: (type.argument.type.incompatible)
@@ -39,20 +39,21 @@ public class GenericArgs {
     }
 
     static class GenericConstructor {
-        <@NonNull T extends @NonNull Object> GenericConstructor(T t) {
-
-        }
+        <@NonNull T extends @NonNull Object> GenericConstructor(T t) {}
     }
 
     void test5() {
         //:: error: (argument.type.incompatible)
-        new <@NonNull String> GenericConstructor(null);
+        new <@NonNull String>GenericConstructor(null);
     }
 
     void testRecursiveDeclarations() {
         class MyComparator<@NonNull T extends @NonNull Comparable<T>>
-        implements Comparator<T @NonNull []> {
-            @Pure public int compare(T[] a, T[] b) { return 0; }
+                implements Comparator<T @NonNull []> {
+            @Pure
+            public int compare(T[] a, T[] b) {
+                return 0;
+            }
         }
         Comparator<@NonNull String @NonNull []> temp = new MyComparator<@NonNull String>();
     }

@@ -1,25 +1,24 @@
 package tests;
 
 import java.io.File;
-
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/**
- * JUnit tests for the Nullness Checker -- testing -AskipUses command-line argument.
- */
-public class NullnessSkipUsesTest extends CheckerFrameworkTest {
+/** JUnit tests for the Nullness Checker -- testing {@code -AskipUses} command-line argument. */
+public class NullnessSkipUsesTest extends CheckerFrameworkPerDirectoryTest {
 
-    public NullnessSkipUsesTest(File testFile) {
-        super(testFile,
+    public NullnessSkipUsesTest(List<File> testFiles) {
+        super(
+                testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
-                "-Anomsgtext", "-AskipUses=SkipMe");
+                "-Anomsgtext",
+                "-AskipUses=SkipMe");
     }
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"nullness-skipuses"};
+        return new String[] {"nullness-skipuses"};
     }
-
 }

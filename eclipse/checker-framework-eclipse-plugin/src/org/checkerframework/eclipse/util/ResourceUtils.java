@@ -7,7 +7,6 @@ import static org.eclipse.core.resources.IResource.FOLDER;
 import java.io.File;
 import java.lang.RuntimeException;
 import java.util.*;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -32,8 +31,7 @@ public class ResourceUtils {
     }
 
     /**
-     * @param relativePath
-     *            workspace relative path
+     * @param relativePath workspace relative path
      * @return given path if path is not known in workspace
      */
     public static IPath relativeToAbsolute(IPath relativePath) {
@@ -43,8 +41,8 @@ public class ResourceUtils {
     }
 
     /**
-     * Returns a list of all files in a resource delta. This is of help when
-     * performing an incremental build.
+     * Returns a list of all files in a resource delta. This is of help when performing an
+     * incremental build.
      *
      * @return Collection A list of all files to be built.
      */
@@ -66,12 +64,10 @@ public class ResourceUtils {
                         && Util.isJavaArtifact(child)) {
                     result.add(child);
                 }
-            }
-            else if (childType == FOLDER) {
+            } else if (childType == FOLDER) {
                 if (deltaKind == IResourceDelta.ADDED) {
                     result.add(child);
-                }
-                else if (deltaKind == IResourceDelta.REMOVED) {
+                } else if (deltaKind == IResourceDelta.REMOVED) {
                     // TODO should just remove markers....
                     IContainer parent = child.getParent();
                     if (parent instanceof IProject) {
@@ -82,14 +78,13 @@ public class ResourceUtils {
                         return result;
                     }
                     result.add(parent);
-                }
-                else {
+                } else {
                     foldersDelta.add(childDelta);
                 }
             }
         }
 
-        for (IResourceDelta childDelta : foldersDelta)  {
+        for (IResourceDelta childDelta : foldersDelta) {
             result.addAll(collectIncremental(childDelta));
         }
         return result;
@@ -98,13 +93,10 @@ public class ResourceUtils {
     /**
      * Convenient method to get resources from adaptables
      *
-     * @param element
-     *            an IAdaptable object which may provide an adapter for
-     *            IResource
+     * @param element an IAdaptable object which may provide an adapter for IResource
      * @return resource object or null
      */
-    public static IResource getResource(Object element)
-    {
+    public static IResource getResource(Object element) {
         if (element instanceof IResource) {
             return (IResource) element;
         }
@@ -118,24 +110,21 @@ public class ResourceUtils {
     }
 
     /**
-     * Collects and combines the selection which may contain sources from
-     * different projects and / or multiple sources from same project.
-     * <p>
-     * If selection contains hierarchical data (like file and its parent
-     * directory), the only topmost element is returned (same for directories
-     * from projects).
-     * <p>
-     * The children from selected parents are not resolved, so that the return
-     * value contains the 'highest' possible hierarchical elements without
-     * children.
+     * Collects and combines the selection which may contain sources from different projects and /
+     * or multiple sources from same project.
+     *
+     * <p>If selection contains hierarchical data (like file and its parent directory), the only
+     * topmost element is returned (same for directories from projects).
+     *
+     * <p>The children from selected parents are not resolved, so that the return value contains the
+     * 'highest' possible hierarchical elements without children.
      *
      * @param structuredSelection
-     * @return a map with the project as a key and selected resources as value.
-     *         If project itself was selected, then key is the same as value.
+     * @return a map with the project as a key and selected resources as value. If project itself
+     *     was selected, then key is the same as value.
      */
     public static Map<IProject, List<IResource>> getResourcesPerProject(
-            IStructuredSelection structuredSelection)
-    {
+            IStructuredSelection structuredSelection) {
 
         Map<IProject, List<IResource>> projectsMap = new HashMap<IProject, List<IResource>>();
 
@@ -150,12 +139,11 @@ public class ResourceUtils {
         return projectsMap;
     }
 
-    /**
-     * Maps the resource into its project
-     */
-    private static void mapResource(IResource resource,
-            Map<IProject, List<IResource>> projectsMap, boolean checkJavaProject)
-    {
+    /** Maps the resource into its project */
+    private static void mapResource(
+            IResource resource,
+            Map<IProject, List<IResource>> projectsMap,
+            boolean checkJavaProject) {
 
         if (resource.getType() == FILE && !Util.isJavaArtifact(resource)) {
             // Ignore non java files
@@ -184,11 +172,9 @@ public class ResourceUtils {
     /**
      * @param resources
      * @param candidate
-     * @return true if the given list contains at least one parent of the given
-     *         candidate
+     * @return true if the given list contains at least one parent of the given candidate
      */
-    private static boolean containsParents(List<IResource> resources,
-            IResource candidate)  {
+    private static boolean containsParents(List<IResource> resources, IResource candidate) {
 
         IPath location = candidate.getLocation();
         for (IResource resource : resources) {
@@ -197,8 +183,7 @@ public class ResourceUtils {
             }
 
             IPath resourceLoc = resource.getLocation();
-            if (resourceLoc != null && resourceLoc.isPrefixOf(location))
-                return true;
+            if (resourceLoc != null && resourceLoc.isPrefixOf(location)) return true;
         }
         return false;
     }
@@ -207,8 +192,7 @@ public class ResourceUtils {
         return ResourcesPlugin.getWorkspace().getRoot();
     }
 
-    public static Set<String> sourceFilesOf(IJavaElement element)
-            throws CoreException {
+    public static Set<String> sourceFilesOf(IJavaElement element) throws CoreException {
         final Set<String> fileNames = new LinkedHashSet<String>();
 
         for (ICompilationUnit cu : Util.getAllCompilationUnits(element)) {
@@ -217,13 +201,12 @@ public class ResourceUtils {
         return fileNames;
     }
 
-    public static Set<String> sourceFilesOf(List<IJavaElement> elements)
-            throws CoreException {
+    public static Set<String> sourceFilesOf(List<IJavaElement> elements) throws CoreException {
         final Set<String> fileNames = new LinkedHashSet<String>();
         for (final IJavaElement element : elements) {
             final Set<String> files = sourceFilesOf(element);
-            for (String file : files ) {
-                if ( file.endsWith(".java") ) {
+            for (String file : files) {
+                if (file.endsWith(".java")) {
                     fileNames.add(file);
                 }
             }
@@ -235,7 +218,7 @@ public class ResourceUtils {
     /**
      * Get the specified project file as an Eclipse resource.
      *
-     * Returns null if the file isn't found.
+     * <p>Returns null if the file isn't found.
      */
     public static IResource getFile(IJavaProject jProject, File file) {
         IProject project = jProject.getProject();
@@ -245,9 +228,7 @@ public class ResourceUtils {
         return project.findMember(filePath.removeFirstSegments(segCount));
     }
 
-    /**
-     * Returns the path of the output directory of the project
-     */
+    /** Returns the path of the output directory of the project */
     public static String outputLocation(IClasspathEntry cp, IJavaProject project) {
 
         IPath out = cp.getOutputLocation();
@@ -257,11 +238,14 @@ public class ResourceUtils {
                 out = project.getOutputLocation();
 
                 //TODO: THERE HAS TO BE A BETTER WAY TO DO THIS BECAUSE THIS IS KLUDGERIFFIC
-                if ( out != null ) {
+                if (out != null) {
 
-                    String path = project.getProject().getLocation().toOSString() +
-                                  File.separator + ".." + File.separator +
-                                  project.getOutputLocation().toOSString();
+                    String path =
+                            project.getProject().getLocation().toOSString()
+                                    + File.separator
+                                    + ".."
+                                    + File.separator
+                                    + project.getOutputLocation().toOSString();
 
                     return new File(path).getCanonicalPath();
                 }
@@ -278,5 +262,4 @@ public class ResourceUtils {
         IFile outDir = ResourceUtils.workspaceRoot().getFile(cp.getPath());
         return outDir.getLocation().toOSString();
     }
-
 }

@@ -62,16 +62,19 @@ class TestIsRegex {
         String datePattern = null;
 
         if (input != null) {
-          datePattern = "regexkdafj";
-          if (!RegexUtil.isRegex(datePattern, 1)) {
-            throw new Error("error parsing regex " + datePattern + ": "
-                + RegexUtil.regexError(datePattern));
-          }
-          return Pattern.compile(datePattern);
+            datePattern = "regexkdafj";
+            if (!RegexUtil.isRegex(datePattern, 1)) {
+                throw new Error(
+                        "error parsing regex "
+                                + datePattern
+                                + ": "
+                                + RegexUtil.regexError(datePattern));
+            }
+            return Pattern.compile(datePattern);
         }
         @Regex(1) String dp = datePattern;
 
-        if (input!=null) { // just some test...
+        if (input != null) { // just some test...
             Pattern pattern = datePattern != null ? Pattern.compile(datePattern) : null;
             return pattern;
         } else {
@@ -84,23 +87,26 @@ class TestIsRegex {
         String datePattern = null;
 
         if (input != null) {
-          datePattern = "regexkdafj";
-          if (!RegexUtil.isRegex(datePattern, 1)) {
-            throw new Error("error parsing regex " + datePattern + ": "
-                + RegexUtil.regexError(datePattern));
-          }
-          return Pattern.compile(datePattern);
+            datePattern = "regexkdafj";
+            if (!RegexUtil.isRegex(datePattern, 1)) {
+                throw new Error(
+                        "error parsing regex "
+                                + datePattern
+                                + ": "
+                                + RegexUtil.regexError(datePattern));
+            }
+            return Pattern.compile(datePattern);
         }
         @Regex(1) String dp = datePattern;
 
-        if (input!=null) { // just some test...
+        if (input != null) { // just some test...
             Pattern pattern = datePattern != null ? Pattern.compile(datePattern) : null;
             return pattern;
         } else {
             Pattern pattern = datePattern != null ? Pattern.compile(dp) : null;
             return pattern;
         }
-      }
+    }
 
     void test10(String s) throws Exception {
         if (!RegexUtil.isRegex(s, 2)) {

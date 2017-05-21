@@ -3,6 +3,7 @@ public class Fields {
 
     // Not final field
     String s = null;
+
     void setString(String s) {
         this.s = s;
     }

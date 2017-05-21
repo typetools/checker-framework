@@ -1,12 +1,10 @@
 package org.checkerframework.checker.signature;
 
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompoundAssignmentTree;
-
 import org.checkerframework.checker.signature.qual.SignatureBottom;
 import org.checkerframework.checker.signature.qual.SignatureUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -18,10 +16,8 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-
 // TODO: Does not yet handle method signature annotations, such as
 // @MethodDescriptor.
-
 
 public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -35,16 +31,12 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithPolyAll(
-                SignatureUnknown.class, SignatureBottom.class);
+        return getBundledTypeQualifiersWithPolyAll(SignatureUnknown.class, SignatureBottom.class);
     }
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
-                new SignatureTreeAnnotator(this),
-                super.createTreeAnnotator()
-        );
+        return new ListTreeAnnotator(new SignatureTreeAnnotator(this), super.createTreeAnnotator());
     }
 
     private class SignatureTreeAnnotator extends TreeAnnotator {
@@ -72,7 +64,5 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             return null; // super.visitCompoundAssignment(node, type);
         }
-
     }
-
 }

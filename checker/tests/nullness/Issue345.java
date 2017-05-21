@@ -8,10 +8,10 @@ public class Issue345 {
         //:: error: (assignment.type.incompatible)
         f1 = f2;
         f2 = f1;
-        f2.toString();   // Null pointer exception here
+        f2.toString(); // Null pointer exception here
     }
 
-    public static void main(String [] args) {
+    public static void main(String[] args) {
         Issue345 a = new Issue345();
     }
 }

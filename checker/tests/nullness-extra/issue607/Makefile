@@ -5,4 +5,4 @@ all: clean
 	$(JAVAC) -processor org.checkerframework.checker.nullness.NullnessChecker Issue607.java
 
 clean:
-	-rm *.class
+	rm -f *.class

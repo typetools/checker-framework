@@ -1,6 +1,4 @@
 package java.util;
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.lock.qual.*;
 
 public class Date implements java.io.Serializable, Cloneable, Comparable<Date> {

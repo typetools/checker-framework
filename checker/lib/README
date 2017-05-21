@@ -13,7 +13,7 @@ If you annotate a new library, please inform the Checker Framework developers
  so that they can include it in the Checker Framework distribution.
 
 When adding a .jar file to this directory, update the below list and also
-the list in ../manual/annotating-libraries.tex .
+the list in ../../docs/manual/annotating-libraries.tex .
 In general, old files need not be removed; that way, we accommodate users
 regardless of which version of a library they wish to use.
 

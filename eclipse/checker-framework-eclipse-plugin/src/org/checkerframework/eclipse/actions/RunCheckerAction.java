@@ -1,27 +1,20 @@
 package org.checkerframework.eclipse.actions;
 
 import java.util.List;
-
+import org.checkerframework.eclipse.CheckerPlugin;
+import org.checkerframework.eclipse.prefs.CheckerPreferences;
+import org.checkerframework.eclipse.util.MutexSchedulingRule;
 import org.checkerframework.eclipse.util.PluginUtil;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jface.viewers.ISelection;
 
-import org.checkerframework.eclipse.CheckerPlugin;
-import org.checkerframework.eclipse.prefs.CheckerPreferences;
-import org.checkerframework.eclipse.util.MutexSchedulingRule;
-
-/**
- *
- * RunCheckerAction is an action handler that determines what
- *
- */
+/** RunCheckerAction is an action handler that determines what */
 //TODO: Rename to RunCheckerHandler
 //TODO: Remove all subclasses and just parameterize RunCheckerAction (perhaps take a list of checkers,
 //TODO: or if no checkers are specified use custom checkers)
-public abstract class RunCheckerAction extends CheckerHandler
-{
+public abstract class RunCheckerAction extends CheckerHandler {
     private final String checkerName;
     protected boolean usePrefs;
     protected boolean useCustom;
@@ -54,27 +47,24 @@ public abstract class RunCheckerAction extends CheckerHandler
     }
 
     /**
-     * If constructed with a no-arg constructor, then we get the list of classes
-     * to use from the preferences system
+     * If constructed with a no-arg constructor, then we get the list of classes to use from the
+     * preferences system
      */
     private List<String> getClassNameFromPrefs() {
         return CheckerManager.getSelectedClasses();
     }
 
-    /**
-     *
-     */
-    public Object execute(ExecutionEvent event)
-    {
+    /** */
+    public Object execute(ExecutionEvent event) {
         ISelection selection = getSelection(event);
         List<IJavaElement> elements = selectionToJavaElements(selection);
 
-        if (!elements.isEmpty())
-        {
+        if (!elements.isEmpty()) {
             Job checkerJob;
-            String customClasses = CheckerPlugin.getDefault()
-                    .getPreferenceStore()
-                    .getString(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASSES);
+            String customClasses =
+                    CheckerPlugin.getDefault()
+                            .getPreferenceStore()
+                            .getString(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASSES);
 
             // Depending on how this runner was created, we will either:
             // * just run one particular checker
@@ -85,11 +75,9 @@ public abstract class RunCheckerAction extends CheckerHandler
 
             if (!usePrefs && !useCustom && !useSingleCustom) {
                 actualNames = checkerName;
-            }
-            else if (!usePrefs && !useSingleCustom) {
+            } else if (!usePrefs && !useSingleCustom) {
                 actualNames = customClasses;
-            }
-            else if (useSingleCustom) {
+            } else if (useSingleCustom) {
                 actualNames = event.getParameter("checker-framework-eclipse-plugin.checker");
             } else {
                 List<String> names = getClassNameFromPrefs();

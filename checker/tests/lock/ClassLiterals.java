@@ -11,24 +11,19 @@ class ClassLiterals {
     // a class literal may not terminate a flow expression string
     @Holding("ClassLiterals")
     //:: error: (flowexpr.parse.error)
-    static void method2() {
-    }
+    static void method2() {}
 
     @Holding("ClassLiterals.method1()")
-    static void method3() {
-    }
+    static void method3() {}
 
     @Holding("testpackage.ClassLiterals.class")
-    static void method4() {
-    }
+    static void method4() {}
 
     // a class literal may not terminate a flow expression string
     @Holding("testpackage.ClassLiterals")
     //:: error: (flowexpr.parse.error)
-    static void method5() {
-    }
+    static void method5() {}
 
     @Holding("testpackage.ClassLiterals.method1()")
-    static void method6() {
-    }
+    static void method6() {}
 }

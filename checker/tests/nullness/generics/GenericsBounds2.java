@@ -4,7 +4,7 @@ import org.checkerframework.checker.nullness.qual.*;
  * Illustrate a problem with annotations on type variables.
  */
 public class GenericsBounds2<X extends @Nullable Object> {
-    void m1(X @NonNull[] a1, @Nullable X @NonNull[] a2) {
+    void m1(X @NonNull [] a1, @Nullable X @NonNull [] a2) {
         //:: error: (assignment.type.incompatible)
         a1 = null;
         //:: error: (assignment.type.incompatible)

@@ -21,7 +21,7 @@ class ForEach {
     }
 
     Object iterateFor(Object[] constants) {
-        for (int i = 0; i<constants.length; ++i) {
+        for (int i = 0; i < constants.length; ++i) {
             Object constant = constants[i];
             return constant;
         }
@@ -68,7 +68,7 @@ class ForEach {
     }
 
     <T extends Object> T giterateFor(T[] constants) {
-        for (int i = 0; i<constants.length; ++i) {
+        for (int i = 0; i < constants.length; ++i) {
             T constant = constants[i];
             return constant;
         }

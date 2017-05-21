@@ -14,6 +14,7 @@ public class Class2 {
         class1.instanceMethod();
         @NonNull Object o3 = class1.instanceField;
     }
+
     void test() {
         Class1.method3(this);
         @NonNull Object o = instanceField;

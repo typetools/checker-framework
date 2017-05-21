@@ -7,5 +7,4 @@
  *
  *
  */
-class Driver {
-}
+class Driver {}

@@ -20,7 +20,6 @@ class UniqueAnnoTest {
         leaked(this);
         //:: error: (unique.leaked)
         leaked(other); // The receiver parameter is "this", so there is a leak.
-
     }
 
     // Not @Unique constructor. No warnings.
@@ -31,10 +30,11 @@ class UniqueAnnoTest {
     }
 
     void leaked(UniqueAnnoTest a) {}
+
     void notLeaked(@NonLeaked UniqueAnnoTest this, @NonLeaked UniqueAnnoTest a) {}
 
-    UniqueAnnoTest leakedToResult(@LeakedToResult UniqueAnnoTest this,
-            @LeakedToResult UniqueAnnoTest a) {
+    UniqueAnnoTest leakedToResult(
+            @LeakedToResult UniqueAnnoTest this, @LeakedToResult UniqueAnnoTest a) {
         return a;
     }
 }

@@ -6,21 +6,23 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 interface AssertFunc {
-    @EnsuresNonNullIf(result=true, expression="#1")
+    @EnsuresNonNullIf(result = true, expression = "#1")
     boolean testParam(final @Nullable Object param);
 }
+
 interface AssertFunc2 {
-    @EnsuresNonNullIf(result=true, expression="#1")
+    @EnsuresNonNullIf(result = true, expression = "#1")
     boolean testParam(final @Nullable Object param);
 }
 
 class AssertionTest {
-    @EnsuresNonNullIf(result=true, expression="#1")
+    @EnsuresNonNullIf(result = true, expression = "#1")
     static boolean override(final @Nullable Object param) {
-        return param!=null;
+        return param != null;
     }
+
     static boolean overrideAssertFunc2(final @Nullable Object param) {
-        return param!=null;
+        return param != null;
     }
 
     void context() {

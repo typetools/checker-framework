@@ -6,22 +6,24 @@ class FlowExpressions {
         public Object field;
     }
 
-    final private @GuardedBy({"<self>"}) MyClass m = new MyClass();
+    private final @GuardedBy({"<self>"}) MyClass m = new MyClass();
     // private @GuardedBy({"nonexistentfield"}) MyClass m2;
     @Pure
-    private @GuardedBy({"<self>"}) MyClass getm() { return m; }
+    private @GuardedBy({"<self>"}) MyClass getm() {
+        return m;
+    }
 
     public void method() {
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (lock.not.held)
         getm().field = new Object();
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         m.field = new Object();
         // TODO: fix the Lock Checker code so that a flowexpr.parse.error is issued (due to the guard of "nonexistentfield" on m2)
         // m2.field = new Object();
-        synchronized(m) {
+        synchronized (m) {
             m.field = new Object();
         }
-        synchronized(getm()) {
+        synchronized (getm()) {
             getm().field = new Object();
         }
     }

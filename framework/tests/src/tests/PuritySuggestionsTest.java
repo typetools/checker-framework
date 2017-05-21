@@ -1,28 +1,30 @@
 package tests;
 
 import java.io.File;
-
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
-
-import tests.util.FlowTestChecker;
+import testlib.util.FlowTestChecker;
 
 /**
  * Tests for the {@code -AsuggestPureMethods} command-line argument.
  *
  * @author Stefan Heule
  */
-public class PuritySuggestionsTest extends CheckerFrameworkTest {
+public class PuritySuggestionsTest extends CheckerFrameworkPerDirectoryTest {
 
-    public PuritySuggestionsTest(File testFile) {
-        super(testFile,
+    public PuritySuggestionsTest(List<File> testFiles) {
+        super(
+                testFiles,
                 FlowTestChecker.class,
                 "flow",
-                "-Anomsgtext", "-AsuggestPureMethods", "-AcheckPurityAnnotations");
+                "-Anomsgtext",
+                "-AsuggestPureMethods",
+                "-AcheckPurityAnnotations");
     }
 
     @Parameters
-    public static String [] getTestDirs() {
-        return new String[]{"purity-suggestions"};
+    public static String[] getTestDirs() {
+        return new String[] {"purity-suggestions"};
     }
 }

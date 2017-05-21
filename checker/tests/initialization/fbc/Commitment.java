@@ -1,5 +1,8 @@
-import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.checker.initialization.qual.*;
+import org.checkerframework.checker.initialization.qual.Initialized;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Commitment {
 
@@ -68,7 +71,5 @@ public class Commitment {
     }
 
     //:: error: (initialization.fields.uninitialized)
-    public Commitment(Commitment arg, int i) {
-
-    }
+    public Commitment(Commitment arg, int i) {}
 }

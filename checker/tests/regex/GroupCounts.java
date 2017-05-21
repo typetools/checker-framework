@@ -1,6 +1,5 @@
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.checkerframework.checker.regex.RegexUtil;
 import org.checkerframework.checker.regex.qual.Regex;
 
@@ -23,13 +22,13 @@ public class GroupCounts {
         @Regex(3) String s11 = "()()(())";
 
         //:: error: (assignment.type.incompatible)
-        @Regex(2) String s6 = "nonregex(";    // error
+        @Regex(2) String s6 = "nonregex("; // error
         //:: error: (assignment.type.incompatible)
-        @Regex(1) String s8 = "abc";    // error
+        @Regex(1) String s8 = "abc"; // error
         //:: error: (assignment.type.incompatible)
-        @Regex(3) String s12 = "()()";    // error
+        @Regex(3) String s12 = "()()"; // error
         //:: error: (assignment.type.incompatible)
-        @Regex(4) String s13 = "(())()";    // error
+        @Regex(4) String s13 = "(())()"; // error
     }
 
     void testPatternCompileGroupCount(@Regex String r, @Regex(3) String r3, @Regex(5) String r5) {
@@ -38,9 +37,9 @@ public class GroupCounts {
         @Regex Pattern p3 = Pattern.compile(r);
 
         //:: error: (assignment.type.incompatible)
-        @Regex(6) Pattern p4 = Pattern.compile(r5);   // error
+        @Regex(6) Pattern p4 = Pattern.compile(r5); // error
         //:: error: (assignment.type.incompatible)
-        @Regex(6) Pattern p5 = Pattern.compile(r3);   // error
+        @Regex(6) Pattern p5 = Pattern.compile(r3); // error
 
         // Make sure Pattern.compile still works when passed an @Unqualified String
         // that's actually a regex, with the warning suppressed.
@@ -61,7 +60,8 @@ public class GroupCounts {
         @Regex(9) String s6 = r3 + r5;
     }
 
-    void testCompoundConcatenationWithGroups(@Regex String s0, @Regex(1) String s1, @Regex(3) String s3) {
+    void testCompoundConcatenationWithGroups(
+            @Regex String s0, @Regex(1) String s1, @Regex(3) String s3) {
         s0 += s0;
         @Regex String test0 = s0;
         //:: error: (assignment.type.incompatible)
@@ -88,7 +88,8 @@ public class GroupCounts {
         @Regex(4) String test4 = RegexUtil.asRegex(s, 3);
     }
 
-    void testMatcherGroupCounts(@Regex Matcher m0, @Regex(1) Matcher m1, @Regex(4) Matcher m4, int n) {
+    void testMatcherGroupCounts(
+            @Regex Matcher m0, @Regex(1) Matcher m1, @Regex(4) Matcher m4, int n) {
         m0.end(0);
         m0.group(0);
         m0.start(0);

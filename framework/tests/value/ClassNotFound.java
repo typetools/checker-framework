@@ -2,7 +2,8 @@ import org.checkerframework.common.value.qual.*;
 
 class ClassNotFound {
 
-    public @StaticallyExecutable static int foo(int a) {
+    @StaticallyExecutable
+    public static int foo(int a) {
         return a + 2;
     }
 
@@ -10,7 +11,5 @@ class ClassNotFound {
         int a = 0;
         //:: warning: (class.find.failed)
         foo(a);
-
     }
-
 }

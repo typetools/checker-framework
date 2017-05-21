@@ -13,5 +13,4 @@ interface DefaultMethods {
         s = "";
         s.toString();
     }
-
 }

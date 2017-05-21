@@ -11,7 +11,5 @@ class FlowSelf {
         assert s != null;
 
         s = s.substring(1);
-
     }
-
 }

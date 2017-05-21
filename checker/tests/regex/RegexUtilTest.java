@@ -52,12 +52,11 @@ public class RegexUtilTest {
         //:: error: (assignment.type.incompatible)
         @Regex(2) String s2 = IllegalNameRegexUtil.asRegex(s, 2);
     }
-
 }
 
 // A dummy RegexUtil class to make sure RegexUtil in no package works.
 class RegexUtil {
-    @EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)
+    @EnsuresQualifierIf(result = true, expression = "#1", qualifier = Regex.class)
     public static boolean isRegex(final String s, int n) {
         return false;
     }
@@ -66,7 +65,7 @@ class RegexUtil {
         return null;
     }
 
-    @EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)
+    @EnsuresQualifierIf(result = true, expression = "#1", qualifier = Regex.class)
     public static boolean isRegex(final String s) {
         return false;
     }

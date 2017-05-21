@@ -1,7 +1,7 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-interface Supplier <T extends @NonNull Object> {
+interface Supplier<T extends @NonNull Object> {
     T supply();
 }
 
@@ -11,7 +11,9 @@ interface Supplier2<T extends @Nullable Object> {
 
 class GroundTargetType {
 
-    static @Nullable Object myMethod() { return null; }
+    static @Nullable Object myMethod() {
+        return null;
+    }
 
     //:: error: (type.argument.type.incompatible)
     Supplier<? extends @Nullable Object> fn = GroundTargetType::myMethod;

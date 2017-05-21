@@ -1,12 +1,12 @@
-import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
-import java.util.*;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 
 class PptTopLevel {
     /** List of all of the splitters for this ppt. */
     public @MonotonicNonNull List<Object> splitters = null;
 
-    @EnsuresNonNullIf(result=true, expression="splitters")
+    @EnsuresNonNullIf(result = true, expression = "splitters")
     public boolean has_splitters() {
         return (splitters != null);
     }
@@ -32,13 +32,13 @@ class PptTopLevel {
     // False tests
     static void testFalse(PptTopLevel ppt) {
         //:: error: (dereference.of.nullable)
-        ppt.splitters.toString();   // error
+        ppt.splitters.toString(); // error
     }
 
     static void testFalseNoAssertion(PptTopLevel ppt) {
         ppt.has_splitters();
         //:: error: (dereference.of.nullable)
-        ppt.splitters.toString();    // error
+        ppt.splitters.toString(); // error
     }
 
     static void testFalseIf(PptTopLevel ppt) {
@@ -46,13 +46,13 @@ class PptTopLevel {
             return;
         }
         //:: error: (dereference.of.nullable)
-        ppt.splitters.toString();   // error
+        ppt.splitters.toString(); // error
     }
 
-//    static void testFalseIfBody(PptTopLevel ppt) {
-//        if (!ppt.has_splitters()) {
-//            //:: error: (dereference.of.nullable)
-//            ppt.splitters.toString();   // error
-//        }
-//    }
+    //    static void testFalseIfBody(PptTopLevel ppt) {
+    //        if (!ppt.has_splitters()) {
+    //            //:: error: (dereference.of.nullable)
+    //            ppt.splitters.toString();   // error
+    //        }
+    //    }
 }

@@ -5,28 +5,26 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
- * The method, and all the methods it calls, maintain a strictly
- * nondecreasing lock hold count on the current thread for any locks
- * that were held prior to the method call.
- * The method might acquire locks but then release them, or might
- * acquire locks but not release them (in which case it should
- * also be annotated with {@literal @}{@link EnsuresLockHeld} or
+ * The method maintains a strictly nondecreasing lock held count on the current thread for any locks
+ * that were held prior to the method call. The same property must in general be true of all the
+ * methods it calls, which should themselves be annotated as {@code @ReleasesNoLocks} or a stronger
+ * annotation such as {@code @}{@link SideEffectFree}.
+ *
+ * <p>The method might acquire locks but then release them, or might acquire locks but not release
+ * them (in which case it should also be annotated with {@literal @}{@link EnsuresLockHeld} or
  * {@literal @}{@link EnsuresLockHeldIf}).
- * <p>
- * This is the default for methods being type-checked that have no
- * {@code @}{@link LockingFree}, {@code @}{@link MayReleaseLocks},
- * {@code @}{@link SideEffectFree}, or {@code @}{@link Pure}
+ *
+ * <p>This is the default for methods being type-checked that have no {@code @}{@link LockingFree},
+ * {@code @}{@link MayReleaseLocks}, {@code @}{@link SideEffectFree}, or {@code @}{@link Pure}
  * annotation.
- * <p>
- * {@code @ReleasesNoLocks} provides a guarantee unlike
- * {@code @}{@link MayReleaseLocks}, which provides no guarantees.
- * However, {@code @ReleasesNoLocks} provides a weaker guarantee than
+ *
+ * <p>{@code @ReleasesNoLocks} provides a guarantee unlike {@code @}{@link MayReleaseLocks}, which
+ * provides no guarantees. However, {@code @ReleasesNoLocks} provides a weaker guarantee than
  * {@code @}{@link LockingFree}.
  *
  * @see MayReleaseLocks
@@ -39,6 +37,5 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @InheritedAnnotation
-@Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
-public @interface ReleasesNoLocks {
-}
+@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+public @interface ReleasesNoLocks {}

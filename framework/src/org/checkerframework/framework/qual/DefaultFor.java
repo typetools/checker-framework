@@ -7,11 +7,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Applied to the declaration of a type qualifier specifies that
- * the given annotation should be the default for a particular location.
+ * Applied to the declaration of a type qualifier specifies that the given annotation should be the
+ * default for a particular location.
  *
- * TODO: Document use relative to the other annotations.
- * This qualifier is for type system developers, not end-users.
+ * <p>TODO: Document use relative to the other annotations. This qualifier is for type system
+ * developers, not end-users.
  *
  * @see TypeUseLocation
  * @see DefaultQualifier
@@ -22,8 +22,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface DefaultFor {
-    /**
-     * @return the locations to which the annotation should be applied
-     */
+    /** @return the locations to which the annotation should be applied */
     TypeUseLocation[] value();
 }

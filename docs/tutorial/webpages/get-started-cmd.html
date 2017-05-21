@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="generator" content=
+  "HTML Tidy for Linux (vers 25 March 2009), see www.w3.org">
+
+  <title>Checker Framework Tutorial - Getting Started - Command
+  Line</title>
+  <link href="bootstrap/css/bootstrap.css" rel="stylesheet" type=
+  "text/css">
+  <script type="text/javascript" src="bootstrap/js/bootstrap.min.js">
+</script>
+  <link href="css/main.css" rel="stylesheet" type="text/css">
+  <link rel="icon" type="image/png" href=
+  "https://checkerframework.org/favicon-checkerframework.png">
+</head>
+
+<body>
+  <div class="top_liner"></div>
+
+  <div class="navbar navbar-inverse navbar-fixed-top" style=
+  "border-bottom: 1px solid #66d;">
+    <div class="navbar-inner">
+      <div class="contained">
+        <ul class="nav">
+          <li class="heading">Checker Framework:</li>
+
+          <li><a href="https://checkerframework.org/">Main Site</a></li>
+
+          <li><a href=
+          "https://checkerframework.org/manual/">
+          Manual</a></li>
+
+          <li><a href=
+          "https://groups.google.com/forum/?fromgroups#!forum/checker-framework-discuss">
+          Discussion List</a></li>
+
+          <li><a href=
+          "https://github.com/typetools/checker-framework/issues">Issue
+          Tracker</a></li>
+
+          <li><a href=
+          "https://github.com/typetools/checker-framework">Source
+          Code</a></li>
+
+          <li><a href=
+          "https://checkerframework.org/eclipse/">Eclipse
+          Plugin</a></li>
+
+          <li class="active"><a href=
+          "https://checkerframework.org/tutorial/">Tutorial</a></li>
+        </ul>
+      </div>
+    </div>
+  </div><img src="https://checkerframework.org/CFLogo.png" alt="Checker Framework logo">
+
+  <div class="page-header short" style=
+  "border-bottom: 1px solid #EEE; border-top: none;">
+    <h1>Checker Framework Tutorial</h1>
+  </div>
+
+  <div id="gettingstarteed">
+    <div class="page-header short" style="border-top: none;">
+      <h2>Getting Started</h2>
+    </div>
+
+    <div class="section">
+      <p>This page walks you through a simple example to show how to use a
+      type-checker
+      from the command line.
+      It shows how the Nullness
+      Checker can be used to prevent null pointer exceptions.</p>
+    </div>
+
+    <div class="section">
+      <h4>Outline</h4>
+
+      <div class="well">
+        <ol>
+          <li><a href="#view">Manually spot the null pointer
+          exception</a></li>
+
+          <li><a href="#run1">Run the Nullness Checker to see how it can
+          catch this error</a></li>
+
+          <li><a href="#error">Correct the error</a></li>
+
+          <li><a href="#run2">Run the Nullness Checker to verify that
+          there are no more errors</a></li>
+        </ol>
+      </div>
+
+      <div id="view">
+        <h4>1. Spot the null pointer exception</h4>Begin by <b>viewing
+        <a href=
+        "../src/NullnessExample.java">NullnessExample.java</a></b>. (If
+        you have not already, download <a href="../sourcefiles.zip">the
+        source files</a> for the tutorial.)
+        It is a simple Java program with an obvious null pointer exception.
+        <pre>
+public class NullnessExample {
+    public static void main(String[] args) {
+        Object myObject = null;
+        System.out.println(myObject.toString());
+    }
+}
+</pre>
+      </div>
+
+      <div id="run1">
+        <h4>2. Run the Nullness Checker</h4>
+
+        <p><b>Run the Nullness Checker</b> to see how it can warn you
+        about this error at compile time.</p>
+
+        <p>To run the Nullness Checker, run javac with command-line
+        arguments <code>-processor
+        org.checkerframework.checker.nullness.NullnessChecker</code>, as
+        follows.</p>
+
+        <p>(Note:  In this tutorial, the commands that you cut-and-paste
+        to run on the command line appear in bold after a <code>$</code> prompt.)
+        <br/>
+        (Note: You should have already made
+        <code>javacheck</code> <a href=
+        "https://checkerframework.org/manual/#installation">
+        an alias</a> to the Checker Framework compiler.)</p>
+        <pre>
+$ <strong>javacheck -processor org.checkerframework.checker.nullness.NullnessChecker NullnessExample.java</strong>
+</pre>
+
+        <p>The following error will be produced.</p>
+        <pre>
+NullnessExample.java:9: error: [dereference.of.nullable] dereference of possibly-null reference myObject
+        System.out.println(myObject.toString());
+                           ^
+1 error
+</pre>
+      </div>
+
+      <div id="error">
+        <h4>3. Correct the error</h4>
+
+        <p>Edit the code to <b>initialize the <code>myObject</code> variable</b>
+        to some non-null value.</p>
+        <pre>
+public class NullnessExample {
+    public static void main(String[] args) {
+        Object myObject = <b>new Object()</b>;
+        System.out.println(myObject.toString());
+    }
+}
+</pre>
+      </div>
+
+      <div id="run2">
+        <h4>4. Re-run the Nullness Checker</h4>
+        <pre>
+$ <b>javacheck -processor org.checkerframework.checker.nullness.NullnessChecker NullnessExample.java</b>
+</pre>
+
+        <p>No errors should be produced.</p>
+      </div>
+
+      <p>This was a very simple example to show how to use the Checker Framework
+      from the command line.
+      The next example is a little more complex.</p>
+    </div>
+  </div>
+
+  <div id="end">
+    <div class="page-header short">
+      <h2><small>Next, try <a href="user-input-cmd.html">Validating
+      User Input</a>, an example using the Regex Checker.</small></h2>
+    </div>
+  </div><!--
+<div class="bottom_liner well">
+    <a href="#">Top</a>
+</div>
+-->
+  <!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath
+ -->
+  <!--  LocalWords:  NullnessChecker plugin's hg
+ -->
+</body>
+</html>

@@ -44,5 +44,4 @@ public class AssertNonNullIfNonNullTest {
     public boolean isValueNonNull4() {
         return getValue() != null;
     }
-
 }

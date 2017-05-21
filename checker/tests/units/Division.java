@@ -1,5 +1,5 @@
-import org.checkerframework.checker.units.qual.*;
 import org.checkerframework.checker.units.*;
+import org.checkerframework.checker.units.qual.*;
 
 public class Division {
     void d() {

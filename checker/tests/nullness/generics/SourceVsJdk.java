@@ -9,6 +9,6 @@ import java.util.Map;
 
 public class SourceVsJdk<K, V> {
     public Map<K, V> getMap() {
-        return Collections.<K, V> emptyMap();
+        return Collections.<K, V>emptyMap();
     }
 }

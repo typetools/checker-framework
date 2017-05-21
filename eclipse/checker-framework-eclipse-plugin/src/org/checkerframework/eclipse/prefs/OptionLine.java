@@ -1,12 +1,11 @@
 package org.checkerframework.eclipse.prefs;
 
-import org.checkerframework.eclipse.util.PluginUtil;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.checkerframework.eclipse.util.PluginUtil;
 
 public class OptionLine {
 
@@ -14,23 +13,30 @@ public class OptionLine {
     private final boolean active;
 
     private static final Pattern DECODE_PATTERN =
-        Pattern.compile("^OptionLine\\(\"(.*)\", (" + Boolean.toString(true) + "|" + Boolean.toString(false) + ")\\)$");
+            Pattern.compile(
+                    "^OptionLine\\(\"(.*)\", ("
+                            + Boolean.toString(true)
+                            + "|"
+                            + Boolean.toString(false)
+                            + ")\\)$");
 
     public OptionLine(final String serialized) {
         assert serialized != null : "OptionLine constructor param can not be null!";
 
         final Matcher matcher = DECODE_PATTERN.matcher(serialized);
         if (!matcher.matches()) {
-            throw new RuntimeException("OptionLine single string constructor parameter is malformed!  " +
-                    "serialized = " + serialized);
+            throw new RuntimeException(
+                    "OptionLine single string constructor parameter is malformed!  "
+                            + "serialized = "
+                            + serialized);
         }
 
-        this.arg    = matcher.group(1);
+        this.arg = matcher.group(1);
         this.active = Boolean.parseBoolean(matcher.group(2));
     }
 
     public OptionLine(final String arg, final boolean active) {
-        this.arg    = arg;
+        this.arg = arg;
         this.active = active;
     }
 
@@ -45,7 +51,6 @@ public class OptionLine {
     public String toString() {
         return "OptionLine(\"" + arg + "\"" + ", " + Boolean.toString(active) + ")";
     }
-
 
     public static final String optionLinesToCmdLine(final Collection<OptionLine> lines) {
         String cmdLine = "";
@@ -73,7 +78,7 @@ public class OptionLine {
         }
 
         if (option.startsWith("[")) {
-            for (final String classDef : findClassDefs("OptionLine", option) ) {
+            for (final String classDef : findClassDefs("OptionLine", option)) {
                 options.add(new OptionLine(classDef));
             }
         } else { // Just make it one big option so people don't get interrupted
@@ -89,7 +94,7 @@ public class OptionLine {
         final List<String> matches = new ArrayList<String>();
 
         int charPos = 0;
-        if (remaining.startsWith("[") || ! remaining.endsWith("]")) {
+        if (remaining.startsWith("[") || !remaining.endsWith("]")) {
             remaining = remaining.substring(1).substring(0, remaining.length() - 2); // strip off []
         } else {
             throw new RuntimeException("Invalid option collection " + value);
@@ -111,19 +116,27 @@ public class OptionLine {
             int index;
             for (index = 0; open > 0 && index < remaining.length(); index++) {
                 final char c = remaining.charAt(index);
-                switch(c) {
-                    case '(': ++open; break;
-                    case ')': --open; break;
-                    default:          break;
+                switch (c) {
+                    case '(':
+                        ++open;
+                        break;
+                    case ')':
+                        --open;
+                        break;
+                    default:
+                        break;
                 }
             }
 
             if (index == remaining.length() && open > 0) {
-                throw new RuntimeException("Unbalanced parentheses in " + value + " starting at char: " +
-                        (value.length() - remaining.length()));
+                throw new RuntimeException(
+                        "Unbalanced parentheses in "
+                                + value
+                                + " starting at char: "
+                                + (value.length() - remaining.length()));
             }
 
-            matches.add("OptionLine(" + remaining.substring(0, index-1) + ")");
+            matches.add("OptionLine(" + remaining.substring(0, index - 1) + ")");
             remaining = remaining.substring(index);
         }
 
@@ -131,7 +144,7 @@ public class OptionLine {
     }
 
     public static final String optionLinesToString(final Collection<OptionLine> lines) {
-        if ( lines == null || lines.isEmpty()) {
+        if (lines == null || lines.isEmpty()) {
             return "[]";
         }
 

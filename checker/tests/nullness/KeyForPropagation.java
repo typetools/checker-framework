@@ -1,9 +1,8 @@
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.List;
-
 import org.checkerframework.checker.nullness.qual.*;
 
 //interface Dest<DA,DB,DC,DD,DE> {
@@ -18,11 +17,11 @@ import org.checkerframework.checker.nullness.qual.*;
 class KeyForPropagation {
 
     {
-        List<@KeyFor("a") String>  a = new ArrayList<String>();
+        List<@KeyFor("a") String> a = new ArrayList<String>();
     }
 
     static {
-        List<@KeyFor("b") String>  b = new ArrayList<String>();
+        List<@KeyFor("b") String> b = new ArrayList<String>();
     }
 
     List<@KeyFor("c") String> c = new ArrayList<String>();

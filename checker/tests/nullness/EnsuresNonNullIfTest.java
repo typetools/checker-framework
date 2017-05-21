@@ -1,41 +1,40 @@
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.dataflow.qual.Pure;
 
-class Node {
+class MyNode {
     int id;
-    @Nullable Node next;
+    @Nullable MyNode next;
 
-    Node(int id, @Nullable Node next) {
+    MyNode(int id, @Nullable MyNode next) {
         this.id = id;
         this.next = next;
     }
 }
 
-class Enumerate {
-    private @Nullable Node current;
+class MyEnumerate {
+    private @Nullable MyNode current;
 
-    public Enumerate(Node node) {
+    public MyEnumerate(MyNode node) {
         this.current = node;
     }
 
-    @EnsuresNonNullIf(expression="current", result=true)
+    @EnsuresNonNullIf(expression = "current", result = true)
     public boolean hasMoreElements() {
         return (current != null);
     }
 
     @RequiresNonNull("current")
-    public Node nextElement() {
-        Node retval = current;
+    public MyNode nextElement() {
+        MyNode retval = current;
         current = current.next;
         return retval;
     }
 }
 
-class Main {
+class MyMain {
     public static final void main(String args[]) {
-        Node n2 = new Node(2, null);
-        Node n1 = new Node(1, n2);
-        Enumerate e = new Enumerate(n1);
+        MyNode n2 = new MyNode(2, null);
+        MyNode n1 = new MyNode(1, n2);
+        MyEnumerate e = new MyEnumerate(n1);
         while (e.hasMoreElements()) {
             System.out.println(e.nextElement().id);
         }

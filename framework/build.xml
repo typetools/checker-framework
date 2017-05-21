@@ -161,7 +161,7 @@
               failonerror="true"
               classpath="${javac.lib}:${stubparser.lib}:${javacutil.lib}:${dataflow.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
@@ -172,13 +172,15 @@
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
-            <arg line="-sourcepath ${src}"/>
-            <arg line="-d ${build}"/>
-            <arg line="@${tmpdir}/srcfiles-framework.txt"/>
-            <arg line="-version"/>
-            <arg line="-XDTA:noannotationsincomments"/>
-            <arg line="-Xlint"/>
-            <arg line="-Werror"/>
+            <arg value="-sourcepath"/>
+            <arg value="${src}"/>
+            <arg value="-d"/>
+            <arg value="${build}"/>
+            <arg value="@${tmpdir}/srcfiles-framework.txt"/>
+            <arg value="-version"/>
+            <arg value="-XDTA:noannotationsincomments"/>
+            <arg value="-Xlint"/>
+            <arg value="-Werror"/>
         </java>
         <delete file="${tmpdir}/srcfiles-framework.txt"/>
 
@@ -209,7 +211,7 @@
         <!-- With Ant 1.9.4 or later, add
             failonwarning="true"
             but Travis is stuck on Ant 1.8.2 as of 6/2016 -->
-        <javadoc sourcepath="${src}:${checker.loc}/${src}:${javacutil.loc}/${src}:${stubparser}/${src}:${dataflow.loc}/${src}:${annotation-file-utilities.loc}/${src}"
+        <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${stubparser}/${src}:${dataflow.loc}/${src}:${annotation-file-utilities.loc}/${src}"
                  destdir="${api.doc}"
                  private="${javadoc.private}"
                  encoding="UTF-8"
@@ -223,9 +225,13 @@
             <package name="org.checkerframework.dataflow.*"/>
             <package name="org.checkerframework.stubparser.*"/>
             <package name="org.checkerframework.framework.*"/>
-            <package name="org.checkerframework.qualframework.*"/>
             <package name="org.checkerframework.common.*"/>
             <package name="org.checkerframework.checker.*"/>
+
+            <fileset dir="${checker.loc}/${src}">
+                <include name="**/*.java"/>
+                <exclude name="${checker.jdk8orhigher.sources}" if="${jdk7orlower}"/>
+            </fileset>
 
             <link href="http://docs.oracle.com/javase/8/docs/api/"/>
             <link href="http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
@@ -255,10 +261,11 @@
     <!-- Testing -->
 
     <target name="build-tests" depends="prep" description="Compile tests">
+        <!-- quoting is OK: the CF repo doesn't use spaces in file names -->
         <pathconvert pathsep=" " property="framework.src.tests">
             <path>
                 <fileset dir="${tests}">
-                    <include name="src/tests/**/*.java"/>
+                    <include name="src/**/*.java"/>
                     <include name="test-lubglb/**/*.java"/>
                     <include name="test-polyall/**/*.java"/>
                 </fileset>
@@ -269,7 +276,7 @@
               failonerror="true"
               classpath="${javac.lib}:${junit.lib}:${hamcrest.lib}:${build}:${javacutil.lib}:${dataflow.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
@@ -280,9 +287,11 @@
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
-            <arg line="-sourcepath ${tests}"/>
-            <arg line="-d ${tests.build}"/>
-            <arg line="${framework.src.tests}"/>
+            <arg value="-sourcepath"/>
+            <arg value="${tests}"/>
+            <arg value="-d"/>
+            <arg value="${tests.build}"/>
+            <arg line="${framework.src.tests}"/> <!-- quoting OK -->
         </java>
     </target>
 
@@ -296,9 +305,9 @@
                printsummary="false"
                haltonerror="${halt.on.test.failure}"
                haltonfailure="${halt.on.test.failure}">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
-            <jvmarg line="-ea"/>
-            <jvmarg line="-Dorg.checkerframework.common.reflection.debug=false"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-ea"/>
+            <jvmarg value="-Dorg.checkerframework.common.reflection.debug=false"/>
 
             <classpath>
                 <pathelement path="${build}"/>
@@ -343,8 +352,8 @@
              haltonerror="${halt.on.test.failure}"
              haltonfailure="${halt.on.test.failure}"
              showoutput="true">
-          <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
-          <jvmarg line="-ea"/>
+          <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+          <jvmarg value="-ea"/>
 
           <classpath>
               <pathelement path="${build}"/>
@@ -360,20 +369,17 @@
           <formatter type="brief" usefile="false"/>
 
           <batchtest todir="${build.reports}">
-              <fileset dir="${tests}/${src}">
-                  <include name="**/*Test.java"/>
-                  <exclude name="**/AllTests.java"/>
-
-                  <!-- Framework classes -->
-                  <exclude name="**/CheckerTest.java"/>
-                  <exclude name="**/ParameterizedCheckerTest.java"/>
+              <fileset dir="${tests}/${src}/">
+                  <!-- The include name must start with tests or else Junit assumes
+                       the classes are not in a package. -->
+                  <include name="tests/*.java"/>
 
                   <!-- Tests that fail by design -->
-                  <exclude name="**/SubtypingStringPatternsPartialTest.java"/>
+                  <exclude name="tests/SubtypingStringPatternsPartialTest.java"/>
                   <!-- Whole-Program inference tests depends on the
                        whole-program-inference-tests target, so we added that target
                        to the depends group and excluded it here.-->
-                  <exclude name="**/WholeProgramInference*.java"/>
+                  <exclude name="tests/WholeProgramInference*.java"/>
 
               </fileset>
           </batchtest>
@@ -389,8 +395,9 @@
         <exec executable="make" failonerror="${halt.on.test.failure}">
             <env key="JAVAC" value="${env.JAVA_HOME}/bin/javac"/>
             <env key="JAVACJAR" value="${jsr308.langtools.dist}/lib/javac.jar"/>
-            <arg line="-C tests/annotationclassloader/"/>
-            <arg line="load-from-dir-test"/>
+            <arg value="-C"/>
+            <arg value="tests/annotationclassloader/"/>
+            <arg value="load-from-dir-test"/>
         </exec>
     </target>
 
@@ -400,8 +407,9 @@
         <exec executable="make" failonerror="${halt.on.test.failure}">
             <env key="JAVAC" value="${env.JAVA_HOME}/bin/javac"/>
             <env key="JAVACJAR" value="${jsr308.langtools.dist}/lib/javac.jar"/>
-            <arg line="-C tests/annotationclassloader/"/>
-            <arg line="load-from-jar-test"/>
+            <arg value="-C"/>
+            <arg value="tests/annotationclassloader/"/>
+            <arg value="load-from-jar-test"/>
         </exec>
     </target>
 
@@ -479,7 +487,7 @@
         </antcall>
     </target>
 
-        <target name="aggregate-tests" depends="jar,build-tests"
+    <target name="aggregate-tests" depends="jar,build-tests"
             description="Run tests for aggregate checkers">
         <antcall target="-run-tests">
             <param name="param" value="tests.AggregateTest"/>
@@ -490,6 +498,13 @@
             description="Run tests for the MethodVal Checker ">
         <antcall target="-run-tests">
             <param name="param" value="tests.MethodValTest"/>
+        </antcall>
+    </target>
+
+    <target name="nontopdefault-tests" depends="jar,build-tests"
+            description="Run tests for the NonTopDefault Checker ">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NonTopDefaultTest"/>
         </antcall>
     </target>
 
@@ -552,6 +567,13 @@
 
     </target>
 
+    <target name="range-tests" depends="jar,build-tests"
+            description="Run tests for the Range library">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.RangeTest"/>
+        </antcall>
+    </target>
+
     <target name="report-tests" depends="jar,build-tests"
             description="Run tests for the Report Checker">
         <antcall target="-run-tests">
@@ -599,6 +621,13 @@
         </antcall>
     </target>
 
+    <target name="flowexpression-tests" depends="jar,build-tests"
+            description="Run tests for constant value propagation">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.FlowExpressionCheckerTest"/>
+        </antcall>
+    </target>
+
     <target name="jtreg.check">
       <condition property="jtreg.exists">
         <available file="${jtreg.home}" type="dir"/>
@@ -608,7 +637,7 @@
     <target name="-jtreg.download" depends="jtreg.check" unless="jtreg.exists">
       <!-- Originally from https://adopt-openjdk.ci.cloudbees.com/view/OpenJDK/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.1-b12.tar.gz but the file cannot be found there any longer. -->
       <get
-        src="http://types.cs.washington.edu/checker-framework/jtreg-4.1-b12.tar.gz"
+        src="https://checkerframework.org/jtreg-4.1-b12.tar.gz"
         dest="${jtreg.home}/.." />
       <untar src="${jtreg.home}/../jtreg-4.1-b12.tar.gz"
         dest="${jtreg.home}/../"
@@ -680,7 +709,7 @@
                     workDir="${build.jtreg.dir}/@{name}/work"
                     reportDir="${build.jtreg.dir}/@{name}/report"
                     samevm="@{samevm}" verbose="@{verbose}"
-                    failonerror="false" resultproperty="jtreg.@{name}.result"
+                    failonerror="true" resultproperty="jtreg.@{name}.result"
                     javacoptions="-g"
                     vmoptions="${coverage.options} -Xbootclasspath/p:${coverage.classpath}:${build}:${checkers.classpath} @{jpda.jvmargs}">
                     <arg line="@{keywords}"/>
@@ -723,7 +752,7 @@
               failonerror="true"
               classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
@@ -734,12 +763,15 @@
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
-            <arg line="-sourcepath ${src}:${checker-jdk}"/>
-            <arg line="-d ${build}"/>
-            <arg line="@${tmpdir}/srcfiles-framework.txt"/>
-            <arg line="-version"/>
-            <arg line="-proc:only"/>
-            <arg line="-processor ${checker-name}"/>
+            <arg value="-sourcepath"/>
+            <arg value="${src}:${checker-jdk}"/>
+            <arg value="-d"/>
+            <arg value="${build}"/>
+            <arg value="@${tmpdir}/srcfiles-framework.txt"/>
+            <arg value="-version"/>
+            <arg value="-proc:only"/>
+            <arg value="-processor"/>
+            <arg value="${checker-name}"/>
             <arg line="${checker-args}"/>
         </java>
         <delete file="${tmpdir}/srcfiles-framework.txt"/>

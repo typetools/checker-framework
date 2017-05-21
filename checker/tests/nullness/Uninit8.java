@@ -3,13 +3,14 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class Uninit8 {
 
-  Object f;
+    Object f;
 
-  Uninit8() { setFields(); }
+    Uninit8() {
+        setFields();
+    }
 
-  @EnsuresNonNull("f")
-  void setFields(@Raw @UnknownInitialization Uninit8 this) {
-    f = new Object();
-  }
-
+    @EnsuresNonNull("f")
+    void setFields(@Raw @UnknownInitialization Uninit8 this) {
+        f = new Object();
+    }
 }

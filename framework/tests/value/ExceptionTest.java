@@ -7,8 +7,5 @@ class ExceptionTest {
         String s = "hello";
         //:: warning: (method.evaluation.exception)
         char c = s.charAt(a);
-
-
     }
-
 }

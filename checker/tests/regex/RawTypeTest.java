@@ -2,8 +2,6 @@ import java.lang.ref.WeakReference;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.List;
-import java.util.Stack;
-
 import org.checkerframework.checker.regex.qual.*;
 
 class RawTypeTest {
@@ -56,10 +54,12 @@ class RawTypeTest {
         }
 
         public void m4() {
-            AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                public Object run() {
-                    return null;
-                }});
+            AccessController.doPrivileged(
+                    new PrivilegedAction<Object>() {
+                        public Object run() {
+                            return null;
+                        }
+                    });
         }
 
         public void m5(List<C4> list, C4 c) {

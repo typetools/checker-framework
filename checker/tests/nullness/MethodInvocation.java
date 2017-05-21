@@ -1,6 +1,6 @@
 
-import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.initialization.qual.*;
+import org.checkerframework.checker.nullness.qual.*;
 
 class MethodInvocation {
 
@@ -20,8 +20,7 @@ class MethodInvocation {
         s = "abc";
     }
 
-    public void a() {
-    }
+    public void a() {}
 
     public void b(@UnderInitialization @Raw MethodInvocation this) {
         //:: error: (dereference.of.nullable)

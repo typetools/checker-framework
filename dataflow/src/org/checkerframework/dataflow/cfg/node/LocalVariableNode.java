@@ -1,18 +1,14 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import javax.lang.model.element.Element;
-
-import org.checkerframework.dataflow.util.HashCodeUtils;
-
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TreeUtils;
-
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import java.util.Collection;
+import java.util.Collections;
+import javax.lang.model.element.Element;
+import org.checkerframework.dataflow.util.HashCodeUtils;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for a local variable or a parameter:
@@ -21,11 +17,10 @@ import com.sun.source.tree.VariableTree;
  *   <em>identifier</em>
  * </pre>
  *
- * We allow local variable uses introduced by the {@link org.checkerframework.dataflow.cfg.CFGBuilder} without
- * corresponding AST {@link Tree}s.
+ * We allow local variable uses introduced by the {@link
+ * org.checkerframework.dataflow.cfg.CFGBuilder} without corresponding AST {@link Tree}s.
  *
  * @author Stefan Heule
- *
  */
 // TODO: don't use for parameters, as they don't have a tree
 public class LocalVariableNode extends Node {

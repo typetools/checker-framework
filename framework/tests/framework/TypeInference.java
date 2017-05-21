@@ -1,5 +1,8 @@
-import tests.util.*;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import testlib.util.*;
 
 public class TypeInference {
 
@@ -12,17 +15,19 @@ public class TypeInference {
         Collection<@Odd String> lst4 = Collections.emptyList();
         Map<Integer, @Odd String> lst5 = Collections.emptyMap();
         Map<Integer, String> lst6 = Collections.emptyMap();
-
     }
 
-    static class MyMap<E> extends HashMap<String, E> { }
-    static <T> MyMap<T> getMap() { return null; }
+    static class MyMap<E> extends HashMap<String, E> {}
+
+    static <T> MyMap<T> getMap() {
+        return null;
+    }
 
     void testSuper() {
         MyMap<@Odd String> m1 = TypeInference.<@Odd String>getMap();
         MyMap<@Odd String> m2 = getMap();
         //:: error: (assignment.type.incompatible)
-        MyMap<String> m3 = TypeInference.<@Odd String>getMap();  // should emit error
+        MyMap<String> m3 = TypeInference.<@Odd String>getMap(); // should emit error
         MyMap<String> m4 = getMap();
 
         Map<String, @Odd Integer> m5 = getMap();

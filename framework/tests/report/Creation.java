@@ -11,6 +11,7 @@ class Creation {
     @ReportCreation
     class TestAll {
         TestAll() {}
+
         TestAll(int i) {}
     }
 

@@ -1,3 +1,4 @@
+import java.util.TreeSet;
 // @skip-test Crashes the Checker Framework, but skipped to avoid breaking the build
 //
 // It looks like we are relying on name equality at some point when resolving
@@ -7,9 +8,6 @@
 // then the assertion failure goes away.  Evidently this is because
 // the annotated TreeSet.java file uses the type variable E.
 
-
-import java.util.*;
-
 public class SortingCollection<T> {
 
     class MergingIterator {
@@ -18,10 +16,7 @@ public class SortingCollection<T> {
         public boolean hasNext() {
             return !queue.isEmpty();
         }
-
     }
 
-    static class PollableTreeSet<T> extends TreeSet<T> {
-    }
-
+    static class PollableTreeSet<T> extends TreeSet<T> {}
 }

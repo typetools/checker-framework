@@ -1,8 +1,7 @@
-import org.checkerframework.framework.test.*;
-import java.util.*;
+import java.util.List;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.framework.qual.*;
-import tests.util.*;
+import org.checkerframework.framework.test.*;
+import testlib.util.*;
 
 class Basic2 {
 
@@ -119,7 +118,12 @@ class Basic2 {
 
     // method calls
     void nonpure() {}
-    @Pure int pure() { return 1; }
+
+    @Pure
+    int pure() {
+        return 1;
+    }
+
     void t7(@Odd String p1, String p2, boolean b1, C c1, C c2) {
         c1.f1 = p1;
         nonpure();
@@ -201,12 +205,15 @@ class Basic2 {
     class CF {
         final String f1;
         CF c;
+
         void nonpure() {};
+
         CF(@Odd String p1) {
             f1 = p1;
             nonpure();
             @Odd String l1 = f1;
         }
+
         void CF_t1(@Odd String p1, CF o) {
             if (f1 == p1) {
                 nonpure();
@@ -219,6 +226,7 @@ class Basic2 {
     class A {
         final @Odd String f1 = null;
         final String f2 = f1;
+
         void A_t1() {
             @Odd String l1 = f2;
         }

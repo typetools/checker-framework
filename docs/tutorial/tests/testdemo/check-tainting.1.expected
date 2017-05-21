@@ -1,0 +1,19 @@
+
+clean:
+Deleting directory /home/mernst/research/types/checker-framework-REAL/tutorial/eclipse-projects/personalblog-demo/bin
+
+check-tainting:
+Created dir: /home/mernst/research/types/checker-framework-REAL/tutorial/eclipse-projects/personalblog-demo/bin
+Compiling 2 source files to /home/mernst/research/types/checker-framework-REAL/tutorial/eclipse-projects/personalblog-demo/bin
+javac 1.8.0-jsr308-1.9.9
+/home/mernst/research/types/checker-framework-REAL/tutorial/eclipse-projects/personalblog-demo/src/net/eyde/personalblog/struts/action/ReadAction.java:58: error: [argument.type.incompatible] incompatible types in argument.
+                        pblog.getPostsByCategory(reqCategory));
+                                                 ^
+  found   : @Tainted String
+  required: @Untainted String
+1 error
+
+BUILD FAILED
+/home/mernst/research/types/checker-framework-REAL/tutorial/eclipse-projects/personalblog-demo/build.xml:35: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds

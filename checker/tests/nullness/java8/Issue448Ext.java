@@ -3,8 +3,8 @@
 // @below-java8-jdk-skip-test
 
 import java.util.Arrays;
-import java.util.stream.IntStream;
 import java.util.function.IntPredicate;
+import java.util.stream.IntStream;
 
 class Issue448Ext {
     void getFor(int[] ia, int index) {
@@ -16,9 +16,8 @@ class Issue448Ext {
     }
 
     Object getFor(IntStream is, int index) {
-        return is
-            .filter(key -> key == index)
-            .findFirst()
-            .orElseThrow(IllegalArgumentException::new);
+        return is.filter(key -> key == index)
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
     }
 }

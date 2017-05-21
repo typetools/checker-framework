@@ -1,5 +1,5 @@
-import org.checkerframework.checker.nullness.qual.*;
 import java.util.Collection;
+import org.checkerframework.checker.nullness.qual.*;
 
 class ArrayNew {
     void m(Collection<? extends @NonNull Integer> seq1) {
@@ -8,13 +8,14 @@ class ArrayNew {
     }
 
     void takePrim1d(int[] ar) {}
+
     void callPrim1d() {
-        takePrim1d(new int[] { 1, 2, 1 });
+        takePrim1d(new int[] {1, 2, 1});
     }
 
     void takePrim2d(int[][] ar) {}
+
     void callPrim2d() {
-        takePrim2d(new int[][] { { 1, 2, 1 },
-                { 3, 3, 7 } });
+        takePrim2d(new int[][] {{1, 2, 1}, {3, 3, 7}});
     }
 }

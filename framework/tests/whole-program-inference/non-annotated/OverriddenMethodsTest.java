@@ -1,11 +1,14 @@
-import tests.wholeprograminference.qual.*;
-class Parent {
+import testlib.wholeprograminference.qual.*;
+
+class OverriddenMethodsTestParent {
     public void foo(@Sibling1 Object obj, @Sibling2 Object obj2) {}
-    public void bar(@Sibling1 Parent this, @Sibling2 Object obj) {}
-    public void barz(@Sibling1 Parent this, @Sibling2 Object obj) {}
+
+    public void bar(@Sibling1 OverriddenMethodsTestParent this, @Sibling2 Object obj) {}
+
+    public void barz(@Sibling1 OverriddenMethodsTestParent this, @Sibling2 Object obj) {}
 }
 
-class Child extends Parent {
+class OverriddenMethodsTestChild extends OverriddenMethodsTestParent {
     @Override
     public void foo(Object obj, Object obj2) {
         //:: error: (assignment.type.incompatible)
@@ -17,7 +20,7 @@ class Child extends Parent {
     @Override
     public void bar(Object obj) {
         //:: error: (assignment.type.incompatible)
-        @Sibling1 Child child = this;
+        @Sibling1 OverriddenMethodsTestChild child = this;
         //:: error: (assignment.type.incompatible)
         @Sibling2 Object o = obj;
     }

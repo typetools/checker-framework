@@ -1,5 +1,17 @@
 package org.checkerframework.common.util;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -17,41 +29,28 @@ import org.checkerframework.framework.util.ExecUtil;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.ErrorReporter;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.element.VariableElement;
-
 /**
- * TypeVisualizer prints AnnotatedTypeMirrors as a directed graph where each node is a type and an arrow
- * is a reference.  Arrows are labeled with the relationship that reference represents (e.g. an arrow
- * marked "extends" starts from a type variable or wildcard type and points to the upper bound of that
- * type).
+ * TypeVisualizer prints AnnotatedTypeMirrors as a directed graph where each node is a type and an
+ * arrow is a reference. Arrows are labeled with the relationship that reference represents (e.g. an
+ * arrow marked "extends" starts from a type variable or wildcard type and points to the upper bound
+ * of that type).
  *
- * Currently, to use TypeVisualizer just insert an if statement somewhere that targets
- * the type you would like to print:
- * e.g.
- * {@code
- *     if (type.getKind() == TypeKind.EXECUTABLE && type.toString().contains("methodToPrint")) {
- *         TypeVisualizer.drawToPng("/Users/jburke/Documents/tmp/method.png", type);
- *     }
+ * <p>Currently, to use TypeVisualizer just insert an if statement somewhere that targets the type
+ * you would like to print: e.g.
+ *
+ * <pre>{@code
+ * if (type.getKind() == TypeKind.EXECUTABLE && type.toString().contains("methodToPrint")) {
+ *     TypeVisualizer.drawToPng("/Users/jburke/Documents/tmp/method.png", type);
  * }
+ * }</pre>
  *
- * Be sure to remove such statements before check-in.
+ * Be sure to remove such statements before commiting your changes.
  */
 public class TypeVisualizer {
 
     /**
      * Creates a dot file at dest that contains a digraph for the structure of type
+     *
      * @param dest the destination dot file
      * @param type the type to be written
      */
@@ -62,6 +61,7 @@ public class TypeVisualizer {
 
     /**
      * Creates a dot file at dest that contains a digraph for the structure of type
+     *
      * @param dest the destination dot file, this string will be directly passed to new File(dest)
      * @param type the type to be written
      */
@@ -71,7 +71,9 @@ public class TypeVisualizer {
 
     /**
      * Draws a dot file for type in a temporary directory then calls the "dot" program to convert
-     * that file into a png at the location dest.  This method will fail if a temp file can't be created.
+     * that file into a png at the location dest. This method will fail if a temp file can't be
+     * created.
+     *
      * @param dest the destination png file
      * @param type the type to be written
      */
@@ -88,7 +90,9 @@ public class TypeVisualizer {
 
     /**
      * Draws a dot file for type in a temporary directory then calls the "dot" program to convert
-     * that file into a png at the location dest.  This method will fail if a temp file can't be created.
+     * that file into a png at the location dest. This method will fail if a temp file can't be
+     * created.
+     *
      * @param dest the destination png file, this string will be directly passed to new File(dest)
      * @param type the type to be written
      */
@@ -97,15 +101,17 @@ public class TypeVisualizer {
     }
 
     /**
-     * Converts the given dot file to a png file at the specified location.  This method
-     * calls the program "dot" from Runtime.exec and will fail if "dot" is not on your class path.
+     * Converts the given dot file to a png file at the specified location. This method calls the
+     * program "dot" from Runtime.exec and will fail if "dot" is not on your class path.
+     *
      * @param dotFile the dot file to convert
      * @param pngFile the destination of the resultant png file
      */
     public static void execDotToPng(final File dotFile, final File pngFile) {
-        String [] cmd = new String[] {
-                "dot", "-Tpng", dotFile.getAbsolutePath(), "-o", pngFile.getAbsolutePath()
-        };
+        String[] cmd =
+                new String[] {
+                    "dot", "-Tpng", dotFile.getAbsolutePath(), "-o", pngFile.getAbsolutePath()
+                };
         System.out.println("Printing dotFile: " + dotFile + " to loc: " + pngFile);
         System.out.flush();
         ExecUtil.execute(cmd, System.out, System.err);
@@ -114,30 +120,36 @@ public class TypeVisualizer {
     /**
      * If the name of typeVariable matches one in the list of typeVarNames, then print typeVariable
      * to a dot file at directory/varName.dot
+     *
      * @return true if the type variable was printed, otherwise false
      */
-    public static boolean printTypevarToDotIfMatches(final AnnotatedTypeVariable typeVariable,
-                                                     final List<String> typeVarNames,
-                                                     final String directory) {
+    public static boolean printTypevarToDotIfMatches(
+            final AnnotatedTypeVariable typeVariable,
+            final List<String> typeVarNames,
+            final String directory) {
         return printTypevarIfMatches(typeVariable, typeVarNames, directory, false);
     }
 
     /**
      * If the name of typeVariable matches one in the list of typeVarNames, then print typeVariable
      * to a png file at directory/varName.png
+     *
      * @return true if the type variable was printed, otherwise false
      */
-    public static boolean printTypevarToPngIfMatches(final AnnotatedTypeVariable typeVariable,
-                                                     final List<String> typeVarNames,
-                                                     final String directory) {
+    public static boolean printTypevarToPngIfMatches(
+            final AnnotatedTypeVariable typeVariable,
+            final List<String> typeVarNames,
+            final String directory) {
         return printTypevarIfMatches(typeVariable, typeVarNames, directory, true);
     }
 
-    private static boolean printTypevarIfMatches(final AnnotatedTypeVariable typeVariable,
-                                                 final List<String> typeVarNames,
-                                                 final String directory,
-                                                 final boolean png) {
-        final String dirPath = directory.endsWith(File.separator) ? directory : directory + File.separator;
+    private static boolean printTypevarIfMatches(
+            final AnnotatedTypeVariable typeVariable,
+            final List<String> typeVarNames,
+            final String directory,
+            final boolean png) {
+        final String dirPath =
+                directory.endsWith(File.separator) ? directory : directory + File.separator;
         String varName = typeVariable.getUnderlyingType().asElement().toString();
 
         if (typeVarNames.contains(varName)) {
@@ -152,15 +164,13 @@ public class TypeVisualizer {
         return false;
     }
 
-
     /**
      * This class exists because there is no LinkedIdentityHashMap.
      *
-     * Node is just a wrapper around type mirror that replaces .equals with referential equality.
-     * This is done to preserve the order types were traversed so that printing will occur
-     * in a hierarchical order.  However, since there is no LinkedIdentityHashMap, it was
-     * easiest to just create a wrapper that performed referential equality on types and use
-     * a LinkedHashMap.
+     * <p>Node is just a wrapper around type mirror that replaces .equals with referential equality.
+     * This is done to preserve the order types were traversed so that printing will occur in a
+     * hierarchical order. However, since there is no LinkedIdentityHashMap, it was easiest to just
+     * create a wrapper that performed referential equality on types and use a LinkedHashMap.
      */
     private static class Node {
         private final AnnotatedTypeMirror type;
@@ -180,7 +190,7 @@ public class TypeVisualizer {
                 return false;
             }
             if (obj instanceof Node) {
-                return ((Node)obj).type == this.type;
+                return ((Node) obj).type == this.type;
             }
 
             return false;
@@ -188,14 +198,14 @@ public class TypeVisualizer {
     }
 
     /**
-     * Drawing visits a type and writes a dot file to the location specified.  It contains
-     * data structures to hold the intermediate dot information before printing.
+     * Drawing visits a type and writes a dot file to the location specified. It contains data
+     * structures to hold the intermediate dot information before printing.
      */
     private static class Drawing {
         /** A map from Node (type) to a dot string declaring that node */
         private final Map<Node, String> nodes = new LinkedHashMap<>();
 
-        /** list of connections between nodes.  Lines will refer to identifiers in nodes.values() */
+        /** list of connections between nodes. Lines will refer to identifiers in nodes.values() */
         private final List<String> lines = new ArrayList<>();
 
         private final String graphName;
@@ -203,7 +213,7 @@ public class TypeVisualizer {
         /** The type being drawn */
         private final AnnotatedTypeMirror type;
 
-        /** Used to identify nodes uniquely.  This field is monotonically increasing. */
+        /** Used to identify nodes uniquely. This field is monotonically increasing. */
         private int nextId = 0;
 
         public Drawing(final String graphName, final AnnotatedTypeMirror type) {
@@ -243,24 +253,29 @@ public class TypeVisualizer {
                     writer.write("}");
                     writer.flush();
                 } catch (IOException e) {
-                    ErrorReporter.errorAbort("Exception visualizing type:\n"
-                            + "file=" + file + "\n"
-                            + "type=" + type,  e);
+                    ErrorReporter.errorAbort(
+                            "Exception visualizing type:\n"
+                                    + "file="
+                                    + file
+                                    + "\n"
+                                    + "type="
+                                    + type,
+                            e);
                 } finally {
                     if (writer != null) {
                         writer.close();
                     }
                 }
             } catch (IOException exc) {
-                ErrorReporter.errorAbort("Exception visualizing type:\n"
-                        + "file=" + file + "\n"
-                        + "type=" + type, exc);
+                ErrorReporter.errorAbort(
+                        "Exception visualizing type:\n" + "file=" + file + "\n" + "type=" + type,
+                        exc);
             }
         }
 
         /**
-         * Connection drawer is used to add the connections between all the nodes created by
-         * the NodeDrawer.  It is not a scanner and is called on every node in the nodes map.
+         * Connection drawer is used to add the connections between all the nodes created by the
+         * NodeDrawer. It is not a scanner and is called on every node in the nodes map.
          */
         private class ConnectionDrawer implements AnnotatedTypeVisitor<Void, Void> {
 
@@ -279,7 +294,7 @@ public class TypeVisualizer {
             public Void visitDeclared(AnnotatedDeclaredType type, Void aVoid) {
                 final List<AnnotatedTypeMirror> typeArgs = type.getTypeArguments();
                 for (int i = 0; i < typeArgs.size(); i++) {
-                    lines.add( connect(type, typeArgs.get(i)) + " " + makeTypeArgLabel(i) );
+                    lines.add(connect(type, typeArgs.get(i)) + " " + makeTypeArgLabel(i));
                 }
                 return null;
             }
@@ -288,7 +303,7 @@ public class TypeVisualizer {
             public Void visitIntersection(AnnotatedIntersectionType type, Void aVoid) {
                 final List<AnnotatedDeclaredType> superTypes = type.directSuperTypes();
                 for (int i = 0; i < superTypes.size(); i++) {
-                    lines.add( connect(type, superTypes.get(i)) + " " + makeLabel("&") );
+                    lines.add(connect(type, superTypes.get(i)) + " " + makeLabel("&"));
                 }
                 return null;
             }
@@ -297,7 +312,7 @@ public class TypeVisualizer {
             public Void visitUnion(AnnotatedUnionType type, Void aVoid) {
                 final List<AnnotatedDeclaredType> alternatives = type.getAlternatives();
                 for (int i = 0; i < alternatives.size(); i++) {
-                    lines.add( connect(type, alternatives.get(i)) + " " + makeLabel("|") );
+                    lines.add(connect(type, alternatives.get(i)) + " " + makeLabel("|"));
                 }
                 return null;
             }
@@ -308,11 +323,15 @@ public class TypeVisualizer {
                 ExecutableElement methodElem = type.getElement();
                 lines.add(connect(type, type.getReturnType()) + " " + makeLabel("returns"));
 
-                final List<? extends TypeParameterElement> typeVarElems = methodElem.getTypeParameters();
+                final List<? extends TypeParameterElement> typeVarElems =
+                        methodElem.getTypeParameters();
                 final List<AnnotatedTypeVariable> typeVars = type.getTypeVariables();
                 for (int i = 0; i < typeVars.size(); i++) {
                     final String typeVarName = typeVarElems.get(i).getSimpleName().toString();
-                    lines.add(connect(type, typeVars.get(i)) + " " + makeMethodTypeArgLabel(i, typeVarName));
+                    lines.add(
+                            connect(type, typeVars.get(i))
+                                    + " "
+                                    + makeMethodTypeArgLabel(i, typeVarName));
                 }
 
                 if (type.getReceiverType() != null) {
@@ -342,8 +361,8 @@ public class TypeVisualizer {
 
             @Override
             public Void visitTypeVariable(AnnotatedTypeVariable type, Void aVoid) {
-                lines.add(connect(type, type.getUpperBound()) + " " + makeLabel("extends") );
-                lines.add(connect(type, type.getLowerBound()) + " " + makeLabel("super") );
+                lines.add(connect(type, type.getUpperBound()) + " " + makeLabel("extends"));
+                lines.add(connect(type, type.getLowerBound()) + " " + makeLabel("super"));
                 return null;
             }
 
@@ -364,8 +383,8 @@ public class TypeVisualizer {
 
             @Override
             public Void visitWildcard(AnnotatedWildcardType type, Void aVoid) {
-                lines.add(connect(type, type.getExtendsBound()) + " " + makeLabel("extends") );
-                lines.add(connect(type, type.getSuperBound()) + " " + makeLabel("super") );
+                lines.add(connect(type, type.getExtendsBound()) + " " + makeLabel("extends"));
+                lines.add(connect(type, type.getSuperBound()) + " " + makeLabel("super"));
                 return null;
             }
 
@@ -399,11 +418,10 @@ public class TypeVisualizer {
          * in the enclosing drawing.
          */
         private class NodeDrawer implements AnnotatedTypeVisitor<Void, Void> {
-            private final DefaultAnnotationFormatter annoFormatter = new DefaultAnnotationFormatter();
+            private final DefaultAnnotationFormatter annoFormatter =
+                    new DefaultAnnotationFormatter();
 
-            public NodeDrawer() {
-            }
-
+            public NodeDrawer() {}
 
             private void visitAll(final List<? extends AnnotatedTypeMirror> types) {
                 for (final AnnotatedTypeMirror type : types) {
@@ -428,9 +446,12 @@ public class TypeVisualizer {
             @Override
             public Void visitDeclared(AnnotatedDeclaredType type, Void aVoid) {
                 if (checkOrAdd(type)) {
-                    addLabeledNode(type,
-                            getAnnoStr(type) + " " + type.getUnderlyingType().asElement().getSimpleName()
-                                    + ( type.getTypeArguments().isEmpty() ? "" : "<...>" ),
+                    addLabeledNode(
+                            type,
+                            getAnnoStr(type)
+                                    + " "
+                                    + type.getUnderlyingType().asElement().getSimpleName()
+                                    + (type.getTypeArguments().isEmpty() ? "" : "<...>"),
                             "shape=box");
                     visitAll(type.getTypeArguments());
                 }
@@ -440,7 +461,7 @@ public class TypeVisualizer {
             @Override
             public Void visitIntersection(AnnotatedIntersectionType type, Void aVoid) {
                 if (checkOrAdd(type)) {
-                    addLabeledNode(type,  getAnnoStr(type) + " Intersection", "shape=doublecircle");
+                    addLabeledNode(type, getAnnoStr(type) + " Intersection", "shape=octagon");
                     visitAll(type.directSuperTypes());
                 }
 
@@ -470,8 +491,8 @@ public class TypeVisualizer {
                     visitAll(type.getThrownTypes());
 
                 } else {
-                    ErrorReporter.errorAbort("Executable types should never be recursive!\n"
-                            + "type=" + type);
+                    ErrorReporter.errorAbort(
+                            "Executable types should never be recursive!\n" + "type=" + type);
                 }
                 return null;
             }
@@ -488,7 +509,12 @@ public class TypeVisualizer {
             @Override
             public Void visitTypeVariable(AnnotatedTypeVariable type, Void aVoid) {
                 if (checkOrAdd(type)) {
-                    addLabeledNode(type, getAnnoStr(type) + " " + type.getUnderlyingType().asElement().getSimpleName(), "shape=invtrapezium");
+                    addLabeledNode(
+                            type,
+                            getAnnoStr(type)
+                                    + " "
+                                    + type.getUnderlyingType().asElement().getSimpleName(),
+                            "shape=invtrapezium");
                     visit(type.getUpperBound());
                     visit(type.getLowerBound());
                 }
@@ -543,7 +569,7 @@ public class TypeVisualizer {
                 if (nodes.containsKey(node)) {
                     return false;
                 }
-                nodes.put(node, String.valueOf( nextId++ ));
+                nodes.put(node, String.valueOf(nextId++));
                 return true;
             }
 
@@ -551,7 +577,8 @@ public class TypeVisualizer {
                 return makeLabeledNode(type, label, null);
             }
 
-            public String makeLabeledNode(final AnnotatedTypeMirror type, final String label, final String attributes) {
+            public String makeLabeledNode(
+                    final AnnotatedTypeMirror type, final String label, final String attributes) {
                 final String attr = (attributes != null) ? ", " + attributes : "";
                 return nodes.get(new Node(type)) + " [label=\"" + label + "\"" + attr + "]";
             }
@@ -560,7 +587,8 @@ public class TypeVisualizer {
                 lines.add(makeLabeledNode(type, label));
             }
 
-            public void addLabeledNode(final AnnotatedTypeMirror type, final String label, final String attributes) {
+            public void addLabeledNode(
+                    final AnnotatedTypeMirror type, final String label, final String attributes) {
                 lines.add(makeLabeledNode(type, label, attributes));
             }
 

@@ -1,34 +1,34 @@
 // Test case for Issue 409:
 // https://github.com/typetools/checker-framework/issues/409
-//@skip-test
+// @skip-test
 
 public class Issue409 {
-  static interface Proc {
-    void call();
-  }
-
-  Proc p;
-
-  class MyProc implements Proc {
-    @Override
-    public void call() {
-      doStuff();
+    static interface Proc {
+        void call();
     }
-  }
 
-  String foo;
+    Proc p;
 
-  Issue409() {
-    p = new MyProc();
-    p.call();
-    foo = "hello";
-  }
+    class MyProc implements Proc {
+        @Override
+        public void call() {
+            doStuff();
+        }
+    }
 
-  void doStuff() {
-    System.out.println(foo.toLowerCase());
-  }
+    String foo;
 
-  public static void main(String[] args) {
-    new Issue409();
-  }
+    Issue409() {
+        p = new MyProc();
+        p.call();
+        foo = "hello";
+    }
+
+    void doStuff() {
+        System.out.println(foo.toLowerCase());
+    }
+
+    public static void main(String[] args) {
+        new Issue409();
+    }
 }

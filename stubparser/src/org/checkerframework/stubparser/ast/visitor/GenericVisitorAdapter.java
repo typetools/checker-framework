@@ -113,6 +113,7 @@ import org.checkerframework.stubparser.ast.type.WildcardType;
  */
 public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A> {
 
+    @Override
     public R visit(AnnotationDeclaration n, A arg) {
         if (n.getJavaDoc() != null) {
             n.getJavaDoc().accept(this, arg);
@@ -130,6 +131,7 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(AnnotationMemberDeclaration n, A arg) {
         if (n.getJavaDoc() != null) {
             n.getJavaDoc().accept(this, arg);
@@ -146,12 +148,14 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(ArrayAccessExpr n, A arg) {
         n.getName().accept(this, arg);
         n.getIndex().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(ArrayCreationExpr n, A arg) {
         n.getType().accept(this, arg);
         if (n.getDimensions() != null) {
@@ -164,6 +168,7 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(ArrayInitializerExpr n, A arg) {
         if (n.getValues() != null) {
             for (Expression expr : n.getValues()) {
@@ -173,6 +178,7 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(AssertStmt n, A arg) {
         n.getCheck().accept(this, arg);
         if (n.getMessage() != null) {
@@ -181,18 +187,21 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(AssignExpr n, A arg) {
         n.getTarget().accept(this, arg);
         n.getValue().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(BinaryExpr n, A arg) {
         n.getLeft().accept(this, arg);
         n.getRight().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(BlockStmt n, A arg) {
         if (n.getStmts() != null) {
             for (Statement s : n.getStmts()) {
@@ -203,20 +212,24 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
 
     }
 
+    @Override
     public R visit(BooleanLiteralExpr n, A arg) {
         return null;
     }
 
+    @Override
     public R visit(BreakStmt n, A arg) {
         return null;
     }
 
+    @Override
     public R visit(CastExpr n, A arg) {
         n.getType().accept(this, arg);
         n.getExpr().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(CatchClause n, A arg) {
         n.getExcept().accept(this, arg);
         n.getCatchBlock().accept(this, arg);
@@ -224,15 +237,18 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
 
     }
 
+    @Override
     public R visit(CharLiteralExpr n, A arg) {
         return null;
     }
 
+    @Override
     public R visit(ClassExpr n, A arg) {
         n.getType().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(ClassOrInterfaceDeclaration n, A arg) {
         if (n.getJavaDoc() != null) {
             n.getJavaDoc().accept(this, arg);
@@ -266,6 +282,7 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(ClassOrInterfaceType n, A arg) {
         if (n.getScope() != null) {
             n.getScope().accept(this, arg);
@@ -278,6 +295,7 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(CompilationUnit n, A arg) {
         if (n.getPackage() != null) {
             n.getPackage().accept(this, arg);
@@ -295,6 +313,7 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(ConditionalExpr n, A arg) {
         n.getCondition().accept(this, arg);
         n.getThenExpr().accept(this, arg);
@@ -302,6 +321,7 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(ConstructorDeclaration n, A arg) {
         if (n.getJavaDoc() != null) {
             n.getJavaDoc().accept(this, arg);
@@ -330,20 +350,24 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(ContinueStmt n, A arg) {
         return null;
     }
 
+    @Override
     public R visit(DoStmt n, A arg) {
         n.getBody().accept(this, arg);
         n.getCondition().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(DoubleLiteralExpr n, A arg) {
         return null;
     }
 
+    @Override
     public R visit(EmptyMemberDeclaration n, A arg) {
         if (n.getJavaDoc() != null) {
             n.getJavaDoc().accept(this, arg);
@@ -351,10 +375,12 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(EmptyStmt n, A arg) {
         return null;
     }
 
+    @Override
     public R visit(EmptyTypeDeclaration n, A arg) {
         if (n.getJavaDoc() != null) {
             n.getJavaDoc().accept(this, arg);
@@ -362,11 +388,13 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(EnclosedExpr n, A arg) {
         n.getInner().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(EnumConstantDeclaration n, A arg) {
         if (n.getJavaDoc() != null) {
             n.getJavaDoc().accept(this, arg);
@@ -389,6 +417,7 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(EnumDeclaration n, A arg) {
         if (n.getJavaDoc() != null) {
             n.getJavaDoc().accept(this, arg);
@@ -416,6 +445,7 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(ExplicitConstructorInvocationStmt n, A arg) {
         if (!n.isThis()) {
             if (n.getExpr() != null) {
@@ -435,16 +465,19 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(ExpressionStmt n, A arg) {
         n.getExpression().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(FieldAccessExpr n, A arg) {
         n.getScope().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(FieldDeclaration n, A arg) {
         if (n.getJavaDoc() != null) {
             n.getJavaDoc().accept(this, arg);
@@ -461,6 +494,7 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(ForeachStmt n, A arg) {
         n.getVariable().accept(this, arg);
         n.getIterable().accept(this, arg);
@@ -468,6 +502,7 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(ForStmt n, A arg) {
         if (n.getInit() != null) {
             for (Expression e : n.getInit()) {
@@ -486,6 +521,7 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(IfStmt n, A arg) {
         n.getCondition().accept(this, arg);
         n.getThenStmt().accept(this, arg);
@@ -495,11 +531,13 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(ImportDeclaration n, A arg) {
         n.getName().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(InitializerDeclaration n, A arg) {
         if (n.getJavaDoc() != null) {
             n.getJavaDoc().accept(this, arg);
@@ -508,47 +546,57 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(InstanceOfExpr n, A arg) {
         n.getExpr().accept(this, arg);
         n.getType().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(IntegerLiteralExpr n, A arg) {
         return null;
     }
 
+    @Override
     public R visit(IntegerLiteralMinValueExpr n, A arg) {
         return null;
     }
 
+    @Override
     public R visit(JavadocComment n, A arg) {
         return null;
     }
 
+    @Override
     public R visit(LabeledStmt n, A arg) {
         n.getStmt().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(LongLiteralExpr n, A arg) {
         return null;
     }
 
+    @Override
     public R visit(LongLiteralMinValueExpr n, A arg) {
         return null;
     }
 
+    @Override
     public R visit(MarkerAnnotationExpr n, A arg) {
         n.getName().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(MemberValuePair n, A arg) {
         n.getValue().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(MethodCallExpr n, A arg) {
         if (n.getScope() != null) {
             n.getScope().accept(this, arg);
@@ -566,6 +614,7 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(MethodDeclaration n, A arg) {
         if (n.getJavaDoc() != null) {
             n.getJavaDoc().accept(this, arg);
@@ -597,10 +646,12 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(NameExpr n, A arg) {
         return null;
     }
 
+    @Override
     public R visit(NormalAnnotationExpr n, A arg) {
         n.getName().accept(this, arg);
         if (n.getPairs() != null) {
@@ -611,10 +662,12 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(NullLiteralExpr n, A arg) {
         return null;
     }
 
+    @Override
     public R visit(ObjectCreationExpr n, A arg) {
         if (n.getScope() != null) {
             n.getScope().accept(this, arg);
@@ -638,6 +691,7 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(PackageDeclaration n, A arg) {
         if (n.getAnnotations() != null) {
             for (AnnotationExpr a : n.getAnnotations()) {
@@ -648,6 +702,7 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(Parameter n, A arg) {
         if (n.getAnnotations() != null) {
             for (AnnotationExpr a : n.getAnnotations()) {
@@ -659,20 +714,24 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(PrimitiveType n, A arg) {
         return null;
     }
 
+    @Override
     public R visit(QualifiedNameExpr n, A arg) {
         n.getQualifier().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(ReferenceType n, A arg) {
         n.getType().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(ReturnStmt n, A arg) {
         if (n.getExpr() != null) {
             n.getExpr().accept(this, arg);
@@ -680,16 +739,19 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(SingleMemberAnnotationExpr n, A arg) {
         n.getName().accept(this, arg);
         n.getMemberValue().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(StringLiteralExpr n, A arg) {
         return null;
     }
 
+    @Override
     public R visit(SuperExpr n, A arg) {
         if (n.getClassExpr() != null) {
             n.getClassExpr().accept(this, arg);
@@ -697,6 +759,7 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(SwitchEntryStmt n, A arg) {
         if (n.getLabel() != null) {
             n.getLabel().accept(this, arg);
@@ -709,6 +772,7 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(SwitchStmt n, A arg) {
         n.getSelector().accept(this, arg);
         if (n.getEntries() != null) {
@@ -720,12 +784,14 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
 
     }
 
+    @Override
     public R visit(SynchronizedStmt n, A arg) {
         n.getExpr().accept(this, arg);
         n.getBlock().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(ThisExpr n, A arg) {
         if (n.getClassExpr() != null) {
             n.getClassExpr().accept(this, arg);
@@ -733,11 +799,13 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(ThrowStmt n, A arg) {
         n.getExpr().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(TryStmt n, A arg) {
         n.getTryBlock().accept(this, arg);
         if (n.getCatchs() != null) {
@@ -751,11 +819,13 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(TypeDeclarationStmt n, A arg) {
         n.getTypeDeclaration().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(TypeParameter n, A arg) {
         if (n.getAnnotations() != null) {
             for (AnnotationExpr a : n.getAnnotations()) {
@@ -770,11 +840,13 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(UnaryExpr n, A arg) {
         n.getExpr().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(VariableDeclarationExpr n, A arg) {
         if (n.getAnnotations() != null) {
             for (AnnotationExpr a : n.getAnnotations()) {
@@ -788,6 +860,7 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(VariableDeclarator n, A arg) {
         n.getId().accept(this, arg);
         if (n.getInit() != null) {
@@ -796,20 +869,24 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(VariableDeclaratorId n, A arg) {
         return null;
     }
 
+    @Override
     public R visit(VoidType n, A arg) {
         return null;
     }
 
+    @Override
     public R visit(WhileStmt n, A arg) {
         n.getCondition().accept(this, arg);
         n.getBody().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(WildcardType n, A arg) {
         if (n.getExtends() != null) {
             n.getExtends().accept(this, arg);
@@ -828,10 +905,12 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
         return null;
     }
 
+    @Override
     public R visit(BlockComment n, A arg) {
         return null;
     }
 
+    @Override
     public R visit(LineComment n, A arg) {
         return null;
     }

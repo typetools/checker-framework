@@ -1,5 +1,6 @@
-import org.checkerframework.checker.initialization.qual.*;
-import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.checker.initialization.qual.Initialized;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class CommitmentFlow {
 
@@ -9,7 +10,9 @@ public class CommitmentFlow {
         t = arg;
     }
 
-    void foo(@UnknownInitialization CommitmentFlow mystery, @Initialized CommitmentFlow triedAndTrue) {
+    void foo(
+            @UnknownInitialization CommitmentFlow mystery,
+            @Initialized CommitmentFlow triedAndTrue) {
         CommitmentFlow local = null;
 
         local = mystery;

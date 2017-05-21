@@ -1,17 +1,14 @@
 package org.checkerframework.eclipse.actions;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public abstract class CheckerHandler extends AbstractHandler {
 
@@ -20,13 +17,14 @@ public abstract class CheckerHandler extends AbstractHandler {
     }
 
     /**
-     * Takes the current selection.  Determines the target project using the first element in the selection.
-     * Return each element in the selection (top-level or nested) that is part of the target project
+     * Takes the current selection. Determines the target project using the first element in the
+     * selection. Return each element in the selection (top-level or nested) that is part of the
+     * target project
+     *
      * @param selection Current user selection
      * @return A list of JavaElements that are in the same project and in the given selection
      */
-    protected /*@Nullable*/
-    List<IJavaElement> selectionToJavaElements(final ISelection selection) {
+    protected /*@Nullable*/ List<IJavaElement> selectionToJavaElements(final ISelection selection) {
         // ITreeSelection
 
         final List<IJavaElement> elements;
@@ -40,7 +38,7 @@ public abstract class CheckerHandler extends AbstractHandler {
         return elements;
     }
 
-    protected List<IJavaElement> toSingleProjectElements(final Object [] elements) {
+    protected List<IJavaElement> toSingleProjectElements(final Object[] elements) {
         final List<IJavaElement> javaElements = new ArrayList<IJavaElement>();
 
         IJavaProject project = null;
@@ -60,7 +58,7 @@ public abstract class CheckerHandler extends AbstractHandler {
                     project = jEl.getJavaProject();
                     javaElements.add(jEl);
 
-                // Only add those elements that are in project
+                    // Only add those elements that are in project
                 } else if (!projectsEqual(jEl.getJavaProject(), project)) {
                     javaElements.add(jEl);
                 }
@@ -70,15 +68,13 @@ public abstract class CheckerHandler extends AbstractHandler {
         return javaElements;
     }
 
-
     //TODO: There must be a better way to do this
     protected boolean projectsEqual(final IJavaProject project1, final IJavaProject project2) {
         return project1.getPath().equals(project2);
     }
 
     /**
-     * Retrieve the selection from the menu or otherwise when called from
-     * elsewhere
+     * Retrieve the selection from the menu or otherwise when called from elsewhere
      *
      * @param event
      * @return the current selection
@@ -87,8 +83,7 @@ public abstract class CheckerHandler extends AbstractHandler {
         ISelection selection = HandlerUtil.getActiveMenuSelection(event);
 
         /* use the current selection when not called from popup menu */
-        if (selection == null)
-            selection = HandlerUtil.getCurrentSelection(event);
+        if (selection == null) selection = HandlerUtil.getCurrentSelection(event);
 
         return selection;
     }

@@ -1,11 +1,9 @@
-import org.checkerframework.checker.signature.qual.*;
-
 import java.util.ArrayList;
+import org.checkerframework.checker.signature.qual.*;
 
 public class DiamondTest {
 
-  void m() {
-    ArrayList<String> list = new ArrayList<>();
-  }
-
+    void m() {
+        ArrayList<String> list = new ArrayList<>();
+    }
 }

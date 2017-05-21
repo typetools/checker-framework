@@ -1,18 +1,8 @@
 // Test case for Issue #770
 // https://github.com/typetools/checker-framework/issues/770
-// @skip-test
 import org.checkerframework.checker.lock.qual.GuardedBy;
 
 public class ViewpointAdaptation2 {
-    class OuterClass {
-        private final Object lock = new Object();
-        @GuardedBy("this.lock") Object field;
-        class InnerClass {
-            private final Object lock = new Object();
-            //:: error: (assignment.type.incompatible)
-            @GuardedBy("this.lock") Object field2 = field;
-        }
-    }
 
     class LockExample {
         protected final Object myLock = new Object();
@@ -29,7 +19,9 @@ public class ViewpointAdaptation2 {
     class Use {
         final LockExample lockExample1 = new LockExample();
         final Object myLock = new Object();
+
         @GuardedBy("lockExample1.myLock") Object o1 = lockExample1.locked;
+
         @GuardedBy("lockExample1.myLock") Object o2 = lockExample1.locked2;
         //:: error: (assignment.type.incompatible)
         @GuardedBy("myLock") Object o3 = lockExample1.locked;

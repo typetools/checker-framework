@@ -2,9 +2,8 @@ package nullness.generics;
 
 //see also framework/tests/all-systems/WildcardSuper2
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 import java.util.List;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 interface ToOverride<T> {
     // For nullness this should default to type @NonNull List<? [ extends @Nullable Object
@@ -20,7 +19,6 @@ class WildcardOverride implements ToOverride<Object> {
         return 0;
     }
 }
-
 
 interface ToOverride2<T> {
     // For nullness this should be typed as @NonNull List<? [ extends @NonNull Object

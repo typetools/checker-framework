@@ -2,28 +2,28 @@
 // https://github.com/typetools/checker-framework/issues/293
 // @skip-test
 class Issue293 {
-  void foobar() {
-    String s;
-    try {
-      s = read();
-    } catch (Exception e) {
-      // Because of definite assignment, s cannot be mentioned here.
-      write("Catch.");
-      return;
-    } finally {
-      // Because of definite assignment, s cannot be mentioned here.
-      write("Finally.");
+    void foobar() {
+        String s;
+        try {
+            s = read();
+        } catch (Exception e) {
+            // Because of definite assignment, s cannot be mentioned here.
+            write("Catch.");
+            return;
+        } finally {
+            // Because of definite assignment, s cannot be mentioned here.
+            write("Finally.");
+        }
+
+        // s is definitely initialized here.
+        write(s);
     }
 
-    // s is definitely initialized here.
-    write(s);
-  }
+    String read() throws Exception {
+        throw new Exception();
+    }
 
-  String read() throws Exception {
-    throw new Exception();
-  }
-
-  void write(String p) {
-    System.out.println(p);
-  }
+    void write(String p) {
+        System.out.println(p);
+    }
 }

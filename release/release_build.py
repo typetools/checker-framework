@@ -8,15 +8,18 @@ Created by Jonathan Burke on 2013-08-01.
 Copyright (c) 2015 University of Washington. All rights reserved.
 """
 
-# See README-maintainers.html for more information
+# See README-release-process.html for more information
 
 from release_vars  import *
 from release_utils import *
+from distutils.dir_util import copy_tree
 
 # Turned on by the --debug command-line option.
 debug = False
 ant_debug = ""
 
+# Currently only affects the Checker Framework tests, which run the longest
+notest = False
 
 def print_usage():
     """Print usage information."""
@@ -24,6 +27,7 @@ def print_usage():
     print_projects(1, 4)
     print "\n  --auto  accepts or chooses the default for all prompts"
     print "\n  --debug  turns on debugging mode which produces verbose output"
+    print "\n  --notest  disables tests to speed up scripts; for debugging only"
     print "\n  --review-manual  review the documentation changes only; don't perform a full build"
 
 def clone_or_update_repos(auto):
@@ -63,12 +67,6 @@ The following repositories will be cloned or updated from their origins:
     clone_from_scratch_or_update(LIVE_PLUME_LIB, PLUME_LIB, clone_from_scratch, False)
     clone_from_scratch_or_update(LIVE_PLUME_BIB, PLUME_BIB, clone_from_scratch, False)
 
-def copy_cf_logo(cf_release_dir):
-    """Copy CFLogo.png from the live web site to the given directory."""
-    dev_releases_png = os.path.join(cf_release_dir, "CFLogo.png")
-    cmd = "rsync --times %s %s" % (LIVE_CF_LOGO, dev_releases_png)
-    execute(cmd)
-
 def get_afu_date(building_afu):
     """If the AFU is being built, return the current date, otherwise return the
     date of the last AFU release as indicated in the AFU home page."""
@@ -90,12 +88,12 @@ def get_new_version(project_name, curr_version, auto):
     if auto:
         new_version = suggested_version
     else:
-        new_version = prompt_w_suggestion("Enter new version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$")
+        new_version = prompt_w_default("Enter new version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$")
 
     print "New version: " + new_version
 
     if curr_version == new_version:
-        curr_version = prompt_w_suggestion("Enter current version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$")
+        curr_version = prompt_w_default("Enter current version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$")
         print "Current version: " + curr_version
 
     return (curr_version, new_version)
@@ -103,32 +101,49 @@ def get_new_version(project_name, curr_version, auto):
 def create_dev_website_release_version_dir(project_name, version):
     """Create the directory for the given version of the given project under
     the releases directory of the dev web site."""
-    interm_dir = os.path.join(FILE_PATH_TO_DEV_SITE, project_name, "releases", version)
+    if project_name == None or project_name == "checker-framework":
+        interm_dir = os.path.join(FILE_PATH_TO_DEV_SITE, "releases", version)
+    else:
+        interm_dir = os.path.join(FILE_PATH_TO_DEV_SITE, project_name, "releases", version)
     delete_path_if_exists(interm_dir)
 
     execute("mkdir -p %s" % interm_dir, True, False)
     return interm_dir
 
-def create_dirs_for_dev_website_release_versions(jsr308_version, afu_version):
-    """Create directories for the given versions of the JSR308, CF and AFU
-    projects under the releases directory of the dev web site."""
-    # these directories correspond to the /cse/www2/types/dev/<project_name>/releases/<version> dirs
-    jsr308_interm_dir = create_dev_website_release_version_dir("jsr308", jsr308_version)
+def create_dirs_for_dev_website_release_versions(jsr308_and_cf_version, afu_version):
+    """Create directories for the given versions of the JSR308, CF, and AFU
+    projects under the releases directory of the dev web site.
+    For example,
+    /cse/www2/types/dev/checker-framework/<project_name>/releases/<version> ."""
+    jsr308_interm_dir = create_dev_website_release_version_dir("jsr308", jsr308_and_cf_version)
     afu_interm_dir = create_dev_website_release_version_dir("annotation-file-utilities", afu_version)
-    checker_framework_interm_dir = create_dev_website_release_version_dir("checker-framework", jsr308_version)
+    checker_framework_interm_dir = create_dev_website_release_version_dir(None, jsr308_and_cf_version)
 
     return (jsr308_interm_dir, afu_interm_dir, checker_framework_interm_dir)
 
-def update_project_dev_website_symlink(project_name, release_version):
-    """Update the \"current\" symlink in the dev web site for the given project
-    to point to the given release of the project on the dev web site."""
-    project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
-    link_path = os.path.join(project_dev_site, "current")
+### def update_project_dev_website_symlink(project_name, release_version):
+###     """Update the \"current\" symlink in the dev web site for the given project
+###     to point to the given release of the project on the dev web site."""
+###     project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
+###     link_path = os.path.join(project_dev_site, "current")
+###
+###     dev_website_relative_dir = os.path.join("releases", release_version)
+###
+###     print "Writing symlink: " + link_path + "\nto point to relative directory: " + dev_website_relative_dir
+###     force_symlink(dev_website_relative_dir, link_path)
 
-    dev_website_relative_dir = os.path.join(RELEASES_SUBDIR, release_version)
+def update_project_dev_website(project_name, release_version):
+    """Update the dev web site for the given project
+    according to the given release of the project on the dev web site."""
+    if project_name == "checker-framework":
+        project_dev_site = FILE_PATH_TO_DEV_SITE
+    else:
+        project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
+    dev_website_relative_dir = os.path.join(project_dev_site, "releases", release_version)
 
-    print "Writing symlink: " + link_path + "\nto point to relative directory: " + dev_website_relative_dir
-    force_symlink(dev_website_relative_dir, link_path)
+    print "Copying from : " + dev_website_relative_dir + "\nto: " + project_dev_site
+    copy_tree(dev_website_relative_dir, project_dev_site)
+
 
 def build_jsr308_langtools_release(version, afu_version, afu_release_date, jsr308_interm_dir):
     """Build the jsr308-langtools project's artifacts and place them in the
@@ -156,7 +171,7 @@ def build_jsr308_langtools_release(version, afu_version, afu_release_date, jsr30
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # build jsr308 website
-    make_cmd = "make jsr308_www=%s jsr308_www_online=%s web-no-checks" % (jsr308_interm_dir, HTTP_PATH_TO_DEV_SITE)
+    make_cmd = "make jsr308_www_dir=%s jsr308_url=%s web-no-checks" % (jsr308_interm_dir, HTTP_PATH_TO_DEV_SITE)
     execute(make_cmd, True, False, JSR308_LT_DOC)
 
     # copy remaining website files to jsr308_interm_dir
@@ -165,7 +180,7 @@ def build_jsr308_langtools_release(version, afu_version, afu_release_date, jsr30
     ant_cmd = "ant %s -f release.xml %s langtools-website-docs " % (ant_debug, ant_props)
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-    update_project_dev_website_symlink("jsr308", version)
+    update_project_dev_website("jsr308", version)
 
     return
 
@@ -189,17 +204,13 @@ def build_annotation_tools_release(version, afu_interm_dir):
     ant_cmd = "ant %s -buildfile %s -e web-no-checks -Dafu.version=%s -Ddeploy-dir=%s" % (ant_debug, build, version, afu_interm_dir)
     execute(ant_cmd)
 
-    update_project_dev_website_symlink("annotation-file-utilities", version)
+    update_project_dev_website("annotation-file-utilities", version)
 
 def build_and_locally_deploy_maven(version):
     protocol_length = len("file://")
     maven_dev_repo_without_protocol = MAVEN_DEV_REPO[protocol_length:]
 
     execute("mkdir -p " + maven_dev_repo_without_protocol)
-
-    # Build and then deploy the maven plugin
-    mvn_install(MAVEN_PLUGIN_DIR)
-    mvn_deploy_mvn_plugin(MAVEN_PLUGIN_DIR, MAVEN_PLUGIN_POM, version, MAVEN_DEV_REPO)
 
     # Deploy jsr308 and checker-qual jars to maven repo
     mvn_deploy(CHECKER_BINARY, CHECKER_BINARY_POM, MAVEN_DEV_REPO)
@@ -228,11 +239,14 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
         execute("./checkPluginUtil.sh", True, False, CHECKER_FRAMEWORK_RELEASE)
 
         # build the checker framework binaries and documents, run checker framework tests
-        ant_cmd = "ant %s -Dhalt.on.test.failure=true dist-release" % (ant_debug)
+        if notest:
+            ant_cmd = "ant %s -Dhalt.on.test.failure=true dist-release-notest" % (ant_debug)
+        else:
+            ant_cmd = "ant %s -Dhalt.on.test.failure=true dist-release" % (ant_debug)
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK)
 
     # make the Checker Framework Manual
-    checker_manual_dir = os.path.join(checker_dir, "manual")
+    checker_manual_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "manual")
     execute("make manual.pdf manual.html", True, False, checker_manual_dir)
 
     if not manual_only:
@@ -242,7 +256,7 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
         execute("make", True, False, dataflow_manual_dir)
 
         # make the checker framework tutorial
-        checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
+        checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "tutorial")
         execute("make", True, False, checker_tutorial_dir)
 
         cfZipName = "checker-framework-%s.zip" % version
@@ -269,12 +283,12 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
         # clean no longer necessary files left over from building the checker framework tutorial
-        checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
+        checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "tutorial")
         execute("make clean", True, False, checker_tutorial_dir)
 
         build_and_locally_deploy_maven(version)
 
-        update_project_dev_website_symlink("checker-framework", version)
+        update_project_dev_website("checker-framework", version)
 
     return
 
@@ -316,6 +330,8 @@ def main(argv):
     debug = read_command_line_option(argv, "--debug")
     if debug:
         ant_debug = "-debug"
+    global notest
+    notest = read_command_line_option(argv, "--notest")
 
     # Indicates whether to review documentation changes only and not perform a build.
     review_documentation = read_command_line_option(argv, "--review-manual")
@@ -385,7 +401,7 @@ def main(argv):
         print("It is *strongly discouraged* to not update the release version numbers for the Checker Framework " +
               "and jsr308-langtools even if no changes were made to these in a month. This would break so much " +
               "in the release scripts that they would become unusable.\n")
-        prompt_until_yes()
+        prompt_to_continue()
 
     old_afu_version = get_afu_version_from_html(AFU_MANUAL)
     (old_afu_version, afu_version) = get_new_version("Annotation File Utilities", old_afu_version, auto)
@@ -400,20 +416,20 @@ def main(argv):
               "and \"Aug.*29\" and fix them to match the previous release date.\n" +
               "Keep in mind that in this case, the release scripts will fail in certain places and you must manually " +
               "follow a few remaining release steps.\n")
-        prompt_until_yes()
+        prompt_to_continue()
 
     if review_documentation:
         print_step("Build Step 4: Review changelogs.") # SEMIAUTO
 
-        print "Verify that all changelog messages follow the guidelines found in README-maintainers.html#changelog_guide\n"
+        print "Verify that all changelog messages follow the guidelines found in README-release-process.html#changelog_guide\n"
 
         print "Ensure that the changelogs end with a line that lists resolved issues in numerical order, like"
         print "Resolved issues:  200, 300, 332, 336, 357, 359, 373, 374.\n"
 
         print("To ensure the jsr308-langtools, AFU and Checker Framework changelogs are correct and complete, " +
-              "please follow the Content Guidelines found in README-maintainers.html#content_guidelines\n")
+              "please follow the Content Guidelines found in README-release-process.html#content_guidelines\n")
 
-        prompt_until_yes()
+        prompt_to_continue()
 
         # This step will write out all of the changes that happened to the individual projects' documentation
         # to temporary files. Please review these changes for errors.
@@ -434,7 +450,7 @@ def main(argv):
                                                 AFU_TAG_PREFIXES, AFU_MANUAL, TMP_DIR + "/afu.manual")
 
         if projects_to_release[CF_OPT]:
-            build_checker_framework_release(jsr308_version, afu_version, afu_date, "", manual_only=True)
+            build_checker_framework_release(jsr308_version, afu_version, afu_date, "checker-framework", manual_only=True)
 
             print ""
             print "The built Checker Framework manual (HTML and PDF) can be found at " + CHECKER_MANUAL
@@ -455,28 +471,28 @@ def main(argv):
 
         return
 
-    print_step("Build Step 4: Copy entire live site to dev site (~22 minutes).") # SEMIAUTO
+    ## I don't think this should be necessary in general.  It's just to put files in place no link checking will work, and it takes a loooong time to run.
+    # print_step("Build Step 4: Copy entire live site to dev site (~22 minutes).") # SEMIAUTO
 
-    if auto or prompt_yes_no("Proceed with copy of live site to dev site?", True):
-        # ************************************************************************************************
-        # WARNING: BE EXTREMELY CAREFUL WHEN MODIFYING THIS COMMAND.  The --delete option is destructive
-        # and its work cannot be undone.  If, for example, this command were modified to accidentally make
-        # /cse/www2/types/ the target directory, the entire types directory could be wiped out.
-        execute("rsync --omit-dir-times --recursive --links --delete --quiet --exclude=dev --exclude=sparta/release/versions /cse/www2/types/ /cse/www2/types/dev")
-        # ************************************************************************************************
+    # if auto or prompt_yes_no("Proceed with copy of live site to dev site?", True):
+    #     # ************************************************************************************************
+    #     # WARNING: BE EXTREMELY CAREFUL WHEN MODIFYING THIS COMMAND.  The --delete option is destructive
+    #     # and its work cannot be undone.  If, for example, this command were modified to accidentally make
+    #     # /cse/www2/types/ the target directory, the entire types directory could be wiped out.
+    #     execute("rsync --omit-dir-times --recursive --links --delete --quiet --exclude=dev --exclude=sparta/release/versions /cse/www2/types/ /cse/www2/types/dev")
+    #     # ************************************************************************************************
 
     print_step("Build Step 5: Create directories for the current release on the dev site.") # AUTO
 
-    version_dirs = create_dirs_for_dev_website_release_versions(jsr308_version, afu_version)
-    jsr308_interm_dir = version_dirs[0]
-    afu_interm_dir = version_dirs[1]
-    checker_framework_interm_dir = version_dirs[2]
+    (jsr308_interm_dir, afu_interm_dir, checker_framework_interm_dir) = \
+        create_dirs_for_dev_website_release_versions(jsr308_version, afu_version)
 
-    # The projects are built in the following order: JSR308-Langtools, Annotation File Utilities,
-    # and Checker Framework. Furthermore, their manuals and websites are also built and placed in
-    # their relevant locations at http://types.cs.washington.edu/dev/ This is the most time consuming
-    # piece of the release. There are no prompts from this step forward; you might want to get a cup
-    # of coffee and do something else until it is done.
+    # The projects are built in the following order: JSR308-Langtools,
+    # Annotation File Utilities, and Checker Framework. Furthermore, their
+    # manuals and websites are also built and placed in their relevant locations
+    # at https://checkerframework.org/dev/ .  This is the most time-consuming
+    # piece of the release. There are no prompts from this step forward; you
+    # might want to get a cup of coffee and do something else until it is done.
 
     print_step("Build Step 6: Build projects and websites.") # AUTO
     print projects_to_release
@@ -493,12 +509,10 @@ def main(argv):
         build_checker_framework_release(jsr308_version, afu_version, afu_date, checker_framework_interm_dir)
 
 
-    print_step("Build Step 7: Overwrite .htaccess.") # AUTO
+    print_step("Build Step 7: Overwrite .htaccess and CFLogo.png .") # AUTO
 
     # Not "cp -p" because that does not work across filesystems whereas rsync does
-    execute("rsync --times %s %s" % (RELEASE_HTACCESS, DEV_HTACCESS))
-
-    copy_cf_logo(checker_framework_interm_dir)
+    execute("rsync --times %s %s" % (CFLOGO, checker_framework_interm_dir))
 
     # Each project has a set of files that are updated for release. Usually these updates include new
     # release date and version information. All changed files are committed and pushed to the intermediate
@@ -509,7 +523,7 @@ def main(argv):
     commit_to_interm_projects(jsr308_version, afu_version, projects_to_release)
 
     # Adds read/write/execute group permissions to all of the new dev website directories
-    # under http://types.cs.washington.edu/dev/ These directories need group read/execute
+    # under https://checkerframework.org/dev/ These directories need group read/execute
     # permissions in order for them to be served.
 
     print_step("\n\nBuild Step 9: Add group permissions to repos.")

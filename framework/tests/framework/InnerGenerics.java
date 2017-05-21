@@ -1,9 +1,9 @@
-import tests.util.*;
+import testlib.util.*;
 
-class ListOuter<T> { }
+class ListOuter<T> {}
 
 public class InnerGenerics {
-    class ListInner<T> { }
+    class ListInner<T> {}
 
     void testInner1() {
         @Odd ListOuter<String> o = new @Odd ListOuter<String>();

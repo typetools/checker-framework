@@ -7,13 +7,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for methods of the form:
- * <br>
- * {@code Object method({@link MethodVal}(classname=c, methodname=m, params=p)
- * Method this, Object obj, Object... args)}
+ * Annotation for methods of the form: <br>
+ * {@code Object method({@link MethodVal}(classname=c, methodname=m, params=p) Method this, Object
+ * obj, Object... args)}
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD })
-public @interface Invoke {
-}
+@Target({ElementType.METHOD})
+public @interface Invoke {}

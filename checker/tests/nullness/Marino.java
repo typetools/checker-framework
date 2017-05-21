@@ -22,7 +22,7 @@ public class Marino {
         int i = 1;
         while (true) {
 
-            @NonNull String a = s;  // s cannot be null here
+            @NonNull String a = s; // s cannot be null here
             s = null;
             //:: error: (dereference.of.nullable)
             System.out.println("hi" + s.length());
@@ -40,9 +40,11 @@ public class Marino {
         // for practicality in interacting with libraries...?
         //:: error: (dereference.of.nullable)
         System.out.println("Member string has length: " + ms_str.length());
-        System.out.println("Everyone should get this error: " +
-                           //:: error: (dereference.of.nullable)
-                           m_nullableStr.length());
+        System.out.println(
+                "Everyone should get this error: "
+                        +
+                        //:: error: (dereference.of.nullable)
+                        m_nullableStr.length());
 
         s = null;
         @NonNull String b = "hi";
@@ -59,7 +61,6 @@ public class Marino {
     }
 
     void methodThatThrowsEx() throws Exception {
-    throw new Exception();
+        throw new Exception();
     }
-
 }

@@ -8,13 +8,12 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 
 /**
- * Behaves like {@link InitializationStore}, but additionally tracks whether
- * {@link PolyNull} is known to be {@link Nullable}.
+ * Behaves like {@link InitializationStore}, but additionally tracks whether {@link PolyNull} is
+ * known to be {@link Nullable}.
  *
  * @author Stefan Heule
  */
-public class NullnessStore extends
-        InitializationStore<NullnessValue, NullnessStore> {
+public class NullnessStore extends InitializationStore<NullnessValue, NullnessStore> {
 
     protected boolean isPolyNullNull;
 

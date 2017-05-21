@@ -1,15 +1,13 @@
 package org.checkerframework.common.reflection;
 
 import java.util.LinkedHashSet;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.StubFiles;
 
 /**
- * The ClassVal Checker provides a sound estimate of the binary name of Class
- * objects.
+ * The ClassVal Checker provides a sound estimate of the binary name of Class objects.
  *
  * @checker_framework.manual #methodval-and-classval-checkers ClassVal Checker
  */
@@ -29,6 +27,7 @@ public class ClassValChecker extends BaseTypeChecker {
         subCheckers.add(ValueChecker.class);
         return subCheckers;
     }
+
     @Override
     public boolean shouldResolveReflection() {
         // Because this checker is a subchecker of MethodVal,

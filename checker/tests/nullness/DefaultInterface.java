@@ -12,8 +12,5 @@ class DefaultInterface {
     public void test() {
 
         @Nullable Foo foo = null;
-
     }
-
-
 }

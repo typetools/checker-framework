@@ -3,21 +3,22 @@ import org.checkerframework.checker.interning.qual.*;
 public class MethodInvocation {
     @Interned MethodInvocation interned;
     MethodInvocation nonInterned;
+
     void nonInternedMethod() {
         nonInternedMethod();
         //:: error: (method.invocation.invalid)
-        internedMethod();   // should emit error
+        internedMethod(); // should emit error
 
         this.nonInternedMethod();
         //:: error: (method.invocation.invalid)
-        this.internedMethod();      // should emit error
+        this.internedMethod(); // should emit error
 
         interned.nonInternedMethod();
         interned.internedMethod();
 
         nonInterned.nonInternedMethod();
         //:: error: (method.invocation.invalid)
-        nonInterned.internedMethod();   // should emit error
+        nonInterned.internedMethod(); // should emit error
     }
 
     void internedMethod(@Interned MethodInvocation this) {
@@ -32,12 +33,11 @@ public class MethodInvocation {
 
         nonInterned.nonInternedMethod();
         //:: error: (method.invocation.invalid)
-        nonInterned.internedMethod();   // should emit error
+        nonInterned.internedMethod(); // should emit error
     }
 
     // Now, test method parameters
-    void internedCharacterParameter(@Interned Character a) {
-    }
+    void internedCharacterParameter(@Interned Character a) {}
 
     // See https://github.com/typetools/checker-framework/issues/84
     void internedCharacterParametersClient() {
@@ -50,5 +50,4 @@ public class MethodInvocation {
         //:: error: (argument.type.incompatible)
         internedCharacterParameter(Character.valueOf('a'));
     }
-
 }

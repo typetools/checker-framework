@@ -10,14 +10,13 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Issue783a<T> {
-  private @Nullable T val;
+    private @Nullable T val;
 
-  public void set(@Nullable T val) {
-    this.val = val;
-  }
+    public void set(@Nullable T val) {
+        this.val = val;
+    }
 
-  @Nullable
-  public T get() {
-    return val;
-  }
+    @Nullable public T get() {
+        return val;
+    }
 }

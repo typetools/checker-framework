@@ -1,5 +1,4 @@
-import org.checkerframework.framework.qual.*;
-import tests.util.*;
+import testlib.util.*;
 
 // Test case for Issue 140:
 // https://github.com/typetools/checker-framework/issues/140
@@ -59,7 +58,9 @@ class GenericTest9 {
         <S extends T> Ordering4<S> reverse();
     }
 
-    <T> Ordering4<T> from4(Comparator4<T> comparator) { return null; }
+    <T> Ordering4<T> from4(Comparator4<T> comparator) {
+        return null;
+    }
 
     <E> Comparator4<? super E> reverseComparator4(Comparator4<? super E> comparator) {
         // Making the method type argument explicit:
@@ -68,5 +69,4 @@ class GenericTest9 {
         from4(comparator).<E>reverse();
         return from4(comparator).reverse();
     }
-
 }

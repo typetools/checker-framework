@@ -2,7 +2,6 @@ package org.checkerframework.checker.linear;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-
 import org.checkerframework.checker.linear.qual.Linear;
 import org.checkerframework.checker.linear.qual.Unusable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -14,12 +13,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * Adds {@link Unusable} qualifier to a type if it represents:
  *
  * <ol>
- * <li value="1">Class declaration tree/element.  Such a construct usually
- * requires the top qualifier.</li>
- *
- * <li value="2">{@code Linear} reference once it is "used up"</li>
+ *   <li value="1">Class declaration tree/element. Such a construct usually requires the top
+ *       qualifier.
+ *   <li value="2">{@code Linear} reference once it is "used up"
  * </ol>
- *
  */
 public class LinearAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -34,9 +31,7 @@ public class LinearAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
     }
 
-    /**
-     * Case 1: type of class declaration
-     */
+    /** Case 1: type of class declaration */
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         if (!type.isAnnotatedInHierarchy(LINEAR) && elt.getKind().isClass()) {
@@ -48,12 +43,11 @@ public class LinearAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // TODO: Re-enable flow with the new org.checkerframework.dataflow framework.
 
     /**
-     * Performs flow-sensitive analysis to mark reference types {@code Linear}
-     * as {@code Unusable} once they are used up.
+     * Performs flow-sensitive analysis to mark reference types {@code Linear} as {@code Unusable}
+     * once they are used up.
      *
-     * A {code Linear} type is "used up" once the reference is mentioned, as
-     * an {@link IdentifierTree}.
-     *
+     * <p>A {code Linear} type is "used up" once the reference is mentioned, as an {@link
+     * IdentifierTree}.
      */
     /*
     private class LinearFlow extends DefaultFlow<DefaultFlowState> {

@@ -4,23 +4,25 @@ package tests;
 // https://github.com/typetools/checker-framework/issues/691
 // This exists to just run the FormatterLubGlbChecker
 
-import org.checkerframework.framework.test.CheckerFrameworkTest;
-
 import java.io.File;
-
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
+import testlib.lubglb.FormatterLubGlbChecker;
 
-import tests.lubglb.FormatterLubGlbChecker;
+public class FormatterLubGlbCheckerTest extends CheckerFrameworkPerDirectoryTest {
 
-public class FormatterLubGlbCheckerTest extends CheckerFrameworkTest {
-
-    public FormatterLubGlbCheckerTest(File testFile) {
-        super(testFile, FormatterLubGlbChecker.class, "", "-Anomsgtext", "-AcheckPurityAnnotations");
+    public FormatterLubGlbCheckerTest(List<File> testFiles) {
+        super(
+                testFiles,
+                FormatterLubGlbChecker.class,
+                "",
+                "-Anomsgtext",
+                "-AcheckPurityAnnotations");
     }
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"formatter-lubglb"};
+        return new String[] {"formatter-lubglb"};
     }
-
 }

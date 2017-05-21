@@ -8,6 +8,7 @@ class Interface {
     interface A {
         @ReportCall
         boolean equals(Object o);
+
         @ReportCall
         void mine();
     }
@@ -38,5 +39,4 @@ class Interface {
         //:: error: (methodcall)
         c.mine();
     }
-
 }

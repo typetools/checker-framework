@@ -5,17 +5,20 @@ import org.checkerframework.checker.signature.qual.*;
 
 public class RefinedReturnTest {
 
-  public class Super {
-    public @BinaryName String aString() { return "int[][]"; }
-  }
+    public class Super {
+        public @BinaryName String aString() {
+            return "int[][]";
+        }
+    }
 
-  public class Sub extends Super {
-    @Override
-    public @BinaryNameForNonArray String aString() { return "java.lang.Integer"; }
-  }
+    public class Sub extends Super {
+        @Override
+        public @BinaryNameForNonArray String aString() {
+            return "java.lang.Integer";
+        }
+    }
 
-  void m() {
-    @BinaryNameForNonArray String s = new Sub().aString();
-  }
-
+    void m() {
+        @BinaryNameForNonArray String s = new Sub().aString();
+    }
 }

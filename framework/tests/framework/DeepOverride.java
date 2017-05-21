@@ -1,5 +1,4 @@
-import tests.util.*;
-import java.util.*;
+import testlib.util.*;
 
 public class DeepOverride {
     public static class A {
@@ -8,13 +7,11 @@ public class DeepOverride {
         }
     }
 
-    public static class B extends A {
-
-    }
+    public static class B extends A {}
 
     public static class C extends B {
         @Override
-            //:: error: (override.return.invalid)
+        //:: error: (override.return.invalid)
         public String method() {
             return "";
         }

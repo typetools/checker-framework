@@ -1,6 +1,6 @@
 // Test case for Issue 102
 public final class Bug102 {
-    class C<T extends @org.checkerframework.checker.nullness.qual.Nullable Object> { }
+    class C<T extends @org.checkerframework.checker.nullness.qual.Nullable Object> {}
 
     void bug1() {
         C<String> c = new C<String>();
@@ -13,5 +13,6 @@ public final class Bug102 {
         m(c);
     }
 
-    <@org.checkerframework.checker.nullness.qual.PolyNull S> void m(final C<@org.checkerframework.checker.nullness.qual.PolyNull String> a) {}
+    <@org.checkerframework.checker.nullness.qual.PolyNull S> void m(
+            final C<@org.checkerframework.checker.nullness.qual.PolyNull String> a) {}
 }

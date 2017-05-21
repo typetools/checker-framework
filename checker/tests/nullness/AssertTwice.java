@@ -24,6 +24,7 @@ public class AssertTwice {
     }
 
     public static @org.checkerframework.checker.nullness.qual.Nullable Object n = "m";
+
     private void twiceWithChecks() {
         assert n != null;
         n = null;

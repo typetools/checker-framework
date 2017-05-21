@@ -1,8 +1,6 @@
 package java.util;
-import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.dataflow.qual.Pure;
 
-import org.checkerframework.checker.nullness.qual.KeyFor;
+
 import org.checkerframework.checker.lock.qual.*;
 
 public class LinkedHashMap<K extends Object, V extends Object> extends HashMap<K, V> implements Map<K, V> {

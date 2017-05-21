@@ -1,5 +1,5 @@
-import org.checkerframework.checker.interning.qual.Interned;
 import java.util.List;
+import org.checkerframework.checker.interning.qual.Interned;
 
 /*
  * This test case excercises the interaction between class annotations
@@ -7,21 +7,21 @@ import java.util.List;
  * A previously existing Unqualified annotation wasn't correctly removed.
  */
 class ClassDefaults {
-  @Interned
-  class Test {}
-  public static interface Visitor<T> {}
+    @Interned class Test {}
 
-  class GuardingVisitor implements Visitor<List<Test>> {
-      void call() {
-          test(this);
-      }
-  }
+    public static interface Visitor<T> {}
 
-  <T> T test(Visitor<T> p) {
-      return null;
-  }
+    class GuardingVisitor implements Visitor<List<Test>> {
+        void call() {
+            test(this);
+        }
+    }
 
-  void call(GuardingVisitor p) {
-      test(p);
-  }
+    <T> T test(Visitor<T> p) {
+        return null;
+    }
+
+    void call(GuardingVisitor p) {
+        test(p);
+    }
 }

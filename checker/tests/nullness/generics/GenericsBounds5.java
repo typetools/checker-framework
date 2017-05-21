@@ -9,7 +9,7 @@ class GenericsBounds5 {
         }
     }
 
-    <@Nullable F extends @Nullable Object> void addNull1( Collection1<F> l ) {
+    <@Nullable F extends @Nullable Object> void addNull1(Collection1<F> l) {
         // This call is allowed, because F is definitely @Nullable.
         l.add(null);
     }
@@ -17,12 +17,12 @@ class GenericsBounds5 {
     // Effectively, this should be the same signature as above.
     // TODO: the type "@Nullable ?" is "@Nullable ? extends @NonNull Object",
     // with the wrong extends bound.
-    void addNull2(Collection1< @Nullable ? extends @Nullable Object> l ) {
+    void addNull2(Collection1<@Nullable ? extends @Nullable Object> l) {
         // This call has to pass, like above.
         l.add(null);
     }
 
-    <@Nullable F extends @Nullable Object> void addNull3( Collection1<F> l, F p ) {
+    <@Nullable F extends @Nullable Object> void addNull3(Collection1<F> l, F p) {
         // This call is allowed, because F is definitely @Nullable.
         l.add(null);
         l.add(p);

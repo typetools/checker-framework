@@ -5,11 +5,14 @@ class Test {
     class Test1<CONTENT extends @Nullable Object> {
         CONTENT a;
         // To prevent the warning about un-initialized fields.
-        Test1(CONTENT p1) { a = p1; }
+        Test1(CONTENT p1) {
+            a = p1;
+        }
 
         public CONTENT get() {
             return a;
         }
+
         @org.checkerframework.dataflow.qual.Pure
         public CONTENT get2() {
             return a;
@@ -19,11 +22,14 @@ class Test {
     class Test2<CONTENT extends @Nullable Object> {
         @NonNull CONTENT a;
         // To prevent the warning about un-initialized fields.
-        Test2(@NonNull CONTENT p1) { a = p1; }
+        Test2(@NonNull CONTENT p1) {
+            a = p1;
+        }
 
         public @NonNull CONTENT get() {
             return a;
         }
+
         @org.checkerframework.dataflow.qual.Pure
         public @NonNull CONTENT get2() {
             return a;
@@ -45,20 +51,24 @@ class Test {
     */
 
     class Test4<CONTENT extends @Nullable Object> {
-        private Pair<CONTENT, CONTENT> userObject;
-        Test4(Pair<CONTENT, CONTENT> p) { userObject = p; }
+        private MyPair<CONTENT, CONTENT> userObject;
+
+        Test4(MyPair<CONTENT, CONTENT> p) {
+            userObject = p;
+        }
 
         @org.checkerframework.dataflow.qual.Pure
         public CONTENT getUserLeft() {
-          return userObject.a;
+            return userObject.a;
         }
-        public class Pair<T1 extends @Nullable Object, T2 extends @Nullable Object> {
+
+        public class MyPair<T1 extends @Nullable Object, T2 extends @Nullable Object> {
             public T1 a;
             public T2 b;
 
-            public Pair(T1 a, T2 b) {
-              this.a = a;
-              this.b = b;
+            public MyPair(T1 a, T2 b) {
+                this.a = a;
+                this.b = b;
             }
         }
     }

@@ -1,4 +1,5 @@
 import org.checkerframework.common.aliasing.qual.*;
+
 class ReceiverParameterTest {
 
     public @Unique ReceiverParameterTest() {
@@ -40,8 +41,12 @@ class ReceiverParameterTest {
         isUnique(sb2);
     }
 
-    ReceiverParameterTest leakedToResult(@LeakedToResult ReceiverParameterTest this) {return this;}
+    ReceiverParameterTest leakedToResult(@LeakedToResult ReceiverParameterTest this) {
+        return this;
+    }
+
     void nonLeaked(@NonLeaked ReceiverParameterTest this) {}
+
     void mayLeak() {}
 
     // @NonLeaked so it doesn't refine the type of the argument.

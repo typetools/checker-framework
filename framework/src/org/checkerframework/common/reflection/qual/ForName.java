@@ -7,12 +7,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for methods of the form:
- * <br>
+ * Annotation for methods of the form: <br>
  * {@code {@link ClassVal}("name") Class method(String name) {...}}
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD })
-public @interface ForName {
-}
+@Target({ElementType.METHOD})
+public @interface ForName {}

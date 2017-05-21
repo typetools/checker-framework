@@ -2,48 +2,48 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-interface Consumer {
+interface ConsumerLPB {
     void method(@Nullable String s);
 }
 
-interface NNConsumer {
+interface NNConsumerLPB {
     void method(@NonNull String s);
 }
 
 class LambdaParamBody {
 
     //:: error: (dereference.of.nullable)
-    Consumer fn0 = (String i) -> i.toString();
-    Consumer fn2 =
+    ConsumerLPB fn0 = (String i) -> i.toString();
+    ConsumerLPB fn2 =
             (@Nullable String i) -> {
                 //:: error: (dereference.of.nullable)
                 i.toString();
             };
-    Consumer fn3 =
+    ConsumerLPB fn3 =
             (String i) -> {
                 //:: error: (dereference.of.nullable)
                 i.toString();
             };
-    Consumer fn3b =
+    ConsumerLPB fn3b =
             (i) -> {
                 //:: error: (dereference.of.nullable)
                 i.toString();
             };
 
-    NNConsumer fn4 =
+    NNConsumerLPB fn4 =
             (String i) -> {
                 i.toString();
             };
-    NNConsumer fn4b =
+    NNConsumerLPB fn4b =
             (i) -> {
                 i.toString();
             };
-    NNConsumer fn5 =
+    NNConsumerLPB fn5 =
             (@Nullable String i) -> {
                 //:: error: (dereference.of.nullable)
                 i.toString();
             };
-    NNConsumer fn6 =
+    NNConsumerLPB fn6 =
             (@NonNull String i) -> {
                 i.toString();
             };

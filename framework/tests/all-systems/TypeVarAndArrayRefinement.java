@@ -2,7 +2,6 @@
 // this is from plume-lib
 class TypeVarAndArrayRefinement {
 
-
     private <T extends Enum<T>> T getEnumValue(Class<T> enumType, String name) {
         T[] constants = enumType.getEnumConstants();
         if (constants == null) {
@@ -17,6 +16,7 @@ class TypeVarAndArrayRefinement {
             }
         }
         // same error that's thrown by Enum.valueOf()
-        throw new IllegalArgumentException("No enum constant " + enumType.getCanonicalName() + "." + name);
+        throw new IllegalArgumentException(
+                "No enum constant " + enumType.getCanonicalName() + "." + name);
     }
 }

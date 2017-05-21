@@ -1,0 +1,7 @@
+This entire folder has been created solely to deploy artifacts to Maven
+central.  The POMs found in the maven-artifacts/poms directory can be used
+to install a file to our local repositories.  The POMS found in this
+directory are used to provide information to the Central Repository when
+deploying there.
+
+See release_push.py

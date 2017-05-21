@@ -1,0 +1,158 @@
+\htmlhr
+\chapter{Tainting Checker\label{tainting-checker}}
+
+The Tainting Checker prevents certain kinds of trust errors.
+A \emph{tainted}, or untrusted, value is one that comes from an arbitrary,
+possibly malicious source, such as user input or unvalidated data.
+In certain parts of your application, using a tainted value can compromise
+the application's integrity, causing it to crash, corrupt data, leak
+private data, etc.
+
+% Ought to have many more examples
+
+For example, a user-supplied pointer, handle, or map key should be
+validated before being dereferenced.
+As another example, a user-supplied string should not be concatenated into a
+SQL query, lest the program be subject to a
+\href{https://en.wikipedia.org/wiki/Sql_injection}{SQL injection} attack.
+A location in your program where malicious data could do damage is
+called a \emph{sensitive sink}.
+
+A program must ``sanitize'' or ``untaint'' an untrusted value before using
+it at a sensitive sink.  There are two general ways to untaint a value:
+by checking
+that it is innocuous/legal (e.g., it contains no characters that can be
+interpreted as SQL commands when pasted into a string context), or by
+transforming the value to be legal (e.g., quoting all the characters that
+can be interpreted as SQL commands).  A correct program must use one of
+these two techniques so that tainted values never flow to a sensitive sink.
+The Tainting Checker ensures that your program does so.
+
+If the Tainting Checker issues no warning for a given program, then no
+tainted value ever flows to a sensitive sink.  However, your program is not
+necessarily free from all trust errors.  As a simple example, you might
+have forgotten to annotate a sensitive sink as requiring an untainted type,
+or you might have forgotten to annotate untrusted data as having a tainted
+type.
+
+To run the Tainting Checker, supply the
+\code{-processor TaintingChecker}
+command-line option to javac.
+%TODO: For examples, see Section~\ref{tainting-examples}.
+
+
+\section{Tainting annotations\label{tainting-annotations}}
+
+% TODO: add both qualifiers explicitly, and then describe their relationship.
+
+The Tainting type system uses the following annotations:
+\begin{itemize}
+\item
+  \refqualclass{checker/tainting/qual}{Untainted} indicates
+  a type that includes only untainted (trusted) values.
+\item
+  \refqualclass{checker/tainting/qual}{Tainted} indicates
+  a type that may include tainted (untrusted) or untainted (trusted) values.
+  \code{@Tainted} is a supertype of \code{@Untainted}.
+  It is the default qualifier.
+\item
+  \refqualclass{checker/tainting/qual}{PolyTainted} is a qualifier that is
+  polymorphic over tainting (see Section~\ref{qualifier-polymorphism}).
+\end{itemize}
+
+
+\section{Tips on writing \code{@Untainted} annotations\label{writing-untainted}}
+
+Most programs are designed with a boundary that surrounds sensitive
+computations, separating them from untrusted values.  Outside this
+boundary, the program may manipulate malicious values, but no malicious
+values ever pass the boundary to be operated upon by sensitive
+computations.
+
+In some programs, the area outside the boundary is very small:  values are
+sanitized as soon as they are received from an external source.  In other
+programs, the area inside the boundary is very small:  values are sanitized
+only immediately before being used at a sensitive sink.  Either approach
+can work, so long as every possibly-tainted value is sanitized before it
+reaches a sensitive sink.
+
+Once you determine the boundary, annotating your program is easy:  put
+\code{@Tainted} outside the boundary, \code{@Untainted} inside, and
+\code{@SuppressWarnings("tainting")} at the validation or
+sanitization routines that are used at the boundary.
+% (Or, the Tainting Checker may indicate to you that the boundary
+% does not exist or has holes through which tainted values can pass.)
+
+The Tainting Checker's standard default qualifier is \code{@Tainted} (see
+Section~\ref{defaults} for overriding this default).  This is the safest
+default, and the one that should be used for all code outside the boundary
+(for example, code that reads user input).  You can set the default
+qualifier to \code{@Untainted} in code that may contain sensitive sinks.
+
+The Tainting Checker does not know the intended semantics of your program,
+so it cannot warn you if you mis-annotate a sensitive sink as taking
+\code{@Tainted} data, or if you mis-annotate external data as
+\code{@Untainted}.  So long as you correctly annotate the sensitive sinks
+and the places that untrusted data is read, the Tainting Checker will
+ensure that all your other annotations are correct and that no undesired
+information flows exist.
+
+As an example, suppose that you wish to prevent SQL injection attacks.  You
+would start by annotating the
+\sunjavadoc{java/sql/Statement.html}{Statement} class to indicate that the
+\code{execute} operations may only operate on untainted queries
+(Chapter~\ref{annotating-libraries} describes how to annotate external
+libraries):
+
+\begin{Verbatim}
+  public boolean execute(@Untainted String sql) throws SQLException;
+  public boolean executeUpdate(@Untainted String sql) throws SQLException;
+\end{Verbatim}
+
+
+\section{\code{@Tainted} and \code{@Untainted} can be used for many purposes\label{tainting-many-uses}}
+
+The \code{@Tainted} and \code{@Untainted} annotations have only minimal
+built-in semantics.  In fact, the Tainting Checker provides only a small
+amount of functionality beyond the Subtyping Checker
+(Chapter~\ref{subtyping-checker}).  This lack of hard-coded behavior has
+two consequences.  The first consequence is that
+the annotations can serve many different purposes, such as:
+
+\begin{itemize}
+\item
+  Prevent SQL injection attacks:  \code{@Tainted} is external input,
+  \code{@Untainted} has been checked for SQL syntax.
+\item
+  Prevent cross-site scripting attacks:  \code{@Tainted} is external input,
+  \code{@Untainted} has been checked for JavaScript syntax.
+\item
+  Prevent information leakage:  \code{@Tainted} is secret data,
+  \code{@Untainted} may be displayed to a user.
+\end{itemize}
+
+The second consequence is that the Tainting Checker is not useful unless
+you annotate the appropriate sources, sinks, and untainting/sanitization
+routines.
+% This is similar to the \code{@Encrypted} annotation
+% (Section~\ref{encrypted-example}), where the cryptographic functions are
+% beyond the reasoning abilities of the type system.  In each case, the type
+% system verifies most of your code, and the \code{@SuppressWarnings}
+% annotations indicate the few places where human attention is needed.
+
+
+If you want more specialized semantics, or you want to annotate multiple
+types of tainting (for example, HTML and SQL) in a single program,
+then you can copy the definition of
+the Tainting Checker to create a new annotation and checker with a more
+specific name and semantics.  You will change the copy to rename the
+annotations, and you will annotate libraries and/or your code to identify
+sources, sinks, and validation/sanitization routines.
+See Chapter~\ref{creating-a-checker} for more
+details.
+
+% TODO: one could add a String[] value to @Untainted to distinguish different
+% values, eg @Untainted{``SQL''} versus @Untainted{``HTML''}.
+
+% LocalWords:  quals untaint PolyTainted mis untainting sanitization java
+%%  LocalWords:  TaintingChecker untrusted unvalidated

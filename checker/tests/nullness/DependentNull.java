@@ -1,19 +1,18 @@
-import java.lang.annotation.*;
-
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.qual.Dependent;
 
 public class DependentNull {
 
     /**
-     * NOTE that @Prototype is a SUPERTYPE of an unannotated reference.
-     * (Uh, how does the checker know that?  It's important to the checking!)
+     * NOTE that @Prototype is a SUPERTYPE of an unannotated reference. (Uh, how does the checker
+     * know that? It's important to the checking!)
      */
     @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @interface Prototype {}
 
-
-    private @NonNull @Dependent(result = Nullable.class, when=Prototype.class) String dep;
+    private @NonNull @Dependent(result = Nullable.class, when = Prototype.class) String dep;
     @NonNull String indep;
 
     DependentNull() {
@@ -24,27 +23,27 @@ public class DependentNull {
     static void fieldAccess() {
         DependentNull t1 = new DependentNull();
         //:: error: (assignment.type.incompatible)
-        t1.dep = null;          // error
+        t1.dep = null; // error
         t1.dep = "m";
         //:: error: (assignment.type.incompatible)
-        t1.indep = null;        // error
+        t1.indep = null; // error
         t1.indep = "m";
 
         @Prototype DependentNull t2 = new DependentNull();
         t2.dep = null;
         t2.dep = "m";
         //:: error: (assignment.type.incompatible)
-        t2.indep = null;        // error
+        t2.indep = null; // error
         t2.indep = "m";
     }
 
     void receiverNonProto() {
         //:: error: (assignment.type.incompatible)
-        dep = null;             // error
+        dep = null; // error
         dep = "m";
 
         //:: error: (assignment.type.incompatible)
-        indep = null;           // error
+        indep = null; // error
         indep = "m";
     }
 
@@ -53,13 +52,12 @@ public class DependentNull {
         dep = "m";
 
         //:: error: (assignment.type.incompatible)
-        indep = null;           // error
+        indep = null; // error
         indep = "m";
     }
 
     class Parameter {
-        Parameter(@Dependent(result = Nullable.class, when = Prototype.class) String param) {
-        }
+        Parameter(@Dependent(result = Nullable.class, when = Prototype.class) String param) {}
 
         void use() {
             new @Prototype Parameter(null);
@@ -70,5 +68,4 @@ public class DependentNull {
             new Parameter("m");
         }
     }
-
 }

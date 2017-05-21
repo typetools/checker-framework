@@ -10,8 +10,11 @@ public class MatcherGroupCount {
         String content = args[1];
 
         if (!RegexUtil.isRegex(regex)) {
-            System.out.println("Error parsing regex \"" + regex + "\": " +
-                RegexUtil.regexException(regex).getMessage());
+            System.out.println(
+                    "Error parsing regex \""
+                            + regex
+                            + "\": "
+                            + RegexUtil.regexException(regex).getMessage());
             System.exit(1);
         }
 

@@ -10,10 +10,12 @@ abstract class Outer<T> {
             this.t = t;
         }
 
-        T get() { return t; }
+        T get() {
+            return t;
+        }
     }
 
-    abstract public Inner getInner();
+    public abstract Inner getInner();
 }
 
 class Harness {
@@ -23,7 +25,7 @@ class Harness {
 
     Outer<String> outer;
 
-    public void context(  ) {
+    public void context() {
         String s = outer.getInner().get();
     }
 }

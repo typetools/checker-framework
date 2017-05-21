@@ -1,0 +1,212 @@
+\htmlhr
+\chapter{Property File Checker\label{propkey-checker}}
+
+The Property File Checker ensures that a property file or resource bundle (both
+of which act like maps from keys to values) is only accessed with valid keys.
+Accesses without a valid key either return \code{null} or a default value, which
+can lead to a \code{NullPointerException} or hard-to-trace behavior.
+The Property File Checker (Section \refwithpage{genpropkey-checker}) ensures
+that the used keys are found in the corresponding property file or resource
+bundle.
+
+We also provide two specialized checkers.
+An Internationalization Checker (Section \refwithpage{i18n-checker})
+verifies that code is properly internationalized.
+A Compiler Message Key Checker (Section \refwithpage{compilermsgs-checker})
+verifies that compiler message keys used in the Checker Framework are
+declared in a property file;
+This is an example of a simple specialization of the property
+file checker, and the Checker Framework source code shows how it is used.
+
+It is easy to customize the property key checker for other related purposes.
+Take a look at the source code of the Compiler Message Key Checker and adapt it for
+your purposes.
+
+
+
+\section{General Property File Checker\label{genpropkey-checker}}
+
+The general Property File Checker ensures that a resource key is located
+in a specified property file or resource bundle.
+
+
+The annotation \refqualclass{checker/propkey/qual}{PropertyKey}
+indicates that the qualified \code{String} is a valid key
+found in the property file or resource bundle.
+You do not need to annotate \code{String} literals.
+The checker looks up every \code{String} literal in the specified
+property file or resource bundle, and adds annotations as appropriate.
+
+If you pass a \code{String} variable to be eventually used as a key, you
+also need to annotate all these variables with \code{@PropertyKey}.
+
+
+The checker can be invoked by running the following
+command:
+
+\begin{Verbatim}
+  javac -processor org.checkerframework.checker.propkey.PropertyKeyChecker
+        -Abundlenames=MyResource MyFile.java ...
+\end{Verbatim}
+
+You must specify the resources, which map keys to strings.
+The checker supports two types of resource:
+resource bundles and property files.  You can specify one or both of the
+following two command-line options:
+
+\begin{enumerate}
+
+\item \code{-Abundlenames=\emph{resource\_name}}
+
+  \emph{resource\_name} is the name of the resource to be used with
+  \sunjavadoc{java/util/ResourceBundle.html\#getBundle-java.lang.String-java.util.Locale-java.lang.ClassLoader-}{ResourceBundle.getBundle()}.
+  The checker uses the default \code{Locale} and \code{ClassLoader} in the
+  compilation system.
+  (For a tutorial about \code{ResourceBundle}s, see
+  \myurl{https://docs.oracle.com/javase/tutorial/i18n/resbundle/concept.html}.)
+  % WAS:  http://java.sun.com/developer/technicalArticles/Intl/ResourceBundles/
+  % https://docs.oracle.com/javase/tutorial/ui/features/i18n.html is not what
+  % I am looking for to replace it.
+  Multiple resource bundle names are separated by colons '\code{:}'.
+
+\item \code{-Apropfiles=\emph{prop\_file}}
+
+  \emph{prop\_file} is the name of a properties file that maps
+  keys to values.  The file format is described in
+  the Javadoc for
+  \sunjavadoc{java/util/Properties.html\#load-java.io.Reader-}{Properties.load()}.
+  Multiple files are separated by colons '\code{:}'.
+
+\end{enumerate}
+
+
+
+\section{Internationalization Checker (I18n Checker)\label{i18n-checker}}
+
+The Internationalization Checker, or I18n Checker, verifies that your code is properly
+internationalized.  Internationalization is the process of designing software so that
+it can be adapted to different languages and locales without needing to change the code.
+Localization is the process of adapting internationalized software to specific languages
+and locales.
+
+Internationalization is sometimes called i18n, because the word starts with ``i'',
+ends with ``n'', and has 18 characters in between.  Localization is similarly
+sometimes abbreviated as l10n.
+
+The checker focuses on one aspect of internationalization:  user-visible strings
+should be presented in the user's own language, such as English, French, or
+German.  This is achieved by looking up keys in a localization resource,
+which maps keys to user-visible strings.  For instance, one version of a
+resource might map \code{"CANCEL\_STRING"} to
+\code{"Cancel"}, and another version of the same resource might map
+\code{"CANCEL\_STRING"} to \code{"Abbrechen"}.
+
+There are other aspects to localization, such as formatting of dates (3/5
+vs.~5/3 for March 5), that the checker does not check.
+
+The Internationalization Checker verifies these two properties:
+
+\begin{enumerate}
+
+\item
+  Any user-visible text should be obtained from a localization resource.
+  For example, \code{String} literals should not be output to the user.
+
+\item
+  When looking up keys in a localization resource, the key should exist in
+  that resource.  This check catches incorrect or misspelled localization
+  keys.
+
+\end{enumerate}
+
+If you use the Internationalization Checker, you may want to also use the
+Internationalization Format String Checker, or I18n Format String Checker
+(Chapter~\ref{i18n-formatter-checker}).
+It verifies that internationalization format strings are well-formed and
+used with arguments of the proper type, so that
+\sunjavadoc{java/text/MessageFormat.html\#format-java.lang.String-java.lang.Object...-}{MessageFormat.format}
+does not fail at run time.
+
+\subsection{Internationalization annotations\label{i18n-annotations}}
+
+The Internationalization Checker supports two annotations:
+
+\begin{enumerate}
+\item \refqualclass{checker/i18n/qual}{Localized}: indicates that the qualified
+\code{String} is a message that has been localized and/or formatted with
+respect to the used locale.
+
+\item \refqualclass{checker/i18n/qual}{LocalizableKey}: indicates that the
+qualified \code{String} or \code{Object} is a valid key found in the
+localization resource.
+This annotation is a specialization of the \code{@PropertyKey} annotation, that
+gets checked by the general Property Key Checker.
+\end{enumerate}
+
+You may need to add the \code{@Localized} annotation to more methods in the
+JDK or other libraries, or in your own code.
+
+
+\subsection{Running the Internationalization Checker\label{i18n-running}}
+
+The Internationalization Checker can be invoked by running the following
+command:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  javac -processor org.checkerframework.checker.i18n.I18nChecker -Abundlenames=MyResource MyFile.java ...
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+You must specify the localization resource, which maps keys to user-visible
+strings.  Like the general Property Key Checker, the Internationalization Checker
+supports two types of localization resource:
+\code{ResourceBundle}s using the
+\code{-Abundlenames=\emph{resource\_name}} option
+or property files using the
+\code{-Apropfiles=\emph{prop\_file}} option.
+
+
+
+\section{Compiler Message Key Checker\label{compilermsgs-checker}}
+
+The Checker Framework uses compiler message keys to output error messages.
+These keys are substituted by localized strings for user-visible error messages.
+Using keys instead of the localized strings in the source code enables easier
+testing, as the expected error keys can stay unchanged while the localized
+strings can still be modified.
+We use the Compiler Message Key Checker to ensure that all internal
+keys are correctly localized.
+Instead of using the Property File Checker, we use a specialized checker,
+giving us more precise documentation of the intended use of \code{String}s.
+
+The single annotation used by this checker is
+\refqualclass{checker/compilermsgs/qual}{CompilerMessageKey}.
+The Checker Framework is completely annotated;
+for example, class \code{org.checkerframework.framework.source.Result}
+uses \code{@CompilerMessageKey} in methods \code{failure} and \code{warning}.
+For most users of the Checker Framework there will be no need to annotate any
+\code{String}s, as the checker looks up all \code{String} literals and adds
+annotations as appropriate.
+
+The Compiler Message Key Checker can be invoked by running the following
+command:
+
+\begin{Verbatim}
+  javac -processor org.checkerframework.checker.compilermsgs.CompilerMessagesChecker
+        -Apropfiles=messages.properties MyFile.java ...
+\end{Verbatim}
+
+You must specify the resource, which maps compiler message keys to user-visible
+strings.  The checker supports the same options as the general property key checker.
+Within the Checker Framework we only use property files,
+so the \code{-Apropfiles=\emph{prop\_file}} option should be used.
+
+% LocalWords:  NullPointerException genpropkey compilermsgs propkey PropertyKey
+% LocalWords:  Abundlenames getBundle ResourceBundle ClassLoader Apropfiles
+% LocalWords:  Abbrechen LocalizableKey CompilerMessageKey java I18n i18n
+%  LocalWords:  l10n

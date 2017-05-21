@@ -1,9 +1,11 @@
 package org.checkerframework.common.util.debug;
 
+import com.sun.source.util.TreePath;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
 import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.util.List;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
@@ -18,7 +20,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.AbstractElementVisitor6;
-
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -27,45 +28,38 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
-
-import com.sun.source.util.TreePath;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.util.Context;
 import org.checkerframework.javacutil.AnnotationProvider;
 
 /**
  * Outputs the method signatures of a class with fully annotated types.
- * <p>
  *
- * The class determines the effective annotations for a checker in source or
- * the classfile.  Finding the effective annotations is useful for the
- * following purposes:
+ * <p>The class determines the effective annotations for a checker in source or the classfile.
+ * Finding the effective annotations is useful for the following purposes:
  *
  * <ol>
- * <li value="1">Debugging annotations in classfile</li>
- * <li value="2">Debugging the default annotations that are implicitly added
- *    by the checker</li>
+ *   <li value="1">Debugging annotations in classfile
+ *   <li value="2">Debugging the default annotations that are implicitly added by the checker
  * </ol>
  *
  * <p>The class can be used in two possible ways, depending on the type file:
  *
  * <ol>
- * <li id="a">From source: the class is to be used as an annotation processor
- * when reading annotations from source.  It can be invoked via the command:
- * <p>{@code javac -processor SignaturePrinter <java files> ...}
- *
- * <li id="b">From classfile: the class is to be used as an independent app
- * when reading annotations from classfile.  It can be invoked via the command:
- * <p>{@code java SignaturePrinter <class name>}
- *
+ *   <li id="a">From source: the class is to be used as an annotation processor when reading
+ *       annotations from source. It can be invoked via the command:
+ *       <p>{@code javac -processor SignaturePrinter <java files> ...}
+ *   <li id="b">From classfile: the class is to be used as an independent app when reading
+ *       annotations from classfile. It can be invoked via the command:
+ *       <p>{@code java SignaturePrinter <class name>}
  * </ol>
  *
- * By default, only the annotations explicitly written by the user are emitted.
- * To view the default and effective annotations in a class that are associated
- * with a checker, the fully qualified name of the checker needs to be passed
- * as '-Achecker=' argument, e.g.
- * <p>{@code javac -processor SignaturePrinter
- *         -Achecker=org.checkerframework.checker.nullness.NullnessChecker JavaFile.java}
+ * By default, only the annotations explicitly written by the user are emitted. To view the default
+ * and effective annotations in a class that are associated with a checker, the fully qualified name
+ * of the checker needs to be passed as {@code -Achecker=} argument, e.g.
+ *
+ * <pre>{@code
+ * javac -processor SignaturePrinter
+ *       -Achecker=org.checkerframework.checker.nullness.NullnessChecker JavaFile.java
+ * }</pre>
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedAnnotationTypes("*")
@@ -85,19 +79,20 @@ public class SignaturePrinter extends AbstractTypeProcessor {
                 throw new RuntimeException(e);
             }
         } else {
-            checker = new SourceChecker() {
+            checker =
+                    new SourceChecker() {
 
-                @Override
-                protected SourceVisitor<?, ?> createSourceVisitor() {
-                    return null;
-                }
+                        @Override
+                        protected SourceVisitor<?, ?> createSourceVisitor() {
+                            return null;
+                        }
 
-                @Override
-                public AnnotationProvider getAnnotationProvider() {
-                    throw new UnsupportedOperationException("getAnnotationProvider is not implemented for this class.");
-                }
-
-            };
+                        @Override
+                        public AnnotationProvider getAnnotationProvider() {
+                            throw new UnsupportedOperationException(
+                                    "getAnnotationProvider is not implemented for this class.");
+                        }
+                    };
         }
         checker.init(env);
     }
@@ -120,7 +115,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
 
     ////////// Printer //////////
     static class ElementPrinter extends AbstractElementVisitor6<Void, Void> {
-        private final static String INDENTION = "    ";
+        private static final String INDENTION = "    ";
 
         private final PrintStream out;
         private String indent = "";
@@ -156,7 +151,8 @@ public class SignaturePrinter extends AbstractTypeProcessor {
                 if (i != 0) {
                     out.print(", ");
                 }
-                printVariable(type.getParameterTypes().get(i),
+                printVariable(
+                        type.getParameterTypes().get(i),
                         elem.getParameters().get(i).getSimpleName());
             }
             out.print(")");
@@ -178,6 +174,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
                 out.print(thrown);
             }
         }
+
         public void printVariable(AnnotatedTypeMirror type, Name name, boolean isVarArg) {
             out.print(type);
             if (isVarArg) {
@@ -224,12 +221,16 @@ public class SignaturePrinter extends AbstractTypeProcessor {
 
         private String typeIdentifier(TypeElement e) {
             switch (e.getKind()) {
-            case INTERFACE: return "interface";
-            case CLASS: return "class";
-            case ANNOTATION_TYPE: return "@interface";
-            case ENUM: return "enum";
-            default:
-                throw new IllegalArgumentException("Not a type element: " + e.getKind());
+                case INTERFACE:
+                    return "interface";
+                case CLASS:
+                    return "class";
+                case ANNOTATION_TYPE:
+                    return "@interface";
+                case ENUM:
+                    return "enum";
+                default:
+                    throw new IllegalArgumentException("Not a type element: " + e.getKind());
             }
         }
 
@@ -237,26 +238,26 @@ public class SignaturePrinter extends AbstractTypeProcessor {
         public Void visitType(TypeElement e, Void p) {
             String prevIndent = indent;
 
-                out.print(indent);
-                out.print(typeIdentifier(e));
-                out.print(' ');
-                out.print(e.getSimpleName());
-                out.print(' ');
-                AnnotatedDeclaredType dt = factory.getAnnotatedType(e);
-                printSupers(dt);
-                out.println("{");
+            out.print(indent);
+            out.print(typeIdentifier(e));
+            out.print(' ');
+            out.print(e.getSimpleName());
+            out.print(' ');
+            AnnotatedDeclaredType dt = factory.getAnnotatedType(e);
+            printSupers(dt);
+            out.println("{");
 
-                indent += INDENTION;
+            indent += INDENTION;
 
-                for (Element enclosed : e.getEnclosedElements()) {
-                    this.visit(enclosed);
-                }
+            for (Element enclosed : e.getEnclosedElements()) {
+                this.visit(enclosed);
+            }
 
-                indent = prevIndent;
-                out.print(indent);
-                out.println("}");
+            indent = prevIndent;
+            out.print(indent);
+            out.println("}");
 
-                return null;
+            return null;
         }
 
         private void printSupers(AnnotatedDeclaredType dt) {
@@ -295,7 +296,6 @@ public class SignaturePrinter extends AbstractTypeProcessor {
 
             return null;
         }
-
     }
 
     public static void printUsage() {
@@ -306,7 +306,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
 
     public static void main(String[] args) {
         if (!(args.length == 1 && !args[0].startsWith(CHECKER_ARG))
-            && !(args.length == 2 && args[0].startsWith(CHECKER_ARG))) {
+                && !(args.length == 2 && args[0].startsWith(CHECKER_ARG))) {
             printUsage();
             return;
         }

@@ -1,16 +1,12 @@
 import org.checkerframework.framework.test.*;
+import testlib.util.*;
 
-import java.util.*;
-import org.checkerframework.framework.qual.*;
-import tests.util.*;
-
-class Postcondition {
+class MetaPostcondition {
 
     String f1, f2, f3;
-    Postcondition p;
+    MetaPostcondition p;
 
-    /***** normal postcondition ******/
-
+    /** *** normal postcondition ***** */
     @EnsuresOdd("f1")
     void oddF1() {
         f1 = null;
@@ -22,24 +18,21 @@ class Postcondition {
     }
 
     @EnsuresOdd("#1.f1")
-    void oddF1_2(final Postcondition param) {
+    void oddF1_2(final MetaPostcondition param) {
         param.f1 = null;
     }
 
     @EnsuresOdd("f1")
     //:: error: (contracts.postcondition.not.satisfied)
-    void oddF1_error() {
-    }
+    void oddF1_error() {}
 
     @EnsuresOdd("---")
     //:: error: (flowexpr.parse.error)
-    void error() {
-    }
+    void error() {}
 
     @EnsuresOdd("#1.#2")
     //:: error: (flowexpr.parse.error)
-    void error2(final String p1, final String p2) {
-    }
+    void error2(final String p1, final String p2) {}
 
     @EnsuresOdd("f1")
     void exception() {
@@ -47,10 +40,9 @@ class Postcondition {
     }
 
     @EnsuresOdd("#1")
-    void param1(final @Odd String f) {
-    }
+    void param1(final @Odd String f) {}
 
-    @EnsuresOdd({"#1","#2"})
+    @EnsuresOdd({"#1", "#2"})
     //:: error: (flowexpr.parameter.not.final)
     void param2(@Odd String f, @Odd String g) {
         f = g;
@@ -58,8 +50,7 @@ class Postcondition {
 
     @EnsuresOdd("#1")
     //:: error: (flowexpr.parse.index.too.big)
-    void param3() {
-    }
+    void param3() {}
 
     // basic postcondition test
     void t1(@Odd String p1, String p2) {
@@ -68,11 +59,13 @@ class Postcondition {
         oddF1();
         @Odd String l2 = f1;
 
+        //:: error: (flowexpr.parse.error)
         error();
     }
 
     // test parameter syntax
     void t2(@Odd String p1, String p2) {
+        //:: error: (flowexpr.parse.index.too.big)
         param3();
     }
 
@@ -86,7 +79,7 @@ class Postcondition {
 
     // postcondition with more complex flow expression
     void tn2(boolean b) {
-        Postcondition param = null;
+        MetaPostcondition param = null;
         //:: error: (assignment.type.incompatible)
         @Odd String l1 = param.f1;
         oddF1_2(param);
@@ -100,12 +93,12 @@ class Postcondition {
         //:: error: (assignment.type.incompatible)
         @Value String l2 = f2;
 
+        //:: error: (flowexpr.parse.error)
         error2(p1, p2);
     }
 
-    /***** conditional postcondition ******/
-
-    @EnsuresOddIf(result=true, expression="f1")
+    /** *** conditional postcondition ***** */
+    @EnsuresOddIf(result = true, expression = "f1")
     boolean condOddF1(boolean b) {
         if (b) {
             f1 = null;
@@ -114,7 +107,7 @@ class Postcondition {
         return false;
     }
 
-    @EnsuresOddIf(result=false, expression="f1")
+    @EnsuresOddIf(result = false, expression = "f1")
     boolean condOddF1False(boolean b) {
         if (b) {
             return true;
@@ -123,7 +116,7 @@ class Postcondition {
         return false;
     }
 
-    @EnsuresOddIf(result=false, expression="f1")
+    @EnsuresOddIf(result = false, expression = "f1")
     boolean condOddF1Invalid(boolean b) {
         if (b) {
             f1 = null;
@@ -133,12 +126,11 @@ class Postcondition {
         return false;
     }
 
-    @EnsuresOddIf(result=false, expression="f1")
+    @EnsuresOddIf(result = false, expression = "f1")
     //:: error: (contracts.conditional.postcondition.invalid.returntype)
-    void wrongReturnType() {
-    }
+    void wrongReturnType() {}
 
-    @EnsuresOddIf(result=false, expression="f1")
+    @EnsuresOddIf(result = false, expression = "f1")
     //:: error: (contracts.conditional.postcondition.invalid.returntype)
     String wrongReturnType2() {
         f1 = null;

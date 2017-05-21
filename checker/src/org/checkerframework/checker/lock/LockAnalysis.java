@@ -1,23 +1,26 @@
 package org.checkerframework.checker.lock;
 
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.Pair;
 
-import java.util.List;
-
-import javax.lang.model.element.VariableElement;
-
 /**
- * The analysis class for the lock type system (serves as factory for the
- * transfer function, stores and abstract values).
+ * The analysis class for the lock type system.
+ *
+ * <p>This class extends {@link CFAbstractAnalysis} so that {@link LockStore} is used rather than
+ * {@link CFStore}.
  */
-public class LockAnalysis extends
-        CFAbstractAnalysis<CFValue, LockStore, LockTransfer> {
+public class LockAnalysis extends CFAbstractAnalysis<CFValue, LockStore, LockTransfer> {
 
-    public LockAnalysis(BaseTypeChecker checker,
+    public LockAnalysis(
+            BaseTypeChecker checker,
             LockAnnotatedTypeFactory factory,
             List<Pair<VariableElement, CFValue>> fieldValues) {
         super(checker, factory, fieldValues);
@@ -25,7 +28,7 @@ public class LockAnalysis extends
 
     @Override
     public LockTransfer createTransferFunction() {
-        return new LockTransfer(this,(LockChecker)checker);
+        return new LockTransfer(this, (LockChecker) checker);
     }
 
     @Override
@@ -39,7 +42,8 @@ public class LockAnalysis extends
     }
 
     @Override
-    public CFValue createAbstractValue(AnnotatedTypeMirror type) {
-        return defaultCreateAbstractValue(this, type);
+    public CFValue createAbstractValue(
+            Set<AnnotationMirror> annotations, TypeMirror underlyingType) {
+        return defaultCreateAbstractValue(this, annotations, underlyingType);
     }
 }

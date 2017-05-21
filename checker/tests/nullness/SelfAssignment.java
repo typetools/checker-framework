@@ -6,8 +6,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 class SelfAssignment {
 
     void test(@Nullable String s) {
-       assertNonNull(s);
-       s = s.trim();
+        assertNonNull(s);
+        s = s.trim();
     }
 
     @EnsuresNonNull("#1")

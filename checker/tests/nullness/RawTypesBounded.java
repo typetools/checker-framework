@@ -1,13 +1,16 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Generic<G extends  @Nullable Object>{
-}
+class Generic<G extends @Nullable Object> {}
+
 class MyClass extends Generic<MyClass> {}
-class BoundedGeneric<B extends @Nullable CharSequence>{}
+
+class BoundedGeneric<B extends @Nullable CharSequence> {}
+
 class RawTypes {
     Generic rawReturn() {
         return new Generic();
     }
+
     Generic rawField = new Generic();
 
     void use() {
@@ -17,10 +20,12 @@ class RawTypes {
         Generic<?> generic3 = rawLocal;
     }
 }
+
 class TestBounded {
     BoundedGeneric rawReturn() {
         return new BoundedGeneric<>();
     }
+
     BoundedGeneric rawField = new BoundedGeneric();
 
     void useWildCard() {

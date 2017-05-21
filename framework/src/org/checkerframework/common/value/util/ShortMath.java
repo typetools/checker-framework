@@ -1,4 +1,5 @@
 package org.checkerframework.common.value.util;
+
 public class ShortMath extends NumberMath<Integer> {
     int number;
 
@@ -77,6 +78,9 @@ public class ShortMath extends NumberMath<Integer> {
 
     @Override
     public Number divide(Number right) {
+        if (isIntegralZero(right)) {
+            return null;
+        }
         if (right instanceof Byte) {
             return number / right.byteValue();
         }
@@ -100,6 +104,9 @@ public class ShortMath extends NumberMath<Integer> {
 
     @Override
     public Number remainder(Number right) {
+        if (isIntegralZero(right)) {
+            return null;
+        }
         if (right instanceof Byte) {
             return number % right.byteValue();
         }
@@ -139,7 +146,7 @@ public class ShortMath extends NumberMath<Integer> {
     }
 
     @Override
-    public Number signedSiftRight(Number right) {
+    public Number signedShiftRight(Number right) {
         if (right instanceof Byte) {
             return number >> right.byteValue();
         }
@@ -156,7 +163,7 @@ public class ShortMath extends NumberMath<Integer> {
     }
 
     @Override
-    public Number unsignedSiftRight(Number right) {
+    public Number unsignedShiftRight(Number right) {
         if (right instanceof Byte) {
             return number >>> right.byteValue();
         }
@@ -225,13 +232,14 @@ public class ShortMath extends NumberMath<Integer> {
 
     @Override
     public Number unaryPlus() {
-       return +number;
+        return +number;
     }
 
     @Override
     public Number unaryMinus() {
         return -number;
     }
+
     @Override
     public Number bitwiseComplement() {
         return ~number;

@@ -1,6 +1,6 @@
 // Testcase for #738
 // https://github.com/typetools/checker-framework/issues/738
-// @skip-test
+// Also, see checker/tests/nullness/Issue738.java
 @SuppressWarnings("") // This testcase is checking for crashes.
 public class Issue738 {
     public static void methodA() {

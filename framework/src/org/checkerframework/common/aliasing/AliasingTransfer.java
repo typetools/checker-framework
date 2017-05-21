@@ -1,10 +1,10 @@
 package org.checkerframework.common.aliasing;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import java.util.List;
-
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.common.aliasing.qual.Unique;
@@ -27,45 +27,37 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.TreeUtils;
 
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-
 /**
- * Type refinement is treated in the usual way, except that at
- * (pseudo-)assignments the RHS may lose its type refinement, before the LHS is
- * type-refined.
+ * Type refinement is treated in the usual way, except that at (pseudo-)assignments the RHS may lose
+ * its type refinement, before the LHS is type-refined.
  *
- * The RHS always loses its type refinement (it is widened to
- * {@literal @}MaybeAliased, and its declared type must have been
- * {@literal @}MaybeAliased) except in the following cases:
- * <p>
- * 1.The RHS is a fresh expression.
- * <p>
- * 2.The LHS is a {@literal @}NonLeaked formal parameter and the RHS is an
- * argument in a method call or constructor invocation.
- * <p>
- * 3.The LHS is a {@literal @}LeakedToResult formal parameter, the RHS is an
- * argument in a method call or constructor invocation, and the method's return
- * value is discarded.
+ * <p>The RHS always loses its type refinement (it is widened to {@literal @}MaybeAliased, and its
+ * declared type must have been {@literal @}MaybeAliased) except in the following cases:
+ *
+ * <ol>
+ *   <li>The RHS is a fresh expression.
+ *   <li>The LHS is a {@literal @}NonLeaked formal parameter and the RHS is an argument in a method
+ *       call or constructor invocation.
+ *   <li>The LHS is a {@literal @}LeakedToResult formal parameter, the RHS is an argument in a
+ *       method call or constructor invocation, and the method's return value is discarded.
+ * </ol>
  */
-
 public class AliasingTransfer extends CFTransfer {
 
     private AnnotatedTypeFactory factory;
 
-    public AliasingTransfer(
-            CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+    public AliasingTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
         factory = analysis.getTypeFactory();
     }
 
     /**
-     * Case 1: For every assignment, the LHS is refined if the RHS has type
-     * {@literal @}Unique and is a method invocation or a new class instance.
+     * Case 1: For every assignment, the LHS is refined if the RHS has type {@literal @}Unique and
+     * is a method invocation or a new class instance.
      */
     @Override
-    public TransferResult<CFValue, CFStore> visitAssignment(AssignmentNode n,
-            TransferInput<CFValue, CFStore> in) {
+    public TransferResult<CFValue, CFStore> visitAssignment(
+            AssignmentNode n, TransferInput<CFValue, CFStore> in) {
         Node rhs = n.getExpression();
         Tree treeRhs = rhs.getTree();
         AnnotatedTypeMirror rhsType = factory.getAnnotatedType(treeRhs);
@@ -81,18 +73,16 @@ public class AliasingTransfer extends CFTransfer {
     }
 
     /**
-     * Handling pseudo-assignments. Called by
-     * {@code CFAbstractTransfer.visitMethodInvocation()}.
-     * <p>
-     * Case 2: Given a method call, traverses all formal parameters of the
-     * method declaration, and if it doesn't have the {@literal @}NonLeaked or
-     * {@literal @}LeakedToResult annotations, we remove the node of the
-     * respective argument in the method call from the store. If parameter has
-     * {@literal @}LeakedToResult, {@code visitMethodInvocation()} handles it.
+     * Handling pseudo-assignments. Called by {@code CFAbstractTransfer.visitMethodInvocation()}.
+     *
+     * <p>Case 2: Given a method call, traverses all formal parameters of the method declaration,
+     * and if it doesn't have the {@literal @}NonLeaked or {@literal @}LeakedToResult annotations,
+     * we remove the node of the respective argument in the method call from the store. If parameter
+     * has {@literal @}LeakedToResult, {@code visitMethodInvocation()} handles it.
      */
     @Override
-    protected void processPostconditions(MethodInvocationNode n, CFStore store,
-            ExecutableElement methodElement, Tree tree) {
+    protected void processPostconditions(
+            MethodInvocationNode n, CFStore store, ExecutableElement methodElement, Tree tree) {
         super.processPostconditions(n, store, methodElement, tree);
         if (TreeUtils.isEnumSuper(n.getTree())) {
             // Skipping the init() method for enums.
@@ -100,10 +90,13 @@ public class AliasingTransfer extends CFTransfer {
         }
         List<Node> args = n.getArguments();
         List<? extends VariableElement> params = methodElement.getParameters();
-        assert (args.size() == params.size()) : "Number of arguments in " +
-                "the method call " + n.toString() + " is different from the" +
-                " number of parameters for the method declaration: "
-                + methodElement.getSimpleName().toString();
+        assert (args.size() == params.size())
+                : "Number of arguments in "
+                        + "the method call "
+                        + n.toString()
+                        + " is different from the"
+                        + " number of parameters for the method declaration: "
+                        + methodElement.getSimpleName().toString();
 
         AnnotatedExecutableType annotatedType = factory.getAnnotatedType(methodElement);
         List<AnnotatedTypeMirror> paramTypes = annotatedType.getParameterTypes();
@@ -119,17 +112,17 @@ public class AliasingTransfer extends CFTransfer {
         // Now, doing the same as above for the receiver parameter
         Node receiver = n.getTarget().getReceiver();
         AnnotatedDeclaredType receiverType = annotatedType.getReceiverType();
-        if (receiverType != null && !receiverType.hasAnnotation(LeakedToResult.class)
+        if (receiverType != null
+                && !receiverType.hasAnnotation(LeakedToResult.class)
                 && !receiverType.hasAnnotation(NonLeaked.class)) {
             store.clearValue(FlowExpressions.internalReprOf(factory, receiver));
         }
     }
 
     /**
-     * Case 3: Given a method invocation expression, if the parent of the
-     * expression is not a statement, check if there are any arguments of the
-     * method call annotated as {@literal @}LeakedToResult and remove it from the
-     * store, since it might be leaked.
+     * Case 3: Given a method invocation expression, if the parent of the expression is not a
+     * statement, check if there are any arguments of the method call annotated as
+     * {@literal @}LeakedToResult and remove it from the store, since it might be leaked.
      */
     @Override
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
@@ -141,12 +134,14 @@ public class AliasingTransfer extends CFTransfer {
 
             ExecutableElement methodElement = TreeUtils.elementFromUse(n.getTree());
             List<Node> args = n.getArguments();
-            List<? extends VariableElement> params = methodElement
-                    .getParameters();
-            assert (args.size() == params.size()) : "Number of arguments in " +
-                    "the method call " + n.toString() + " is different from the" +
-                    " number of parameters for the method declaration: "
-                    + methodElement.getSimpleName().toString();
+            List<? extends VariableElement> params = methodElement.getParameters();
+            assert (args.size() == params.size())
+                    : "Number of arguments in "
+                            + "the method call "
+                            + n.toString()
+                            + " is different from the"
+                            + " number of parameters for the method declaration: "
+                            + methodElement.getSimpleName().toString();
             CFStore store = in.getRegularStore();
 
             for (int i = 0; i < args.size(); i++) {
@@ -155,8 +150,7 @@ public class AliasingTransfer extends CFTransfer {
                 if (factory.getAnnotatedType(param).hasAnnotation(LeakedToResult.class)) {
                     // If argument can leak to result, and parent is not a
                     // single statement, remove that node from store.
-                    store.clearValue(FlowExpressions.internalReprOf(factory,
-                            arg));
+                    store.clearValue(FlowExpressions.internalReprOf(factory, arg));
                 }
             }
 
@@ -167,7 +161,6 @@ public class AliasingTransfer extends CFTransfer {
             if (receiverType != null && receiverType.hasAnnotation(LeakedToResult.class)) {
                 store.clearValue(FlowExpressions.internalReprOf(factory, receiver));
             }
-
         }
         // If parent is a statement, processPostconditions will handle the
         // pseudo-assignments.

@@ -40,7 +40,7 @@ class Package extends PatternSyntaxException {
             // We don't look at supertypes of the types we analyze.
             // TODO: Should we?
             System.out.println("OK!");
-        //:: error: (usage)
+            //:: error: (usage)
         } catch (PatternSyntaxException pse) {
             // We do get a report for direct uses.
             System.out.println("Ha!");

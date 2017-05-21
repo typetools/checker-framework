@@ -6,9 +6,11 @@ public class UIParent {
     protected UIElement thingy;
 
     @SafeEffect // Making this ctor safe to allow easy safe subclasses
-    public UIParent() { }
+    public UIParent() {}
 
-    public void doingUIStuff() { thingy.dangerous(); } // should have UI effect
+    public void doingUIStuff() {
+        thingy.dangerous();
+    } // should have UI effect
 
     @SafeEffect
     public void doingSafeStuff() {} // non-UI

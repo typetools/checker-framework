@@ -19,7 +19,6 @@ class NullnessInterning {
     Object f = null;
 
     void m(Object p) {
-        if (f == p) {
-        }
+        if (f == p) {}
     }
 }

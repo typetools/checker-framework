@@ -3,9 +3,10 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 // Subclasses of this interface/class may opt to prohibit null elements
-public class TreeSet<E extends @Nullable Object> extends AbstractSet<E> implements NavigableSet<E>, Cloneable, java.io.Serializable {
+public class TreeSet<E extends @NonNull Object> extends AbstractSet<E> implements NavigableSet<E>, Cloneable, java.io.Serializable {
   private static final long serialVersionUID = 0;
   public TreeSet() { throw new RuntimeException("skeleton method"); }
   public TreeSet(Comparator<? super E> a1) { throw new RuntimeException("skeleton method"); }
@@ -17,9 +18,9 @@ public class TreeSet<E extends @Nullable Object> extends AbstractSet<E> implemen
   @Pure public int size() { throw new RuntimeException("skeleton method"); }
   @EnsuresNonNullIf(expression={"pollFirst()", "pollLast()"}, result=false)
   @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean contains(Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
-  public boolean remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  public boolean remove(Object a1) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
   public boolean addAll(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public NavigableSet<E> subSet(E a1, boolean a2, E a3, boolean a4) { throw new RuntimeException("skeleton method"); }

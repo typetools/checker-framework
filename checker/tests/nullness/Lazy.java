@@ -30,8 +30,7 @@ public class Lazy {
         _g.toLowerCase();
     }
 
-    void test2() {
-    }
+    void test2() {}
 
     void test3() {
         //:: error: (dereference.of.nullable)

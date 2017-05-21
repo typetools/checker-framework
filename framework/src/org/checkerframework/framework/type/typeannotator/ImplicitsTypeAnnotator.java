@@ -1,5 +1,16 @@
 package org.checkerframework.framework.type.typeannotator;
 
+import com.sun.source.tree.Tree;
+import java.lang.annotation.Annotation;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -8,38 +19,22 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
-import java.lang.annotation.Annotation;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-
-import com.sun.source.tree.Tree;
-
 /**
- * Adds annotations to a type based on the contents of a type. By default, this
- * class honors the {@link ImplicitFor} annotation and applies implicit
- * annotations specified by {@link ImplicitFor} for any type whose visitor is
- * not overridden or does not call {@code super}; it is designed to be invoked
- * from
- * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(Element, org.checkerframework.framework.type.AnnotatedTypeMirror)}
- * and
- * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(Tree, org.checkerframework.framework.type.AnnotatedTypeMirror)}.
+ * Adds annotations to a type based on the contents of a type. By default, this class honors the
+ * {@link ImplicitFor} annotation and applies implicit annotations specified by {@link ImplicitFor}
+ * for any type whose visitor is not overridden or does not call {@code super}; it is designed to be
+ * invoked from {@link
+ * org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(Element,
+ * org.checkerframework.framework.type.AnnotatedTypeMirror)} and {@link
+ * org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(Tree,
+ * org.checkerframework.framework.type.AnnotatedTypeMirror)}.
  *
- * <p>
+ * <p>{@link ImplicitsTypeAnnotator} traverses types deeply by default, except that it skips the
+ * method receiver of executable types (for interoperability with {@link
+ * org.checkerframework.framework.type.AnnotatedTypeFactory#annotateInheritedFromClass(org.checkerframework.framework.type.AnnotatedTypeMirror)}).
  *
- * {@link ImplicitsTypeAnnotator} traverses types deeply by default, except that it skips
- * the method receiver of executable types (for interoperability with
- * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#annotateInheritedFromClass(org.checkerframework.framework.type.AnnotatedTypeMirror)}).
- *
- * This class takes care of two of the attributes of {@link ImplicitFor};
- * the others are handled in {@link org.checkerframework.framework.type.treeannotator.TreeAnnotator}.
+ * <p>This class takes care of two of the attributes of {@link ImplicitFor}; the others are handled
+ * in {@link org.checkerframework.framework.type.treeannotator.TreeAnnotator}.
  *
  * @see org.checkerframework.framework.type.treeannotator.TreeAnnotator
  */
@@ -53,13 +48,14 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
     // private final AnnotatedTypeFactory atypeFactory;
 
     /**
-     * Creates a {@link ImplicitsTypeAnnotator} from the given checker, using
-     * that checker to determine the annotations that are in the type hierarchy.
+     * Creates a {@link ImplicitsTypeAnnotator} from the given checker, using that checker to
+     * determine the annotations that are in the type hierarchy.
      */
     public ImplicitsTypeAnnotator(AnnotatedTypeFactory typeFactory) {
         super(typeFactory);
         this.typeKinds = new EnumMap<TypeKind, Set<AnnotationMirror>>(TypeKind.class);
-        this.typeClasses = new HashMap<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>>();
+        this.typeClasses =
+                new HashMap<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>>();
         this.typeNames = new IdentityHashMap<String, Set<AnnotationMirror>>();
 
         this.qualHierarchy = typeFactory.getQualifierHierarchy();
@@ -74,7 +70,8 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
             ImplicitFor implicit = qual.getAnnotation(ImplicitFor.class);
             if (implicit == null) continue;
 
-            AnnotationMirror theQual = AnnotationUtils.fromClass(typeFactory.getElementUtils(), qual);
+            AnnotationMirror theQual =
+                    AnnotationUtils.fromClass(typeFactory.getElementUtils(), qual);
             for (TypeKind typeKind : implicit.types()) {
                 addTypeKind(typeKind, theQual);
             }
@@ -88,16 +85,27 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
     public void addTypeKind(TypeKind typeKind, AnnotationMirror theQual) {
         boolean res = qualHierarchy.updateMappingToMutableSet(typeKinds, typeKind, theQual);
         if (!res) {
-            ErrorReporter.errorAbort("TypeAnnotator: invalid update of typeKinds " +
-                    typeKinds + " at " + typeKind + " with " + theQual);
+            ErrorReporter.errorAbort(
+                    "TypeAnnotator: invalid update of typeKinds "
+                            + typeKinds
+                            + " at "
+                            + typeKind
+                            + " with "
+                            + theQual);
         }
     }
 
-    public void addTypeClass(Class<? extends AnnotatedTypeMirror> typeClass, AnnotationMirror theQual) {
+    public void addTypeClass(
+            Class<? extends AnnotatedTypeMirror> typeClass, AnnotationMirror theQual) {
         boolean res = qualHierarchy.updateMappingToMutableSet(typeClasses, typeClass, theQual);
         if (!res) {
-            ErrorReporter.errorAbort("TypeAnnotator: invalid update of typeClasses " +
-                    typeClasses + " at " + typeClass + " with " + theQual);
+            ErrorReporter.errorAbort(
+                    "TypeAnnotator: invalid update of typeClasses "
+                            + typeClasses
+                            + " at "
+                            + typeClass
+                            + " with "
+                            + theQual);
         }
     }
 
@@ -105,8 +113,13 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
         String typeNameString = typeName.getCanonicalName().intern();
         boolean res = qualHierarchy.updateMappingToMutableSet(typeNames, typeNameString, theQual);
         if (!res) {
-            ErrorReporter.errorAbort("TypeAnnotator: invalid update of typeNames " +
-                    typeNames + " at " + typeName + " with " + theQual);
+            ErrorReporter.errorAbort(
+                    "TypeAnnotator: invalid update of typeNames "
+                            + typeNames
+                            + " at "
+                            + typeName
+                            + " with "
+                            + theQual);
         }
     }
 
@@ -114,7 +127,7 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
     protected Void scan(AnnotatedTypeMirror type, Void p) {
 
         if (type == null) // on bounds, etc.
-            return super.scan(type, p);
+        return super.scan(type, p);
 
         // If the type's fully-qualified name is in the appropriate map, annotate
         // the type. Do this before looking at kind or class, as this information
@@ -122,7 +135,7 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
 
         String qname = null;
         if (type.getKind() == TypeKind.DECLARED) {
-            qname = TypesUtils.getQualifiedName((DeclaredType)type.getUnderlyingType()).toString();
+            qname = TypesUtils.getQualifiedName((DeclaredType) type.getUnderlyingType()).toString();
         } else if (type.getKind().isPrimitive()) {
             qname = type.getUnderlyingType().toString();
         }

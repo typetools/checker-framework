@@ -6,8 +6,6 @@ class AnonymousClass {
 
     void test() {
         //:: error: (type.argument.type.incompatible)
-        new Bound<@Nullable String>() {
-
-        };
+        new Bound<@Nullable String>() {};
     }
 }

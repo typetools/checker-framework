@@ -1,5 +1,5 @@
-import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.initialization.qual.*;
+import org.checkerframework.checker.nullness.qual.*;
 
 class MultiConstructorInit {
 
@@ -19,8 +19,7 @@ class MultiConstructorInit {
     }
 
     //:: error: (initialization.fields.uninitialized)
-    public MultiConstructorInit(float t) {
-    }
+    public MultiConstructorInit(float t) {}
 
     public static void main(String[] args) {
         new MultiConstructorInit();

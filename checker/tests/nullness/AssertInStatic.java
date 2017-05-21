@@ -8,5 +8,4 @@ public class AssertInStatic {
             assert true;
         }
     }
-
 }

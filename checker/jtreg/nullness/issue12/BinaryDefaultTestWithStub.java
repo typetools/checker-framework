@@ -9,13 +9,13 @@
  * @compile/fail/ref=BinaryDefaultTestWithStub.out -XDrawDiagnostics -Xlint:unchecked -Astubs=binary.astub -processor org.checkerframework.checker.nullness.NullnessChecker BinaryDefaultTest.java
  */
 
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 class BinaryDefaultTestWithStub {
-  void test1(@NonNull BinaryDefaultTestInterface bar, @Nullable BinaryDefaultTestInterface bar2) {
-    @Nullable BinaryDefaultTestBinary foo = BinaryDefaultTestBinary.foo(bar);
-    @Nullable BinaryDefaultTestBinary baz = BinaryDefaultTestBinary.foo(bar2);
-    @NonNull BinaryDefaultTestBinary biz = BinaryDefaultTestBinary.foo(bar);
-  }
+    void test1(@NonNull BinaryDefaultTestInterface bar, @Nullable BinaryDefaultTestInterface bar2) {
+        @Nullable BinaryDefaultTestBinary foo = BinaryDefaultTestBinary.foo(bar);
+        @Nullable BinaryDefaultTestBinary baz = BinaryDefaultTestBinary.foo(bar2);
+        @NonNull BinaryDefaultTestBinary biz = BinaryDefaultTestBinary.foo(bar);
+    }
 }

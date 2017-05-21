@@ -23,5 +23,4 @@ class LubTest {
     public void notok(@Nullable LubTest t) {
         this.setStr((t == null) ? "" : t.getStr());
     }
-
 }

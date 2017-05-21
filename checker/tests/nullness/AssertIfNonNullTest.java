@@ -14,5 +14,4 @@ public class AssertIfNonNullTest {
     public @Nullable Long getId() {
         return id;
     }
-
 }

@@ -14,10 +14,10 @@ public class Casts {
 
     void testBoxing() {
         Integer b = null;
-        //:: error: (assignment.type.incompatible)
+        //:: error: (unboxing.of.nullable)
         int i = b;
         // no error, because there was already a nullpointer exception
-        Object o = (int)b;
+        Object o = (int) b;
     }
 
     void testUnsafeCast(@Nullable Object x) {
@@ -78,10 +78,12 @@ public class Casts {
     class Generics<T extends Object> {
         T t;
         @Nullable T nt;
+
         Generics(T t) {
             this.t = t;
             this.nt = t;
         }
+
         void m() {
             //:: error: (assignment.type.incompatible)
             t = (@Nullable T) null;

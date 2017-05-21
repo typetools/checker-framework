@@ -1,32 +1,27 @@
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.RequiresQualifier;
-import tests.util.EnsuresOdd;
-import tests.util.EnsuresOddIf;
-import tests.util.Odd;
-import tests.util.RequiresOdd;
+import testlib.util.EnsuresOdd;
+import testlib.util.EnsuresOddIf;
+import testlib.util.Odd;
+import testlib.util.RequiresOdd;
 
 class ContractsOverriding {
     static class Super {
         String f, g;
 
-        void m1() {
-        }
+        void m1() {}
 
-        void m2() {
-        }
+        void m2() {}
 
         @RequiresOdd("g")
-        void m3() {
-        }
+        void m3() {}
 
         @RequiresOdd("g")
-        void m3b() {
-        }
+        void m3b() {}
 
         @RequiresOdd("f")
-        void m4() {
-        }
+        void m4() {}
     }
 
     static class Sub extends Super {
@@ -35,33 +30,28 @@ class ContractsOverriding {
         @Override
         @RequiresOdd("f")
         //:: error: (contracts.precondition.override.invalid)
-        void m1() {
-        }
+        void m1() {}
 
         @Override
         @RequiresQualifier(expression = "f", qualifier = Odd.class)
         //:: error: (contracts.precondition.override.invalid)
-        void m2() {
-        }
+        void m2() {}
 
         @Override
         // g is a different field than in the supertype
         @RequiresOdd("g")
         //:: error: (contracts.precondition.override.invalid)
-        void m3() {
-        }
+        void m3() {}
 
         @Override
         @RequiresOdd("super.g")
-        void m3b() {
-        }
+        void m3b() {}
 
         @Override
         // use different string to refer to 'f' and RequiresQualifier instead
         // of RequiresOdd
         @RequiresQualifier(expression = "this.f", qualifier = Odd.class)
-        void m4() {
-        }
+        void m4() {}
     }
 
     static class Sub2 extends Super2 {
@@ -69,13 +59,11 @@ class ContractsOverriding {
 
         @Override
         //:: error: (contracts.postcondition.not.satisfied)
-        void m1() {
-        }
+        void m1() {}
 
         @Override
         //:: error: (contracts.postcondition.not.satisfied)
-        void m2() {
-        }
+        void m2() {}
 
         @Override
         @EnsuresOdd("g")
@@ -132,7 +120,7 @@ class ContractsOverriding {
         }
 
         @Override
-        @EnsuresOddIf(expression="g", result=true)
+        @EnsuresOddIf(expression = "g", result = true)
         //:: error: (contracts.conditional.postcondition.true.override.invalid)
         boolean m3() {
             g = odd;
@@ -140,26 +128,26 @@ class ContractsOverriding {
         }
 
         @Override
-        @EnsuresOddIf(expression="f", result=true)
+        @EnsuresOddIf(expression = "f", result = true)
         boolean m4() {
             return super.m4();
         }
 
         @Override
         // invalid result
-        @EnsuresOddIf(expression="f", result=false)
+        @EnsuresOddIf(expression = "f", result = false)
         boolean m5() {
             f = odd;
             return true;
         }
 
-        @EnsuresOddIf(expression="f", result=false)
+        @EnsuresOddIf(expression = "f", result = false)
         boolean m6() {
             f = odd;
             return true;
         }
 
-        @EnsuresQualifierIf(expression = "this.f", qualifier = Odd.class, result=true)
+        @EnsuresQualifierIf(expression = "this.f", qualifier = Odd.class, result = true)
         boolean m7() {
             f = odd;
             return true;
@@ -170,31 +158,31 @@ class ContractsOverriding {
         String f, g;
         @Odd String odd;
 
-        @EnsuresOddIf(expression="f", result=true)
+        @EnsuresOddIf(expression = "f", result = true)
         boolean m1() {
             f = odd;
             return true;
         }
 
-        @EnsuresQualifierIf(expression = "f", qualifier = Odd.class, result=true)
+        @EnsuresQualifierIf(expression = "f", qualifier = Odd.class, result = true)
         boolean m2() {
             f = odd;
             return true;
         }
 
-        @EnsuresOddIf(expression="g", result=true)
+        @EnsuresOddIf(expression = "g", result = true)
         boolean m3() {
             g = odd;
             return true;
         }
 
-        @EnsuresQualifierIf(expression = "this.f", qualifier = Odd.class, result=true)
+        @EnsuresQualifierIf(expression = "this.f", qualifier = Odd.class, result = true)
         boolean m4() {
             f = odd;
             return true;
         }
 
-        @EnsuresQualifierIf(expression = "this.f", qualifier = Odd.class, result=true)
+        @EnsuresQualifierIf(expression = "this.f", qualifier = Odd.class, result = true)
         boolean m5() {
             f = odd;
             return true;

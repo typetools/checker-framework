@@ -10,6 +10,6 @@ interface I {
     public void m(List<? extends String> l);
 }
 
-class C implements I {
+class OtherClass implements I {
     public void m(List l) {}
 }

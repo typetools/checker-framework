@@ -6,7 +6,7 @@ import java.io.*;
 
 public class InitializationAssertionFailure implements Serializable {
 
-  static final long serialVersionUID = 20030819L;
+    static final long serialVersionUID = 20030819L;
 
-  private InitializationAssertionFailure() {}
+    private InitializationAssertionFailure() {}
 }

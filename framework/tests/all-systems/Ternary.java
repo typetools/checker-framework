@@ -51,13 +51,13 @@ class Ternary {
         // ClassSymbol and MethodSymbol generate an intersection type.
         ClassSymbol c = null;
         MethodSymbol m = null;
-        Object s = (m!=null) ? m : c;
+        Object s = (m != null) ? m : c;
     }
 
     void vars2() {
         // ClassSymbol and MethodSymbol generate an intersection type.
         ClassSymbol c = null;
         MethodSymbol m = null;
-        Symbol s = (m!=null) ? m : c;
+        Symbol s = (m != null) ? m : c;
     }
 }

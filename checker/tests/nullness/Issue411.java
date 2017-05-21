@@ -8,26 +8,26 @@ import org.checkerframework.checker.nullness.qual.*;
 
 class Test {
 
-  @MonotonicNonNull Object field1 = null;
-  final @Nullable Object field2 = null;
+    @MonotonicNonNull Object field1 = null;
+    final @Nullable Object field2 = null;
 
-  void m() {
-    if (field1 != null) {
-      new Object() {
-        void f() {
-          field1.toString(); // dereference of possibly-null reference
+    void m() {
+        if (field1 != null) {
+            new Object() {
+                void f() {
+                    field1.toString(); // dereference of possibly-null reference
+                }
+            };
         }
-      };
     }
-  }
 
-  void n() {
-    if (field2 != null) {
-      new Object() {
-        void f() {
-          field2.toString(); // dereference of possibly-null reference
+    void n() {
+        if (field2 != null) {
+            new Object() {
+                void f() {
+                    field2.toString(); // dereference of possibly-null reference
+                }
+            };
         }
-      };
     }
-  }
 }

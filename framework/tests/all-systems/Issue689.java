@@ -2,7 +2,9 @@
 // https://github.com/typetools/checker-framework/issues/689
 public class Issue689 {
 
-    public int initializerFodder() { return 3; }
+    public int initializerFodder() {
+        return 3;
+    }
 
     public Runnable trigger() {
         return new Runnable() {

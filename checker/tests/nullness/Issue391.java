@@ -1,10 +1,9 @@
 // Test case for Issue 391:
 // https://github.com/typetools/checker-framework/issues/391
 
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
-import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
-
 
 class ClassA {
     private @Nullable String value = null;
@@ -24,8 +23,7 @@ public class Issue391 {
     ClassA field = new ClassA();
 
     @RequiresNonNull("field.value")
-    void method() {
-    }
+    void method() {}
 
     @EnsuresNonNull("field.value")
     void ensuresNonNull() {

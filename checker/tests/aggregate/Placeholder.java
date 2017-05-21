@@ -2,6 +2,4 @@
 // We should add more files to test
 // aggregate checker functionality.
 
-class Placeholder {
-
-}
+class Placeholder {}

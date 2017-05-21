@@ -1,8 +1,15 @@
-import tests.util.Odd;
-import tests.util.Even;
+import testlib.util.Even;
+import testlib.util.Odd;
 
-abstract class C<T extends @Odd Object> { abstract T id(T x); }
-class D extends C<@Odd String> { @Odd String id(@Odd String x) { return x; } }
+abstract class C<T extends @Odd Object> {
+    abstract T id(T x);
+}
+
+class D extends C<@Odd String> {
+    @Odd String id(@Odd String x) {
+        return x;
+    }
+}
 
 class Usage {
     void use() {

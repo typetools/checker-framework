@@ -2,30 +2,24 @@ package org.checkerframework.eclipse.natures;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import org.checkerframework.eclipse.builder.CheckerBuilder;
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.runtime.CoreException;
 
-import org.checkerframework.eclipse.builder.CheckerBuilder;
-
-public class CheckerBuildNature implements IProjectNature
-{
+public class CheckerBuildNature implements IProjectNature {
     public static final String NATURE_ID = "checkers.eclipse.buildnature";
     private IProject project;
 
     @Override
-    public void configure() throws CoreException
-    {
+    public void configure() throws CoreException {
         IProjectDescription desc = project.getDescription();
         ICommand[] buildSpec = desc.getBuildSpec();
 
-        for (ICommand command : buildSpec)
-        {
-            if (CheckerBuilder.BUILDER_ID.equals(command.getBuilderName()))
-            {
+        for (ICommand command : buildSpec) {
+            if (CheckerBuilder.BUILDER_ID.equals(command.getBuilderName())) {
                 // already registered the builder for this project
                 return;
             }
@@ -42,16 +36,13 @@ public class CheckerBuildNature implements IProjectNature
     }
 
     @Override
-    public void deconfigure() throws CoreException
-    {
+    public void deconfigure() throws CoreException {
         IProjectDescription desc = project.getDescription();
         ICommand[] buildSpec = desc.getBuildSpec();
         List<ICommand> newSpec = new ArrayList<ICommand>();
 
-        for (ICommand command : buildSpec)
-        {
-            if (!CheckerBuilder.BUILDER_ID.equals(command.getBuilderName()))
-            {
+        for (ICommand command : buildSpec) {
+            if (!CheckerBuilder.BUILDER_ID.equals(command.getBuilderName())) {
                 newSpec.add(command);
             }
         }
@@ -61,15 +52,12 @@ public class CheckerBuildNature implements IProjectNature
     }
 
     @Override
-    public IProject getProject()
-    {
+    public IProject getProject() {
         return this.project;
     }
 
     @Override
-    public void setProject(IProject project)
-    {
+    public void setProject(IProject project) {
         this.project = project;
     }
-
 }

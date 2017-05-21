@@ -25,11 +25,8 @@
 
 package java.util;
 
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.checker.nullness.qual.PolyNull;
 
 /**
  * An ordered collection (also known as a <i>sequence</i>).  The user of this
@@ -175,9 +172,6 @@ public interface List<E extends Object> extends Collection<E> {
      *         sequence
      * @see Arrays#asList(Object[])
      */
-    // Element annotation should be the same as that on the type parameter E.
-    // It's @Nullable here because that is most lenient.
-    // Eventually, figure out how to express this, or hard-code in the checker.
     Object[] toArray();
 
     /**
@@ -218,8 +212,6 @@ public interface List<E extends Object> extends Collection<E> {
      *         this list
      * @throws NullPointerException if the specified array is null
      */
-    // @Nullable because, if there is room in the argument a1, the method
-    // puts null after the elements of this.
     <T extends Object> T [] toArray(T [] a);
 
 

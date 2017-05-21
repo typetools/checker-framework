@@ -1,24 +1,26 @@
 package org.checkerframework.framework.type.visitor;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.javacutil.ErrorReporter;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeKind;
-
 /**
- * Replaces or adds all the annotations in the parameter with the annotations
- * from the visited type. An annotation is replaced if the parameter type
- * already has an annotation in the same hierarchy at the same location as the
- * visited type.
+ * Replaces or adds all the annotations in the parameter with the annotations from the visited type.
+ * An annotation is replaced if the parameter type already has an annotation in the same hierarchy
+ * at the same location as the visited type.
  *
- * Example use: AnnotatedTypeMirror visitType = ...; AnnotatedTypeMirror
- * parameter - ...; visitType.accept(new AnnotatedTypesMerger(), parameter);
+ * <p>Example use:
+ *
+ * <pre>{@code
+ * AnnotatedTypeMirror visitType = ...;
+ * AnnotatedTypeMirror parameter = ...;
+ * visitType.accept(new AnnotatedTypesMerger(), parameter);
+ * }</pre>
  *
  * @author smillst
- *
  */
 public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
 
@@ -29,7 +31,10 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
         new AnnotatedTypeMerger().visit(from, to);
     }
 
-    public static void merge(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to, final AnnotationMirror top) {
+    public static void merge(
+            final AnnotatedTypeMirror from,
+            final AnnotatedTypeMirror to,
+            final AnnotationMirror top) {
         if (from == to) {
             ErrorReporter.errorAbort("From == to");
         }
@@ -44,7 +49,8 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
     }
 
     /**
-     * @param top if top != null, then only annotation in the hierarchy of top are affected by this merger
+     * @param top if top != null, then only annotation in the hierarchy of top are affected by this
+     *     merger
      */
     public AnnotatedTypeMerger(final AnnotationMirror top) {
         this.top = top;
@@ -63,11 +69,12 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
         return r1;
     }
 
-    protected void replaceAnnotations(final AnnotatedTypeMirror one, final AnnotatedTypeMirror two) {
+    protected void replaceAnnotations(
+            final AnnotatedTypeMirror one, final AnnotatedTypeMirror two) {
         if (top == null) {
             two.replaceAnnotations(one.getAnnotations());
         } else {
-            final AnnotationMirror replacement =  one.getAnnotationInHierarchy(top);
+            final AnnotationMirror replacement = one.getAnnotationInHierarchy(top);
             if (replacement != null) {
                 two.replaceAnnotation(one.getAnnotationInHierarchy(top));
             }
@@ -88,8 +95,9 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
 
     /**
      * For type variables and wildcards, the absence of a primary annotations has an implied meaning
-     * on substitution.  Therefore, in these cases we remove the primary annotation and rely on
-     * the fact that the bounds are also merged into the type to.
+     * on substitution. Therefore, in these cases we remove the primary annotation and rely on the
+     * fact that the bounds are also merged into the type to.
+     *
      * @param from a type variable or wildcard
      */
     public void resolvePrimaries(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
@@ -108,9 +116,11 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
         } else {
             ErrorReporter.errorAbort(
                     "ResolvePrimaries' from argument should be a type variable OR wildcard\n"
-                  + "from=" + from.toString(true) + "\n"
-                  + "to="   + to.toString(true)
-            );
+                            + "from="
+                            + from.toString(true)
+                            + "\n"
+                            + "to="
+                            + to.toString(true));
         }
     }
 }

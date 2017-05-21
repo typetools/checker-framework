@@ -1,14 +1,12 @@
 package org.checkerframework.framework.stub;
 
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.TypesUtils;
-
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -19,20 +17,20 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
-
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.util.Context;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Generates a stub file from a single class or an entire package.<p>
+ * Generates a stub file from a single class or an entire package.
  *
- * A stub file can be used to add annotations to methods of classes, that
- * are only available in binary or the source of which cannot be edited.
+ * <p>A stub file can be used to add annotations to methods of classes, that are only available in
+ * binary or the source of which cannot be edited.
+ *
  * @checker_framework.manual #stub-creating-and-using Using stub classes
  */
 public class StubGenerator {
     /** The indentation for the class */
-    private final static String INDENTION = "    ";
+    private static final String INDENTION = "    ";
 
     /** The output stream */
     private final PrintStream out;
@@ -43,46 +41,36 @@ public class StubGenerator {
     /** the package of the class being processed */
     private String currentPackage = null;
 
-
-    /**
-     * Constructs an instanceof {@code IndexGenerator} that outputs to
-     * {@code System.out}.
-     */
+    /** Constructs an instanceof {@code IndexGenerator} that outputs to {@code System.out}. */
     public StubGenerator() {
         this(System.out);
     }
 
     /**
-     * Constructs an instance of {@code IndexGenerator} that outputs to
-     * the provided output stream.
+     * Constructs an instance of {@code IndexGenerator} that outputs to the provided output stream.
      *
-     * @param out   the output stream
+     * @param out the output stream
      */
     public StubGenerator(PrintStream out) {
         this.out = out;
     }
 
     /**
-     * Constructs an instance of {@code IndexGenerator} that outputs to
-     * the provided output stream.
+     * Constructs an instance of {@code IndexGenerator} that outputs to the provided output stream.
      *
-     * @param out   the output stream
+     * @param out the output stream
      */
     public StubGenerator(OutputStream out) {
         this.out = new PrintStream(out);
     }
 
-    /**
-     * Generate the stub file for all the classes within the provided
-     * package.
-     */
+    /** Generate the stub file for all the classes within the provided package. */
     public void stubFromField(Element elt) {
         if (!(elt.getKind() == ElementKind.FIELD)) {
             return;
         }
 
-        String pkg = ElementUtils.getVerboseName((ElementUtils
-                .enclosingPackage(elt)));
+        String pkg = ElementUtils.getVerboseName((ElementUtils.enclosingPackage(elt)));
         if (!"".equals(pkg)) {
             currentPackage = pkg;
             currentIndention = "    ";
@@ -90,13 +78,9 @@ public class StubGenerator {
         }
         VariableElement field = (VariableElement) elt;
         printFieldDecl(field);
-
     }
 
-    /**
-     * Generate the stub file for all the classes within the provided
-     * package.
-     */
+    /** Generate the stub file for all the classes within the provided package. */
     public void stubFromPackage(PackageElement packageElement) {
         currentPackage = packageElement.getQualifiedName().toString();
 
@@ -105,8 +89,7 @@ public class StubGenerator {
         out.print(currentPackage);
         out.println(";");
 
-        for (TypeElement element
-                : ElementFilter.typesIn(packageElement.getEnclosedElements())) {
+        for (TypeElement element : ElementFilter.typesIn(packageElement.getEnclosedElements())) {
             if (isPublicOrProtected(element)) {
                 out.println();
                 printClass(element);
@@ -114,17 +97,13 @@ public class StubGenerator {
         }
     }
 
-    /**
-     * Generate the stub file for all the classes within the provided
-     * package.
-     */
+    /** Generate the stub file for all the classes within the provided package. */
     public void stubFromMethod(Element elt) {
         if (!(elt.getKind() == ElementKind.CONSTRUCTOR || elt.getKind() == ElementKind.METHOD)) {
             return;
         }
 
-        String newPackage = ElementUtils.getVerboseName(ElementUtils
-                .enclosingPackage(elt));
+        String newPackage = ElementUtils.getVerboseName(ElementUtils.enclosingPackage(elt));
         if (!newPackage.equals("")) {
             currentPackage = newPackage;
             currentIndention = "    ";
@@ -135,19 +114,15 @@ public class StubGenerator {
         printMethodDecl(method);
     }
 
-    /**
-     * Generate the stub file for provided class.  The generated file
-     * includes the package name.
-     */
+    /** Generate the stub file for provided class. The generated file includes the package name. */
     public void stubFromType(TypeElement typeElement) {
 
         // only output stub for classes or interfaces.  not enums
         if (typeElement.getKind() != ElementKind.CLASS
-                && typeElement.getKind() != ElementKind.INTERFACE)
-            return;
+                && typeElement.getKind() != ElementKind.INTERFACE) return;
 
-        String newPackageName = ElementUtils.getVerboseName(ElementUtils
-                .enclosingPackage(typeElement));
+        String newPackageName =
+                ElementUtils.getVerboseName(ElementUtils.enclosingPackage(typeElement));
         boolean newPackage = !newPackageName.equals(currentPackage);
         currentPackage = newPackageName;
 
@@ -159,13 +134,16 @@ public class StubGenerator {
             out.println(";");
             out.println();
         }
-        String fullClassName = ElementUtils.getQualifiedClassName(typeElement)
-                .toString();
+        String fullClassName = ElementUtils.getQualifiedClassName(typeElement).toString();
 
-        String className = fullClassName.substring(fullClassName
-                //+1 because currentPackage doesn't include
-                // the . between the package name and the classname
-                .indexOf(currentPackage) + currentPackage.length()+1);
+        String className =
+                fullClassName.substring(
+                        fullClassName
+                                        //+1 because currentPackage doesn't include
+                                        // the . between the package name and the classname
+                                        .indexOf(currentPackage)
+                                + currentPackage.length()
+                                + 1);
 
         int index = className.lastIndexOf('.');
         if (index == -1) {
@@ -176,16 +154,12 @@ public class StubGenerator {
         }
     }
 
-    /**
-     * helper method that outputs the index for the provided class.
-     */
+    /** helper method that outputs the index for the provided class. */
     private void printClass(TypeElement typeElement) {
         printClass(typeElement, null);
     }
 
-    /**
-     * helper method that outputs the index for the provided class.
-     */
+    /** helper method that outputs the index for the provided class. */
     private void printClass(TypeElement typeElement, String outerClass) {
         List<TypeElement> innerClass = new ArrayList<TypeElement>();
 
@@ -236,15 +210,13 @@ public class StubGenerator {
         indent();
         out.println("}");
 
-        for (TypeElement element: innerClass) {
+        for (TypeElement element : innerClass) {
             printClass(element, typeElement.getSimpleName().toString());
         }
-
     }
 
     /**
-     * Helper method that outputs the public or protected inner members of
-     * a class.
+     * Helper method that outputs the public or protected inner members of a class.
      *
      * @param members list of the class members
      */
@@ -256,14 +228,12 @@ public class StubGenerator {
         }
     }
 
-    /**
-     * Helper method that outputs the declaration of the member
-     */
+    /** Helper method that outputs the declaration of the member */
     private void printMember(Element member, List<TypeElement> innerClass) {
         if (member.getKind().isField()) {
-            printFieldDecl((VariableElement)member);
+            printFieldDecl((VariableElement) member);
         } else if (member instanceof ExecutableElement) {
-            printMethodDecl((ExecutableElement)member);
+            printMethodDecl((ExecutableElement) member);
         } else if (member instanceof TypeElement) {
             innerClass.add((TypeElement) member);
         }
@@ -272,7 +242,7 @@ public class StubGenerator {
     /**
      * Helper method that outputs the field declaration for the given field.
      *
-     * It indicates whether the field is {@code protected}.
+     * <p>It indicates whether the field is {@code protected}.
      */
     private void printFieldDecl(VariableElement field) {
         if ("class".equals(field.getSimpleName().toString())) {
@@ -302,7 +272,7 @@ public class StubGenerator {
     /**
      * Helper method that outputs the method declaration for the given method
      *
-     * IT indicates whether the field is {@code protected}.
+     * <p>IT indicates whether the field is {@code protected}.
      */
     private void printMethodDecl(ExecutableElement method) {
         indent();
@@ -356,11 +326,9 @@ public class StubGenerator {
     }
 
     /**
-     * Return a string representation of the list in the form of
-     * {@code item1, item2, item3, ...}
+     * Return a string representation of the list in the form of {@code item1, item2, item3, ...}
      *
-     * instead of the default representation,
-     * {@code [item1, item2, item3, ...]}
+     * <p>instead of the default representation, {@code [item1, item2, item3, ...]}
      */
     private String formatList(List<?> lst) {
         StringBuilder sb = new StringBuilder();
@@ -376,7 +344,7 @@ public class StubGenerator {
     /** Returns true if the element is public or protected element */
     private boolean isPublicOrProtected(Element element) {
         return element.getModifiers().contains(Modifier.PUBLIC)
-               || element.getModifiers().contains(Modifier.PROTECTED);
+                || element.getModifiers().contains(Modifier.PROTECTED);
     }
 
     /** outputs the simple name of the type */
@@ -386,9 +354,7 @@ public class StubGenerator {
 
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
-            if (token.length() == 1
-                    || token.lastIndexOf('.') == -1)
-                sb.append(token);
+            if (token.length() == 1 || token.lastIndexOf('.') == -1) sb.append(token);
             else {
                 int index = token.lastIndexOf('.');
                 sb.append(token.substring(index + 1));

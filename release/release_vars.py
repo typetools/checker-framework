@@ -45,16 +45,16 @@ def append_to_PATH(paths):
 MAX_DOWNLOAD_SIZE = 2000000000
 
 # The location the test site is built in
-HTTP_PATH_TO_DEV_SITE = "http://types.cs.washington.edu/dev"
-FILE_PATH_TO_DEV_SITE = "/cse/www2/types/dev/"
+HTTP_PATH_TO_DEV_SITE = "https://checkerframework.org/dev"
+FILE_PATH_TO_DEV_SITE = "/cse/www2/types/checker-framework/dev"
 DEV_HTACCESS = os.path.join(FILE_PATH_TO_DEV_SITE, ".htaccess")
 
 # The location the test site is pushed to when it is ready
-HTTP_PATH_TO_LIVE_SITE = "http://types.cs.washington.edu"
-FILE_PATH_TO_LIVE_SITE = "/cse/www2/types"
+HTTP_PATH_TO_LIVE_SITE = "https://checkerframework.org"
+FILE_PATH_TO_LIVE_SITE = "/cse/www2/types/checker-framework"
 LIVE_HTACCESS = os.path.join(FILE_PATH_TO_LIVE_SITE, ".htaccess")
 
-PGP_PASSPHRASE_FILE = "/projects/swlab1/checker-framework/release-private.password"
+PGP_PASSPHRASE_FILE = "/projects/swlab1/checker-framework/hosting-info/release-private.password"
 SONATYPE_OSS_URL = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 SONATYPE_STAGING_REPO_ID = "sonatype-nexus-staging"
 SONATYPE_CLOSING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
@@ -65,11 +65,8 @@ SONATYPE_DROPPING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-
 # Another alternative is: USER = os.getenv('USER')
 USER = pwd.getpwuid(os.geteuid())[0]
 
-# Per-user root directory for the files created by the release process
-USER_SCRATCH_DIR = "/scratch/" + USER
-
 # Per-user directory for the temporary files created by the release process
-TMP_DIR = USER_SCRATCH_DIR + "/jsr308-release"
+TMP_DIR = "/scratch/" + USER + "/jsr308-release"
 
 # Location this and other release scripts are contained in
 SCRIPTS_DIR = TMP_DIR + "/checker-framework/release"
@@ -102,13 +99,13 @@ OPENJDK_RELEASE_SITE = 'http://jdk8.java.net/download.html'
 
 EMAIL_TO = 'jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegroups.com'
 
-# Location of the project directories in which we will build the actual projects
-# When we build these projects are pushed to the INTERM repositories
+# Location of the project directories in which we will build the actual projects.
+# When we build these projects are pushed to the INTERM repositories.
 BUILD_DIR = TMP_DIR + "/build/"
 CHECKER_FRAMEWORK = os.path.join(BUILD_DIR, 'checker-framework')
 CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, 'release')
 CHECKER_BIN_DIR = os.path.join(CHECKER_FRAMEWORK, 'checker', 'dist')
-RELEASE_HTACCESS = os.path.join(CHECKER_FRAMEWORK_RELEASE, "types.htaccess")
+CFLOGO = os.path.join(CHECKER_FRAMEWORK, 'docs', 'logo', 'Logo', 'CFLogo.png')
 CHECKER_TAG_PREFIXES = ["checker-framework-", "checkers-", "new release "]
 
 CHECKER_BINARY = os.path.join(CHECKER_BIN_DIR, 'checker.jar')
@@ -116,8 +113,10 @@ CHECKER_SOURCE = os.path.join(CHECKER_BIN_DIR, 'checker-source.jar')
 CHECKER_JAVADOC = os.path.join(CHECKER_BIN_DIR, 'checker-javadoc.jar')
 
 CHECKER_QUAL = os.path.join(CHECKER_BIN_DIR, 'checker-qual.jar')
+CHECKER_QUAL_SOURCE = os.path.join(CHECKER_BIN_DIR, 'checker-qual-source.jar')
 CHECKER_COMPAT_QUAL = os.path.join(CHECKER_BIN_DIR, 'checker-compat-qual.jar')
-CHECKER_MANUAL = os.path.join(CHECKER_FRAMEWORK, "checker", "manual")
+CHECKER_COMPAT_QUAL_SOURCE = os.path.join(CHECKER_BIN_DIR, 'checker-compat-qual-source.jar')
+CHECKER_MANUAL = os.path.join(CHECKER_FRAMEWORK, "docs", "manual")
 
 JAVAC_BINARY = os.path.join(CHECKER_BIN_DIR, 'javac.jar')
 JDK7_BINARY = os.path.join(CHECKER_BIN_DIR, 'jdk7.jar')
@@ -152,11 +151,10 @@ AFU_MANUAL = os.path.join(ANNO_FILE_UTILITIES, 'annotation-file-utilities.html')
 PLUME_LIB = os.path.join(BUILD_DIR, 'plume-lib')
 PLUME_BIB = os.path.join(BUILD_DIR, 'plume-bib')
 
-MAVEN_PLUGIN_DIR = os.path.join(CHECKER_FRAMEWORK, 'maven-plugin')
-MAVEN_PLUGIN_POM = os.path.join(MAVEN_PLUGIN_DIR, 'pom.xml')
+MAVEN_ARTIFACTS_DIR = os.path.join(CHECKER_FRAMEWORK, 'maven-artifacts')
 MAVEN_DEV_REPO = 'file:///cse/www2/types/dev/m2-repo'
 
-MAVEN_POMS_DIR = os.path.join(MAVEN_PLUGIN_DIR, 'poms')
+MAVEN_POMS_DIR = os.path.join(MAVEN_ARTIFACTS_DIR, 'poms')
 CHECKER_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'checkerPom.xml')
 CHECKER_QUAL_POM = os.path.join(MAVEN_POMS_DIR, 'checkerQualPom.xml')
 CHECKER_COMPAT_QUAL_POM = os.path.join(MAVEN_POMS_DIR, 'checkerCompatQualPom.xml')
@@ -165,7 +163,7 @@ JAVAC_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'compilerPom.xml')
 JDK7_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'jdk7Pom.xml')
 JDK8_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'jdk8Pom.xml')
 
-MAVEN_RELEASE_DIR = os.path.join(MAVEN_PLUGIN_DIR, 'release')
+MAVEN_RELEASE_DIR = os.path.join(MAVEN_ARTIFACTS_DIR, 'release')
 CHECKER_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerReleasePom.xml')
 CHECKER_QUAL_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerQualReleasePom.xml')
 CHECKER_COMPAT_QUAL_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerCompatQualReleasePom.xml')
@@ -173,7 +171,6 @@ CHECKER_COMPAT_QUAL_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerCompat
 JAVAC_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'compilerReleasePom.xml')
 JDK7_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'jdk7ReleasePom.xml')
 JDK8_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'jdk8ReleasePom.xml')
-MAVEN_PLUGIN_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'mavenPluginReleasePom.xml')
 JAVACUTIL_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'javacutilReleasePom.xml')
 DATAFLOW_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'dataflowReleasePom.xml')
 
@@ -193,21 +190,18 @@ LIVE_TO_INTERM_REPOS = (
     (LIVE_ANNO_REPO, INTERM_ANNO_REPO)
 )
 
-RELEASES_SUBDIR = "releases"
-CURRENT_SUBDIR = "current"
-
-JSR308_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "jsr308", RELEASES_SUBDIR)
-AFU_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "annotation-file-utilities", RELEASES_SUBDIR)
-CHECKER_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "checker-framework", RELEASES_SUBDIR)
+JSR308_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "jsr308", "releases")
+AFU_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "annotation-file-utilities", "releases")
+CHECKER_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "releases")
 
 JSR308_LIVE_SITE = os.path.join(FILE_PATH_TO_LIVE_SITE, "jsr308")
-JSR308_LIVE_RELEASES_DIR = os.path.join(JSR308_LIVE_SITE, RELEASES_SUBDIR)
+JSR308_LIVE_RELEASES_DIR = os.path.join(JSR308_LIVE_SITE, "releases")
 
 AFU_LIVE_SITE = os.path.join(FILE_PATH_TO_LIVE_SITE, "annotation-file-utilities")
-AFU_LIVE_RELEASES_DIR = os.path.join(AFU_LIVE_SITE, RELEASES_SUBDIR)
+AFU_LIVE_RELEASES_DIR = os.path.join(AFU_LIVE_SITE, "releases")
 
-CHECKER_LIVE_SITE = os.path.join(FILE_PATH_TO_LIVE_SITE, "checker-framework")
-CHECKER_LIVE_RELEASES_DIR = os.path.join(CHECKER_LIVE_SITE, RELEASES_SUBDIR)
+CHECKER_LIVE_SITE = FILE_PATH_TO_LIVE_SITE
+CHECKER_LIVE_RELEASES_DIR = os.path.join(CHECKER_LIVE_SITE, "releases")
 LIVE_CF_LOGO = os.path.join(CHECKER_LIVE_SITE, "CFLogo.png")
 
 CURRENT_DATE = datetime.date.today()
@@ -236,7 +230,7 @@ PATH = PATH + ":/homes/gws/mernst/.local/bin/:." # for html5validator
 os.environ['PATH'] = PATH
 
 # Tools that must be on your PATH (besides common *nix ones like grep)
-TOOLS = ['hevea', 'perl', 'java', 'dia', 'latex', 'mvn', 'hg', 'git', 'html5validator', EDITOR]
+TOOLS = ['hevea', 'perl', 'java', 'latex', 'mvn', 'hg', 'git', 'html5validator', EDITOR]
 
 # Script option constants
 LT_OPT = "langtools"

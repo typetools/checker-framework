@@ -15,11 +15,10 @@ class NullnessBound {
     }
 
     class Gen1<E extends @Nullable Object> {
-        public void add(E e) { }
+        public void add(E e) {}
     }
 
     class Gen2<@Nullable E> {
-        public void add(E e) { }
+        public void add(E e) {}
     }
-
 }

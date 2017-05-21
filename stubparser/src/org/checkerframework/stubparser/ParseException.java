@@ -58,9 +58,9 @@ public class ParseException extends Exception {
   /**
    * The following constructors are for use by you for whatever
    * purpose you can think of.  Constructing the exception in this
-   * manner makes the exception behave in the normal way - i.e., as
-   * documented in the class "Throwable".  The fields "errorToken",
-   * "expectedTokenSequences", and "tokenImage" do not contain
+   * manner makes the exception behave in the normal way -- i.e., as
+   * documented in the class {@link Throwable}.  The fields
+   * {@link #expectedTokenSequences}, and {@link #tokenImage} do not contain
    * relevant information.  The JavaCC generated code does not use
    * these constructors.
    */

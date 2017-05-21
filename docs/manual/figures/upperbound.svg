@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="9.1598835cm"
+   height="7.4332433cm"
+   viewBox="358 100 287.88204 371.66216"
+   id="svg3577"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="upperbound.svg">
+  <metadata
+     id="metadata3693">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs3691" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1280"
+     inkscape:window-height="698"
+     id="namedview3689"
+     showgrid="false"
+     inkscape:zoom="1.6651112"
+     inkscape:cx="226.93323"
+     inkscape:cy="139.0237"
+     inkscape:window-x="0"
+     inkscape:window-y="1"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3577"
+     inkscape:connector-spacing="5"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <g
+     id="g3589"
+     transform="translate(43.662473,-18.999996)">
+    <rect
+       style="fill:#ffffff"
+       x="360"
+       y="120"
+       width="201"
+       height="44"
+       id="rect3591" />
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#7f7f7f;stroke-width:2.18256378;stroke-opacity:1"
+       x="340.9155"
+       y="120.09128"
+       width="240.36746"
+       height="43.817436"
+       id="rect3593" />
+    <text
+       font-size="15.8044"
+       style="font-style:normal;font-weight:normal;font-size:14.32277775px;font-family:'courier new';text-anchor:middle;fill:#7f7f7f;fill-opacity:1"
+       x="460.5"
+       y="146.772"
+       id="text3595">
+      <tspan
+         x="460.5"
+         y="146.772"
+         id="tspan3597"
+         style="font-size:21.16666603px;fill:#7f7f7f;fill-opacity:1">@UpperBoundUnknown</tspan>
+    </text>
+  </g>
+  <text
+     font-size="12.8"
+     style="font-style:normal;font-weight:normal;font-size:12.80000019px;font-family:'courier new';text-anchor:start;fill:#000000"
+     x="657.78046"
+     y="257.31573"
+     id="text3619">
+    <tspan
+       x="657.78046"
+       y="257.31573"
+       id="tspan3621" />
+  </text>
+  <g
+     id="g3657"
+     transform="translate(43.662473,-17.999787)">
+    <line
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       x1="460.5"
+       y1="200"
+       x2="460.5"
+       y2="173.73599"
+       id="line3659" />
+    <polygon
+       style="fill:#000000"
+       points="460.5,173.736 455.5,176.236 460.5,166.236 465.5,176.236 "
+       id="polygon3661" />
+    <polygon
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       points="460.5,173.736 455.5,176.236 460.5,166.236 465.5,176.236 "
+       id="polygon3663" />
+  </g>
+  <text
+     font-size="12.8"
+     style="font-style:normal;font-weight:normal;font-size:12.80000019px;font-family:'courier new';text-anchor:start;fill:#000000"
+     x="657.78046"
+     y="257.31573"
+     id="text3673">
+    <tspan
+       x="657.78046"
+       y="257.31573"
+       id="tspan3675" />
+  </text>
+  <rect
+     style="fill:#ffffff"
+     x="403.66251"
+     y="347.00104"
+     width="201"
+     height="44"
+     id="rect3559" />
+  <rect
+     style="fill:none;fill-opacity:0;stroke:#7f7f7f;stroke-width:2.14008689;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     x="386.80826"
+     y="426.73199"
+     width="230.82231"
+     height="43.860157"
+     id="rect3561" />
+  <text
+     font-size="15.8044"
+     style="font-style:normal;font-weight:normal;font-size:15.80440044px;font-family:'courier new';text-anchor:middle;fill:#7f7f7f;fill-opacity:1"
+     x="501.62015"
+     y="455.129"
+     id="text3563">
+    <tspan
+       style="font-size:21.16666603px;fill:#7f7f7f;fill-opacity:1"
+       x="501.62015"
+       y="455.129"
+       id="tspan3565">@UpperBoundBottom</tspan>
+  </text>
+  <g
+     id="g3631"
+     transform="translate(63.835768,310.93151)">
+    <rect
+       id="rect3583"
+       height="42.243332"
+       width="455.82483"
+       y="33.964108"
+       x="210.61656"
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.32192183;stroke-miterlimit:4;stroke-dasharray:none" />
+    <text
+       font-size="15.8044"
+       style="font-style:normal;font-weight:normal;font-size:15.80440044px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="441.76974"
+       y="56.765598"
+       id="text3676">
+      <tspan
+         style="font-size:21.16666603px"
+         x="441.76974"
+         y="56.765598"
+         id="tspan3678">@LTOMLengthOf(&quot;myArray&quot;)</tspan>
+    </text>
+  </g>
+  <g
+     transform="translate(42.815005,224.81445)"
+     id="g3590">
+    <line
+       id="line3592"
+       y2="173.73599"
+       x2="460.5"
+       y1="200"
+       x1="460.5"
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2" />
+    <polygon
+       id="polygon3594"
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+       style="fill:#000000" />
+    <polygon
+       id="polygon3596"
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2" />
+  </g>
+  <path
+     inkscape:connector-curvature="2"
+     inkscape:connector-type="polyline"
+     id="path4201"
+     d="m 610.66182,395.89969 0,0"
+     style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.41111112px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+  <g
+     transform="translate(34.866493,231.91491)"
+     id="g4844">
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.60108316;stroke-miterlimit:4;stroke-dasharray:none"
+       x="250.48653"
+       y="33.693851"
+       width="437.61899"
+       height="42.783855"
+       id="rect4846" />
+    <text
+       font-size="15.8044"
+       style="font-style:normal;font-weight:normal;font-size:21.16666603px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="469.17535"
+       y="56.765598"
+       id="text4848">
+      <tspan
+         x="469.17535"
+         y="56.765598"
+         id="tspan4850"
+         style="font-size:21.16666603px">@LTLengthOf(&quot;myArray&quot;)</tspan>
+    </text>
+  </g>
+  <g
+     transform="translate(43.662473,64.000556)"
+     id="g4856">
+    <line
+       id="line4858"
+       y2="173.73599"
+       x2="460.5"
+       y1="200"
+       x1="460.5"
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2" />
+    <polygon
+       id="polygon4860"
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+       style="fill:#000000" />
+    <polygon
+       id="polygon4862"
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2" />
+  </g>
+  <g
+     transform="translate(42.815015,143.86462)"
+     id="g3696">
+    <line
+       id="line3698"
+       y2="173.73599"
+       x2="460.5"
+       y1="200"
+       x1="460.5"
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2" />
+    <polygon
+       id="polygon3700"
+       points="455.5,176.236 460.5,166.236 465.5,176.236 460.5,173.736 "
+       style="fill:#000000" />
+    <polygon
+       id="polygon3702"
+       points="455.5,176.236 460.5,166.236 465.5,176.236 460.5,173.736 "
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2" />
+  </g>
+  <g
+     transform="translate(63.835771,150.76204)"
+     id="g3704">
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.32192183;stroke-miterlimit:4;stroke-dasharray:none"
+       x="210.61656"
+       y="33.964108"
+       width="455.82483"
+       height="42.243332"
+       id="rect3706" />
+    <text
+       font-size="15.8044"
+       style="font-style:normal;font-weight:normal;font-size:15.80440044px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="441.76974"
+       y="56.765598"
+       id="text3708">
+      <tspan
+         style="font-size:21.16666603px"
+         x="441.76974"
+         y="56.765598"
+         id="tspan3710">@LTEqLengthOf(&quot;myArray&quot;)</tspan>
+    </text>
+  </g>
+</svg>

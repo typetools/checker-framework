@@ -8,10 +8,7 @@ import org.checkerframework.dataflow.constantpropagation.ConstantPropagationTran
 
 public class ConstantPropagationPlayground {
 
-    /**
-     * Run constant propagation for a specific file and create a PDF of the CFG
-     * in the end.
-     */
+    /** Run constant propagation for a specific file and create a PDF of the CFG in the end. */
     public static void main(String[] args) {
 
         /* Configuration: change as appropriate */
@@ -23,10 +20,8 @@ public class ConstantPropagationPlayground {
         // run the analysis and create a PDF file
         ConstantPropagationTransfer transfer = new ConstantPropagationTransfer();
         // TODO: correct processing environment
-        Analysis<Constant, ConstantPropagationStore, ConstantPropagationTransfer> analysis = new Analysis<>(
-                null, transfer);
-        JavaSource2CFGDOT.generateDOTofCFG(inputFile, outputDir, method,
-                clazz, true, analysis);
+        Analysis<Constant, ConstantPropagationStore, ConstantPropagationTransfer> analysis =
+                new Analysis<>(null, transfer);
+        JavaSource2CFGDOT.generateDOTofCFG(inputFile, outputDir, method, clazz, true, analysis);
     }
-
 }

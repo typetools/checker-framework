@@ -1,8 +1,6 @@
 package java.util.regex;
 
 import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
 
 public final class Pattern implements java.io.Serializable{
     private static final long serialVersionUID = 0L;

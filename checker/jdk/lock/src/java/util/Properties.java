@@ -1,7 +1,5 @@
 package java.util;
-import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.checker.nullness.qual.PolyNull;
 
 public class Properties extends Hashtable<Object, Object> {
   private static final long serialVersionUID = 0;

@@ -7,8 +7,8 @@
  * @compile/ref=RawTypeFailIgnored.out -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Alint -Anomsgtext -AignoreRawTypeArguments RawTypeFail.java
  */
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 class RawTypeFail {
     Map mr = new HashMap();

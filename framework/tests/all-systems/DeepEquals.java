@@ -1,5 +1,4 @@
 
-import java.util.*;
 
 public class DeepEquals {
     public static int deepEquals(Object o1) {

@@ -13,8 +13,7 @@ abstract class MethodTypeVars7 {
     }
 
     <T> T validate(@Nullable T value, T defaultValue) {
-        return value != null &&
-            !value.toString().isEmpty() ? value : defaultValue;
+        return value != null && !value.toString().isEmpty() ? value : defaultValue;
     }
 
     <T> T validateIf(@Nullable T value, T defaultValue) {
@@ -26,8 +25,7 @@ abstract class MethodTypeVars7 {
     }
 
     <T> T validate2(@Nullable T value, T defaultValue) {
-        return value == null ||
-            value.toString().isEmpty() ? defaultValue : value;
+        return value == null || value.toString().isEmpty() ? defaultValue : value;
     }
 
     <T> T validate3(@Nullable T value, T defaultValue) {
@@ -40,14 +38,12 @@ abstract class MethodTypeVars7 {
 
     <T> T validatefail(@Nullable T value, T defaultValue) {
         //:: error: (return.type.incompatible)
-        return ((value == null || !value.toString().isEmpty())
-                ? value : defaultValue);
+        return ((value == null || !value.toString().isEmpty()) ? value : defaultValue);
     }
 
     <T> T validate2fail(@Nullable T value, T defaultValue) {
         //:: error: (return.type.incompatible)
-        return ((value != null && value.toString().isEmpty())
-                ? defaultValue : value);
+        return ((value != null && value.toString().isEmpty()) ? defaultValue : value);
     }
 
     <T> T validate3fail(@Nullable T value3, T defaultValue3) {
@@ -82,5 +78,4 @@ abstract class MethodTypeVars7 {
         System.out.println("test 1 " + test1(null, "s_2"));
         System.out.println("test 2 " + test2(null, "s_2"));
     }
-
 }

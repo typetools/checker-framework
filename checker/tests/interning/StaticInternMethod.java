@@ -1,11 +1,10 @@
+import java.util.HashMap;
+import java.util.Map;
 import org.checkerframework.checker.interning.qual.*;
-
-import java.util.*;
 
 public class StaticInternMethod {
 
-    private static Map<Integer, @Interned Foo> pool =
-        new HashMap<Integer, @Interned Foo>();
+    private static Map<Integer, @Interned Foo> pool = new HashMap<Integer, @Interned Foo>();
 
     @SuppressWarnings("interning")
     public static @Interned Foo intern(Integer i) {
@@ -19,7 +18,7 @@ public class StaticInternMethod {
     }
 
     static class Foo {
-        public Foo(Integer i) { }
+        public Foo(Integer i) {}
     }
 
     void test() {

@@ -2,10 +2,10 @@
 .PHONY: all skipped issue618
 
 # Tests that are currently passing
-all:
+all: issue618
 
 # Tests that are currently not passing
-skipped: issue618
+skipped:
 
 issue618:
 	make -C issue618

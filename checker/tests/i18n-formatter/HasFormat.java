@@ -1,16 +1,13 @@
 import java.text.MessageFormat;
-import java.util.Formatter;
-
-import org.checkerframework.checker.formatter.FormatUtil;
-import org.checkerframework.checker.formatter.qual.ConversionCategory;
+import java.util.Date;
 import org.checkerframework.checker.i18nformatter.I18nFormatUtil;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
-import java.util.Date;
 
 public class HasFormat {
 
     void test1(String format) {
-        if (I18nFormatUtil.hasFormat(format, I18nConversionCategory.GENERAL, I18nConversionCategory.NUMBER)) {
+        if (I18nFormatUtil.hasFormat(
+                format, I18nConversionCategory.GENERAL, I18nConversionCategory.NUMBER)) {
             MessageFormat.format(format, "S", 1);
             //:: warning: (i18nformat.missing.arguments)
             MessageFormat.format(format, "S");
@@ -22,14 +19,19 @@ public class HasFormat {
     }
 
     void test2(String format) {
-        if (!I18nFormatUtil.hasFormat(format, I18nConversionCategory.GENERAL, I18nConversionCategory.NUMBER)) {
+        if (!I18nFormatUtil.hasFormat(
+                format, I18nConversionCategory.GENERAL, I18nConversionCategory.NUMBER)) {
             //:: error: (i18nformat.string.invalid)
             MessageFormat.format(format, "S", 1);
         }
     }
 
     void test3(String format) {
-        if (I18nFormatUtil.hasFormat(format, I18nConversionCategory.GENERAL, I18nConversionCategory.UNUSED, I18nConversionCategory.GENERAL)) {
+        if (I18nFormatUtil.hasFormat(
+                format,
+                I18nConversionCategory.GENERAL,
+                I18nConversionCategory.UNUSED,
+                I18nConversionCategory.GENERAL)) {
             //:: warning: (i18nformat.argument.unused)
             MessageFormat.format(format, "S", 1, "S");
         }

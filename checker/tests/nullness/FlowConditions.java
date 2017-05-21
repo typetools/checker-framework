@@ -1,5 +1,7 @@
-import java.util.*;
-
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import org.checkerframework.checker.nullness.qual.*;
 
 class FlowConditions {
@@ -15,14 +17,13 @@ class FlowConditions {
         }
     }
 
-
     private final Map<String, Set<String>> graph = new HashMap<String, Set<String>>();
 
     public void addEdge1(String e, String parent, String child) {
-        if ( !graph.containsKey(parent)) {
+        if (!graph.containsKey(parent)) {
             throw new NoSuchElementException();
         }
-        if ( !graph.containsKey(child)) {
+        if (!graph.containsKey(child)) {
             throw new NoSuchElementException();
         }
         @NonNull Set<String> edges = graph.get(parent);
@@ -35,6 +36,5 @@ class FlowConditions {
     //         throw new NoSuchElementException();
     //     @NonNull Set<String> edges = graph.get(parent);
     // }
-
 
 }

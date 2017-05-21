@@ -1,5 +1,6 @@
 
-import org.checkerframework.checker.initialization.qual.*;
+import org.checkerframework.checker.initialization.qual.Initialized;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
 class Cast {
 
@@ -8,5 +9,4 @@ class Cast {
         //:: error: (initialization.invalid.cast)
         @Initialized Cast t2 = (@Initialized Cast) this;
     }
-
 }

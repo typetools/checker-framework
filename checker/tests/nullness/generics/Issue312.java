@@ -6,12 +6,12 @@ import java.util.List;
 // A mock-up of the Guava API used in the test case;
 // see below for the code that uses Guava.
 @SuppressWarnings("nullness")
-class Ordering<T> {
-    public static <C extends Comparable> Ordering<C> natural() {
+class Ordering312<T> {
+    public static <C extends Comparable> Ordering312<C> natural() {
         return null;
     }
 
-    public <S extends T> Ordering<S> reverse() {
+    public <S extends T> Ordering312<S> reverse() {
         return null;
     }
 
@@ -22,14 +22,14 @@ class Ordering<T> {
 
 class Issue312 {
     void test(List<String> list) {
-        Ordering.natural().reverse().sortedCopy(list);
+        Ordering312.natural().reverse().sortedCopy(list);
     }
 }
 
 /* Original test using Guava:
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Ordering;
+import com.google.common.collect.Ordering312;
 import java.util.List;
 
 class Issue312 {

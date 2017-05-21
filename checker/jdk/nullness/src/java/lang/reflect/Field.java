@@ -14,7 +14,7 @@ public final class Field extends AccessibleObject implements Member {
   @Pure public int getModifiers() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isEnumConstant() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isSynthetic() { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Class<? /*extends @NonNull Object*/> getType() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Class<?> getType() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public Type getGenericType() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean equals(@Nullable Object obj) { throw new RuntimeException("skeleton method"); }
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }

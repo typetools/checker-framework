@@ -1,9 +1,8 @@
 package org.checkerframework.framework.util.defaults;
 
-import org.checkerframework.framework.util.PluginUtil;
-
 import java.util.Comparator;
 import java.util.TreeSet;
+import org.checkerframework.framework.util.PluginUtil;
 
 /**
  * An ordered set of Defaults (see {@link org.checkerframework.framework.util.defaults.Default}).
@@ -13,12 +12,12 @@ import java.util.TreeSet;
 class DefaultSet extends TreeSet<Default> {
 
     private static final Comparator<Default> comparator =
-        new Comparator<Default>() {
-            @Override
-            public int compare(Default d1, Default d2) {
-                return d1.compareTo(d2);
-            }
-        };
+            new Comparator<Default>() {
+                @Override
+                public int compare(Default d1, Default d2) {
+                    return d1.compareTo(d2);
+                }
+            };
 
     public DefaultSet() {
         super(comparator);

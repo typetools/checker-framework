@@ -3,9 +3,9 @@
 
 // @skip-test until the issue is fixed
 
-import org.checkerframework.checker.lock.qual.*;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
+import org.checkerframework.checker.lock.qual.*;
 
 class GuardedByLocalVariable {
 
@@ -13,12 +13,12 @@ class GuardedByLocalVariable {
         //:: error: (flowexpr.parse.error)
         @GuardedBy("m0") Object kk;
         {
-            final Map<Object, Integer> m0 = new HashMap<Object,Integer>();
+            final Map<Object, Integer> m0 = new HashMap<Object, Integer>();
             @GuardedBy("m0") Object k = "key";
             kk = k;
         }
         {
-            final Map<Object, Integer> m0 = new HashMap<Object,Integer>();
+            final Map<Object, Integer> m0 = new HashMap<Object, Integer>();
             //:: error: (assignment.type.incompatible)
             @GuardedBy("m0") Object k2 = kk;
         }
@@ -28,5 +28,4 @@ class GuardedByLocalVariable {
         //:: error: (flowexpr.parse.error)
         @GuardedBy("foobar") Object kk;
     }
-
 }

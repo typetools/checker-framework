@@ -1,10 +1,7 @@
-import org.checkerframework.framework.test.*;
-import java.util.*;
-
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.framework.qual.*;
-import tests.util.*;
+import org.checkerframework.framework.test.*;
+import testlib.util.*;
 
 // various tests about keeping information in the store about pure method calls
 class StorePure {
@@ -13,12 +10,36 @@ class StorePure {
 
     // various pure methods
 
-    @Pure String pure1() { return null; }
-    @Pure String pure1b() { return null; }
-    @Deterministic String pure1c() { return null; }
-    @Pure String pure2(int i) { return null; }
-    @Pure String pure3(boolean b) { return null; }
-    @Pure String pure4(String o) { return null; }
+    @Pure
+    String pure1() {
+        return null;
+    }
+
+    @Pure
+    String pure1b() {
+        return null;
+    }
+
+    @Deterministic
+    String pure1c() {
+        return null;
+    }
+
+    @Pure
+    String pure2(int i) {
+        return null;
+    }
+
+    @Pure
+    String pure3(boolean b) {
+        return null;
+    }
+
+    @Pure
+    String pure4(String o) {
+        return null;
+    }
+
     void nonpure() {}
 
     void t1(@Odd String p1, String p2, boolean b1) {

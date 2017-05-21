@@ -1,13 +1,13 @@
 /*
  * @test
  * @summary Test that compliation order doesn't effect typechecking (#767)
- * @ignore Until Issue #767 is fixed
  *
  * @compile -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Anomsgtext Class1.java Class2.java
  * @compile -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Anomsgtext Class2.java Class1.java
  *
  */
-import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Class1 {
     public static @Nullable Object field = null;

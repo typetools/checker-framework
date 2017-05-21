@@ -6,11 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
-
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
@@ -26,22 +24,19 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * A store that extends {@code CFAbstractStore} and additionally tracks which
- * fields of the 'self' reference have been initialized.
+ * A store that extends {@code CFAbstractStore} and additionally tracks which fields of the 'self'
+ * reference have been initialized.
  *
  * @author Stefan Heule
  * @see InitializationTransfer
  */
-public class InitializationStore<V extends CFAbstractValue<V>,
-            S extends InitializationStore<V, S>>
+public class InitializationStore<V extends CFAbstractValue<V>, S extends InitializationStore<V, S>>
         extends CFAbstractStore<V, S> {
 
     /** The list of fields that are initialized. */
     protected final Set<VariableElement> initializedFields;
 
-    public InitializationStore(
-            CFAbstractAnalysis<V, S, ?> analysis,
-            boolean sequentialSemantics) {
+    public InitializationStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
         initializedFields = new HashSet<>();
     }
@@ -49,9 +44,8 @@ public class InitializationStore<V extends CFAbstractValue<V>,
     /**
      * {@inheritDoc}
      *
-     * <p>
-     * If the receiver is a field, and has an invariant annotation, then it can
-     * be considered initialized.
+     * <p>If the receiver is a field, and has an invariant annotation, then it can be considered
+     * initialized.
      */
     @Override
     public void insertValue(Receiver r, V value) {
@@ -61,10 +55,11 @@ public class InitializationStore<V extends CFAbstractValue<V>,
             return;
         }
         super.insertValue(r, value);
-        InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory = (InitializationAnnotatedTypeFactory<?, ?, ?, ?>) analysis.getTypeFactory();
+        InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory =
+                (InitializationAnnotatedTypeFactory<?, ?, ?, ?>) analysis.getTypeFactory();
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
         AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
-        for (AnnotationMirror a : value.getType().getAnnotations()) {
+        for (AnnotationMirror a : value.getAnnotations()) {
             if (qualifierHierarchy.isSubtype(a, invariantAnno)) {
                 if (r instanceof FieldAccess) {
                     FieldAccess fa = (FieldAccess) r;
@@ -80,21 +75,23 @@ public class InitializationStore<V extends CFAbstractValue<V>,
     /**
      * {@inheritDoc}
      *
-     * <p>
-     * Additionally, the {@link InitializationStore} keeps all field values for
-     * fields that have the 'invariant' annotation.
+     * <p>Additionally, the {@link InitializationStore} keeps all field values for fields that have
+     * the 'invariant' annotation.
      */
     @Override
-    public void updateForMethodCall(MethodInvocationNode n,
-            AnnotatedTypeFactory atypeFactory, V val) {
-        AnnotationMirror fieldInvariantAnnotation = ((InitializationAnnotatedTypeFactory<?, ?, ?, ?>)atypeFactory).getFieldInvariantAnnotation();
+    public void updateForMethodCall(
+            MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, V val) {
+        AnnotationMirror fieldInvariantAnnotation =
+                ((InitializationAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
+                        .getFieldInvariantAnnotation();
 
         // Are there fields that have the 'invariant' annotations and are in the
         // store?
         List<FlowExpressions.FieldAccess> invariantFields = new ArrayList<>();
         for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
             FlowExpressions.FieldAccess fieldAccess = e.getKey();
-            Set<AnnotationMirror> declaredAnnos = atypeFactory.getAnnotatedType(fieldAccess.getField()).getAnnotations();
+            Set<AnnotationMirror> declaredAnnos =
+                    atypeFactory.getAnnotatedType(fieldAccess.getField()).getAnnotations();
             if (AnnotationUtils.containsSame(declaredAnnos, fieldInvariantAnnotation)) {
                 invariantFields.add(fieldAccess);
             }
@@ -115,9 +112,9 @@ public class InitializationStore<V extends CFAbstractValue<V>,
     }
 
     /**
-     * Mark the field identified by the element {@code field} as initialized (if
-     * it belongs to the current class, or is static (in which case there is no
-     * aliasing issue and we can just add all static fields).
+     * Mark the field identified by the element {@code field} as initialized (if it belongs to the
+     * current class, or is static (in which case there is no aliasing issue and we can just add all
+     * static fields).
      */
     public void addInitializedField(FieldAccess field) {
         boolean fieldOnThisReference = field.getReceiver() instanceof ThisReference;
@@ -128,17 +125,14 @@ public class InitializationStore<V extends CFAbstractValue<V>,
     }
 
     /**
-     * Mark the field identified by the element {@code f} as initialized (the
-     * caller needs to ensure that the field belongs to the current class, or is
-     * a static field).
+     * Mark the field identified by the element {@code f} as initialized (the caller needs to ensure
+     * that the field belongs to the current class, or is a static field).
      */
     public void addInitializedField(VariableElement f) {
         initializedFields.add(f);
     }
 
-    /**
-     * Is the field identified by the element {@code f} initialized?
-     */
+    /** Is the field identified by the element {@code f} initialized? */
     public boolean isFieldInitialized(Element f) {
         return initializedFields.contains(f);
     }

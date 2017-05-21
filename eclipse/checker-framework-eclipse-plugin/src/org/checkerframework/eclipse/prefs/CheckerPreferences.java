@@ -4,10 +4,8 @@ package org.checkerframework.eclipse.prefs;
  * This class keeps static information about preferences for the checker plugin
  *
  * @author asumu
- *
  */
-public final class CheckerPreferences
-{
+public final class CheckerPreferences {
     //TODO: SHORTEN THESE AND CREATE BETTER NAMES
 
     /** A key for determining if individual class prefs should be checked */
@@ -50,12 +48,12 @@ public final class CheckerPreferences
     public static final String PREF_CHECKER_CUSTOM_CLASSES = "checker_custom_classes";
 
     /** Key for option to use custom classes during autobuild */
-    public static final String PREF_CHECKER_CUSTOM_CLASS_AUTOBUILD = "checker_custom_class_autobuild";
+    public static final String PREF_CHECKER_CUSTOM_CLASS_AUTOBUILD =
+            "checker_custom_class_autobuild";
 
     /** Key for option to use custom classes during autobuild */
     public static final String PREF_CHECKER_SELECTED_CHECKERS = "checker_selected_checkers";
 
     /** Where or not the plugin should output extra diagnostic info */
     public static final String PREF_CHECKER_VERBOSE = "checker_verbose";
-
 }

@@ -1,6 +1,4 @@
-import org.checkerframework.checker.interning.qual.*;
-
-import java.util.*;
+import org.checkerframework.checker.interning.qual.Interned;
 
 public class Comparison {
 

@@ -1,7 +1,6 @@
 package com.sun.javadoc;
 
 import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.dataflow.qual.Pure;
 
 public interface FieldDoc extends MemberDoc {
   public abstract com.sun.javadoc.Type type();

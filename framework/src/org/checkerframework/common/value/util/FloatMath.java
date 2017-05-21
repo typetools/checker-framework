@@ -1,4 +1,5 @@
 package org.checkerframework.common.value.util;
+
 public class FloatMath extends NumberMath<Float> {
     float number;
 
@@ -127,12 +128,12 @@ public class FloatMath extends NumberMath<Float> {
     }
 
     @Override
-    public Number signedSiftRight(Number right) {
+    public Number signedShiftRight(Number right) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Number unsignedSiftRight(Number right) {
+    public Number unsignedShiftRight(Number right) {
         throw new UnsupportedOperationException();
     }
 
@@ -153,13 +154,14 @@ public class FloatMath extends NumberMath<Float> {
 
     @Override
     public Number unaryPlus() {
-       return +number;
+        return +number;
     }
 
     @Override
     public Number unaryMinus() {
         return -number;
     }
+
     @Override
     public Number bitwiseComplement() {
         throw new UnsupportedOperationException();

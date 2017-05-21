@@ -1,5 +1,12 @@
 package org.checkerframework.checker.nullness;
 
+import java.util.List;
+import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -9,19 +16,10 @@ import org.checkerframework.framework.util.TypeArgumentMapper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.util.Types;
-
-
 /**
- * KeyForPropagator is used to move nested KeyFor annotations from one side of a pseudo-assignment to
- * the other.  The KeyForPropagationTreeAnnotator details the locations in which this occurs.
+ * KeyForPropagator is used to move nested KeyFor annotations from one side of a pseudo-assignment
+ * to the other. The KeyForPropagationTreeAnnotator details the locations in which this occurs.
+ *
  * @see org.checkerframework.checker.nullness.KeyForPropagationTreeAnnotator
  */
 public class KeyForPropagator {
@@ -38,7 +36,6 @@ public class KeyForPropagator {
         BOTH
     }
 
-
     // The top type of the KeyFor hierarchy, this class will replace @UnknownKeyFor annotations.
     // It will also add annotations when they are misisng for types that require primary annotation
     // (i.e. not TypeVars, Wildcards, Intersections, or Unions).
@@ -49,37 +46,43 @@ public class KeyForPropagator {
     }
 
     /**
-     * Propagate annotations from the type arguments of one type to another.  Which type is the
-     * source and destination of the annotations depends on the direction parameter.  Only @KeyFor annotations
-     * are propagated and only if the type to which it would be propagated contains an @UnknownKeyFor or
-     * contains no key for annotations of any kind.  If any of the type arguments are wildcards than
-     * they are ignored.
+     * Propagate annotations from the type arguments of one type to another. Which type is the
+     * source and destination of the annotations depends on the direction parameter. Only @KeyFor
+     * annotations are propagated and only if the type to which it would be propagated contains
+     * an @UnknownKeyFor or contains no key for annotations of any kind. If any of the type
+     * arguments are wildcards than they are ignored.
      *
-     * Note the primary annotations of subtype/supertype are not used.
+     * <p>Note the primary annotations of subtype/supertype are not used.
      *
-     * Simple Example:
+     * <p>Simple Example:
+     *
      * <pre>{@code
      * typeOf(subtype) = ArrayList<@KeyFor("a") String>
      * typeOf(supertype) = List<@UnknownKeyFor String>
      * direction = TO_SUPERTYPE
      * }</pre>
-     * The type of supertype after propagate would be:
-     * {@code List<@KeyFor("a") String>}
      *
-     * A more complex example would be:
+     * The type of supertype after propagate would be: {@code List<@KeyFor("a") String>}
+     *
+     * <p>A more complex example would be:
+     *
      * <pre>{@code
      * typeOf(subtype) = HashMap<@UnknownKeyFor String, @KeyFor("b") List<@KeyFor("c") String>>
      * typeOf(supertype) = Map<@KeyFor("a") String, @KeyFor("b") List<@KeyFor("c") String>>
      * direction = TO_SUBTYPE
      * }</pre>
      *
-     * The type of subtype after propagate would be:
-     * {@code HashMap<@KeyFor("a") String, @KeyFor("b") List<@KeyFor("c") String>>}
+     * The type of subtype after propagate would be: {@code HashMap<@KeyFor("a")
+     * String, @KeyFor("b") List<@KeyFor("c") String>>}
      */
-    public void propagate(final AnnotatedDeclaredType subtype, final AnnotatedDeclaredType supertype,
-                          PropagationDirection direction, final AnnotatedTypeFactory typeFactory) {
+    public void propagate(
+            final AnnotatedDeclaredType subtype,
+            final AnnotatedDeclaredType supertype,
+            PropagationDirection direction,
+            final AnnotatedTypeFactory typeFactory) {
         final TypeElement subtypeElement = (TypeElement) subtype.getUnderlyingType().asElement();
-        final TypeElement supertypeElement = (TypeElement) supertype.getUnderlyingType().asElement();
+        final TypeElement supertypeElement =
+                (TypeElement) supertype.getUnderlyingType().asElement();
         final Types types = typeFactory.getProcessingEnv().getTypeUtils();
 
         // Note: The right hand side of this or expression will cover raw types
@@ -95,12 +98,11 @@ public class KeyForPropagator {
             return;
         }
 
-
-
         Set<Pair<Integer, Integer>> typeParamMappings =
-             TypeArgumentMapper.mapTypeArgumentIndices(subtypeElement, supertypeElement, types);
+                TypeArgumentMapper.mapTypeArgumentIndices(subtypeElement, supertypeElement, types);
 
-        KeyForPropagationMerger merger = new KeyForPropagationMerger(typeFactory.getProcessingEnv());
+        KeyForPropagationMerger merger =
+                new KeyForPropagationMerger(typeFactory.getProcessingEnv());
 
         final List<AnnotatedTypeMirror> subtypeArgs = subtype.getTypeArguments();
         final List<AnnotatedTypeMirror> supertypeArgs = supertype.getTypeArguments();
@@ -109,7 +111,8 @@ public class KeyForPropagator {
             final AnnotatedTypeMirror subtypeArg = subtypeArgs.get(path.first);
             final AnnotatedTypeMirror supertypeArg = supertypeArgs.get(path.second);
 
-            if (subtypeArg.getKind() == TypeKind.WILDCARD || supertypeArg.getKind() == TypeKind.WILDCARD) {
+            if (subtypeArg.getKind() == TypeKind.WILDCARD
+                    || supertypeArg.getKind() == TypeKind.WILDCARD) {
                 continue;
             }
 
@@ -128,15 +131,12 @@ public class KeyForPropagator {
                     merger.visit(supertypeArg, subtypeArg);
                     break;
             }
-
         }
-
     }
 
     /**
-     * An annotated type merger that merges @KeyFor annotations and only if the
-     * type that is receiving an annotation has an @UnknownKeyFor annotation or NO key for
-     * annotations.
+     * An annotated type merger that merges @KeyFor annotations and only if the type that is
+     * receiving an annotation has an @UnknownKeyFor annotation or NO key for annotations.
      */
     private class KeyForPropagationMerger extends AnnotatedTypeMerger {
         private final ProcessingEnvironment env;
@@ -150,12 +150,12 @@ public class KeyForPropagator {
             final AnnotationMirror fromKeyFor = from.getAnnotationInHierarchy(UNKNOWN_KEYFOR);
             final AnnotationMirror toKeyFor = to.getAnnotationInHierarchy(UNKNOWN_KEYFOR);
 
-            boolean toNeedsAnnotation = toKeyFor == null || AnnotationUtils.areSame(toKeyFor, UNKNOWN_KEYFOR);
-            if (fromKeyFor!= null && toNeedsAnnotation) {
+            boolean toNeedsAnnotation =
+                    toKeyFor == null || AnnotationUtils.areSame(toKeyFor, UNKNOWN_KEYFOR);
+            if (fromKeyFor != null && toNeedsAnnotation) {
                 AnnotationBuilder annotationBuilder = new AnnotationBuilder(env, fromKeyFor);
                 to.replaceAnnotation(annotationBuilder.build());
             }
         }
     }
-
 }

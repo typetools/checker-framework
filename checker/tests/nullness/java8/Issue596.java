@@ -7,21 +7,19 @@ import org.checkerframework.checker.nullness.qual.*;
 
 class Issue596 {
 
-  private static String getOrEmpty(AtomicReference<String> ref) {
-    return Optional.fromNullable(ref.get()).or("");
-  }
-
+    private static String getOrEmpty(AtomicReference<String> ref) {
+        return Optional.fromNullable(ref.get()).or("");
+    }
 }
 
 // From Google Guava
 class Optional<T> {
 
-  public static <T> Optional<T> fromNullable(/*@Nullable*/ T nullableReference) {
-    return new Optional<T>();
-  }
+    public static <T> Optional<T> fromNullable(/*@Nullable*/ T nullableReference) {
+        return new Optional<T>();
+    }
 
-  public T or(T defaultValue) {
-    return defaultValue;
-  }
-
+    public T or(T defaultValue) {
+        return defaultValue;
+    }
 }

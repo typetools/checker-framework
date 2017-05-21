@@ -1,11 +1,10 @@
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
 
-import java.io.*;
-import java.util.*;
-
 class EntryReader {
-    public EntryReader() throws IOException {
-    }
+    public EntryReader() throws IOException {}
 }
 
 class TryCatch {
@@ -14,7 +13,7 @@ class TryCatch {
         try {
             new EntryReader();
         } catch (FileNotFoundException e) {
-            file_errors.add (e);
+            file_errors.add(e);
         }
     }
 
