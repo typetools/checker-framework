@@ -17,6 +17,8 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic.Kind;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -120,10 +122,15 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         final AnnotatedTypeMirror assignedTo =
                 TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expressionTree));
 
+        SourceChecker checker = typeFactory.getContext().getChecker();
+
         if (showInferenceSteps) {
-            System.err.println("DTAI: expression: " + expressionTree.toString().replace("\n", " "));
-            System.err.println("  argTypes: " + argTypes);
-            System.err.println("  assignedTo: " + assignedTo);
+            checker.message(
+                    Kind.NOTE,
+                    "DTAI: expression: %s\n  argTypes: %s\n  assignedTo: %s\n",
+                    expressionTree.toString().replace("\n", " "),
+                    argTypes,
+                    assignedTo);
         }
 
         final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
@@ -131,20 +138,20 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets, true);
 
         if (showInferenceSteps) {
-            System.err.println("  after infer: " + inferredArgs);
+            checker.message(Kind.NOTE, "  after infer: %s\n", inferredArgs);
         }
 
         handleNullTypeArguments(
                 typeFactory, methodElem, methodType, argTypes, assignedTo, targets, inferredArgs);
 
         if (showInferenceSteps) {
-            System.err.println("  after handleNull: " + inferredArgs);
+            checker.message(Kind.NOTE, "  after handleNull: %s\n", inferredArgs);
         }
 
         handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
 
         if (showInferenceSteps) {
-            System.err.println("  results: " + inferredArgs);
+            checker.message(Kind.NOTE, "  results: %s\n", inferredArgs);
         }
 
         return inferredArgs;
