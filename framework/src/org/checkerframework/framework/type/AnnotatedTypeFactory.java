@@ -669,7 +669,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * TypeArgumentInference infers the method type arguments when they are not explicitly written.
      */
     protected TypeArgumentInference createTypeArgumentInference() {
-        return new DefaultTypeArgumentInference();
+        return new DefaultTypeArgumentInference(this);
     }
 
     public TypeArgumentInference getTypeArgumentInference() {
