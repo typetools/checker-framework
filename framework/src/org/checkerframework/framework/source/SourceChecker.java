@@ -265,6 +265,10 @@ import org.checkerframework.javacutil.TreeUtils;
     // org.checkerframework.common.basetype.BaseTypeVisitor
     "showchecks",
 
+    // Output information about intermediate steps in method type argument inference
+    // org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference
+    "showInferenceSteps",
+
     /// Visualizing the CFG
 
     // Implemented in the wrapper rather than this file, but worth noting here.
@@ -1046,7 +1050,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @throws IllegalArgumentException if {@code source} is neither a {@link Tree} nor an {@link
      *     Element}
      */
-    public void message(
+    private void message(
             Diagnostic.Kind kind,
             Object source,
             /*@CompilerMessageKey*/ String msgKey,
@@ -1188,10 +1192,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @see SourceChecker#message(Diagnostic.Kind, Object, String, Object...)
      */
     public void message(Diagnostic.Kind kind, String msg, Object... args) {
+        String ftdmsg = String.format(msg, args);
         if (messager != null) {
-            messager.printMessage(kind, String.format(msg, args));
+            messager.printMessage(kind, ftdmsg);
         } else {
-            System.err.println(kind + ": " + String.format(msg, args));
+            System.err.println(kind + ": " + ftdmsg);
         }
     }
 
