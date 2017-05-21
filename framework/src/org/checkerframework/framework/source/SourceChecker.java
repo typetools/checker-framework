@@ -943,6 +943,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         } else {
             previousErrorCompilationUnit = null;
         }
+        if (visitor == null) {
+            // typeProcessingStart invokes initChecker, which should
+            // have set the visitor. If the field is still null, an
+            // exception occured during initialization, which was already
+            // logged there. Don't also cause a NPE here.
+            return;
+        }
         if (p.getCompilationUnit() != currentRoot) {
             currentRoot = p.getCompilationUnit();
             visitor.setRoot(currentRoot);
