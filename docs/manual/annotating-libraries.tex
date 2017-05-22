@@ -156,7 +156,7 @@ Set up the Checker Framework (replace \textit{mychecker} with the name of your c
 \begin{enumerate}
 \item \<mkdir \$JSR308/checker-framework/checker/jdk/\textit{mychecker}/> \\
   \<cd \$JSR308/checker-framework/checker/jdk/\textit{mychecker}/> \\
-  \<ln -s ../Makefile.jdk Makefile>
+  \codeid{echo "include ../Makefile.jdk" > Makefile}
 
 \item Add \textit{mychecker} to
   \<\$JSR308/checker-framework/checker/jdk/MakeFile> in the  definition of
