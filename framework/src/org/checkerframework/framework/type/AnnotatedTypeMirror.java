@@ -1440,6 +1440,12 @@ public abstract class AnnotatedTypeMirror {
             at.setComponentType(ct);
             return at;
         }
+
+        @Override
+        public void clearAnnotations() {
+            super.clearAnnotations();
+            componentType.clearAnnotations();
+        }
     }
 
     /**
