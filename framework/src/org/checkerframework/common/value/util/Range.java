@@ -128,19 +128,16 @@ public class Range {
         }
         if (IGNORE_OVERFLOW) {
             return new Range(Math.max(from, Integer.MIN_VALUE), Math.min(to, Integer.MAX_VALUE));
-        } else {
-            if (this.isWiderThan(integerWidth)) {
-                return INT_EVERYTHING;
-            } else {
-                int intFrom = (int) this.from;
-                int intTo = (int) this.to;
-                if (intFrom <= intTo) {
-                    return new Range(intFrom, intTo);
-                } else {
-                    return INT_EVERYTHING;
-                }
-            }
         }
+        if (this.isWiderThan(integerWidth)) {
+            return INT_EVERYTHING;
+        }
+        int intFrom = (int) this.from;
+        int intTo = (int) this.to;
+        if (intFrom <= intTo) {
+            return new Range(intFrom, intTo);
+        }
+        return INT_EVERYTHING;
     }
 
     /** The number of values representable in 16 bits: 2^16 or 1&lt;&lt;16. */
@@ -165,20 +162,17 @@ public class Range {
         }
         if (IGNORE_OVERFLOW) {
             return new Range(Math.max(from, Short.MIN_VALUE), Math.min(to, Short.MAX_VALUE));
-        } else {
-            if (this.isWiderThan(shortWidth)) {
-                // short is be promoted to int before the operation so no need for explicit casting
-                return SHORT_EVERYTHING;
-            } else {
-                short shortFrom = (short) this.from;
-                short shortTo = (short) this.to;
-                if (shortFrom <= shortTo) {
-                    return new Range(shortFrom, shortTo);
-                } else {
-                    return SHORT_EVERYTHING;
-                }
-            }
         }
+        if (this.isWiderThan(shortWidth)) {
+            // short is be promoted to int before the operation so no need for explicit casting
+            return SHORT_EVERYTHING;
+        }
+        short shortFrom = (short) this.from;
+        short shortTo = (short) this.to;
+        if (shortFrom <= shortTo) {
+            return new Range(shortFrom, shortTo);
+        }
+        return SHORT_EVERYTHING;
     }
 
     /** The number of values representable in 8 bits: 2^8 or 1&lt;&lt;8. */
@@ -203,20 +197,17 @@ public class Range {
         }
         if (IGNORE_OVERFLOW) {
             return new Range(Math.max(from, Byte.MIN_VALUE), Math.min(to, Byte.MAX_VALUE));
-        } else {
-            if (this.isWiderThan(byteWidth)) {
-                // byte is be promoted to int before the operation so no need for explicit casting
-                return BYTE_EVERYTHING;
-            } else {
-                byte byteFrom = (byte) this.from;
-                byte byteTo = (byte) this.to;
-                if (byteFrom <= byteTo) {
-                    return new Range(byteFrom, byteTo);
-                } else {
-                    return BYTE_EVERYTHING;
-                }
-            }
         }
+        if (this.isWiderThan(byteWidth)) {
+            // byte is be promoted to int before the operation so no need for explicit casting
+            return BYTE_EVERYTHING;
+        }
+        byte byteFrom = (byte) this.from;
+        byte byteTo = (byte) this.to;
+        if (byteFrom <= byteTo) {
+            return new Range(byteFrom, byteTo);
+        }
+        return BYTE_EVERYTHING;
     }
 
     /** Returns true if the element is contained in this range. */

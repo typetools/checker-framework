@@ -390,8 +390,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (AnnotationUtils.areSameByClass(lub, IntRange.class)) {
                 Range lubRange = getRange(lub);
                 if (Range.IGNORE_OVERFLOW) {
-                    Range range1 = getRangeOrConvertIntVal(a1);
-                    Range range2 = getRangeOrConvertIntVal(a2);
+                    Range range1 = getRange(a1);
+                    Range range2 = getRange(a2);
                     if (range1 != null && range2 != null) {
                         if (range1.from == range2.from) {
                             if (lubRange.to < Byte.MAX_VALUE) {
@@ -1548,7 +1548,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Returns a {@code Range} bounded by the values specified in the given {@code @Range}
-     * annotation.
+     * annotation. Also returns an appropriate range if an {@code @IntVal} annotation is passed.
+     * Returns {@code null} if the annotation is null or if the annotation is not an {@code
+     * IntRange}, {@code IntRangeFromPositive}, {@code IntVal}, or {@code ArrayLenRange}.
      */
     public static Range getRange(AnnotationMirror rangeAnno) {
         if (rangeAnno == null) {
@@ -1559,29 +1561,23 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return new Range(1, Integer.MAX_VALUE);
         }
 
+        if (AnnotationUtils.areSameByClass(rangeAnno, IntVal.class)) {
+            return ValueCheckerUtils.getRangeFromValues(getIntValues(rangeAnno));
+        }
+
         // Assume rangeAnno is well-formed, i.e., 'from' is less than or equal to 'to'.
         if (AnnotationUtils.areSameByClass(rangeAnno, IntRange.class)) {
             return new Range(
                     AnnotationUtils.getElementValue(rangeAnno, "from", Long.class, true),
                     AnnotationUtils.getElementValue(rangeAnno, "to", Long.class, true));
-        } else {
+        }
+
+        if (AnnotationUtils.areSameByClass(rangeAnno, ArrayLenRange.class)) {
             return new Range(
                     AnnotationUtils.getElementValue(rangeAnno, "from", Integer.class, true),
                     AnnotationUtils.getElementValue(rangeAnno, "to", Integer.class, true));
         }
-    }
 
-    /**
-     * Returns a {@code Range} bounded by the values specified in the given {@code @IntRange} or
-     * {@code @IntVal} annotation. Returns null if the given annotation is not {@code IntRange} or
-     * {@code IntVal}.
-     */
-    public static Range getRangeOrConvertIntVal(AnnotationMirror anno) {
-        if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
-            return ValueCheckerUtils.getRangeFromValues(getIntValues(anno));
-        } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
-            return getRange(anno);
-        }
         return null;
     }
 
