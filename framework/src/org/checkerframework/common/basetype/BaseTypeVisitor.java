@@ -2352,7 +2352,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         OverrideChecker overrideChecker =
-                new OverrideChecker(
+                createOverrideChecker(
                         memberReferenceTree,
                         overridingMethodType,
                         overridingType,
@@ -2709,7 +2709,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return success;
         }
 
-        private boolean checkReceiverOverride() {
+        protected boolean checkReceiverOverride() {
             // Check the receiver type.
             // isSubtype() requires its arguments to be actual subtypes with
             // respect to JLS, but overrider receiver is not a subtype of the
