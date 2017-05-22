@@ -1,7 +1,8 @@
 package fieldinvar;
 
-import org.checkerframework.checker.index.qual.*;
-import org.checkerframework.checker.index.qual.MinLenFieldInvariant;
+import org.checkerframework.common.value.qual.BottomVal;
+import org.checkerframework.common.value.qual.MinLen;
+import org.checkerframework.common.value.qual.MinLenFieldInvariant;
 import org.checkerframework.framework.qual.FieldInvariant;
 
 public class MinLenFieldInvar {
@@ -13,7 +14,7 @@ public class MinLenFieldInvar {
         }
     }
 
-    //:: error: (field.invar.not.subtype)
+    //:: error: (field.invariant.not.subtype)
     @MinLenFieldInvariant(field = "minlen2", minLen = 1)
     class InvalidSub extends Super {
         public InvalidSub() {
@@ -31,7 +32,7 @@ public class MinLenFieldInvar {
         }
     }
 
-    //:: error: (field.invar.not.found.superclass)
+    //:: error: (field.invariant.not.found.superclass)
     @MinLenFieldInvariant(field = "validSubField", minLen = 3)
     class InvalidSubSub1 extends ValidSub {
         public InvalidSubSub1() {
@@ -39,7 +40,7 @@ public class MinLenFieldInvar {
         }
     }
 
-    //:: error: (field.invar.not.subtype.superclass)
+    //:: error: (field.invariant.not.subtype.superclass)
     @MinLenFieldInvariant(field = "minlen2", minLen = 3)
     class InvalidSubSub2 extends ValidSub {
         public InvalidSubSub2() {
@@ -47,7 +48,7 @@ public class MinLenFieldInvar {
         }
     }
 
-    @FieldInvariant(field = "minlen2", qualifier = MinLenBottom.class)
+    @FieldInvariant(field = "minlen2", qualifier = BottomVal.class)
     @MinLenFieldInvariant(field = "validSubField", minLen = 4)
     class ValidSubSub extends ValidSub {
         public ValidSubSub() {
@@ -55,7 +56,7 @@ public class MinLenFieldInvar {
         }
 
         void test() {
-            int @MinLenBottom [] bot = minlen2;
+            int @BottomVal [] bot = minlen2;
             int @MinLen(4) [] four = validSubField;
         }
     }

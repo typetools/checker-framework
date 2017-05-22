@@ -124,7 +124,7 @@ public class Range {
      */
     public Range intRange() {
         if (this.isNothing()) {
-            return NOTHING;
+            return this;
         }
         if (IGNORE_OVERFLOW) {
             return new Range(Math.max(from, Integer.MIN_VALUE), Math.min(to, Integer.MAX_VALUE));
@@ -161,7 +161,7 @@ public class Range {
      */
     public Range shortRange() {
         if (this.isNothing()) {
-            return NOTHING;
+            return this;
         }
         if (IGNORE_OVERFLOW) {
             return new Range(Math.max(from, Short.MIN_VALUE), Math.min(to, Short.MAX_VALUE));
@@ -199,7 +199,7 @@ public class Range {
      */
     public Range byteRange() {
         if (this.isNothing()) {
-            return NOTHING;
+            return this;
         }
         if (IGNORE_OVERFLOW) {
             return new Range(Math.max(from, Byte.MIN_VALUE), Math.min(to, Byte.MAX_VALUE));

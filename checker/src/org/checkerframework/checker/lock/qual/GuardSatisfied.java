@@ -24,8 +24,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * not need to know what those locks are (and it cannot know, because the constructor can be called
  * by arbitrary code).
  *
- * <p>
- *
  * @see GuardedBy
  * @see Holding
  * @checker_framework.manual #lock-checker Lock Checker

@@ -41,13 +41,14 @@ public class ReflectiveEvaluator {
      * @param receiverValues a list of possible receiver values. null indicates that the method has
      *     no receiver.
      * @param tree location to report any errors
-     * @return all possible values that the method may return
+     * @return all possible values that the method may return, or null if the method could not be
+     *     evaluated
      */
     public List<?> evaluateMethodCall(
             List<List<?>> allArgValues, List<?> receiverValues, MethodInvocationTree tree) {
         Method method = getMethodObject(tree);
         if (method == null) {
-            return new ArrayList<>();
+            return null;
         }
 
         if (receiverValues == null) {
@@ -91,7 +92,7 @@ public class ReflectiveEvaluator {
                     }
                     // Method evaluation will always fail, so don't bother
                     // trying again
-                    return new ArrayList<Object>();
+                    return null;
                 } catch (ExceptionInInitializerError e) {
                     if (reportWarnings) {
                         checker.report(
@@ -101,6 +102,7 @@ public class ReflectiveEvaluator {
                                         e.getCause().toString()),
                                 tree);
                     }
+                    return null;
                 } catch (IllegalArgumentException e) {
                     if (reportWarnings) {
                         String args = PluginUtil.join(", ", arguments);
@@ -111,12 +113,13 @@ public class ReflectiveEvaluator {
                                         e.getLocalizedMessage() + ": " + args),
                                 tree);
                     }
-
+                    return null;
                 } catch (Throwable e) {
                     // Catch any exception thrown because they shouldn't crash the type checker.
                     if (reportWarnings) {
                         checker.report(Result.warning("method.evaluation.failed", method), tree);
                     }
+                    return null;
                 }
             }
         }
@@ -262,13 +265,13 @@ public class ReflectiveEvaluator {
         }
     }
 
-    public List<?> evaluteConstrutorCall(
+    public List<?> evaluteConstructorCall(
             ArrayList<List<?>> argValues, NewClassTree tree, TypeMirror typeToCreate) {
         try {
             // get the constructor
-            Constructor<?> constructor = getConstrutorObject(tree, typeToCreate);
+            Constructor<?> constructor = getConstructorObject(tree, typeToCreate);
             if (constructor == null) {
-                return new ArrayList<>();
+                return null;
             }
 
             List<Object[]> listOfArguments;
@@ -289,20 +292,20 @@ public class ReflectiveEvaluator {
                     if (reportWarnings) {
                         checker.report(Result.warning("constructor.invocation.failed"), tree);
                     }
-                    return new ArrayList<Object>();
+                    return null;
                 }
-                return results;
             }
+            return results;
 
         } catch (ReflectiveOperationException e) {
             if (reportWarnings) {
                 checker.report(Result.warning("constructor.evaluation.failed"), tree);
             }
+            return null;
         }
-        return new ArrayList<>();
     }
 
-    private Constructor<?> getConstrutorObject(NewClassTree tree, TypeMirror typeToCreate)
+    private Constructor<?> getConstructorObject(NewClassTree tree, TypeMirror typeToCreate)
             throws ClassNotFoundException, NoSuchMethodException {
         ExecutableElement ele = TreeUtils.elementFromUse(tree);
         List<Class<?>> paramClasses = getParameterClasses(tree, ele);

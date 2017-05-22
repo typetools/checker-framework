@@ -473,19 +473,17 @@ public class QualifierDefaults {
         // System.out.println("applyDefaults on tree " + tree +
         //        " gives elt: " + elt + "(" + elt.getKind() + ")");
 
-        if (elt != null) {
-            boolean defaultTypeVarLocals =
-                    (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>)
-                            && (((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
-                                    .getShouldDefaultTypeVarLocals());
-
-            applyToTypeVar =
-                    defaultTypeVarLocals
-                            && elt.getKind() == ElementKind.LOCAL_VARIABLE
-                            && type.getKind() == TypeKind.TYPEVAR;
-            applyDefaultsElement(elt, type);
-            applyToTypeVar = false;
-        }
+        boolean defaultTypeVarLocals =
+                (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>)
+                        && (((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
+                                .getShouldDefaultTypeVarLocals());
+        applyToTypeVar =
+                defaultTypeVarLocals
+                        && elt != null
+                        && elt.getKind() == ElementKind.LOCAL_VARIABLE
+                        && type.getKind() == TypeKind.TYPEVAR;
+        applyDefaultsElement(elt, type);
+        applyToTypeVar = false;
     }
 
     private DefaultSet fromDefaultQualifier(DefaultQualifier dq) {

@@ -1,8 +1,10 @@
 // Test case for issue #55:
 // https://github.com/kelloggm/checker-framework/issues/55
 
+// @skip-test until the Index Checker supports strings
+
 import org.checkerframework.checker.index.qual.IndexFor;
-import org.checkerframework.checker.index.qual.MinLen;
+import org.checkerframework.common.value.qual.MinLen;
 
 public class LiteralString {
 

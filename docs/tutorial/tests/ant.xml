@@ -25,18 +25,22 @@
             taskname="javac-jsr308">
         <!-- <arg value="-version"/> -->
         <arg value="-g"/>
-        <arg line="-classpath ${checker.lib}:@{custom.lib}"/>
-        <arg line="-sourcepath @{srcpath}"/>
-        <arg line="-processor @{checker}"/>
-        <arg line="-implicit:none"/>
-        <arg line="-source 1.8"/>
+        <arg value="-classpath"/>
+        <arg value="${checker.lib}:@{custom.lib}"/>
+        <arg value="-sourcepath"/>
+        <arg value="@{srcpath}"/>
+        <arg value="-processor"/>
+        <arg value="@{checker}"/>
+        <arg value="-implicit:none"/>
+        <arg value="-source"/>
+        <arg value="1.8"/>
         <arg value="-encoding"/>
         <arg value="utf-8"/>
-        <arg line="-Xprefer:newer"/>
+        <arg value="-Xprefer:newer"/>
         <arg line="@{files}"/>
-        <arg line="-Alint=@{lint}"/>
-        <arg line="-Anocheckjdk"/>
-        <arg line="-AsuppressWarnings=purity"/>
+        <arg value="-Alint=@{lint}"/>
+        <arg value="-Anocheckjdk"/>
+        <arg value="-AsuppressWarnings=purity"/>
       </java>
     </sequential>
   </macrodef>
@@ -55,17 +59,21 @@
             taskname="javac-jsr308">
         <!-- <arg value="-version"/> -->
         <arg value="-g"/>
-        <arg line="-classpath @{custom.lib}"/>
-        <arg line="-sourcepath @{srcpath}"/>
-        <arg line="-processor @{checker}"/>
-        <arg line="-implicit:none"/>
-        <arg line="-source 1.8"/>
+        <arg value="-classpath"/>
+        <arg value="@{custom.lib}"/>
+        <arg value="-sourcepath"/>
+        <arg value="@{srcpath}"/>
+        <arg value="-processor"/>
+        <arg value="@{checker}"/>
+        <arg value="-implicit:none"/>
+        <arg value="-source"/>
+        <arg value="1.8"/>
         <arg value="-encoding"/>
         <arg value="utf-8"/>
-        <arg line="-Xprefer:newer"/>
+        <arg value="-Xprefer:newer"/>
         <arg line="@{files}"/>
-        <arg line="-Alint=@{lint}"/>
-        <arg line="-Aquals=@{quals}"/>
+        <arg value="-Alint=@{lint}"/>
+        <arg value="-Aquals=@{quals}"/>
       </java>
     </sequential>
   </macrodef>
@@ -78,22 +86,32 @@
     <sequential>
       <exec executable="diff" outputproperty="diff-output" resultproperty="diff-result"> <!-- not  failonerror="true because that prevents user-friendly error message below -->
         <!-- <arg value="-q"/> -->
-        <arg line="-I '@{ignore-matching-lines}'"/>
+        <arg value="-I"/>
+        <arg value="@{ignore-matching-lines}"/>
         <!-- ignore lint results -->
-        <arg line="-I 'Note:'"/>
+        <arg value="-I"/>
+        <arg value="Note:"/>
         <!-- ignore ant headers and empty lines -->
-        <arg line="-I '^ *$'"/>
-        <arg line="-I '^[^ ]*:$'"/>
+        <arg value="-I"/>
+        <arg value="^ *$"/>
+        <arg value="-I"/>
+        <arg value="^[^ ]*:$"/>
 
         <!-- ignore version of Checker Framework javac -->
-        <arg line="-I '^javac 1.8.0-jsr308'"/>
+        <arg value="-I"/>
+        <arg value="^javac 1.8.0-jsr308"/>
 
         <!-- ignore paths -->
-        <arg line="-I '.java'"/>
-        <arg line="-I '.xml'"/>
-        <arg line="-I 'Deleting directory'"/>
-        <arg line="-I 'Created dir:'"/>
-        <arg line="-I 'Compiling 2 source files to'"/>
+        <arg value="-I"/>
+        <arg value=".java"/>
+        <arg value="-I"/>
+        <arg value=".xml"/>
+        <arg value="-I"/>
+        <arg value="Deleting directory"/>
+        <arg value="-I"/>
+        <arg value="Created dir:"/>
+        <arg value="-I"/>
+        <arg value="Compiling 2 source files to"/>
 
         <!-- the files to compare -->
         <arg line="@{file1}"/>
@@ -133,11 +151,12 @@ ${line.separator}NOTE: Did you run 'ant touch-files'?"/>
     <sequential>
       <exec executable="ant" failonerror="false"
           resultproperty="property.ignore">
-        <arg line="-Dcompiler.lib=${javac.lib}"/>
-        <arg line="-Dchecker.lib=${checker.lib}"/>
+        <arg value="-Dcompiler.lib=${javac.lib}"/>
+        <arg value="-Dchecker.lib=${checker.lib}"/>
         <arg value="-e"/>
-        <arg line="-l @{logfile}"/>
-        <arg line="@{task}"/>
+        <arg value="-l"/>
+        <arg value="@{logfile}"/>
+        <arg value="@{task}"/>
       </exec>
       <sleep milliseconds="100"/> <!--sometimes output gets truncated -->
     </sequential>
