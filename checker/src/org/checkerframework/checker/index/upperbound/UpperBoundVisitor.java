@@ -28,6 +28,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFactory> {
 
     private static final String UPPER_BOUND = "array.access.unsafe.high";
+    private static final String UPPER_BOUND_CONST = "array.access.unsafe.high.constant";
 
     public UpperBoundVisitor(BaseTypeChecker checker) {
         super(checker);
@@ -85,8 +86,28 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return;
         }
 
-        checker.report(
-                Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName), indexTree);
+        // We can issue two different errors: either one that talks about a constant index or a generic one
+        // about the upperbound type. We only issue the error about a constant index if:
+        // 1. The max value of the constant is known
+        // 2. The minlen of the array is known
+        // 3. The qualifier on the constant is @UpperBoundUnknown
+        if (valMax == null || minLen == null || !qualifier.isUnknown()) {
+            checker.report(
+                    Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName), indexTree);
+        } else {
+            // valMax is not null, so the index is a constant that was not less than the length of the array
+            checker.report(
+                    Result.failure(
+                            UPPER_BOUND_CONST,
+                            valMax.toString(),
+                            arrName,
+                            atypeFactory
+                                    .getValueAnnotatedTypeFactory()
+                                    .getAnnotatedType(arrTree)
+                                    .toString(),
+                            valMax + 1),
+                    indexTree);
+        }
     }
 
     @Override
