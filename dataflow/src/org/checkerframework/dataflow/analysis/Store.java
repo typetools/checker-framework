@@ -56,7 +56,7 @@ public interface Store<S extends Store<S>> {
     /**
      * Compute an upper bound of two stores that is wider than the least upper bound of the two
      * stores. Used to jump to a higher abstraction to allow faster termination of the fixed point
-     * computations in {@link Analysis}.
+     * computations in {@link Analysis}. {@code previous} must be the previous store.
      *
      * <p>A particular analysis might not require widening and should implement this method by
      * calling leastUpperBound.
@@ -65,14 +65,16 @@ public interface Store<S extends Store<S>> {
      *
      * <ul>
      *   <li>Does not change {@code this}.
-     *   <li>Does not change {@code other}.
+     *   <li>Does not change {@code previous}.
      *   <li>Returns a fresh object which is not aliased yet.
      *   <li>Returns an object of the same (dynamic) type as {@code this}, even if the signature is
      *       more permissive.
      *   <li>Is commutative.
      * </ul>
+     *
+     * @param previous must be the previous store
      */
-    S widenUpperBound(S other);
+    S widenUpperBound(S previous);
 
     /**
      * Can the objects {@code a} and {@code b} be aliases? Returns a conservative answer (i.e.,

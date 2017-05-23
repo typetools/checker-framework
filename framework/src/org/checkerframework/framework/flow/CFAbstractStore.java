@@ -792,8 +792,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     @Override
-    public S widenUpperBound(S other) {
-        return upperBound(other, true);
+    public S widenUpperBound(S previous) {
+        return upperBound(previous, true);
     }
 
     private S upperBound(S other, boolean shouldWiden) {

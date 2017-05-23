@@ -379,27 +379,74 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean implementsWidening() {
-            return true;
+        public int numberOfIterationsBeforeWidening() {
+            return MAX_VALUES + 1;
         }
 
         @Override
-        public AnnotationMirror widenUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            AnnotationMirror lub = leastUpperBound(a1, a2);
+        public AnnotationMirror widenedUpperBound(
+                AnnotationMirror newQualifier, AnnotationMirror previousQualifier) {
+            AnnotationMirror lub = leastUpperBound(newQualifier, previousQualifier);
             if (AnnotationUtils.areSameByClass(lub, IntRange.class)) {
-                Range range = getRange(lub);
-                if (range.isWithin(Byte.MIN_VALUE, Byte.MAX_VALUE)) {
-                    return createIntRangeAnnotation(Range.BYTE_EVERYTHING);
-                } else if (range.isWithin(Short.MIN_VALUE, Short.MAX_VALUE)) {
-                    return createIntRangeAnnotation(Range.SHORT_EVERYTHING);
-                } else if (range.isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-                    return createIntRangeAnnotation(Range.INT_EVERYTHING);
+                Range lubRange = getRange(lub);
+                Range newRange = getRangeOrConvertIntVal(newQualifier);
+                Range oldRange = getRangeOrConvertIntVal(previousQualifier);
+                Range wubRange = widenRange(newRange, oldRange, lubRange);
+                return createIntRangeAnnotation(wubRange);
+            } else if (AnnotationUtils.areSameByClass(lub, ArrayLenRange.class)) {
+                Range lubRange = getRange(lub);
+                Range newRange = getRangeOrConvertArrayLen(newQualifier);
+                Range oldRange = getRangeOrConvertArrayLen(previousQualifier);
+                return createArrayLenRangeAnnotation(widenRange(newRange, oldRange, lubRange));
+            } else {
+                return lub;
+            }
+        }
+
+        private Range widenRange(Range newRange, Range oldRange, Range lubRange) {
+            if (newRange == null || oldRange == null) {
+                return lubRange;
+            }
+            // If the newRange closer to max than the oldRange, then move the from to the
+            // old range.
+            if ((newRange.from >= oldRange.from && newRange.to >= oldRange.to)) {
+                if (lubRange.to < Byte.MAX_VALUE) {
+                    return new Range(newRange.from, Byte.MAX_VALUE);
+                } else if (lubRange.to < Short.MAX_VALUE) {
+                    return new Range(newRange.from, Short.MAX_VALUE);
+                } else if (lubRange.to < Integer.MAX_VALUE) {
+                    return new Range(newRange.from, Integer.MAX_VALUE);
                 } else {
-                    return UNKNOWNVAL;
+                    return new Range(newRange.from, Long.MAX_VALUE);
                 }
             }
-            return lub;
+
+            if ((newRange.from <= oldRange.from && newRange.to <= oldRange.to)) {
+                if (lubRange.from > Byte.MIN_VALUE) {
+                    return new Range(Byte.MIN_VALUE, newRange.to);
+                } else if (lubRange.from > Short.MIN_VALUE) {
+                    return new Range(Short.MIN_VALUE, newRange.to);
+                } else if (lubRange.from > Integer.MIN_VALUE) {
+                    return new Range(Integer.MIN_VALUE, newRange.to);
+                } else {
+                    return new Range(Long.MIN_VALUE, newRange.to);
+                }
+            }
+
+            if (lubRange.isWithin(Byte.MIN_VALUE + 1, Byte.MAX_VALUE)
+                    || lubRange.isWithin(Byte.MIN_VALUE, Byte.MAX_VALUE - 1)) {
+                return Range.BYTE_EVERYTHING;
+            } else if (lubRange.isWithin(Short.MIN_VALUE + 1, Short.MAX_VALUE)
+                    || lubRange.isWithin(Short.MIN_VALUE, Short.MAX_VALUE - 1)) {
+                return Range.SHORT_EVERYTHING;
+            } else if (lubRange.isWithin(Long.MIN_VALUE + 1, Long.MAX_VALUE)
+                    || lubRange.isWithin(Long.MIN_VALUE, Long.MAX_VALUE - 1)) {
+                return Range.INT_EVERYTHING;
+            } else {
+                return Range.EVERYTHING;
+            }
         }
+
         /**
          * Determines the least upper bound of a1 and a2, which contains the union of their sets of
          * possible values.
@@ -1516,7 +1563,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return createIntRangeAnnotation(Collections.min(intValues), Collections.max(intValues));
     }
 
-    /** Returns a {@code Range} bounded by the values specified in the given annotation. */
+    /**
+     * Returns a {@code Range} bounded by the values specified in the given {@code @Range}
+     * annotation.
+     */
     public static Range getRange(AnnotationMirror rangeAnno) {
         if (rangeAnno == null) {
             return null;
@@ -1536,6 +1586,34 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     AnnotationUtils.getElementValue(rangeAnno, "from", Integer.class, true),
                     AnnotationUtils.getElementValue(rangeAnno, "to", Integer.class, true));
         }
+    }
+
+    /**
+     * Returns a {@code Range} bounded by the values specified in the given {@code @IntRange} or
+     * {@code @IntVal} annotation. Returns null if the given annotations is not {@code IntRange} or
+     * {@code IntVal}.
+     */
+    public static Range getRangeOrConvertIntVal(AnnotationMirror anno) {
+        if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
+            return ValueCheckerUtils.getRangeFromValues(getIntValues(anno));
+        } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
+            return getRange(anno);
+        }
+        return null;
+    }
+
+    /**
+     * Returns a {@code Range} bounded by the values specified in the given {@code @ArrayLenRange}
+     * or {@code @ArrayLen} annotation. Returns null if the given annotations is not {@code
+     * ArrayLenRange} or {@code ArrayLen}.
+     */
+    public static Range getRangeOrConvertArrayLen(AnnotationMirror anno) {
+        if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
+            return ValueCheckerUtils.getRangeFromValues(getArrayLength(anno));
+        } else if (AnnotationUtils.areSameByClass(anno, ArrayLenRange.class)) {
+            return getRange(anno);
+        }
+        return null;
     }
 
     /**

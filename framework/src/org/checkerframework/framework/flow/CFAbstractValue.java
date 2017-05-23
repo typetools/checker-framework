@@ -370,7 +370,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         private AnnotationMirror computeUpperBound(AnnotationMirror a, AnnotationMirror b) {
             QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
             if (widen) {
-                return hierarchy.widenUpperBound(a, b);
+                return hierarchy.widenedUpperBound(a, b);
             } else {
                 return hierarchy.leastUpperBound(a, b);
             }
