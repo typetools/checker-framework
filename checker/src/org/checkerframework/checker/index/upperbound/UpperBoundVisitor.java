@@ -195,7 +195,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                     valueAnnotatedTypeFactory.getMinLenFromString(
                             arrayName, valueExp, getCurrentPath());
             if (testMinLen(value, minlen, arrayName, varLtlQual)) {
-                continue checkloop;
+                continue;
             }
             for (String array : sameLenArrays) {
                 int minlenSL =
