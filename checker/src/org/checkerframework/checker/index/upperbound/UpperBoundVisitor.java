@@ -63,6 +63,11 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return;
         }
 
+        // Find max because it's important to determine whether the index is less than the
+        // minimum length of the array. If it could be any of several values, only the max is of
+        // interest.
+        Long valMax = IndexUtil.getMaxValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory());
+
         AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromTree(arrTree);
         // Produce the full list of relevant names by checking the SameLen type.
         if (sameLenAnno != null && AnnotationUtils.areSameByClass(sameLenAnno, SameLen.class)) {
@@ -73,13 +78,21 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 if (qualifier.isLessThanLengthOfAny(slNames)) {
                     return;
                 }
+                for (String slName : slNames) {
+                    // Check if any of the arrays have a minlen that is greater than the
+                    // known constant value.
+                    int minlenSL =
+                            atypeFactory
+                                    .getValueAnnotatedTypeFactory()
+                                    .getMinLenFromString(slName, arrTree, getCurrentPath());
+                    if (valMax != null && valMax < minlenSL) {
+                        return;
+                    }
+                }
             }
         }
 
-        // Find max because it's important to determine whether the index is less than the
-        // minimum length of the array. If it could be any of several values, only the max is of
-        // interest.
-        Long valMax = IndexUtil.getMaxValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory());
+        // Check against the minlen of the array itself.
         Integer minLen = IndexUtil.getMinLen(arrTree, atypeFactory.getValueAnnotatedTypeFactory());
         if (valMax != null && minLen != null && valMax < minLen) {
             return;
@@ -169,6 +182,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         SameLenAnnotatedTypeFactory sameLenFactory = atypeFactory.getSameLenAnnotatedTypeFactory();
         ValueAnnotatedTypeFactory valueAnnotatedTypeFactory =
                 atypeFactory.getValueAnnotatedTypeFactory();
+        checkloop:
         for (String arrayName : varLtlQual.getArrays()) {
 
             List<String> sameLenArrays =
@@ -177,12 +191,19 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 continue;
             }
 
-            int minLen =
+            int minlen =
                     valueAnnotatedTypeFactory.getMinLenFromString(
                             arrayName, valueExp, getCurrentPath());
-
-            if (testMinLen(value, minLen, arrayName, varLtlQual)) {
+            if (testMinLen(value, minlen, arrayName, varLtlQual)) {
                 continue;
+            }
+            for (String array : sameLenArrays) {
+                int minlenSL =
+                        valueAnnotatedTypeFactory.getMinLenFromString(
+                                array, valueExp, getCurrentPath());
+                if (testMinLen(value, minlenSL, arrayName, varLtlQual)) {
+                    continue checkloop;
+                }
             }
 
             return false;
@@ -217,7 +238,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     /**
-     * Tests a constant value (value) against the minlen (minlen) of an array (arrayName) with a
+     * Tests a constant value (value) against the minlen (minlens) of an array (arrayName) with a
      * qualifier (varQual).
      */
     private boolean testMinLen(Long value, int minLen, String arrayName, LessThanLengthOf varQual) {
