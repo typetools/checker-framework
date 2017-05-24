@@ -1,5 +1,9 @@
 package org.checkerframework.common.value;
 
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+*/
+
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
@@ -18,6 +22,7 @@ import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 
@@ -126,6 +131,20 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         }
 
         return super.visitAnnotation(node, p);
+    }
+
+    @Override
+    protected void commonAssignmentCheck(
+            AnnotatedTypeMirror varType,
+            ExpressionTree valueExp,
+            /*@CompilerMessageKey*/ String errorKey) {
+
+        // This is definitely a hack. However, it does prevent some spurious warnings
+        // from the Value Checker when interacting with unannotated bytecode.
+        if (varType.toString().contains("@")
+                || varType.getUnderlyingType().toString().contains("@")) {
+            super.commonAssignmentCheck(varType, valueExp, errorKey);
+        }
     }
 
     @Override
