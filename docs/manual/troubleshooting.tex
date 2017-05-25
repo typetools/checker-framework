@@ -753,10 +753,10 @@ You need to install several packages in order to build the Checker
 Framework.  The following command installs them for Ubuntu:
 
 \begin{Verbatim}
-sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial openjdk-8-jdk unzip
+sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial openjdk-8-jdk texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended unzip
 \end{Verbatim}
 
-If you are building on Windows, here is an incomplete list of needed
+If you are building on Windows, here is an \emph{incomplete} list of needed
 prerequisites:
 \begin{itemize}
 \item
@@ -948,9 +948,6 @@ an IDE such as Eclipse.
 \item
 Install needed packages; see Section~\ref{building-prerequisites} for
 instructions.
-% To build the manual, you will need \LaTeX and
-% {\hevea} (\myurl{http://hevea.inria.fr/}) installed, and either
-% \<rsvg-convert> or \<convert>.
 
 \item
 Run \code{make} in the \code{docs/manual} directory to build both the PDF and HTML versions of the manual.
