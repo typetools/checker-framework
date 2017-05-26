@@ -12,8 +12,8 @@ import org.checkerframework.javacutil.Pair;
  * The DefaultTypeHierarchy AND RELATED CLASSES
  *
  * <p>VisitHistory keeps track of all visits and allows clients of this class to check whether or
- * not they have visited a pair of AnnotatedTypeMirrors already. This is necessary in order to halt
- * visiting on recursive bounds.
+ * not they have visited an equivalent pair of AnnotatedTypeMirrors already. This is necessary in
+ * order to halt visiting on recursive bounds.
  */
 public class VisitHistory {
 
