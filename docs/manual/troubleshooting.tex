@@ -610,6 +610,19 @@ values as an annotation argument, you need to put curly braces around them:
         @LTLengthOf({"firstName", "lastName"}) int index;
 \end{Verbatim}
 
+A message of the form
+
+\begin{Verbatim}
+  Error: cannot find symbol
+\end{Verbatim}
+
+\noindent
+for an annotation type that is imported, and is a applied to a
+statically-imported enum, is caused by a javac bug, unrelated to the
+Checker Framework.  See
+\url{https://bugs.openjdk.java.net/browse/JDK-7101822} and \url{https://bugs.openjdk.java.net/browse/JDK-8169095}.
+% Also see https://github.com/typetools/checker-framework/issues/1304
+
 
 \subsection{Unable to build the checker, or to run programs\label{common-problems-running-java}}
 
