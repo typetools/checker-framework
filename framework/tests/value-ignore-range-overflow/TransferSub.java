@@ -51,12 +51,6 @@ public class TransferSub {
         //:: error: (assignment.type.incompatible)
         @IntRange(from = 0) int s1 = k1;
 
-        // transferred to SimpleTransferSub.java
-        // this section is failing due to CF bug
-        // int k2 = 0;
-        // //:: error: (assignment.type.incompatible)
-        // @IntRange(from = 1) int s2 = k2--;
-
         k1 = 1;
         @IntRange(from = 0) int t = --k1;
 
@@ -70,4 +64,3 @@ public class TransferSub {
         @IntRange(from = -1) int x1 = u1;
     }
 }
-//a comment

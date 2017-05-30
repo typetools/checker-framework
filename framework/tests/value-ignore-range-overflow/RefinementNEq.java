@@ -28,4 +28,3 @@ public class RefinementNEq {
         }
     }
 }
-//a comment

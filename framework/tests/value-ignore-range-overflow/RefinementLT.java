@@ -54,4 +54,3 @@ public class RefinementLT {
         }
     }
 }
-//a comment
