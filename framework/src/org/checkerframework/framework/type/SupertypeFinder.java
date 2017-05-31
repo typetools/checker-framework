@@ -223,6 +223,10 @@ class SupertypeFinder {
          * @param element type parameter to which {@code wildcard} is an argument
          * @param wildcard wildcard type whose upper bound may be modified.
          */
+        // TODO: BoundsInitializer#initializeExtendsBound(AnnotatedWildcardType) and
+        // SupertypeFinder#fixWildcardBound} have simalar logic for handling unbounded wildcards.
+        // Merging those methods and this into AnnotatedWildcardType would improve the code greatly and
+        // still be easier than implementing all of capture conversion
         private void fixWildcardBound(
                 TypeParameterElement element, AnnotatedWildcardType wildcard) {
             if (TypesUtils.isErasedSubtype(types, wildcard.getUnderlyingType(), element.asType())) {
@@ -233,7 +237,7 @@ class SupertypeFinder {
             wildcard.setExtendsBound(atv.getUpperBound());
             wildcard.getExtendsBound().replaceAnnotations(bound.getAnnotations());
 
-            // If the upper bound of the type parameter refers to itself, then can those
+            // If the upper bound of the type parameter refers to itself, then change those
             // references to the wildcard.
             Map<TypeParameterElement, AnnotatedTypeMirror> mapping = new HashMap<>();
             mapping.put(element, wildcard);
