@@ -10,6 +10,7 @@ import com.sun.source.tree.TypeCastTree;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.qual.ArrayLen;
@@ -20,6 +21,7 @@ import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
+import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
@@ -171,6 +173,44 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         if (node.getExpression().getKind() == Kind.NULL_LITERAL) {
             return null;
         }
+
+        AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(node);
+        AnnotationMirror castAnno = castType.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
+        AnnotationMirror exprAnno =
+                atypeFactory
+                        .getAnnotatedType(node.getExpression())
+                        .getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
+
+        // Don't check a type cast if it is to a declared IntRange that covers the whole
+        // of the new type. I.e. do not warn if an @IntRange(from = Integer.MIN_VALUE,
+        // to = Integer.MAX_VALUE) int is casted to a @IntRange(from = Byte.MIN_VALUE,
+        // to = Byte.MAX_VALUE byte).
+        if (castAnno != null
+                && exprAnno != null
+                && atypeFactory.isIntRange(castAnno)
+                && atypeFactory.isIntRange(exprAnno)) {
+            Range castRange = ValueAnnotatedTypeFactory.getRange(castAnno);
+            Range exprRange = ValueAnnotatedTypeFactory.getRange(exprAnno);
+            if (exprRange.contains(castRange)) {
+                if (castType.getUnderlyingType().getKind() == TypeKind.BYTE
+                        && castRange.isByteEverything()) {
+                    return p;
+                }
+                if (castType.getUnderlyingType().getKind() == TypeKind.SHORT
+                        && castRange.isShortEverything()) {
+                    return p;
+                }
+                if (castType.getUnderlyingType().getKind() == TypeKind.INT
+                        && castRange.isIntEverything()) {
+                    return p;
+                }
+                if (castType.getUnderlyingType().getKind() == TypeKind.LONG
+                        && castRange.isLongEverything()) {
+                    return p;
+                }
+            }
+        }
+
         return super.visitTypeCast(node, p);
     }
 }

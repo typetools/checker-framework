@@ -1499,7 +1499,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror createIntRangeAnnotation(Range range) {
         if (range.isNothing()) {
             return BOTTOMVAL;
-        } else if (range.isEverything()) {
+        } else if (range.isLongEverything()) {
             return UNKNOWNVAL;
         } else if (range.isWiderThan(MAX_VALUES)) {
             return createIntRangeAnnotation(range.from, range.to);
@@ -1540,7 +1540,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror createArrayLenRangeAnnotation(Range range) {
         if (range.isNothing()) {
             return BOTTOMVAL;
-        } else if (range.isEverything() || !range.isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+        } else if (range.isLongEverything()
+                || !range.isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE)) {
             return UNKNOWNVAL;
         } else {
             return createArrayLenRangeAnnotation(
