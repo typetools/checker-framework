@@ -20,7 +20,6 @@ class ValueCast2 {
     }
 
     int baz(@IntRange(from = Long.MIN_VALUE, to = 0) long x) {
-        //:: warning: (cast.unsafe)
         return (int) x;
     }
 }
