@@ -287,8 +287,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * This method performs pre-processing on annotations written by users.
          *
          * <p>If any *Val annotation has &gt; MAX_VALUES number of values provided, replaces the
-         * annotation by @IntRange for integral types, @ArrayLenRange for arrays, and @UnknownVal
-         * for all other types. Works together with {@link
+         * annotation by @IntRange for integral types, @ArrayLenRange for arrays, @ArrayLen
+         * or @ArrayLenRange for strings, and @UnknownVal for all other types. Works together with
+         * {@link
          * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
          * Void)} which issues warnings to users in these cases.
          *
@@ -314,8 +315,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             if (anno != null && anno.getElementValues().size() > 0) {
-
-                // VD: from StringVal to ArrayLen or ArrayLenRange (do not forget to change comments)
                 if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
                     List<Long> values =
                             AnnotationUtils.getElementValueArray(anno, "value", Long.class, true);
@@ -390,8 +389,30 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     if (from > to || from < 0) {
                         atm.replaceAnnotation(BOTTOMVAL);
                     }
+                } else if (AnnotationUtils.areSameByClass(anno, StringVal.class)) {
+                    // The annotation is StringVal. If there are too many elements,
+                    // ArrayLen or ArrayLenRange is used.
+                    List<String> values =
+                            AnnotationUtils.getElementValueArray(
+                                    anno, "value", String.class, false);
+
+                    if (values.size() > MAX_VALUES) {
+
+                        List<Integer> arrayLengths = getLengthsForStringValues(values);
+
+                        if (arrayLengths.size() > MAX_VALUES) {
+                            long annoMinVal = Collections.min(arrayLengths);
+                            long annoMaxVal = Collections.max(arrayLengths);
+                            atm.replaceAnnotation(
+                                    createArrayLenRangeAnnotation(
+                                            new Range(annoMinVal, annoMaxVal)));
+                        } else {
+                            atm.replaceAnnotation(createArrayLenAnnotation(arrayLengths));
+                        }
+                    }
+
                 } else {
-                    // In here the annotation is @*Val where (*) is not Int but other types (String, Double, etc).
+                    // In here the annotation is @*Val where (*) is not Int, String but other types (Double, etc).
                     // Therefore we extract its values in a generic way to check its size.
                     List<Object> values =
                             AnnotationUtils.getElementValueArray(
@@ -402,6 +423,20 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
         }
+    }
+
+    /**
+     * Gets a list of lengths for a list of string values.
+     *
+     * @param values List of string values.
+     * @return List of unique lengths of strings in {@code values}.
+     */
+    private List<Integer> getLengthsForStringValues(List<String> values) {
+        List<Integer> lengths = new ArrayList<Integer>();
+        for (String str : values) {
+            lengths.add(str.length());
+        }
+        return ValueCheckerUtils.removeDuplicates(lengths);
     }
 
     /** The qualifier hierarchy for the Value type system */
