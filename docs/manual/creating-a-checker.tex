@@ -220,7 +220,7 @@ $ javac \textbackslash
 \end{alltt}
 %
 Otherwise, simply pass the fully-qualified name of your \<BaseTypeChecker>
-subclass to the \<-process> flag instead:
+subclass to the \<-processor> flag instead:
 %
 \begin{alltt}
 $ javac \textbackslash
@@ -1693,6 +1693,10 @@ changed if the English message is updated.
 pseudo-assignment check (as performed by
 \refclass{common/basetype}{BaseTypeVisitor}; see
 Section~\ref{creating-extending-visitor}).
+
+\item \code{-AshowInferenceSteps}: print debugging information
+about intermediate steps in method type argument inference
+(as performed by \refclass{framework/util/typeinference}{DefaultTypeArgumentInference}).
 
 \end{itemize}
 

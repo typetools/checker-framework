@@ -227,7 +227,7 @@
               failonerror="true"
               classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
@@ -238,12 +238,14 @@
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
-            <arg line="-sourcepath ${src}"/>
-            <arg line="-d ${build}"/>
-            <arg line="@${tmpdir}/srcfiles-checker.txt"/>
-            <arg line="-version"/>
-            <arg line="-Xlint"/>
-            <arg line="-Werror"/>
+            <arg value="-sourcepath"/>
+            <arg value="${src}"/>
+            <arg value="-d"/>
+            <arg value="${build}"/>
+            <arg value="@${tmpdir}/srcfiles-checker.txt"/>
+            <arg value="-version"/>
+            <arg value="-Xlint"/>
+            <arg value="-Werror"/>
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
 
@@ -265,8 +267,8 @@
     </target>
     <target name="-force-compile-java8" if="should-force-compile-java8">
         <exec executable="ant" failonerror="true">
-            <arg line="compile-java8-sources"/>
-            <arg line="-Djava8-output=${build}"/>
+            <arg value="compile-java8-sources"/>
+            <arg value="-Djava8-output=${build}"/>
             <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
         </exec>
     </target>
@@ -331,7 +333,7 @@
 
     <target name="-javadoc-force-java8" if="${should-force-compile-java8}">
         <exec executable="ant" failonerror="true">
-            <arg line="javadoc"/>
+            <arg value="javadoc"/>
             <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
         </exec>
     </target>
@@ -432,7 +434,7 @@
         <java fork="true"
               failonerror="true"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
@@ -443,11 +445,12 @@
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
-            <arg line="-d ${checker-qual-classes-tmp}"/>
-            <arg line="@${tmpdir}/srcfiles-checker.txt"/>
-            <arg line="-version"/>
-            <arg line="-Xlint"/>
-            <arg line="-Werror"/>
+            <arg value="-d"/>
+            <arg value="${checker-qual-classes-tmp}"/>
+            <arg value="@${tmpdir}/srcfiles-checker.txt"/>
+            <arg value="-version"/>
+            <arg value="-Xlint"/>
+            <arg value="-Werror"/>
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
 
@@ -486,8 +489,8 @@
     </target>
     <target name="-force-checker-qual-java8" if="${should-force-compile-java8}">
         <exec executable="ant" failonerror="true">
-            <arg line="compile-java8-sources"/>
-            <arg line="-Djava8-output=${checker-qual-classes-tmp}"/>
+            <arg value="compile-java8-sources"/>
+            <arg value="-Djava8-output=${checker-qual-classes-tmp}"/>
             <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
         </exec>
     </target>
@@ -498,7 +501,7 @@
               failonerror="true"
               classname="com.sun.tools.javac.Main"
               classpath="${java8-output}">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <arg value="-source"/>
             <arg value="8"/>
@@ -508,10 +511,11 @@
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
-            <arg line="-d ${java8-output}"/>
-            <arg line="${checker.loc}/${src}/${checker.jdk8orhigher.sources}"/>
-            <arg line="-Xlint"/>
-            <arg line="-Werror"/>
+            <arg value="-d"/>
+            <arg value="${java8-output}"/>
+            <arg value="${checker.loc}/${src}/${checker.jdk8orhigher.sources}"/>
+            <arg value="-Xlint"/>
+            <arg value="-Werror"/>
         </java>
     </target>
 
@@ -546,7 +550,7 @@
         <java fork="true"
               failonerror="true"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only generate Java 6 bytecode. -->
             <arg value="-source"/>
@@ -555,11 +559,12 @@
             <arg value="6"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
-            <arg line="-d ${checker-compat-qual-classes-tmp}"/>
-            <arg line="@${tmpdir}/srcfiles-checker.txt"/>
-            <arg line="-version"/>
-            <arg line="-Xlint"/>
-            <arg line="-Werror"/>
+            <arg value="-d"/>
+            <arg value="${checker-compat-qual-classes-tmp}"/>
+            <arg value="@${tmpdir}/srcfiles-checker.txt"/>
+            <arg value="-version"/>
+            <arg value="-Xlint"/>
+            <arg value="-Werror"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
         </java>
@@ -597,7 +602,7 @@
               failonerror="true"
               classpath="${build}:${javac.lib}:${junit.lib}:${hamcrest.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
@@ -608,8 +613,10 @@
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
-            <arg line="-sourcepath ${tests}"/>
-            <arg line="-d ${tests.build}"/>
+            <arg value="-sourcepath"/>
+            <arg value="${tests}"/>
+            <arg value="-d"/>
+            <arg value="${tests.build}"/>
             <arg line="${src.tests}"/>
         </java>
     </target>
@@ -651,17 +658,17 @@
                printsummary="withOutAndErr"
                >
             <formatter type="plain" usefile="false"/>
-            <jvmarg line="-Demit.test.debug=true"/>
+            <jvmarg value="-Demit.test.debug=true"/>
     <!-- end of debugging version. -->
 
             <!-- plain output for debugging -->
 
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
-            <jvmarg line="${debugger.str}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg line="${debugger.str}"/> <!-- may be empty string -->
 
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
             <sysproperty key="emit.test.debug" value="${should.emit.debug.str}"/>
-            <jvmarg line="-ea"/>
+            <jvmarg value="-ea"/>
 
             <classpath>
                 <pathelement path="${build}"/>
@@ -720,9 +727,9 @@
                printsummary="false"
                haltonerror="${halt.on.test.failure}"
                haltonfailure="${halt.on.test.failure}">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
-            <jvmarg line="-ea"/>
-            <jvmarg line="${debugger.str}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-ea"/>
+            <jvmarg line="${debugger.str}"/>  <!-- may be empty string -->
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
             <sysproperty key="emit.test.debug" value="${should.emit.debug.str}"/>
 
@@ -793,7 +800,8 @@
             description="Run tests that need a special command line">
         <exec executable="make" failonerror="${halt.on.test.failure}">
             <env key="JAVAC" value="${basedir}/bin/javac"/>
-            <arg line="-C tests/command-line/"/>
+            <arg value="-C"/>
+            <arg value="tests/command-line/"/>
         </exec>
     </target>
 
@@ -923,13 +931,15 @@
     <target name="nullness-extra-tests-nobuildjdk" depends="dist-nobuildjdk,jdk.jar.exists,build-tests"
             description="Run extra tests for the Nullness Checker, WITHOUT updating jdkX.jar">
         <exec executable="chmod" failonerror="true">
-            <arg line="+x ${basedir}/bin/javac"/>
+            <arg value="+x"/>
+            <arg value="${basedir}/bin/javac"/>
         </exec>
 
         <exec executable="make" failonerror="${halt.on.test.failure}">
             <env key="JAVAC" value="${basedir}/bin/javac"/>
             <env key="JAVAP" value="${jsr308.langtools.dist}/bin/javap"/>
-            <arg line="-C tests/nullness-extra/"/>
+            <arg value="-C"/>
+            <arg value="tests/nullness-extra/"/>
         </exec>
     </target>
 
@@ -1072,6 +1082,13 @@
         </antcall>
     </target>
 
+    <target name="value-index-interaction-tests" depends="jar,build-tests"
+            description="Run tests for the interaction between the Value Checker and the Index Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.ValueIndexInteractionTest"/>
+        </antcall>
+    </target>
+
     <target name="guieffect-tests" depends="jar,build-tests"
             description="Run tests for the GUI Effect Checker">
         <antcall target="-run-tests">
@@ -1086,12 +1103,14 @@
     <target name="example-tests-nobuildjdk" depends="dist-nobuildjdk,jdk.jar.exists,build-tests"
             description="Run tests for the example programs, WITHOUT updating jdkX.jar">
       <exec executable="chmod" failonerror="true">
-        <arg line="+x ${basedir}/bin/javac"/>
+        <arg value="+x"/>
+        <arg value="${basedir}/bin/javac"/>
       </exec>
 
       <exec executable="make" failonerror="${halt.on.test.failure}">
         <env key="JAVAC" value="${basedir}/bin/javac"/>
-        <arg line="-C ../docs/examples/"/>
+        <arg value="-C"/>
+        <arg value="../docs/examples/"/>
       </exec>
     </target>
 
@@ -1286,19 +1305,21 @@ So, use our own archived version.
               failonerror="true"
               classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
-            <jvmarg line="${maybeDebug}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg line="${maybeDebug}"/>  <!-- may be empty string -->
             <arg value="-g"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
-            <arg line="-d ${build}"/>
-            <arg line="@${tmpdir}/srcfiles-checker.txt"/>
-            <arg line="-version"/>
-            <arg line="-proc:only"/>
-            <arg line="-processor ${checker-name}"/>
-            <arg line="-AprintErrorStack"/>
+            <arg value="-d"/>
+            <arg value="${build}"/>
+            <arg value="@${tmpdir}/srcfiles-checker.txt"/>
+            <arg value="-version"/>
+            <arg value="-proc:only"/>
+            <arg value="-processor"/>
+            <arg value="${checker-name}"/>
+            <arg value="-AprintErrorStack"/>
             <arg line="${checker-args}"/>
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
@@ -1356,13 +1377,15 @@ So, use our own archived version.
 
     <target name="-demos.pull" depends="demos.check" if="demos.exists">
       <exec executable="git" dir="${basedir}/../../checker-framework-demos" failonerror="true">
-        <arg line="pull"/>
+        <arg value="pull"/>
       </exec>
     </target>
 
     <target name="-demos.clone" depends="demos.check" unless="demos.exists">
       <exec executable="git" dir="${basedir}/../.." failonerror="true">
-        <arg line="clone https://github.com/typetools/checker-framework.demos.git checker-framework-demos"/>
+        <arg value="clone"/>
+        <arg value="https://github.com/typetools/checker-framework.demos.git"/>
+        <arg value="checker-framework-demos"/>
       </exec>
     </target>
 
@@ -1388,8 +1411,8 @@ So, use our own archived version.
         compression="gzip" />
 
       <exec executable="mvn" dir="${errorprone.home}" failonerror="true">
-        <arg line="package"/>
-        <arg line="-Dmaven.test.skip=true"/>
+        <arg value="package"/>
+        <arg value="-Dmaven.test.skip=true"/>
       </exec>
     </target>
 
@@ -1411,7 +1434,8 @@ So, use our own archived version.
             <compilerclasspath>
               <pathelement location="${errorprone.lib}"/>
             </compilerclasspath>
-            <compilerarg line="-Xmaxwarns 1000"/>
+            <compilerarg value="-Xmaxwarns"/>
+            <compilerarg value="1000"/>
         </javac>
     </target>
 
@@ -1444,6 +1468,7 @@ So, use our own archived version.
     <target name="download-jdk" description="Downloads jdk7.jar and jdk8.jar from checkerframework.org/dev-jdk to checker/jdk and checker/dist">
         <get src="https://checkerframework.org/dev-jdk/jdk7.jar" dest="jdk/jdk7.jar"/>
         <get src="https://checkerframework.org/dev-jdk/jdk8.jar" dest="jdk/jdk8.jar"/>
+
         <!-- Copy jars to dist. If dist doesn't exist then the copy task creates it.-->
         <copy file="jdk/jdk7.jar" tofile="dist/jdk7.jar"/>
         <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar"/>
@@ -1473,19 +1498,19 @@ So, use our own archived version.
         <!--<fail unless="env.JAVA_9_HOME" message="Environment variable  &quot;JAVA_9_HOME&quot; needs to be set!"/>-->
 
         <exec executable="ant" failonerror="true">
-            <arg line="jdk.jar"/>
+            <arg value="jdk.jar"/>
             <env key="JAVA_HOME"  value="${env.JAVA_7_HOME}"/>
             <env key="LT_BIN" value="${LT_BIN}"/>
         </exec>
 
         <exec executable="ant" failonerror="true">
-            <arg line="jdk.jar"/>
+            <arg value="jdk.jar"/>
             <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
             <env key="LT_BIN" value="${LT_BIN}"/>
         </exec>
 
         <!--<exec executable="ant" failonerror="true">
-            <arg line="jdk.jar"/>
+            <arg value="jdk.jar"/>
             <env key="JAVA_HOME"  value="${env.JAVA_9_HOME}"/>
         </exec>-->
 
