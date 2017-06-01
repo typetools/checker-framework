@@ -192,20 +192,16 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             Range castRange = ValueAnnotatedTypeFactory.getRange(castAnno);
             Range exprRange = ValueAnnotatedTypeFactory.getRange(exprAnno);
             if (exprRange.contains(castRange)) {
-                if (castType.getUnderlyingType().getKind() == TypeKind.BYTE
-                        && castRange.isByteEverything()) {
+                if (castType.getKind() == TypeKind.BYTE && castRange.isByteEverything()) {
                     return p;
                 }
-                if (castType.getUnderlyingType().getKind() == TypeKind.SHORT
-                        && castRange.isShortEverything()) {
+                if (castType.getKind() == TypeKind.SHORT && castRange.isShortEverything()) {
                     return p;
                 }
-                if (castType.getUnderlyingType().getKind() == TypeKind.INT
-                        && castRange.isIntEverything()) {
+                if (castType.getKind() == TypeKind.INT && castRange.isIntEverything()) {
                     return p;
                 }
-                if (castType.getUnderlyingType().getKind() == TypeKind.LONG
-                        && castRange.isLongEverything()) {
+                if (castType.getKind() == TypeKind.LONG && castRange.isLongEverything()) {
                     return p;
                 }
             }
