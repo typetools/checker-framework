@@ -2441,14 +2441,7 @@ public class CFGBuilder {
         protected VariableTree getAssertionsEnabledVariable() {
             if (ea == null) {
                 String name = uniqueName("assertionsEnabled");
-                MethodTree enclosingMethod = TreeUtils.enclosingMethod(getCurrentPath());
-                Element owner;
-                if (enclosingMethod != null) {
-                    owner = TreeUtils.elementFromDeclaration(enclosingMethod);
-                } else {
-                    ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
-                    owner = TreeUtils.elementFromDeclaration(enclosingClass);
-                }
+                Element owner = findOwner();
                 ExpressionTree initializer = null;
                 ea =
                         treeBuilder.buildVariableDecl(
@@ -4200,89 +4193,48 @@ public class CFGBuilder {
                 case POSTFIX_INCREMENT:
                     {
                         ExpressionTree exprTree = tree.getExpression();
-                        TypeMirror exprType = InternalUtils.typeOf(exprTree);
-                        TypeMirror oneType = types.getPrimitiveType(TypeKind.INT);
                         Node expr = scan(exprTree, p);
+                        TypeMirror exprType = InternalUtils.typeOf(exprTree);
 
-                        TypeMirror promotedType = binaryPromotedType(exprType, oneType);
+                        VariableTree tempVarDecl =
+                                treeBuilder.buildVariableDecl(
+                                        exprType,
+                                        uniqueName("tempPostfix"),
+                                        findOwner(),
+                                        tree.getExpression());
+                        handleArtificialTree(tempVarDecl);
+                        VariableDeclarationNode tempVarDeclNode =
+                                new VariableDeclarationNode(tempVarDecl);
+                        tempVarDeclNode.setInSource(false);
+                        extendWithNode(tempVarDeclNode);
 
-                        LiteralTree oneTree = treeBuilder.buildLiteral(Integer.valueOf(1));
-                        handleArtificialTree(oneTree);
+                        Tree tempVar = treeBuilder.buildVariableUse(tempVarDecl);
+                        handleArtificialTree(tempVar);
+                        Node tempVarNode = new LocalVariableNode(tempVar);
+                        tempVarNode.setInSource(false);
+                        extendWithNode(tempVarNode);
 
-                        Node exprRHS = binaryNumericPromotion(expr, promotedType);
-                        Node one = new IntegerLiteralNode(oneTree);
-                        one.setInSource(false);
-                        extendWithNode(one);
-                        one = binaryNumericPromotion(one, promotedType);
+                        AssignmentNode tempAssignNode = new AssignmentNode(tree, tempVarNode, expr);
+                        tempAssignNode.setInSource(false);
+                        extendWithNode(tempAssignNode);
 
-                        BinaryTree operTree =
-                                treeBuilder.buildBinary(
-                                        promotedType,
-                                        (kind == Tree.Kind.POSTFIX_INCREMENT
-                                                ? Tree.Kind.PLUS
-                                                : Tree.Kind.MINUS),
-                                        exprTree,
-                                        oneTree);
-                        handleArtificialTree(operTree);
-                        Node operNode;
-                        if (kind == Tree.Kind.POSTFIX_INCREMENT) {
-                            operNode = new NumericalAdditionNode(operTree, exprRHS, one);
-                        } else {
-                            assert kind == Tree.Kind.POSTFIX_DECREMENT;
-                            operNode = new NumericalSubtractionNode(operTree, exprRHS, one);
-                        }
-                        extendWithNode(operNode);
+                        boolean isIncrement = kind == Tree.Kind.POSTFIX_INCREMENT;
+                        createIncrementOrDecrementAssign(null, expr, isIncrement);
 
-                        Node narrowed = narrowAndBox(operNode, exprType);
-                        // TODO: By using the assignment as the result of the expression, we
-                        // act like a pre-increment/decrement.  Fix this by saving the initial
-                        // value of the expression in a temporary.
-                        AssignmentNode assignNode = new AssignmentNode(tree, expr, narrowed);
-                        extendWithNode(assignNode);
-                        result = assignNode;
+                        Tree resultExpr = treeBuilder.buildVariableUse(tempVarDecl);
+                        handleArtificialTree(resultExpr);
+                        result = new LocalVariableNode(resultExpr);
+                        result.setInSource(false);
+                        extendWithNode(result);
                         break;
                     }
                 case PREFIX_DECREMENT:
                 case PREFIX_INCREMENT:
                     {
                         ExpressionTree exprTree = tree.getExpression();
-                        TypeMirror exprType = InternalUtils.typeOf(exprTree);
-                        TypeMirror oneType = types.getPrimitiveType(TypeKind.INT);
                         Node expr = scan(exprTree, p);
-
-                        TypeMirror promotedType = binaryPromotedType(exprType, oneType);
-
-                        LiteralTree oneTree = treeBuilder.buildLiteral(Integer.valueOf(1));
-                        handleArtificialTree(oneTree);
-
-                        Node exprRHS = binaryNumericPromotion(expr, promotedType);
-                        Node one = new IntegerLiteralNode(oneTree);
-                        one.setInSource(false);
-                        extendWithNode(one);
-                        one = binaryNumericPromotion(one, promotedType);
-
-                        BinaryTree operTree =
-                                treeBuilder.buildBinary(
-                                        promotedType,
-                                        (kind == Tree.Kind.PREFIX_INCREMENT
-                                                ? Tree.Kind.PLUS
-                                                : Tree.Kind.MINUS),
-                                        exprTree,
-                                        oneTree);
-                        handleArtificialTree(operTree);
-                        Node operNode;
-                        if (kind == Tree.Kind.PREFIX_INCREMENT) {
-                            operNode = new NumericalAdditionNode(operTree, exprRHS, one);
-                        } else {
-                            assert kind == Tree.Kind.PREFIX_DECREMENT;
-                            operNode = new NumericalSubtractionNode(operTree, exprRHS, one);
-                        }
-                        extendWithNode(operNode);
-
-                        Node narrowed = narrowAndBox(operNode, exprType);
-                        AssignmentNode assignNode = new AssignmentNode(tree, expr, narrowed);
-                        extendWithNode(assignNode);
-                        result = assignNode;
+                        boolean isIncrement = kind == Tree.Kind.PREFIX_INCREMENT;
+                        result = createIncrementOrDecrementAssign(tree, expr, isIncrement);
                         break;
                     }
 
@@ -4299,6 +4251,61 @@ public class CFGBuilder {
             }
 
             return result;
+        }
+
+        private AssignmentNode createIncrementOrDecrementAssign(
+                Tree target, Node expr, boolean isIncrement) {
+            ExpressionTree exprTree = (ExpressionTree) expr.getTree();
+            TypeMirror exprType = expr.getType();
+            TypeMirror oneType = types.getPrimitiveType(TypeKind.INT);
+            TypeMirror promotedType = binaryPromotedType(exprType, oneType);
+
+            LiteralTree oneTree = treeBuilder.buildLiteral(Integer.valueOf(1));
+            handleArtificialTree(oneTree);
+
+            Node exprRHS = binaryNumericPromotion(expr, promotedType);
+            Node one = new IntegerLiteralNode(oneTree);
+            one.setInSource(false);
+            extendWithNode(one);
+            one = binaryNumericPromotion(one, promotedType);
+
+            BinaryTree operTree =
+                    treeBuilder.buildBinary(
+                            promotedType,
+                            isIncrement ? Tree.Kind.PLUS : Tree.Kind.MINUS,
+                            exprTree,
+                            oneTree);
+            handleArtificialTree(operTree);
+
+            Node operNode;
+            if (isIncrement) {
+                operNode = new NumericalAdditionNode(operTree, exprRHS, one);
+            } else {
+                operNode = new NumericalSubtractionNode(operTree, exprRHS, one);
+            }
+            operNode.setInSource(false);
+            extendWithNode(operNode);
+
+            Node narrowed = narrowAndBox(operNode, exprType);
+
+            if (target == null) {
+                target = treeBuilder.buildAssignment(exprTree, (ExpressionTree) narrowed.getTree());
+                handleArtificialTree(target);
+            }
+
+            AssignmentNode assignNode = new AssignmentNode(target, expr, narrowed);
+            assignNode.setInSource(false);
+            return extendWithNode(assignNode);
+        }
+
+        private Element findOwner() {
+            MethodTree enclosingMethod = TreeUtils.enclosingMethod(getCurrentPath());
+            if (enclosingMethod != null) {
+                return TreeUtils.elementFromDeclaration(enclosingMethod);
+            } else {
+                ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+                return TreeUtils.elementFromDeclaration(enclosingClass);
+            }
         }
 
         @Override

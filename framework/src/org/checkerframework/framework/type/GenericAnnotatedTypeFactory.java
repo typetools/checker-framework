@@ -17,7 +17,6 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
@@ -1275,15 +1274,8 @@ public abstract class GenericAnnotatedTypeFactory<
         defaults.annotate(tree, type);
 
         if (iUseFlow) {
-            Value as;
-            if (tree.getKind() == Kind.POSTFIX_DECREMENT
-                    || tree.getKind() == Kind.POSTFIX_INCREMENT) {
-                // Dataflow incorrectly treats postfix as prefix.
-                // See Issue 867: https://github.com/typetools/checker-framework/issues/867
-                as = getInferredValueFor(((UnaryTree) tree).getExpression());
-            } else {
-                as = getInferredValueFor(tree);
-            }
+            Value as = getInferredValueFor(tree);
+
             if (as != null) {
                 applyInferredAnnotations(type, as);
             }
