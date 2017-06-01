@@ -181,10 +181,10 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                         .getAnnotatedType(node.getExpression())
                         .getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
 
-        // Don't check a type cast if it is to a declared IntRange that covers the whole
-        // of the new type. I.e. do not warn if an @IntRange(from = Integer.MIN_VALUE,
-        // to = Integer.MAX_VALUE) int is casted to a @IntRange(from = Byte.MIN_VALUE,
-        // to = Byte.MAX_VALUE byte).
+        // It is always legal to cast to an IntRange type that includes all values
+        // of the underlying type. Do not warn about such casts.
+        // I.e. do not warn if an @IntRange(...) int is casted
+        // to a @IntRange(from = Byte.MIN_VALUE, to = Byte.MAX_VALUE byte).
         if (castAnno != null
                 && exprAnno != null
                 && atypeFactory.isIntRange(castAnno)
