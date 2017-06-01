@@ -370,7 +370,7 @@ public class BoundsInitializer {
             TypeMirror underlyingExtendsBound = underlyingType.getExtendsBound();
             if (underlyingExtendsBound == null) {
                 //TODO: AnnotatedTypeFactory#widenToUpperBound) and
-                // SupertypeFinder#fixWildcardBound} have simalar logic for handling unbounded wildcards.
+                // SupertypeFinder#fixWildcardBound have similar logic for handling unbounded wildcards.
                 // Merging those methods and this into AnnotatedWildcardType would improve the code greatly and
                 // still be easier than implementing all of capture conversion
                 // Take the upper bound of the type variable the wildcard is bound to.

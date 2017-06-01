@@ -224,7 +224,7 @@ class SupertypeFinder {
          * @param wildcard wildcard type whose upper bound may be modified.
          */
         // TODO: BoundsInitializer#initializeExtendsBound(AnnotatedWildcardType) and
-        // SupertypeFinder#fixWildcardBound} have simalar logic for handling unbounded wildcards.
+        // SupertypeFinder#fixWildcardBound have similar logic for handling unbounded wildcards.
         // Merging those methods and this into AnnotatedWildcardType would improve the code greatly and
         // still be easier than implementing all of capture conversion
         private void fixWildcardBound(
