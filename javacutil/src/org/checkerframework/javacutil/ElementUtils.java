@@ -360,14 +360,25 @@ public class ElementUtils {
             // For each direct supertype of the current type element, if it
             // hasn't already been visited, push it onto the stack and
             // add it to our superelems set.
-            TypeMirror supertypecls = current.getSuperclass();
-            if (supertypecls.getKind() != TypeKind.NONE) {
+            TypeMirror supertypecls;
+            try {
+                supertypecls = current.getSuperclass();
+            } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
+                // Looking up a supertype failed. This sometimes happens
+                // when transitive dependencies are not on the classpath.
+                // As javac didn't complain, let's also not complain.
+                // TODO: Use an expanded ErrorReporter to output a message.
+                supertypecls = null;
+            }
+
+            if (supertypecls != null && supertypecls.getKind() != TypeKind.NONE) {
                 TypeElement supercls = (TypeElement) ((DeclaredType) supertypecls).asElement();
                 if (!superelems.contains(supercls)) {
                     stack.push(supercls);
                     superelems.add(supercls);
                 }
             }
+
             for (TypeMirror supertypeitf : current.getInterfaces()) {
                 TypeElement superitf = (TypeElement) ((DeclaredType) supertypeitf).asElement();
                 if (!superelems.contains(superitf)) {

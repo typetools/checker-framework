@@ -9,6 +9,7 @@ import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.PluginUtil;
 
 /**
  * An abstraction that can be either a range or a list of values that could come from an {@link
@@ -114,6 +115,21 @@ class RangeOrListOfValues {
             isRange = true;
             range = new Range(Collections.min(values), Collections.max(values));
             values = null;
+        }
+    }
+
+    @Override
+    public String toString() {
+        if (isRange) {
+            return range.toString();
+        } else {
+            if (values.size() == 0) {
+                return "[]";
+            }
+            String res = "[";
+            res += PluginUtil.join(", ", values);
+            res += "]";
+            return res;
         }
     }
 }

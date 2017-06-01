@@ -1,5 +1,3 @@
-package fieldinvar;
-
 import org.checkerframework.common.value.qual.*;
 import org.checkerframework.framework.qual.FieldInvariant;
 
