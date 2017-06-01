@@ -76,6 +76,11 @@ class ArrayInit {
         int @ArrayLen(3) [] ints2 = {2, 2, 2};
     }
 
+    public void initializerString() {
+        byte @ArrayLen(2) [] bytes = new byte[] {100, '%'};
+        char @ArrayLen(3) [] chars = new char[] {45, 'A', '%'};
+    }
+
     public void vargsTest() {
         // type of arg should be @UnknownVal Object @BottomVal[]
         vargs((Object[]) null);
