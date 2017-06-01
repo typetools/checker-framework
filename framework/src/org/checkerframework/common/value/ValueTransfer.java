@@ -363,6 +363,8 @@ public class ValueTransfer extends CFTransfer {
             Node rightOperand,
             TransferInput<CFValue, CFStore> p,
             TransferResult<CFValue, CFStore> result) {
+        //VD: array length and array length range
+
         List<String> lefts = getStringValues(leftOperand, p);
         List<String> rights = getStringValues(rightOperand, p);
         List<String> concat;

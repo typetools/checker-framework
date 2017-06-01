@@ -122,6 +122,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         backingSet.add("short");
         backingSet.add("java.lang.Short");
         backingSet.add("byte[]");
+        // VD: why not char[]
         coveredClassStrings = Collections.unmodifiableSet(backingSet);
     }
 
@@ -299,6 +300,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             if (anno != null && anno.getElementValues().size() > 0) {
+
+                // VD: from StringVal to ArrayLen or ArrayLenRange (do not forget to change comments)
                 if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
                     List<Long> values =
                             AnnotationUtils.getElementValueArray(anno, "value", Long.class, true);
@@ -442,6 +445,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     newValues.addAll(a2Values);
                     return createArrayLenAnnotation(newValues);
                 } else {
+                    // VD: in case of StringVal, call createStringValAnnotation, which will
+                    // create ArrayLen if needed
                     List<Object> a1Values =
                             AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
                     List<Object> a2Values =
@@ -464,10 +469,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
 
+            //VD: Special handling for lub of StringVal and ArrayLen
+
             // Special handling for dealing with the lub of an ArrayLenRange and an ArrayLen.
 
             AnnotationMirror arrayLenAnno = null;
             AnnotationMirror arrayLenRangeAnno = null;
+            // VD: AnnotationMirror stringValAnno = null;
+
             if (AnnotationUtils.areSameByClass(a1, ArrayLen.class)) {
                 arrayLenAnno = a1;
             } else if (AnnotationUtils.areSameByClass(a2, ArrayLen.class)) {
@@ -616,6 +625,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<Long> subValues = ValueCheckerUtils.getValuesFromRange(subRange, Long.class);
                 return superValues.containsAll(subValues);
             } else {
+                //VD: subtyping of StringVal and arrayLenRange (only one direction)
                 return false;
             }
         }
@@ -808,6 +818,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /** Convert a byte array to a String. Return null if unable to convert. */
         private String getByteArrayStringVal(List<? extends ExpressionTree> initializers) {
+            //VD: warning: platform dependent
             // True iff every element of the array is a literal.
             boolean allLiterals = true;
             byte[] bytes = new byte[initializers.size()];
@@ -994,6 +1005,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror returnType =
                         createResultingAnnotation(type.getUnderlyingType(), returnValues);
                 type.replaceAnnotation(returnType);
+
+                //VD: string length, or use an annotation?
             }
 
             return null;
@@ -1139,6 +1152,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             return createStringAnnotation(stringVals);
         } else if (ValueCheckerUtils.getClassFromType(resultType) == byte[].class) {
+            // VD: why not char[]?
             List<String> stringVals = new ArrayList<>(values.size());
             for (Object o : values) {
                 if (o instanceof byte[]) {
@@ -1295,6 +1309,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
+            //VD: array len or array len range.
             return UNKNOWNVAL;
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, StringVal.class);
@@ -1612,6 +1627,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (annotation == null) {
             return null;
         }
+        // VD: minimum length for StringVal annotation
         if (AnnotationUtils.areSameByClass(annotation, MinLen.class)) {
             return AnnotationUtils.getElementValue(annotation, "value", Integer.class, true);
         } else if (AnnotationUtils.areSameByClass(annotation, ArrayLenRange.class)) {
@@ -1660,6 +1676,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         getAnnotationFromJavaExpressionString(
                                 arrayExpression, tree, currentPath, ArrayLen.class);
             }
+            // VD: Try the StringVal annotation.
         } catch (FlowExpressionParseException e) {
             // ignore parse errors
         }
