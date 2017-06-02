@@ -77,17 +77,17 @@ public class TypeArgInferenceUtil {
             throw new Error(); // dead code
         }
 
-        final List<AnnotatedTypeMirror> argtypes = new ArrayList<>(argTrees.size());
+        final List<AnnotatedTypeMirror> argTypes = new ArrayList<>(argTrees.size());
         for (Tree arg : argTrees) {
             AnnotatedTypeMirror argType = typeFactory.getAnnotatedType(arg);
             if (TypesUtils.isPrimitive(argType.getUnderlyingType())) {
-                argtypes.add(typeFactory.getBoxedType((AnnotatedPrimitiveType) argType));
+                argTypes.add(typeFactory.getBoxedType((AnnotatedPrimitiveType) argType));
             } else {
-                argtypes.add(argType);
+                argTypes.add(argType);
             }
         }
 
-        return argtypes;
+        return argTypes;
     }
 
     /**
