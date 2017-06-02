@@ -228,13 +228,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         return boxedArgs;
     }
 
-    @Override
-    public void adaptMethodType(
-            AnnotatedTypeFactory typeFactory,
-            ExpressionTree invocation,
-            AnnotatedExecutableType methodType) {
-        // do nothing
-    }
     // TODO: THIS IS A BIG VIOLATION OF Single Responsibility and SHOULD BE FIXED, IT IS SOLELY HERE
     // TODO: AS A TEMPORARY KLUDGE BEFORE A RELEASE/SPARTA ENGAGEMENT
     // TODO: TypeArgumentInference should only have an infer method (its sole responsibility)
