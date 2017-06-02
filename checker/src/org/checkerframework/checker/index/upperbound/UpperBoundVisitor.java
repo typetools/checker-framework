@@ -112,13 +112,14 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             checker.report(
                     Result.failure(
                             UPPER_BOUND_CONST,
-                            valMax.toString(),
+                            indexTree.toString(),
                             arrName,
+                            minLen,
+                            valMax,
                             atypeFactory
                                     .getValueAnnotatedTypeFactory()
                                     .getAnnotatedType(arrTree)
-                                    .toString(),
-                            valMax + 1),
+                                    .toString()),
                     indexTree);
         }
     }
