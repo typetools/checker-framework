@@ -118,7 +118,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             return new HashMap<>();
         }
 
-        final List<AnnotatedTypeMirror> argTypes = getArgumentTypes(expressionTree, typeFactory);
+        final List<AnnotatedTypeMirror> argTypes =
+                TypeArgInferenceUtil.getArgumentTypes(expressionTree, typeFactory);
         final AnnotatedTypeMirror assignedTo =
                 TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expressionTree));
 
@@ -212,29 +213,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             }
         }
         return false;
-    }
-
-    private List<AnnotatedTypeMirror> boxPrimitives(
-            AnnotatedTypeFactory factory, List<AnnotatedTypeMirror> args) {
-        List<AnnotatedTypeMirror> boxedArgs = new ArrayList<>(args.size());
-        for (AnnotatedTypeMirror arg : args) {
-            if (TypesUtils.isPrimitive(arg.getUnderlyingType())) {
-                AnnotatedTypeMirror boxed = factory.getBoxedType((AnnotatedPrimitiveType) arg);
-                boxedArgs.add(boxed);
-            } else {
-                boxedArgs.add(arg);
-            }
-        }
-        return boxedArgs;
-    }
-
-    protected final List<AnnotatedTypeMirror> getArgumentTypes(
-            final ExpressionTree expression, final AnnotatedTypeFactory typeFactory) {
-        final List<? extends ExpressionTree> argTrees =
-                TypeArgInferenceUtil.expressionToArgTrees(expression);
-        List<AnnotatedTypeMirror> argtypes =
-                TypeArgInferenceUtil.treesToTypes(argTrees, typeFactory);
-        return boxPrimitives(typeFactory, argtypes);
     }
 
     /**
