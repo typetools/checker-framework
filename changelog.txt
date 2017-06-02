@@ -1,3 +1,16 @@
+Version 2.1.12, 1 June 2017
+
+The manual links to Glacier, a class immutability checker.
+
+The stubparser license has been updated.  You can now use stubparser under
+either the LGPL or the Apache license, whichever you prefer.
+
+Closed issues:
+254, 1201, 1229, 1236, 1239, 1240, 1257, 1265, 1270, 1271, 1272, 1274, 1288,
+1291, 1299, 1304, 1305.
+
+---------------------------------------------------------------------------
+
 Version 2.1.11, 1 May 2017
 
 The manual contains new FAQ (frequently asked questions) sections about
@@ -5,6 +18,7 @@ false positive warnings and about inference for field types.
 
 Closed issues:
 989, 1096, 1136, 1228.
+
 ---------------------------------------------------------------------------
 
 Version 2.1.10, 3 April 2017
