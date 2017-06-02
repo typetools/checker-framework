@@ -35,8 +35,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * conjunction with some other type-system that wants to ensure safe initialization.
  *
  * @checker_framework.manual #initialization-checker Initialization Checker
- * @checker_framework.manual #unknowninitialization-examples Examples of the @UnknownInitialization
- *     annotation
  */
 @SubtypeOf({})
 @DefaultFor({TypeUseLocation.LOCAL_VARIABLE, TypeUseLocation.RESOURCE_VARIABLE})

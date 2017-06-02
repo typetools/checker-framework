@@ -11,6 +11,7 @@ import com.sun.source.tree.TypeCastTree;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.qual.ArrayLen;
@@ -21,6 +22,7 @@ import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
+import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
@@ -172,6 +174,37 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         if (node.getExpression().getKind() == Kind.NULL_LITERAL) {
             return null;
         }
+
+        AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(node);
+        AnnotationMirror castAnno = castType.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
+        AnnotationMirror exprAnno =
+                atypeFactory
+                        .getAnnotatedType(node.getExpression())
+                        .getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
+
+        // It is always legal to cast to an IntRange type that includes all values
+        // of the underlying type. Do not warn about such casts.
+        // I.e. do not warn if an @IntRange(...) int is casted
+        // to a @IntRange(from = Byte.MIN_VALUE, to = Byte.MAX_VALUE byte).
+        if (castAnno != null
+                && exprAnno != null
+                && atypeFactory.isIntRange(castAnno)
+                && atypeFactory.isIntRange(exprAnno)) {
+            Range castRange = ValueAnnotatedTypeFactory.getRange(castAnno);
+            if (castType.getKind() == TypeKind.BYTE && castRange.isByteEverything()) {
+                return p;
+            }
+            if (castType.getKind() == TypeKind.SHORT && castRange.isShortEverything()) {
+                return p;
+            }
+            if (castType.getKind() == TypeKind.INT && castRange.isIntEverything()) {
+                return p;
+            }
+            if (castType.getKind() == TypeKind.LONG && castRange.isLongEverything()) {
+                return p;
+            }
+        }
+
         return super.visitTypeCast(node, p);
     }
 }

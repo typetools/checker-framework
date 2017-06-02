@@ -97,8 +97,23 @@ public class Range {
     }
 
     /** Return true if this range contains every {@code long} value. */
-    public boolean isEverything() {
+    public boolean isLongEverything() {
         return from == Long.MIN_VALUE && to == Long.MAX_VALUE;
+    }
+
+    /** Return true if this range contains every {@code int} value. */
+    public boolean isIntEverything() {
+        return from == Integer.MIN_VALUE && to == Integer.MAX_VALUE;
+    }
+
+    /** Return true if this range contains every {@code short} value. */
+    public boolean isShortEverything() {
+        return from == Short.MIN_VALUE && to == Short.MAX_VALUE;
+    }
+
+    /** Return true if this range contains every {@code byte} value. */
+    public boolean isByteEverything() {
+        return from == Byte.MIN_VALUE && to == Byte.MAX_VALUE;
     }
 
     /** Return true if this range contains no values. */
