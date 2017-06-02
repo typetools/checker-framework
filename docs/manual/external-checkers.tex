@@ -154,5 +154,24 @@ implementation.  You can learn about the SQL checker at
 \url{https://blog.jooq.org/2016/05/09/jsr-308-and-the-checker-framework-add-even-more-typesafety-to-jooq-3-9/}.
 
 
+\section{Glacier:  Class immutability\label{glacier-immutability-checker}}
+
+\href{http://mcoblenz.github.io/Glacier/}{Glacier}~\cite{CoblenzNAMS2017}
+enforces transitive class immutability in Java.  According to its webpage:
+
+\begin{itemize}
+\item
+  Transitive: if a class is immutable, then every field must be
+  immutable. This means that all reachable state from an immutable object's
+  fields is immutable.
+\item
+  Class: the immutability of an object depends only on its class's
+  immutability declaration.
+\item
+  Immutability: state in an object is not changable through any reference to
+  the object.
+\end{itemize}
+
+
 % LocalWords:  SCJ EnerJ CheckLT unsanitized JavaUI CCS IGJ OIGJ FIO08
 %%  LocalWords:  jOOQ typesafe

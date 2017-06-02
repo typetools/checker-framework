@@ -610,6 +610,19 @@ values as an annotation argument, you need to put curly braces around them:
         @LTLengthOf({"firstName", "lastName"}) int index;
 \end{Verbatim}
 
+A message of the form
+
+\begin{Verbatim}
+  Error: cannot find symbol
+\end{Verbatim}
+
+\noindent
+for an annotation type that is imported, and is a applied to a
+statically-imported enum, is caused by a javac bug, unrelated to the
+Checker Framework.  See
+\url{https://bugs.openjdk.java.net/browse/JDK-7101822} and \url{https://bugs.openjdk.java.net/browse/JDK-8169095}.
+% Also see https://github.com/typetools/checker-framework/issues/1304
+
 
 \subsection{Unable to build the checker, or to run programs\label{common-problems-running-java}}
 
@@ -753,10 +766,10 @@ You need to install several packages in order to build the Checker
 Framework.  The following command installs them for Ubuntu:
 
 \begin{Verbatim}
-sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial openjdk-8-jdk unzip
+sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial openjdk-8-jdk texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended unzip
 \end{Verbatim}
 
-If you are building on Windows, here is an incomplete list of needed
+If you are building on Windows, here is an \emph{incomplete} list of needed
 prerequisites:
 \begin{itemize}
 \item
@@ -948,9 +961,6 @@ an IDE such as Eclipse.
 \item
 Install needed packages; see Section~\ref{building-prerequisites} for
 instructions.
-% To build the manual, you will need \LaTeX and
-% {\hevea} (\myurl{http://hevea.inria.fr/}) installed, and either
-% \<rsvg-convert> or \<convert>.
 
 \item
 Run \code{make} in the \code{docs/manual} directory to build both the PDF and HTML versions of the manual.
