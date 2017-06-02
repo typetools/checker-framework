@@ -220,6 +220,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                     case INT:
                         exprRange = exprRange.intRange();
                         break;
+                    default:
                 }
                 if (castRange.equals(exprRange)) {
                     return p;
