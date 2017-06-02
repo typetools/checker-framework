@@ -20,7 +20,16 @@ public class Range {
     /** The upper bound of the interval, inclusive. */
     public final long to;
 
-    /** Should ranges take overflow into account or ignore it? */
+    /**
+     * Should ranges take overflow into account or ignore it?
+     *
+     * <p>Any checker that uses this library should be sure to set this field. By default, this
+     * field is set to false (meaning overflow is taken into account), but a previous checker might
+     * have set it to true.
+     *
+     * <p>A static field is used because passing an instance field throughout the class (and at all
+     * of its use cases) results in the code being unacceptably bloated.
+     */
     public static boolean IGNORE_OVERFLOW = false;
 
     /** A range containing all possible 64-bit values. */
