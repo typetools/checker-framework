@@ -182,6 +182,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                         .getAnnotatedType(node.getExpression())
                         .getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
 
+        System.out.println("castAnno: " + castAnno);
+        System.out.println("exprAnno: " + exprAnno);
+
         // It is always legal to cast to an IntRange type that includes all values
         // of the underlying type. Do not warn about such casts.
         // I.e. do not warn if an @IntRange(...) int is casted
@@ -203,8 +206,26 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             if (castType.getKind() == TypeKind.LONG && castRange.isLongEverything()) {
                 return p;
             }
+            if (Range.IGNORE_OVERFLOW) {
+                // Range.IGNORE_OVERFLOW is only set if this checker is ignoring overflow.
+                // In that case, compress casts to the range of the underlying type.
+                Range exprRange = ValueAnnotatedTypeFactory.getRange(exprAnno);
+                switch (castType.getKind()) {
+                    case BYTE:
+                        exprRange = exprRange.byteRange();
+                        break;
+                    case SHORT:
+                        exprRange = exprRange.shortRange();
+                        break;
+                    case INT:
+                        exprRange = exprRange.intRange();
+                        break;
+                }
+                if (castRange.equals(exprRange)) {
+                    return p;
+                }
+            }
         }
-
         return super.visitTypeCast(node, p);
     }
 }
