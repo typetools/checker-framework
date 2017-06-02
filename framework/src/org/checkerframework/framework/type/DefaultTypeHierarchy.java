@@ -1003,6 +1003,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
     protected boolean visitWildcardSubtype(
             AnnotatedWildcardType subtype, AnnotatedTypeMirror supertype, VisitHistory visited) {
+        if (subtype.isUninferredTypeArgument()) {
+            return ignoreUninferredTypeArguments;
+        }
         TypeMirror superTypeMirror = supertype.getUnderlyingType();
         if (supertype.getKind() == TypeKind.TYPEVAR) {
             TypeVariable atv = (TypeVariable) supertype.getUnderlyingType();
