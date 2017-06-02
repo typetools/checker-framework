@@ -118,7 +118,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             return new HashMap<>();
         }
 
-        final List<AnnotatedTypeMirror> argTypes = getArgumentTypes(expressionTree, typeFactory);
+        final List<AnnotatedTypeMirror> argTypes =
+                TypeArgInferenceUtil.getArgumentTypes(expressionTree, typeFactory);
         final AnnotatedTypeMirror assignedTo =
                 TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expressionTree));
 
@@ -212,40 +213,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             }
         }
         return false;
-    }
-
-    private List<AnnotatedTypeMirror> boxPrimitives(
-            AnnotatedTypeFactory factory, List<AnnotatedTypeMirror> args) {
-        List<AnnotatedTypeMirror> boxedArgs = new ArrayList<>(args.size());
-        for (AnnotatedTypeMirror arg : args) {
-            if (TypesUtils.isPrimitive(arg.getUnderlyingType())) {
-                AnnotatedTypeMirror boxed = factory.getBoxedType((AnnotatedPrimitiveType) arg);
-                boxedArgs.add(boxed);
-            } else {
-                boxedArgs.add(arg);
-            }
-        }
-        return boxedArgs;
-    }
-
-    @Override
-    public void adaptMethodType(
-            AnnotatedTypeFactory typeFactory,
-            ExpressionTree invocation,
-            AnnotatedExecutableType methodType) {
-        // do nothing
-    }
-    // TODO: THIS IS A BIG VIOLATION OF Single Responsibility and SHOULD BE FIXED, IT IS SOLELY HERE
-    // TODO: AS A TEMPORARY KLUDGE BEFORE A RELEASE/SPARTA ENGAGEMENT
-    // TODO: TypeArgumentInference should only have an infer method (its sole responsibility)
-    // TODO: Subclasses should NOT be able to call adaptMethodType and getArgumentTypes (getArgumentTypes should be inlined)
-    protected List<AnnotatedTypeMirror> getArgumentTypes(
-            final ExpressionTree expression, final AnnotatedTypeFactory typeFactory) {
-        final List<? extends ExpressionTree> argTrees =
-                TypeArgInferenceUtil.expressionToArgTrees(expression);
-        List<AnnotatedTypeMirror> argtypes =
-                TypeArgInferenceUtil.treesToTypes(argTrees, typeFactory);
-        return boxPrimitives(typeFactory, argtypes);
     }
 
     /**
