@@ -85,6 +85,7 @@ fully-qualified type name?
 \\ \ref{faq-jsr-308}: What is the relationship between the Checker Framework and JSR 308?
 \\ \ref{faq-checked-exceptions}: Is there a type-checker for managing checked and unchecked exceptions?
 \\ \ref{faq-pluggable-type-checking}: How does pluggable type-checking work?
+\\ \ref{faq-classpath-to-use-annotated-library}: What classpath is needed to use an annotated library?
 
 
 \section{Motivation for pluggable type-checking\label{faq-motivation-section}}
@@ -1756,15 +1757,39 @@ the declared type of the left-hand side.
 \end{itemize}
 
 
+\subsection{What classpath is needed to use an annotated library?\label{faq-classpath-to-use-annotated-library}}
+
+Suppose that you distribute a library, which contains Checker Framework
+annotations such as \<@Nullable>.  This enables clients of the library to
+use the Checker Framework to type-check their programs.  To do so, they
+must have the Checker Framework annotations on their classpath, for
+instance by using the Checker Framework Compiler.
+
+Clients who do not wish to perform pluggable type-checking do not need to
+have the Checker Framework annotations (\<checker.jar> or
+\<checker-qual.jar>) in their classpath, either when compiling or running
+their programs.
+
+The JVM does not issue a link error if an annotation is not found when a
+class is loaded.  (By contrast, the JVM does issue a link error if a
+superclass, or a parameter/return/field type, is not found.)
+Likewise, there is no problem compiling against a library even if the
+library's annotations are not on the classpath.
+These are properties of Java, and are not specific to the Checker
+Framework's annotations.
+
+
+
 % LocalWords:  toolset AbstractCollection ConcurrentHashMap NullnessUtil
 % LocalWords:  castNonNull createWidget backporting JCIP's GuardedBy Awarns PMD
 % LocalWords:  ElementType nullness bytecodes Jlint Hashtable SuppressWarnings
 %  LocalWords:  RegexUtil compareTo myA requiresB nullable java myobject
 %  LocalWords:  multithreading myfield Regex NonEmpty Xmaxerrs Xmaxwarns
-%  LocalWords:  MonotonicNonNull EnsuresNonNull myFieldName pre dev
+%  LocalWords:  MonotonicNonNull EnsuresNonNull myFieldName pre dev API's
 %  LocalWords:  m1 m2 RequiresNonNull AconcurrentSemantics MyQual plugin
 %  LocalWords:  MyClass MyMoreRestrictiveQual TOPTYPEANNO DEFAULTANNO api
 %%  LocalWords:  OtherClass Goetz antipattern subclassed varargs regexes
-%%  LocalWords:  featureful RetentionPolicy instanceof contravariance
+%%  LocalWords:  featureful RetentionPolicy instanceof contravariance qual
 %%  LocalWords:  NoSuchElementException binarySearch subclasses
 %%  LocalWords:  intExample1 intExample2 requiresPositive
+%%  LocalWords:  IllegalFormatException
