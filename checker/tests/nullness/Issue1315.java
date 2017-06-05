@@ -12,8 +12,13 @@ public class Issue1315 {
         }
 
         @SuppressWarnings("unchecked")
-        T unsound(@Nullable Object p) {
+        T test1(@Nullable Object p) {
             //:: error: (return.type.incompatible)
+            return (T) p;
+        }
+
+        @SuppressWarnings("unchecked")
+        T test2(Object p) {
             return (T) p;
         }
     }
@@ -21,7 +26,7 @@ public class Issue1315 {
     static class Casts {
         public static void test() {
             Box<String> bs = new Box<String>("");
-            bs.f = bs.unsound(null);
+            bs.f = bs.test1(null);
             bs.f.toString();
         }
     }
