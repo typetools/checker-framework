@@ -110,7 +110,7 @@ jobs:
             if [[ "${SLUGOWNER}" == "typetools" ]]; then
               sh trigger-travis.sh typetests daikon-typecheck $TRAVISTOKEN
               sh trigger-travis.sh typetests plume-lib-typecheck $TRAVISTOKEN
-	    fi
+            fi
           fi
 
 git:

@@ -36,7 +36,7 @@ else
     if [ "$?" -ne 0 ]; then
         ATSLUGOWNER=typetools
     else
-	ATSLUGOWNER=${SLUGOWNER}
+        ATSLUGOWNER=${SLUGOWNER}
     fi
     set -e
     echo "Running:  (cd .. && git clone --depth 1 https://github.com/${ATSLUGOWNER}/annotation-tools.git)"
