@@ -3,7 +3,10 @@ class TypeVars {
 
     class Test1<T> {
         void m() {
-            @SuppressWarnings({"unchecked", "assignment.type.incompatible"})
+            @SuppressWarnings({
+                "unchecked",
+                "units:assignment.type.incompatible" // Units doesn't use dataflow, so "x" isn't defaulted to top.
+            })
             T x = (T) new Object();
 
             Object o = x;
