@@ -2218,7 +2218,32 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Type checks that a method may override another method. Uses the OverrideChecker class.
+     * Create an OverrideChecker.
+     *
+     * <p>This exists so that subclasses can subclass OverrideChecker and use their subclass instead
+     * of using OverrideChecker itself.
+     */
+    protected OverrideChecker createOverrideChecker(
+            Tree overriderTree,
+            AnnotatedExecutableType overrider,
+            AnnotatedTypeMirror overridingType,
+            AnnotatedTypeMirror overridingReturnType,
+            AnnotatedExecutableType overridden,
+            AnnotatedDeclaredType overriddenType,
+            AnnotatedTypeMirror overriddenReturnType) {
+        return new OverrideChecker(
+                overriderTree,
+                overrider,
+                overridingType,
+                overridingReturnType,
+                overridden,
+                overriddenType,
+                overriddenReturnType);
+    }
+
+    /**
+     * Type checks that a method may override another method. Uses an OverrideChecker subclass as
+     * created by createOverrideChecker().
      *
      * @param overriderTree declaration tree of overriding method
      * @param overridingType type of overriding class
@@ -2242,7 +2267,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         OverrideChecker overrideChecker =
-                new OverrideChecker(
+                createOverrideChecker(
                         overriderTree,
                         overrider,
                         overridingType,
@@ -2327,7 +2352,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         OverrideChecker overrideChecker =
-                new OverrideChecker(
+                createOverrideChecker(
                         memberReferenceTree,
                         overridingMethodType,
                         overridingType,
@@ -2402,22 +2427,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * <p>This method returns the result of the check, but also emits error messages as a side
      * effect.
      */
-    private class OverrideChecker {
+    public class OverrideChecker {
         // Strings for printing
-        private final String overriderMeth;
-        private final String overriderTyp;
-        private final String overriddenMeth;
-        private final String overriddenTyp;
+        protected final String overriderMeth;
+        protected final String overriderTyp;
+        protected final String overriddenMeth;
+        protected final String overriddenTyp;
 
-        private final Tree overriderTree;
-        private final Boolean methodReference;
+        protected final Tree overriderTree;
+        protected final Boolean methodReference;
 
-        private final AnnotatedExecutableType overrider;
-        private final AnnotatedTypeMirror overridingType;
-        private final AnnotatedExecutableType overridden;
-        private final AnnotatedDeclaredType overriddenType;
-        private final AnnotatedTypeMirror overriddenReturnType;
-        private final AnnotatedTypeMirror overridingReturnType;
+        protected final AnnotatedExecutableType overrider;
+        protected final AnnotatedTypeMirror overridingType;
+        protected final AnnotatedExecutableType overridden;
+        protected final AnnotatedDeclaredType overriddenType;
+        protected final AnnotatedTypeMirror overriddenReturnType;
+        protected final AnnotatedTypeMirror overridingReturnType;
 
         /**
          * Create an OverrideChecker.
@@ -2435,7 +2460,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
          * @param overriddenType the declared type enclosing the overridden method
          * @param overriddenReturnType the return type of the overridden method
          */
-        OverrideChecker(
+        public OverrideChecker(
                 Tree overriderTree,
                 AnnotatedExecutableType overrider,
                 AnnotatedTypeMirror overridingType,
@@ -2684,7 +2709,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return success;
         }
 
-        private boolean checkReceiverOverride() {
+        protected boolean checkReceiverOverride() {
             // Check the receiver type.
             // isSubtype() requires its arguments to be actual subtypes with
             // respect to JLS, but overrider receiver is not a subtype of the

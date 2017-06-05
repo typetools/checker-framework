@@ -5,8 +5,8 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -23,6 +23,21 @@ import org.checkerframework.javacutil.TreeUtils;
 public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory> {
     public SameLenVisitor(BaseTypeChecker checker) {
         super(checker);
+    }
+
+    // This variable is used to store the name of the variable being assigned to on
+    // the left hand side of an assignment/pseudo-assignment, so that that variable
+    // can later be included in the SameLen type. This pattern is a bit uncomfortable,
+    // but there is not a clear other way to save this information.
+    private String lastVar = "";
+
+    protected void commonAssignmentCheck(
+            Tree varTree, ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
+        if (varTree.getKind() == Tree.Kind.VARIABLE) {
+            VariableTree vTree = (VariableTree) varTree;
+            lastVar = vTree.getName().toString();
+        }
+        super.commonAssignmentCheck(varTree, valueExp, errorKey);
     }
 
     /**
@@ -48,9 +63,10 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
 
             Receiver rec = FlowExpressions.internalReprOf(atypeFactory, (ExpressionTree) valueTree);
             if (rec != null && SameLenAnnotatedTypeFactory.isReceiverToStringParsable(rec)) {
-                List<String> itself = Collections.singletonList(rec.toString());
-                System.out.println("itself: " + rec.toString());
-                AnnotationMirror newSameLen = atypeFactory.getCombinedSameLen(arraysInAnno, itself);
+                List<String> names = new ArrayList<>();
+                names.add(rec.toString());
+                names.add(lastVar);
+                AnnotationMirror newSameLen = atypeFactory.getCombinedSameLen(arraysInAnno, names);
                 valueType.replaceAnnotation(newSameLen);
             }
         }

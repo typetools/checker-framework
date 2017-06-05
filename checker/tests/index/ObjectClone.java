@@ -13,6 +13,7 @@ class ObjectClone {
     }
 
     public static void main(String[] args) {
+        String @SameLen("args") [] args2 = args;
         String @SameLen({"args", "args_sorted"}) [] args_sorted = args.clone();
         Arrays.sort(args_sorted);
         String @SameLen({"args", "args_sorted"}) [] args_sorted2 = args_sorted.clone();

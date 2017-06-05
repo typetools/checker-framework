@@ -300,6 +300,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * by @BOTTOMVAL. The {@link
          * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
          * Void)} would raise an error to users in this case.
+         *
+         * <p>If a user only writes one side of an {@code IntRange} annotation, this method also
+         * computes an appropriate default based on the underlying type for the other side of the
+         * range. For instance, if the user write {@code @IntRange(from = 1) short x;} then this
+         * method will translate the annotation to {@code @IntRange(from = 1, to = Short.MAX_VALUE}.
          */
         private void replaceWithNewAnnoInSpecialCases(AnnotatedTypeMirror atm) {
             AnnotationMirror anno = atm.getAnnotationInHierarchy(UNKNOWNVAL);
@@ -332,10 +337,49 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                 createArrayLenRangeAnnotation(new Range(annoMinVal, annoMaxVal)));
                     }
                 } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
-                    long from = AnnotationUtils.getElementValue(anno, "from", Long.class, true);
-                    long to = AnnotationUtils.getElementValue(anno, "to", Long.class, true);
+                    // Compute appropriate defaults for integral ranges.
+                    long from, to;
+                    if (AnnotationUtils.hasElementValue(anno, "from")) {
+                        from = AnnotationUtils.getElementValue(anno, "from", Long.class, false);
+                    } else {
+                        switch (atm.getUnderlyingType().getKind()) {
+                            case INT:
+                                from = Integer.MIN_VALUE;
+                                break;
+                            case SHORT:
+                                from = Short.MIN_VALUE;
+                                break;
+                            case BYTE:
+                                from = Byte.MIN_VALUE;
+                                break;
+                            default:
+                                from = Long.MIN_VALUE;
+                        }
+                    }
+                    if (AnnotationUtils.hasElementValue(anno, "to")) {
+                        to = AnnotationUtils.getElementValue(anno, "to", Long.class, false);
+                    } else {
+                        switch (atm.getUnderlyingType().getKind()) {
+                            case INT:
+                                to = Integer.MAX_VALUE;
+                                break;
+                            case SHORT:
+                                to = Short.MAX_VALUE;
+                                break;
+                            case BYTE:
+                                to = Byte.MAX_VALUE;
+                                break;
+                            default:
+                                to = Long.MAX_VALUE;
+                        }
+                    }
                     if (from > to) {
                         atm.replaceAnnotation(BOTTOMVAL);
+                    } else {
+                        // Always do a replacement of the annotation here so that
+                        // the defaults calculated above are correctly added to the
+                        // annotation (assuming the annotation is well-formed).
+                        atm.replaceAnnotation(createIntRangeAnnotation(from, to));
                     }
                 } else if (AnnotationUtils.areSameByClass(anno, ArrayLenRange.class)) {
                     int from = AnnotationUtils.getElementValue(anno, "from", Integer.class, true);
@@ -1455,7 +1499,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror createIntRangeAnnotation(Range range) {
         if (range.isNothing()) {
             return BOTTOMVAL;
-        } else if (range.isEverything()) {
+        } else if (range.isLongEverything()) {
             return UNKNOWNVAL;
         } else if (range.isWiderThan(MAX_VALUES)) {
             return createIntRangeAnnotation(range.from, range.to);
@@ -1496,7 +1540,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror createArrayLenRangeAnnotation(Range range) {
         if (range.isNothing()) {
             return BOTTOMVAL;
-        } else if (range.isEverything() || !range.isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+        } else if (range.isLongEverything()
+                || !range.isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE)) {
             return UNKNOWNVAL;
         } else {
             return createArrayLenRangeAnnotation(
