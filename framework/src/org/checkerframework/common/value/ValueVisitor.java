@@ -1,5 +1,7 @@
 package org.checkerframework.common.value;
-
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+*/
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
@@ -8,6 +10,7 @@ import com.sun.source.tree.TypeCastTree;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.qual.ArrayLen;
@@ -15,9 +18,13 @@ import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.DoubleVal;
 import org.checkerframework.common.value.qual.IntRange;
+import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
+import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 
@@ -47,6 +54,39 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 throw new IllegalArgumentException(
                         "exp is not an intergral literal (INT_LITERAL, LONG_LITERAL, CHAR_LITERAL)");
         }
+    }
+
+    /**
+     * ValueVisitor overrides this method so that it does not have to check variables annotated with
+     * the {@link IntRangeFromPositive} annotation. This annotation is only introduced by the Index
+     * Checker's {@link org.checkerframework.checker.index.qual.Positive} annotation. It is safe to
+     * defer checking of these values to the Index Checker because this is only introduced for
+     * explicitly-written {@link org.checkerframework.checker.index.qual.Positive} annotations,
+     * which must be checked by the Lower Bound Checker.
+     *
+     * @param varType the annotated type of the lvalue (usually a variable)
+     * @param valueExp the AST node for the rvalue (the new value)
+     * @param errorKey the error message to use if the check fails (must be a compiler message key,
+     */
+    @Override
+    protected void commonAssignmentCheck(
+            AnnotatedTypeMirror varType,
+            ExpressionTree valueExp,
+            /*@CompilerMessageKey*/ String errorKey) {
+
+        SimpleAnnotatedTypeScanner<Void, Void> replaceIntRangeFromPositive =
+                new SimpleAnnotatedTypeScanner<Void, Void>() {
+                    @Override
+                    protected Void defaultAction(AnnotatedTypeMirror type, Void p) {
+                        if (type.hasAnnotation(IntRangeFromPositive.class)) {
+                            type.replaceAnnotation(atypeFactory.UNKNOWNVAL);
+                        }
+                        return null;
+                    }
+                };
+
+        replaceIntRangeFromPositive.visit(varType);
+        super.commonAssignmentCheck(varType, valueExp, errorKey);
     }
 
     @Override
@@ -133,6 +173,37 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         if (node.getExpression().getKind() == Kind.NULL_LITERAL) {
             return null;
         }
+
+        AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(node);
+        AnnotationMirror castAnno = castType.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
+        AnnotationMirror exprAnno =
+                atypeFactory
+                        .getAnnotatedType(node.getExpression())
+                        .getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
+
+        // It is always legal to cast to an IntRange type that includes all values
+        // of the underlying type. Do not warn about such casts.
+        // I.e. do not warn if an @IntRange(...) int is casted
+        // to a @IntRange(from = Byte.MIN_VALUE, to = Byte.MAX_VALUE byte).
+        if (castAnno != null
+                && exprAnno != null
+                && atypeFactory.isIntRange(castAnno)
+                && atypeFactory.isIntRange(exprAnno)) {
+            Range castRange = ValueAnnotatedTypeFactory.getRange(castAnno);
+            if (castType.getKind() == TypeKind.BYTE && castRange.isByteEverything()) {
+                return p;
+            }
+            if (castType.getKind() == TypeKind.SHORT && castRange.isShortEverything()) {
+                return p;
+            }
+            if (castType.getKind() == TypeKind.INT && castRange.isIntEverything()) {
+                return p;
+            }
+            if (castType.getKind() == TypeKind.LONG && castRange.isLongEverything()) {
+                return p;
+            }
+        }
+
         return super.visitTypeCast(node, p);
     }
 }

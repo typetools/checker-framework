@@ -208,7 +208,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.1.10.zip}
+  \url{https://checkerframework.org/checker-framework-2.1.12.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -716,7 +716,8 @@ Stub and JDK libraries; see Section~\ref{creating-debugging-options-libraries}.
 
 \item
  \<-Afilenames>,
- \<-Ashowchecks>
+ \<-Ashowchecks>,
+ \<-AshowInferenceSteps>
 Progress tracing; see Section~\ref{creating-debugging-options-progress}.
 
 \item
@@ -1079,7 +1080,7 @@ i++;
 
 \item
   Avoid writing \<@SuppressWarnings> annotations unless there is no
-  alternative.  It is tempting to think that your code is wrong and the
+  alternative.  It is tempting to think that your code is right and the
   checker's warnings are false positives.  Sometimes they are, but slow
   down and convince yourself of that before you dismiss them.
   Section~\ref{handling-warnings} discusses what to do when a checker

@@ -56,11 +56,4 @@ public interface TypeArgumentInference {
             final ExpressionTree invocation,
             final ExecutableElement methodElem,
             final AnnotatedExecutableType methodType);
-
-    public void adaptMethodType(
-            final AnnotatedTypeFactory typeFactory,
-            final ExpressionTree invocation,
-            final AnnotatedExecutableType methodType);
-    // TODO: THIS IS A BIG VIOLATION OF Single Responsibility and SHOULD BE FIXED, IT IS SOLELY HERE
-    // TODO: AS A TEMPORARY KLUDGE BEFORE A RELEASE/SPARTA ENGAGEMENT
 }

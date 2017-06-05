@@ -346,7 +346,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                 List<ClassOrInterfaceType> bounds = typeParam.getTypeBound();
                 if (bounds != null) {
                     for (int j = 0; j < bounds.size(); j++) {
-                        ClassOrInterfaceType bound = bounds.get(i);
+                        ClassOrInterfaceType bound = bounds.get(j);
                         BoundLocation loc = new BoundLocation(i, j);
                         bound.accept(this, method.bounds.vivify(loc));
                     }

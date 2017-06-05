@@ -94,8 +94,23 @@ public class Range {
     }
 
     /** Return true if this range contains every {@code long} value. */
-    public boolean isEverything() {
+    public boolean isLongEverything() {
         return from == Long.MIN_VALUE && to == Long.MAX_VALUE;
+    }
+
+    /** Return true if this range contains every {@code int} value. */
+    public boolean isIntEverything() {
+        return from == Integer.MIN_VALUE && to == Integer.MAX_VALUE;
+    }
+
+    /** Return true if this range contains every {@code short} value. */
+    public boolean isShortEverything() {
+        return from == Short.MIN_VALUE && to == Short.MAX_VALUE;
+    }
+
+    /** Return true if this range contains every {@code byte} value. */
+    public boolean isByteEverything() {
+        return from == Byte.MIN_VALUE && to == Byte.MAX_VALUE;
     }
 
     /** Return true if this range contains no values. */
@@ -117,6 +132,9 @@ public class Range {
      * converted to Integer.MIN_VALUE.
      */
     public Range intRange() {
+        if (this.isNothing()) {
+            return this;
+        }
         if (this.isWiderThan(integerWidth)) {
             return INT_EVERYTHING;
         } else {
@@ -144,6 +162,9 @@ public class Range {
      * converted to Short.MIN_VALUE.
      */
     public Range shortRange() {
+        if (this.isNothing()) {
+            return this;
+        }
         if (this.isWiderThan(shortWidth)) {
             // short is be promoted to int before the operation so no need for explicit casting
             return SHORT_EVERYTHING;
@@ -172,6 +193,9 @@ public class Range {
      * Byte.MIN_VALUE.
      */
     public Range byteRange() {
+        if (this.isNothing()) {
+            return this;
+        }
         if (this.isWiderThan(byteWidth)) {
             // byte is be promoted to int before the operation so no need for explicit casting
             return BYTE_EVERYTHING;

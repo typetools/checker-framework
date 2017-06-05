@@ -1,4 +1,12 @@
-import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.checker.index.qual.GTENegativeOne;
+import org.checkerframework.checker.index.qual.LTEqLengthOf;
+import org.checkerframework.checker.index.qual.LTLengthOf;
+import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.checker.index.qual.PolyLowerBound;
+import org.checkerframework.checker.index.qual.PolySameLen;
+import org.checkerframework.checker.index.qual.PolyUpperBound;
+import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.checker.index.qual.SameLen;
 
 class Polymorphic {
 
@@ -8,15 +16,6 @@ class Polymorphic {
         return a;
     }
 
-    int @PolyMinLen [] minlen_identity(int @PolyMinLen [] a) {
-        return a;
-    }
-
-    public static String @PolyMinLen [] quantify2(String @PolyMinLen [] vars) {
-        String[] result = new String[vars.length];
-        return result;
-    }
-
     int @PolySameLen [] samelen_identity(int @PolySameLen [] a) {
         int @SameLen("a") [] x = a;
         return a;
@@ -24,13 +23,6 @@ class Polymorphic {
 
     @PolyUpperBound int ubc_identity(@PolyUpperBound int a) {
         return a;
-    }
-
-    // MinLen tests
-    void minlen_id(int @MinLen(5) [] a) {
-        int @MinLen(5) [] b = minlen_identity(a);
-        //:: error: (assignment.type.incompatible)
-        int @MinLen(6) [] c = minlen_identity(b);
     }
 
     // SameLen tests

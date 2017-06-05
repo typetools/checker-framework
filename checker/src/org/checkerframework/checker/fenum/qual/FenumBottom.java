@@ -27,9 +27,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 // to the multigraph hierarchy constructor.
 @SubtypeOf({})
 @Retention(RetentionPolicy.RUNTIME)
-@ImplicitFor(
-    literals = {LiteralKind.NULL},
-    typeNames = {java.lang.Void.class}
-)
+@ImplicitFor(literals = LiteralKind.NULL, typeNames = java.lang.Void.class)
 @DefaultFor(TypeUseLocation.LOWER_BOUND)
 public @interface FenumBottom {}

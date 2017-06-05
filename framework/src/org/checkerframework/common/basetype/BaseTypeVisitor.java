@@ -101,7 +101,7 @@ import org.checkerframework.framework.util.ContractsUtils.ConditionalPostconditi
 import org.checkerframework.framework.util.ContractsUtils.Contract;
 import org.checkerframework.framework.util.ContractsUtils.Postcondition;
 import org.checkerframework.framework.util.ContractsUtils.Precondition;
-import org.checkerframework.framework.util.FieldInvariantObject;
+import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -355,7 +355,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected void checkFieldInvariantDeclarations(ClassTree classTree) {
         TypeElement elt = TreeUtils.elementFromDeclaration(classTree);
-        FieldInvariantObject invariants = atypeFactory.getFieldInvariants(elt);
+        FieldInvariants invariants = atypeFactory.getFieldInvariants(elt);
         if (invariants == null) {
             // No invariants to check
             return;
@@ -373,7 +373,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // Checks #4 (see method Javadoc)
         if (!invariants.isWellFormed()) {
-            checker.report(Result.failure("field.invar.not.wellformed"), errorTree);
+            checker.report(Result.failure("field.invariant.not.wellformed"), errorTree);
             return;
         }
 
@@ -385,10 +385,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Checks that fields are declared in super class. (#2b)
         if (!fieldsNotFound.isEmpty()) {
             String notFoundString = PluginUtil.join(", ", fieldsNotFound);
-            checker.report(Result.failure("field.invar.not.found", notFoundString), errorTree);
+            checker.report(Result.failure("field.invariant.not.found", notFoundString), errorTree);
         }
 
-        FieldInvariantObject superInvar =
+        FieldInvariants superInvar =
                 atypeFactory.getFieldInvariants(InternalUtils.getTypeElement(superClass));
         if (superInvar != null) {
             // Checks #3 (see method Javadoc)
@@ -419,7 +419,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // Checks #3
                     checker.report(
                             Result.failure(
-                                    "field.invar.not.subtype",
+                                    "field.invariant.not.subtype",
                                     fieldName,
                                     invariantAnno,
                                     declaredAnno),
@@ -431,7 +431,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Checks #2a
         if (!notFinal.isEmpty()) {
             String notFinalString = PluginUtil.join(", ", notFinal);
-            checker.report(Result.failure("field.invar.not.final", notFinalString), errorTree);
+            checker.report(Result.failure("field.invariant.not.final", notFinalString), errorTree);
         }
     }
 
@@ -676,7 +676,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         node);
             }
 
-            checkParametersAreEffectivelyFinal(methodElement, expression);
+            checkParametersAreEffectivelyFinal(node, methodElement, expression);
         }
     }
 
@@ -684,7 +684,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Check that the parameters used in {@code stringExpr} are effectively final for method {@code
      * method}.
      */
-    private void checkParametersAreEffectivelyFinal(ExecutableElement method, String stringExpr) {
+    private void checkParametersAreEffectivelyFinal(
+            MethodTree node, ExecutableElement method, String stringExpr) {
         // check that all parameters used in the expression are
         // effectively final, so that they cannot be modified
         List<Integer> parameterIndices = FlowExpressionParseUtil.parameterIndices(stringExpr);
@@ -697,7 +698,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!ElementUtils.isEffectivelyFinal(parameter)) {
                 checker.report(
                         Result.failure("flowexpr.parameter.not.final", "#" + idx, stringExpr),
-                        method);
+                        node);
             }
         }
     }
@@ -1357,7 +1358,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-        // If node is the tree represnting the compounds assignment s += expr,
+        // If node is the tree representing the compounds assignment s += expr,
         // Then this method should check whether s + expr can be assigned to s,
         // but the "s + expr" tree does not exist.  So instead, check that
         // s += expr can be assigned to s.
@@ -2217,7 +2218,32 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Type checks that a method may override another method. Uses the OverrideChecker class.
+     * Create an OverrideChecker.
+     *
+     * <p>This exists so that subclasses can subclass OverrideChecker and use their subclass instead
+     * of using OverrideChecker itself.
+     */
+    protected OverrideChecker createOverrideChecker(
+            Tree overriderTree,
+            AnnotatedExecutableType overrider,
+            AnnotatedTypeMirror overridingType,
+            AnnotatedTypeMirror overridingReturnType,
+            AnnotatedExecutableType overridden,
+            AnnotatedDeclaredType overriddenType,
+            AnnotatedTypeMirror overriddenReturnType) {
+        return new OverrideChecker(
+                overriderTree,
+                overrider,
+                overridingType,
+                overridingReturnType,
+                overridden,
+                overriddenType,
+                overriddenReturnType);
+    }
+
+    /**
+     * Type checks that a method may override another method. Uses an OverrideChecker subclass as
+     * created by createOverrideChecker().
      *
      * @param overriderTree declaration tree of overriding method
      * @param overridingType type of overriding class
@@ -2241,7 +2267,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         OverrideChecker overrideChecker =
-                new OverrideChecker(
+                createOverrideChecker(
                         overriderTree,
                         overrider,
                         overridingType,
@@ -2326,7 +2352,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         OverrideChecker overrideChecker =
-                new OverrideChecker(
+                createOverrideChecker(
                         memberReferenceTree,
                         overridingMethodType,
                         overridingType,
@@ -2401,22 +2427,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * <p>This method returns the result of the check, but also emits error messages as a side
      * effect.
      */
-    private class OverrideChecker {
+    public class OverrideChecker {
         // Strings for printing
-        private final String overriderMeth;
-        private final String overriderTyp;
-        private final String overriddenMeth;
-        private final String overriddenTyp;
+        protected final String overriderMeth;
+        protected final String overriderTyp;
+        protected final String overriddenMeth;
+        protected final String overriddenTyp;
 
-        private final Tree overriderTree;
-        private final Boolean methodReference;
+        protected final Tree overriderTree;
+        protected final Boolean methodReference;
 
-        private final AnnotatedExecutableType overrider;
-        private final AnnotatedTypeMirror overridingType;
-        private final AnnotatedExecutableType overridden;
-        private final AnnotatedDeclaredType overriddenType;
-        private final AnnotatedTypeMirror overriddenReturnType;
-        private final AnnotatedTypeMirror overridingReturnType;
+        protected final AnnotatedExecutableType overrider;
+        protected final AnnotatedTypeMirror overridingType;
+        protected final AnnotatedExecutableType overridden;
+        protected final AnnotatedDeclaredType overriddenType;
+        protected final AnnotatedTypeMirror overriddenReturnType;
+        protected final AnnotatedTypeMirror overridingReturnType;
 
         /**
          * Create an OverrideChecker.
@@ -2434,7 +2460,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
          * @param overriddenType the declared type enclosing the overridden method
          * @param overriddenReturnType the return type of the overridden method
          */
-        OverrideChecker(
+        public OverrideChecker(
                 Tree overriderTree,
                 AnnotatedExecutableType overrider,
                 AnnotatedTypeMirror overridingType,
@@ -2683,7 +2709,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return success;
         }
 
-        private boolean checkReceiverOverride() {
+        protected boolean checkReceiverOverride() {
             // Check the receiver type.
             // isSubtype() requires its arguments to be actual subtypes with
             // respect to JLS, but overrider receiver is not a subtype of the

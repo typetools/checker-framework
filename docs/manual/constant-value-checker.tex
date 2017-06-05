@@ -24,7 +24,7 @@ The Constant Value Checker uses type annotations to indicate the value of
 an expression (Section~\ref{constant-value-checker-type-annotations}), and
 it uses method annotations to indicate methods that the Constant Value
 Checker can execute at compile time
-(Section~\ref{staticallyexecutable-annotation}).
+(Section~\ref{constant-value-staticallyexecutable-annotation}).
 
 
 \subsection{Type Annotations\label{constant-value-checker-type-annotations}}
@@ -42,8 +42,11 @@ The main type annotations are
 \refqualclass{common/value/qual}{DoubleVal}, and
 \refqualclass{common/value/qual}{StringVal}.
 Additional type annotations for arrays are
-\refqualclass{common/value/qual}{ArrayLen} and
-\refqualclass{common/value/qual}{ArrayLenRange}.
+\refqualclass{common/value/qual}{ArrayLen},
+\refqualclass{common/value/qual}{ArrayLenRange},
+and \refqualclass{common/value/qual}{MinLen}.
+A polymorphic qualifier (\refqualclass{common/value/qual}{PolyValue})
+is also supported (see Section~\ref{qualifier-polymorphism}).
 
 Each \<*Val> type annotation takes as an argument a set of values, and its
 meaning is that at run time, the expression evaluates to one of the values.  For
@@ -75,6 +78,10 @@ have exactly the same meaning, and using either one has the same effect.
 to \refqualclass{common/value/qual}{ArrayLen} that
 \refqualclass{common/value/qual}{IntRange} has to
 \refqualclass{common/value/qual}{IntVal}.
+The \<@MinLen> annotation is an alias for \<@ArrayLenRange> (meaning that every \<@MinLen> annotation
+ is automatically converted to an \<@ArrayLenRange> annotation) that only takes
+one argument, which is the lower bound of the range. The upper bound of the
+range is the maximum integer value.
 
 Figure~\ref{fig-value-hierarchy} shows the
 subtyping relationship among the type annotations.
@@ -84,7 +91,7 @@ Because \<int> can be casted to \<double>, an \<@IntVal> annotation is a
 subtype of a \<@DoubleVal> annotation with the same values.
 
 \begin{figure}
-\includeimage{value-subtyping}{5.7cm}
+\includeimage{value-subtyping}{7cm}
 \caption{At the top, the type qualifier hierarchy of the Constant Value Checker
 annotations. Qualifiers in gray are used
 internally by the type system but should never be written by a
@@ -142,8 +149,15 @@ $\Rightarrow$
 \label{fig-constant-value-refactoring}
 \end{figure}
 
+\ifonbuffalo{\relax}\else{
+  The Constant Value Checker trusts the
+  \refqualclass{checker/index/qual}{Positive} annotation.  If your code
+  contains a \refqualclass{checker/index/qual}{Positive} annotation, then
+  in order to guarantee soundness, you must run the Index Checker whenever
+  you run the Constant Value Checker.
+}\fi
 
-\subsection{Compile-time execution of expressions\label{staticallyexecutable-annotation}}
+\subsection{Compile-time execution of expressions\label{constant-value-compile-time-execution}}
 
 Whenever all the operands of an expression are compile-time constants (that
 is, their types have constant-value type annotations), the Constant Value
@@ -152,9 +166,14 @@ optimizations performed by the compiler and does not affect the code that
 is generated.
 
 The Constant Value Checker statically executes operators that do
-not throw exceptions (e.g., \<+>, \<->, \code{<\relax<}, \<!=>), and also
-calls to methods annotated with
-\refqualclass{common/value/qual}{StaticallyExecutable}.
+not throw exceptions (e.g., \<+>, \<->, \code{<\relax<}, \<!=>).
+
+
+\subsection{\<@StaticallyExecutable> methods and the classpath\label{constant-value-staticallyexecutable-annotation}}
+
+The Constant Value Checker statically executes methods annotated with
+\refqualclass{common/value/qual}{StaticallyExecutable}, \emph{if the
+method has already been compiled and is on the classpath}.
 
 \begin{figure}
 \begin{Verbatim}
@@ -175,29 +194,25 @@ public void bar() {
 \label{fig-staticallyexecutable}
 \end{figure}
 
-\begin{sloppypar}
 A \<@StaticallyExecutable> method must
 be \refqualclass{dataflow/qual}{Pure} (side-effect-free and
 deterministic).
+
 Additionally, a \<@StaticallyExecutable> method and any method it calls must be on
 the classpath for the compiler, because they are reflectively called at
-compile-time to perform the constant value analysis. Any standard
-library methods (such as those annotated as \<@StaticallyExecutable> in file
-\<statically-executable.astub>) will already be on the
-classpath.
-\end{sloppypar}
-
-\begin{sloppypar}
+compile-time to perform the constant value analysis.
+% Standard library methods (such as those annotated as \<@StaticallyExecutable>
+% in file \<statically-executable.astub>) will already be on the classpath.
 To use \<@StaticallyExecutable> on methods in your own code, you should
 first compile the code without the Constant Value Checker and then add
 the location of the resulting \code{.class} files to the
-classpath. This can be done by either adding the destination path to
-your environment variable \code{CLASSPATH} or by passing the
-argument \code{-classpath path/to/class/files} to the call. The latter
-would look similar to:
-\code{-processor org.checkerframework.common.value.ValueChecker
--Astubs=statically-executable.astub -classpath \$CLASSPATH:\$MY\_PROJECT/build/}
-\end{sloppypar}
+classpath. For example, the command-line arguments to the Checker Framework
+might include:
+\begin{Verbatim}
+  -processor org.checkerframework.common.value.ValueChecker
+  -Astubs=statically-executable.astub
+  -classpath $CLASSPATH:MY_PROJECT/build/
+\end{Verbatim}
 
 
 \section{Warnings\label{value-checker-warnings}}
@@ -253,4 +268,5 @@ warning message:
 \end{sloppypar}
 %%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange
 %  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
-%%  LocalWords:  classpath AreportEvalWarns
+%%  LocalWords:  classpath AreportEvalWarns ArrayLen ArrayLenRange MinLen
+%%  LocalWords:  PolyValue
