@@ -9,7 +9,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * The annotated expression evaluates to an integer whose value is less than the lengths of all the
- * given sequences.
+ * given sequences. This annotation is rarely used; it is more common to use {@code @}{@link
+ * IndexFor}.
  *
  * <p>For example, an expression with type {@code @LTLengthOf({"a", "b"})} is less than both {@code
  * a.length} and {@code b.length}. The sequences {@code a} and {@code b} might have different
@@ -23,6 +24,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * offset = {"-1", "x"})}. Then {@code e - 1} is less than {@code a.length}, and {@code e + x} is
  * less than {@code b.length}.
  *
+ * @see IndexFor
  * @checker_framework.manual #index-checker Index Checker
  */
 @SubtypeOf(LTEqLengthOf.class)
