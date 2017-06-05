@@ -79,12 +79,14 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   echo "Running: git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-"
   git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-
   if [ "$?" -ne 0 ]; then
-    SLUGOWNER=typetools
+    CFISLUGOWNER=typetools
+  else
+    CFISLUGOWNER=${SLUGOWNER}
   fi
   set -e
-  echo "Running:  (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/checker-framework-inference.git)"
-  (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/checker-framework-inference.git)
-  echo "... done: (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/checker-framework-inference.git)"
+  echo "Running:  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
+  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)
+  echo "... done: (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
 
   export AFU=`pwd`/../annotation-tools/annotation-file-utilities
   export PATH=$AFU/scripts:$PATH
@@ -95,12 +97,14 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   echo "Running: git ls-remote https://github.com/${SLUGOWNER}/plume-lib.git &>-"
   git ls-remote https://github.com/${SLUGOWNER}/plume-lib.git &>-
   if [ "$?" -ne 0 ]; then
-    SLUGOWNER=typetools
+    PLSLUGOWNER=mernst
+  else
+    PLSLUGOWNER=${SLUGOWNER}
   fi
   set -e
-  echo "Running:  (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/plume-lib.git)"
-  (cd .. && git clone https://github.com/${SLUGOWNER}/plume-lib.git)
-  echo "... done: (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/plume-lib.git)"
+  echo "Running:  (cd .. && git clone --depth 1 https://github.com/${PLSLUGOWNER}/plume-lib.git)"
+  (cd .. && git clone https://github.com/${PLSLUGOWNER}/plume-lib.git)
+  echo "... done: (cd .. && git clone --depth 1 https://github.com/${PLSLUGOWNER}/plume-lib.git)"
 
   export CHECKERFRAMEWORK=`pwd`
   (cd ../plume-lib/java && make check-types)
