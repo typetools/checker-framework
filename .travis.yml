@@ -90,8 +90,6 @@ jobs:
 
             curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
 
-            SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
-
             git ls-remote https://github.com/${SLUGOWNER}/checker-framework.demos.git &>-
             if [ "$?" -eq 0 ]; then
               sh trigger-travis.sh ${SLUGOWNER} checker-framework.demos $TRAVISTOKEN
