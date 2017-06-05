@@ -123,7 +123,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         backingSet.add("short");
         backingSet.add("java.lang.Short");
         backingSet.add("byte[]");
-        // VD: why not char[]
         coveredClassStrings = Collections.unmodifiableSet(backingSet);
     }
 
@@ -397,18 +396,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                     anno, "value", String.class, false);
 
                     if (values.size() > MAX_VALUES) {
-
-                        List<Integer> arrayLengths = getLengthsForStringValues(values);
-
-                        if (arrayLengths.size() > MAX_VALUES) {
-                            long annoMinVal = Collections.min(arrayLengths);
-                            long annoMaxVal = Collections.max(arrayLengths);
-                            atm.replaceAnnotation(
-                                    createArrayLenRangeAnnotation(
-                                            new Range(annoMinVal, annoMaxVal)));
-                        } else {
-                            atm.replaceAnnotation(createArrayLenAnnotation(arrayLengths));
-                        }
+                        List<Integer> lengths = getLengthsForStringValues(values);
+                        atm.replaceAnnotation(createArrayLenAnnotation(lengths));
                     }
 
                 } else {
@@ -539,9 +528,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     newValues.addAll(a1Values);
                     newValues.addAll(a2Values);
                     return createArrayLenAnnotation(newValues);
+                } else if (AnnotationUtils.areSameByClass(a1, StringVal.class)) {
+                    List<String> a1Values =
+                            AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
+                    List<String> a2Values =
+                            AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+                    List<String> newValues = new ArrayList<>();
+                    newValues.addAll(a1Values);
+                    newValues.addAll(a2Values);
+                    return createStringAnnotation(newValues);
                 } else {
-                    // VD: in case of StringVal, call createStringValAnnotation, which will
-                    // create ArrayLen if needed
                     List<Object> a1Values =
                             AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
                     List<Object> a2Values =
@@ -564,13 +560,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
 
-            //VD: Special handling for lub of StringVal and ArrayLen
-
-            // Special handling for dealing with the lub of an ArrayLenRange and an ArrayLen.
+            // Special handling for dealing with the lub of an ArrayLenRange and an ArrayLen
+            // or a StringVal with one of them.
 
             AnnotationMirror arrayLenAnno = null;
             AnnotationMirror arrayLenRangeAnno = null;
-            // VD: AnnotationMirror stringValAnno = null;
+            AnnotationMirror stringValAnno = null;
 
             if (AnnotationUtils.areSameByClass(a1, ArrayLen.class)) {
                 arrayLenAnno = a1;
@@ -582,10 +577,20 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (AnnotationUtils.areSameByClass(a2, ArrayLenRange.class)) {
                 arrayLenRangeAnno = a2;
             }
+            if (AnnotationUtils.areSameByClass(a1, StringVal.class)) {
+                stringValAnno = a1;
+            } else if (AnnotationUtils.areSameByClass(a2, StringVal.class)) {
+                stringValAnno = a2;
+            }
 
             if (arrayLenAnno != null && arrayLenRangeAnno != null) {
                 return leastUpperBound(
                         arrayLenRangeAnno, convertArrayLenToArrayLenRange(arrayLenAnno));
+            } else if (stringValAnno != null && arrayLenAnno != null) {
+                return leastUpperBound(arrayLenAnno, convertStringValToArrayLen(stringValAnno));
+            } else if (stringValAnno != null && arrayLenRangeAnno != null) {
+                return leastUpperBound(
+                        arrayLenRangeAnno, convertStringValToArrayLenRange(stringValAnno));
             }
 
             // Annotations are both in the same hierarchy, but they are not the same.
@@ -727,8 +732,27 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<Long> superValues = getArrayLenOrIntValue(superAnno);
                 List<Long> subValues = ValueCheckerUtils.getValuesFromRange(subRange, Long.class);
                 return superValues.containsAll(subValues);
-            } else {
+            } else if (AnnotationUtils.areSameByClass(superAnno, StringVal.class)
+                    && (AnnotationUtils.areSameByClass(subAnno, ArrayLen.class)
+                            || AnnotationUtils.areSameByClass(subAnno, ArrayLenRange.class))) {
+
+                List<String> superValues =
+                        AnnotationUtils.getElementValueArray(
+                                superAnno, "value", String.class, true);
+                return superValues.contains("") && getMaxLenValue(subAnno) == 0;
+            } else if (AnnotationUtils.areSameByClass(superAnno, ArrayLen.class)
+                    && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
+
+                // List<String> subValues =
+                //     AnnotationUtils.getElementValueArray(subAnno, "value", Integer.class, true);
                 //VD: subtyping of StringVal and arrayLenRange (only one direction)
+                //TODO: check and comment why it is correct
+                return isSubtype(convertStringValToArrayLen(subAnno), superAnno);
+            } else if (AnnotationUtils.areSameByClass(superAnno, ArrayLenRange.class)
+                    && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
+                //VD: subtyping of StringVal and arrayLenRange (only one direction)
+                return isSubtype(convertStringValToArrayLenRange(subAnno), superAnno);
+            } else {
                 return false;
             }
         }
@@ -921,7 +945,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /** Convert a byte array to a String. Return null if unable to convert. */
         private String getByteArrayStringVal(List<? extends ExpressionTree> initializers) {
-            //VD: warning: platform dependent
             // True iff every element of the array is a literal.
             boolean allLiterals = true;
             byte[] bytes = new byte[initializers.size()];
@@ -1063,10 +1086,18 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return getDeclAnnotation(method, StaticallyExecutable.class) != null;
         }
 
+        private boolean isStringLengthInvocation(ExpressionTree tree) {
+            ExecutableElement lengthMethod =
+                    TreeUtils.getMethod("java.lang.String", "length", 0, processingEnv);
+
+            return TreeUtils.isMethodInvocation(tree, lengthMethod, processingEnv);
+        }
+
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
             if (handledByValueChecker(type)
                     && methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree))) {
+
                 // Get argument values
                 List<? extends ExpressionTree> arguments = tree.getArguments();
                 ArrayList<List<?>> argValues;
@@ -1085,31 +1116,38 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     argValues = null;
                 }
 
-                // Get receiver values
-                AnnotatedTypeMirror receiver = getReceiverType(tree);
-                List<?> receiverValues;
-
-                if (receiver != null && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
-                    receiverValues = getValues(receiver, receiver.getUnderlyingType());
-                    if (receiverValues == null || receiverValues.isEmpty()) {
-                        // Values aren't known, so don't try to evaluate the method.
-                        return null;
+                if (isStringLengthInvocation(tree)) {
+                    AnnotatedTypeMirror receiverType = getReceiverType(tree);
+                    AnnotationMirror resultAnno = createArrayLengthResultAnnotation(receiverType);
+                    if (resultAnno != null) {
+                        type.replaceAnnotation(resultAnno);
                     }
                 } else {
-                    receiverValues = null;
-                }
+                    // Get receiver values
+                    AnnotatedTypeMirror receiver = getReceiverType(tree);
+                    List<?> receiverValues;
 
-                // Evaluate method
-                List<?> returnValues =
-                        evaluator.evaluateMethodCall(argValues, receiverValues, tree);
-                if (returnValues == null) {
-                    return null;
-                }
-                AnnotationMirror returnType =
-                        createResultingAnnotation(type.getUnderlyingType(), returnValues);
-                type.replaceAnnotation(returnType);
+                    if (receiver != null
+                            && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
+                        receiverValues = getValues(receiver, receiver.getUnderlyingType());
+                        if (receiverValues == null || receiverValues.isEmpty()) {
+                            // Values aren't known, so don't try to evaluate the method.
+                            return null;
+                        }
+                    } else {
+                        receiverValues = null;
+                    }
 
-                //VD: string length, or use an annotation?
+                    // Evaluate method
+                    List<?> returnValues =
+                            evaluator.evaluateMethodCall(argValues, receiverValues, tree);
+                    if (returnValues == null) {
+                        return null;
+                    }
+                    AnnotationMirror returnType =
+                            createResultingAnnotation(type.getUnderlyingType(), returnValues);
+                    type.replaceAnnotation(returnType);
+                }
             }
 
             return null;
@@ -1186,24 +1224,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     // The field access is to the length field, as in "someArrayExpression.length"
                     AnnotatedTypeMirror receiverType = getAnnotatedType(tree.getExpression());
                     if (receiverType.getKind() == TypeKind.ARRAY) {
-                        AnnotationMirror arrayAnno = receiverType.getAnnotation(ArrayLen.class);
-                        if (arrayAnno != null) {
-                            // array.length, where array : @ArrayLen(x)
-                            List<Integer> lengths =
-                                    ValueAnnotatedTypeFactory.getArrayLength(arrayAnno);
-                            type.replaceAnnotation(
-                                    createNumberAnnotationMirror(new ArrayList<Number>(lengths)));
-                            return null;
-                        }
-                        // Check for an ArrayLenRange annotation.
-                        arrayAnno = receiverType.getAnnotation(ArrayLenRange.class);
-                        if (arrayAnno != null) {
-                            // array.length, where array : @ArrayLenRange(x)
-                            Range range = getRange(arrayAnno);
-                            type.replaceAnnotation(createIntRangeAnnotation(range));
-                            return null;
-                        } else {
-                            type.replaceAnnotation(createIntRangeAnnotation(0, Integer.MAX_VALUE));
+
+                        AnnotationMirror resultAnno =
+                                createArrayLengthResultAnnotation(receiverType);
+                        if (resultAnno != null) {
+                            type.replaceAnnotation(resultAnno);
                         }
                     }
                 }
@@ -1214,6 +1239,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /** Returns true iff the given type is in the domain of the Constant Value Checker. */
         private boolean handledByValueChecker(AnnotatedTypeMirror type) {
             return coveredClassStrings.contains(type.getUnderlyingType().toString());
+        }
+    }
+
+    AnnotationMirror createArrayLengthResultAnnotation(AnnotatedTypeMirror receiverType) {
+        AnnotationMirror arrayAnno = receiverType.getAnnotation(ArrayLen.class);
+        if (arrayAnno != null) {
+            // array.length, where array : @ArrayLen(x)
+            List<Integer> lengths = ValueAnnotatedTypeFactory.getArrayLength(arrayAnno);
+            return createNumberAnnotationMirror(new ArrayList<Number>(lengths));
+        }
+        // Check for an ArrayLenRange annotation.
+        arrayAnno = receiverType.getAnnotation(ArrayLenRange.class);
+        if (arrayAnno != null) {
+            // array.length, where array : @ArrayLenRange(x)
+            Range range = getRange(arrayAnno);
+            return createIntRangeAnnotation(range);
+        } else {
+            return createIntRangeAnnotation(0, Integer.MAX_VALUE);
         }
     }
 
@@ -1255,7 +1298,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             return createStringAnnotation(stringVals);
         } else if (ValueCheckerUtils.getClassFromType(resultType) == byte[].class) {
-            // VD: why not char[]?
             List<String> stringVals = new ArrayList<>(values.size());
             for (Object o : values) {
                 if (o instanceof byte[]) {
@@ -1398,7 +1440,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Returns a {@link StringVal} annotation using the values. If {@code values} is null, then
      * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
-     * sorted and duplicates are removed before the annotation is created.
+     * sorted and duplicates are removed before the annotation is created. If values is larger than
+     * the max number of values allowed (10 by default), then an {@link ArrayLen} or an {@link
+     * ArrayLenRange} annotation is returned.
      *
      * @param values list of strings; duplicates are allowed and the values may be in any order
      * @return a {@link StringVal} annotation using the values
@@ -1412,8 +1456,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
-            //VD: array len or array len range.
-            return UNKNOWNVAL;
+            // Too many strings are replaced by their lengths
+            List<Integer> lengths = getLengthsForStringValues(values);
+            return createArrayLenAnnotation(lengths);
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, StringVal.class);
             builder.setValue("value", values);
@@ -1604,6 +1649,21 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return createArrayLenRangeAnnotation(Collections.min(values), Collections.max(values));
     }
 
+    /** Converts an {@code @StringVal} annotation to an {@code @ArrayLenRange} annotation. */
+    public AnnotationMirror convertStringValToArrayLenRange(AnnotationMirror stringValAnno) {
+        List<String> values =
+                AnnotationUtils.getElementValueArray(stringValAnno, "value", String.class, true);
+        List<Integer> lengths = getLengthsForStringValues(values);
+        return createArrayLenRangeAnnotation(Collections.min(lengths), Collections.max(lengths));
+    }
+
+    /** Converts an {@code @StringVal} annotation to an {@code @ArrayLen} annotation. */
+    public AnnotationMirror convertStringValToArrayLen(AnnotationMirror stringValAnno) {
+        List<String> values =
+                AnnotationUtils.getElementValueArray(stringValAnno, "value", String.class, true);
+        return createArrayLenAnnotation(getLengthsForStringValues(values));
+    }
+
     /** Converts an {@code @IntVal} annotation to an {@code @IntRange} annotation. */
     public AnnotationMirror convertIntValToIntRange(AnnotationMirror intValAnno) {
         List<Long> intValues = getIntValues(intValAnno);
@@ -1750,6 +1810,26 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
+     * Used to find the maximum length of an array. Returns null if there is no minimum length
+     * known, or if the passed annotation is null.
+     */
+    public Integer getMaxLenValue(AnnotationMirror annotation) {
+        if (annotation == null) {
+            return null;
+        }
+        if (AnnotationUtils.areSameByClass(annotation, ArrayLenRange.class)) {
+            return Long.valueOf(getRange(annotation).to).intValue();
+        } else if (AnnotationUtils.areSameByClass(annotation, ArrayLen.class)) {
+            return Collections.max(getArrayLength(annotation));
+        } else if (AnnotationUtils.areSameByClass(annotation, StringVal.class)) {
+            //VD: optimize
+            return Collections.max(getArrayLength(convertStringValToArrayLen(annotation)));
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Used to find the minimum length of an array, which is useful for array bounds checking.
      * Returns null if there is no minimum length known, or if the passed annotation is null.
      *
@@ -1761,13 +1841,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (annotation == null) {
             return null;
         }
-        // VD: minimum length for StringVal annotation
         if (AnnotationUtils.areSameByClass(annotation, MinLen.class)) {
             return AnnotationUtils.getElementValue(annotation, "value", Integer.class, true);
         } else if (AnnotationUtils.areSameByClass(annotation, ArrayLenRange.class)) {
             return Long.valueOf(getRange(annotation).from).intValue();
         } else if (AnnotationUtils.areSameByClass(annotation, ArrayLen.class)) {
             return Collections.min(getArrayLength(annotation));
+        } else if (AnnotationUtils.areSameByClass(annotation, StringVal.class)) {
+            //VD: optimize
+            return Collections.min(getArrayLength(convertStringValToArrayLen(annotation)));
         } else {
             return null;
         }
@@ -1810,7 +1892,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         getAnnotationFromJavaExpressionString(
                                 arrayExpression, tree, currentPath, ArrayLen.class);
             }
-            // VD: Try the StringVal annotation.
+            if (lengthAnno == null) {
+                lengthAnno =
+                        getAnnotationFromJavaExpressionString(
+                                arrayExpression, tree, currentPath, StringVal.class);
+            }
         } catch (FlowExpressionParseException e) {
             // ignore parse errors
         }

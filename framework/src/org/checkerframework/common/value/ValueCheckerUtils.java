@@ -94,7 +94,6 @@ public class ValueCheckerUtils {
     public static List<?> getValuesCastedToType(AnnotationMirror anno, TypeMirror castTo) {
         Class<?> castType = ValueCheckerUtils.getClassFromType(castTo);
         List<?> values = null;
-        // VD: how do the casts work? should not cast String to byte[]
         if (AnnotationUtils.areSameByClass(anno, DoubleVal.class)) {
             values = convertDoubleVal(anno, castType, castTo);
         } else if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {

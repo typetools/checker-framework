@@ -357,13 +357,13 @@ public class ValueTransfer extends CFTransfer {
             TransferResult<CFValue, CFStore> result) {
         //VD: array length and array length range
 
+        AnnotationMirror resultAnno;
+
         List<String> lefts = getStringValues(leftOperand, p);
         List<String> rights = getStringValues(rightOperand, p);
-        List<String> concat;
-        if (lefts == null || rights == null) {
-            concat = null;
-        } else {
-            concat = new ArrayList<>();
+
+        if (lefts != null && rights != null) {
+            List<String> concat = new ArrayList<>();
             if (lefts.isEmpty()) {
                 lefts = Collections.singletonList("null");
             }
@@ -375,10 +375,14 @@ public class ValueTransfer extends CFTransfer {
                     concat.add(left + right);
                 }
             }
+            resultAnno = atypefactory.createStringAnnotation(concat);
+        } else {
+            //VD: we do not have values, try at least lengths
+
+            resultAnno = atypefactory.UNKNOWNVAL;
         }
-        AnnotationMirror stringVal = atypefactory.createStringAnnotation(concat);
         TypeMirror underlyingType = result.getResultValue().getUnderlyingType();
-        CFValue newResultValue = analysis.createSingleAnnotationValue(stringVal, underlyingType);
+        CFValue newResultValue = analysis.createSingleAnnotationValue(resultAnno, underlyingType);
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
     }
 
