@@ -29,13 +29,15 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
     // the left hand side of an assignment/pseudo-assignment, so that that variable
     // can later be included in the SameLen type. This pattern is a bit uncomfortable,
     // but there is not a clear other way to save this information.
-    private String lastVar = "";
+    private String lastVar = null;
 
     protected void commonAssignmentCheck(
             Tree varTree, ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
         if (varTree.getKind() == Tree.Kind.VARIABLE) {
             VariableTree vTree = (VariableTree) varTree;
             lastVar = vTree.getName().toString();
+        } else {
+            lastVar = null;
         }
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
     }
@@ -65,7 +67,9 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
             if (rec != null && SameLenAnnotatedTypeFactory.isReceiverToStringParsable(rec)) {
                 List<String> names = new ArrayList<>();
                 names.add(rec.toString());
-                names.add(lastVar);
+                if (lastVar != null) {
+                    names.add(lastVar);
+                }
                 AnnotationMirror newSameLen = atypeFactory.getCombinedSameLen(arraysInAnno, names);
                 valueType.replaceAnnotation(newSameLen);
             }
