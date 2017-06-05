@@ -88,9 +88,8 @@ public class Casts {
             //:: error: (assignment.type.incompatible)
             t = (@Nullable T) null;
             nt = (@Nullable T) null;
-            //:: warning: (cast.unsafe)
+            //:: error: (assignment.type.incompatible))
             t = (T) null;
-            //:: warning: (cast.unsafe)
             nt = (T) null;
         }
     }
