@@ -122,7 +122,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         backingSet.add("java.lang.Long");
         backingSet.add("short");
         backingSet.add("java.lang.Short");
-        backingSet.add("byte[]");
         coveredClassStrings = Collections.unmodifiableSet(backingSet);
     }
 
@@ -748,20 +747,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else {
                 // Initializer used
                 handleInitializers(initializers, (AnnotatedArrayType) type);
-
-                AnnotationMirror newQual;
-                Class<?> clazz = ValueCheckerUtils.getClassFromType(type.getUnderlyingType());
-                String stringVal = null;
-                if (clazz.equals(byte[].class)) {
-                    stringVal = getByteArrayStringVal(initializers);
-                } else if (clazz.equals(char[].class)) {
-                    stringVal = getCharArrayStringVal(initializers);
-                }
-
-                if (stringVal != null) {
-                    newQual = createStringAnnotation(Collections.singletonList(stringVal));
-                    type.replaceAnnotation(newQual);
-                }
             }
 
             return null;
@@ -872,52 +857,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 componentType = ((AnnotatedArrayType) componentType).getComponentType();
                 i++;
             }
-        }
-
-        /** Convert a byte array to a String. Return null if unable to convert. */
-        private String getByteArrayStringVal(List<? extends ExpressionTree> initializers) {
-            // True iff every element of the array is a literal.
-            boolean allLiterals = true;
-            byte[] bytes = new byte[initializers.size()];
-            for (int i = 0; i < initializers.size(); i++) {
-                ExpressionTree e = initializers.get(i);
-                if (e.getKind() == Tree.Kind.INT_LITERAL) {
-                    bytes[i] = (byte) (((Integer) ((LiteralTree) e).getValue()).intValue());
-                } else if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
-                    bytes[i] = (byte) (((Character) ((LiteralTree) e).getValue()).charValue());
-                } else {
-                    allLiterals = false;
-                }
-            }
-            if (allLiterals) {
-                return new String(bytes);
-            }
-            // If any part of the initializer isn't known,
-            // the stringval isn't known.
-            return null;
-        }
-
-        /** Convert a char array to a String. Return null if unable to convert. */
-        private String getCharArrayStringVal(List<? extends ExpressionTree> initializers) {
-            boolean allLiterals = true;
-            StringBuilder stringVal = new StringBuilder();
-            for (ExpressionTree e : initializers) {
-                if (e.getKind() == Tree.Kind.INT_LITERAL) {
-                    char charVal = (char) (((Integer) ((LiteralTree) e).getValue()).intValue());
-                    stringVal.append(charVal);
-                } else if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
-                    char charVal = (((Character) ((LiteralTree) e).getValue()));
-                    stringVal.append(charVal);
-                } else {
-                    allLiterals = false;
-                }
-            }
-            if (allLiterals) {
-                return stringVal.toString();
-            }
-            // If any part of the initializer isn't known,
-            // the stringval isn't known.
-            return null;
         }
 
         @Override
@@ -1069,14 +1008,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitNewClass(NewClassTree tree, AnnotatedTypeMirror type) {
-            boolean wrapperClass =
-                    TypesUtils.isBoxedPrimitive(type.getUnderlyingType())
-                            || TypesUtils.isDeclaredOfName(
-                                    type.getUnderlyingType(), "java.lang.String");
-
-            if (wrapperClass
-                    || (handledByValueChecker(type)
-                            && methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree)))) {
+            if (handledByValueChecker(type)
+                    && methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree))) {
                 // get argument values
                 List<? extends ExpressionTree> arguments = tree.getArguments();
                 ArrayList<List<?>> argValues;
@@ -1204,16 +1137,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<String> stringVals = new ArrayList<>(values.size());
             for (Object o : values) {
                 stringVals.add((String) o);
-            }
-            return createStringAnnotation(stringVals);
-        } else if (ValueCheckerUtils.getClassFromType(resultType) == byte[].class) {
-            List<String> stringVals = new ArrayList<>(values.size());
-            for (Object o : values) {
-                if (o instanceof byte[]) {
-                    stringVals.add(new String((byte[]) o));
-                } else {
-                    stringVals.add(o.toString());
-                }
             }
             return createStringAnnotation(stringVals);
         }

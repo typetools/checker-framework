@@ -202,20 +202,6 @@ public class ValueCheckerUtils {
     private static List<?> convertStringVal(AnnotationMirror anno, Class<?> newClass) {
         List<String> strings =
                 AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
-
-        if (newClass == byte[].class) {
-            List<byte[]> bytes = new ArrayList<>();
-            for (String s : strings) {
-                bytes.add(s.getBytes());
-            }
-            return bytes;
-        } else if (newClass == char[].class) {
-            List<char[]> chars = new ArrayList<>();
-            for (String s : strings) {
-                chars.add(s.toCharArray());
-            }
-            return chars;
-        }
         return strings;
     }
 

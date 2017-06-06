@@ -1,21 +1,10 @@
 import org.checkerframework.common.value.qual.*;
 
-package android.util;
-
-class Base64{
-    @StaticallyExecutable static byte[] decode(byte[] input, int offet, int len, int flags);
-    @StaticallyExecutable static byte[] decode(byte[] input, int flags);
-    @StaticallyExecutable static byte[] decode(String input, int flags);
-    @StaticallyExecutable static byte[] encode(byte[] input, int flags);
-    @StaticallyExecutable static byte[] encode(byte[] input, int offset, int len, int flags);
-    @StaticallyExecutable static String encodeToString(byte[] input, int offset, int len, int flags);
-    @StaticallyExecutable static String encodeToString(byte[] input, int flags);
-}
-
-
 package java.lang;
 
 class Boolean{
+    @StaticallyExecutable Boolean(boolean value);
+    @StaticallyExecutable Boolean(String s);
     @StaticallyExecutable boolean booleanValue();
     @StaticallyExecutable static boolean getBoolean(String name);
     @StaticallyExecutable static boolean parseBoolean(String s);
@@ -26,6 +15,9 @@ class Boolean{
 }
 
 class Byte{
+    @StaticallyExecutable Byte(byte value);
+    @StaticallyExecutable Byte(String s);
+
     @StaticallyExecutable @PolyValue byte byteValue() @PolyValue;
     @StaticallyExecutable static Byte decode(String nm);
     @StaticallyExecutable @PolyValue double doubleValue() @PolyValue;
@@ -43,15 +35,17 @@ class Byte{
 }
 
 class Character{
+    @StaticallyExecutable Character(char value);
+
     @StaticallyExecutable static int charCount(int codePoint);
     @StaticallyExecutable char charValue();
-    @StaticallyExecutable static int codePointAt(char[] a, int index);
-    @StaticallyExecutable static int codePointAt(char[] a, int index, int limit);
-    @StaticallyExecutable static int codePointAt(CharSequence seq, int index);
-    @StaticallyExecutable static int codePointBefore(char[] a, int index);
-    @StaticallyExecutable static int codePointBefore(char[] a, int index, int start);
+    static int codePointAt(char[] a, int index);
+    static int codePointAt(char[] a, int index, int limit);
+    static int codePointAt(CharSequence seq, int index);
+    static int codePointBefore(char[] a, int index);
+    static int codePointBefore(char[] a, int index, int start);
     @StaticallyExecutable static int codePointBefore(CharSequence seq, int index);
-    @StaticallyExecutable static int codePointCount(char[] a, int offset, int count);
+    static int codePointCount(char[] a, int offset, int count);
     @StaticallyExecutable static int codePointCount(CharSequence seq, int beginIndex, int endIndex);
     @StaticallyExecutable static int digit(char ch, int radix);
     @StaticallyExecutable static int digit(int codePoint, int radix);
@@ -102,11 +96,11 @@ class Character{
     @StaticallyExecutable static boolean isValidCodePoint(int codePoint);
     @StaticallyExecutable static boolean isWhitespace(char ch);
     @StaticallyExecutable static boolean isWhitespace(int codePoint);
-    @StaticallyExecutable static int offsetByCodePoints(char[] a, int start, int count, int index, int codePointOffset);
+    static int offsetByCodePoints(char[] a, int start, int count, int index, int codePointOffset);
     @StaticallyExecutable static int offsetByCodePoints(CharSequence seq, int index, int codePointOffset);
     @StaticallyExecutable static char reverseBytes(char ch);
-    @StaticallyExecutable static char[] toChars(int codePoint);
-    @StaticallyExecutable static int toChars(int codePoint, char[] dst, int dstIndex);
+    static char[] toChars(int codePoint);
+    static int toChars(int codePoint, char[] dst, int dstIndex);
     @StaticallyExecutable static int toCodePoint(char high, char low);
     @StaticallyExecutable static char toLowerCase(char ch);
     @StaticallyExecutable static int toLowerCase(int codePoint);
@@ -120,6 +114,9 @@ class Character{
 }
 
 class Double{
+    @StaticallyExecutable Double(double value);
+    @StaticallyExecutable Double(String s);
+
     @StaticallyExecutable @PolyValue byte byteValue() @PolyValue;
     @StaticallyExecutable static int compare(double d1, double d2);
     @StaticallyExecutable static long doubleToLongBits(double value);
@@ -142,6 +139,10 @@ class Double{
     @StaticallyExecutable static Double valueOf(String s);
 }
 class Float{
+    @StaticallyExecutable Float(double value);
+    @StaticallyExecutable Float(float value);
+    @StaticallyExecutable Float(String s);
+
     @StaticallyExecutable @PolyValue byte byteValue() @PolyValue;
     @StaticallyExecutable static int compare(float f1, float f2);
     @StaticallyExecutable @PolyValue double doubleValue() @PolyValue;
@@ -165,6 +166,9 @@ class Float{
 }
 
 class Integer{
+    @StaticallyExecutable Integer(int value);
+    @StaticallyExecutable Integer(String s);
+
     @StaticallyExecutable static int bitCount(int i);
     @StaticallyExecutable @PolyValue byte byteValue() @PolyValue;
     @StaticallyExecutable static Integer decode(String nm);
@@ -199,6 +203,9 @@ class Integer{
 }
 
 class Long{
+    @StaticallyExecutable Long(long value);
+    @StaticallyExecutable Long(String s);
+
     @StaticallyExecutable static int bitCount(long i);
     @StaticallyExecutable @PolyValue byte byteValue() @PolyValue;
     @StaticallyExecutable static Long decode(String nm);
@@ -233,6 +240,9 @@ class Long{
 }
 
 class Short{
+    @StaticallyExecutable Short(short value);
+    @StaticallyExecutable Short(String s);
+
     @StaticallyExecutable @PolyValue byte byteValue() @PolyValue;
     @StaticallyExecutable static Short decode(String nm);
     @StaticallyExecutable @PolyValue double doubleValue() @PolyValue;
@@ -251,6 +261,11 @@ class Short{
 }
 
 class String{
+    @StaticallyExecutable String();
+    @StaticallyExecutable String(String original);
+    @StaticallyExecutable String(StringBuffer buffer);
+    @StaticallyExecutable String(StringBuilder builder);
+
     @StaticallyExecutable char charAt(int index);
     @StaticallyExecutable int codePointAt(int index);
     @StaticallyExecutable int codePointBefore(int index);
@@ -261,17 +276,17 @@ class String{
     @StaticallyExecutable boolean contains(CharSequence s);
     @StaticallyExecutable boolean contentEquals(CharSequence cs);
     @StaticallyExecutable boolean contentEquals(StringBuffer sb);
-    @StaticallyExecutable static String copyValueOf(char[] data);
-    @StaticallyExecutable static String copyValueOf(char[] data, int offset, int count);
+    static String copyValueOf(char[] data);
+    static String copyValueOf(char[] data, int offset, int count);
     @StaticallyExecutable boolean endsWith(String suffix);
     @StaticallyExecutable boolean equalsIgnoreCase(String anotherString);
     @StaticallyExecutable static String format(Locale l, String format, Object... args);
     @StaticallyExecutable static String format(String format, Object... args);
-    @StaticallyExecutable byte[] getBytes();
-    @StaticallyExecutable byte[] getBytes(Charset charset);
-    @StaticallyExecutable void getBytes(int srcBegin, int srcEnd, byte[] dst, int dstBegin);
-    @StaticallyExecutable byte[] getBytes(String charsetName);
-    @StaticallyExecutable void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin);
+    byte[] getBytes();
+    byte[] getBytes(Charset charset);
+    void getBytes(int srcBegin, int srcEnd, byte[] dst, int dstBegin);
+    byte[] getBytes(String charsetName);
+    void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin);
     @StaticallyExecutable int indexOf(int ch);
     @StaticallyExecutable int indexOf(int ch, int fromIndex);
     @StaticallyExecutable int indexOf(String str);
@@ -291,14 +306,14 @@ class String{
     @StaticallyExecutable String replace(CharSequence target, CharSequence replacement);
     @StaticallyExecutable String replaceAll(String regex, String replacement);
     @StaticallyExecutable String replaceFirst(String regex, String replacement);
-    @StaticallyExecutable String @MinLen(1) [] split(String regex);
-    @StaticallyExecutable String @MinLen(1) [] split(String regex, int limit);
+    String @MinLen(1) [] split(String regex);
+    String @MinLen(1) [] split(String regex, int limit);
     @StaticallyExecutable boolean  startsWith(String prefix);
     @StaticallyExecutable boolean  startsWith(String prefix, int toffset);
     @StaticallyExecutable CharSequence subSequence(int beginIndex, int endIndex);
     @StaticallyExecutable String substring(int beginIndex);
     @StaticallyExecutable String substring(int beginIndex, int endIndex);
-    @StaticallyExecutable char[] toCharArray();
+    char[] toCharArray();
     @StaticallyExecutable String toLowerCase();
     @StaticallyExecutable String toLowerCase(Locale locale);
     @StaticallyExecutable String toString();
@@ -307,8 +322,8 @@ class String{
     @StaticallyExecutable String trim();
     @StaticallyExecutable static String valueOf(boolean b);
     @StaticallyExecutable static String valueOf(char c);
-    @StaticallyExecutable static String valueOf(char[] data);
-    @StaticallyExecutable static String valueOf(char[] data, int offset, int count);
+    static String valueOf(char[] data);
+    static String valueOf(char[] data, int offset, int count);
     @StaticallyExecutable static String valueOf(double d);
     @StaticallyExecutable static String valueOf(float f);
     @StaticallyExecutable static String valueOf(int i);
