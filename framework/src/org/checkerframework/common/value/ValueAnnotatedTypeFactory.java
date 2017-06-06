@@ -1255,9 +1255,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // array.length, where array : @ArrayLenRange(x)
             Range range = getRange(arrayAnno);
             return createIntRangeAnnotation(range);
-        } else {
-            return createIntRangeAnnotation(0, Integer.MAX_VALUE);
         }
+
+        arrayAnno = receiverType.getAnnotation(StringVal.class);
+        if (arrayAnno != null) {
+            List<String> strings = ValueAnnotatedTypeFactory.getStringValues(arrayAnno);
+            List<Integer> lengths = getLengthsForStringValues(strings);
+            return createNumberAnnotationMirror(new ArrayList<Number>(lengths));
+        }
+
+        return createIntRangeAnnotation(0, Integer.MAX_VALUE);
     }
 
     /**
@@ -1651,16 +1658,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Converts an {@code @StringVal} annotation to an {@code @ArrayLenRange} annotation. */
     public AnnotationMirror convertStringValToArrayLenRange(AnnotationMirror stringValAnno) {
-        List<String> values =
-                AnnotationUtils.getElementValueArray(stringValAnno, "value", String.class, true);
+        List<String> values = getStringValues(stringValAnno);
         List<Integer> lengths = getLengthsForStringValues(values);
         return createArrayLenRangeAnnotation(Collections.min(lengths), Collections.max(lengths));
     }
 
     /** Converts an {@code @StringVal} annotation to an {@code @ArrayLen} annotation. */
     public AnnotationMirror convertStringValToArrayLen(AnnotationMirror stringValAnno) {
-        List<String> values =
-                AnnotationUtils.getElementValueArray(stringValAnno, "value", String.class, true);
+        List<String> values = getStringValues(stringValAnno);
         return createArrayLenAnnotation(getLengthsForStringValues(values));
     }
 
@@ -1789,6 +1794,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         return new ArrayList<>(boolSet);
+    }
+
+    /**
+     * Returns the set of possible values as a sorted list with no duplicate values. Returns the
+     * empty list if no values are possible (for dead code). Returns null if any value is possible
+     * -- that is, if no estimate can be made -- and this includes when there is no constant-value
+     * annotation so the argument is null.
+     *
+     * @param stringAnno a {@code @StringVal} annotation, or null
+     */
+    public static List<String> getStringValues(AnnotationMirror stringAnno) {
+        if (stringAnno == null) {
+            return null;
+        }
+        List<String> list =
+                AnnotationUtils.getElementValueArray(stringAnno, "value", String.class, true);
+        list = ValueCheckerUtils.removeDuplicates(list);
+        return list;
     }
 
     public boolean isIntRange(Set<AnnotationMirror> anmSet) {
