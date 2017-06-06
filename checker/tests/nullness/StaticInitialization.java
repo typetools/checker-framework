@@ -5,5 +5,6 @@ public class StaticInitialization {
     @SuppressWarnings({"nullness", "initialization.fields.uninitialized"})
     public static Object dontWarnAboutThisField;
 
-    static {}
+    static {
+    }
 }

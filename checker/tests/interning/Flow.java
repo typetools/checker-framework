@@ -1,5 +1,3 @@
-import org.checkerframework.checker.interning.qual.*;
-
 /*
  * A test inspired by some problem in Daikon.
  */

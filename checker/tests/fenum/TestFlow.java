@@ -1,4 +1,4 @@
-import org.checkerframework.checker.fenum.qual.*;
+import org.checkerframework.checker.fenum.qual.Fenum;
 
 @SuppressWarnings("fenum:assignment.type.incompatible")
 public class TestFlow {

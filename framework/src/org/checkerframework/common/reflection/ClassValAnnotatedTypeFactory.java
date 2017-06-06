@@ -96,9 +96,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ClassValQualifierHierarchy(factory);
     }
 
-    /**
-     * The qualifier hierarchy for the ClassVal type system
-     */
+    /** The qualifier hierarchy for the ClassVal type system */
     protected class ClassValQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
         public ClassValQualifierHierarchy(MultiGraphFactory f) {
@@ -168,29 +166,29 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /*
          * Computes subtyping as per the subtyping in the qualifier hierarchy
          * structure unless both annotations are ClassVal. In this case, rhs is
-         * a subtype of lhs iff lhs contains at least every element of rhs
+         * a subtype of lhs iff lhs contains at least every element of rhs.
          */
         @Override
-        public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
-            if (AnnotationUtils.areSame(sub, sup)
-                    || AnnotationUtils.areSameByClass(sup, UnknownClass.class)
-                    || AnnotationUtils.areSameByClass(sub, ClassValBottom.class)) {
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSame(subAnno, superAnno)
+                    || AnnotationUtils.areSameByClass(superAnno, UnknownClass.class)
+                    || AnnotationUtils.areSameByClass(subAnno, ClassValBottom.class)) {
                 return true;
             }
-            if (AnnotationUtils.areSameByClass(sub, UnknownClass.class)
-                    || AnnotationUtils.areSameByClass(sup, ClassValBottom.class)) {
+            if (AnnotationUtils.areSameByClass(subAnno, UnknownClass.class)
+                    || AnnotationUtils.areSameByClass(superAnno, ClassValBottom.class)) {
                 return false;
             }
-            if (AnnotationUtils.areSameByClass(sup, ClassVal.class)
-                    && AnnotationUtils.areSameByClass(sub, ClassBound.class)) {
+            if (AnnotationUtils.areSameByClass(superAnno, ClassVal.class)
+                    && AnnotationUtils.areSameByClass(subAnno, ClassBound.class)) {
                 return false;
             }
 
             // if super: ClassVal && sub is ClassVal
             // if super: ClassBound && (sub is ClassBound or ClassVal)
 
-            List<String> supValues = getClassNamesFromAnnotation(sup);
-            List<String> subValues = getClassNamesFromAnnotation(sub);
+            List<String> supValues = getClassNamesFromAnnotation(superAnno);
+            List<String> subValues = getClassNamesFromAnnotation(subAnno);
 
             return supValues.containsAll(subValues);
         }
@@ -203,9 +201,12 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Implements these type inference rules:
+     *
+     * <pre>
      * C.class:             @ClassVal(fully qualified name of C)
      * Class.forName(name): @ClassVal("name")
      * exp.getClass():      @ClassBound(fully qualified classname of exp)
+     * </pre>
      */
     protected class ClassValTreeAnnotator extends TreeAnnotator {
 
@@ -274,8 +275,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Return String representation of class name. This will not return the
-         * correct name for anonymous classes.
+         * Return String representation of class name. This will not return the correct name for
+         * anonymous classes.
          */
         private String getClassNameFromType(Type classType) {
             switch (classType.getKind()) {

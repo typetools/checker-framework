@@ -1,4 +1,3 @@
-import java.util.Arrays;
 import org.checkerframework.checker.nullness.qual.*;
 
 public class Imports1 {

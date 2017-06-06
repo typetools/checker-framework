@@ -2,7 +2,6 @@ import java.lang.ref.WeakReference;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.List;
-import java.util.Stack;
 import org.checkerframework.checker.regex.qual.*;
 
 class RawTypeTest {

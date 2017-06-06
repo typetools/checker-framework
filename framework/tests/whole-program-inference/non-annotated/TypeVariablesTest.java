@@ -1,4 +1,4 @@
-import tests.wholeprograminference.qual.*;
+import testlib.wholeprograminference.qual.*;
 
 public class TypeVariablesTest<T1 extends /*@Parent*/ Object, T2 extends /*@Parent*/ Object> {
 

@@ -7,11 +7,7 @@ public class I18nFormat {
 
         MessageFormat.format(
                 "{0} {1, number} {2, time} {3, date} {4, choice, 0#zero}",
-                "S",
-                1,
-                new Date(),
-                new Date(),
-                0);
+                "S", 1, new Date(), new Date(), 0);
         MessageFormat.format("{0, number}{1, number}", 1, 2);
         MessageFormat.format("{0, number}{0}", 1);
 

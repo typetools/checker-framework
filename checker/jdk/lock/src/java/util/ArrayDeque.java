@@ -1,9 +1,7 @@
 package java.util;
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+
 import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.checker.nullness.qual.PolyNull;
+
 
 public class ArrayDeque<E extends Object> extends AbstractCollection<E> implements Deque<E>, Cloneable, java.io.Serializable {
   private static final long serialVersionUID = 0;

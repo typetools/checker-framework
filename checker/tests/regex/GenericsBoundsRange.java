@@ -4,9 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.regex.qual.Regex;
 
-/**
- * Designed to test whether or not a bounds range of generics actually works.
- */
+/** Designed to test whether or not a bounds range of generics actually works. */
 public class GenericsBoundsRange<@Regex(3) T extends @Regex(1) String> {
     public T t;
 

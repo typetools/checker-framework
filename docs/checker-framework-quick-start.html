@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Checker Framework quick start guide</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+<h1>Checker Framework quick start guide</h1>
+
+<p>
+This document gives some important information for getting started with
+pluggable type-checking.  More resources are given at the end.
+</p>
+
+<p>
+A pluggable type-checker, or &ldquo;checker&rdquo; for short, prevents certain run-time errors.  For example, it can prove that your code never suffers a
+NullPointerException.  Choose which checker you want to run from the <a href="https://checkerframework.org/manual/#introduction">list
+of checkers</a>.
+</p>
+
+<p>
+To <a href="https://checkerframework.org/manual/#installation">install the Checker Framework</a>, download and unzip
+the Checker Framework distribution:
+<a href="checker-framework-2.1.7.zip"><!-- checker-framework-zip-version -->checker-framework-2.1.7.zip<!-- /checker-framework-zip-version --></a>.<br/>
+Or, the
+<a href="http://eisop.uwaterloo.ca/live/">Checker Framework Live Demo</a>
+webpage lets you try the Checker Framework without installing it.
+</p>
+
+<p>
+To <a href="https://checkerframework.org/manual/#running">run a checker</a>, supply the <code>-processor</code> command-line argument:
+</p>
+
+<pre>
+  $CHECKERFRAMEWORK/bin/checker/javac -processor nullness MyFile1.java MyFile2.java
+</pre>
+
+<p>
+You write annotations in your code.  Then, the checker
+<a href="https://checkerframework.org/manual/#checker-guarantees">verifies
+two facts:</a> (1) the annotations you wrote are correct (they are consistent with your source code), and (2) your program will not suffer certain exceptions or errors at run time.
+</p>
+
+<p>
+Java has two types of annotations:  type annotations and declaration annotations.
+</p>
+
+<ul>
+<li>
+A type annotation, also known as a type qualifier, creates a new type.  The
+qualified type represents a different set of values.  For example, the
+ordinary Java type <code>String</code> includes <code>"hello"</code>,
+<code>""</code>, <code>null</code>, and other values.  The
+<code>@NonNull String</code> type includes <code>"hello"</code> and
+<code>""</code>, but does not include <code>null</code>.
+<br/>
+You write a type annotation right before a use of a type (on the same
+line), <a href="https://checkerframework.org/manual/#writing-annotations">as in</a>:
+<pre>
+  @NonNull String s;
+  List&lt;@Positive Integer&gt; l;
+  class Folder&lt;F extends @Existing File&gt; { ... }
+</pre>
+</li>
+<li>
+A declaration annotation gives information about a method or a variable (as
+opposed to information about the method's return type or the variable's
+type).
+<br/>
+Write a declaration annotation on a different line than the declaration it
+annotates.  For example, to indicate that a method has no side effects:
+
+<pre>
+  @SideEffectFree
+  public String toString() { ... }
+</pre>
+
+</li>
+</ul>
+
+<p>
+For the most part, you only need to write annotations on method signatures and fields.
+Most annotations within method bodies are <a href="https://checkerframework.org/manual/#type-refinement">inferred for you automatically</a>.
+Furthermore, each checker applies certain defaults to further reduce your
+annotation burden; for example, using the
+<a href="https://checkerframework.org/manual/#nullness-checker">Nullness
+  Checker</a>, you do not need to write <code>@NonNull</code>, only
+  <code>@Nullable</code> which appears less often.
+See the manual for more
+<a href="https://checkerframework.org/manual/#tips-about-writing-annotations">tips
+  about writing annotations</a>.
+</p>
+
+<p>
+To learn more, you can read:
+</p>
+<ul>
+  <li><a href="https://checkerframework.org/tutorial/">Checker Framework tutorial</a>
+  </li>
+  <li><a href="https://github.com/glts/safer-spring-petclinic/wiki">Nullness Checker tutorial</a> (external site, setup information is out of date)</li>
+  <li><a href="https://checkerframework.org/manual/#faq">Checker Framework frequently asked questions (FAQs)</a>
+  </li>
+  <li><a href="https://checkerframework.org/manual/">Checker Framework manual</a>
+  </li>
+</ul>
+
+</body>
+</html>

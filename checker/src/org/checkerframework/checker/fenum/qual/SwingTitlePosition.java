@@ -8,8 +8,8 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Justifications for the title text of a
- * {@link javax.swing.border.TitledBorder}.
+ * Justifications for the title text of a {@link javax.swing.border.TitledBorder}.
+ *
  * @see javax.swing.border.TitledBorder#DEFAULT_POSITION
  * @see javax.swing.border.TitledBorder#ABOVE_TOP
  * @see javax.swing.border.TitledBorder#TOP

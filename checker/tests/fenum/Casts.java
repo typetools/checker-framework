@@ -1,4 +1,4 @@
-import org.checkerframework.checker.fenum.qual.*;
+import org.checkerframework.checker.fenum.qual.Fenum;
 
 class Casts {
     @Fenum("A") Object fa;

@@ -1,7 +1,6 @@
-import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.test.*;
-import tests.util.*;
+import testlib.util.*;
 
 class ParamFlowExpr {
 

@@ -7,8 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Compatibility annotation to allow importing both declaration and type
- * annotations.
+ * Compatibility annotation to allow importing both declaration and type annotations.
  *
  * @see org.checkerframework.checker.nullness.qual.MonotonicNonNull
  * @checker_framework.manual #nullness-checker Nullness Checker

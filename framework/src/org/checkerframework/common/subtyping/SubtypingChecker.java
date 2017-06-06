@@ -9,19 +9,14 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 
 /**
- * A checker for type qualifier systems that only checks subtyping
- * relationships.
+ * A checker for type qualifier systems that only checks subtyping relationships.
  *
- * <p>
- *
- * The annotation(s) are specified on the command line, using an annotation
- * processor argument:
+ * <p>The annotation(s) are specified on the command line, using an annotation processor argument:
  *
  * <ul>
- * <li>{@code -Aquals}: specifies the annotations in the qualifier hierarchy
- * (as a comma-separated list of fully-qualified annotation names with no
- * spaces in between).  Only the annotation for one qualified subtype
- * hierarchy can be passed.</li>
+ *   <li>{@code -Aquals}: specifies the annotations in the qualifier hierarchy (as a comma-separated
+ *       list of fully-qualified annotation names with no spaces in between). Only the annotation
+ *       for one qualified subtype hierarchy can be passed.
  * </ul>
  *
  * @checker_framework.manual #subtyping-checker Subtying Checker

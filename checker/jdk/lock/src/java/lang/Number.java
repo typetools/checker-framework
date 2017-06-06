@@ -1,6 +1,5 @@
 package java.lang;
 
-import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.checker.lock.qual.*;
 
 public abstract class Number implements java.io.Serializable {

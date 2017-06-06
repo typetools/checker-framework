@@ -3,9 +3,7 @@
 import static org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory.DATE;
 import static org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory.NUMBER;
 
-import org.checkerframework.checker.i18nformatter.I18nFormatUtil;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormat;
-import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
 
 public class ManualExample {
 
@@ -33,7 +31,7 @@ public class ManualExample {
 
         //:: error: (assignment.type.incompatible)
         f = "{0, number} {1, number}"; // error: NUMBER is stronger (more restrictive) than DATE
-        //:: error: (i18nformat.excess.arguments)
+        //:: error: (i18nformat.excess.arguments) :: error: (assignment.type.incompatible)
         f = "{0} {1} {2}"; // error: too many arguments
     }
 }

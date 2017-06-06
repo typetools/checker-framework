@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
-import tests.util.FlowTestChecker;
+import testlib.util.FlowTestChecker;
 
 /**
  * Tests for the {@code -AsuggestPureMethods} command-line argument.

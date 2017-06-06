@@ -1,7 +1,5 @@
 package java.util.regex;
 
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.lock.qual.*;
 
 public final class Matcher implements MatchResult {

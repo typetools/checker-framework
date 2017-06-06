@@ -1,6 +1,5 @@
 package org.checkerframework.framework.util.typeinference.solver;
 
-import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -10,43 +9,42 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.typeinference.constraint.TIsU;
 import org.checkerframework.framework.util.typeinference.constraint.TSuperU;
 import org.checkerframework.framework.util.typeinference.constraint.TUConstraint;
 
-/**
- * Converts a set of TUConstraints into a ConstraintMap.
- */
+/** Converts a set of TUConstraints into a ConstraintMap. */
 public class ConstraintMapBuilder {
 
     /**
-     * Let Ti be a the ith target being inferred
-     * Let ATV(i) be the annotated type variable that represents as use of Ti which may or may not
-     * have primary annotations.
-     * Let ATM be an annotated type mirror that may or may not be target Tx, or have a component target Tx
-     * Let Ai be the type argument we are trying to infer for Ti
+     * Let Ti be a the ith target being inferred Let ATV(i) be the annotated type variable that
+     * represents as use of Ti which may or may not have primary annotations. Let ATM be an
+     * annotated type mirror that may or may not be target Tx, or have a component target Tx Let Ai
+     * be the type argument we are trying to infer for Ti
      *
-     * We have a set of constraints of the form:
-     * {@code ATV(i) <?> ATM}
+     * <p>We have a set of constraints of the form: {@code ATV(i) <?> ATM}
      *
-     * Where {@code <?>} is either a subtype ({@code <:}), supertype ({@code :>}), or equality relationship ({@code =}).
+     * <p>Where {@code <?>} is either a subtype ({@code <:}), supertype ({@code :>}), or equality
+     * relationship ({@code =}).
      *
-     * Regardless of what {@code <?>} is, a constraint will only imply constraints on Ai in a given
-     * hierarchy if ATV(i) does NOT have a primary annotation in that hierarchy.  That is:
+     * <p>Regardless of what {@code <?>} is, a constraint will only imply constraints on Ai in a
+     * given hierarchy if ATV(i) does NOT have a primary annotation in that hierarchy. That is:
      *
-     * E.g. Let ATV(i) be @NonNull Ti,  the constraints @NonNull Ti = @NonNull @Initialized String
-     * does not imply any primary annotation in the Nullness hierarchy for type argument Ai because the Annotated
-     * type mirror has a primary annotation in the NUllness hierarchy.
+     * <p>E.g. Let ATV(i) be @NonNull Ti, the constraints @NonNull Ti = @NonNull @Initialized String
+     * does not imply any primary annotation in the Nullness hierarchy for type argument Ai because
+     * the Annotated type mirror has a primary annotation in the NUllness hierarchy.
      *
-     * However, it does imply that Ai has a primary annotation of @Initialized since ATV(i) has no
-     * primary annotation in the initialization hierarchy.
+     * <p>However, it does imply that Ai has a primary annotation of @Initialized since ATV(i) has
+     * no primary annotation in the initialization hierarchy.
      *
-     * Note, constraints come in 2 forms:
-     *   a) between a target and a concrete AnnotatedTypeMirror.
-     *   E.g., As seen above (@NonNull Ti = @NonNull @Initialized String)
+     * <p>Note, constraints come in 2 forms:
      *
-     *   b) between two targets
-     *   E.g., (@NonNull Ti = Tj)
+     * <ul>
+     *   <li>between a target and a concrete AnnotatedTypeMirror. E.g., As seen above {@code
+     *       (@NonNull Ti = @NonNull @Initialized String)}
+     *   <li>between two targets E.g., {@code (@NonNull Ti = Tj)}
+     * </ul>
      */
     public ConstraintMap build(
             Set<TypeVariable> targets,
@@ -54,12 +52,13 @@ public class ConstraintMapBuilder {
             AnnotatedTypeFactory typeFactory) {
 
         final QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
-        final Set<? extends AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
+        final AnnotationMirrorSet tops =
+                new AnnotationMirrorSet(qualifierHierarchy.getTopAnnotations());
         final ConstraintMap result = new ConstraintMap(targets);
 
-        final Set<AnnotationMirror> tAnnos = new LinkedHashSet<>();
-        final Set<AnnotationMirror> uAnnos = new LinkedHashSet<>();
-        final Set<AnnotationMirror> hierarchiesInRelation = new LinkedHashSet<>();
+        final AnnotationMirrorSet tAnnos = new AnnotationMirrorSet();
+        final AnnotationMirrorSet uAnnos = new AnnotationMirrorSet();
+        final AnnotationMirrorSet hierarchiesInRelation = new AnnotationMirrorSet();
 
         for (TUConstraint constraint : constraints) {
             tAnnos.clear();
@@ -158,7 +157,7 @@ public class ConstraintMapBuilder {
             TypeVariable typeU,
             ConstraintMap result,
             TUConstraint constraint,
-            Set<AnnotationMirror> hierarchiesInRelation) {
+            AnnotationMirrorSet hierarchiesInRelation) {
         if (constraint instanceof TIsU) {
             result.addTargetEquality(typeT, typeU, hierarchiesInRelation);
         } else if (constraint instanceof TSuperU) {
@@ -172,7 +171,7 @@ public class ConstraintMapBuilder {
             TypeVariable typeVariable,
             TUConstraint constraint,
             ConstraintMap result,
-            Set<AnnotationMirror> annotationMirrors,
+            AnnotationMirrorSet annotationMirrors,
             QualifierHierarchy qualifierHierarchy) {
         if (constraint instanceof TIsU) {
             result.addPrimaryEqualities(typeVariable, qualifierHierarchy, annotationMirrors);
@@ -188,7 +187,7 @@ public class ConstraintMapBuilder {
             AnnotatedTypeMirror type,
             ConstraintMap result,
             TUConstraint constraint,
-            Set<AnnotationMirror> hierarchies) {
+            AnnotationMirrorSet hierarchies) {
         if (constraint instanceof TIsU) {
             result.addTypeEqualities(target, type, hierarchies);
         } else if (constraint instanceof TSuperU) {

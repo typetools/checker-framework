@@ -8,8 +8,8 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * UnknownVal is a type annotation indicating that the expression's value is not
- * known at compile type.
+ * UnknownVal is a type annotation indicating that the expression's value is not known at compile
+ * type.
  *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */

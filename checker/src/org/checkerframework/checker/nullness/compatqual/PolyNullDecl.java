@@ -9,6 +9,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  * @see org.checkerframework.checker.nullness.qual.PolyNull
  * @checker_framework.manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

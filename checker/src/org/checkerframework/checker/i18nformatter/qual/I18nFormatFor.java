@@ -8,28 +8,23 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * This annotation indicates that when a string of the annotated type is
- * passed as the first argument to {@link
- * java.text.MessageFormat#format(String, Object...)}, then the expression
- * that is an argument to the annotation can be passed as the remaining
- * arguments, in varargs style.
- * <p>
+ * This annotation indicates that when a string of the annotated type is passed as the first
+ * argument to {@link java.text.MessageFormat#format(String, Object...)}, then the expression that
+ * is an argument to the annotation can be passed as the remaining arguments, in varargs style.
  *
- * The annotation is used to annotate a method to ensure that an argument is of
- * a particular type indicated by a format string.
+ * <p>The annotation is used to annotate a method to ensure that an argument is of a particular type
+ * indicated by a format string.
  *
- * Example:
+ * <p>Example:
  *
  * <pre> static void method(@I18nFormatFor("#2") String format, Object... arg2) {...}
  *
  * method("{0, number}", 2);</pre>
  *
- * This ensures that the second parameter ("#2") can be passed as the remaining arguments of
- * {@link java.text.MessageFormat#format(String, Object...)},
- * when the first argument is {@code "format"}.
+ * This ensures that the second parameter ("#2") can be passed as the remaining arguments of {@link
+ * java.text.MessageFormat#format(String, Object...)}, when the first argument is {@code "format"}.
  *
- * @checker_framework.manual #i18n-formatter-checker Internationalization
- *                           Format String Checker
+ * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  * @author Siwakorn Srisakaokul
  */
 @Documented
@@ -38,9 +33,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf(I18nUnknownFormat.class)
 public @interface I18nFormatFor {
     /**
-     * Java expression that is an array that can be passed as the second
-     * argument to {@link java.text.MessageFormat#format(String, Object...)},
-     * when the annotated String is the first argument.
+     * Java expression that is an array that can be passed as the second argument to {@link
+     * java.text.MessageFormat#format(String, Object...)}, when the annotated String is the first
+     * argument.
+     *
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String value();

@@ -2,7 +2,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.qual.RequiresQualifiers;
 import org.checkerframework.framework.test.*;
-import tests.util.*;
+import testlib.util.*;
 
 // various tests for the precondition mechanism
 class Precondition {
@@ -119,7 +119,7 @@ class Precondition {
         requiresF4();
     }
 
-    /***** multiple preconditions ******/
+    /** *** multiple preconditions ***** */
     @RequiresQualifiers({
         @RequiresQualifier(expression = "f1", qualifier = Value.class),
         @RequiresQualifier(expression = "f2", qualifier = Odd.class)

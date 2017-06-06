@@ -21,15 +21,16 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Generates a stub file from a single class or an entire package.<p>
+ * Generates a stub file from a single class or an entire package.
  *
- * A stub file can be used to add annotations to methods of classes, that
- * are only available in binary or the source of which cannot be edited.
+ * <p>A stub file can be used to add annotations to methods of classes, that are only available in
+ * binary or the source of which cannot be edited.
+ *
  * @checker_framework.manual #stub-creating-and-using Using stub classes
  */
 public class StubGenerator {
     /** The indentation for the class */
-    private final static String INDENTION = "    ";
+    private static final String INDENTION = "    ";
 
     /** The output stream */
     private final PrintStream out;
@@ -40,38 +41,30 @@ public class StubGenerator {
     /** the package of the class being processed */
     private String currentPackage = null;
 
-    /**
-     * Constructs an instanceof {@code IndexGenerator} that outputs to
-     * {@code System.out}.
-     */
+    /** Constructs an instanceof {@code IndexGenerator} that outputs to {@code System.out}. */
     public StubGenerator() {
         this(System.out);
     }
 
     /**
-     * Constructs an instance of {@code IndexGenerator} that outputs to
-     * the provided output stream.
+     * Constructs an instance of {@code IndexGenerator} that outputs to the provided output stream.
      *
-     * @param out   the output stream
+     * @param out the output stream
      */
     public StubGenerator(PrintStream out) {
         this.out = out;
     }
 
     /**
-     * Constructs an instance of {@code IndexGenerator} that outputs to
-     * the provided output stream.
+     * Constructs an instance of {@code IndexGenerator} that outputs to the provided output stream.
      *
-     * @param out   the output stream
+     * @param out the output stream
      */
     public StubGenerator(OutputStream out) {
         this.out = new PrintStream(out);
     }
 
-    /**
-     * Generate the stub file for all the classes within the provided
-     * package.
-     */
+    /** Generate the stub file for all the classes within the provided package. */
     public void stubFromField(Element elt) {
         if (!(elt.getKind() == ElementKind.FIELD)) {
             return;
@@ -87,10 +80,7 @@ public class StubGenerator {
         printFieldDecl(field);
     }
 
-    /**
-     * Generate the stub file for all the classes within the provided
-     * package.
-     */
+    /** Generate the stub file for all the classes within the provided package. */
     public void stubFromPackage(PackageElement packageElement) {
         currentPackage = packageElement.getQualifiedName().toString();
 
@@ -107,10 +97,7 @@ public class StubGenerator {
         }
     }
 
-    /**
-     * Generate the stub file for all the classes within the provided
-     * package.
-     */
+    /** Generate the stub file for all the classes within the provided package. */
     public void stubFromMethod(Element elt) {
         if (!(elt.getKind() == ElementKind.CONSTRUCTOR || elt.getKind() == ElementKind.METHOD)) {
             return;
@@ -127,10 +114,7 @@ public class StubGenerator {
         printMethodDecl(method);
     }
 
-    /**
-     * Generate the stub file for provided class.  The generated file
-     * includes the package name.
-     */
+    /** Generate the stub file for provided class. The generated file includes the package name. */
     public void stubFromType(TypeElement typeElement) {
 
         // only output stub for classes or interfaces.  not enums
@@ -170,16 +154,12 @@ public class StubGenerator {
         }
     }
 
-    /**
-     * helper method that outputs the index for the provided class.
-     */
+    /** helper method that outputs the index for the provided class. */
     private void printClass(TypeElement typeElement) {
         printClass(typeElement, null);
     }
 
-    /**
-     * helper method that outputs the index for the provided class.
-     */
+    /** helper method that outputs the index for the provided class. */
     private void printClass(TypeElement typeElement, String outerClass) {
         List<TypeElement> innerClass = new ArrayList<TypeElement>();
 
@@ -236,8 +216,7 @@ public class StubGenerator {
     }
 
     /**
-     * Helper method that outputs the public or protected inner members of
-     * a class.
+     * Helper method that outputs the public or protected inner members of a class.
      *
      * @param members list of the class members
      */
@@ -249,9 +228,7 @@ public class StubGenerator {
         }
     }
 
-    /**
-     * Helper method that outputs the declaration of the member
-     */
+    /** Helper method that outputs the declaration of the member */
     private void printMember(Element member, List<TypeElement> innerClass) {
         if (member.getKind().isField()) {
             printFieldDecl((VariableElement) member);
@@ -265,7 +242,7 @@ public class StubGenerator {
     /**
      * Helper method that outputs the field declaration for the given field.
      *
-     * It indicates whether the field is {@code protected}.
+     * <p>It indicates whether the field is {@code protected}.
      */
     private void printFieldDecl(VariableElement field) {
         if ("class".equals(field.getSimpleName().toString())) {
@@ -295,7 +272,7 @@ public class StubGenerator {
     /**
      * Helper method that outputs the method declaration for the given method
      *
-     * IT indicates whether the field is {@code protected}.
+     * <p>IT indicates whether the field is {@code protected}.
      */
     private void printMethodDecl(ExecutableElement method) {
         indent();
@@ -349,11 +326,9 @@ public class StubGenerator {
     }
 
     /**
-     * Return a string representation of the list in the form of
-     * {@code item1, item2, item3, ...}
+     * Return a string representation of the list in the form of {@code item1, item2, item3, ...}
      *
-     * instead of the default representation,
-     * {@code [item1, item2, item3, ...]}
+     * <p>instead of the default representation, {@code [item1, item2, item3, ...]}
      */
     private String formatList(List<?> lst) {
         StringBuilder sb = new StringBuilder();

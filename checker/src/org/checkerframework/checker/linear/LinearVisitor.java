@@ -14,11 +14,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A type-checking visitor for the Linear type system.  The visitor reports
- * an error ("unsafe.use") for any use of a reference of {@link Unusable}
- * type.  In other words, it reports an error for any {@code Linear}
- * references that is used more than once, or is used after it has been
- * "used up".
+ * A type-checking visitor for the Linear type system. The visitor reports an error ("unsafe.use")
+ * for any use of a reference of {@link Unusable} type. In other words, it reports an error for any
+ * {@code Linear} references that is used more than once, or is used after it has been "used up".
  *
  * @see LinearChecker
  */
@@ -29,13 +27,12 @@ public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
     }
 
     /**
-     * Return true if the node represents a reference to a local variable
-     * or parameter.
+     * Return true if the node represents a reference to a local variable or parameter.
      *
-     * In Linear Checker, only local variables and method parameters can be
-     * of {@link Linear} or {@link Unusable} types.
+     * <p>In Linear Checker, only local variables and method parameters can be of {@link Linear} or
+     * {@link Unusable} types.
      *
-     * @param node   a tree
+     * @param node a tree
      * @return true if node is a local variable or parameter reference
      */
     static boolean isLocalVarOrParam(ExpressionTree node) {
@@ -50,9 +47,7 @@ public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
         }
     }
 
-    /**
-     * Issue an error if the node represents a reference that has been used up.
-     */
+    /** Issue an error if the node represents a reference that has been used up. */
     private void checkLegality(ExpressionTree node) {
         if (isLocalVarOrParam(node)) {
             if (atypeFactory.getAnnotatedType(node).hasAnnotation(Unusable.class)) {
@@ -74,9 +69,7 @@ public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
         return super.visitMemberSelect(node, p);
     }
 
-    /**
-     * Linear Checker does not contain a rule for method invocation.
-     */
+    /** Linear Checker does not contain a rule for method invocation. */
     // Premature optimization:  Don't check method invocability
     @Override
     protected void checkMethodInvocability(

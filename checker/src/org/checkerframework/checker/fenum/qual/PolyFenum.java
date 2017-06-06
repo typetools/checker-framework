@@ -11,6 +11,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * A polymorphic qualifier for the fake enum type system.
  *
  * @checker_framework.manual #fenum-checker Fake Enum Checker
+ * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @Documented
 @PolymorphicQualifier(FenumTop.class)

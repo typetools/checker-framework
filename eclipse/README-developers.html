@@ -110,7 +110,7 @@
             <td>2.</td>
             <td><strong>Import the Checker Framework project in Eclipse</strong><br/>
                 The Checker Framework manual has instructions on building the Checker Framework from source:<br/>
-                <code>http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#build-source</code>
+                <code>https://checkerframework.org/manual/#build-source</code>
                 <br/>
                 You do not need to build the framework but you do need the Checker Framework source.  Use a local clone
                 of the Checker Framework and import that project into a workspace.
@@ -366,15 +366,15 @@
             Create a new CheckerAction class in CheckerActions:
             /eclipse/checker-framework-eclipse-plugin/src/org/checkerframework/eclipse/actions/CheckerActions.java
             </td>
-        <tr>
         </tr>
+        <tr>
             <td>3.</td>
             <td><strong>Add checker to plugin.xml</strong><br/>
             In eclipse/checker-framework-eclipse-plugin/plugin.xml, add the checked to the both the "org.eclipse.ui.menus"
-            extension point and and the "org.eclipse.ui.commands" extension point.
+            extension point and the "org.eclipse.ui.commands" extension point.
             </td>
-        <tr>
         </tr>
+        <tr>
             <td>4.</td>
             <td><strong>Build and test the plugin</strong><br/>
              See the <a href="#building_the_plugin">Building the plugin</a> and <a href="#testing">Testing</a> sections.
@@ -394,7 +394,7 @@
                 are included by copying them to the checker-framework-eclipse-plugin/lib directory before the
                 plugin is built.  If you wish to test the plugin with a different set of artifacts, copy them
                 here.  If these artifacts aren't present, the plugin will not build. From the top-level of a
-                Checker Framework clone that has been built:
+                Checker Framework clone that has been built with JDK 7:
 
                 <code><br/>
                 cd eclipse<br/>
@@ -591,7 +591,7 @@
 <section id="testing">
     <h2>Testing</h2>
     <p>To test your plugin, you should install it locally.  You can find installation instructions at:<br/>
-       <a href="http://types.cs.washington.edu/checker-framework/eclipse/">http://types.cs.washington.edu/checker-framework/eclipse/</a><br/>
+       <a href="https://checkerframework.org/eclipse/">https://checkerframework.org/eclipse/</a><br/>
        However, when installing the plugin, rather than using the above URL for the location of the
        plugin, you should press the "Local" button and select the directory of your
        checker-framework-update-site project.  The IDE will treat that directory as an update site
@@ -609,8 +609,8 @@
         </li>
     </ul>
     <p>When performing a release, you should test the "Getting Started" and "Validating User Input" guides from
-    the checker framework tutorial: <a href="http://types.cs.washington.edu/checker-framework/tutorial/">
-        http://types.cs.washington.edu/checker-framework/tutorial/</a>
+    the checker framework tutorial: <a href="https://checkerframework.org/tutorial/">
+        https://checkerframework.org/tutorial/</a>
 
     <div class="alert alert-warning">
         In the next section we discuss a typical workflow for testing the Eclipse plugin.  This workflow
@@ -696,7 +696,7 @@
     <div class="alert alert-danger">
         <strong>Note:</strong> Since the Checker Framework process is run in another process from Eclipse,
         setting a breakpoint in Checker Framework code will NOT cause Eclipse to pause at this code.  One
-        way of debugging this other process is to pass <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#debugging-options">debug arguments (see 23.8.5)</a>
+        way of debugging this other process is to pass <a href="https://checkerframework.org/manual/#debugging-options">debug arguments (see 23.8.5)</a>
         in the Eclipse->Checker Framework preferences.  This will cause the Checker Framework to pause and wait
         for a debugger before Executing.  You can then hook another debugger to this process to debug it separately
         from the process used to debug the Eclipse plugin.

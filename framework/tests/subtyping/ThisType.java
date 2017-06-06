@@ -1,4 +1,4 @@
-import tests.util.*;
+import testlib.util.*;
 
 class ThisType {
     void t1(@Encrypted ThisType this) {

@@ -8,10 +8,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
-/**
- * A set that is more efficient than HashSet for 0 and 1 elements.
- */
-final public class MostlySingleton<T> implements Set<T> {
+/** A set that is more efficient than HashSet for 0 and 1 elements. */
+public final class MostlySingleton<T> implements Set<T> {
     private enum State {
         EMPTY,
         SINGLETON,

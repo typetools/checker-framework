@@ -1,6 +1,6 @@
 // @skip-test
 
-import org.checkerframework.checker.interning.qual.*;
+import org.checkerframework.checker.interning.qual.Interned;
 
 // Per JLS 5.1.7:
 //  * autoboxed Characters in the range '\u0000' to '\u007f' are interned

@@ -1,5 +1,6 @@
-import org.checkerframework.checker.initialization.qual.*;
-import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.checker.initialization.qual.NotOnlyInitialized;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 // This example is taken from the FBC paper, figure 1 (and has some additional code in main below).
 // We made the list generic.

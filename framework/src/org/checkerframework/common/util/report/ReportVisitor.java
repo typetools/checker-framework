@@ -43,14 +43,10 @@ import org.checkerframework.javacutil.TreeUtils;
 
 public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
 
-    /**
-     * The tree kinds that should be reported.
-     */
+    /** The tree kinds that should be reported. */
     private final String[] treeKinds;
 
-    /**
-     * The modifiers that should be reported.
-     */
+    /** The modifiers that should be reported. */
     private final String[] modifiers;
 
     public ReportVisitor(BaseTypeChecker checker) {
@@ -76,7 +72,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         return new ReportAnnotatedTypeFactory(checker);
     }
 
-    class ReportAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+    private static class ReportAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         public ReportAnnotatedTypeFactory(BaseTypeChecker checker) {
             super(checker);
@@ -103,9 +99,8 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
     }
 
     /**
-     * Check for uses of the {@link ReportUse} annotation.
-     * This method has to be called for every explicit or implicit use of a type,
-     * most cases are simply covered by the type validator.
+     * Check for uses of the {@link ReportUse} annotation. This method has to be called for every
+     * explicit or implicit use of a type, most cases are simply covered by the type validator.
      *
      * @param node the tree for error reporting only
      * @param member the element from which to start looking
@@ -145,7 +140,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
     */
 
     @Override
-    public Void visitClass(ClassTree node, Void p) {
+    public void processClassTree(ClassTree node) {
         TypeElement member = TreeUtils.elementFromDeclaration(node);
         boolean report = false;
         // No need to check on the declaring class itself
@@ -160,7 +155,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
                         Result.failure("inherit", node, ElementUtils.getVerboseName(sup)), node);
             }
         }
-        return super.visitClass(node, p);
+        super.processClassTree(node);
     }
 
     @Override

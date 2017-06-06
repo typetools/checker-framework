@@ -15,7 +15,7 @@ public class Boxing {
         Integer i1 = 5;
         int i1u = i1;
         Integer i2 = null;
-        //:: error: (assignment.type.incompatible)
+        //:: error: (unboxing.of.nullable)
         int i2u = i2; // invalid
     }
 

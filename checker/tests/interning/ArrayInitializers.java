@@ -1,5 +1,5 @@
 
-import org.checkerframework.checker.interning.qual.*;
+import org.checkerframework.checker.interning.qual.Interned;
 
 class ArrayInitializers {
     public static final String STATIC_FIELD = "m";

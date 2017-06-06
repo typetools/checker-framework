@@ -69,13 +69,13 @@ public class KeyForChecked {
     @Covariant(0)
     class KFIterator<E extends @Nullable Object> {}
 
-    void incorrect1() {
+    void incorrect1(Object map) {
         String nonkey = "";
         //:: error: (assignment.type.incompatible)
         @KeyFor("map") String key = nonkey;
     }
 
-    void correct1() {
+    void correct1(Object map) {
         String nonkey = "";
         @SuppressWarnings("assignment.type.incompatible")
         @KeyFor("map") String key = nonkey;
@@ -122,7 +122,7 @@ public class KeyForChecked {
 
         for (@KeyFor("emap") String st : s) {}
         for (String st : s) {}
-
+        Object bubu = new Object();
         //:: error: (enhancedfor.type.incompatible)
         for (@KeyFor("bubu") String st : s) {}
     }

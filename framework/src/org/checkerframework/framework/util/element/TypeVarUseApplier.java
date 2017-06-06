@@ -25,9 +25,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.javacutil.ErrorReporter;
 
-/**
- * Apply annotations to the use of a type parameter declaration
- */
+/** Apply annotations to the use of a type parameter declaration */
 public class TypeVarUseApplier {
 
     public static void apply(
@@ -46,8 +44,8 @@ public class TypeVarUseApplier {
     };
 
     /**
-     * @return true if type is an AnnotatedTypeVariable, or an AnnotatedArrayType with a type variable component,
-     *         and the element is not a TYPE_PARAMETER
+     * @return true if type is an AnnotatedTypeVariable, or an AnnotatedArrayType with a type
+     *     variable component, and the element is not a TYPE_PARAMETER
      */
     public static boolean accepts(AnnotatedTypeMirror type, Element element) {
         return (type instanceof AnnotatedTypeVariable || isGenericArrayType(type))
@@ -112,8 +110,8 @@ public class TypeVarUseApplier {
     }
 
     /**
-     * Applies the bound annotations from the declaration of the type parameter and
-     * then applies the explicit annotations written on the type variable
+     * Applies the bound annotations from the declaration of the type parameter and then applies the
+     * explicit annotations written on the type variable
      */
     public void extractAndApply() {
         addAnnotationsFromElement(typeVariable, useElem.getAnnotationMirrors());
@@ -184,7 +182,7 @@ public class TypeVarUseApplier {
 
     /**
      * Depending on what element type the annotations are stored on, the relevant annotations might
-     * be stored with different annotation positions.  getAnnotations finds the correct annotations
+     * be stored with different annotation positions. getAnnotations finds the correct annotations
      * by annotation position and element kind and returns them
      */
     private static List<Attribute.TypeCompound> getAnnotations(
@@ -222,9 +220,7 @@ public class TypeVarUseApplier {
         return annotations;
     }
 
-    /**
-     * @return annotations on an element that apply to variable declarations
-     */
+    /** @return annotations on an element that apply to variable declarations */
     private static List<Attribute.TypeCompound> getVariableAnnos(final Element variableElem) {
         final VarSymbol varSymbol = (VarSymbol) variableElem;
         final List<Attribute.TypeCompound> annotations = new ArrayList<Attribute.TypeCompound>();
@@ -248,11 +244,13 @@ public class TypeVarUseApplier {
     }
 
     /**
-     * Currently, the metadata for storing annotations (i.e. the Attribute.TypeCompounds) is null for binary-only
-     * parameters and type parameters.  However, it is present on the method.  So in order to ensure that we correctly
-     * retrieve the annotations we need to index from the method and retrieve the annotations from its metadata.
-     * @return a list of annotations that were found on METHOD_FORMAL_PARAMETERS that match the parameter index
-     * of the input element in the parent methods formal parameter list
+     * Currently, the metadata for storing annotations (i.e. the Attribute.TypeCompounds) is null
+     * for binary-only parameters and type parameters. However, it is present on the method. So in
+     * order to ensure that we correctly retrieve the annotations we need to index from the method
+     * and retrieve the annotations from its metadata.
+     *
+     * @return a list of annotations that were found on METHOD_FORMAL_PARAMETERS that match the
+     *     parameter index of the input element in the parent methods formal parameter list
      */
     private static List<Attribute.TypeCompound> getParameterAnnos(final Element paramElem) {
         final Element enclosingElement = paramElem.getEnclosingElement();
@@ -282,9 +280,7 @@ public class TypeVarUseApplier {
         return result;
     }
 
-    /**
-     * @return the annotations on the return type of the input ExecutableElement
-     */
+    /** @return the annotations on the return type of the input ExecutableElement */
     private static List<Attribute.TypeCompound> getReturnAnnos(final Element methodElem) {
         if (!(methodElem instanceof ExecutableElement)) {
             ErrorReporter.errorAbort(

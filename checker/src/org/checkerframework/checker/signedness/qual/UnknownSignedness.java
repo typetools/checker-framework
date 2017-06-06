@@ -9,8 +9,8 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The value's signedness is not known to the Signedness Checker.
- * This is also used for non-numeric values, which cannot have a signedness.
+ * The value's signedness is not known to the Signedness Checker. This is also used for non-numeric
+ * values, which cannot have a signedness.
  *
  * @checker_framework.manual #signedness-checker Signedness Checker
  */

@@ -25,7 +25,6 @@
 
 package java.lang.ref;
 
-import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.lock.qual.*;
 
 

@@ -10,6 +10,7 @@ import lubglb.quals.C;
 import lubglb.quals.D;
 import lubglb.quals.E;
 import lubglb.quals.F;
+import lubglb.quals.Poly;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 
@@ -23,6 +24,6 @@ public class LubGlbAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return new HashSet<Class<? extends Annotation>>(
-                Arrays.asList(A.class, B.class, C.class, D.class, E.class, F.class));
+                Arrays.asList(A.class, B.class, C.class, D.class, E.class, F.class, Poly.class));
     }
 }

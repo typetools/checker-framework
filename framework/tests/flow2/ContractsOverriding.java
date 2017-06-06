@@ -1,10 +1,10 @@
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.RequiresQualifier;
-import tests.util.EnsuresOdd;
-import tests.util.EnsuresOddIf;
-import tests.util.Odd;
-import tests.util.RequiresOdd;
+import testlib.util.EnsuresOdd;
+import testlib.util.EnsuresOddIf;
+import testlib.util.Odd;
+import testlib.util.RequiresOdd;
 
 class ContractsOverriding {
     static class Super {

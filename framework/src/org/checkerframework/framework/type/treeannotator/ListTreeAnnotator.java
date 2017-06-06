@@ -8,12 +8,11 @@ import java.util.List;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
- * ListTreeAnnotator is a TreeVisitor that executes a list of
- * {@link TreeAnnotator}
- * for each tree visited.
+ * ListTreeAnnotator is a TreeVisitor that executes a list of {@link TreeAnnotator} for each tree
+ * visited.
  *
- * Checkers should not extend ListTreeAnnotator; they should instead
- * pass a custom TreeAnnotator to the constructor.
+ * <p>Checkers should not extend ListTreeAnnotator; they should instead pass a custom TreeAnnotator
+ * to the constructor.
  *
  * @see ImplicitsTreeAnnotator
  * @see PropagationTreeAnnotator
@@ -23,9 +22,8 @@ public class ListTreeAnnotator extends TreeAnnotator {
     protected final List<TreeAnnotator> annotators;
 
     /**
-     * @param annotators the annotators that will be executed for
-     *                   each tree scanned by this TreeAnnotator.
-     *                   They are executed in the order passed in.
+     * @param annotators the annotators that will be executed for each tree scanned by this
+     *     TreeAnnotator. They are executed in the order passed in.
      */
     public ListTreeAnnotator(TreeAnnotator... annotators) {
         this(Arrays.asList(annotators));
@@ -33,7 +31,7 @@ public class ListTreeAnnotator extends TreeAnnotator {
 
     /**
      * @param annotators the annotators that will be executed for each tree scanned by this
-     *                   TreeAnnotator. They are executed in the order passed in.
+     *     TreeAnnotator. They are executed in the order passed in.
      */
     public ListTreeAnnotator(List<TreeAnnotator> annotators) {
         super(null);

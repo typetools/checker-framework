@@ -30,9 +30,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
-/**
- * A Utility class to find symbols corresponding to string references.
- */
+/** A Utility class to find symbols corresponding to string references. */
 public class Resolver {
     private final Resolve resolve;
     private final Names names;
@@ -53,16 +51,16 @@ public class Resolver {
     static {
         try {
             FIND_METHOD =
-                    Resolve.class
-                            .getDeclaredMethod(
-                                    "findMethod",
-                                    Env.class,
-                                    Type.class,
-                                    Name.class,
-                                    List.class,
-                                    List.class,
-                                    boolean.class,
-                                    boolean.class);
+                    Resolve.class.getDeclaredMethod(
+                            "findMethod",
+                            Env.class,
+                            Type.class,
+                            Name.class,
+                            List.class,
+                            List.class,
+                            boolean.class,
+                            boolean.class,
+                            boolean.class);
             FIND_METHOD.setAccessible(true);
 
             FIND_VAR = Resolve.class.getDeclaredMethod("findVar", Env.class, Name.class);
@@ -73,23 +71,17 @@ public class Resolver {
             FIND_IDENT.setAccessible(true);
 
             FIND_IDENT_IN_TYPE =
-                    Resolve.class
-                            .getDeclaredMethod(
-                                    "findIdentInType",
-                                    Env.class,
-                                    Type.class,
-                                    Name.class,
-                                    KindSelector.class);
+                    Resolve.class.getDeclaredMethod(
+                            "findIdentInType", Env.class, Type.class, Name.class, int.class);
             FIND_IDENT_IN_TYPE.setAccessible(true);
 
             FIND_IDENT_IN_PACKAGE =
-                    Resolve.class
-                            .getDeclaredMethod(
-                                    "findIdentInPackage",
-                                    Env.class,
-                                    TypeSymbol.class,
-                                    Name.class,
-                                    KindSelector.class);
+                    Resolve.class.getDeclaredMethod(
+                            "findIdentInPackage",
+                            Env.class,
+                            TypeSymbol.class,
+                            Name.class,
+                            int.class);
             FIND_IDENT_IN_PACKAGE.setAccessible(true);
 
             FIND_TYPE = Resolve.class.getDeclaredMethod("findType", Env.class, Name.class);
@@ -129,20 +121,44 @@ public class Resolver {
     }
 
     /**
+     * Determine the environment for the given path.
+     *
+     * @param path the tree path to the local scope
+     * @return the corresponding attribution environment
+     */
+    public Env<AttrContext> getEnvForPath(TreePath path) {
+        TreePath iter = path;
+        JavacScope scope = null;
+        while (scope == null && iter != null) {
+            try {
+                scope = (JavacScope) trees.getScope(iter);
+            } catch (Throwable t) {
+                // Work around Issue #1059 by skipping through the TreePath until something
+                // doesn't crash. This probably returns the class scope, so users might not
+                // get the variables they expect. But that is better than crashing.
+                iter = iter.getParentPath();
+            }
+        }
+        if (scope != null) {
+            return scope.getEnv();
+        } else {
+            ErrorReporter.errorAbort(
+                    "Could not determine any possible scope for path: " + path.getLeaf());
+            return null;
+        }
+    }
+
+    /**
      * Finds the package with name {@code name}.
      *
-     * @param name
-     *            The name of the package.
-     * @param path
-     *            The tree path to the local scope.
-     * @return the {@code PackageSymbol} for the package if it is found,
-     * {@code null} otherwise
+     * @param name the name of the package
+     * @param path the tree path to the local scope
+     * @return the {@code PackageSymbol} for the package if it is found, {@code null} otherwise
      */
     public PackageSymbol findPackage(String name, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
-            JavacScope scope = (JavacScope) trees.getScope(path);
-            Env<AttrContext> env = scope.getEnv();
+            Env<AttrContext> env = getEnvForPath(path);
             Element res =
                     wrapInvocationOnResolveInstance(FIND_IDENT, env, names.fromString(name), PCK);
             // findIdent will return a PackageSymbol even for a symbol that is not a package,
@@ -162,24 +178,18 @@ public class Resolver {
     /**
      * Finds the field with name {@code name} in a given type.
      *
-     * <p>
-     * The method adheres to all the rules of Java's scoping (while also
-     * considering the imports) for name resolution.
+     * <p>The method adheres to all the rules of Java's scoping (while also considering the imports)
+     * for name resolution.
      *
-     * @param name
-     *            The name of the field.
-     * @param type
-     *            The type of the receiver (i.e., the type in which to look for
-     *            the field).
-     * @param path
-     *            The tree path to the local scope.
+     * @param name the name of the field
+     * @param type the type of the receiver (i.e., the type in which to look for the field).
+     * @param path the tree path to the local scope
      * @return the element for the field
      */
     public VariableElement findField(String name, TypeMirror type, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
-            JavacScope scope = (JavacScope) trees.getScope(path);
-            Env<AttrContext> env = scope.getEnv();
+            Env<AttrContext> env = getEnvForPath(path);
             Element res =
                     wrapInvocationOnResolveInstance(
                             FIND_IDENT_IN_TYPE,
@@ -205,17 +215,14 @@ public class Resolver {
     /**
      * Finds the local variable with name {@code name} in the given scope.
      *
-     * @param name
-     *            The name of the local variable.
-     * @param path
-     *            The tree path to the local scope.
+     * @param name the name of the local variable
+     * @param path the tree path to the local scope
      * @return the element for the local variable
      */
     public VariableElement findLocalVariableOrParameterOrField(String name, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
-            JavacScope scope = (JavacScope) trees.getScope(path);
-            Env<AttrContext> env = scope.getEnv();
+            Env<AttrContext> env = getEnvForPath(path);
             Element res = wrapInvocationOnResolveInstance(FIND_VAR, env, names.fromString(name));
             if (res.getKind() == ElementKind.LOCAL_VARIABLE
                     || res.getKind() == ElementKind.PARAMETER
@@ -233,21 +240,17 @@ public class Resolver {
     /**
      * Finds the class literal with name {@code name}.
      *
-     * <p>
-     * The method adheres to all the rules of Java's scoping (while also
-     * considering the imports) for name resolution.
+     * <p>The method adheres to all the rules of Java's scoping (while also considering the imports)
+     * for name resolution.
      *
-     * @param name
-     *            The name of the class.
-     * @param path
-     *            The tree path to the local scope.
+     * @param name the name of the class
+     * @param path the tree path to the local scope
      * @return the element for the class
      */
     public Element findClass(String name, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
-            JavacScope scope = (JavacScope) trees.getScope(path);
-            Env<AttrContext> env = scope.getEnv();
+            Env<AttrContext> env = getEnvForPath(path);
             return wrapInvocationOnResolveInstance(FIND_TYPE, env, names.fromString(name));
         } finally {
             log.popDiagnosticHandler(discardDiagnosticHandler);
@@ -257,20 +260,15 @@ public class Resolver {
     /**
      * Finds the class with name {@code name} in a given package.
      *
-     * @param name
-     *            The name of the class.
-     * @param pck
-     *            The PackageSymbol for the package.
-     * @param path
-     *            The tree path to the local scope.
-     * @return the {@code ClassSymbol} for the class if it is found,
-     * {@code null} otherwise
+     * @param name the name of the class
+     * @param pck the PackageSymbol for the package
+     * @param path the tree path to the local scope
+     * @return the {@code ClassSymbol} for the class if it is found, {@code null} otherwise
      */
     public ClassSymbol findClassInPackage(String name, PackageSymbol pck, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
-            JavacScope scope = (JavacScope) trees.getScope(path);
-            Env<AttrContext> env = scope.getEnv();
+            Env<AttrContext> env = getEnvForPath(path);
             Element res =
                     wrapInvocationOnResolveInstance(
                             FIND_IDENT_IN_PACKAGE, env, pck, names.fromString(name), TYP);
@@ -285,19 +283,14 @@ public class Resolver {
     }
 
     /**
-     * Finds the method element for a given name and list of expected parameter
-     * types.
+     * Finds the method element for a given name and list of expected parameter types.
      *
-     * <p>
-     * The method adheres to all the rules of Java's scoping (while also
-     * considering the imports) for name resolution.
+     * <p>The method adheres to all the rules of Java's scoping (while also considering the imports)
+     * for name resolution.
      *
-     * @param methodName
-     *            Name of the method to find.
-     * @param receiverType
-     *            Type of the receiver of the method
-     * @param path
-     *            Tree path.
+     * @param methodName name of the method to find
+     * @param receiverType type of the receiver of the method
+     * @param path tree path
      * @return the method element (if found)
      */
     public Element findMethod(
@@ -307,8 +300,7 @@ public class Resolver {
             java.util.List<TypeMirror> argumentTypes) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
-            JavacScope scope = (JavacScope) trees.getScope(path);
-            Env<AttrContext> env = scope.getEnv();
+            Env<AttrContext> env = getEnvForPath(path);
 
             Type site = (Type) receiverType;
             Name name = names.fromString(methodName);
@@ -349,9 +341,7 @@ public class Resolver {
         }
     }
 
-    /**
-     * Build an instance of {@code Resolve$MethodResolutionContext}.
-     */
+    /** Build an instance of {@code Resolve$MethodResolutionContext}. */
     protected Object buildMethodContext()
             throws ClassNotFoundException, InstantiationException, IllegalAccessException,
                     InvocationTargetException, NoSuchFieldException {

@@ -12,12 +12,12 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * {@link Nullable} is a type annotation that indicates that the value is not
- * known to be non-null (see {@link NonNull}). Only if an expression has a
- * {@link Nullable} type may it be assigned {@code null}.
+ * {@link Nullable} is a type annotation that indicates that the value is not known to be non-null
+ * (see {@link NonNull}). Only if an expression has a {@link Nullable} type may it be assigned
+ * {@code null}.
  *
- * <p>
- * This annotation is associated with the {@link org.checkerframework.checker.nullness.AbstractNullnessChecker}.
+ * <p>This annotation is associated with the {@link
+ * org.checkerframework.checker.nullness.AbstractNullnessChecker}.
  *
  * @see NonNull
  * @see MonotonicNonNull
@@ -25,10 +25,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @SubtypeOf({})
-@ImplicitFor(
-    literals = {LiteralKind.NULL},
-    typeNames = {java.lang.Void.class}
-)
+@ImplicitFor(literals = LiteralKind.NULL, typeNames = java.lang.Void.class)
 @DefaultInUncheckedCodeFor({TypeUseLocation.RETURN, TypeUseLocation.UPPER_BOUND})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

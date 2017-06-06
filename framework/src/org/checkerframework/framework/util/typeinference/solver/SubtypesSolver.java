@@ -14,6 +14,8 @@ import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.AnnotationMirrorMap;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.typeinference.GlbUtil;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
 import org.checkerframework.framework.util.typeinference.solver.TargetConstraints.Subtypes;
@@ -26,10 +28,11 @@ public class SubtypesSolver {
 
     /**
      * Infers type arguments using subtype constraints.
+     *
      * @param remainingTargets targets for which we still need to infer a value
      * @param constraints the set of constraints for all targets
-     * @return a mapping of ( {@code target -> inferred type} ), note this class always infers concrete types
-     *         and will not infer that the target is equivalent to another target
+     * @return a mapping of ( {@code target &rArr; inferred type} ), note this class always infers
+     *     concrete types and will not infer that the target is equivalent to another target
      */
     public InferenceResult solveFromSubtypes(
             final Set<TypeVariable> remainingTargets,
@@ -78,14 +81,14 @@ public class SubtypesSolver {
 
             // if the subtypes size is only 1 then we need not do any GLBing on the underlying types
             // but we may have primary annotations that need to be GLBed
-            Map<AnnotationMirror, Set<AnnotationMirror>> primaries = subtypes.primaries;
+            AnnotationMirrorMap<AnnotationMirrorSet> primaries = subtypes.primaries;
             if (subtypes.types.size() == 1) {
-                final Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> entry =
+                final Entry<AnnotatedTypeMirror, AnnotationMirrorSet> entry =
                         subtypes.types.entrySet().iterator().next();
                 AnnotatedTypeMirror supertype = entry.getKey().deepCopy();
 
                 for (AnnotationMirror top : entry.getValue()) {
-                    final Set<AnnotationMirror> superAnnos = primaries.get(top);
+                    final AnnotationMirrorSet superAnnos = primaries.get(top);
                     // if it is null we're just going to use the anno already on supertype
                     if (superAnnos != null) {
                         final AnnotationMirror supertypeAnno =
@@ -135,24 +138,23 @@ public class SubtypesSolver {
     }
 
     /**
-     * /**
-     * If the target corresponding to targetRecord must be a subtype of another target for which
+     * /** If the target corresponding to targetRecord must be a subtype of another target for which
      * we have already determined a GLB, add that target's GLB to the list of subtypes to be GLBed
      * for this target.
      */
     protected static void propagatePreviousGlbs(
             final Subtypes targetSubtypes,
             InferenceResult solution,
-            final Map<AnnotatedTypeMirror, Set<AnnotationMirror>> subtypesOfTarget) {
+            final Map<AnnotatedTypeMirror, AnnotationMirrorSet> subtypesOfTarget) {
 
-        for (final Entry<TypeVariable, Set<AnnotationMirror>> subtypeTarget :
+        for (final Entry<TypeVariable, AnnotationMirrorSet> subtypeTarget :
                 targetSubtypes.targets.entrySet()) {
             final InferredValue subtargetInferredGlb = solution.get(subtypeTarget.getKey());
 
             if (subtargetInferredGlb != null) {
                 final AnnotatedTypeMirror subtargetGlbType =
                         ((InferredType) subtargetInferredGlb).type;
-                Set<AnnotationMirror> subtargetAnnos = subtypesOfTarget.get(subtargetGlbType);
+                AnnotationMirrorSet subtargetAnnos = subtypesOfTarget.get(subtargetGlbType);
                 if (subtargetAnnos != null) {
                     // there is already an equivalent type in the list of subtypes, just add
                     // any hierarchies that are not in its list but are in the supertarget's list

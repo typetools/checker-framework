@@ -1,4 +1,4 @@
-import org.checkerframework.checker.i18n.qual.*;
+import org.checkerframework.checker.i18n.qual.Localized;
 
 class LocalizedMessage {
     @Localized String localize(String s) {
@@ -34,7 +34,7 @@ class LocalizedMessage {
     void concatenation(@Localized String s1, String s2) {
         //:: error: (argument.type.incompatible)
         localized(s1 + s1); // error
-        //:: error: (argument.type.incompatible)
+        //:: error: (argument.type.incompatible) :: error: (compound.assignment.type.incompatible)
         localized(s1 += s1); // error
         //:: error: (argument.type.incompatible)
         localized(s1 + "m"); // error

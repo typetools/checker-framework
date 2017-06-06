@@ -1,4 +1,4 @@
-import tests.wholeprograminference.qual.*;
+import testlib.wholeprograminference.qual.*;
 
 class OverriddenMethodsTestParent {
     public void foo(@Sibling1 Object obj, @Sibling2 Object obj2) {}

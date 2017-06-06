@@ -45,41 +45,30 @@ import org.checkerframework.javacutil.TreeUtils;
  * Adds {@link Regex} to the type of tree, in the following cases:
  *
  * <ol>
- *
- * <li value="1">a {@code String} or {@code char} literal that is a valid
- * regular expression</li>
- *
- * <li value="2">concatenation of two valid regular expression values
- * (either {@code String} or {@code char}) or two partial regular expression
- * values that make a valid regular expression when concatenated.</li>
- *
- * <li value="3">for calls to Pattern.compile changes the group count value
- * of the return type to be the same as the parameter. For calls to the asRegex
- * methods of the classes in asRegexClasses these asRegex methods will return a
- * {@code @Regex String} with the same group count as the second argument to the
- * call to asRegex.</li>
- *
- * <!--<li value="4">initialization of a char array that when converted to a String
+ *   <li value="1">a {@code String} or {@code char} literal that is a valid regular expression
+ *   <li value="2">concatenation of two valid regular expression values (either {@code String} or
+ *       {@code char}) or two partial regular expression values that make a valid regular expression
+ *       when concatenated.
+ *   <li value="3">for calls to Pattern.compile changes the group count value of the return type to
+ *       be the same as the parameter. For calls to the asRegex methods of the classes in
+ *       asRegexClasses these asRegex methods will return a {@code @Regex String} with the same
+ *       group count as the second argument to the call to asRegex.
+ *       <!--<li value="4">initialization of a char array that when converted to a String
  * is a valid regular expression.</li>-->
- *
  * </ol>
  *
- * Provides a basic analysis of concatenation of partial regular expressions
- * to determine if a valid regular expression is produced by concatenating
- * non-regular expression Strings. Do do this, {@link PartialRegex} is added
- * to the type of tree in the following cases:
+ * Provides a basic analysis of concatenation of partial regular expressions to determine if a valid
+ * regular expression is produced by concatenating non-regular expression Strings. Do do this,
+ * {@link PartialRegex} is added to the type of tree in the following cases:
  *
  * <ol>
- *
- * <li value="1">a String literal that is not a valid regular expression.</li>
- *
- * <li value="2">concatenation of two partial regex Strings that doesn't result
- * in a regex String or a partial regex and regex String.</li>
- *
+ *   <li value="1">a String literal that is not a valid regular expression.
+ *   <li value="2">concatenation of two partial regex Strings that doesn't result in a regex String
+ *       or a partial regex and regex String.
  * </ol>
  *
- * Also, adds {@link PolyRegex} to the type of String/char concatenation of
- * a Regex and a PolyRegex or two PolyRegexs.
+ * Also, adds {@link PolyRegex} to the type of String/char concatenation of a Regex and a PolyRegex
+ * or two PolyRegexs.
  */
 public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -93,14 +82,14 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * The value method of the PartialRegex qualifier.
      *
-     * @see org.checkerframework.checker.regex.classic.qual.PartialRegex
+     * @see org.checkerframework.checker.regex.qual.PartialRegex
      */
     private final ExecutableElement partialRegexValue;
 
     /**
-     * Class names that contain an {@code asRegex(String, int)} method. These
-     * asRegex methods will return a {@code @Regex String} with the same group
-     * count as the second parameter to the asRegex call.
+     * Class names that contain an {@code asRegex(String, int)} method. These asRegex methods will
+     * return a {@code @Regex String} with the same group count as the second parameter to the
+     * asRegex call.
      *
      * @see RegexUtil#asRegex(String, int)
      */
@@ -175,9 +164,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 new RegexPropagationAnnotator(this));
     }
 
-    /**
-     * Returns a new Regex annotation with the given group count.
-     */
+    /** Returns a new Regex annotation with the given group count. */
     /*package-scope*/ AnnotationMirror createRegexAnnotation(int groupCount) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, Regex.class);
         if (groupCount > 0) {
@@ -192,11 +179,10 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * A custom qualifier hierarchy for the Regex Checker. This makes a regex
-     * annotation a subtype of all regex annotations with lower group count
-     * values. For example, {@code @Regex(3)} is a subtype of {@code @Regex(1)}.
-     * All regex annotations are subtypes of {@code @Regex} which has a default
-     * value of 0.
+     * A custom qualifier hierarchy for the Regex Checker. This makes a regex annotation a subtype
+     * of all regex annotations with lower group count values. For example, {@code @Regex(3)} is a
+     * subtype of {@code @Regex(1)}. All regex annotations are subtypes of {@code @Regex}, which has
+     * a default value of 0.
      */
     private final class RegexQualifierHierarchy extends GraphQualifierHierarchy {
 
@@ -205,33 +191,31 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameIgnoringValues(rhs, REGEX)
-                    && AnnotationUtils.areSameIgnoringValues(lhs, REGEX)) {
-                int rhsValue = getRegexValue(rhs);
-                int lhsValue = getRegexValue(lhs);
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, REGEX)
+                    && AnnotationUtils.areSameIgnoringValues(superAnno, REGEX)) {
+                int rhsValue = getRegexValue(subAnno);
+                int lhsValue = getRegexValue(superAnno);
                 return lhsValue <= rhsValue;
             }
             // TODO: subtyping between PartialRegex?
             // Ignore annotation values to ensure that annotation is in supertype map.
-            if (AnnotationUtils.areSameIgnoringValues(lhs, REGEX)) {
-                lhs = REGEX;
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, REGEX)) {
+                superAnno = REGEX;
             }
-            if (AnnotationUtils.areSameIgnoringValues(rhs, REGEX)) {
-                rhs = REGEX;
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, REGEX)) {
+                subAnno = REGEX;
             }
-            if (AnnotationUtils.areSameIgnoringValues(lhs, PARTIALREGEX)) {
-                lhs = PARTIALREGEX;
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, PARTIALREGEX)) {
+                superAnno = PARTIALREGEX;
             }
-            if (AnnotationUtils.areSameIgnoringValues(rhs, PARTIALREGEX)) {
-                rhs = PARTIALREGEX;
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, PARTIALREGEX)) {
+                subAnno = PARTIALREGEX;
             }
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
 
-        /**
-         * Gets the value out of a regex annotation.
-         */
+        /** Gets the value out of a regex annotation. */
         private int getRegexValue(AnnotationMirror anno) {
             return (Integer)
                     AnnotationUtils.getElementValuesWithDefaults(anno)
@@ -241,8 +225,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns the group count value of the given annotation or 0 if
-     * there's a problem getting the group count value.
+     * Returns the group count value of the given annotation or 0 if there's a problem getting the
+     * group count value.
      */
     public int getGroupCount(AnnotationMirror anno) {
         AnnotationValue groupCountValue =
@@ -254,17 +238,14 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return (groupCountValue == null) ? 0 : (Integer) groupCountValue.getValue();
     }
 
-    /**
-     * Returns the number of groups in the given regex String.
-     */
+    /** Returns the number of groups in the given regex String. */
     public static int getGroupCount(/*@Regex*/ String regex) {
         return Pattern.compile(regex).matcher("").groupCount();
     }
 
     /**
-     * This method is a copy of RegexUtil.isRegex.
-     * We cannot directly use RegexUtil, because it uses type annotations
-     * which cannot be used in IDEs (yet).
+     * This method is a copy of RegexUtil.isRegex. We cannot directly use RegexUtil, because it uses
+     * type annotations which cannot be used in IDEs (yet).
      */
     @SuppressWarnings("purity") // the checker cannot prove that the method is pure, but it is
     /*@org.checkerframework.dataflow.qual.Pure*/
@@ -277,7 +258,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return true;
     }
 
-    private class RegexPropagationAnnotator extends PropagationTreeAnnotator {
+    private static class RegexPropagationAnnotator extends PropagationTreeAnnotator {
 
         public RegexPropagationAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
@@ -298,9 +279,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Case 1: valid regular expression String or char literal.
-         * Adds PartialRegex annotation to String literals that are not valid
-         * regular expressions.
+         * Case 1: valid regular expression String or char literal. Adds PartialRegex annotation to
+         * String literals that are not valid regular expressions.
          */
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
@@ -324,8 +304,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Case 2: concatenation of Regex or PolyRegex String/char literals.
-         * Also handles concatenation of partial regular expressions.
+         * Case 2: concatenation of Regex or PolyRegex String/char literals. Also handles
+         * concatenation of partial regular expressions.
          */
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
@@ -347,7 +327,9 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     type.removeAnnotationInHierarchy(REGEX);
                     // ...and add a new one with the correct group count value.
                     type.addAnnotation(createRegexAnnotation(lGroupCount + rGroupCount));
-                } else if (lExprPoly && rExprPoly || lExprPoly && rExprRE || lExprRE && rExprPoly) {
+                } else if ((lExprPoly && rExprPoly)
+                        || (lExprPoly && rExprRE)
+                        || (lExprRE && rExprPoly)) {
                     type.addAnnotation(PolyRegex.class);
                 } else if (lExprPart && rExprPart) {
                     String lRegex = getPartialRegexValue(lExpr);
@@ -372,9 +354,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null; // super.visitBinary(tree, type);
         }
 
-        /**
-         * Case 2: Also handle compound String concatenation.
-         */
+        /** Case 2: Also handle compound String concatenation. */
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
             if (TreeUtils.isStringCompoundConcatenation(node)) {
@@ -395,10 +375,9 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Case 3: For a call to Pattern.compile, add an annotation to the
-         * return type that has the same group count value as the parameter.
-         * For calls to {@code asRegex(String, int)} change the return type to
-         * have the same group count as the value of the second argument.
+         * Case 3: For a call to Pattern.compile, add an annotation to the return type that has the
+         * same group count value as the parameter. For calls to {@code asRegex(String, int)} change
+         * the return type to have the same group count as the value of the second argument.
          */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
@@ -422,19 +401,14 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitMethodInvocation(tree, type);
         }
 
-        /**
-         * Returns a new PartialRegex annotation with the given partial regular
-         * expression.
-         */
+        /** Returns a new PartialRegex annotation with the given partial regular expression. */
         private AnnotationMirror createPartialRegexAnnotation(String partial) {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, PartialRegex.class);
             builder.setValue("value", partial);
             return builder.build();
         }
 
-        /**
-         * Returns the value of a PartialRegex annotation.
-         */
+        /** Returns the value of a PartialRegex annotation. */
         private String getPartialRegexValue(AnnotatedTypeMirror type) {
             return (String)
                     AnnotationUtils.getElementValuesWithDefaults(
@@ -444,11 +418,12 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Returns the value of the Regex annotation on the given type or NULL if there is no Regex annotation.
-         * If type is a TYPEVAR, WILDCARD, or INTERSECTION type, visit first their primary annotation
-         * then visit their upper bounds to get the Regex annotation.  It's get "minimum" regex count
-         * because, depending on the bounds of a typevar or wildcard, the actual type may have more than
-         * the upper bound's count.
+         * Returns the value of the Regex annotation on the given type or NULL if there is no Regex
+         * annotation. If type is a TYPEVAR, WILDCARD, or INTERSECTION type, visit first their
+         * primary annotation then visit their upper bounds to get the Regex annotation. The method
+         * gets "minimum" regex count because, depending on the bounds of a typevar or wildcard, the
+         * actual type may have more than the upper bound's count.
+         *
          * @param type type that may carry a Regex annotation
          * @return the Integer value of the Regex annotation (0 if no value exists)
          */

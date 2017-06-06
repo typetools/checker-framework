@@ -25,7 +25,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.util.Elements;
 import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory;
 import org.checkerframework.checker.initialization.qual.FBCBottom;
 import org.checkerframework.checker.initialization.qual.Initialized;
@@ -54,6 +53,7 @@ import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.DependentTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -63,9 +63,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-/**
- * The annotated type factory for the nullness type-system.
- */
+/** The annotated type factory for the nullness type-system. */
 public class NullnessAnnotatedTypeFactory
         extends InitializationAnnotatedTypeFactory<
                 NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
@@ -79,10 +77,7 @@ public class NullnessAnnotatedTypeFactory
     protected final SystemGetPropertyHandler systemGetPropertyHandler;
     protected final CollectionToArrayHeuristics collectionToArrayHeuristics;
 
-    /**
-     * Factory for arbitrary qualifiers, used for declarations and "unused"
-     * qualifier.
-     */
+    /** Factory for arbitrary qualifiers, used for declarations and "unused" qualifier. */
     protected final GeneralAnnotatedTypeFactory generalFactory;
 
     /** Cache for the nullness annotations */
@@ -108,7 +103,7 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(
                 org.checkerframework.checker.nullness.qual.LazyNonNull.class, MONOTONIC_NONNULL);
 
-        // If you update the following, also update ../../../manual/nullness-checker.tex .
+        // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex .
         // Aliases for @Nonnull:
         addAliasedAnnotation(com.sun.istack.internal.NotNull.class, NONNULL);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.NonNull.class, NONNULL);
@@ -122,7 +117,6 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(org.jmlspecs.annotation.NonNull.class, NONNULL);
         addAliasedAnnotation(android.annotation.NonNull.class, NONNULL);
         addAliasedAnnotation(android.support.annotation.NonNull.class, NONNULL);
-
         // Aliases for @Nullable:
         addAliasedAnnotation(com.sun.istack.internal.Nullable.class, NULLABLE);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.CheckForNull.class, NULLABLE);
@@ -222,10 +216,9 @@ public class NullnessAnnotatedTypeFactory
     }
 
     /**
-     * For types of left-hand side of an assignment, this method replaces {@link PolyNull} or
-     * {@link PolyAll} with {@link Nullable} if the org.checkerframework.dataflow analysis
-     * has determined that this is allowed soundly.
-     * For example:
+     * For types of left-hand side of an assignment, this method replaces {@link PolyNull} or {@link
+     * PolyAll} with {@link Nullable} if the org.checkerframework.dataflow analysis has determined
+     * that this is allowed soundly. For example:
      *
      * <pre> @PolyNull String foo(@PolyNull String param) {
      *    if (param == null) {
@@ -237,7 +230,7 @@ public class NullnessAnnotatedTypeFactory
      * }
      * </pre>
      *
-     * @param lhsType  type to replace whose polymorphic qualifier will be replaced
+     * @param lhsType type to replace whose polymorphic qualifier will be replaced
      * @param context tree used to get dataflow value
      */
     protected void replacePolyQualifier(AnnotatedTypeMirror lhsType, Tree context) {
@@ -292,9 +285,7 @@ public class NullnessAnnotatedTypeFactory
         return new NullnessTransfer((NullnessAnalysis) analysis);
     }
 
-    /**
-     * @return an AnnotatedTypeFormatter that does not print the qualifiers on null literals
-     */
+    /** @return an AnnotatedTypeFormatter that does not print the qualifiers on null literals */
     @Override
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
         return new NullnessAnnotatedTypeFormatter(
@@ -347,13 +338,11 @@ public class NullnessAnnotatedTypeFactory
     }
 
     /**
-     * If the element is {@link NonNull} when used in a static member access,
-     * modifies the element's type (by adding {@link NonNull}).
+     * If the element is {@link NonNull} when used in a static member access, modifies the element's
+     * type (by adding {@link NonNull}).
      *
-     * @param elt
-     *            the element being accessed
-     * @param type
-     *            the type of the element {@code elt}
+     * @param elt the element being accessed
+     * @param type the type of the element {@code elt}
      */
     private void annotateIfStatic(Element elt, AnnotatedTypeMirror type) {
         if (elt == null) {
@@ -392,12 +381,12 @@ public class NullnessAnnotatedTypeFactory
     }
 
     /**
-     * Nullness doesn't call propagation on binary and unary because
-     * the result is always @Initialized (the default qualifier).
+     * Nullness doesn't call propagation on binary and unary because the result is
+     * always @Initialized (the default qualifier).
      *
-     * Would this be valid to move into CommitmentTreeAnnotator.
+     * <p>Would this be valid to move into CommitmentTreeAnnotator.
      */
-    protected class NullnessPropagationAnnotator extends PropagationTreeAnnotator {
+    protected static class NullnessPropagationAnnotator extends PropagationTreeAnnotator {
 
         public NullnessPropagationAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
@@ -503,9 +492,7 @@ public class NullnessAnnotatedTypeFactory
         }
     }
 
-    /**
-     * @return the list of annotations of the non-null type system
-     */
+    /** @return the list of annotations of the non-null type system */
     public Set<Class<? extends Annotation>> getNullnessAnnotations() {
         return nullnessAnnos;
     }
@@ -520,8 +507,24 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     public AnnotationMirror getFieldInvariantAnnotation() {
-        Elements elements = processingEnv.getElementUtils();
-        return AnnotationUtils.fromClass(elements, NonNull.class);
+        return NONNULL;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>In other words, is the lower bound @NonNull?
+     *
+     * @param field field that might have invariant annotation
+     * @return whether or not field has the invariant annotation
+     */
+    @Override
+    protected boolean hasFieldInvariantAnnotation(VariableTree field) {
+        AnnotationMirror invariant = getFieldInvariantAnnotation();
+        AnnotatedTypeMirror type = getAnnotatedType(field);
+        Set<AnnotationMirror> lowerBounds =
+                AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type);
+        return AnnotationUtils.containsSame(lowerBounds, invariant);
     }
 
     @Override
@@ -536,11 +539,11 @@ public class NullnessAnnotatedTypeFactory
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (isInitializationAnnotation(rhs) || isInitializationAnnotation(lhs)) {
-                return this.isSubtypeInitialization(rhs, lhs);
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (isInitializationAnnotation(subAnno) || isInitializationAnnotation(superAnno)) {
+                return this.isSubtypeInitialization(subAnno, superAnno);
             }
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
 
         @Override

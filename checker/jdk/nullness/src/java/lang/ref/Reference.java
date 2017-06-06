@@ -25,11 +25,10 @@
 
 package java.lang.ref;
 
-import jdk.internal.vm.annotation.DontInline;
-import jdk.internal.HotSpotIntrinsicCandidate;
-import jdk.internal.misc.JavaLangRefAccess;
-import jdk.internal.misc.SharedSecrets;
-import jdk.internal.ref.Cleaner;
+import sun.misc.Cleaner;
+
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Abstract base class for reference objects.  This class defines the
@@ -245,9 +244,7 @@ public abstract class Reference<T> {
      * @return   The object to which this reference refers, or
      *           <code>null</code> if this reference object has been cleared
      */
-    @SideEffectFree
-    @HotSpotIntrinsicCandidate
-    public T get() {
+    @SideEffectFree public @Nullable T get() {
         return this.referent;
     }
 

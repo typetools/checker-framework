@@ -223,7 +223,7 @@ public interface PreparedStatement extends Statement {
      * marker in the SQL statement; if a database access error occurs or
      * this method is called on a closed <code>PreparedStatement</code>
      */
-    void setBigDecimal(int parameterIndex, BigDecimal x) throws SQLException;
+    void setBigDecimal(int parameterIndex, @Nullable BigDecimal x) throws SQLException;
 
     /**
      * Sets the designated parameter to the given Java <code>String</code> value.
@@ -253,7 +253,7 @@ public interface PreparedStatement extends Statement {
      * marker in the SQL statement; if a database access error occurs or
      * this method is called on a closed <code>PreparedStatement</code>
      */
-    void setBytes(int parameterIndex, byte x[]) throws SQLException;
+    void setBytes(int parameterIndex, @Nullable byte x[]) throws SQLException;
 
     /**
      * Sets the designated parameter to the given <code>java.sql.Date</code> value
@@ -268,7 +268,7 @@ public interface PreparedStatement extends Statement {
      * marker in the SQL statement; if a database access error occurs or
      * this method is called on a closed <code>PreparedStatement</code>
      */
-    void setDate(int parameterIndex, java.sql.Date x)
+    void setDate(int parameterIndex, java.sql.@Nullable Date x)
             throws SQLException;
 
     /**
@@ -282,7 +282,7 @@ public interface PreparedStatement extends Statement {
      * marker in the SQL statement; if a database access error occurs or
      * this method is called on a closed <code>PreparedStatement</code>
      */
-    void setTime(int parameterIndex, java.sql.Time x)
+    void setTime(int parameterIndex, java.sql.@Nullable Time x)
             throws SQLException;
 
     /**
@@ -296,7 +296,7 @@ public interface PreparedStatement extends Statement {
      * @exception SQLException if parameterIndex does not correspond to a parameter
      * marker in the SQL statement; if a database access error occurs or
      * this method is called on a closed <code>PreparedStatement</code>     */
-    void setTimestamp(int parameterIndex, java.sql.Timestamp x)
+    void setTimestamp(int parameterIndex, java.sql.@Nullable Timestamp x)
             throws SQLException;
 
     /**
@@ -319,7 +319,7 @@ public interface PreparedStatement extends Statement {
      * marker in the SQL statement; if a database access error occurs or
      * this method is called on a closed <code>PreparedStatement</code>
      */
-    void setAsciiStream(int parameterIndex, java.io.InputStream x, int length)
+    void setAsciiStream(int parameterIndex, java.io.@Nullable InputStream x, int length)
             throws SQLException;
 
     /**
@@ -351,7 +351,7 @@ public interface PreparedStatement extends Statement {
      * @deprecated Use {@code setCharacterStream}
      */
     @Deprecated
-    void setUnicodeStream(int parameterIndex, java.io.InputStream x,
+    void setUnicodeStream(int parameterIndex, java.io.@Nullable InputStream x,
                           int length) throws SQLException;
 
     /**
@@ -373,7 +373,7 @@ public interface PreparedStatement extends Statement {
      * marker in the SQL statement; if a database access error occurs or
      * this method is called on a closed <code>PreparedStatement</code>
      */
-    void setBinaryStream(int parameterIndex, java.io.InputStream x,
+    void setBinaryStream(int parameterIndex, java.io.@Nullable InputStream x,
                          int length) throws SQLException;
 
     /**
@@ -520,7 +520,7 @@ public interface PreparedStatement extends Statement {
      * @since 1.2
      */
     void setCharacterStream(int parameterIndex,
-                          java.io.Reader reader,
+                          java.io.@Nullable Reader reader,
                           int length) throws SQLException;
 
     /**
@@ -552,7 +552,7 @@ public interface PreparedStatement extends Statement {
      * @throws SQLFeatureNotSupportedException  if the JDBC driver does not support this method
      * @since 1.2
      */
-    void setBlob (int parameterIndex, Blob x) throws SQLException;
+    void setBlob (int parameterIndex, @Nullable Blob x) throws SQLException;
 
     /**
      * Sets the designated parameter to the given <code>java.sql.Clob</code> object.
@@ -567,7 +567,7 @@ public interface PreparedStatement extends Statement {
      * @throws SQLFeatureNotSupportedException  if the JDBC driver does not support this method
      * @since 1.2
      */
-    void setClob (int parameterIndex, Clob x) throws SQLException;
+    void setClob (int parameterIndex, @Nullable Clob x) throws SQLException;
 
     /**
      * Sets the designated parameter to the given <code>java.sql.Array</code> object.
@@ -631,7 +631,7 @@ public interface PreparedStatement extends Statement {
      * this method is called on a closed <code>PreparedStatement</code>
      * @since 1.2
      */
-    void setDate(int parameterIndex, java.sql.Date x, Calendar cal)
+    void setDate(int parameterIndex, java.sql.@Nullable Date x, Calendar cal)
             throws SQLException;
 
     /**
@@ -653,7 +653,7 @@ public interface PreparedStatement extends Statement {
      * this method is called on a closed <code>PreparedStatement</code>
      * @since 1.2
      */
-    void setTime(int parameterIndex, java.sql.Time x, Calendar cal)
+    void setTime(int parameterIndex, java.sql.@Nullable Time x, Calendar cal)
             throws SQLException;
 
     /**
@@ -675,7 +675,7 @@ public interface PreparedStatement extends Statement {
      * this method is called on a closed <code>PreparedStatement</code>
      * @since 1.2
      */
-    void setTimestamp(int parameterIndex, java.sql.Timestamp x, Calendar cal)
+    void setTimestamp(int parameterIndex, java.sql.@Nullable Timestamp x, Calendar cal)
             throws SQLException;
 
     /**
@@ -733,7 +733,7 @@ public interface PreparedStatement extends Statement {
      * @throws SQLFeatureNotSupportedException  if the JDBC driver does not support this method
      * @since 1.4
      */
-    void setURL(int parameterIndex, java.net.URL x) throws SQLException;
+    void setURL(int parameterIndex, java.net.@Nullable URL x) throws SQLException;
 
     /**
      * Retrieves the number, types and properties of this
@@ -786,7 +786,7 @@ public interface PreparedStatement extends Statement {
      * @throws SQLFeatureNotSupportedException  if the JDBC driver does not support this method
      * @since 1.6
      */
-     void setNString(int parameterIndex, String value) throws SQLException;
+     void setNString(int parameterIndex, @Nullable String value) throws SQLException;
 
     /**
      * Sets the designated parameter to a <code>Reader</code> object. The
@@ -804,7 +804,7 @@ public interface PreparedStatement extends Statement {
      * @throws SQLFeatureNotSupportedException  if the JDBC driver does not support this method
      * @since 1.6
      */
-     void setNCharacterStream(int parameterIndex, Reader value, long length) throws SQLException;
+     void setNCharacterStream(int parameterIndex, @Nullable Reader value, long length) throws SQLException;
 
     /**
      * Sets the designated parameter to a <code>java.sql.NClob</code> object. The driver converts this to a
@@ -819,7 +819,7 @@ public interface PreparedStatement extends Statement {
      * @throws SQLFeatureNotSupportedException  if the JDBC driver does not support this method
      * @since 1.6
      */
-     void setNClob(int parameterIndex, NClob value) throws SQLException;
+     void setNClob(int parameterIndex, @Nullable NClob value) throws SQLException;
 
     /**
      * Sets the designated parameter to a <code>Reader</code> object.  The reader must contain  the number
@@ -840,7 +840,7 @@ public interface PreparedStatement extends Statement {
      * @throws SQLFeatureNotSupportedException  if the JDBC driver does not support this method
      * @since 1.6
      */
-     void setClob(int parameterIndex, Reader reader, long length)
+     void setClob(int parameterIndex, @Nullable Reader reader, long length)
        throws SQLException;
 
     /**
@@ -867,7 +867,7 @@ public interface PreparedStatement extends Statement {
      *
      * @since 1.6
      */
-     void setBlob(int parameterIndex, InputStream inputStream, long length)
+     void setBlob(int parameterIndex, @Nullable InputStream inputStream, long length)
         throws SQLException;
     /**
      * Sets the designated parameter to a <code>Reader</code> object.  The reader must contain  the number
@@ -891,7 +891,7 @@ public interface PreparedStatement extends Statement {
      *
      * @since 1.6
      */
-     void setNClob(int parameterIndex, Reader reader, long length)
+     void setNClob(int parameterIndex, @Nullable Reader reader, long length)
        throws SQLException;
 
      /**
@@ -984,7 +984,7 @@ public interface PreparedStatement extends Statement {
      * this method is called on a closed <code>PreparedStatement</code>
      * @since 1.6
     */
-    void setAsciiStream(int parameterIndex, java.io.InputStream x, long length)
+    void setAsciiStream(int parameterIndex, java.io.@Nullable InputStream x, long length)
             throws SQLException;
     /**
      * Sets the designated parameter to the given input stream, which will have
@@ -1006,7 +1006,7 @@ public interface PreparedStatement extends Statement {
      * this method is called on a closed <code>PreparedStatement</code>
      * @since 1.6
      */
-    void setBinaryStream(int parameterIndex, java.io.InputStream x,
+    void setBinaryStream(int parameterIndex, java.io.@Nullable InputStream x,
                          long length) throws SQLException;
         /**
      * Sets the designated parameter to the given <code>Reader</code>
@@ -1031,7 +1031,7 @@ public interface PreparedStatement extends Statement {
      * @since 1.6
      */
     void setCharacterStream(int parameterIndex,
-                          java.io.Reader reader,
+                          java.io.@Nullable Reader reader,
                           long length) throws SQLException;
     //-----
     /**
@@ -1057,7 +1057,7 @@ public interface PreparedStatement extends Statement {
      * @throws SQLFeatureNotSupportedException  if the JDBC driver does not support this method
        * @since 1.6
     */
-    void setAsciiStream(int parameterIndex, java.io.InputStream x)
+    void setAsciiStream(int parameterIndex, java.io.@Nullable InputStream x)
             throws SQLException;
     /**
      * Sets the designated parameter to the given input stream.
@@ -1081,7 +1081,7 @@ public interface PreparedStatement extends Statement {
      * @throws SQLFeatureNotSupportedException  if the JDBC driver does not support this method
      * @since 1.6
      */
-    void setBinaryStream(int parameterIndex, java.io.InputStream x)
+    void setBinaryStream(int parameterIndex, java.io.@Nullable InputStream x)
     throws SQLException;
         /**
      * Sets the designated parameter to the given <code>Reader</code>
@@ -1109,7 +1109,7 @@ public interface PreparedStatement extends Statement {
      * @since 1.6
      */
     void setCharacterStream(int parameterIndex,
-                          java.io.Reader reader) throws SQLException;
+                          java.io.@Nullable Reader reader) throws SQLException;
   /**
      * Sets the designated parameter to a <code>Reader</code> object. The
      * <code>Reader</code> reads the data till end-of-file is reached. The
@@ -1133,7 +1133,7 @@ public interface PreparedStatement extends Statement {
      * @throws SQLFeatureNotSupportedException  if the JDBC driver does not support this method
      * @since 1.6
      */
-     void setNCharacterStream(int parameterIndex, Reader value) throws SQLException;
+     void setNCharacterStream(int parameterIndex, @Nullable Reader value) throws SQLException;
 
     /**
      * Sets the designated parameter to a <code>Reader</code> object.
@@ -1157,7 +1157,7 @@ public interface PreparedStatement extends Statement {
      * @throws SQLFeatureNotSupportedException  if the JDBC driver does not support this method
      * @since 1.6
      */
-     void setClob(int parameterIndex, Reader reader)
+     void setClob(int parameterIndex, @Nullable Reader reader)
        throws SQLException;
 
     /**
@@ -1185,7 +1185,7 @@ public interface PreparedStatement extends Statement {
      *
      * @since 1.6
      */
-     void setBlob(int parameterIndex, InputStream inputStream)
+     void setBlob(int parameterIndex, @Nullable InputStream inputStream)
         throws SQLException;
     /**
      * Sets the designated parameter to a <code>Reader</code> object.
@@ -1210,7 +1210,7 @@ public interface PreparedStatement extends Statement {
      *
      * @since 1.6
      */
-     void setNClob(int parameterIndex, Reader reader)
+     void setNClob(int parameterIndex, @Nullable Reader reader)
        throws SQLException;
 
     //------------------------- JDBC 4.2 -----------------------------------

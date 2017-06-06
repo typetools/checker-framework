@@ -1,8 +1,6 @@
 // Test for Checker Framework issue 795
 // https://github.com/typetools/checker-framework/issues/795
 
-// @skip-test until the issue is fixed
-
 import java.util.HashMap;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.*;
@@ -10,12 +8,13 @@ import org.checkerframework.checker.nullness.qual.*;
 class KeyForLocalVariable {
 
     public static void localVariableShadowing() {
-        // There should be a warning here that m0 is not in scope
+        //:: error: (expression.unparsable.type.invalid)
         @KeyFor("m0") String kk;
         {
             Map<String, Integer> m0 = new HashMap<String, Integer>();
             @SuppressWarnings("keyfor")
             @KeyFor("m0") String k = "key";
+            //:: error: (assignment.type.incompatible)
             kk = k;
         }
         {
@@ -26,7 +25,7 @@ class KeyForLocalVariable {
     }
 
     public static void invalidLocalVariable() {
-        // There should be a warning here that m0 is not in scope
+        //:: error: (expression.unparsable.type.invalid)
         @KeyFor("foobar") String kk;
     }
 }

@@ -5,6 +5,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -24,6 +25,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -40,6 +42,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ValueLiteral;
+import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -55,17 +58,16 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 
 /**
- * A collection of helper methods to parse a string that represents a restricted
- * Java expression. Such expressions can be found in annotations (e.g., to
- * specify a pre- or postcondition).
+ * A collection of helper methods to parse a string that represents a restricted Java expression.
+ * Such expressions can be found in annotations (e.g., to specify a pre- or postcondition).
  *
  * @author Stefan Heule
  */
 public class FlowExpressionParseUtil {
 
     /**
-     * Regular expression for an identifier.  Permits '$' in the name,
-     * though that character never appears in Java source code.
+     * Regular expression for an identifier. Permits '$' in the name, though that character never
+     * appears in Java source code.
      */
     protected static final String identifierRegex = "[a-zA-Z_$][a-zA-Z_$0-9]*";
     /** Regular expression for a formal parameter use. */
@@ -83,25 +85,24 @@ public class FlowExpressionParseUtil {
     /** Matches a parameter */
     protected static final Pattern parameterPattern = anchored(parameterRegex);
     /**
-     * Matches 'this', the self reference.
-     * Does not allow "#0" because people reading the code might assume the
-     * numbering starts at 0 and assume that #0 is the first formal parameter.
+     * Matches 'this', the self reference. Does not allow "#0" because people reading the code might
+     * assume the numbering starts at 0 and assume that #0 is the first formal parameter.
      */
     protected static final Pattern thisPattern = anchored("this");
     /** Matches 'super' */
     protected static final Pattern superPattern = anchored("super");
     /** Matches an identifier */
     protected static final Pattern identifierPattern = anchored(identifierRegex);
-    /** Matches a method call.  Capturing groups 1 and 2 are the method and arguments. */
+    /** Matches a method call. Capturing groups 1 and 2 are the method and arguments. */
     protected static final Pattern methodPattern = anchored("(" + identifierRegex + ")\\((.*)\\)");
-    /** Matches an array access.  Capturing groups 1 and 2 are the array and index. */
+    /** Matches an array access. Capturing groups 1 and 2 are the array and index. */
     protected static final Pattern arrayPattern = anchored("(.*)\\[(.*)\\]");
-    /** Matches a field access.  Capturing groups 1 and 2 are the object and field. */
+    /** Matches a field access. Capturing groups 1 and 2 are the object and field. */
     protected static final Pattern memberselect = anchored("([^.]+)\\.(.+)");
     /** Matches integer literals */
-    protected static final Pattern intPattern = anchored("[-+]?[1-9][0-9]*");
+    protected static final Pattern intPattern = anchored("[-+]?[0-9]+");
     /** Matches long literals */
-    protected static final Pattern longPattern = anchored("[-+]?[1-9][0-9]*L");
+    protected static final Pattern longPattern = anchored("[-+]?[0-9]+[Ll]");
     /** Matches string literals */
     // Regex can be found at, for example, http://stackoverflow.com/a/481587/173852
     protected static final Pattern stringPattern = anchored("\"(?:[^\"\\\\]|\\\\.)*\"");
@@ -111,17 +112,13 @@ public class FlowExpressionParseUtil {
     protected static final Pattern parenthesesPattern = anchored("\\((.*)\\)");
 
     /**
-     * Parse a string and return its representation as a {@link Receiver}, or
-     * throw an {@link FlowExpressionParseException}.
+     * Parse a string and return its representation as a {@link Receiver}, or throw an {@link
+     * FlowExpressionParseException}.
      *
-     * @param expression
-     *            flow expression to parse.
-     * @param context
-     *            information about any receiver and arguments
+     * @param expression flow expression to parse
+     * @param context information about any receiver and arguments
      * @param localScope path to local scope to use
-     *
      * @param useLocalScope whether {@code localScope} should be used to resolve identifiers
-     *
      */
     public static FlowExpressions.Receiver parse(
             String expression,
@@ -355,6 +352,10 @@ public class FlowExpressionParseUtil {
         boolean originalReceiver = true;
         VariableElement fieldElem = null;
 
+        if (receiverType.getKind() == TypeKind.ARRAY && s.equals("length")) {
+            fieldElem = resolver.findField(s, receiverType, path);
+        }
+
         // Search for field in each enclosing class.
         while (receiverType.getKind() == TypeKind.DECLARED) {
             fieldElem = resolver.findField(s, receiverType, path);
@@ -419,8 +420,11 @@ public class FlowExpressionParseUtil {
     private static Receiver parseParameter(String s, FlowExpressionContext context)
             throws FlowExpressionParseException {
         Matcher parameterMatcher = parameterPattern.matcher(s);
-        if (!parameterMatcher.matches() || context.arguments == null) {
+        if (!parameterMatcher.matches()) {
             return null;
+        }
+        if (context.arguments == null) {
+            throw constructParserException(s, "No parameter found.");
         }
         int idx = -1;
         try {
@@ -469,6 +473,10 @@ public class FlowExpressionParseUtil {
             // try to find the correct method
             Resolver resolver = new Resolver(env);
             TypeMirror receiverType = context.receiver.getType();
+
+            if (receiverType.getKind() == TypeKind.ARRAY) {
+                element = resolver.findMethod(methodName, receiverType, path, parameterTypes);
+            }
 
             // Search for method in each enclosing class.
             while (receiverType.getKind() == TypeKind.DECLARED) {
@@ -536,9 +544,6 @@ public class FlowExpressionParseUtil {
     }
 
     private static boolean isArray(String s, FlowExpressionContext context) {
-        if (context.parsingMember) {
-            return false;
-        }
         Matcher arraymatcher = arrayPattern.matcher(s);
         return arraymatcher.matches();
     }
@@ -553,7 +558,8 @@ public class FlowExpressionParseUtil {
         String receiverStr = arraymatcher.group(1);
         String indexStr = arraymatcher.group(2);
         Receiver receiver = parseHelper(receiverStr, context, path);
-        Receiver index = parseHelper(indexStr, context, path);
+        FlowExpressionContext contextForIndex = context.copyAndUseOuterReceiver();
+        Receiver index = parseHelper(indexStr, contextForIndex, path);
         TypeMirror receiverType = receiver.getType();
         if (!(receiverType instanceof ArrayType)) {
             throw constructParserException(
@@ -582,20 +588,18 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * Matches a substring of {@code expression} to a package and class name
-     * (starting from the beginning of the string).
+     * Matches a substring of {@code expression} to a package and class name (starting from the
+     * beginning of the string).
      *
      * @param expression the expression string that may start with a package and class name
      * @param resolver the {@code Resolver} for the current processing environment
      * @param path the tree path to the local scope
-     * @return {@code null} if the expression string did not start with a package name;
-     * otherwise a {@code Pair} containing the {@code ClassName} for the matched
-     * class, and the remaining substring of the expression (possibly null) after
-     * the package and class name.
-     * @throws FlowExpressionParseException if the entire expression string
-     * matches a package name (but no class name), or if a package name was
-     * matched but the class could not be found within the package
-     * (e.g., {@code "myExistingPackage.myNonExistentClass"}).
+     * @return {@code null} if the expression string did not start with a package name; otherwise a
+     *     {@code Pair} containing the {@code ClassName} for the matched class, and the remaining
+     *     substring of the expression (possibly null) after the package and class name.
+     * @throws FlowExpressionParseException if the entire expression string matches a package name
+     *     (but no class name), or if a package name was matched but the class could not be found
+     *     within the package (e.g., {@code "myExistingPackage.myNonExistentClass"}).
      */
     private static Pair<ClassName, String> matchPackageAndClassNameWithinExpression(
             String expression, Resolver resolver, TreePath path)
@@ -649,17 +653,16 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * Greedily matches the longest substring of {@code expression} to a package
-     * (starting from the beginning of the string).
+     * Greedily matches the longest substring of {@code expression} to a package (starting from the
+     * beginning of the string).
      *
      * @param expression the expression string that may start with a package name
      * @param resolver the {@code Resolver} for the current processing environment
      * @param path the tree path to the local scope
-     * @return {@code null} if the expression string did not start with a package name;
-     * otherwise a {@code Pair} containing the {@code PackageSymbol} for the matched
-     * package, and the remaining substring of the expression (always non-null) after
-     * the package name
-     * @throws FlowExpressionParseException if the entire expression string matches a package name.
+     * @return {@code null} if the expression string did not start with a package name; otherwise a
+     *     {@code Pair} containing the {@code PackageSymbol} for the matched package, and the
+     *     remaining substring of the expression (always non-null) after the package name
+     * @throws FlowExpressionParseException if the entire expression string matches a package name
      */
     private static Pair<PackageSymbol, String> matchPackageNameWithinExpression(
             String expression, Resolver resolver, TreePath path)
@@ -673,8 +676,7 @@ public class FlowExpressionParseUtil {
         }
 
         String packageName = dotMatcher.group(1);
-        String
-                remainingString = dotMatcher.group(2),
+        String remainingString = dotMatcher.group(2),
                 remainingStringIfPackageMatched = remainingString;
 
         PackageSymbol result = null; // the result of this method call
@@ -735,16 +737,16 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * A very simple parser for parameter lists, i.e. strings of the form
-     * {@code a, b, c} for some expressions {@code a}, {@code b} and {@code c}.
+     * A very simple parser for parameter lists, i.e. strings of the form {@code a, b, c} for some
+     * expressions {@code a}, {@code b} and {@code c}.
      *
      * @author Stefan Heule
      */
     private static class ParameterListParser {
 
         /**
-         * Parse a parameter list and return the parameters as a list (or throw
-         * a {@link FlowExpressionParseException}).
+         * Parse a parameter list and return the parameters as a list (or throw a {@link
+         * FlowExpressionParseException}).
          */
         private static List<Receiver> parseParameterList(
                 String parameterString,
@@ -863,11 +865,10 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * @return a list of 1-based indices of all formal parameters that
-     * occur in {@code s}.  Each formal parameter occurs in s as a string
-     * like "#1" or "#4".  This routine does not do proper parsing; for
-     * instance, if "#2" appears within a string in s, then 2 would still
-     * be in the result list.
+     * @return a list of 1-based indices of all formal parameters that occur in {@code s}. Each
+     *     formal parameter occurs in s as a string like "#1" or "#4". This routine does not do
+     *     proper parsing; for instance, if "#2" appears within a string in s, then 2 would still be
+     *     in the result list.
      */
     public static List<Integer> parameterIndices(String s) {
         List<Integer> result = new ArrayList<>();
@@ -884,9 +885,8 @@ public class FlowExpressionParseUtil {
     ///
 
     /**
-     * Context used to parse a flow expression.
-     * When parsing flow expression E in annotation {@code @A(E)},
-     * The context is the program element that is annotated by {@code @A(E)}.
+     * Context used to parse a flow expression. When parsing flow expression E in annotation
+     * {@code @A(E)}, The context is the program element that is annotated by {@code @A(E)}.
      */
     public static class FlowExpressionContext {
         public final Receiver receiver;
@@ -900,9 +900,11 @@ public class FlowExpressionParseUtil {
 
         /**
          * Creates context for parsing a flow expression.
+         *
          * @param receiver used to replace "this" in a flow expression and used to resolve
-         *                 identifiers in the flow expression with an implicit "this"
-         * @param arguments used to replace parameter references, e.g. #1, in flow expressions
+         *     identifiers in the flow expression with an implicit "this"
+         * @param arguments used to replace parameter references, e.g. #1, in flow expressions, null
+         *     if no arguments
          * @param checkerContext used to create {@link FlowExpressions.Receiver}s
          */
         public FlowExpressionContext(
@@ -935,11 +937,12 @@ public class FlowExpressionParseUtil {
         }
 
         /**
-         * Creates a {@link FlowExpressionContext} for the method declared in {@code methodDeclaration}.
+         * Creates a {@link FlowExpressionContext} for the method declared in {@code
+         * methodDeclaration}.
          *
-         * @param methodDeclaration Used translate parameter numbers in a flow expression to formal parameters of
-         *             the method.
-         * @param enclosingTree Used to look up fields and as type of "this" in flow expressions
+         * @param methodDeclaration used translate parameter numbers in a flow expression to formal
+         *     parameters of the method
+         * @param enclosingTree used to look up fields and as type of "this" in flow expressions
          * @param checkerContext use to build FlowExpressions.Receiver
          * @return context created of {@code methodDeclaration}
          */
@@ -950,11 +953,12 @@ public class FlowExpressionParseUtil {
         }
 
         /**
-         * Creates a {@link FlowExpressionContext} for the method declared in {@code methodDeclaration}.
+         * Creates a {@link FlowExpressionContext} for the method declared in {@code
+         * methodDeclaration}.
          *
-         * @param methodDeclaration Used translate parameter numbers in a flow expression to formal parameters of
-         *             the method.
-         * @param enclosingType Used to look up fields and as type of "this" in flow expressions
+         * @param methodDeclaration used translate parameter numbers in a flow expression to formal
+         *     parameters of the method
+         * @param enclosingType used to look up fields and as type of "this" in flow expressions
          * @param checkerContext use to build FlowExpressions.Receiver
          * @return context created of {@code methodDeclaration}
          */
@@ -962,7 +966,16 @@ public class FlowExpressionParseUtil {
                 MethodTree methodDeclaration,
                 TypeMirror enclosingType,
                 BaseContext checkerContext) {
-            Node receiver = new ImplicitThisLiteralNode(enclosingType);
+
+            Node receiver;
+            if (methodDeclaration.getModifiers().getFlags().contains(Modifier.STATIC)) {
+                Element classElt =
+                        ElementUtils.enclosingClass(
+                                TreeUtils.elementFromDeclaration(methodDeclaration));
+                receiver = new ClassNameNode(enclosingType, classElt);
+            } else {
+                receiver = new ImplicitThisLiteralNode(enclosingType);
+            }
             Receiver internalReceiver =
                     FlowExpressions.internalReprOf(
                             checkerContext.getAnnotationProvider(), receiver);
@@ -978,13 +991,33 @@ public class FlowExpressionParseUtil {
             return flowExprContext;
         }
 
+        public static FlowExpressionContext buildContextForLambda(
+                LambdaExpressionTree lambdaTree, TreePath path, BaseContext checkerContext) {
+            TypeMirror enclosingType = InternalUtils.typeOf(TreeUtils.enclosingClass(path));
+            Node receiver = new ImplicitThisLiteralNode(enclosingType);
+            Receiver internalReceiver =
+                    FlowExpressions.internalReprOf(
+                            checkerContext.getAnnotationProvider(), receiver);
+            List<Receiver> internalArguments = new ArrayList<>();
+            for (VariableTree arg : lambdaTree.getParameters()) {
+                internalArguments.add(
+                        FlowExpressions.internalReprOf(
+                                checkerContext.getAnnotationProvider(),
+                                new LocalVariableNode(arg, receiver)));
+            }
+            FlowExpressionContext flowExprContext =
+                    new FlowExpressionContext(internalReceiver, internalArguments, checkerContext);
+            return flowExprContext;
+        }
+
         /**
-         * Creates a {@link FlowExpressionContext} for the method declared in {@code methodDeclaration}.
+         * Creates a {@link FlowExpressionContext} for the method declared in {@code
+         * methodDeclaration}.
          *
-         * @param methodDeclaration Used translate parameter numbers in a flow expression to formal
-         *                          parameters of the method.
-         * @param currentPath To find the enclosing class, which is used to look up fields and as type
-         *                    of "this" in flow expressions
+         * @param methodDeclaration used translate parameter numbers in a flow expression to formal
+         *     parameters of the method
+         * @param currentPath to find the enclosing class, which is used to look up fields and as
+         *     type of "this" in flow expressions
          * @param checkerContext use to build FlowExpressions.Receiver
          * @return context created of {@code methodDeclaration}
          */
@@ -995,12 +1028,13 @@ public class FlowExpressionParseUtil {
         }
 
         /**
-         * @return a {@link FlowExpressionContext} for the class {@code classTree} as
-         *         seen at the class declaration.
+         * @return a {@link FlowExpressionContext} for the class {@code classTree} as seen at the
+         *     class declaration.
          */
         public static FlowExpressionContext buildContextForClassDeclaration(
                 ClassTree classTree, BaseContext checkerContext) {
             Node receiver = new ImplicitThisLiteralNode(InternalUtils.typeOf(classTree));
+
             Receiver internalReceiver =
                     FlowExpressions.internalReprOf(
                             checkerContext.getAnnotationProvider(), receiver);
@@ -1012,8 +1046,8 @@ public class FlowExpressionParseUtil {
 
         /**
          * @return a {@link FlowExpressionContext} for the method {@code methodInvocation}
-         *         (represented as a {@link Node} as seen at the method use (i.e.,
-         *         at a method call site).
+         *     (represented as a {@link Node} as seen at the method use (i.e., at a method call
+         *     site).
          */
         public static FlowExpressionContext buildContextForMethodUse(
                 MethodInvocationNode methodInvocation, BaseContext checkerContext) {
@@ -1033,9 +1067,8 @@ public class FlowExpressionParseUtil {
         }
 
         /**
-         * @return a {@link FlowExpressionContext} for the constructor {@code n}
-         *         (represented as a {@link Node} as seen at the method use (i.e.,
-         *         at a method call site).
+         * @return a {@link FlowExpressionContext} for the constructor {@code n} (represented as a
+         *     {@link Node} as seen at the method use (i.e., at a method call site).
          */
         public static FlowExpressionContext buildContextForNewClassUse(
                 ObjectCreationNode n, BaseContext checkerContext) {
@@ -1059,8 +1092,8 @@ public class FlowExpressionParseUtil {
         }
 
         /**
-         * Returns a copy of the context that differs in that it has a different
-         * receiver. The outer receiver remains unchanged.
+         * Returns a copy of the context that differs in that it has a different receiver. The outer
+         * receiver remains unchanged.
          */
         public FlowExpressionContext copyChangeToParsingMemberOfReceiver(Receiver receiver) {
             return new FlowExpressionContext(
@@ -1068,9 +1101,8 @@ public class FlowExpressionParseUtil {
         }
 
         /**
-         * Returns a copy of the context that differs in that it uses the
-         * outer receiver as main receiver (and also uses it as the outer
-         * receiver).
+         * Returns a copy of the context that differs in that it uses the outer receiver as main
+         * receiver (and also uses it as the outer receiver).
          */
         public FlowExpressionContext copyAndUseOuterReceiver() {
             return new FlowExpressionContext(
@@ -1080,11 +1112,10 @@ public class FlowExpressionParseUtil {
 
     /**
      * Returns the type of the inner most enclosing class.Type.noType is returned if no enclosing
-     * class is found. This is in contrast to {@link DeclaredType#getEnclosingType()} which
-     * returns the type of the inner most instance.  If the inner most enclosing class is static
-     * this method will return the type of that class where as
-     * {@link DeclaredType#getEnclosingType()} will return the type of the inner most enclosing
-     * class that is not static.
+     * class is found. This is in contrast to {@link DeclaredType#getEnclosingType()} which returns
+     * the type of the inner most instance. If the inner most enclosing class is static this method
+     * will return the type of that class where as {@link DeclaredType#getEnclosingType()} will
+     * return the type of the inner most enclosing class that is not static.
      *
      * @param type a DeclaredType
      * @return the type of the innermost enclosing class or Type.noType
@@ -1116,8 +1147,8 @@ public class FlowExpressionParseUtil {
     ///
 
     /**
-     * An exception that indicates a parse error. It contains a {@link Result}
-     * that can be used for error reporting.
+     * An exception that indicates a parse error. It contains a {@link Result} that can be used for
+     * error reporting.
      */
     public static class FlowExpressionParseException extends Exception {
         private static final long serialVersionUID = 1L;
@@ -1139,7 +1170,8 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} with explanation {@code explanation}.
+     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} with
+     * explanation {@code explanation}.
      */
     private static FlowExpressionParseException constructParserException(
             String expr, String explanation) {
@@ -1147,7 +1179,8 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} whose parsing threw {@code cause}.
+     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} whose parsing
+     * threw {@code cause}.
      */
     private static FlowExpressionParseException constructParserException(
             String expr, Throwable cause) {
@@ -1155,7 +1188,8 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} with explanation {@code explanation}, whose parsing threw {@code cause}.
+     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} with
+     * explanation {@code explanation}, whose parsing threw {@code cause}.
      */
     private static FlowExpressionParseException constructParserException(
             String expr, String explanation, Throwable cause) {

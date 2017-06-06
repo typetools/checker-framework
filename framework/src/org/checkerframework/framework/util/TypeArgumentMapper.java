@@ -18,50 +18,57 @@ import javax.lang.model.util.Types;
 import org.checkerframework.javacutil.Pair;
 
 /**
- * Records any mapping between the type parameters of a subtype to the corresponding
- * type parameters of a supertype.
- * e.g., Suppose we have the following classes:
+ * Records any mapping between the type parameters of a subtype to the corresponding type parameters
+ * of a supertype. e.g., Suppose we have the following classes:
+ *
  * <pre>{@code
- *      class Map<M1,M2>
- *      class HashMap<H1, H2> extends Map<H1,H2>
+ * class Map<M1,M2>
+ * class HashMap<H1, H2> extends Map<H1,H2>
  * }</pre>
- *  And we pass HashMap and Map to mapTypeArguments, the result would be:
+ *
+ * And we pass HashMap and Map to mapTypeArguments, the result would be:
+ *
  * <pre>{@code
- *      Map(H1 -> M1, H2 -> M2)
+ * Map(H1 &rArr; M1, H2 &rArr; M2)
  * }</pre>
  *
  * Note, a single type argument in the subtype can map to multiple type parameters in the supertype.
  * e.g.,
+ *
  * <pre>{@code
- *      class OneTypeMap<O1> extends Map<O1,O1>
+ * class OneTypeMap<O1> extends Map<O1,O1>
  * }</pre>
+ *
  * would have the result:
+ *
  * <pre>{@code
- *      Map(O1 -> [M1,M2])
+ * Map(O1 &rArr; [M1,M2])
  * }</pre>
  *
  * This utility only maps between corresponding type parameters, so the following class:
+ *
  * <pre>{@code
- *      class StringMap extends Map<String,String>
+ * class StringMap extends Map<String,String>
  * }</pre>
+ *
  * would have an empty map as a result:
+ *
  * <pre>{@code
- *      Map() // there are no type argument relationships between the two types
+ * Map() // there are no type argument relationships between the two types
  * }</pre>
  */
 public class TypeArgumentMapper {
 
     /**
-     * Returns a mapping from subtype's type parameter indices to the indices of corresponding
-     * type parameters in supertype.
-     *
+     * Returns a mapping from subtype's type parameter indices to the indices of corresponding type
+     * parameters in supertype.
      */
     public static Set<Pair<Integer, Integer>> mapTypeArgumentIndices(
             final TypeElement subtype, final TypeElement supertype, final Types types) {
         Set<Pair<Integer, Integer>> result = new HashSet<>();
         if (subtype.equals(supertype)) {
             for (int i = 0; i < subtype.getTypeParameters().size(); i++) {
-                result.add(Pair.of(new Integer(i), new Integer(i)));
+                result.add(Pair.of(Integer.valueOf(i), Integer.valueOf(i)));
             }
 
         } else {
@@ -87,15 +94,13 @@ public class TypeArgumentMapper {
         return result;
     }
 
-    /**
-     * @return a Map(type parameter symbol &rarr; index in type parameter list)
-     */
+    /** @return a Map(type parameter symbol &rarr; index in type parameter list) */
     private static Map<TypeParameterElement, Integer> getElementToIndex(TypeElement typeElement) {
         Map<TypeParameterElement, Integer> result = new LinkedHashMap<>();
 
         List<? extends TypeParameterElement> params = typeElement.getTypeParameters();
         for (int i = 0; i < params.size(); i++) {
-            result.put(params.get(i), new Integer(i));
+            result.put(params.get(i), Integer.valueOf(i));
         }
 
         return result;
@@ -105,16 +110,17 @@ public class TypeArgumentMapper {
      * Returns a mapping from the type parameters of subtype to a list of the type parameters in
      * supertype that must be the same type as subtype.
      *
-     * e.g.,
+     * <p>e.g.,
+     *
      * <pre>{@code
      * class A<A1,A2,A3>
      * class B<B1,B2,B3,B4> extends A<B1,B1,B3> {}
      * }</pre>
      *
-     * results in a {@code Map(B1 -> [A1,A2], B2 -> [], B3 -> [A3], B4 -> [])}
+     * results in a {@code Map(B1 &rArr; [A1,A2], B2 &rArr; [], B3 &rArr; [A3], B4 &rArr; [])}
      *
-     * @return a mapping from the type parameters of subtype to the supertype type parameter's
-     * that to which they are a type argument
+     * @return a mapping from the type parameters of subtype to the supertype type parameter's that
+     *     to which they are a type argument
      */
     public static Map<TypeParameterElement, Set<TypeParameterElement>> mapTypeArguments(
             final TypeElement subtype, final TypeElement supertype, final Types types) {
@@ -210,8 +216,9 @@ public class TypeArgumentMapper {
     }
 
     /**
-     * Create a list of TypeRecord's that form a "path" to target from subtype.
-     * e.g. Suppose I have the types
+     * Create a list of TypeRecord's that form a "path" to target from subtype. e.g. Suppose I have
+     * the types
+     *
      * <pre>{@code
      * interface Map<M1,M2>
      * class AbstractMap<A1,A2> implements Map<A1,A2>, Iterable<Entry<M1,M2>>
@@ -227,19 +234,20 @@ public class TypeArgumentMapper {
      * }</pre>
      *
      * Note: You can have an implementation of the same interface inherited multiple times as long
-     * as the parameterization of that interface remains the same
-     * e.g.
+     * as the parameterization of that interface remains the same e.g.
+     *
      * <pre>{@code
      * interface List<E>
      * class AbstractList<A> implements List<E>
      * class ArrayList<T> extends AbstractList<T> implements List<T>
      * }</pre>
+     *
      * Notice how ArrayList implements list both by inheriting from AbstractList and from explicitly
-     * listing it in the implements clause.  We prioritize finding a path through the list of interfaces first
-     * since this will be the shorter path.
+     * listing it in the implements clause. We prioritize finding a path through the list of
+     * interfaces first since this will be the shorter path.
      *
      * @return a set of type records that represents the sequence of directSupertypes between
-     * subtype and target
+     *     subtype and target
      */
     private static List<TypeRecord> depthFirstSearchForSupertype(
             final TypeElement subtype, final TypeElement target, final Types types) {
@@ -250,9 +258,7 @@ public class TypeArgumentMapper {
         return result;
     }
 
-    /**
-     * Computes one level for depthFirstSearchForSupertype then recurses.
-     */
+    /** Computes one level for depthFirstSearchForSupertype then recurses. */
     private static List<TypeRecord> recursiveDepthFirstSearch(
             final Stack<TypeRecord> pathFromRoot, final TypeElement target, final Types types) {
         List<TypeRecord> path = null;
@@ -300,17 +306,20 @@ public class TypeArgumentMapper {
     }
 
     /**
-     *  Maps a class or interface's declaration element to the type it would be if viewed from a subtype class or interface
+     * Maps a class or interface's declaration element to the type it would be if viewed from a
+     * subtype class or interface
      *
-     * e.g. suppose we have the elements for the declarations:
+     * <p>e.g. suppose we have the elements for the declarations:
+     *
      * <pre>{@code
      * class A<Ta>
      * class B<Tb> extends A<Tb>
      * }</pre>
      *
      * The type record of B if it is viewed as class A would bed:
+     *
      * <pre>{@code
-     *    TypeRecord( element = A<Ta>, type = A<Tb> )
+     * TypeRecord( element = A<Ta>, type = A<Tb> )
      * }</pre>
      *
      * That is, B can be viewed as an object of type A with an type argument of type parameter Tb

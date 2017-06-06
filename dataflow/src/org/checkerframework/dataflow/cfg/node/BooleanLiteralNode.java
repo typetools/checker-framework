@@ -14,7 +14,6 @@ import java.util.Collections;
  * </pre>
  *
  * @author Stefan Heule
- *
  */
 public class BooleanLiteralNode extends ValueLiteralNode {
 

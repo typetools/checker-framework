@@ -22,9 +22,13 @@
 
     <property environment="env"/>
 
-    <property name="JAVA_7_HOME" value="${env.JAVA_7_HOME}" />
-    <property name="JAVA_8_HOME" value="${env.JAVA_8_HOME}" />
-    <property name="JAVA_9_HOME" value="${env.JAVA_9_HOME}" />
+    <!-- Whether or not java8 sources should be compiled even though jdk7orlower is used.-->
+    <condition property="should-force-compile-java8">
+        <and>
+            <istrue value="${jdk7orlower}"/>
+            <isset property="env.JAVA_8_HOME"/>
+        </and>
+    </condition>
 
     <!--
          NOTE LT_BIN IN THE NEXT FEW TARGETS IS SOLELY FOR bin-devel/javac and Jenkins.
@@ -33,19 +37,6 @@
     -->
     <property name="LT_BIN" value=""/>
 
-    <condition property="jdkName" value="jdk7.jar">
-        <contains string="${java.version}" substring="1.7"/>
-    </condition>
-
-    <condition property="jdkName" value="jdk8.jar">
-        <contains string="${java.version}" substring="1.8"/>
-    </condition>
-
-    <!-- TODO: raise an error if no supported version found. -->
-    <condition property="jdkName" value="jdk9.jar" else="UNSUPPORTED">
-        <!-- TODO: is there something more fine-grained than just 9? -->
-        <contains string="${java.version}" substring="9"/>
-    </condition>
 
     <!-- Used to have:
            depends="touch-jdk"
@@ -56,6 +47,8 @@
         <mkdir dir="${tests.build}"/>
         <mkdir dir="${tests.build}/testclasses"/>
         <mkdir dir="${api.doc}" />
+
+        <symlink link="${checkerframework}/docs/api" resource="../checker/${api.doc}" overwrite="true" failonerror="false"/>
 
         <available property="framework.project"
                    file="${framework.loc}/build.xml"/>
@@ -119,7 +112,7 @@
         <delete failonerror="false">
             <fileset dir="${tests.build}" includes="**/*.class"/>
             <fileset dir="jdk" includes="**/*.class"/>
-            <fileset dir="${checker.loc}/examples" includes="**/*.class"/>
+            <fileset dir="${docs.loc}/examples" includes="**/*.class"/>
         </delete>
 
         <delete dir="${dist}"/>
@@ -139,6 +132,7 @@
             description="Set properties: filesets and build.uptodate">
         <fileset id="src.files" dir="${src}">
             <include name="**/*.java"/>
+            <exclude name="${checker.jdk8orhigher.sources}"/>
             <exclude name="**/package-info.java"/>
         </fileset>
 
@@ -204,6 +198,7 @@
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
+                    <exclude name="${checker.jdk8orhigher.sources}"/>
                 </fileset>
                 <!-- Recompile dependent projects with annotations-in-comments
                      enabled, in order to get classes with qualified types. -->
@@ -232,23 +227,25 @@
               failonerror="true"
               classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
-            <!-- Option no longer exists in JDK 9.
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
-            -->
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+
             <arg value="-g"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
-            <arg line="-sourcepath ${src}"/>
-            <arg line="-d ${build}"/>
-            <arg line="@${tmpdir}/srcfiles-checker.txt"/>
-            <arg line="-version"/>
-            <arg line="-Xlint"/>
-            <arg line="-Werror"/>
+            <arg value="-sourcepath"/>
+            <arg value="${src}"/>
+            <arg value="-d"/>
+            <arg value="${build}"/>
+            <arg value="@${tmpdir}/srcfiles-checker.txt"/>
+            <arg value="-version"/>
+            <arg value="-Xlint"/>
+            <arg value="-Werror"/>
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
 
+        <antcall target="-compile-java8"/>
         <!--
         Touch doesn't work on a directory, so can't do:
            <touch file="${build}"/>
@@ -256,6 +253,20 @@
         -->
         <touch file="${build}/.timestamp"/>
         <delete file="${build}/.timestamp"/>
+    </target>
+
+    <target name="-compile-java8" depends="-force-compile-java8"
+            description="Compiles java 8 sources if JAVA_8_HOME is set or javac is already java8">
+        <antcall target="compile-java8-sources">
+            <param name="java8-output" value="${build}"/>
+        </antcall>
+    </target>
+    <target name="-force-compile-java8" if="should-force-compile-java8">
+        <exec executable="ant" failonerror="true">
+            <arg value="compile-java8-sources"/>
+            <arg value="-Djava8-output=${build}"/>
+            <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
+        </exec>
     </target>
 
     <!-- TODO: add a type-checking target that doesn't use
@@ -277,7 +288,7 @@
         <!-- With Ant 1.9.4 or later, add to each javadoc task:
             failonwarning="true"
             but Travis is stuck on Ant 1.8.2 as of 6/2016 -->
-        <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}:${annotation-file-utilities.loc}/${src}"
+        <javadoc sourcepath="${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}:${annotation-file-utilities.loc}/${src}"
                  destdir="${api.doc}"
                  private="${javadoc.private}"
                  encoding="UTF-8"
@@ -295,20 +306,37 @@
             <package name="org.checkerframework.common.*"/>
             <package name="org.checkerframework.checker.*"/>
 
+            <fileset dir="${checker.loc}/${src}">
+                <include name="**/*.java"/>
+                <exclude name="${checker.jdk8orhigher.sources}" if="${jdk7orlower}"/>
+            </fileset>
+
             <link href="http://docs.oracle.com/javase/8/docs/api/"/>
             <link href="http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
             <taglet name="org.checkerframework.javacutil.dist.ManualTaglet"
                     path="${build}:${javacutil.loc}/${build}:${javacutil.lib}"/>
         </javadoc>
         <property name="favicon.targetfile" value="favicon-checkerframework.png"/>
-        <copy file="manual/logo/Checkmark/CFCheckmark_favicon.png" tofile="${api.doc}/${favicon.targetfile}" />
-        <exec executable="manual/logo/add-favicon" failonerror="true">
+        <copy file="../docs/logo/Checkmark/CFCheckmark_favicon.png" tofile="${api.doc}/${favicon.targetfile}" />
+        <exec executable="../docs/logo/add-favicon" failonerror="true">
             <arg value="${api.doc}"/>
             <arg value="${favicon.targetfile}"/>
         </exec>
     </target>
 
-    <target name="javadoc.jar" depends="javadoc" description="Create jar of all javadoc documentation">
+    <target name="javadoc-java8" depends="-javadoc-force-java8, -javadoc-java8"
+            description="Build the Javadoc using JAVA_8_HOME."/>
+
+    <target name="-javadoc-force-java8" if="${should-force-compile-java8}">
+        <exec executable="ant" failonerror="true">
+            <arg value="javadoc"/>
+            <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
+        </exec>
+    </target>
+    <target name="-javadoc-java8" if="${jdk8orhigher}" depends="javadoc"/>
+
+
+    <target name="javadoc.jar" depends="javadoc-java8" description="Create jar of all javadoc documentation">
         <jar destfile="${checker.javadoc.lib}" basedir="${api.doc}"></jar>
     </target>
 
@@ -355,18 +383,16 @@
             <manifest>
                 <attribute name="Main-Class" value="org.checkerframework.framework.util.CheckerMain"/>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
+                <attribute name="Implementation-URL" value="https://checkerframework.org/"/>
             </manifest>
         </jar>
     </target>
-
 
     <!-- This creates checker-qual.jar and checker-qual-source.jar-->
     <target name="checker-qual-jar"
             description="Create checker-qual.jar file for annotations">
         <property name="checker-qual-sources-tmp" value="${tmpdir}/checker-qual-sources"/>
         <property name="checker-qual-classes-tmp" value="${tmpdir}/checker-qual-classes"/>
-
         <mkdir dir="${checker-qual-sources-tmp}"/>
         <mkdir dir="${checker-qual-classes-tmp}"/>
 
@@ -381,6 +407,7 @@
                 <include name="**/UnitsTools.java"/>
                 <include name="**/SignednessUtil.java"/>
                 <include name="**/I18nFormatUtil.java"/>
+                <exclude name="${checker.jdk8orhigher.sources}"/>
             </fileset>
             <fileset dir="${dataflow.loc}/${src}">
                 <include name="org/checkerframework/**/qual/*.java"/>
@@ -403,38 +430,85 @@
         <java fork="true"
               failonerror="true"
               classname="com.sun.tools.javac.Main">
-            <!-- Option no longer exists in JDK 9.
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
-            -->
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+
             <arg value="-g"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
-            <arg line="-d ${checker-qual-classes-tmp}"/>
-            <arg line="@${tmpdir}/srcfiles-checker.txt"/>
-            <arg line="-version"/>
-            <arg line="-XDTA:noannotationsincomments"/>
-            <arg line="-Xlint"/>
-            <arg line="-Werror"/>
+            <arg value="-d"/>
+            <arg value="${checker-qual-classes-tmp}"/>
+            <arg value="@${tmpdir}/srcfiles-checker.txt"/>
+            <arg value="-version"/>
+            <arg value="-Xlint"/>
+            <arg value="-Werror"/>
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
 
+        <!-- Compile and copy Java 8 sources -->
+        <copy todir="${checker-qual-sources-tmp}">
+            <!-- Copying like this removes the $CHECKERFRAMEWORK/checker/src portion of the file
+            names so that the top level directory is org.-->
+            <fileset dir="${checker.loc}/${src}">
+                <include name="${checker.jdk8orhigher.sources}"/>
+            </fileset>
+        </copy>
+        <antcall target="-checker-qual-java8"/>
+
+        <!--Jar classes and source files-->
         <jar destfile="${checker.qual.lib}" basedir="${checker-qual-classes-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
+                <attribute name="Implementation-URL" value="https://checkerframework.org/"/>
             </manifest>
         </jar>
 
         <jar destfile="${checker.qual.sources.lib}" basedir="${checker-qual-sources-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
+                <attribute name="Implementation-URL" value="https://checkerframework.org/"/>
             </manifest>
         </jar>
         <delete dir="${checker-qual-sources-tmp}" failonerror="false"/>
         <delete dir="${checker-qual-classes-tmp}" failonerror="false"/>
+    </target>
+
+    <target name="-checker-qual-java8" depends="-force-checker-qual-java8">
+        <antcall target="compile-java8-sources">
+            <param name="java8-output" value="${checker-qual-classes-tmp}"/>
+        </antcall>
+    </target>
+    <target name="-force-checker-qual-java8" if="${should-force-compile-java8}">
+        <exec executable="ant" failonerror="true">
+            <arg value="compile-java8-sources"/>
+            <arg value="-Djava8-output=${checker-qual-classes-tmp}"/>
+            <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
+        </exec>
+    </target>
+
+    <target name="compile-java8-sources" if="jdk8orhigher"
+            description="Compile Java 8 classes if JAVA_8_HOME exists">
+        <java fork="true"
+              failonerror="true"
+              classname="com.sun.tools.javac.Main"
+              classpath="${java8-output}">
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+            <arg value="-g"/>
+            <arg value="-source"/>
+            <arg value="8"/>
+            <arg value="-target"/>
+            <arg value="8"/>
+            <arg value="-encoding"/>
+            <arg value="utf-8"/>
+            <!-- To not get a warning about bootstrap classpath -->
+            <arg value="-Xlint:-options"/>
+            <arg value="-d"/>
+            <arg value="${java8-output}"/>
+            <arg value="${checker.loc}/${src}/${checker.jdk8orhigher.sources}"/>
+            <arg value="-Xlint"/>
+            <arg value="-Werror"/>
+        </java>
     </target>
 
     <!-- This creates checker-compat-qual.jar and checker-compat-qual-source.jar-->
@@ -468,9 +542,8 @@
         <java fork="true"
               failonerror="true"
               classname="com.sun.tools.javac.Main">
-            <!-- Option no longer exists in JDK 9.
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
-            -->
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+
             <arg value="-g"/>
             <!-- Make sure we only generate Java 6 bytecode. -->
             <arg value="-source"/>
@@ -479,11 +552,12 @@
             <arg value="6"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
-            <arg line="-d ${checker-compat-qual-classes-tmp}"/>
-            <arg line="@${tmpdir}/srcfiles-checker.txt"/>
-            <arg line="-version"/>
-            <arg line="-Xlint"/>
-            <arg line="-Werror"/>
+            <arg value="-d"/>
+            <arg value="${checker-compat-qual-classes-tmp}"/>
+            <arg value="@${tmpdir}/srcfiles-checker.txt"/>
+            <arg value="-version"/>
+            <arg value="-Xlint"/>
+            <arg value="-Werror"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
         </java>
@@ -492,7 +566,7 @@
         <jar destfile="${checker.compat.qual.lib}" basedir="${checker-compat-qual-classes-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
+                <attribute name="Implementation-URL" value="https://checkerframework.org/"/>
             </manifest>
         </jar>
 
@@ -500,7 +574,7 @@
              basedir="${checker-compat-qual-sources-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
+                <attribute name="Implementation-URL" value="https://checkerframework.org/"/>
             </manifest>
         </jar>
         <delete dir="${checker-compat-qual-sources-tmp}" failonerror="false"/>
@@ -512,9 +586,7 @@
         <pathconvert pathsep=" " property="src.tests">
             <path>
                 <fileset dir="${tests}">
-                    <include name="src/tests/**/*.java"/>
-                    <include name="test-lubglb/**/*.java"/>
-                    <include name="test-polyall/**/*.java"/>
+                    <include name="src/**/*.java"/>
                 </fileset>
             </path>
         </pathconvert>
@@ -523,16 +595,17 @@
               failonerror="true"
               classpath="${build}:${javac.lib}:${junit.lib}:${hamcrest.lib}"
               classname="com.sun.tools.javac.Main">
-            <!-- Option no longer exists in JDK 9.
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
-            -->
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+
             <arg value="-g"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
-            <arg line="-sourcepath ${tests}"/>
-            <arg line="-d ${tests.build}"/>
+            <arg value="-sourcepath"/>
+            <arg value="${tests}"/>
+            <arg value="-d"/>
+            <arg value="${tests.build}"/>
             <arg line="${src.tests}"/>
         </java>
     </target>
@@ -574,18 +647,16 @@
                printsummary="withOutAndErr"
                >
             <formatter type="plain" usefile="false"/>
-            <jvmarg line="-Demit.test.debug=true"/>
+            <jvmarg value="-Demit.test.debug=true"/>
     <!-- end of debugging version. -->
 
             <!-- plain output for debugging -->
-            <!-- Option no longer exists in JDK 9.
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
-            -->
-            <jvmarg line="${debugger.str}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg line="${debugger.str}"/> <!-- may be empty string -->
 
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
             <sysproperty key="emit.test.debug" value="${should.emit.debug.str}"/>
-            <jvmarg line="-ea"/>
+            <jvmarg value="-ea"/>
 
             <classpath>
                 <pathelement path="${build}"/>
@@ -644,11 +715,10 @@
                printsummary="false"
                haltonerror="${halt.on.test.failure}"
                haltonfailure="${halt.on.test.failure}">
-            <!-- Option no longer exists in JDK 9.
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
-            -->
-            <jvmarg line="-ea"/>
-            <jvmarg line="${debugger.str}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-ea"/>
+            <jvmarg line="${debugger.str}"/>  <!-- may be empty string -->
+
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
             <sysproperty key="emit.test.debug" value="${should.emit.debug.str}"/>
 
@@ -665,12 +735,7 @@
 
             <batchtest todir="${build.reports}">
                 <fileset dir="${tests}/${src}">
-                    <include name="**/*Test.java"/>
-                    <exclude name="**/AllTests.java"/>
-
-                    <!-- Framework classes -->
-                    <exclude name="**/CheckerTest.java"/>
-                    <exclude name="**/ParameterizedCheckerTest.java"/>
+                    <include name="tests/*.java"/>
                 </fileset>
             </batchtest>
         </junit>
@@ -708,6 +773,9 @@
         <antcall target="check-compilermsgs"/>
         <antcall target="check-purity"/>
 
+        <!-- Eventually we would also want this:
+          <antcall target="check-nullness"/>
+        -->
     </target>
 
     <target name="aggregate-tests" depends="jar,build-tests"
@@ -721,7 +789,8 @@
             description="Run tests that need a special command line">
         <exec executable="make" failonerror="${halt.on.test.failure}">
             <env key="JAVAC" value="${basedir}/bin/javac"/>
-            <arg line="-C tests/command-line/"/>
+            <arg value="-C"/>
+            <arg value="tests/command-line/"/>
         </exec>
     </target>
 
@@ -749,6 +818,13 @@
         </antcall>
         <antcall target="-run-tests">
             <param name="param" value="tests.I18nUncheckedDefaultsTest"/>
+        </antcall>
+    </target>
+
+    <target name="index-tests" depends="jar,build-tests"
+            description="Run tests for the Index Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.IndexTest"/>
         </antcall>
     </target>
 
@@ -844,13 +920,15 @@
     <target name="nullness-extra-tests-nobuildjdk" depends="dist-nobuildjdk,jdk.jar.exists,build-tests"
             description="Run extra tests for the Nullness Checker, WITHOUT updating jdkX.jar">
         <exec executable="chmod" failonerror="true">
-            <arg line="+x ${basedir}/bin/javac"/>
+            <arg value="+x"/>
+            <arg value="${basedir}/bin/javac"/>
         </exec>
 
         <exec executable="make" failonerror="${halt.on.test.failure}">
             <env key="JAVAC" value="${basedir}/bin/javac"/>
             <env key="JAVAP" value="${jsr308.langtools.dist}/bin/javap"/>
-            <arg line="-C tests/nullness-extra/"/>
+            <arg value="-C"/>
+            <arg value="tests/nullness-extra/"/>
         </exec>
     </target>
 
@@ -961,7 +1039,7 @@
             <param name="param" value="tests.I18nFormatterLubGlbCheckerTest"/>
         </antcall>
         <antcall target="-run-tests">
-            <param name="param" value="tests.I18nFormatterFormatterUncheckedDefaultsTest"/>
+            <param name="param" value="tests.I18nFormatterUncheckedDefaultsTest"/>
         </antcall>
     </target>
 
@@ -993,40 +1071,11 @@
         </antcall>
     </target>
 
-    <target name="fenum-extension-tests" depends="jar,build-tests"
-            description="Run tests for the Fenum Checker extension capabilities">
-        <exec executable="chmod" failonerror="true">
-            <arg line="+x ${basedir}/bin/javac"/>
-        </exec>
-
-        <exec executable="make" failonerror="${halt.on.test.failure}">
-            <env key="JAVAC" value="${basedir}/bin/javac"/>
-            <arg line="-C tests/fenum-extension/"/>
-        </exec>
-    </target>
-
-    <target name="subtyping-extension-tests" depends="jar,build-tests"
-            description="Run tests for the Subtyping Checker extension capabilities">
-        <exec executable="chmod" failonerror="true">
-            <arg line="+x ${basedir}/bin/javac"/>
-        </exec>
-
-        <exec executable="make" failonerror="${halt.on.test.failure}">
-            <env key="JAVAC" value="${basedir}/bin/javac"/>
-            <arg line="-C tests/subtyping-extension/"/>
-        </exec>
-    </target>
-
-    <target name="units-extension-tests" depends="jar,build-tests"
-            description="Run tests for the Units Checker extension capabilities">
-        <exec executable="chmod" failonerror="true">
-            <arg line="+x ${basedir}/bin/javac"/>
-        </exec>
-
-        <exec executable="make" failonerror="${halt.on.test.failure}">
-            <env key="JAVAC" value="${basedir}/bin/javac"/>
-            <arg line="-C tests/units-extension/"/>
-        </exec>
+    <target name="value-index-interaction-tests" depends="jar,build-tests"
+            description="Run tests for the interaction between the Value Checker and the Index Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.ValueIndexInteractionTest"/>
+        </antcall>
     </target>
 
     <target name="guieffect-tests" depends="jar,build-tests"
@@ -1043,12 +1092,14 @@
     <target name="example-tests-nobuildjdk" depends="dist-nobuildjdk,jdk.jar.exists,build-tests"
             description="Run tests for the example programs, WITHOUT updating jdkX.jar">
       <exec executable="chmod" failonerror="true">
-        <arg line="+x ${basedir}/bin/javac"/>
+        <arg value="+x"/>
+        <arg value="${basedir}/bin/javac"/>
       </exec>
 
       <exec executable="make" failonerror="${halt.on.test.failure}">
         <env key="JAVAC" value="${basedir}/bin/javac"/>
-        <arg line="-C examples/"/>
+        <arg value="-C"/>
+        <arg value="../docs/examples/"/>
       </exec>
     </target>
 
@@ -1078,7 +1129,7 @@ but it expired from the cloudbees Jenkins server in early June 2016.
 So, use our own archived version.
       -->
       <get
-        src="http://types.cs.washington.edu/jtreg-4.2.0-for-jdk7.tar.gz"
+        src="https://types.cs.washington.edu/jtreg-4.2.0-for-jdk7.tar.gz"
         dest="${jtreg.home}/.." />
       <untar src="${jtreg.home}/../jtreg-4.2.0-for-jdk7.tar.gz"
         dest="${jtreg.home}/../"
@@ -1196,7 +1247,7 @@ So, use our own archived version.
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
-                    <exclude name=""/>
+                    <exclude name="${checker.jdk8orhigher.sources}"/>
                 </fileset>
                 <fileset dir="${javacutil.loc}/${src}">
                     <include name="**/*.java"/>
@@ -1221,6 +1272,11 @@ So, use our own archived version.
                 <fileset dir="${framework.loc}/${src}">
                     <include name="**/*.java"/>
                 </fileset>
+                <!-- TODO: check-nullness doesn't properly work with this.
+                <fileset dir="${checker-jdk}" erroronmissingdir="false">
+                    <include name="**/*.java"/>
+                </fileset>
+                -->
             </path>
         </pathconvert>
 
@@ -1229,25 +1285,31 @@ So, use our own archived version.
         </condition>
 
         <echo message="${src.files}" file="${tmpdir}/srcfiles-checker.txt"/>
+
+        <echo message="Applying ${checker-name} to the Checker Framework sources."/>
+        <!-- Use this if you want to see the file names:
+        <echo message="Applying ${checker-name} to: ${src.files}"/>
+        -->
         <java fork="true"
               failonerror="true"
               classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
-            <!-- Option no longer exists in JDK 9.
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
-            -->
-            <jvmarg line="${maybeDebug}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg line="${maybeDebug}"/>  <!-- may be empty string -->
+
             <arg value="-g"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
-            <arg line="-sourcepath ${src}:${checker-jdk}"/>
-            <arg line="-d ${build}"/>
-            <arg line="@${tmpdir}/srcfiles-checker.txt"/>
-            <arg line="-version"/>
-            <arg line="-proc:only"/>
-            <arg line="-processor ${checker-name}"/>
+            <arg value="-d"/>
+            <arg value="${build}"/>
+            <arg value="@${tmpdir}/srcfiles-checker.txt"/>
+            <arg value="-version"/>
+            <arg value="-proc:only"/>
+            <arg value="-processor"/>
+            <arg value="${checker-name}"/>
+            <arg value="-AprintErrorStack"/>
             <arg line="${checker-args}"/>
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
@@ -1258,16 +1320,22 @@ So, use our own archived version.
         <antcall target="-run-checker">
             <param name="checker-name" value="org.checkerframework.checker.nullness.NullnessChecker"/>
             <param name="checker-jdk" value="jdk/nullness/src"/>
-            <param name="checker-args" value="-Awarns"/>
+            <param name="checker-args" value="-Awarns -Xmaxwarns 10000"/>
         </antcall>
     </target>
+
+    <fileset dir=".." id="messages.properties.files">
+      <include name="**/messages.properties"/>
+    </fileset>
+
+    <pathconvert pathsep=":" property="messages.properties.concatenated" refid="messages.properties.files">
+    </pathconvert>
 
     <target name="check-compilermsgs"
             description="Run the compiler message keys checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="org.checkerframework.checker.compilermsgs.CompilerMessagesChecker"/>
-
-            <param name="checker-args" value="-Apropfiles=${framework.loc}/src/org/checkerframework/framework/source/messages.properties:${framework.loc}/src/org/checkerframework/common/aliasing/messages.properties:${framework.loc}/src/org/checkerframework/common/basetype/messages.properties:./src/org/checkerframework/checker/lock/messages.properties:./src/org/checkerframework/checker/interning/messages.properties:./src/org/checkerframework/checker/nullness/messages.properties:./src/org/checkerframework/checker/initialization/messages.properties:./src/org/checkerframework/checker/linear/messages.properties:./src/org/checkerframework/checker/signedness/messages.properties:./src/org/checkerframework/checker/regex/messages.properties:${framework.loc}/src/org/checkerframework/common/util/report/messages.properties:./src/org/checkerframework/checker/formatter/messages.properties:./src/org/checkerframework/checker/i18nformatter/messages.properties:${framework.loc}/src/org/checkerframework/common/value/messages.properties:./src/org/checkerframework/checker/guieffect/messages.properties:${framework.loc}/src/org/checkerframework/common/reflection/messages.properties"/>
+            <param name="checker-args" value="-Apropfiles=${messages.properties.concatenated}"/>
         </antcall>
     </target>
 
@@ -1275,7 +1343,7 @@ So, use our own archived version.
             description="Run the Purity Checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="org.checkerframework.framework.util.PurityChecker"/>
-            <param name="checker-args" value="-AprintErrorStack"/>
+            <param name="checker-args" value=""/>
         </antcall>
     </target>
 
@@ -1283,10 +1351,10 @@ So, use our own archived version.
     <target name="check-tutorial" description="Test that the tutorial is working as expected">
     <!--The tutorial build file is written relative to its location,
         so useNativeBasedir is required. -->
-          <ant dir="${framework.loc}/../tutorial/tests/" useNativeBasedir="true">
+          <ant dir="${docs.loc}/tutorial/tests/" useNativeBasedir="true">
               <target name="check-tutorial"/>
           </ant>
-          <ant dir="${framework.loc}/../tutorial/eclipse-projects/personalblog-demo" useNativeBasedir="true">
+          <ant dir="${docs.loc}/tutorial/eclipse-projects/personalblog-demo" useNativeBasedir="true">
               <target name="clean"/>
           </ant>
     </target>
@@ -1299,13 +1367,15 @@ So, use our own archived version.
 
     <target name="-demos.pull" depends="demos.check" if="demos.exists">
       <exec executable="git" dir="${basedir}/../../checker-framework-demos" failonerror="true">
-        <arg line="pull"/>
+        <arg value="pull"/>
       </exec>
     </target>
 
     <target name="-demos.clone" depends="demos.check" unless="demos.exists">
       <exec executable="git" dir="${basedir}/../.." failonerror="true">
-        <arg line="clone https://github.com/typetools/checker-framework.demos.git checker-framework-demos"/>
+        <arg value="clone"/>
+        <arg value="https://github.com/typetools/checker-framework.demos.git"/>
+        <arg value="checker-framework-demos"/>
       </exec>
     </target>
 
@@ -1324,14 +1394,15 @@ So, use our own archived version.
 
     <target name="-errorprone.download" depends="errorprone.check" unless="errorprone.exists">
       <get
-        src="https://github.com/google/error-prone/archive/v2.0.9.tar.gz"
-        dest="${errorprone.home}/../error-prone-2.0.9.tar.gz" />
-      <untar src="${errorprone.home}/../error-prone-2.0.9.tar.gz"
+        src="https://github.com/google/error-prone/archive/v${errorprone.version}.tar.gz"
+        dest="${errorprone.home}/../error-prone-${errorprone.version}.tar.gz" />
+      <untar src="${errorprone.home}/../error-prone-${errorprone.version}.tar.gz"
         dest="${errorprone.home}/../"
         compression="gzip" />
 
       <exec executable="mvn" dir="${errorprone.home}" failonerror="true">
-        <arg line="package"/>
+        <arg value="package"/>
+        <arg value="-Dmaven.test.skip=true"/>
       </exec>
     </target>
 
@@ -1353,6 +1424,8 @@ So, use our own archived version.
             <compilerclasspath>
               <pathelement location="${errorprone.lib}"/>
             </compilerclasspath>
+            <compilerarg value="-Xmaxwarns"/>
+            <compilerarg value="1000"/>
         </javac>
     </target>
 
@@ -1384,20 +1457,47 @@ So, use our own archived version.
 -->
     </target>
 
+    <target name="download-jdk" description="Downloads jdk7.jar and jdk8.jar from checkerframework.org/dev-jdk to checker/jdk and checker/dist">
+        <get src="https://checkerframework.org/dev-jdk/jdk7.jar" dest="jdk/jdk7.jar"/>
+        <get src="https://checkerframework.org/dev-jdk/jdk8.jar" dest="jdk/jdk8.jar"/>
+
+        <!-- Copy jars to dist. If dist doesn't exist then the copy task creates it.-->
+        <copy file="jdk/jdk7.jar" tofile="dist/jdk7.jar"/>
+        <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar"/>
+
+
+        <!--The implementation version listed in the Manifest is the hash of the commit of-->
+        <!--the Checker Framework that created the jdk.jar.  Show it here to help debugging.-->
+        <loadfile property="message">
+            <zipentry zipfile="jdk/jdk7.jar" name="META-INF/MANIFEST.MF"/>
+        </loadfile>
+        <echo>"Manifest file from jdk7.jar:"</echo>
+        <echo>"${message}"</echo>
+
+
+        <loadfile property="message">
+            <zipentry zipfile="jdk/jdk8.jar" name="META-INF/MANIFEST.MF"/>
+        </loadfile>
+        <echo>"Manifest file from jdk8.jar:"</echo>
+        <echo>"${message}"</echo>
+
+
+    </target>
+
     <target name="all.jdks.jar" description="Build jdkX.jar using JAVA_X_HOME (with X in 7, 8, and 9)">
-        <fail unless="JAVA_7_HOME" message="Property &quot;JAVA_7_HOME&quot; needs to be set!"/>
-        <fail unless="JAVA_8_HOME" message="Property &quot;JAVA_8_HOME&quot; needs to be set!"/>
-        <fail unless="JAVA_9_HOME" message="Property &quot;JAVA_9_HOME&quot; needs to be set!"/>
+        <fail unless="env.JAVA_7_HOME" message="Environment variable &quot;JAVA_7_HOME&quot; needs to be set!"/>
+        <fail unless="env.JAVA_8_HOME" message="Environment variable &quot;JAVA_8_HOME&quot; needs to be set!"/>
+        <!--<fail unless="env.JAVA_9_HOME" message="Environment variable  &quot;JAVA_9_HOME&quot; needs to be set!"/>-->
 
         <exec executable="ant" failonerror="true">
-            <arg line="jdk.jar"/>
-            <env key="JAVA_HOME"  value="${JAVA_7_HOME}"/>
+            <arg value="jdk.jar"/>
+            <env key="JAVA_HOME"  value="${env.JAVA_7_HOME}"/>
             <env key="LT_BIN" value="${LT_BIN}"/>
         </exec>
 
         <exec executable="ant" failonerror="true">
-            <arg line="jdk.jar"/>
-            <env key="JAVA_HOME"  value="${JAVA_8_HOME}"/>
+            <arg value="jdk.jar"/>
+            <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
             <env key="LT_BIN" value="${LT_BIN}"/>
         </exec>
 
@@ -1406,16 +1506,17 @@ So, use our own archived version.
             <env key="JAVA_HOME"  value="${JAVA_9_HOME}"/>
             <env key="LT_BIN" value="${LT_BIN}"/>
         </exec>
-
     </target>
 
     <target name="jdk.jar" depends="jar"
             description="Create the instrumented jdkX.jar using the JDK specified by JAVA_HOME">
+      <fail unless="env.JAVA_HOME" message="Environment variable JAVA_HOME is not set."/>
       <property name="annotation-file-utilities.jar" value="${annotation.tools}/annotation-file-utilities/annotation-file-utilities.jar"/>
       <available property="annotation-file-utilities.exist" file="${annotation-file-utilities.jar}" />
-      <fail unless="annotation-file-utilities.exist" message="Could not find annotation-file-utilities.jar: ${annotation-file-utilities.jar}.  You must build Annotation Tools; see http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#build-source" />
+      <fail unless="annotation-file-utilities.exist" message="Could not find annotation-file-utilities.jar: ${annotation-file-utilities.jar}.  You must build Annotation Tools; see https://checkerframework.org/manual/#build-source" />
 
       <exec executable="make" failonerror="true">
+         <arg value="CHECKERFRAMEWORK=${checkerframework}"/>
          <arg value="LANGTOOLS=${jsr308.langtools}"/>
          <arg value="LANGTOOLSDIST=${jsr308.langtools.dist}"/>
          <arg value="ANNOTATION_TOOLS=${annotation.tools}"/>
@@ -1432,6 +1533,11 @@ So, use our own archived version.
             description="Everything necessary to prepare this project for distribution: binary distribution, testing, and documentation.">
     </target>
 
+    <!-- Like dist-release, but don't run the tests which take a very long time.  Use only during testing. -->
+    <target name="dist-release-notest" depends="clean, dist-all, javadoc.jar, sources.jar"
+            description="Everything necessary to prepare this project for distribution: binary distribution, [no testing], and documentation.">
+    </target>
+
     <target name="dist-all"
             depends="-prep-dist,jar,all.jdks.jar,dist-nobuildjdk"
             description="Build checker.jar, checker-qual.jar, and all jdkX.jar(s).  This comprises all jars needed to run the framework.">
@@ -1441,6 +1547,9 @@ So, use our own archived version.
             depends="-prep-dist,jar,jdk.jar,dist-nobuildjdk"
             description="Build checker.jar, checker-qual.jar, and one jdkX.jar where X is the major version number of java in JAVA_HOME (only Java 7/8/9 are currently supported).  This comprises all jars needed to run the framework.">
     </target>
+
+    <target name="dist-downloadjdk" depends="download-jdk,dist-nobuildjdk"
+            description="Build checker.jar, checker-qual.jar, and download the jdkX.jars rather than building them."/>
 
     <target name="dist-nobuildjdk"
             depends="-prep-dist,jar,jdk.jar.exists"

@@ -7,8 +7,12 @@ class ArrayInitializerTest {
         //:: error: (unique.leaked)
         Object[] ar = new Object[] {o};
 
+        @Unique Object o2 = new Object();
+        //:: error: (unique.leaked)
+        Object @Unique [] ar2 = new Object[] {o2};
+
         Object[] arr = new Object[] {new Object()};
 
-        Object[] arrr = new Object[2];
+        Object @Unique [] arrr = new Object[2];
     }
 }

@@ -8,8 +8,8 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Indicates that the {@code String} is a key into a property file
- * or resource bundle containing Localized Strings.
+ * Indicates that the {@code String} is a key into a property file or resource bundle containing
+ * Localized Strings.
  *
  * @checker_framework.manual #i18n-checker Internationalization Checker
  */

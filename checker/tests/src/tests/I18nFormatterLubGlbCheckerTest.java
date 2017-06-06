@@ -8,7 +8,7 @@ import java.io.File;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
-import tests.lubglb.I18nFormatterLubGlbChecker;
+import testlib.lubglb.I18nFormatterLubGlbChecker;
 
 public class I18nFormatterLubGlbCheckerTest extends CheckerFrameworkPerDirectoryTest {
 

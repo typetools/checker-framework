@@ -1,5 +1,4 @@
-import tests.reflection.qual.Top;
-import tests.reflection.qual.ReflectBottom;
+import testlib.reflection.qual.*;
 
 package java.lang.reflect;
 

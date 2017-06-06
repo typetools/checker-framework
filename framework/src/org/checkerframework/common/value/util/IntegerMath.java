@@ -78,6 +78,9 @@ public class IntegerMath extends NumberMath<Integer> {
 
     @Override
     public Number divide(Number right) {
+        if (isIntegralZero(right)) {
+            return null;
+        }
         if (right instanceof Byte) {
             return number / right.byteValue();
         }
@@ -101,6 +104,9 @@ public class IntegerMath extends NumberMath<Integer> {
 
     @Override
     public Number remainder(Number right) {
+        if (isIntegralZero(right)) {
+            return null;
+        }
         if (right instanceof Byte) {
             return number % right.byteValue();
         }
@@ -140,7 +146,7 @@ public class IntegerMath extends NumberMath<Integer> {
     }
 
     @Override
-    public Number signedSiftRight(Number right) {
+    public Number signedShiftRight(Number right) {
         if (right instanceof Byte) {
             return number >> right.byteValue();
         }
@@ -157,7 +163,7 @@ public class IntegerMath extends NumberMath<Integer> {
     }
 
     @Override
-    public Number unsignedSiftRight(Number right) {
+    public Number unsignedShiftRight(Number right) {
         if (right instanceof Byte) {
             return number >>> right.byteValue();
         }

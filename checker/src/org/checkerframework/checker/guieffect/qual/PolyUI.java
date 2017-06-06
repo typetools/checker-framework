@@ -11,6 +11,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * Annotation for the polymorphic-UI effect.
  *
  * @checker_framework.manual #guieffect-checker GUI Effect Checker
+ * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @PolymorphicQualifier(UI.class)
 @Documented

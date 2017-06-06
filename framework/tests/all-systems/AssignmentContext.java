@@ -20,6 +20,8 @@ class AssignmentContext {
         s = b ? new String[] {""} : null;
     }
 
+    @SuppressWarnings(
+            "array.access.unsafe.high") // This access is obviously unsafe, but it's in test code so whatever.
     void assignToCast(String[][] currentSample) {
         // This statement used to cause a null pointer exception.
         ((String[]) currentSample[3])[4] = currentSample[3][4];

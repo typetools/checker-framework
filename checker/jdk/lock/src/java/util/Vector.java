@@ -1,9 +1,7 @@
 package java.util;
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.checker.nullness.qual.PolyNull;
+
 
 // permits nullable object
 public class Vector<E extends Object> extends AbstractList<E> implements List<E>, RandomAccess, Cloneable, java.io.Serializable {

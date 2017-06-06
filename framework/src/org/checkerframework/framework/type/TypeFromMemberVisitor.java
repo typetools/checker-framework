@@ -1,8 +1,6 @@
 package org.checkerframework.framework.type;
 
-/**
- * Created by jburke on 11/20/14.
- */
+/** Created by jburke on 11/20/14. */
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -16,7 +14,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Converts a field or methods tree tree into an AnnotatedTypeMirror
+ * Converts a field or methods tree into an AnnotatedTypeMirror
  *
  * @see org.checkerframework.framework.type.TypeFromTree
  */

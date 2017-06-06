@@ -1,0 +1,166 @@
+
+Checker Framework redesign/refactoring (in priority order):
+
+(Throughout the refactorings, incrementally update the manual.)
+
+* Document the difference between getAnnotation and getEffectiveAnnotation
+
+* rename commonAssignmentCheck to subtypeCheck
+
+* rename asMemberOf or postAsMemberOf to fieldFromUse
+
+* isSubtype should not return boolean.
+  (Sometimes it is used for control flow rather than error reporting?  Why?  And would that even be possible to incorporate into inference mode?)
+  It should be "requireSubtype", return void, and issue the proper error.
+  This is essentially commonAssignmentCheck, though.  What's the distinction?  Determine that and document it.
+  An alternative (but not as good?):  isSubtype could return information about the specific error (like 3rd type parameter is the one that doesn't match, for example).
+  Problem: type hierarchy doesn't have access to the Checker.
+   * could return an error object, or pass in something that will handle errors.
+  (Werner calls this a "declarative interface".)
+  [Jonathan should propose an interface.]
+  [Werner will write some code in the meanwhile to direct the discussion.]
+
+* CF cleanups based on langtools cleanups -- typeFromElement and typeFromTree hacks can be removed [Werner]
+
+* Some things need to happen only once ever, whereas others happen once per compilation method.
+  Need a setup and teardown method (rather than typeProcessingOver, which is not called if there is a Java error or typechkecing error (but is called if there are warnings)).
+  [Werner.]
+
+* AnnotatedTypeFactory changes (Stuart); see below
+
+* Eliminate use of reflection in composing a type-checker from
+  similarly-named classes; force this to be explicit.  This will make the
+  type-checkers a bit more verbose, but easier to understand and debug.
+  Examples throughout the manual may need to be updated.
+
+* change from AST visiting to CFG visiting, so that each type system doesn't
+  have to implement special logic to infer where boxing, unboxing, and
+  other desugarings occur -- that can be done once, correctly, by CFG
+  construction.
+  TypeVisitor or SourceVisitor should be over the CFG.
+  This can be independent of Stuart's changes.
+  Should the new interface be over the CFG too?
+  A nice side effect is that if the CFG duplicates code (such as that for
+  finally blocks), then we get path/context-sensitive treatment of that
+  code for free since we analyze it twice.  One challenge would be avoiding
+  producing two error messages for the same expression, but that feature
+  could be deferred because the system can be useful even before that
+  feature is implemented.
+Stefan says:
+I have three comments that might be useful to consider when performing this
+transformation:
+- We currently have a generic MarkerNode which we use (mostly for debugging)
+  to keep some of the structure of high-level constructs that we don't need
+  in the CFG, such as locking or try-catch blocks.  I'd except this structure
+  to be more important for type-checkers, so it might be worth having
+  explicit types for the different kinds.
+- If the CFG is used for type-checking, then somebody should go carefully
+  over the CFGBuilder to make sure it does not unsoundly approximate the
+  source program.  Some approximations might be sound for flow-sensitive
+  type-refinement (and only lead to missed opportunities for type
+  refinement), but are not sound when type-checking.  I don't have a concrete
+  example in mind, but the TODOs might be a good starting point.
+- A challenge will be how to deal with type-checking errors that occur for
+  CFG nodes without direct source-level counter-part (which were introduced
+  as part of desugaring), but I'm sure you are aware of this.
+
+* there are currently multiple ways to obtain an error reporter and other
+  global values.  Put these in a Checker Framework environment, and make all
+  the code use a single consistent way to obtain them.  This will make the
+  code easier to understand and will make mocking easier to do.
+
+* staging for compound checkers:  ability to run multiple checkers within a
+  single type system [Rene]
+
+* staging of steps within a checker:  separate conceptually distinct tasks,
+  such as implicits/defaults/flow/typevalidity/subtyping/customchecks.
+  This can be done in twwo spages:two tasks:
+   1.  Using the current AnnotatedTypeFactory's lazy approach to annotation,
+       separate the current logic into individual steps, where each step is run
+       successively on the current tree.
+   2.  Abandon the lazy approach.  Separate the current logic into steps that
+       are run over an entire compilation unit.  This is to avoid the visitor
+       feedback loop that makes debugging so difficult.
+  [Rene]
+
+* separate definition of a type-checker from performing type-checking using
+  that definition, to make "initialization" of a type system easier
+* eliminate postInit method
+
+* load javac via a classloader rather than by starting a new process -- this
+  may avoid some problems with the Maven and Eclipse plugins?
+
+
+* use a single Processor implementation and ensure checker writers never have
+to worry about the Processor interface.  Invocation could be done a number of
+ways:
+javac --processor checkerFramework.CheckerFramework -Acheckers:checker1:checker2:checker
+javac --checkers checker1:checker2:checkers3
+By the way, the second option will work with both the jsr308 and Java8
+compilers as the --checkers could be translated by CheckerMain into the first
+form.  [I don't see how a Java 8 compiler could handle the --checkers
+option; it will only work with a non-standard javac binary.  But maybe the
+proposal is to always require that (e.g., via "java -jar checker.jar") and
+never support direct use of javac.]
+[This feels low-priority to Mike.]
+
+===========================================================================
+
+Inference-related tasks:
+
+* Create unique ids for each annotated type location in source code, these IDs
+will replace inference's ids.  This can be a discrete task, though I would
+imagine there are some interactions with Stuart's code.
+
+* Add a callback for either generating constraints or enforcing checks in
+either commonAssignmentCheck or QualifierHierarchy.  If this is done through
+QualifierHierarchy, create methods isSubtype and mustBeSubtype to distinguish
+between the times when isSubtype is used in conditionals rather than to
+enforce a subtype relationship
+
+* Add a Solve step to the top-level control flow.  Perhaps, as part of the high
+level staging this step can optionally be replaced by a PrintConstraints step,
+or a GenerateGame step.
+
+===========================================================================
+
+Overview of Stuart's refactorings, in his own words:
+
+> The stuff I'm working on has three main components:
+>
+>  - User-defined qualifier support: Allow checkers to use custom objects to
+>    represent qualifiers internally, instead of using AnnotationMirrors
+>    directly.
+>  - Qualifier parameter support: Allow checkers to easily add support for
+>    generics-style qualifier parameters.  This uses user-defined qualifiers in
+>    its implementation.
+>  - SPARTA: A new implementation of the SPARTA FlowChecker, based on qualifier
+>    parameters.
+>
+> Here are my branches:
+>
+> ssh://tricycle/homes/gws/spernste/hg/checker-framework
+>   (branched from checker-framework-dff)
+>   This has changes to existing checker framework components that are necessary
+>   to make the other components work.
+>
+> ssh://tricycle/homes/gws/spernste/hg/checker-framework-qual
+>   (branched from ~spernste/hg/checker-framework)
+>   This has user-defined qualifier support, implemented as an abstract base
+>   checker in the checkers.userqual package.  I also adapted the TaintingChecker
+>   to use the new userqual base classes.
+>
+> ssh://tricycle/homes/gws/spernste/hg/checker-framework-qualparam
+>   (branched from ~spernste/hg/checker-framework-qual)
+>   This has qualifier parameter support, implemented as an abstract base checker
+>   in the checkers.qualparam package.  I also adapted the TaintingChecker to
+>   use the new qualparam base classes.
+>
+> ssh://tricycle/homes/gws/spernste/hg/checker-framework-sparta
+>   (branched from ~spernste/hg/checker-framework-qualparam)
+>   This has the qualparam-based implementation of the SPARTA FlowChecker.
+>
+> I think I have the permissions set so anyone can check out from these
+> repositories, but let me know if I need to fix them.
+
+===========================================================================

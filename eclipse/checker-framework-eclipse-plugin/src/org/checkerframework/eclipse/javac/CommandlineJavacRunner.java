@@ -6,8 +6,11 @@ import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
-
+import org.checkerframework.eclipse.CheckerPlugin;
+import org.checkerframework.eclipse.actions.CheckerManager;
+import org.checkerframework.eclipse.prefs.CheckerPreferences;
 import org.checkerframework.eclipse.prefs.OptionLine;
+import org.checkerframework.eclipse.util.Command;
 import org.checkerframework.eclipse.util.PluginUtil;
 import org.checkerframework.eclipse.util.Util;
 import org.eclipse.core.runtime.FileLocator;
@@ -17,61 +20,44 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.osgi.framework.Bundle;
 
-import org.checkerframework.eclipse.CheckerPlugin;
-import org.checkerframework.eclipse.actions.CheckerManager;
-import org.checkerframework.eclipse.prefs.CheckerPreferences;
-import org.checkerframework.eclipse.util.Command;
-
 /**
- * Runs the Checker Framework (i.e. javac with the
- * appropriate bootclasspath, classpath, and option arguments).
+ * Runs the Checker Framework (i.e. javac with the appropriate bootclasspath, classpath, and option
+ * arguments).
  */
 public class CommandlineJavacRunner implements CheckersRunner {
 
-    /**
-     * The location of the checkers.jar relative to the plugin directory
-     */
+    /** The location of the checkers.jar relative to the plugin directory */
     public static final String CHECKERS_JAR_LOCATION = "lib/checker.jar";
 
     public boolean verbose = false;
 
-    /**
-     * Names of source files to compile
-     */
+    /** Names of source files to compile */
     protected final List<String> fileNames;
 
-    /**
-     * checkers to run
-     */
-    protected final String [] processors;
+    /** checkers to run */
+    protected final String[] processors;
 
-    /**
-     * The classpath for this project
-     */
+    /** The classpath for this project */
     protected final String classpath;
 
-    /**
-     * The bootclasspath for this project
-     */
+    /** The bootclasspath for this project */
     protected final String bootClasspath;
 
-    /**
-     * The output of running the Checker Framework Compiler
-     */
+    /** The output of running the Checker Framework Compiler */
     protected String checkResult;
 
-    /**
-     * The location of checkers.jar
-     */
+    /** The location of checkers.jar */
     protected File checkerJar;
 
-    /**
-     * Whether or not the checker in question has qualifiers that are not supplied by Aquals
-     */
+    /** Whether or not the checker in question has qualifiers that are not supplied by Aquals */
     protected boolean hasQuals;
 
-    public CommandlineJavacRunner(final String[] fileNames, final String [] processors,
-            final String classpath, final String bootClasspath, final boolean hasQuals) {
+    public CommandlineJavacRunner(
+            final String[] fileNames,
+            final String[] processors,
+            final String classpath,
+            final String bootClasspath,
+            final boolean hasQuals) {
         this.fileNames = Arrays.asList(fileNames);
         this.processors = processors;
 
@@ -87,19 +73,26 @@ public class CommandlineJavacRunner implements CheckersRunner {
     }
 
     /**
-     * Write the names of all files to be checked into a file-of-file-names(fofn) and
-     * then call the Checker Framework in "check-only" mode to check the files
-     * listed in the fofn
+     * Write the names of all files to be checked into a file-of-file-names(fofn) and then call the
+     * Checker Framework in "check-only" mode to check the files listed in the fofn
      */
-    public void run()
-    {
+    public void run() {
         try {
             MessageConsoleStream out = CheckerPlugin.findConsole().newMessageStream();
 
-            final File srcFofn       = PluginUtil.writeTmpSrcFofn("CFPlugin-eclipse", true, PluginUtil.toFiles(fileNames));
-            final File classpathFofn = PluginUtil.writeTmpCpFile("CFPlugin-eclipse", true,  classpath);
+            final File srcFofn =
+                    PluginUtil.writeTmpSrcFofn(
+                            "CFPlugin-eclipse", true, PluginUtil.toFiles(fileNames));
+            final File classpathFofn =
+                    PluginUtil.writeTmpCpFile("CFPlugin-eclipse", true, classpath);
 
-            final List<String> cmd = createCommand(srcFofn, processors, classpathFofn, bootClasspath, new PrintStream(out));
+            final List<String> cmd =
+                    createCommand(
+                            srcFofn,
+                            processors,
+                            classpathFofn,
+                            bootClasspath,
+                            new PrintStream(out));
 
             if (verbose) {
                 out.println(PluginUtil.join(" ", cmd));
@@ -108,7 +101,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
                 out.println("Source Files:\n  " + PluginUtil.join("\n\t", fileNames));
             }
 
-            final String [] cmdArr = cmd.toArray(new String[cmd.size()]);
+            final String[] cmdArr = cmd.toArray(new String[cmd.size()]);
             checkResult = Command.exec(cmdArr);
 
             if (verbose) {
@@ -124,27 +117,33 @@ public class CommandlineJavacRunner implements CheckersRunner {
     }
 
     /**
-     * @return The implicit annotations that should be used when running the Checker Framework compiler
-     * see -Djsr308_imports in the Checker Framework Manual
+     * @return The implicit annotations that should be used when running the Checker Framework
+     *     compiler see -Djsr308_imports in the Checker Framework Manual
      */
-    private String implicitAnnotations(final String [] processors) {
+    private String implicitAnnotations(final String[] processors) {
         return PluginUtil.join(File.pathSeparator, CheckerManager.getSelectedQuals(processors));
     }
 
     /**
-     * Create a list where each item in the list forms a part of the command for calling the Checker Framework compiler
-     * e.g.
-     * java -jar checker.jar -proc:only -classpath /this/projects/classpath -processor checkers.nullness.NullChecker @srcFofnPath
+     * Create a list where each item in the list forms a part of the command for calling the Checker
+     * Framework compiler e.g. java -jar checker.jar -proc:only -classpath /this/projects/classpath
+     * -processor checkers.nullness.NullChecker @srcFofnPath
+     *
      * @param srcFofn A file of file names that contains the paths of all files to compile
      * @param processors Checkers to call on the given filenames
      * @param classpathFofn A file of file names for the Eclipse project's classpath
      * @param bootClassPath The Eclipse project's bootclasspath
-     * @return A list of strings that (when separated by spaces) will form a call to the Checker Framework compiler
+     * @return A list of strings that (when separated by spaces) will form a call to the Checker
+     *     Framework compiler
      */
-    protected List<String> createCommand( final File srcFofn, final String [] processors,
-                                          final File classpathFofn, final String bootClassPath,
-                                          PrintStream out)  {
-        final Map<PluginUtil.CheckerProp, Object> props = new HashMap<PluginUtil.CheckerProp, Object>();
+    protected List<String> createCommand(
+            final File srcFofn,
+            final String[] processors,
+            final File classpathFofn,
+            final String bootClassPath,
+            PrintStream out) {
+        final Map<PluginUtil.CheckerProp, Object> props =
+                new HashMap<PluginUtil.CheckerProp, Object>();
 
         final IPreferenceStore prefs = CheckerPlugin.getDefault().getPreferenceStore();
         if (prefs.getBoolean(CheckerPreferences.PREF_CHECKER_IMPLICIT_IMPORTS) && this.hasQuals) {
@@ -162,20 +161,30 @@ public class CommandlineJavacRunner implements CheckersRunner {
 
         addProcessorOptions(props, prefs);
 
-
         final String procsStr = PluginUtil.join(",", processors);
         final String jdkPath = prefs.getString(CheckerPreferences.PREF_CHECKER_JDK_PATH);
 
-        return PluginUtil.getCmd(null, null, null, srcFofn, procsStr,
+        return PluginUtil.getCmd(
+                null,
+                null,
+                null,
+                srcFofn,
+                procsStr,
                 checkerJar.getAbsolutePath(),
-                jdkPath, classpathFofn, bootClassPath,
-                props, out, true, null);
+                jdkPath,
+                classpathFofn,
+                bootClassPath,
+                props,
+                out,
+                true,
+                null);
     }
 
     /**
-     * Any options found under the label "Additional Compiler Options" in the Checker Framework Plugin
-     * preferences page
-     * @param store  The preference store for this plugin
+     * Any options found under the label "Additional Compiler Options" in the Checker Framework
+     * Plugin preferences page
+     *
+     * @param store The preference store for this plugin
      */
     private void addPreferenceOptions(final List<String> opts, IPreferenceStore store) {
         // add options from preferences
@@ -193,7 +202,8 @@ public class CommandlineJavacRunner implements CheckersRunner {
      *
      * @param opts
      */
-    private void addProcessorOptions(Map<PluginUtil.CheckerProp, Object> opts, IPreferenceStore store) {
+    private void addProcessorOptions(
+            Map<PluginUtil.CheckerProp, Object> opts, IPreferenceStore store) {
         // TODO: some input validation would be nice here. Especially for
         // the additional compiler flags, which could be checked against
         // the compiler.
@@ -224,6 +234,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
 
     /**
      * Find a file within the plugin directory
+     *
      * @param path The name of the file to find relative to the plugin directory
      * @return The path to the given file
      */
@@ -237,7 +248,14 @@ public class CommandlineJavacRunner implements CheckersRunner {
         } catch (IOException e) {
             throw new RuntimeException("Exception locating plugin on path: " + path, e);
         } catch (NullPointerException npe) {
-            throw new RuntimeException("Bundle= " + bundle + " ID=" + CheckerPlugin.PLUGIN_ID + " checkerJar=" + checkersJAR, npe);
+            throw new RuntimeException(
+                    "Bundle= "
+                            + bundle
+                            + " ID="
+                            + CheckerPlugin.PLUGIN_ID
+                            + " checkerJar="
+                            + checkersJAR,
+                    npe);
         }
 
         File checkersJarFile;
@@ -252,6 +270,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
 
     /**
      * Parse the result of calling the Checker Framework compiler
+     *
      * @return A list of JavacErrors parsed from the compiler output
      */
     public List<JavacError> getErrors() {
@@ -261,7 +280,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
     public static void printTrimmedOutput(final MessageConsoleStream out, final String output) {
 
         List<String> lines = Arrays.asList(output.split(Util.NL));
-        for ( final String line : lines ) {
+        for (final String line : lines) {
             out.println(JavacError.trimDetails(line));
         }
     }

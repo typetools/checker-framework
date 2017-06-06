@@ -21,9 +21,11 @@
     <property name="api.doc" value="api"/>
 
     <property environment="env"/>
+
     <tstamp>
         <format property="timestamp" pattern="yy-MM-dd-HH-mm-ss-SS" />
     </tstamp>
+
     <!-- Prevent printing a literal ${env.BUILD_NUMBER} if it's not in env-->
     <property name="env.EXECUTOR_NUMBER" value="" />
 
@@ -39,15 +41,39 @@
     <property name="compiler.version.goal.java9"
               value="javac 9"/>
 
+
+    <condition property="jdkName" value="jdk7.jar">
+        <contains string="${java.version}" substring="1.7"/>
+    </condition>
+
+    <condition property="jdkName" value="jdk8.jar">
+        <contains string="${java.version}" substring="1.8"/>
+    </condition>
+
+    <!-- TODO: raise an error if no supported version found. -->
+    <condition property="jdkName" value="jdk9.jar" else="UNSUPPORTED">
+        <contains string="${java.version}" substring="1.9"/>
+    </condition>
+
+    <condition property="jdk7orlower">
+        <equals arg1="${jdkName}" arg2="jdk7.jar" />
+    </condition>
+
+    <condition property="jdk8orhigher">
+        <or>
+            <equals arg1="${jdkName}" arg2="jdk8.jar" />
+            <equals arg1="${jdkName}" arg2="jdk9.jar" />
+        </or>
+    </condition>
+
+
     <target name="prep-all"
             description="Perform preparation useful for all projects">
         <java fork="true"
               outputproperty="compiler.version"
               classname="com.sun.tools.javac.Main">
-            <!-- Option no longer exists in JDK 9.
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
-            -->
-            <arg line="-version"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+            <arg value="-version"/>
         </java>
 
         <condition property="compiler.exists.jsr308">
@@ -99,17 +125,17 @@ points to version ${build.version} of the 'javac.jar' library."/>
               failonerror="true"
               classpath="${javac.lib}:${javadoc.lib}"
               classname="com.sun.tools.javac.Main">
-            <!-- Option no longer exists in JDK 9.
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
-            -->
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
+
             <arg value="-g"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
-            <arg line="-d ${build}"/>
-            <arg line="${javacutil.loc}/src/org/checkerframework/javacutil/dist/ManualTaglet.java"/>
-            <arg line="-version"/>
+            <arg value="-d"/>
+            <arg value="${build}"/>
+            <arg value="${javacutil.loc}/src/org/checkerframework/javacutil/dist/ManualTaglet.java"/>
+            <arg value="-version"/>
         </java>
     </target>
 
@@ -117,7 +143,7 @@ points to version ${build.version} of the 'javac.jar' library."/>
     <target name="tags" depends="prep" description="Create Emacs TAGS table">
         <exec executable="/bin/sh" failonerror="true">
             <arg value="-c"/>
-            <arg value="etags `find . \( -name jdk \) -prune -o -name '*.java' -print | sort-directory-order`"/>
+            <arg value="ctags -e -f TAGS `find . \( -name jdk \) -prune -o -name '*.java' -print | sort-directory-order`"/>
         </exec>
     </target>
 

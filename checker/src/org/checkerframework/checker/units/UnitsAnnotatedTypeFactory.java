@@ -5,6 +5,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -38,12 +39,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 /**
  * Annotated type factory for the Units Checker.
  *
- * Handles multiple names for the same unit, with different prefixes,
- * e.g. @kg is the same as @g(Prefix.kilo).
+ * <p>Handles multiple names for the same unit, with different prefixes, e.g. @kg is the same
+ * as @g(Prefix.kilo).
  *
- * Supports relations between units, e.g. if "m" is a variable of type "@m" and
- * "s" is a variable of type "@s", the division "m/s" is automatically annotated
- * as "mPERs", the correct unit for the result.
+ * <p>Supports relations between units, e.g. if "m" is a variable of type "@m" and "s" is a variable
+ * of type "@s", the division "m/s" is automatically annotated as "mPERs", the correct unit for the
+ * result.
  */
 public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private static final Class<org.checkerframework.checker.units.qual.UnitsRelations>
@@ -56,8 +57,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationUtils.fromClass(elements, UnitsBottom.class);
 
     /**
-     * Map from canonical class name to the corresponding UnitsRelations instance.
-     * We use the string to prevent instantiating the UnitsRelations multiple times.
+     * Map from canonical class name to the corresponding UnitsRelations instance. We use the string
+     * to prevent instantiating the UnitsRelations multiple times.
      */
     private Map<String, UnitsRelations> unitsRel;
 
@@ -276,8 +277,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Look for an @UnitsRelations annotation on the qualifier and
-     * add it to the list of UnitsRelations.
+     * Look for an @UnitsRelations annotation on the qualifier and add it to the list of
+     * UnitsRelations.
      *
      * @param qual the qualifier to investigate
      */
@@ -296,21 +297,34 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     ErrorReporter.errorAbort(
                             "Invalid @UnitsRelations meta-annotation found in %s. @UnitsRelations value,"
                                     + " %s, is not a subclass of org.checkerframework.checker.units.UnitsRelations.",
-                            qual.toString(),
-                            clazz.toString());
+                            qual.toString(), clazz.toString());
                     continue;
                 }
                 String classname = theclass.getCanonicalName();
 
                 if (!getUnitsRel().containsKey(classname)) {
                     try {
-                        unitsRel.put(classname, theclass.newInstance().init(processingEnv));
+                        unitsRel.put(
+                                classname,
+                                theclass.getDeclaredConstructor()
+                                        .newInstance()
+                                        .init(processingEnv));
+                    } catch (NoSuchMethodException e) {
+                        // TODO
+                        e.printStackTrace();
+                        ErrorReporter.errorAbort("Exception NoSuchMethodException");
+                    } catch (InvocationTargetException e) {
+                        // TODO
+                        e.printStackTrace();
+                        ErrorReporter.errorAbort("Exception InvocationTargetException");
                     } catch (InstantiationException e) {
                         // TODO
                         e.printStackTrace();
+                        ErrorReporter.errorAbort("Exception InstantiationException");
                     } catch (IllegalAccessException e) {
                         // TODO
                         e.printStackTrace();
+                        ErrorReporter.errorAbort("Exception IllegalAccessException");
                     }
                 }
             }
@@ -346,9 +360,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /**
-     * A class for adding annotations based on tree
-     */
+    /** A class for adding annotations based on tree */
     private class UnitsTreeAnnotator extends TreeAnnotator {
 
         UnitsTreeAnnotator(UnitsAnnotatedTypeFactory atypeFactory) {
@@ -478,9 +490,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /**
-     * Set the Bottom qualifier as the bottom of the hierarchy.
-     */
+    /** Set the Bottom qualifier as the bottom of the hierarchy. */
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new UnitsQualifierHierarchy(
@@ -494,14 +504,14 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
-                return AnnotationUtils.areSame(lhs, rhs);
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, subAnno)) {
+                return AnnotationUtils.areSame(superAnno, subAnno);
             }
-            lhs = removePrefix(lhs);
-            rhs = removePrefix(rhs);
+            superAnno = removePrefix(superAnno);
+            subAnno = removePrefix(subAnno);
 
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
 
         // Overriding leastUpperBound due to the fact that alias annotations are

@@ -63,9 +63,6 @@ class UnionAsMemberOf {
 }
 
 final class Issue577Outer<K extends Object> {
-    // TODO: See Issue 724
-    // https://github.com/typetools/checker-framework/issues/724
-    @SuppressWarnings({"regex:argument.type.incompatible", "tainting:argument.type.incompatible"})
     private Inner createInner(ReferenceQueue<? super K> q) {
         return new Inner(q);
     }

@@ -3,7 +3,7 @@ import static java.util.Arrays.asList;
 import java.util.List;
 import java.util.function.Supplier;
 
-//@below-java8-jdk-skip-test
+// @below-java8-jdk-skip-test
 class Issue436 {
     public void makeALongFormConditionalLambdaReturningGenerics(boolean makeAll) {
         // TypeArgInferenceUtil.assignedTo used to try to use the method return rather than the lambda return

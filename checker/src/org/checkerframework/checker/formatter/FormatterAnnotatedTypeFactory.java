@@ -23,13 +23,11 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * Adds {@link Format} to the type of tree, if it is a {@code String} or
- * {@code char} literal that represents a satisfiable format. The annotation's
- * value is set to be a list of appropriate {@link ConversionCategory} values
- * for every parameter of the format.
+ * Adds {@link Format} to the type of tree, if it is a {@code String} or {@code char} literal that
+ * represents a satisfiable format. The annotation's value is set to be a list of appropriate {@link
+ * ConversionCategory} values for every parameter of the format.
  *
  * @see ConversionCategory
- *
  * @author Konstantin Weitz
  */
 public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -108,11 +106,11 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameIgnoringValues(rhs, FORMAT)
-                    && AnnotationUtils.areSameIgnoringValues(lhs, FORMAT)) {
-                ConversionCategory[] rhsArgTypes = treeUtil.formatAnnotationToCategories(rhs);
-                ConversionCategory[] lhsArgTypes = treeUtil.formatAnnotationToCategories(lhs);
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, FORMAT)
+                    && AnnotationUtils.areSameIgnoringValues(superAnno, FORMAT)) {
+                ConversionCategory[] rhsArgTypes = treeUtil.formatAnnotationToCategories(subAnno);
+                ConversionCategory[] lhsArgTypes = treeUtil.formatAnnotationToCategories(superAnno);
 
                 if (rhsArgTypes.length > lhsArgTypes.length) {
                     return false;
@@ -125,20 +123,20 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 return true;
             }
-            if (AnnotationUtils.areSameIgnoringValues(lhs, FORMAT)) {
-                lhs = FORMAT;
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, FORMAT)) {
+                superAnno = FORMAT;
             }
-            if (AnnotationUtils.areSameIgnoringValues(rhs, FORMAT)) {
-                rhs = FORMAT;
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, FORMAT)) {
+                subAnno = FORMAT;
             }
-            if (AnnotationUtils.areSameIgnoringValues(lhs, INVALIDFORMAT)) {
-                lhs = INVALIDFORMAT;
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, INVALIDFORMAT)) {
+                superAnno = INVALIDFORMAT;
             }
-            if (AnnotationUtils.areSameIgnoringValues(rhs, INVALIDFORMAT)) {
-                rhs = INVALIDFORMAT;
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, INVALIDFORMAT)) {
+                subAnno = INVALIDFORMAT;
             }
 
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
 
         @Override

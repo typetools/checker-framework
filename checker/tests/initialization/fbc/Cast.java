@@ -1,5 +1,6 @@
 
-import org.checkerframework.checker.initialization.qual.*;
+import org.checkerframework.checker.initialization.qual.Initialized;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
 class Cast {
 

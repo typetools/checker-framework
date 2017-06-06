@@ -3,9 +3,8 @@
 // TODO: add a @Processor method-annotation to parameterize
 
 /**
- * This class has auxiliar methods to compile a class and return its classfile.
- * It is used by defaultPersists/Driver and inheritDeclAnnoPersist/Driver.
- *
+ * This class has auxiliar methods to compile a class and return its classfile. It is used by
+ * defaultPersists/Driver and inheritDeclAnnoPersist/Driver.
  */
 import com.sun.tools.classfile.ClassFile;
 import java.io.BufferedWriter;
@@ -102,8 +101,8 @@ public class PersistUtil {
 }
 
 /**
- * The name of the class that should be analyzed.
- * Should only need to be provided when analyzing inner classes.
+ * The name of the class that should be analyzed. Should only need to be provided when analyzing
+ * inner classes.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

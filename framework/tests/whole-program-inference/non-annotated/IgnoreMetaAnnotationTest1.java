@@ -1,4 +1,4 @@
-import tests.wholeprograminference.qual.Sibling1;
+import testlib.wholeprograminference.qual.Sibling1;
 
 // See ExpectedErrors#IgnoreMetaAnnotationTest2
 class IgnoreMetaAnnotationTest1 {

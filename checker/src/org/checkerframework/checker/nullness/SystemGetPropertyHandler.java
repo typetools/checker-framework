@@ -1,26 +1,26 @@
 package org.checkerframework.checker.nullness;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.*;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Utility class for handling {@link java.lang.System#getProperty(String)}
- * invocations.
+ * Utility class for handling {@link java.lang.System#getProperty(String)} invocations.
  *
- * <p>
- * If the argument is a literal key that is guaranteed to be present in the
- * system properties may (according to the documentation of
- * {@link java.lang.System#getProperty(String)}), as in
- * {@code System.getProperties("line.separator")}, then the result of the method
- * call is assumed to be non-null.
+ * <p>If the argument is a literal key that is guaranteed to be present in the system properties may
+ * (according to the documentation of {@link java.lang.System#getProperty(String)}), as in {@code
+ * System.getProperties("line.separator")}, then the result of the method call is assumed to be
+ * non-null.
  */
 public class SystemGetPropertyHandler {
 

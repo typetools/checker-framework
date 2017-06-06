@@ -30,6 +30,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -47,12 +48,10 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * The visitor for the freedom-before-commitment type-system. The
- * freedom-before-commitment type-system and this class are abstract and need to
- * be combined with another type-system whose safe initialization should be
- * tracked. For an example, see the {@link NullnessChecker}. Also supports
- * rawness as a type-system for tracking initialization, though FBC is
- * preferred.
+ * The visitor for the freedom-before-commitment type-system. The freedom-before-commitment
+ * type-system and this class are abstract and need to be combined with another type-system whose
+ * safe initialization should be tracked. For an example, see the {@link NullnessChecker}. Also
+ * supports rawness as a type-system for tracking initialization, though FBC is preferred.
  *
  * @author Stefan Heule
  */
@@ -148,7 +147,9 @@ public class InitializationVisitor<
             // Fields cannot have commitment annotations.
             for (Class<? extends Annotation> c : atypeFactory.getInitializationAnnotations()) {
                 for (AnnotationMirror a : annotationMirrors) {
-                    if (atypeFactory.isUnclassified(a)) continue; // unclassified is allowed
+                    if (atypeFactory.isUnclassified(a)) {
+                        continue; // unclassified is allowed
+                    }
                     if (AnnotationUtils.areSameByClass(a, c)) {
                         checker.report(Result.failure(COMMITMENT_INVALID_FIELD_TYPE, node), node);
                         break;
@@ -166,7 +167,8 @@ public class InitializationVisitor<
             AnnotationMirror inferredAnnotation,
             CFAbstractStore<?, ?> store) {
         // also use the information about initialized fields to check contracts
-        AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
+        final AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
+
         if (atypeFactory.getQualifierHierarchy().isSubtype(invariantAnno, necessaryAnnotation)) {
             if (expr instanceof FieldAccess) {
                 FieldAccess fa = (FieldAccess) expr;
@@ -182,6 +184,35 @@ public class InitializationVisitor<
                                 fieldType.getAnnotations(), invariantAnno)) {
                             return true;
                         }
+                    }
+                } else {
+                    Set<AnnotationMirror> recvAnnoSet;
+                    @SuppressWarnings("unchecked")
+                    Value value = (Value) store.getValue(fa.getReceiver());
+                    if (value != null) {
+                        recvAnnoSet = value.getAnnotations();
+                    } else if (fa.getReceiver() instanceof LocalVariable) {
+                        Element elem = ((LocalVariable) fa.getReceiver()).getElement();
+                        AnnotatedTypeMirror recvType = atypeFactory.getAnnotatedType(elem);
+                        recvAnnoSet = recvType.getAnnotations();
+                    } else {
+                        // Is there anything better we could do?
+                        return false;
+                    }
+                    boolean isRecvCommitted = false;
+                    for (AnnotationMirror anno : recvAnnoSet) {
+                        if (atypeFactory.isCommitted(anno)) {
+                            isRecvCommitted = true;
+                        }
+                    }
+
+                    AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fa.getField());
+                    // The receiver is fully initialized and the field type
+                    // has the invariant type.
+                    if (isRecvCommitted
+                            && AnnotationUtils.containsSame(
+                                    fieldType.getAnnotations(), invariantAnno)) {
+                        return true;
                     }
                 }
             }
@@ -270,11 +301,7 @@ public class InitializationVisitor<
     protected final List<VariableTree> initializedFields;
 
     @Override
-    public Void visitClass(ClassTree node, Void p) {
-        // call the ATF with any node from this class to trigger the org.checkerframework.dataflow
-        // analysis.
-        atypeFactory.preProcessClassTree(node);
-
+    public void processClassTree(ClassTree node) {
         // go through all members and look for initializers.
         // save all fields that are initialized and do not report errors about
         // them later when checking constructors.
@@ -294,7 +321,7 @@ public class InitializationVisitor<
             }
         }
 
-        Void result = super.visitClass(node, p);
+        super.processClassTree(node);
 
         // Is there a static initializer block?
         boolean hasStaticInitializer = false;
@@ -325,8 +352,6 @@ public class InitializationVisitor<
             List<AnnotationMirror> receiverAnnotations = Collections.emptyList();
             checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
         }
-
-        return result;
     }
 
     @Override
@@ -357,9 +382,7 @@ public class InitializationVisitor<
         return super.visitMethod(node, p);
     }
 
-    /**
-     * Returns the full list of annotations on the receiver.
-     */
+    /** Returns the full list of annotations on the receiver. */
     private List<? extends AnnotationMirror> getAllReceiverAnnotations(MethodTree node) {
         // TODO: get access to a Types instance and use it to get receiver type
         // Or, extend ExecutableElement with such a method.
@@ -381,8 +404,8 @@ public class InitializationVisitor<
     }
 
     /**
-     * Checks that all fields (all static fields if {@code staticFields} is
-     * true) are initialized in the given store.
+     * Checks that all fields (all static fields if {@code staticFields} is true) are initialized in
+     * the given store.
      */
     // TODO: the code for checking if fields are initialized should be re-written,
     // as the current version contains quite a few ugly parts, is hard to understand,

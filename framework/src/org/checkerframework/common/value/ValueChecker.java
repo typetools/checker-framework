@@ -7,8 +7,16 @@ import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedOptions;
 
 /**
- * @author plvines
+ * The Constant Value Checker is a constant propagation analysis: for each variable, it determines
+ * whether that variable's value can be known at compile time.
  *
+ * <p>The Constant Value Checker has no dependencies, but it does trust {@link
+ * org.checkerframework.checker.index.qual.Positive} annotations from the {@link
+ * org.checkerframework.checker.index.IndexChecker}. This means that if the Value Checker is run on
+ * code containing {@code Positive} annotations, then the Index Checker also needs to be run to
+ * guarantee soundness.
+ *
+ * @author plvines
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
 @StubFiles("statically-executable.astub")

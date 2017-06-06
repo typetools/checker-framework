@@ -1,9 +1,7 @@
 package java.util;
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
 
-import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
-import org.checkerframework.checker.nullness.qual.KeyFor;
+
+
 import org.checkerframework.checker.lock.qual.*;
 
 // This permits null element when using a custom comparator which allows null

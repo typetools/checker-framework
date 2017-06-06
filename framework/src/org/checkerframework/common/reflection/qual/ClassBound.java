@@ -7,8 +7,8 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * This represents a {@code Class<T>} object whose run-time value
- * is equal to or a subtype of one of the arguments.
+ * This represents a {@code Class<T>} object whose run-time value is equal to or a subtype of one of
+ * the arguments.
  *
  * @checker_framework.manual #methodval-and-classval-checkers ClassVal Checker
  */
@@ -17,8 +17,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface ClassBound {
     /**
-     * The <a href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1">binary name</a>
-     * of the class or classes that upper-bound the values of this Class object.
+     * The <a href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1">binary
+     * name</a> of the class or classes that upper-bound the values of this Class object.
      */
     String[] value();
 }

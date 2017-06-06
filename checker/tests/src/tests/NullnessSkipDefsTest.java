@@ -5,9 +5,7 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/**
- * JUnit tests for the Nullness Checker -- testing -AskipDefs command-line argument.
- */
+/** JUnit tests for the Nullness Checker -- testing {@code -AskipDefs} command-line argument. */
 public class NullnessSkipDefsTest extends CheckerFrameworkPerDirectoryTest {
 
     public NullnessSkipDefsTest(List<File> testFiles) {

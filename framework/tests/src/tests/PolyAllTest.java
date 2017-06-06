@@ -5,8 +5,7 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/**
- */
+/** */
 public class PolyAllTest extends CheckerFrameworkPerDirectoryTest {
 
     public PolyAllTest(List<File> testFiles) {

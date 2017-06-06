@@ -117,6 +117,11 @@
             style="push">
           </command>
           <command
+            commandId="checkers.eclipse.runindex"
+            label="Index Checker"
+            style="push">
+          </command>
+          <command
             commandId="checkers.eclipse.runfenum"
             label="Fenum Checker"
             style="push">
@@ -236,6 +241,12 @@
     </command>
     <command
       categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$IndexAction"
+      id="checkers.eclipse.runindex"
+      name="Run Index Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
       defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$FenumAction"
       id="checkers.eclipse.runfenum"
       name="Run Fenum Checker">
@@ -296,7 +307,7 @@
     </command>
     <command
       categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$signednessAction"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$SignednessAction"
       id="checkers.eclipse.runsignednesschecker"
       name="Run Signedness Checker">
     </command>

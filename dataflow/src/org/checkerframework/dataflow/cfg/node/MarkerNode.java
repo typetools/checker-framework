@@ -12,16 +12,13 @@ import javax.lang.model.util.Types;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
- * MarkerNodes are no-op Nodes used for debugging information.
- * They can hold a Tree and a message, which will be part of the
- * String representation of the MarkerNode.
+ * MarkerNodes are no-op Nodes used for debugging information. They can hold a Tree and a message,
+ * which will be part of the String representation of the MarkerNode.
  *
- * An example use case for MarkerNodes is representing switch
- * statements.
+ * <p>An example use case for MarkerNodes is representing switch statements.
  *
  * @author Stefan Heule
  * @author Charlie Garrett
- *
  */
 public class MarkerNode extends Node {
 

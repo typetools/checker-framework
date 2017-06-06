@@ -15,7 +15,6 @@ import javax.lang.model.element.TypeElement;
 import org.checkerframework.checker.guieffect.qual.AlwaysSafe;
 import org.checkerframework.checker.guieffect.qual.PolyUI;
 import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
-import org.checkerframework.checker.guieffect.qual.PolyUIType;
 import org.checkerframework.checker.guieffect.qual.SafeEffect;
 import org.checkerframework.checker.guieffect.qual.UI;
 import org.checkerframework.checker.guieffect.qual.UIEffect;
@@ -28,9 +27,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-/**
- * Require that only UI code invokes code with the UI effect.
- */
+/** Require that only UI code invokes code with the UI effect. */
 public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
     protected final boolean debugSpew;
@@ -212,8 +209,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         AnnotationMirror targetPolyP = atypeFactory.getDeclAnnotation(methElt, PolyUIEffect.class);
         TypeElement targetClassElt = (TypeElement) methElt.getEnclosingElement();
 
-        if (targetUIP != null && (targetSafeP != null || targetPolyP != null)
-                || targetSafeP != null && targetPolyP != null) {
+        if ((targetUIP != null && (targetSafeP != null || targetPolyP != null))
+                || (targetSafeP != null && targetPolyP != null)) {
             checker.report(Result.failure("annotations.conflicts"), node);
         }
         if (targetPolyP != null && !atypeFactory.isPolymorphicType(targetClassElt)) {
@@ -265,7 +262,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     }
 
     @Override
-    public Void visitClass(ClassTree node, Void p) {
+    public void processClassTree(ClassTree node) {
         // TODO: Check constraints on this class decl vs. parent class decl., and interfaces
         // TODO: This has to wait for now: maybe this will be easier with the isValidUse on the TypeFactory
         // AnnotatedTypeMirror.AnnotatedDeclaredType atype = atypeFactory.fromClass(node);
@@ -276,9 +273,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         // are implicitly moved into each constructor, which must then be @UI
         currentMethods.push(null);
         effStack.push(new Effect(UIEffect.class));
-        Void ret = super.visitClass(node, p);
+        super.processClassTree(node);
         currentMethods.pop();
         effStack.pop();
-        return ret;
     }
 }

@@ -12,7 +12,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
  * Base class of the {@link Block} implementation hierarchy.
  *
  * @author Stefan Heule
- *
  */
 public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements ExceptionBlock {
 
@@ -27,9 +26,7 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
     /** The node of this block. */
     protected Node node;
 
-    /**
-     * Set the node.
-     */
+    /** Set the node. */
     public void setNode(Node c) {
         node = c;
         c.setBlock(this);
@@ -40,9 +37,7 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
         return node;
     }
 
-    /**
-     * Add an exceptional successor.
-     */
+    /** Add an exceptional successor. */
     public void addExceptionalSuccessor(BlockImpl b, TypeMirror cause) {
         if (exceptionalSuccessors == null) {
             exceptionalSuccessors = new HashMap<>();

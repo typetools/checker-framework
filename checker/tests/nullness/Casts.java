@@ -14,7 +14,7 @@ public class Casts {
 
     void testBoxing() {
         Integer b = null;
-        //:: error: (assignment.type.incompatible)
+        //:: error: (unboxing.of.nullable)
         int i = b;
         // no error, because there was already a nullpointer exception
         Object o = (int) b;

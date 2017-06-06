@@ -1,6 +1,6 @@
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.test.*;
-import tests.util.*;
+import testlib.util.*;
 
 // Tests for the meta-annotations for contracts.
 class MetaPrecondition {

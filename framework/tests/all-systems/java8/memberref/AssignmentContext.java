@@ -1,4 +1,3 @@
-import java.lang.SuppressWarnings;
 
 interface FunctionAC {
     String apply(String s);

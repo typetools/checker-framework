@@ -1,4 +1,4 @@
-// Addtional Test case for Issue579
+// Additional Test case for Issue579
 // https://github.com/typetools/checker-framework/issues/579
 import org.checkerframework.checker.nullness.qual.NonNull;
 

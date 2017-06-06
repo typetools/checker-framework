@@ -13,15 +13,13 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.InternalUtils;
 
 /**
- * An utility class for working with the {@link SideEffectFree}, {@link
- * Deterministic}, and {@link Pure} annotations.
+ * An utility class for working with the {@link SideEffectFree}, {@link Deterministic}, and {@link
+ * Pure} annotations.
  *
  * @see SideEffectFree
  * @see Deterministic
  * @see Pure
- *
  * @author Stefan Heule
- *
  */
 public class PurityUtils {
 
@@ -59,17 +57,15 @@ public class PurityUtils {
         return kinds.contains(Kind.SIDE_EFFECT_FREE);
     }
 
-    /**
-     * @return the types of purity of the method {@code tree}.
-     */
+    /** @return the types of purity of the method {@code tree}. */
     public static List<Pure.Kind> getPurityKinds(AnnotationProvider provider, MethodTree tree) {
         Element methodElement = InternalUtils.symbol(tree);
         return getPurityKinds(provider, methodElement);
     }
 
     /**
-     * @return the types of purity of the method {@code methodElement}.
-     * TODO: should the return type be an EnumSet?
+     * @return the types of purity of the method {@code methodElement}. TODO: should the return type
+     *     be an EnumSet?
      */
     public static List<Pure.Kind> getPurityKinds(
             AnnotationProvider provider, Element methodElement) {

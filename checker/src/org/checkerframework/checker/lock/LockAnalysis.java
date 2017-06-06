@@ -9,14 +9,13 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.Pair;
 
 /**
  * The analysis class for the lock type system.
  *
- * This class extends {@link CFAbstractAnalysis} so that {@link LockStore} is used rather than
- * {@link CFStore};
+ * <p>This class extends {@link CFAbstractAnalysis} so that {@link LockStore} is used rather than
+ * {@link CFStore}.
  */
 public class LockAnalysis extends CFAbstractAnalysis<CFValue, LockStore, LockTransfer> {
 

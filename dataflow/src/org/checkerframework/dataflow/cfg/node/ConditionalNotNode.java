@@ -2,10 +2,7 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
-import java.util.Collection;
-import java.util.Collections;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
 
 /**
  * A node for a conditional not expression:
@@ -16,27 +13,12 @@ import org.checkerframework.javacutil.InternalUtils;
  *
  * @author Stefan Heule
  * @author Charlie Garrett
- *
  */
-public class ConditionalNotNode extends Node {
-
-    protected UnaryTree tree;
-    protected Node operand;
+public class ConditionalNotNode extends UnaryOperationNode {
 
     public ConditionalNotNode(UnaryTree tree, Node operand) {
-        super(InternalUtils.typeOf(tree));
+        super(tree, operand);
         assert tree.getKind().equals(Kind.LOGICAL_COMPLEMENT);
-        this.tree = tree;
-        this.operand = operand;
-    }
-
-    public Node getOperand() {
-        return operand;
-    }
-
-    @Override
-    public UnaryTree getTree() {
-        return tree;
     }
 
     @Override
@@ -61,10 +43,5 @@ public class ConditionalNotNode extends Node {
     @Override
     public int hashCode() {
         return HashCodeUtils.hash(getOperand());
-    }
-
-    @Override
-    public Collection<Node> getOperands() {
-        return Collections.singletonList(getOperand());
     }
 }

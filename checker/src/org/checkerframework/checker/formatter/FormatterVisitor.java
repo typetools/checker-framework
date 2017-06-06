@@ -16,8 +16,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * Whenever a format method invocation is found in the syntax tree,
- * the following checks happen, read the code, seriously! (otherwise see manual 12.2)
+ * Whenever a format method invocation is found in the syntax tree, the following checks happen,
+ * read the code, seriously! (otherwise see manual 12.2)
  *
  * @author Konstantin Weitz
  */

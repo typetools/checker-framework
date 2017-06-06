@@ -1,5 +1,6 @@
 package org.checkerframework.common.aliasing;
 
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import java.lang.annotation.Annotation;
 import java.util.Map;
@@ -77,6 +78,12 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             p.replaceAnnotations(defaultedSet);
             return null;
         }
+
+        @Override
+        public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
+            type.replaceAnnotation(UNIQUE);
+            return super.visitNewArray(node, type);
+        }
     }
 
     @Override
@@ -128,8 +135,8 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (isLeakedQualifier(lhs) && isLeakedQualifier(rhs)) {
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (isLeakedQualifier(superAnno) && isLeakedQualifier(subAnno)) {
                 // @LeakedToResult and @NonLeaked were supposed to be
                 // non-type-qualifiers annotations.
                 // Currently the stub parser does not support non-type-qualifier
@@ -138,7 +145,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // warnings related to the hierarchy are ignored.
                 return true;
             }
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
     }
 }

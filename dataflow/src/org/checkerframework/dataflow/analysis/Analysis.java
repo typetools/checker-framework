@@ -45,14 +45,9 @@ import org.checkerframework.javacutil.Pair;
  * given a control flow graph and a transfer function.
  *
  * @author Stefan Heule
- *
- * @param <A>
- *            The abstract value type to be tracked by the analysis.
- * @param <S>
- *            The store type used in the analysis.
- * @param <T>
- *            The transfer function type that is used to approximated runtime
- *            behavior.
+ * @param <A> the abstract value type to be tracked by the analysis
+ * @param <S> the store type used in the analysis
+ * @param <T> the transfer function type that is used to approximated runtime behavior
  */
 public class Analysis<
         A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> {
@@ -72,27 +67,30 @@ public class Analysis<
     /** Instance of the types utility. */
     protected final Types types;
 
-    /**
-     * Then stores before every basic block (assumed to be 'no information' if
-     * not present).
-     */
+    /** Then stores before every basic block (assumed to be 'no information' if not present). */
     protected IdentityHashMap<Block, S> thenStores;
 
-    /**
-     * Else stores before every basic block (assumed to be 'no information' if
-     * not present).
-     */
+    /** Else stores before every basic block (assumed to be 'no information' if not present). */
     protected IdentityHashMap<Block, S> elseStores;
 
     /**
-     * The transfer inputs before every basic block (assumed to be 'no information' if
-     * not present).
+     * Number of times every block has been analyzed since the last time widening was applied. Null,
+     * if maxCountBeforeWidening is -1 which implies widening isn't used for this analysis.
+     */
+    protected IdentityHashMap<Block, Integer> blockCount;
+
+    /**
+     * Number of times a block can be analyzed before widening. -1 implies that widening shouldn't
+     * be used.
+     */
+    protected final int maxCountBeforeWidening;
+
+    /**
+     * The transfer inputs before every basic block (assumed to be 'no information' if not present).
      */
     protected IdentityHashMap<Block, TransferInput<A, S>> inputs;
 
-    /**
-     * The stores after every return statement.
-     */
+    /** The stores after every return statement. */
     protected IdentityHashMap<ReturnNode, TransferResult<A, S>> storesAtReturnStatements;
 
     /** The worklist used for the fix-point iteration. */
@@ -105,8 +103,8 @@ public class Analysis<
     public HashMap<Element, A> finalLocalValues;
 
     /**
-     * The node that is currently handled in the analysis (if it is running).
-     * The following invariant holds:
+     * The node that is currently handled in the analysis (if it is running). The following
+     * invariant holds:
      *
      * <pre>
      *   !isRunning &rArr; (currentNode == null)
@@ -115,15 +113,12 @@ public class Analysis<
     protected Node currentNode;
 
     /**
-     * The tree that is currently being looked at. The transfer function can set
-     * this tree to make sure that calls to {@code getValue} will not return
-     * information for this given tree.
+     * The tree that is currently being looked at. The transfer function can set this tree to make
+     * sure that calls to {@code getValue} will not return information for this given tree.
      */
     protected Tree currentTree;
 
-    /**
-     * The current transfer input when the analysis is running.
-     */
+    /** The current transfer input when the analysis is running. */
     protected TransferInput<A, S> currentInput;
 
     public Tree getCurrentTree() {
@@ -136,12 +131,10 @@ public class Analysis<
 
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
-     * flow graph. The transfer function is set later using
-     * {@code setTransferFunction}.
+     * flow graph. The transfer function is set later using {@code setTransferFunction}.
      */
     public Analysis(ProcessingEnvironment env) {
-        this.env = env;
-        types = env.getTypeUtils();
+        this(env, null, -1);
     }
 
     /**
@@ -149,7 +142,18 @@ public class Analysis<
      * flow graph, given a transfer function.
      */
     public Analysis(ProcessingEnvironment env, T transfer) {
-        this(env);
+        this(env, transfer, -1);
+    }
+
+    /**
+     * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
+     * flow graph, given a transfer function.
+     */
+    public Analysis(ProcessingEnvironment env, T transfer, int maxCountBeforeWidening) {
+        this.env = env;
+        types = env.getTypeUtils();
+        this.transferFunction = transfer;
+        this.maxCountBeforeWidening = maxCountBeforeWidening;
         this.transferFunction = transfer;
     }
 
@@ -170,8 +174,7 @@ public class Analysis<
     }
 
     /**
-     * Perform the actual analysis. Should only be called once after the object
-     * has been created.
+     * Perform the actual analysis. Should only be called once after the object has been created.
      */
     public void performAnalysis(ControlFlowGraph cfg) {
         assert isRunning == false;
@@ -301,8 +304,7 @@ public class Analysis<
     }
 
     /**
-     * Propagate the stores in currentInput to the successor block, succ, according to the
-     * flowRule.
+     * Propagate the stores in currentInput to the successor block, succ, according to the flowRule.
      */
     protected void propagateStoresTo(
             Block succ,
@@ -370,9 +372,8 @@ public class Analysis<
     }
 
     /**
-     * Updates the value of node {@code node} to the value of the
-     * {@code transferResult}. Returns true if the node's value changed, or a
-     * store was updated.
+     * Updates the value of node {@code node} to the value of the {@code transferResult}. Returns
+     * true if the node's value changed, or a store was updated.
      */
     protected boolean updateNodeValues(Node node, TransferResult<A, S> transferResult) {
         A newVal = transferResult.getResultValue();
@@ -388,8 +389,7 @@ public class Analysis<
     }
 
     /**
-     * Call the transfer function for node {@code node}, and set that node as
-     * current node first.
+     * Call the transfer function for node {@code node}, and set that node as current node first.
      */
     protected TransferResult<A, S> callTransferFunction(Node node, TransferInput<A, S> store) {
 
@@ -428,6 +428,7 @@ public class Analysis<
         this.cfg = cfg;
         thenStores = new IdentityHashMap<>();
         elseStores = new IdentityHashMap<>();
+        blockCount = maxCountBeforeWidening == -1 ? null : new IdentityHashMap<Block, Integer>();
         inputs = new IdentityHashMap<>();
         storesAtReturnStatements = new IdentityHashMap<>();
         worklist = new Worklist(cfg);
@@ -467,8 +468,7 @@ public class Analysis<
     }
 
     /**
-     * Add a basic block to the worklist. If {@code b} is already present,
-     * the method does nothing.
+     * Add a basic block to the worklist. If {@code b} is already present, the method does nothing.
      */
     protected void addToWorklist(Block b) {
         // TODO: use a more efficient way to check if b is already present
@@ -478,19 +478,28 @@ public class Analysis<
     }
 
     /**
-     * Add a store before the basic block {@code b} by merging with the
-     * existing stores for that location.
+     * Add a store before the basic block {@code b} by merging with the existing stores for that
+     * location.
      */
     protected void addStoreBefore(
             Block b, Node node, S s, Store.Kind kind, boolean addBlockToWorklist) {
         S thenStore = getStoreBefore(b, Store.Kind.THEN);
         S elseStore = getStoreBefore(b, Store.Kind.ELSE);
+        boolean shouldWiden = false;
+        Integer count = null;
+        if (blockCount != null) {
+            count = blockCount.get(b);
+            if (count == null) {
+                count = 0;
+            }
+            shouldWiden = count >= maxCountBeforeWidening;
+        }
 
         switch (kind) {
             case THEN:
                 {
                     // Update the then store
-                    S newThenStore = (thenStore != null) ? thenStore.leastUpperBound(s) : s;
+                    S newThenStore = mergeStores(s, thenStore, shouldWiden);
                     if (!newThenStore.equals(thenStore)) {
                         thenStores.put(b, newThenStore);
                         if (elseStore != null) {
@@ -503,7 +512,7 @@ public class Analysis<
             case ELSE:
                 {
                     // Update the else store
-                    S newElseStore = (elseStore != null) ? elseStore.leastUpperBound(s) : s;
+                    S newElseStore = mergeStores(s, elseStore, shouldWiden);
                     if (!newElseStore.equals(elseStore)) {
                         elseStores.put(b, newElseStore);
                         if (thenStore != null) {
@@ -516,7 +525,7 @@ public class Analysis<
             case BOTH:
                 if (thenStore == elseStore) {
                     // Currently there is only one regular store
-                    S newStore = (thenStore != null) ? thenStore.leastUpperBound(s) : s;
+                    S newStore = mergeStores(s, thenStore, shouldWiden);
                     if (!newStore.equals(thenStore)) {
                         thenStores.put(b, newStore);
                         elseStores.put(b, newStore);
@@ -526,13 +535,13 @@ public class Analysis<
                 } else {
                     boolean storeChanged = false;
 
-                    S newThenStore = (thenStore != null) ? thenStore.leastUpperBound(s) : s;
+                    S newThenStore = mergeStores(s, thenStore, shouldWiden);
                     if (!newThenStore.equals(thenStore)) {
                         thenStores.put(b, newThenStore);
                         storeChanged = true;
                     }
 
-                    S newElseStore = (elseStore != null) ? elseStore.leastUpperBound(s) : s;
+                    S newElseStore = mergeStores(s, elseStore, shouldWiden);
                     if (!newElseStore.equals(elseStore)) {
                         elseStores.put(b, newElseStore);
                         storeChanged = true;
@@ -544,15 +553,32 @@ public class Analysis<
                     }
                 }
         }
+        if (blockCount != null) {
+            if (shouldWiden) {
+                blockCount.put(b, 0);
+            } else {
+                blockCount.put(b, count + 1);
+            }
+        }
 
         if (addBlockToWorklist) {
             addToWorklist(b);
         }
     }
 
+    private S mergeStores(S previousStore, S newStore, boolean shouldWiden) {
+        if (newStore == null) {
+            return previousStore;
+        } else if (shouldWiden) {
+            return newStore.widenUpperBound(previousStore);
+        } else {
+            return newStore.leastUpperBound(previousStore);
+        }
+    }
+
     /**
-     * A worklist is a priority queue of blocks in which the order is given
-     * by depth-first ordering to place non-loop predecessors ahead of successors.
+     * A worklist is a priority queue of blocks in which the order is given by depth-first ordering
+     * to place non-loop predecessors ahead of successors.
      */
     protected static class Worklist {
 
@@ -603,25 +629,22 @@ public class Analysis<
     }
 
     /**
-     * Read the {@link TransferInput} for a particular basic block (or {@code null} if
-     * none exists yet).
+     * Read the {@link TransferInput} for a particular basic block (or {@code null} if none exists
+     * yet).
      */
     public /*@Nullable*/ TransferInput<A, S> getInput(Block b) {
         return getInputBefore(b);
     }
 
     /**
-     * @return the transfer input corresponding to the location right before the basic
-     *         block {@code b}.
+     * @return the transfer input corresponding to the location right before the basic block {@code
+     *     b}.
      */
     protected /*@Nullable*/ TransferInput<A, S> getInputBefore(Block b) {
         return inputs.get(b);
     }
 
-    /**
-     * @return the store corresponding to the location right before the basic
-     *         block {@code b}.
-     */
+    /** @return the store corresponding to the location right before the basic block {@code b}. */
     protected /*@Nullable*/ S getStoreBefore(Block b, Store.Kind kind) {
         switch (kind) {
             case THEN:
@@ -635,8 +658,8 @@ public class Analysis<
     }
 
     /**
-     * Read the {@link Store} for a particular basic block from a map of stores
-     * (or {@code null} if none exists yet).
+     * Read the {@link Store} for a particular basic block from a map of stores (or {@code null} if
+     * none exists yet).
      */
     protected static <S> /*@Nullable*/ S readFromStore(Map<Block, S> stores, Block b) {
         return stores.get(b);
@@ -648,10 +671,9 @@ public class Analysis<
     }
 
     /**
-     * @return the abstract value for {@link Node} {@code n}, or {@code null} if
-     *         no information is available. Note that if the analysis has not
-     *         finished yet, this value might not represent the final value for
-     *         this node.
+     * @return the abstract value for {@link Node} {@code n}, or {@code null} if no information is
+     *     available. Note that if the analysis has not finished yet, this value might not represent
+     *     the final value for this node.
      */
     public /*@Nullable*/ A getValue(Node n) {
         if (isRunning) {
@@ -675,10 +697,9 @@ public class Analysis<
     }
 
     /**
-     * @return the abstract value for {@link Tree} {@code t}, or {@code null} if
-     *         no information is available. Note that if the analysis has not
-     *         finished yet, this value might not represent the final value for
-     *         this node.
+     * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
+     *     available. Note that if the analysis has not finished yet, this value might not represent
+     *     the final value for this node.
      */
     public /*@Nullable*/ A getValue(Tree t) {
         // we do not yet have a org.checkerframework.dataflow fact about the current node
@@ -692,24 +713,22 @@ public class Analysis<
         return getValue(nodeCorrespondingToTree);
     }
 
-    /**
-     * Get the {@link Node} for a given {@link Tree}.
-     */
+    /** Get the {@link Node} for a given {@link Tree}. */
     public Node getNodeForTree(Tree t) {
         return cfg.getNodeCorrespondingToTree(t);
     }
 
     /**
-     * Get the {@link MethodTree} of the current CFG if the argument {@link Tree} maps
-     * to a {@link Node} in the CFG or null otherwise.
+     * Get the {@link MethodTree} of the current CFG if the argument {@link Tree} maps to a {@link
+     * Node} in the CFG or null otherwise.
      */
     public /*@Nullable*/ MethodTree getContainingMethod(Tree t) {
         return cfg.getContainingMethod(t);
     }
 
     /**
-     * Get the {@link ClassTree} of the current CFG if the argument {@link Tree} maps
-     * to a {@link Node} in the CFG or null otherwise.
+     * Get the {@link ClassTree} of the current CFG if the argument {@link Tree} maps to a {@link
+     * Node} in the CFG or null otherwise.
      */
     public /*@Nullable*/ ClassTree getContainingClass(Tree t) {
         return cfg.getContainingClass(t);
@@ -731,9 +750,8 @@ public class Analysis<
     }
 
     /**
-     * @return the regular exit store, or {@code null}, if there is no such
-     *         store (because the method cannot exit through the regular exit
-     *         block).
+     * @return the regular exit store, or {@code null}, if there is no such store (because the
+     *     method cannot exit through the regular exit block).
      */
     public /*@Nullable*/ S getRegularExitStore() {
         SpecialBlock regularExitBlock = cfg.getRegularExitBlock();

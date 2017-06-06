@@ -8,14 +8,12 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.InternalUtils;
 
 /**
- * A node representing a array type used in an expression
- * such as a field access
+ * A node representing a array type used in an expression such as a field access
  *
- * <em>type</em> .class
+ * <p><em>type</em> .class
  *
  * @author Stefan Heule
  * @author Charlie Garrett
- *
  */
 public class ArrayTypeNode extends Node {
 

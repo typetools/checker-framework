@@ -7,10 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for methods of the form:
- * <br>
- * {@code {@link ClassBound}("ReceiverType") Class method(ReceiverType this)
- * {...}}
+ * Annotation for methods of the form: <br>
+ * {@code {@link ClassBound}("ReceiverType") Class method(ReceiverType this) {...}}
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

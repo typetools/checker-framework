@@ -1,4 +1,4 @@
-import tests.wholeprograminference.qual.*;
+import testlib.wholeprograminference.qual.*;
 
 public class CompoundTypeTest {
     // The default type for fields is @DefaultType.

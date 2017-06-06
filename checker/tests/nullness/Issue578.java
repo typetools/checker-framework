@@ -1,5 +1,3 @@
-// @skip-test
-
 // Test case for issue #578: https://github.com/typetools/checker-framework/issues/578
 class Issue578 {
     <A, B> void eval(Helper<B> helper, Interface<A> anInterface) {

@@ -16,29 +16,26 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * Utilities for determining tree-based heuristics.
  *
- * For an example, see {@link org.checkerframework.checker.interning.InterningVisitor}
+ * <p>For an example, see {@link org.checkerframework.checker.interning.InterningVisitor}
  */
 public class Heuristics {
 
     /**
-     * Determines whether a tree has a particular set of direct parents,
-     * ignoring blocks and parentheses.
+     * Determines whether a tree has a particular set of direct parents, ignoring blocks and
+     * parentheses.
      *
-     * <p>
-     *
-     * For example, to test whether an expression (specified by {@code path})
-     * is immediately contained by an if statement which is immediately
-     * contained in a method, one would invoke:
+     * <p>For example, to test whether an expression (specified by {@code path}) is immediately
+     * contained by an if statement which is immediately contained in a method, one would invoke:
      *
      * <pre>
      * matchParents(path, Kind.IF, Kind.METHOD)
      * </pre>
      *
      * @param path the path to match
-     * @param kinds the tree kinds to match against, in ascending order starting
-     *        from the desired kind of the parent
-     * @return true if the tree path matches the desired kinds, skipping blocks
-     *         and parentheses, for as many kinds as specified
+     * @param kinds the tree kinds to match against, in ascending order starting from the desired
+     *     kind of the parent
+     * @return true if the tree path matches the desired kinds, skipping blocks and parentheses, for
+     *     as many kinds as specified
      */
     public static boolean matchParents(TreePath path, Tree.Kind... kinds) {
 
@@ -64,10 +61,7 @@ public class Heuristics {
         return result;
     }
 
-    /**
-     * A convenience class for tree-matching algorithms. Skips parentheses by
-     * default.
-     */
+    /** A convenience class for tree-matching algorithms. Skips parentheses by default. */
     public static class Matcher extends SimpleTreeVisitor<Boolean, Void> {
 
         @Override
@@ -145,9 +139,7 @@ public class Heuristics {
 
     public static class WithinTrueBranch extends Matcher {
         private final Matcher matcher;
-        /**
-         * @param conditionMatcher for the condition
-         */
+        /** @param conditionMatcher for the condition */
         public WithinTrueBranch(Matcher conditionMatcher) {
             this.matcher = conditionMatcher;
         }

@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import org.checkerframework.checker.nullness.qual.*;
 
 class Unboxing {
@@ -23,5 +22,22 @@ class Unboxing {
         }
         // after the merge, f cannot be null
         f.toString();
+    }
+
+    void foo(@Nullable Integer in) {
+        //:: error: (unboxing.of.nullable)
+        int q = in;
+    }
+
+    int bar(@Nullable Integer in) {
+        //:: error: (unboxing.of.nullable)
+        return in;
+    }
+
+    <T extends @Nullable Integer> int barT(T in) {
+        //:: error: (unboxing.of.nullable)
+        int q = in;
+        //:: error: (unboxing.of.nullable)
+        return in;
     }
 }

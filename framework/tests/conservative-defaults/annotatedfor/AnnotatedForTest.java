@@ -1,6 +1,6 @@
 import org.checkerframework.framework.qual.AnnotatedFor;
-import tests.util.SubQual;
-import tests.util.SuperQual;
+import testlib.util.SubQual;
+import testlib.util.SuperQual;
 
 class AnnotatedForTest {
     /*

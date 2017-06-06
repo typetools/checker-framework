@@ -90,8 +90,8 @@ public class Primitives {
     }
 
     /**
-     * Return the gcd (greatest common divisor) of the differences
-     * between the elements of int array a.
+     * Return the gcd (greatest common divisor) of the differences between the elements of int array
+     * a.
      */
     public static int gcd_differences(int[] a) {
         // Euclid's method

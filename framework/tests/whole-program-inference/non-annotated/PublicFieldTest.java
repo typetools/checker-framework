@@ -1,4 +1,5 @@
-import tests.wholeprograminference.qual.*;
+import testlib.wholeprograminference.qual.*;
+
 public class PublicFieldTest {
     public static int field1; // parent
     public static int field2; // sib2
@@ -17,9 +18,13 @@ public class PublicFieldTest {
     }
 
     void expectsBottom(@WholeProgramInferenceBottom int t) {}
+
     void expectsSibling1(@Sibling1 int t) {}
+
     void expectsSibling2(@Sibling2 int t) {}
+
     void expectsTop(@Top int t) {}
+
     void expectsParent(@Parent int t) {}
 
     @Sibling1 int getSibling1() {
@@ -30,6 +35,7 @@ public class PublicFieldTest {
 class AnotherClass {
 
     int innerField;
+
     public AnotherClass() {
         PublicFieldTest.field1 = getSibling2();
         PublicFieldTest.field2 = getSibling2();
@@ -44,11 +50,14 @@ class AnotherClass {
     @WholeProgramInferenceBottom int getBottom() {
         return (@WholeProgramInferenceBottom int) 0;
     }
+
     @Top int getTop() {
         return (@Top int) 0;
     }
+
     @Sibling2 int getSibling2() {
         return (@Sibling2 int) 0;
     }
+
     void expectsSibling2(@Sibling2 int t) {}
 }

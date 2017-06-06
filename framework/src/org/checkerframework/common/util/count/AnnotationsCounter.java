@@ -8,14 +8,18 @@ import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.processing.*;
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.*;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 
 /**
- * An annotation processor for counting the occurrences of annotations.
- * To invoke it, use
+ * An annotation processor for counting the occurrences of annotations. To invoke it, use
+ *
  * <pre>
  * javac -proc:only -processor org.checkerframework.common.util.count.AnnotationsCounter <em>MyFile.java ...</em>
  * </pre>

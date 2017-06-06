@@ -14,8 +14,8 @@ import javax.lang.model.util.Types;
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**
- * An AST visitor that provides a variety of compiler utilities and interfaces
- * to facilitate type-checking.
+ * An AST visitor that provides a variety of compiler utilities and interfaces to facilitate
+ * type-checking.
  */
 public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
 

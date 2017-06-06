@@ -1,6 +1,6 @@
 import java.util.LinkedList;
 import java.util.List;
-import tests.util.*;
+import testlib.util.*;
 
 class InvariantArrays {
     Object[] oa;

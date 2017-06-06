@@ -15,8 +15,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**
- * A "general" annotated type factory that supports qualifiers from any type hierarchy.
- * One big limitation is that it does not support annotations coming from a stub file.
+ * A "general" annotated type factory that supports qualifiers from any type hierarchy. One big
+ * limitation is that it does not support annotations coming from a stub file.
  */
 public class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
@@ -35,10 +35,7 @@ public class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
         // See testcase tests/nullness/GeneralATFStore.java
     }
 
-    /**
-     * Return true to support any qualifier.
-     * No handling of aliases.
-     */
+    /** Return true to support any qualifier. No handling of aliases. */
     @Override
     public boolean isSupportedQualifier(AnnotationMirror a) {
         return true;
@@ -51,8 +48,8 @@ public class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
 }
 
 /**
- * A very limited QualifierHierarchy that is used for access to
- * qualifiers from different type systems.
+ * A very limited QualifierHierarchy that is used for access to qualifiers from different type
+ * systems.
  */
 class GeneralQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
@@ -111,7 +108,7 @@ class GeneralQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
     // Not needed - raises error.
     @Override
-    public boolean isSubtype(AnnotationMirror anno1, AnnotationMirror anno2) {
+    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
         ErrorReporter.errorAbort(
                 "GeneralQualifierHierarchy.isSubtype() was called! It shouldn't be called.");
         return false;
@@ -119,7 +116,7 @@ class GeneralQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
     // Not needed - raises error.
     @Override
-    public boolean isSubtypeTypeVariable(AnnotationMirror anno1, AnnotationMirror anno2) {
+    public boolean isSubtypeTypeVariable(AnnotationMirror subAnno, AnnotationMirror superAnno) {
         ErrorReporter.errorAbort(
                 "GeneralQualifierHierarchy.isSubtypeTypeVariable() was called! It shouldn't be called.");
         return false;
@@ -138,8 +135,8 @@ class GeneralQualifierHierarchy extends MultiGraphQualifierHierarchy {
     // Not needed - raises error.
     @Override
     public boolean isSubtypeTypeVariable(
-            Collection<? extends AnnotationMirror> rhs,
-            Collection<? extends AnnotationMirror> lhs) {
+            Collection<? extends AnnotationMirror> subAnnos,
+            Collection<? extends AnnotationMirror> superAnnos) {
         ErrorReporter.errorAbort(
                 "GeneralQualifierHierarchy.isSubtypeTypeVariable() was called! It shouldn't be called.");
         return false;

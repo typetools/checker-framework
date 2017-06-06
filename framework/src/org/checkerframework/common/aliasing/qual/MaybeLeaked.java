@@ -11,14 +11,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * Temporary type qualifier:
  *
- * This is the default type qualifier for the Leaked hierarchy.
- * <p>
+ * <p>This is the default type qualifier for the Leaked hierarchy.
  *
- * Once the stub parser gets updated to read non-type-qualifer
- * annotations on stub files (Issue 383), this annotation can be removed,
- * and {@link NonLeaked} and {@link LeakedToResult} can be made
- * to be type annotations but not type qualifiers and not in a
- * type hierarchy.
+ * <p>Once the stub parser gets updated to read non-type-qualifer annotations on stub files (Issue
+ * 383), this annotation can be removed, and {@link NonLeaked} and {@link LeakedToResult} can be
+ * made to be type annotations but not type qualifiers and not in a type hierarchy.
  *
  * @checker_framework.manual #aliasing-checker Aliasing Checker
  */

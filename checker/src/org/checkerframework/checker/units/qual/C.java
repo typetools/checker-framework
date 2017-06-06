@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- *  Degree Centigrade (Celsius).
+ * Degree Centigrade (Celsius).
  *
  * @checker_framework.manual #units-checker Units Checker
  */

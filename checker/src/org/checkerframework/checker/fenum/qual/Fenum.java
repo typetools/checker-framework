@@ -8,10 +8,9 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * A generic fake enumeration qualifier that is parameterized by a name.
- * It is written in source code as, for example,
- * {@code @Fenum("cardSuit")} and {@code @Fenum("faceValue")}, which
- * would be distinct fake enumerations.
+ * A generic fake enumeration qualifier that is parameterized by a name. It is written in source
+ * code as, for example, {@code @Fenum("cardSuit")} and {@code @Fenum("faceValue")}, which would be
+ * distinct fake enumerations.
  *
  * @checker_framework.manual #fenum-checker Fake Enum Checker
  */

@@ -4,14 +4,12 @@ import java.io.*;
 
 // AK: XXX This code is copied and modified from somewhere. I don't remember from where.
 /**
- * The important method in this class is {@code exec(String[])}. It
- * executes its argument and pipes both stdout and stderr to System.out. Each
- * line in the piped output from stdout is prefixed with "OUT>" and the output
- * from stderr is prefixed with "ERR>"
+ * The important method in this class is {@code exec(String[])}. It executes its argument and pipes
+ * both stdout and stderr to System.out. Each line in the piped output from stdout is prefixed with
+ * "OUT>" and the output from stderr is prefixed with "ERR>"
  *
- * <p>
- * Credit: Producer code modified (and augmented) from Michael Daconta's
- * "Java Traps" column ("When Runtime.exec() won't"), found at
+ * <p>Credit: Producer code modified (and augmented) from Michael Daconta's "Java Traps" column
+ * ("When Runtime.exec() won't"), found at
  * http://www.javaworld.com/javaworld/jw-12-2000/jw-1229-traps.html
  */
 public class Command {
@@ -29,9 +27,7 @@ public class Command {
         }
     }
 
-    /**
-     * Executes a command and return the error and output result of the process
-     */
+    /** Executes a command and return the error and output result of the process */
     public static String exec(String[] cmd) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -56,5 +52,4 @@ public class Command {
         }
         return exitVal;
     }
-
 }

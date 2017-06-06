@@ -1,8 +1,7 @@
 package java.util;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Random implements java.io.Serializable {
-    private static final long serialVersionUID = 0L;
+  private static final long serialVersionUID = 0L;
   public Random() { throw new RuntimeException("skeleton method"); }
   public Random(long a1) { throw new RuntimeException("skeleton method"); }
   public synchronized void setSeed(long a1) { throw new RuntimeException("skeleton method"); }

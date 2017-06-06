@@ -10,8 +10,7 @@ import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The value is a compile-time constant, and could be
- * {@link Signed} or {@link Unsigned}.
+ * The value is a compile-time constant, and could be {@link Signed} or {@link Unsigned}.
  *
  * @checker_framework.manual #signedness-checker Signedness Checker
  */

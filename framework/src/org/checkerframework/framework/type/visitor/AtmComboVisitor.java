@@ -1,10 +1,20 @@
 package org.checkerframework.framework.type.visitor;
 
-import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 
 /**
- * Visitor interface for all pair-wise combinations of AnnotatedTypeMirrors.  See AtmCombo, it enumerates all
- * possible combinations and provides an "accept" method used to call AtmComboVisitor visit methods.
+ * Visitor interface for all pair-wise combinations of AnnotatedTypeMirrors. See AtmCombo, it
+ * enumerates all possible combinations and provides an "accept" method used to call AtmComboVisitor
+ * visit methods.
  */
 public interface AtmComboVisitor<RETURN_TYPE, PARAM> {
 

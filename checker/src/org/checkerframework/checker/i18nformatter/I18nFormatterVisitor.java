@@ -19,11 +19,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * Whenever a method with {@link I18nFormatFor} annotation is invoked,
- * it will perform the format string verification.
+ * Whenever a method with {@link I18nFormatFor} annotation is invoked, it will perform the format
+ * string verification.
  *
- * @checker_framework.manual #i18n-formatter-checker Internationalization
- *                           Format String Checker
+ * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  * @author Siwakorn Srisakaokul
  */
 public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotatedTypeFactory> {

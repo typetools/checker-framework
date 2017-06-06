@@ -16,4 +16,4 @@ This repository also contains the following directories:
  tutorial      a tutorial for the Checker Framework
  release       buildfiles for making a release
  eclipse       the Checker Framework Eclipse plug-in
- maven-plugin  the Checker Framework Maven plug-in
+ maven-artifacts  artifacts to be uploaded to Maven Central

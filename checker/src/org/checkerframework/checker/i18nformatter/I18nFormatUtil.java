@@ -16,27 +16,22 @@ import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nValidFormat;
 
 /**
- * This class provides a collection of utilities to ease working with i18n
- * format strings.
+ * This class provides a collection of utilities to ease working with i18n format strings.
  *
- * @checker_framework.manual #i18n-formatter-checker Internationalization
- *                           Format String Checker
+ * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  * @author Siwakorn Srisakaokul
  */
 public class I18nFormatUtil {
 
-    /**
-     * Throws an exception if the format is not syntactically valid.
-     */
+    /** Throws an exception if the format is not syntactically valid. */
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
         MessageFormat.format(format, (Object[]) null);
     }
 
     /**
-     * Returns a {@link I18nConversionCategory} for every conversion found in
-     * the format string.
+     * Returns a {@link I18nConversionCategory} for every conversion found in the format string.
      *
-     * Throws an exception if the format is not syntactically valid.
+     * <p>Throws an exception if the format is not syntactically valid.
      */
     public static I18nConversionCategory[] formatParameterCategories(String format)
             throws IllegalFormatException {
@@ -66,9 +61,8 @@ public class I18nFormatUtil {
     }
 
     /**
-     * Returns true if the format string is satisfiable, and if the format's
-     * parameters match the passed {@link I18nConversionCategory}s. Otherwise an
-     * error is thrown.
+     * Returns true if the format string is satisfiable, and if the format's parameters match the
+     * passed {@link I18nConversionCategory}s. Otherwise an error is thrown.
      */
     // TODO introduce more such functions, see RegexUtil for examples
     @I18nChecksFormat
@@ -115,29 +109,19 @@ public class I18nFormatUtil {
 
         public static int maxOffset;
 
-        /**
-         * The locale to use for formatting numbers and dates.
-         *
-         */
+        /** The locale to use for formatting numbers and dates. */
         private static Locale locale;
 
-        /**
-         * An array of formatters, which are used to format the arguments.
-         *
-         */
+        /** An array of formatters, which are used to format the arguments. */
         private static List<I18nConversionCategory> categories;
 
         /**
-         * The argument numbers corresponding to each formatter. (The formatters
-         * are stored in the order they occur in the pattern, not in the order
-         * in which the arguments are specified.)
-         *
+         * The argument numbers corresponding to each formatter. (The formatters are stored in the
+         * order they occur in the pattern, not in the order in which the arguments are specified.)
          */
         private static List<Integer> argumentIndices;
 
-        /**
-         * The number of subformats
-         */
+        /** The number of subformats */
         private static int numFormat;
 
         // Indices for segments

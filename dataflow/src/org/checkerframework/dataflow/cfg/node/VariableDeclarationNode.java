@@ -13,11 +13,10 @@ import org.checkerframework.javacutil.InternalUtils;
  *   <em>modifier</em> <em>type</em> <em>identifier</em>;
  * </pre>
  *
- * Note: Does not have an initializer block, as that will be translated to a
- * separate {@link AssignmentNode}.
+ * Note: Does not have an initializer block, as that will be translated to a separate {@link
+ * AssignmentNode}.
  *
  * @author Stefan Heule
- *
  */
 public class VariableDeclarationNode extends Node {
 

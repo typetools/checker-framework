@@ -5,34 +5,33 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.TargetType;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
- *  When discovering supertypes of an AnnotatedTypeMirror we want to annotate each supertype with the annotations
- *  of the subtypes class declaration.  This class provides static methods to do this for a list of supertypes.
- *  An instance of this class handles ONE supertype.
+ * When discovering supertypes of an AnnotatedTypeMirror we want to annotate each supertype with the
+ * annotations of the subtypes class declaration. This class provides static methods to do this for
+ * a list of supertypes. An instance of this class handles ONE supertype.
  */
 public class SuperTypeApplier extends IndexedElementAnnotationApplier {
 
     /**
      * Annotates each supertype with annotations from subtypeElement's extends/implements clauses.
+     *
      * @param supertypes supertypes to annotate
      * @param subtypeElement element that may have annotations to apply to supertypes
      */
     public static void annotateSupers(
             List<AnnotatedTypeMirror.AnnotatedDeclaredType> supertypes,
             TypeElement subtypeElement) {
-
-        final boolean isInterface = subtypeElement.getSuperclass().getKind() == TypeKind.NONE;
-
-        final int typeOffset = isInterface ? 0 : -1;
-
         for (int i = 0; i < supertypes.size(); i++) {
             final AnnotatedTypeMirror supertype = supertypes.get(i);
-            final int typeIndex = i + typeOffset;
-
-            (new SuperTypeApplier(supertype, subtypeElement, typeIndex)).extractAndApply();
+            // Offset i by -1 since typeIndex should start from -1.
+            // -1 represents the (implicit) extends clause class.
+            // 0 and greater represent the implements clause interfaces.
+            // For details see the JSR 308 specification:
+            // http://types.cs.washington.edu/jsr308/specification/java-annotation-design.html#class-file%3Aext%3Ari%3Aextends
+            final int typeIndex = i - 1;
+            new SuperTypeApplier(supertype, subtypeElement, typeIndex).extractAndApply();
         }
     }
 
@@ -41,23 +40,23 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
     /**
      * The type_index of the supertype being annotated.
      *
-     * Note: Due to the semantics of TypeAnnotationPosition, type_index/index numbering works as follows:
+     * <p>Note: Due to the semantics of TypeAnnotationPosition, type_index/index numbering works as
+     * follows:
      *
-     * If subtypeElement represents a class and not an interface:
-     *    then
-     *      the first member of supertypes represents the object and the relevant type_index = -1
-     *      interface indices are offset by 1.
+     * <p>If subtypeElement represents a class and not an interface:
      *
-     *    else
-     *      all members of supertypes represent interfaces and their indices == their index in the supertypes list
+     * <p>then the first member of supertypes represents the object and the relevant type_index =
+     * -1; interface indices are offset by 1.
      *
+     * <p>else all members of supertypes represent interfaces and their indices == their index in
+     * the supertypes list
      */
     private final int index;
 
     /**
-     * Note: This is not meant to be used in apply explicitly unlike all other AnnotationAppliers
-     * it is intended to be used for annotate super types via the static annotateSuper method, hence the private
-     * constructor
+     * Note: This is not meant to be used in apply explicitly unlike all other AnnotationAppliers it
+     * is intended to be used for annotate super types via the static annotateSuper method, hence
+     * the private constructor
      */
     SuperTypeApplier(
             final AnnotatedTypeMirror supertype,
@@ -68,33 +67,25 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
         this.index = index;
     }
 
-    /**
-     * @return the type_index that should represent supertype
-     */
+    /** @return the type_index that should represent supertype */
     @Override
     public int getElementIndex() {
         return index;
     }
 
-    /**
-     * @return the type_index of anno's TypeAnnotationPosition
-     */
+    /** @return the type_index of anno's TypeAnnotationPosition */
     @Override
     public int getTypeCompoundIndex(Attribute.TypeCompound anno) {
         return anno.getPosition().type_index;
     }
 
-    /**
-     * @return TargetType.CLASS_EXTENDS
-     */
+    /** @return TargetType.CLASS_EXTENDS */
     @Override
     protected TargetType[] annotatedTargets() {
         return new TargetType[] {TargetType.CLASS_EXTENDS};
     }
 
-    /**
-     * @return TargetType.CLASS_TYPE_PARAMETER, TargetType.CLASS_TYPE_PARAMETER_BOUND
-     */
+    /** @return TargetType.CLASS_TYPE_PARAMETER, TargetType.CLASS_TYPE_PARAMETER_BOUND */
     @Override
     protected TargetType[] validTargets() {
         return new TargetType[] {
@@ -102,9 +93,7 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
         };
     }
 
-    /**
-     * @return the TypeCompounds (annotations) of the subclass
-     */
+    /** @return the TypeCompounds (annotations) of the subclass */
     @Override
     protected Iterable<Attribute.TypeCompound> getRawTypeAttributes() {
         return subclassSymbol.getRawTypeAttributes();

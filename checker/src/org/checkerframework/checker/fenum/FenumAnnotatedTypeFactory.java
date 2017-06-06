@@ -11,7 +11,8 @@ import org.checkerframework.checker.fenum.qual.FenumUnqualified;
 import org.checkerframework.checker.fenum.qual.PolyFenum;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.AnnotationClassLoader;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -32,9 +33,8 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Copied from SubtypingChecker.
-     * Instead of returning an empty set if no "quals" option is given,
-     * we return Fenum as the only qualifier.
+     * Copied from SubtypingChecker. Instead of returning an empty set if no "quals" option is
+     * given, we return Fenum as the only qualifier.
      */
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
@@ -94,19 +94,19 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameIgnoringValues(lhs, FENUM)
-                    && AnnotationUtils.areSameIgnoringValues(rhs, FENUM)) {
-                return AnnotationUtils.areSame(lhs, rhs);
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, FENUM)
+                    && AnnotationUtils.areSameIgnoringValues(subAnno, FENUM)) {
+                return AnnotationUtils.areSame(superAnno, subAnno);
             }
             // Ignore annotation values to ensure that annotation is in supertype map.
-            if (AnnotationUtils.areSameIgnoringValues(lhs, FENUM)) {
-                lhs = FENUM;
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, FENUM)) {
+                superAnno = FENUM;
             }
-            if (AnnotationUtils.areSameIgnoringValues(rhs, FENUM)) {
-                rhs = FENUM;
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, FENUM)) {
+                subAnno = FENUM;
             }
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
     }
 }

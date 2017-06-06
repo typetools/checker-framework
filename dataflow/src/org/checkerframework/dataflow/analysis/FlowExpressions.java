@@ -1,5 +1,14 @@
 package org.checkerframework.dataflow.analysis;
 
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,29 +36,30 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Collection of classes and helper functions to represent Java expressions
- * about which the org.checkerframework.dataflow analysis can possibly infer facts. Expressions
- * include:
+ * Collection of classes and helper functions to represent Java expressions about which the
+ * org.checkerframework.dataflow analysis can possibly infer facts. Expressions include:
+ *
  * <ul>
- * <li>Field accesses (e.g., <em>o.f</em>)</li>
- * <li>Local variables (e.g., <em>l</em>)</li>
- * <li>This reference (e.g., <em>this</em>)</li>
- * <li>Pure method calls (e.g., <em>o.m()</em>)</li>
- * <li>Unknown other expressions to mark that something else was present.</li>
+ *   <li>Field accesses (e.g., <em>o.f</em>)
+ *   <li>Local variables (e.g., <em>l</em>)
+ *   <li>This reference (e.g., <em>this</em>)
+ *   <li>Pure method calls (e.g., <em>o.m()</em>)
+ *   <li>Unknown other expressions to mark that something else was present.
  * </ul>
  *
  * @author Stefan Heule
- *
  */
 public class FlowExpressions {
 
     /**
-     * @return the internal representation (as {@link FieldAccess}) of a
-     *         {@link FieldAccessNode}. Can contain {@link Unknown} as receiver.
+     * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
+     *     Can contain {@link Unknown} as receiver.
      */
     public static FieldAccess internalReprOfFieldAccess(
             AnnotationProvider provider, FieldAccessNode node) {
@@ -64,8 +74,8 @@ public class FlowExpressions {
     }
 
     /**
-     * @return the internal representation (as {@link FieldAccess}) of a
-     *         {@link FieldAccessNode}. Can contain {@link Unknown} as receiver.
+     * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
+     *     Can contain {@link Unknown} as receiver.
      */
     public static ArrayAccess internalReprOfArrayAccess(
             AnnotationProvider provider, ArrayAccessNode node) {
@@ -75,22 +85,22 @@ public class FlowExpressions {
     }
 
     /**
-     * We ignore operations such as widening and
-     * narrowing when computing the internal representation.
+     * We ignore operations such as widening and narrowing when computing the internal
+     * representation.
      *
-     * @return the internal representation (as {@link Receiver}) of any
-     *         {@link Node}. Might contain {@link Unknown}.
+     * @return the internal representation (as {@link Receiver}) of any {@link Node}. Might contain
+     *     {@link Unknown}.
      */
     public static Receiver internalReprOf(AnnotationProvider provider, Node receiverNode) {
         return internalReprOf(provider, receiverNode, false);
     }
 
     /**
-     * We ignore operations such as widening and
-     * narrowing when computing the internal representation.
+     * We ignore operations such as widening and narrowing when computing the internal
+     * representation.
      *
-     * @return the internal representation (as {@link Receiver}) of any
-     *         {@link Node}. Might contain {@link Unknown}.
+     * @return the internal representation (as {@link Receiver}) of any {@link Node}. Might contain
+     *     {@link Unknown}.
      */
     public static Receiver internalReprOf(
             AnnotationProvider provider, Node receiverNode, boolean allowNonDeterministic) {
@@ -180,7 +190,209 @@ public class FlowExpressions {
         return receiver;
     }
 
-    public static abstract class Receiver {
+    /**
+     * @return the internal representation (as {@link Receiver}) of any {@link ExpressionTree}.
+     *     Might contain {@link Unknown}.
+     */
+    public static Receiver internalReprOf(
+            AnnotationProvider provider, ExpressionTree receiverTree) {
+        return internalReprOf(provider, receiverTree, true);
+    }
+    /**
+     * We ignore operations such as widening and narrowing when computing the internal
+     * representation.
+     *
+     * @return the internal representation (as {@link Receiver}) of any {@link ExpressionTree}.
+     *     Might contain {@link Unknown}.
+     */
+    public static Receiver internalReprOf(
+            AnnotationProvider provider,
+            ExpressionTree receiverTree,
+            boolean allowNonDeterministic) {
+        Receiver receiver;
+        switch (receiverTree.getKind()) {
+            case ARRAY_ACCESS:
+                ArrayAccessTree a = (ArrayAccessTree) receiverTree;
+                Receiver arrayAccessExpression = internalReprOf(provider, a.getExpression());
+                Receiver index = internalReprOf(provider, a.getIndex());
+                receiver = new ArrayAccess(InternalUtils.typeOf(a), arrayAccessExpression, index);
+                break;
+            case BOOLEAN_LITERAL:
+            case CHAR_LITERAL:
+            case DOUBLE_LITERAL:
+            case FLOAT_LITERAL:
+            case INT_LITERAL:
+            case LONG_LITERAL:
+            case NULL_LITERAL:
+            case STRING_LITERAL:
+                LiteralTree vn = (LiteralTree) receiverTree;
+                receiver = new ValueLiteral(InternalUtils.typeOf(receiverTree), vn.getValue());
+                break;
+            case NEW_ARRAY:
+                receiver =
+                        new ArrayCreation(
+                                InternalUtils.typeOf(receiverTree),
+                                Collections.<Node>emptyList(),
+                                Collections.<Node>emptyList());
+                break;
+            case METHOD_INVOCATION:
+                MethodInvocationTree mn = (MethodInvocationTree) receiverTree;
+                ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn);
+                if (PurityUtils.isDeterministic(provider, invokedMethod) || allowNonDeterministic) {
+                    List<Receiver> parameters = new ArrayList<>();
+                    for (ExpressionTree p : mn.getArguments()) {
+                        parameters.add(internalReprOf(provider, p));
+                    }
+                    Receiver methodReceiver;
+                    if (ElementUtils.isStatic(invokedMethod)) {
+                        methodReceiver = new ClassName(InternalUtils.typeOf(mn.getMethodSelect()));
+                    } else {
+                        methodReceiver = internalReprOf(provider, mn.getMethodSelect());
+                    }
+                    TypeMirror type = InternalUtils.typeOf(mn);
+                    receiver = new MethodCall(type, invokedMethod, methodReceiver, parameters);
+                } else {
+                    receiver = null;
+                }
+                break;
+            case MEMBER_SELECT:
+                receiver = internalRepOfMemberSelect(provider, (MemberSelectTree) receiverTree);
+                break;
+            case IDENTIFIER:
+                IdentifierTree identifierTree = (IdentifierTree) receiverTree;
+                TypeMirror typeOfId = InternalUtils.typeOf(identifierTree);
+                if (identifierTree.getName().contentEquals("this")
+                        || identifierTree.getName().contentEquals("super")) {
+                    receiver = new ThisReference(typeOfId);
+                    break;
+                }
+                Element ele = TreeUtils.elementFromUse(identifierTree);
+                switch (ele.getKind()) {
+                    case LOCAL_VARIABLE:
+                    case RESOURCE_VARIABLE:
+                    case EXCEPTION_PARAMETER:
+                    case PARAMETER:
+                        receiver = new LocalVariable(ele);
+                        break;
+                    case FIELD:
+                        // Implicit access expression, such as "this" or a class name
+                        Receiver fieldAccessExpression;
+                        TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
+                        if (ElementUtils.isStatic(ele)) {
+                            fieldAccessExpression = new ClassName(enclosingType);
+                        } else {
+                            fieldAccessExpression = new ThisReference(enclosingType);
+                        }
+                        receiver =
+                                new FieldAccess(
+                                        fieldAccessExpression, typeOfId, (VariableElement) ele);
+                        break;
+                    case CLASS:
+                    case ENUM:
+                    case ANNOTATION_TYPE:
+                    case INTERFACE:
+                        receiver = new ClassName(ele.asType());
+                        break;
+                    default:
+                        receiver = null;
+                }
+                break;
+            default:
+                receiver = null;
+        }
+
+        if (receiver == null) {
+            receiver = new Unknown(InternalUtils.typeOf(receiverTree));
+        }
+        return receiver;
+    }
+
+    /**
+     * Returns the implicit receiver of ele.
+     *
+     * <p>Returns either a new ClassName or a new ThisReference depending on whether ele is static
+     * or not. The passed element must be a field, method, or class.
+     *
+     * @param ele field, method, or class
+     * @return either a new ClassName or a new ThisReference depending on whether ele is static or
+     *     not
+     */
+    public static Receiver internalRepOfImplicitReceiver(Element ele) {
+        TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
+        if (ElementUtils.isStatic(ele)) {
+            return new ClassName(enclosingType);
+        } else {
+            return new ThisReference(enclosingType);
+        }
+    }
+
+    /**
+     * Returns either a new ClassName or ThisReference Receiver object for the enclosingType
+     *
+     * <p>The Tree should be an expression or a statement that does not have a receiver or an
+     * implicit receiver. For example, a local variable declaration.
+     *
+     * @param path TreePath to tree
+     * @param enclosingType type of the enclosing type
+     * @return a new ClassName or ThisReference that is a Receiver object for the enclosingType
+     */
+    public static Receiver internalRepOfPseudoReceiver(TreePath path, TypeMirror enclosingType) {
+        if (TreeUtils.isTreeInStaticScope(path)) {
+            return new ClassName(enclosingType);
+        } else {
+            return new ThisReference(enclosingType);
+        }
+    }
+
+    private static Receiver internalRepOfMemberSelect(
+            AnnotationProvider provider, MemberSelectTree memberSelectTree) {
+        TypeMirror expressionType = InternalUtils.typeOf(memberSelectTree.getExpression());
+        if (TreeUtils.isClassLiteral(memberSelectTree)) {
+            return new ClassName(expressionType);
+        }
+        Element ele = TreeUtils.elementFromUse(memberSelectTree);
+        switch (ele.getKind()) {
+            case METHOD:
+            case CONSTRUCTOR:
+                return internalReprOf(provider, memberSelectTree.getExpression());
+            case CLASS: // o instanceof MyClass.InnerClass
+            case ENUM:
+            case INTERFACE: // o instanceof MyClass.InnerInterface
+            case ANNOTATION_TYPE:
+                return new ClassName(expressionType);
+            case ENUM_CONSTANT:
+            case FIELD:
+                Receiver r = internalReprOf(provider, memberSelectTree.getExpression());
+                return new FieldAccess(r, ElementUtils.getType(ele), (VariableElement) ele);
+            default:
+                ErrorReporter.errorAbort(
+                        "Unexpected element kind: %s element: %s", ele.getKind(), ele);
+                return null;
+        }
+    }
+
+    /**
+     * Returns Receiver objects for the formal parameters of the method in which path is enclosed.
+     *
+     * @param annotationProvider annotationProvider
+     * @param path TreePath that is enclosed by the method
+     * @return list of Receiver objects for the formal parameters of the method in which path is
+     *     enclosed
+     */
+    public static List<Receiver> getParametersOfEnclosingMethod(
+            AnnotationProvider annotationProvider, TreePath path) {
+        MethodTree methodTree = TreeUtils.enclosingMethod(path);
+        if (methodTree == null) {
+            return null;
+        }
+        List<Receiver> internalArguments = new ArrayList<>();
+        for (VariableTree arg : methodTree.getParameters()) {
+            internalArguments.add(internalReprOf(annotationProvider, new LocalVariableNode(arg)));
+        }
+        return internalArguments;
+    }
+
+    public abstract static class Receiver {
         protected final TypeMirror type;
 
         public Receiver(TypeMirror type) {
@@ -199,38 +411,32 @@ public class FlowExpressions {
         }
 
         /**
-         * Returns true if and only if the value this expression stands for
-         * cannot be changed by a method call. This is the case for local
-         * variables, the self reference as well as final field accesses for
-         * whose receiver {@link #isUnmodifiableByOtherCode} is true.
+         * Returns true if and only if the value this expression stands for cannot be changed by a
+         * method call. This is the case for local variables, the self reference as well as final
+         * field accesses for whose receiver {@link #isUnmodifiableByOtherCode} is true.
          */
         public abstract boolean isUnmodifiableByOtherCode();
 
-        /**
-         * @return true if and only if the two receiver are syntactically
-         *         identical
-         */
+        /** @return true if and only if the two receiver are syntactically identical */
         public boolean syntacticEquals(Receiver other) {
             return other == this;
         }
 
         /**
-         * @return true if and only if this receiver contains a receiver that is
-         *         syntactically equal to {@code other}.
+         * @return true if and only if this receiver contains a receiver that is syntactically equal
+         *     to {@code other}.
          */
         public boolean containsSyntacticEqualReceiver(Receiver other) {
             return syntacticEquals(other);
         }
 
         /**
-         * Returns true if and only if {@code other} appears anywhere in this
-         * receiver or an expression appears in this receiver such that
-         * {@code other} might alias this expression, and that expression is
-         * modifiable.
+         * Returns true if and only if {@code other} appears anywhere in this receiver or an
+         * expression appears in this receiver such that {@code other} might alias this expression,
+         * and that expression is modifiable.
          *
-         * <p>
-         * This is always true, except for cases where the Java type information
-         * prevents aliasing and none of the subexpressions can alias 'other'.
+         * <p>This is always true, except for cases where the Java type information prevents
+         * aliasing and none of the subexpressions can alias 'other'.
          */
         public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
             return this.equals(other) || store.canAlias(this, other);
@@ -301,13 +507,17 @@ public class FlowExpressions {
             }
             FieldAccess fa = (FieldAccess) other;
             return super.syntacticEquals(other)
-                    || fa.getField().equals(getField())
-                            && fa.getReceiver().syntacticEquals(getReceiver());
+                    || (fa.getField().equals(getField())
+                            && fa.getReceiver().syntacticEquals(getReceiver()));
         }
 
         @Override
         public String toString() {
-            return receiver + "." + field;
+            if (receiver instanceof ClassName) {
+                return receiver.getType() + "." + field;
+            } else {
+                return receiver + "." + field;
+            }
         }
 
         @Override
@@ -363,8 +573,8 @@ public class FlowExpressions {
     }
 
     /**
-     * A ClassName represents the occurrence of a class as part of a static
-     * field access or method invocation.
+     * A ClassName represents the occurrence of a class as part of a static field access or method
+     * invocation.
      */
     public static class ClassName extends Receiver {
         public ClassName(TypeMirror type) {
@@ -387,7 +597,7 @@ public class FlowExpressions {
 
         @Override
         public String toString() {
-            return getType().toString();
+            return getType().toString() + ".class";
         }
 
         @Override
@@ -581,11 +791,13 @@ public class FlowExpressions {
         public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
             return false; // not modifiable
         }
+
+        public Object getValue() {
+            return value;
+        }
     }
 
-    /**
-     * A method call.
-     */
+    /** A method call. */
     public static class MethodCall extends Receiver {
 
         protected final Receiver receiver;
@@ -619,23 +831,20 @@ public class FlowExpressions {
             return false;
         }
 
-        /**
-         * @return the method call receiver (for inspection only - do not modify)
-         */
+        /** @return the method call receiver (for inspection only - do not modify) */
         public Receiver getReceiver() {
             return receiver;
         }
 
         /**
-         * @return the method call parameters (for inspection only - do not modify any of the parameters)
+         * @return the method call parameters (for inspection only - do not modify any of the
+         *     parameters)
          */
         public List<Receiver> getParameters() {
             return Collections.unmodifiableList(parameters);
         }
 
-        /**
-         * @return the ExecutableElement for the method call
-         */
+        /** @return the ExecutableElement for the method call */
         public ExecutableElement getElement() {
             return method;
         }
@@ -722,7 +931,11 @@ public class FlowExpressions {
         @Override
         public String toString() {
             StringBuilder result = new StringBuilder();
-            result.append(receiver.toString());
+            if (receiver instanceof ClassName) {
+                result.append(receiver.getType());
+            } else {
+                result.append(receiver);
+            }
             result.append(".");
             String methodName = method.getSimpleName().toString();
             result.append(methodName);
@@ -740,9 +953,7 @@ public class FlowExpressions {
         }
     }
 
-    /**
-     * A deterministic method call.
-     */
+    /** A deterministic method call. */
     public static class ArrayAccess extends Receiver {
 
         protected final Receiver receiver;

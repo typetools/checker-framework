@@ -1,4 +1,4 @@
-import tests.util.*;
+import testlib.util.*;
 
 public @Odd class ClassAnnotations {
 

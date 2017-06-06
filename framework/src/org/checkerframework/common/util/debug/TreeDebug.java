@@ -1,13 +1,21 @@
 package org.checkerframework.common.util.debug;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import java.util.Set;
-import javax.annotation.processing.*;
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
@@ -15,21 +23,15 @@ import javax.lang.model.util.ElementFilter;
 /**
  * A utility class for displaying the structure of the AST of a program.
  *
- * <p>
+ * <p>The class is actually an annotation processor; in order to use it, invoke the compiler on the
+ * source file(s) for which you wish to view the structure of the program. You may also wish to use
+ * the {@code -proc:only} javac option to stop compilation after annotation processing. (But, in
+ * general {@code -proc:only} causes type annotation processors not to be run.)
  *
- * The class is actually an annotation processor; in order to use it, invoke the
- * compiler on the source file(s) for which you wish to view the structure of
- * the program. You may also wish to use the {@code -proc:only} javac option to
- * stop compilation after annotation processing.  (But, in general
- * {@code -proc:only} causes type annotation processors not to be run.)
- *
- * <p>
- *
- * The utility will display the {@link Kind} of each
- * node it encounters while scanning the AST, indented according to its depth in
- * the tree. Additionally, the names of identifiers and member selection trees
- * are displayed (since these names are not tree nodes and therefore not
- * directly visited during AST traversal).
+ * <p>The utility will display the {@link Kind} of each node it encounters while scanning the AST,
+ * indented according to its depth in the tree. Additionally, the names of identifiers and member
+ * selection trees are displayed (since these names are not tree nodes and therefore not directly
+ * visited during AST traversal).
  *
  * @see org.checkerframework.common.util.debug.TreePrinter
  */

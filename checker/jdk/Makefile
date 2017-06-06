@@ -4,7 +4,7 @@
 
 CTSYM ?= $(JAVA_HOME)/lib/ct.sym
 
-CHECKER_DIRS = nullness lock
+CHECKER_DIRS = nullness lock index
 
 all: clean classes
 # Extracts unannotated .class files from $(CTSYM)
@@ -18,7 +18,10 @@ all: clean classes
 # jdk.jar only contains those classes with annotations, not every class from
 # the original JDK.
 jdk.jar:
-	cd annotated; jar cf ../jdk.jar .
+	echo Checker-Framework-Version: `git rev-parse --short HEAD` > manifest.txt
+	echo Creation-Date: `date` >> manifest.txt
+	cd annotated; jar cfm ../jdk.jar ../manifest.txt .
+	rm manifest.txt
 
 # Helper
 
@@ -29,7 +32,8 @@ ANNOTATED_CLASSES_BY_DIR = $(shell find $(CHECKER_DIRS) -name '*.class' | sort)
 ANNOTATED_CLASSES = \
 	$(patsubst nullness/build/%.class,annotated/%.class, \
       $(patsubst lock/build/%.class,annotated/%.class, \
-        $(ANNOTATED_CLASSES_BY_DIR)))
+        $(patsubst index/build/%.class,annotated/%.class, \
+          $(ANNOTATED_CLASSES_BY_DIR))))
 
 # Extract from $(CTSYM) an unannotated version of every file that will
 # eventually get any annotation.

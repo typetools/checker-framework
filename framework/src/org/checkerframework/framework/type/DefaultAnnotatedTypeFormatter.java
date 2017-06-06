@@ -1,6 +1,7 @@
 package org.checkerframework.framework.type;
 
 import com.sun.tools.javac.code.Type;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -21,11 +22,13 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
+import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 
 /**
  * An AnnotatedTypeFormatter used by default by all AnnotatedTypeFactory (and therefore all
  * annotated types).
+ *
  * @see org.checkerframework.framework.type.AnnotatedTypeFormatter
  * @see org.checkerframework.framework.type.AnnotatedTypeMirror#toString
  */
@@ -33,15 +36,18 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     protected final FormattingVisitor formattingVisitor;
 
     /**
-     * Constructs a DefaultAnnotatedTypeFormatter that does not print invisible annotations by default
+     * Constructs a DefaultAnnotatedTypeFormatter that does not print invisible annotations by
+     * default
      */
     public DefaultAnnotatedTypeFormatter() {
         this(new DefaultAnnotationFormatter(), true, false);
     }
 
     /**
-     * @param printVerboseGenerics for type parameters, their uses, and wildcards, print more information
-     * @param defaultPrintInvisibleAnnos whether or not this AnnotatedTypeFormatter should print invisible annotations
+     * @param printVerboseGenerics for type parameters, their uses, and wildcards, print more
+     *     information
+     * @param defaultPrintInvisibleAnnos whether or not this AnnotatedTypeFormatter should print
+     *     invisible annotations
      */
     public DefaultAnnotatedTypeFormatter(
             boolean printVerboseGenerics, boolean defaultPrintInvisibleAnnos) {
@@ -50,8 +56,10 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
 
     /**
      * @param formatter an object that converts annotation mirrors to strings
-     * @param printVerboseGenerics for type parameters, their uses, and wildcards, print more information
-     * @param defaultPrintInvisibleAnnos whether or not this AnnotatedTypeFormatter should print invisible annotations
+     * @param printVerboseGenerics for type parameters, their uses, and wildcards, print more
+     *     information
+     * @param defaultPrintInvisibleAnnos whether or not this AnnotatedTypeFormatter should print
+     *     invisible annotations
      */
     public DefaultAnnotatedTypeFormatter(
             AnnotationFormatter formatter,
@@ -61,8 +69,8 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     }
 
     /**
-     * Used by subclasses and other constructors to specify the underlying implementation of
-     * this DefaultAnnotatedTypeFormatter
+     * Used by subclasses and other constructors to specify the underlying implementation of this
+     * DefaultAnnotatedTypeFormatter
      */
     protected DefaultAnnotatedTypeFormatter(FormattingVisitor visitor) {
         this.formattingVisitor = visitor;
@@ -80,38 +88,32 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         return formattingVisitor.visit(type);
     }
 
-    /**
-     * A scanning visitor that prints the entire AnnotatedTypeMirror passed to visit.
-     */
+    /** A scanning visitor that prints the entire AnnotatedTypeMirror passed to visit. */
     protected static class FormattingVisitor
             implements AnnotatedTypeVisitor<String, Set<AnnotatedTypeMirror>> {
 
-        /**
-         * The object responsible for converting annotations to strings
-         */
+        /** The object responsible for converting annotations to strings */
         protected final AnnotationFormatter annoFormatter;
 
         /**
-         * Represents whether or not invisible annotations should be printed if the
-         * client of this class does not use the printInvisibleAnnos parameter
+         * Represents whether or not invisible annotations should be printed if the client of this
+         * class does not use the printInvisibleAnnos parameter
          */
         protected final boolean defaultInvisiblesSetting;
 
         /**
-         * For a given call to format, this setting specifies whether or not to printInvisibles.
-         * If a user did not specify a printInvisible parameter in the call to format then this
-         * value will equal DefaultAnnotatedTypeFormatter.defaultInvisibleSettings for this object
+         * For a given call to format, this setting specifies whether or not to printInvisibles. If
+         * a user did not specify a printInvisible parameter in the call to format then this value
+         * will equal DefaultAnnotatedTypeFormatter.defaultInvisibleSettings for this object
          */
         protected boolean currentPrintInvisibleSetting;
 
-        /**
-         * Default value of currentPrintVerboseGenerics
-         */
+        /** Default value of currentPrintVerboseGenerics */
         protected final boolean defaultPrintVerboseGenerics;
 
         /**
-         * Prints type variables in a less ambiguous manner using [] to delimit them.
-         * Always prints both bounds even if they lower bound is an AnnotatedNull type.
+         * Prints type variables in a less ambiguous manner using [] to delimit them. Always prints
+         * both bounds even if they lower bound is an AnnotatedNull type.
          */
         protected boolean currentPrintVerboseGenerics;
 
@@ -126,25 +128,21 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             this.currentPrintInvisibleSetting = false;
         }
 
-        /**
-         * Set the current verbose settings to use while printing
-         */
+        /** Set the current verbose settings to use while printing */
         protected void setVerboseSettings(boolean printVerbose) {
             this.currentPrintInvisibleSetting = printVerbose;
             this.currentPrintVerboseGenerics = printVerbose;
         }
 
-        /**
-         * Set verbose settings to the default
-         */
+        /** Set verbose settings to the default */
         protected void resetPrintVerboseSettings() {
             this.currentPrintInvisibleSetting = defaultInvisiblesSetting;
             this.currentPrintVerboseGenerics = defaultPrintVerboseGenerics;
         }
 
         /**
-         * print to sb keyWord followed by field.  NULL types are substituted with
-         * their annotations followed by " Void"
+         * print to sb keyWord followed by field. NULL types are substituted with their annotations
+         * followed by " Void"
          */
         @SideEffectFree
         protected void printBound(
@@ -193,6 +191,10 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             if (type.isDeclaration() && currentPrintInvisibleSetting) {
                 sb.append("/*DECL*/ ");
             }
+            if (type.getEnclosingType() != null) {
+                sb.append(this.visit(type.getEnclosingType(), visiting));
+                sb.append('.');
+            }
             final Element typeElt = type.getUnderlyingType().asElement();
             String smpl = typeElt.getSimpleName().toString();
             if (smpl.isEmpty()) {
@@ -207,13 +209,15 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
 
             if (type.typeArgs != null) {
                 // getTypeArguments sets the field if it does not already exist.
-                final List<AnnotatedTypeMirror> typeArgs = type.getTypeArguments();
+                final List<AnnotatedTypeMirror> typeArgs = type.typeArgs;
                 if (!typeArgs.isEmpty()) {
                     sb.append("<");
 
                     boolean isFirst = true;
                     for (AnnotatedTypeMirror typeArg : typeArgs) {
-                        if (!isFirst) sb.append(", ");
+                        if (!isFirst) {
+                            sb.append(", ");
+                        }
                         sb.append(visit(typeArg, visiting));
                         isFirst = false;
                     }
@@ -256,9 +260,11 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             StringBuilder sb = new StringBuilder();
             if (!type.getTypeVariables().isEmpty()) {
                 sb.append('<');
+                List<String> typeVars = new ArrayList<>(type.getTypeVariables().size());
                 for (AnnotatedTypeVariable atv : type.getTypeVariables()) {
-                    sb.append(visit(atv, visiting));
+                    typeVars.add(visit(atv, visiting));
                 }
+                sb.append(PluginUtil.join(", ", typeVars));
                 sb.append("> ");
             }
             if (type.getReturnType() != null) {

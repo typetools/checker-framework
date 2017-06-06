@@ -5,14 +5,12 @@ import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Indicates a String that is not a syntactically valid regular expression.
- * The String itself can be stored as a parameter to the annotation,
- * allowing the Regex Checker to verify some concatenations of partial
- * regular expression Strings.
- * <p>
+ * Indicates a String that is not a syntactically valid regular expression. The String itself can be
+ * stored as a parameter to the annotation, allowing the Regex Checker to verify some concatenations
+ * of partial regular expression Strings.
  *
- * This annotation may not be written in source code; it is an
- * implementation detail of the Regex Checker.
+ * <p>This annotation may not be written in source code; it is an implementation detail of the Regex
+ * Checker.
  *
  * @checker_framework.manual #regex-checker Regex Checker
  */
@@ -22,8 +20,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 public @interface PartialRegex {
 
     /**
-     * The String qualified by this annotation. Used to verify concatenation
-     * of partial regular expressions. Defaults to the empty String.
+     * The String qualified by this annotation. Used to verify concatenation of partial regular
+     * expressions. Defaults to the empty String.
      */
     String value() default "";
 }

@@ -27,7 +27,6 @@ package java.lang.ref;
 
 import sun.misc.Cleaner;
 
-import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.lock.qual.*;
 
 /**

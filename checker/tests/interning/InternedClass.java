@@ -2,7 +2,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
-import org.checkerframework.checker.interning.qual.*;
+import org.checkerframework.checker.interning.qual.Interned;
 
 // The @Interned annotation indicates that much like an enum, all variables
 // declared of this type are interned (except the constuctor return value).

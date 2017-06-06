@@ -18,14 +18,14 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.Pair;
 
 /**
- * {@link PropagationTreeAnnotator} adds qualifiers to types where the resulting
- * type is a function of an input type, e.g. the result of a binary operation
- * is a LUB of the type of expressions in the binary operation.
+ * {@link PropagationTreeAnnotator} adds qualifiers to types where the resulting type is a function
+ * of an input type, e.g. the result of a binary operation is a LUB of the type of expressions in
+ * the binary operation.
  *
- * {@link PropagationTreeAnnotator} is generally ran first by {@link ListTreeAnnotator}
- * since the trees it handles are not usually targets of @implicit for.
+ * <p>{@link PropagationTreeAnnotator} is generally ran first by {@link ListTreeAnnotator} since the
+ * trees it handles are not usually targets of @implicit for.
  *
- * {@link PropagationTreeAnnotator} does not traverse trees deeply by default.
+ * <p>{@link PropagationTreeAnnotator} does not traverse trees deeply by default.
  *
  * @see TreeAnnotator
  */
@@ -34,8 +34,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     private final QualifierHierarchy qualHierarchy;
 
     /**
-     * Creates a {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator} from the given checker, using that checker's
-     * type hierarchy.
+     * Creates a {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}
+     * from the given checker, using that checker's type hierarchy.
      */
     public PropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
         super(atypeFactory);
@@ -112,6 +112,11 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
+        if (hasPrimaryAnnotationInAllHierarchies(type)) {
+            // If the type already has a primary annotation in all hierarchies, then the
+            // propagated annotations won't be applied.  So don't compute them.
+            return null;
+        }
         AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(node.getExpression());
         AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(node.getVariable());
         Set<? extends AnnotationMirror> lubs =
@@ -122,6 +127,14 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
+        if (hasPrimaryAnnotationInAllHierarchies(type)) {
+            // If the type already has a primary annotation in all hierarchies, then the
+            // propagated annotations won't be applied.  So don't compute them.
+            // Also, calling getAnnotatedType on the left and right operands is potentially
+            // expensive.
+            return null;
+        }
+
         AnnotatedTypeMirror a = atypeFactory.getAnnotatedType(node.getLeftOperand());
         AnnotatedTypeMirror b = atypeFactory.getAnnotatedType(node.getRightOperand());
         Set<? extends AnnotationMirror> lubs =
@@ -133,6 +146,12 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
+        if (hasPrimaryAnnotationInAllHierarchies(type)) {
+            // If the type already has a primary annotation in all hierarchies, then the
+            // propagated annotations won't be applied.  So don't compute them.
+            return null;
+        }
+
         AnnotatedTypeMirror exp = atypeFactory.getAnnotatedType(node.getExpression());
         type.addMissingAnnotations(exp.getAnnotations());
         return null;
@@ -153,6 +172,11 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror type) {
+        if (hasPrimaryAnnotationInAllHierarchies(type)) {
+            // If the type is already has a primary annotation in all hierarchies, then the
+            // propagated annotations won't be applied.  So don't compute them.
+            return null;
+        }
 
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
         if (type.getKind() == TypeKind.TYPEVAR) {
@@ -169,5 +193,15 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             type.addMissingAnnotations(exprType.getEffectiveAnnotations());
         }
         return null;
+    }
+
+    private boolean hasPrimaryAnnotationInAllHierarchies(AnnotatedTypeMirror type) {
+        boolean annotated = true;
+        for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+            if (type.getEffectiveAnnotationInHierarchy(top) == null) {
+                annotated = false;
+            }
+        }
+        return annotated;
     }
 }

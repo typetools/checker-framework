@@ -14,11 +14,8 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
-/**
- * The activator class controls the plug-in life cycle
- */
-public class CheckerPlugin extends AbstractUIPlugin
-{
+/** The activator class controls the plug-in life cycle */
+public class CheckerPlugin extends AbstractUIPlugin {
 
     /** Controls debugging of the plugin */
     public static boolean DEBUG = false;
@@ -34,22 +31,18 @@ public class CheckerPlugin extends AbstractUIPlugin
     /** The console name to use for this plugin */
     private static final String consoleName = "Checker Framework Plugin Console";
 
-
-    public CheckerPlugin()
-    {
+    public CheckerPlugin() {
         super();
         plugin = this;
     }
 
     @Override
-    public void start(BundleContext context) throws Exception
-    {
+    public void start(BundleContext context) throws Exception {
         super.start(context);
     }
 
     @Override
-    public void stop(BundleContext context) throws Exception
-    {
+    public void stop(BundleContext context) throws Exception {
         plugin = null;
         super.stop(context);
     }
@@ -64,92 +57,73 @@ public class CheckerPlugin extends AbstractUIPlugin
      *
      * @return the shared instance
      */
-    public static CheckerPlugin getDefault()
-    {
+    public static CheckerPlugin getDefault() {
         return plugin;
     }
 
     /**
-     * Returns an image descriptor for the image file at the given plug-in
-     * relative path
+     * Returns an image descriptor for the image file at the given plug-in relative path
      *
-     * @param path
-     *            the path
+     * @param path the path
      * @return the image descriptor
      */
-    public static ImageDescriptor getImageDescriptor(String path)
-    {
+    public static ImageDescriptor getImageDescriptor(String path) {
         return imageDescriptorFromPlugin(PLUGIN_ID, path);
     }
 
     /**
      * Log an exception.
      *
-     * @param e
-     *            the exception
-     * @param message
-     *            message describing how/why the exception occurred
+     * @param e the exception
+     * @param message message describing how/why the exception occurred
      */
-    public static void logException(Throwable e, String message)
-    {
+    public static void logException(Throwable e, String message) {
         getDefault().logMessage(IStatus.ERROR, message, e);
     }
 
-    public void logMessage(int severity, String message, Throwable e)
-    {
-        if (DEBUG)
-        {
-            String what = (severity == IStatus.ERROR) ? (e != null ? "Exception"
-                    : "Error")
-                    : "Warning";
+    public void logMessage(int severity, String message, Throwable e) {
+        if (DEBUG) {
+            String what =
+                    (severity == IStatus.ERROR) ? (e != null ? "Exception" : "Error") : "Warning";
             System.out.println(what + " in Checker Framework plugin: " + message);
-            if (e != null)
-            {
+            if (e != null) {
                 e.printStackTrace();
             }
         }
-        IStatus status = new Status(severity, CheckerPlugin.PLUGIN_ID, 0, message,
-                e);
+        IStatus status = new Status(severity, CheckerPlugin.PLUGIN_ID, 0, message, e);
         getLog().log(status);
     }
 
     /**
-     * Returns the SWT Shell of the active workbench window or {@code null}
-     * if no workbench window is active.
+     * Returns the SWT Shell of the active workbench window or {@code null} if no workbench window
+     * is active.
      *
-     * @return the SWT Shell of the active workbench window, or
-     *         {@code null} if no workbench window is active
+     * @return the SWT Shell of the active workbench window, or {@code null} if no workbench window
+     *     is active
      */
-    public static Shell getShell()
-    {
+    public static Shell getShell() {
         IWorkbenchWindow window = getActiveWorkbenchWindow();
-        if (window == null)
-        {
+        if (window == null) {
             return null;
         }
         return window.getShell();
     }
 
-    /**
-     * @return active window instance, never null
-     */
-    public static IWorkbenchWindow getActiveWorkbenchWindow()
-    {
-        if (Display.getCurrent() != null)
-        {
+    /** @return active window instance, never null */
+    public static IWorkbenchWindow getActiveWorkbenchWindow() {
+        if (Display.getCurrent() != null) {
             return getDefault().getWorkbench().getActiveWorkbenchWindow();
         }
         // need to call from UI thread
         final IWorkbenchWindow[] window = new IWorkbenchWindow[1];
-        Display.getDefault().syncExec(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                window[0] = getDefault().getWorkbench()
-                        .getActiveWorkbenchWindow();
-            }
-        });
+        Display.getDefault()
+                .syncExec(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                window[0] = getDefault().getWorkbench().getActiveWorkbenchWindow();
+                            }
+                        });
         return window[0];
     }
 
@@ -158,22 +132,18 @@ public class CheckerPlugin extends AbstractUIPlugin
      *
      * @return a MessageConsole (will create if it doesn't exist)
      */
-    public static MessageConsole findConsole()
-    {
+    public static MessageConsole findConsole() {
         ConsolePlugin plugin = ConsolePlugin.getDefault();
         IConsoleManager conMan = plugin.getConsoleManager();
         IConsole[] existing = conMan.getConsoles();
-        for (IConsole element : existing)
-        {
-            if (consoleName.equals(element.getName()))
-            {
+        for (IConsole element : existing) {
+            if (consoleName.equals(element.getName())) {
                 return (MessageConsole) element;
             }
         }
         // no console found, so create a new one
         MessageConsole myConsole = new MessageConsole(consoleName, null);
-        conMan.addConsoles(new IConsole[] { myConsole });
+        conMan.addConsoles(new IConsole[] {myConsole});
         return myConsole;
     }
-
 }
