@@ -117,6 +117,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                                     .getValueAnnotatedTypeFactory()
                                     .getAnnotatedType(arrTree)
                                     .toString(),
+                            valMax + 1,
                             valMax + 1),
                     indexTree);
         } else if (valMax != null && qualifier.isUnknown()) {
@@ -131,11 +132,15 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                             atypeFactory
                                     .getValueAnnotatedTypeFactory()
                                     .getAnnotatedType(arrTree)
-                                    .toString()),
+                                    .toString(),
+                            arrName,
+                            arrName,
+                            valMax + 1),
                     indexTree);
         } else {
             checker.report(
-                    Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName), indexTree);
+                    Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName, arrName),
+                    indexTree);
         }
     }
 
