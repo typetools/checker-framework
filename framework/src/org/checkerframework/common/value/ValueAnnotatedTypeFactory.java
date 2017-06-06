@@ -1599,7 +1599,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         List<Long> list = AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, true);
-        ValueCheckerUtils.removeDuplicates(list);
+        list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }
 
@@ -1617,7 +1617,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         List<Double> list =
                 AnnotationUtils.getElementValueArray(doubleAnno, "value", Double.class, true);
-        ValueCheckerUtils.removeDuplicates(list);
+        list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }
 
@@ -1635,7 +1635,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         List<Integer> list =
                 AnnotationUtils.getElementValueArray(arrayAnno, "value", Integer.class, true);
-        ValueCheckerUtils.removeDuplicates(list);
+        list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }
 
