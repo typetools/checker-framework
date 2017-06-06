@@ -29,6 +29,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
     private static final String UPPER_BOUND = "array.access.unsafe.high";
     private static final String UPPER_BOUND_CONST = "array.access.unsafe.high.constant";
+    private static final String UPPER_BOUND_RANGE = "array.access.unsafe.high.range";
 
     public UpperBoundVisitor(BaseTypeChecker checker) {
         super(checker);
@@ -99,28 +100,42 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return;
         }
 
-        // We can issue two different errors: either one that talks about a constant index or a generic one
-        // about the upperbound type. We only issue the error about a constant index if:
-        // 1. The max value of the constant is known
-        // 2. The minlen of the array is known
-        // 3. The qualifier on the constant is @UpperBoundUnknown
-        if (valMax == null || minLen == null || !qualifier.isUnknown()) {
-            checker.report(
-                    Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName), indexTree);
-        } else {
-            // valMax is not null, so the index is a constant that was not less than the length of the array
+        // We can issue three different errors:
+        // 1. if the index is a compile time constant, issue an error that describes the array type
+        // 2. if the index is a compile time range and has no upperbound qualifier,
+        //    issue an error that names the upperbound of the range and the array's type
+        // 3. if neither of the above, issue an error that names the upper bound type
+
+        if (IndexUtil.getExactValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory())
+                != null) {
+            // Note that valMax is equal to the exact value in this case.
             checker.report(
                     Result.failure(
                             UPPER_BOUND_CONST,
-                            indexTree.toString(),
-                            arrName,
-                            minLen,
                             valMax,
+                            atypeFactory
+                                    .getValueAnnotatedTypeFactory()
+                                    .getAnnotatedType(arrTree)
+                                    .toString(),
+                            valMax + 1),
+                    indexTree);
+        } else if (valMax != null && qualifier.isUnknown()) {
+
+            checker.report(
+                    Result.failure(
+                            UPPER_BOUND_RANGE,
+                            atypeFactory
+                                    .getValueAnnotatedTypeFactory()
+                                    .getAnnotatedType(indexTree)
+                                    .toString(),
                             atypeFactory
                                     .getValueAnnotatedTypeFactory()
                                     .getAnnotatedType(arrTree)
                                     .toString()),
                     indexTree);
+        } else {
+            checker.report(
+                    Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName), indexTree);
         }
     }
 
