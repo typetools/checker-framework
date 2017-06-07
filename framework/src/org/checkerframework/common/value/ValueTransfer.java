@@ -137,14 +137,18 @@ public class ValueTransfer extends CFTransfer {
         }
 
         // @IntRange
-        if (isIntRange(subNode, p)) {
+        if (subNode instanceof StringConversionNode) {
+            return getStringLengths(((StringConversionNode) subNode).getOperand(), p, null);
+        } else if (isIntRange(subNode, p)) {
             Range valueRange = getIntRange(subNode, p);
 
             int fromLength = Long.toString(valueRange.from).length();
             int toLength = Long.toString(valueRange.to).length();
 
             int lowerLength = Math.min(fromLength, toLength);
-            if (valueRange.contains(0)) lowerLength = 1;
+            if (valueRange.contains(0)) {
+                lowerLength = 1;
+            }
 
             int upperLength = Math.max(fromLength, toLength);
 
