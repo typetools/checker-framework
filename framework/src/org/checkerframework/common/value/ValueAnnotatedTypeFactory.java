@@ -1587,7 +1587,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror createIntRangeAnnotation(Range range) {
         if (range.isNothing()) {
             return BOTTOMVAL;
-        } else if (range.isEverything()) {
+        } else if (range.isLongEverything()) {
             return UNKNOWNVAL;
         } else if (range.isWiderThan(MAX_VALUES)) {
             return createIntRangeAnnotation(range.from, range.to);
@@ -1628,7 +1628,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror createArrayLenRangeAnnotation(Range range) {
         if (range.isNothing()) {
             return BOTTOMVAL;
-        } else if (range.isEverything() || !range.isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+        } else if (range.isLongEverything()
+                || !range.isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE)) {
             return UNKNOWNVAL;
         } else {
             return createArrayLenRangeAnnotation(
@@ -1699,7 +1700,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns the set of possible values as a sorted listed with no duplicate values. Returns the
+     * Returns the set of possible values as a sorted list with no duplicate values. Returns the
      * empty list if no values are possible (for dead code). Returns null if any value is possible
      * -- that is, if no estimate can be made -- and this includes when there is no constant-value
      * annotation so the argument is null.
@@ -1714,12 +1715,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         List<Long> list = AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, true);
-        ValueCheckerUtils.removeDuplicates(list);
+        list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }
 
     /**
-     * Returns the set of possible values as a sorted listed with no duplicate values. Returns the
+     * Returns the set of possible values as a sorted list with no duplicate values. Returns the
      * empty list if no values are possible (for dead code). Returns null if any value is possible
      * -- that is, if no estimate can be made -- and this includes when there is no constant-value
      * annotation so the argument is null.
@@ -1732,14 +1733,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         List<Double> list =
                 AnnotationUtils.getElementValueArray(doubleAnno, "value", Double.class, true);
-        ValueCheckerUtils.removeDuplicates(list);
+        list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }
 
     /**
-     * Returns the set of possible array lengths as a sorted listed with no duplicate values.
-     * Returns the empty list if no values are possible (for dead code). Returns null if any value
-     * is possible -- that is, if no estimate can be made -- and this includes when there is no
+     * Returns the set of possible array lengths as a sorted list with no duplicate values. Returns
+     * the empty list if no values are possible (for dead code). Returns null if any value is
+     * possible -- that is, if no estimate can be made -- and this includes when there is no
      * constant-value annotation so the argument is null.
      *
      * @param arrayAnno an {@code @ArrayLen} annotation, or null
@@ -1750,12 +1751,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         List<Integer> list =
                 AnnotationUtils.getElementValueArray(arrayAnno, "value", Integer.class, true);
-        ValueCheckerUtils.removeDuplicates(list);
+        list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }
 
     /**
-     * Returns the set of possible values as a sorted listed with no duplicate values. Returns the
+     * Returns the set of possible values as a sorted list with no duplicate values. Returns the
      * empty list if no values are possible (for dead code). Returns null if any value is possible
      * -- that is, if no estimate can be made -- and this includes when there is no constant-value
      * annotation so the argument is null.
@@ -1776,7 +1777,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns the set of possible values as a sorted listed with no duplicate values. Returns the
+     * Returns the set of possible values as a sorted list with no duplicate values. Returns the
      * empty list if no values are possible (for dead code). Returns null if any value is possible
      * -- that is, if no estimate can be made -- and this includes when there is no constant-value
      * annotation so the argument is null.

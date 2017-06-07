@@ -535,8 +535,6 @@ public class AnnotatedTypes {
             final ExpressionTree expr,
             final ExecutableElement elt,
             final AnnotatedExecutableType preType) {
-        //TODO: TEMPORARY KLUDGE
-        atypeFactory.getTypeArgumentInference().adaptMethodType(atypeFactory, expr, preType);
 
         // Is the method a generic method?
         if (elt.getTypeParameters().isEmpty()) {
