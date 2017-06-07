@@ -8,8 +8,11 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.SameLen;
@@ -23,14 +26,39 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /** Warns about array accesses that could be too high. */
 public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFactory> {
 
     private static final String UPPER_BOUND = "array.access.unsafe.high";
+    private static final String LOCAL_VAR_ANNO = "local.variable.unsafe.dependent.annotation";
 
     public UpperBoundVisitor(BaseTypeChecker checker) {
         super(checker);
+    }
+
+    /**
+     * This visits all annotations and issues a warning on any annotation on a local variable. This
+     * is necessary for the soundness of the reassignment code, which must unrefine all qualifiers,
+     * but which cannot collect all in-scope local variables. So that there are no local variables
+     * with qualifiers that are not in the store, this method forbids programmers from writing such
+     * qualifiers. This may introduce false positives if the programmer would like to write a
+     * non-primary annotation on a local variable.
+     */
+    @Override
+    public Void visitVariable(VariableTree node, Void p) {
+        Element elt = TreeUtils.elementFromDeclaration(node);
+        if (elt.getKind() == ElementKind.LOCAL_VARIABLE) {
+            AnnotatedTypeMirror atm = atypeFactory.getAnnotatedTypeLhs(node);
+            AnnotationMirror anm = atm.getAnnotationInHierarchy(atypeFactory.UNKNOWN);
+            if (AnnotationUtils.hasElementValue(anm, "value")) {
+                // This is a dependent annotation.
+                // Issue a warning; dependent annotations should not be written on local variables.
+                checker.report(Result.warning(LOCAL_VAR_ANNO), node);
+            }
+        }
+        return super.visitVariable(node, p);
     }
 
     /**
