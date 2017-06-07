@@ -11,7 +11,7 @@ public abstract class WeakHasherMap<K, V> extends AbstractMap<K, V> implements M
     @org.checkerframework.dataflow.qual.Pure
     //:: error: (override.param.invalid)
     public boolean containsKey(Object key) {
-        //:: warning: [unchecked] unchecked cast
+        //:: warning: [unchecked] unchecked cast :: warning: (cast.unsafe)
         K kkey = (K) key;
         hash.containsKey(null);
         return true;

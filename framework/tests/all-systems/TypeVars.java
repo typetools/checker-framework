@@ -3,7 +3,8 @@ class TypeVars {
 
     class Test1<T> {
         void m() {
-            @SuppressWarnings("unchecked")
+            // The cast below is unsafe in type systems where new Object() has a top qualifier.
+            @SuppressWarnings({"unchecked", "cast.unsafe"})
             T x = (T) new Object();
 
             Object o = x;

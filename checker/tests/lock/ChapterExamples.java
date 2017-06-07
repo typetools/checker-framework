@@ -76,7 +76,7 @@ class ChapterExamples {
 
     public <K extends @GuardedBy({}) Object, V extends @GuardedBy({}) Object> void put(
             K key, V value) {
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({"unchecked", "cast.unsafe"})
         K k = (K) maskNull(key);
     }
 
