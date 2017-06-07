@@ -5,6 +5,7 @@ import static org.checkerframework.checker.index.IndexUtil.getValueOfAnnotationW
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -14,6 +15,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.PolySameLen;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.SameLenBottom;
@@ -71,6 +75,52 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new SameLenQualifierHierarchy(factory);
+    }
+
+    @Override
+    public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree tree) {
+        AnnotatedTypeMirror atm = super.getAnnotatedTypeLhs(tree);
+        if (tree.getKind() == Tree.Kind.VARIABLE) {
+            String varName;
+            Element elt = TreeUtils.elementFromDeclaration((VariableTree) tree);
+            if (elt.getKind() == ElementKind.LOCAL_VARIABLE
+                    || elt.getKind() == ElementKind.RESOURCE_VARIABLE
+                    || elt.getKind() == ElementKind.EXCEPTION_PARAMETER
+                    || elt.getKind() == ElementKind.PARAMETER) {
+                varName = elt.getSimpleName().toString();
+            } else {
+                Receiver receiverF = FlowExpressions.internalRepOfImplicitReceiver(elt);
+                FlowExpressionParseUtil.FlowExpressionContext context =
+                        new FlowExpressionParseUtil.FlowExpressionContext(
+                                receiverF, null, getContext());
+                try {
+                    varName =
+                            FlowExpressionParseUtil.parse(
+                                            ((VariableTree) tree).getName().toString(),
+                                            context,
+                                            getPath(tree),
+                                            false)
+                                    .toString();
+                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                    varName = null;
+                }
+            }
+            if (varName != null) {
+                AnnotationMirror anm = atm.getAnnotation(SameLen.class);
+                if (anm != null) {
+                    List<String> slArrays = IndexUtil.getValueOfAnnotationWithStringArgument(anm);
+                    if (slArrays.contains(varName)) {
+                        slArrays.remove(varName);
+                    }
+                    if (slArrays.size() == 0) {
+                        atm.replaceAnnotation(UNKNOWN);
+                    } else {
+                        atm.replaceAnnotation(createSameLen(slArrays.toArray(new String[0])));
+                    }
+                }
+            }
+        }
+        return atm;
     }
 
     /**
