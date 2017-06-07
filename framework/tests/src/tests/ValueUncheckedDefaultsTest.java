@@ -6,7 +6,7 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/** Tests unchecked code defaults the constant value propagation type system. */
+/** Tests unchecked code defaults for the constant value propagation type system. */
 public class ValueUncheckedDefaultsTest extends CheckerFrameworkPerDirectoryTest {
 
     public ValueUncheckedDefaultsTest(List<File> testFiles) {
