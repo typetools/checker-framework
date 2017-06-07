@@ -722,6 +722,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     && (AnnotationUtils.areSameByClass(subAnno, ArrayLen.class)
                             || AnnotationUtils.areSameByClass(subAnno, ArrayLenRange.class))) {
 
+                // Allow @ArrayLen(0) to be converted to @StringVal("")
                 List<String> superValues =
                         AnnotationUtils.getElementValueArray(
                                 superAnno, "value", String.class, true);
@@ -731,12 +732,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 // List<String> subValues =
                 //     AnnotationUtils.getElementValueArray(subAnno, "value", Integer.class, true);
-                //VD: subtyping of StringVal and arrayLenRange (only one direction)
-                //TODO: check and comment why it is correct
+                //VD: check whether it is correct
                 return isSubtype(convertStringValToArrayLen(subAnno), superAnno);
             } else if (AnnotationUtils.areSameByClass(superAnno, ArrayLenRange.class)
                     && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
-                //VD: subtyping of StringVal and arrayLenRange (only one direction)
+                //VD: check whether it is correct
                 return isSubtype(convertStringValToArrayLenRange(subAnno), superAnno);
             } else {
                 return false;
