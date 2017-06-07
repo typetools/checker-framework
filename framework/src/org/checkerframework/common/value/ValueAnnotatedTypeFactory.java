@@ -396,7 +396,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                     anno, "value", String.class, false);
 
                     if (values.size() > MAX_VALUES) {
-                        List<Integer> lengths = getLengthsForStringValues(values);
+                        List<Integer> lengths = ValueCheckerUtils.getLengthsForStringValues(values);
                         atm.replaceAnnotation(createArrayLenAnnotation(lengths));
                     }
 
@@ -412,20 +412,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
         }
-    }
-
-    /**
-     * Gets a list of lengths for a list of string values.
-     *
-     * @param values List of string values.
-     * @return List of unique lengths of strings in {@code values}.
-     */
-    private List<Integer> getLengthsForStringValues(List<String> values) {
-        List<Integer> lengths = new ArrayList<Integer>();
-        for (String str : values) {
-            lengths.add(str.length());
-        }
-        return ValueCheckerUtils.removeDuplicates(lengths);
     }
 
     /** The qualifier hierarchy for the Value type system */
@@ -1260,7 +1246,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         arrayAnno = receiverType.getAnnotation(StringVal.class);
         if (arrayAnno != null) {
             List<String> strings = ValueAnnotatedTypeFactory.getStringValues(arrayAnno);
-            List<Integer> lengths = getLengthsForStringValues(strings);
+            List<Integer> lengths = ValueCheckerUtils.getLengthsForStringValues(strings);
             return createNumberAnnotationMirror(new ArrayList<Number>(lengths));
         }
 
@@ -1464,7 +1450,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.size() > MAX_VALUES) {
             // Too many strings are replaced by their lengths
-            List<Integer> lengths = getLengthsForStringValues(values);
+            List<Integer> lengths = ValueCheckerUtils.getLengthsForStringValues(values);
             return createArrayLenAnnotation(lengths);
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, StringVal.class);
@@ -1659,20 +1645,35 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Converts an {@code @StringVal} annotation to an {@code @ArrayLenRange} annotation. */
     public AnnotationMirror convertStringValToArrayLenRange(AnnotationMirror stringValAnno) {
         List<String> values = getStringValues(stringValAnno);
-        List<Integer> lengths = getLengthsForStringValues(values);
+        List<Integer> lengths = ValueCheckerUtils.getLengthsForStringValues(values);
         return createArrayLenRangeAnnotation(Collections.min(lengths), Collections.max(lengths));
     }
 
     /** Converts an {@code @StringVal} annotation to an {@code @ArrayLen} annotation. */
     public AnnotationMirror convertStringValToArrayLen(AnnotationMirror stringValAnno) {
         List<String> values = getStringValues(stringValAnno);
-        return createArrayLenAnnotation(getLengthsForStringValues(values));
+        return createArrayLenAnnotation(ValueCheckerUtils.getLengthsForStringValues(values));
     }
 
     /** Converts an {@code @IntVal} annotation to an {@code @IntRange} annotation. */
     public AnnotationMirror convertIntValToIntRange(AnnotationMirror intValAnno) {
         List<Long> intValues = getIntValues(intValAnno);
         return createIntRangeAnnotation(Collections.min(intValues), Collections.max(intValues));
+    }
+
+    /** Returns a {@code Range} bounded by the array lengths specified in the given annotation. */
+    public static Range getArrayLenRange(AnnotationMirror arrayLenRangeAnno) {
+        if (arrayLenRangeAnno == null) {
+            return null;
+        }
+
+        // VD: do we need to handle MinLen?
+
+        // arrayLenRangeAnno rangeAnno is well-formed, i.e., 'from' is less than or equal to 'to'.
+
+        return new Range(
+                AnnotationUtils.getElementValue(arrayLenRangeAnno, "from", Integer.class, true),
+                AnnotationUtils.getElementValue(arrayLenRangeAnno, "to", Integer.class, true));
     }
 
     /** Returns a {@code Range} bounded by the values specified in the given annotation. */

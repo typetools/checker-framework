@@ -262,4 +262,18 @@ public class ValueCheckerUtils {
         Set<T> set = new TreeSet<>(values);
         return new ArrayList<T>(set);
     }
+
+    /**
+     * Gets a list of lengths for a list of string values.
+     *
+     * @param values List of string values.
+     * @return List of unique lengths of strings in {@code values}.
+     */
+    public static List<Integer> getLengthsForStringValues(List<String> values) {
+        List<Integer> lengths = new ArrayList<Integer>();
+        for (String str : values) {
+            lengths.add(str.length());
+        }
+        return ValueCheckerUtils.removeDuplicates(lengths);
+    }
 }
