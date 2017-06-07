@@ -1,5 +1,7 @@
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.ArrayLenRange;
+import org.checkerframework.common.value.qual.IntRange;
+import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 
 class StringLenConcats {
@@ -43,5 +45,25 @@ class StringLenConcats {
             @StringVal({"ee", "ff", "gg", "hh", "ii"}) String b) {
         @ArrayLen(2) String aa = a + a;
         @ArrayLen(3) String ab = a + b;
+    }
+
+    void conversions(
+            @IntVal(123) int intConst,
+            @IntRange(from = -100000, to = 100) int intRange,
+            @IntRange(from = 100, to = 100000) int positiveRange,
+            @ArrayLen(10) String a,
+            @ArrayLenRange(from = 10, to = 20) String b,
+            @StringVal({"aaa", "bbbbb"}) String c) {
+        @ArrayLen(13) String aConst = a + intConst;
+        @ArrayLen({11, 12, 13, 14, 15, 16, 17}) String aRange = a + intRange;
+        @ArrayLen({13, 14, 15, 16}) String aPositive = a + positiveRange;
+
+        @ArrayLenRange(from = 13, to = 23) String bConst = b + intConst;
+        @ArrayLenRange(from = 11, to = 27) String bRange = b + intRange;
+        @ArrayLenRange(from = 13, to = 26) String bPositive = b + positiveRange;
+
+        @StringVal({"aaa123", "bbbbb123"}) String cConst = c + intConst;
+        @ArrayLen({4, 5, 6, 7, 8, 9, 10, 11, 12}) String cRange = c + intRange;
+        @ArrayLen({6, 7, 8, 9, 10, 11}) String cPositive = c + positiveRange;
     }
 }
