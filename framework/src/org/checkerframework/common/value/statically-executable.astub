@@ -19,8 +19,8 @@ class Boolean{
     @StaticallyExecutable boolean booleanValue();
     @StaticallyExecutable static boolean getBoolean(String name);
     @StaticallyExecutable static boolean parseBoolean(String s);
-    @StaticallyExecutable String toString();
-    @StaticallyExecutable static String toString(boolean b);
+    @StaticallyExecutable @StringVal({"true", "false"}) String toString();
+    @StaticallyExecutable static @StringVal({"true", "false"}) String toString(boolean b);
     @StaticallyExecutable static Boolean valueOf(boolean b);
     @StaticallyExecutable static Boolean valueOf(String s);
 }
@@ -35,8 +35,8 @@ class Byte{
     @StaticallyExecutable static byte parseByte(String s);
     @StaticallyExecutable static byte parseByte(String s, int radix);
     @StaticallyExecutable @PolyValue short shortValue() @PolyValue;
-    @StaticallyExecutable String toString();
-    @StaticallyExecutable static String toString(byte b);
+    @StaticallyExecutable @ArrayLen({1,2,3,4}) String toString();
+    @StaticallyExecutable static @ArrayLen({1,2,3,4}) String toString(byte b);
     @StaticallyExecutable static @PolyValue Byte valueOf(@PolyValue byte b);
     @StaticallyExecutable static Byte valueOf(String s);
     @StaticallyExecutable static Byte valueOf(String s, int radix);
@@ -110,8 +110,8 @@ class Character{
     @StaticallyExecutable static int toCodePoint(char high, char low);
     @StaticallyExecutable static char toLowerCase(char ch);
     @StaticallyExecutable static int toLowerCase(int codePoint);
-    @StaticallyExecutable String toString();
-    @StaticallyExecutable static String toString(char c);
+    @StaticallyExecutable @ArrayLen(1) String toString();
+    @StaticallyExecutable static @ArrayLen(1) String toString(char c);
     @StaticallyExecutable static char toTitleCase(char ch);
     @StaticallyExecutable static int toTitleCase(int codePoint);
     @StaticallyExecutable static char toUpperCase(char ch);
@@ -187,12 +187,12 @@ class Integer{
     @StaticallyExecutable static int rotateRight(int i, int distance);
     @StaticallyExecutable short  shortValue();
     @StaticallyExecutable static int signum(int i);
-    @StaticallyExecutable static String toBinaryString(int i);
-    @StaticallyExecutable static String toHexString(int i);
-    @StaticallyExecutable static String toOctalString(int i);
-    @StaticallyExecutable String toString();
-    @StaticallyExecutable static String toString(int i);
-    @StaticallyExecutable static String toString(int i, int radix);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 32) String toBinaryString(int i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 8) String toHexString(int i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 11) String toOctalString(int i);
+    @StaticallyExecutable @ArrayLenRange(from = 1, to = 11) String toString();
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 11) String toString(int i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1) String toString(int i, int radix);
     @StaticallyExecutable static @PolyValue Integer valueOf(@PolyValue int i);
     @StaticallyExecutable static Integer valueOf(String s);
     @StaticallyExecutable static Integer valueOf(String s, int radix);
@@ -221,12 +221,12 @@ class Long{
     @StaticallyExecutable static long rotateRight(long i, int distance);
     @StaticallyExecutable @PolyValue short shortValue() @PolyValue;
     @StaticallyExecutable static int signum(long i);
-    @StaticallyExecutable static String toBinaryString(long i);
-    @StaticallyExecutable static String toHexString(long i);
-    @StaticallyExecutable static String toOctalString(long i);
-    @StaticallyExecutable String toString();
-    @StaticallyExecutable static String toString(long i);
-    @StaticallyExecutable static String toString(long i, int radix);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 64) String toBinaryString(long i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 16) String toHexString(long i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 22) String toOctalString(long i);
+    @StaticallyExecutable @ArrayLenRange(from = 1, to = 20) String toString();
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 20) String toString(long i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1) String toString(long i, int radix);
     @StaticallyExecutable static @PolyValue Long valueOf(@PolyValue long l);
     @StaticallyExecutable static Long valueOf(String s);
     @StaticallyExecutable static Long valueOf(String s, int radix);
@@ -243,8 +243,8 @@ class Short{
     @StaticallyExecutable static short parseShort(String s, int radix);
     @StaticallyExecutable static short reverseBytes(short i);
     @StaticallyExecutable @PolyValue short shortValue() @PolyValue;
-    @StaticallyExecutable String toString();
-    @StaticallyExecutable static String toString(short s);
+    @StaticallyExecutable @ArrayLen({1, 2, 3, 4, 5, 6}) String toString();
+    @StaticallyExecutable static @ArrayLen({1, 2, 3, 4, 5, 6}) String toString(short s);
     @StaticallyExecutable static @PolyValue Short valueOf(@PolyValue short s);
     @StaticallyExecutable static Short valueOf(String s);
     @StaticallyExecutable static Short valueOf(String s, int radix);
@@ -305,14 +305,14 @@ class String{
     @StaticallyExecutable String toUpperCase();
     @StaticallyExecutable String toUpperCase(Locale locale);
     @StaticallyExecutable String trim();
-    @StaticallyExecutable static String valueOf(boolean b);
-    @StaticallyExecutable static String valueOf(char c);
+    @StaticallyExecutable static @StringVal({"true", "false"}) String valueOf(boolean b);
+    @StaticallyExecutable static @ArrayLen(1) String valueOf(char c);
     @StaticallyExecutable static String valueOf(char[] data);
     @StaticallyExecutable static String valueOf(char[] data, int offset, int count);
     @StaticallyExecutable static String valueOf(double d);
     @StaticallyExecutable static String valueOf(float f);
-    @StaticallyExecutable static String valueOf(int i);
-    @StaticallyExecutable static String valueOf(long l);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 11) String valueOf(int i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 20) String valueOf(long l);
     @StaticallyExecutable static String valueOf(Object obj) ;
 }
 
