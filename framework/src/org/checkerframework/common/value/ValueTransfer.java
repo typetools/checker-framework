@@ -72,7 +72,7 @@ public class ValueTransfer extends CFTransfer {
     /**
      * Returns a range of possible lengths for {@code subNode}, as casted to a String.
      *
-     * @param stringValues a list of lengths for subNode, or null
+     * @param stringLengths a list of string lengths for subNode, or null
      */
     private Range getStringLengthRange(
             Node subNode, TransferInput<CFValue, CFStore> p, List<Integer> stringLengths) {
