@@ -172,21 +172,9 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror type) {
-        if (hasPrimaryAnnotationInAllHierarchies(type)) {
-            // If the type is already has a primary annotation in all hierarchies, then the
-            // propagated annotations won't be applied.  So don't compute them.
-            return null;
-        }
-
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
         if (type.getKind() == TypeKind.TYPEVAR) {
-            if (exprType.getKind() == TypeKind.TYPEVAR) {
-                // If both types are type variables, take the direct annotations.
-                type.addMissingAnnotations(exprType.getAnnotations());
-            }
-            // else do nothing
-            // TODO: What should we do if the type is a type variable, but the expression
-            // is not?
+            type.addMissingAnnotations(exprType.getAnnotations());
         } else {
             // Use effective annotations from the expression, to get upper bound
             // of type variables.
