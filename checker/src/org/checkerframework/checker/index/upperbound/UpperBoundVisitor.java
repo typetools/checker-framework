@@ -7,12 +7,14 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.SameLen;
@@ -22,9 +24,11 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -33,32 +37,124 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
     private static final String UPPER_BOUND = "array.access.unsafe.high";
     private static final String LOCAL_VAR_ANNO = "local.variable.unsafe.dependent.annotation";
+    private static final String DEPENDENT_NOT_PERMITTED = "dependent.not.permitted";
 
     public UpperBoundVisitor(BaseTypeChecker checker) {
         super(checker);
     }
 
     /**
-     * This visits all annotations and issues a warning on any annotation on a local variable. This
-     * is necessary for the soundness of the reassignment code, which must unrefine all qualifiers,
-     * but which cannot collect all in-scope local variables. So that there are no local variables
-     * with qualifiers that are not in the store, this method forbids programmers from writing such
-     * qualifiers. This may introduce false positives if the programmer would like to write a
-     * non-primary annotation on a local variable.
+     * This visits all local variable declarations and issues a warning if a dependent annotation is
+     * written on a local variable. This is necessary for the soundness of the reassignment code,
+     * which must unrefine all qualifiers, but which cannot collect all in-scope local variables. So
+     * that there are no local variables with qualifiers that are not in the store, this method
+     * forbids programmers from writing such qualifiers. This may introduce false positives if the
+     * programmer would like to write a non-primary annotation on a local variable.
+     *
+     * <p>Also issues warnings if the expression in a dependent annotation is not permitted.
+     * Permitted expressions in dependent annotations are:
+     *
+     * <p>1. final or effectively final variables 2. local variables 3. private fields 4. pure
+     * method calls all of whose arguments (including the receiver expression) are composed only of
+     * expressions in this list 5. accesses of a public final field whose access expression
+     * (sometimes called the receiver) is composed only of expressions in this list
+     *
+     * <p>Any other expression results in a warning.
      */
     @Override
     public Void visitVariable(VariableTree node, Void p) {
         Element elt = TreeUtils.elementFromDeclaration(node);
-        if (elt.getKind() == ElementKind.LOCAL_VARIABLE) {
-            AnnotatedTypeMirror atm = atypeFactory.getAnnotatedTypeLhs(node);
-            AnnotationMirror anm = atm.getAnnotationInHierarchy(atypeFactory.UNKNOWN);
-            if (AnnotationUtils.hasElementValue(anm, "value")) {
-                // This is a dependent annotation.
-                // Issue a warning; dependent annotations should not be written on local variables.
+        AnnotatedTypeMirror atm = atypeFactory.getAnnotatedTypeLhs(node);
+        AnnotationMirror anm = atm.getAnnotationInHierarchy(atypeFactory.UNKNOWN);
+        if (anm != null && AnnotationUtils.hasElementValue(anm, "value")) {
+            // This is a dependent annotation. If this is a local variable,
+            // issue a warning; dependent annotations should not be written on local variables.
+            if (elt.getKind() == ElementKind.LOCAL_VARIABLE) {
                 checker.report(Result.warning(LOCAL_VAR_ANNO), node);
             }
+            UBQualifier qual = UBQualifier.createUBQualifier(anm);
+            if (qual.isLessThanLengthQualifier()) {
+                LessThanLengthOf ltl = (LessThanLengthOf) qual;
+                for (String array : ltl.getArrays()) {
+                    checkIfPermittedInDependentTypeAnno(array, node);
+                }
+            }
         }
+
         return super.visitVariable(node, p);
+    }
+
+    private boolean checkIfPermittedInDependentTypeAnno(String expr, Tree tree) {
+        try {
+            FlowExpressions.Receiver rec =
+                    atypeFactory.getReceiverFromJavaExpressionString(expr, getCurrentPath());
+            if (rec.isUnmodifiableByOtherCode()) { // covers final and effectively final variables
+                return true;
+            }
+            if (rec instanceof FlowExpressions.LocalVariable) {
+                return true;
+            }
+            if (rec instanceof FlowExpressions.FieldAccess) {
+                FlowExpressions.FieldAccess faRec = (FlowExpressions.FieldAccess) rec;
+                if (faRec.getField().getModifiers().contains(Modifier.PRIVATE)
+                        || (faRec.getField().getModifiers().contains(Modifier.PUBLIC)
+                                && faRec.isFinal()
+                                && checkIfPermittedInDependentTypeAnno(
+                                        faRec.getReceiver().toString(), tree))) {
+                    return true;
+                } else {
+                    // issue warning
+                    checker.report(
+                            Result.warning(
+                                    DEPENDENT_NOT_PERMITTED,
+                                    expr,
+                                    "fields in a dependent type must either be private or public and final with a receiver that is private, public and final, or a local variable"),
+                            tree);
+                }
+            }
+            if (rec instanceof FlowExpressions.MethodCall) {
+                FlowExpressions.MethodCall mcRec = (FlowExpressions.MethodCall) rec;
+                boolean parametersArePermittedInDependentTypeAnno = true;
+                for (FlowExpressions.Receiver r : mcRec.getParameters()) {
+                    parametersArePermittedInDependentTypeAnno =
+                            parametersArePermittedInDependentTypeAnno
+                                    && checkIfPermittedInDependentTypeAnno(r.toString(), tree);
+                }
+                if (parametersArePermittedInDependentTypeAnno
+                        && PurityUtils.isSideEffectFree(atypeFactory, mcRec.getElement())
+                        && checkIfPermittedInDependentTypeAnno(
+                                mcRec.getReceiver().toString(), tree)) {
+                    return true;
+                } else {
+                    // issue warning
+                    checker.report(
+                            Result.warning(
+                                    DEPENDENT_NOT_PERMITTED,
+                                    expr,
+                                    "all method calls in dependent types must be pure, have a receiver that is permitted in a dependent type annotation, and have parameters that are permitted in a dependent type annotation"),
+                            tree);
+                }
+            }
+            checker.report(
+                    Result.warning(
+                            DEPENDENT_NOT_PERMITTED,
+                            expr,
+                            "the expression did not fit one of the categories of permitted expression in dependent types. Those categories are: \n           1. final or effectively final variables\n"
+                                    + "           2. local variables\n"
+                                    + "           3. private fields\n"
+                                    + "           4. pure method calls all of whose arguments (including the receiver expression)\n"
+                                    + "           are composed only of expressions in this list\n"
+                                    + "           5. accesses of a public final field whose access expression (sometimes called the\n"
+                                    + "           receiver) is composed only of expressions in this list"),
+                    tree);
+            return false;
+        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+            // issue warning
+            checker.report(
+                    Result.warning(DEPENDENT_NOT_PERMITTED, expr, "the expression was unparseable"),
+                    tree);
+            return false;
+        }
     }
 
     /**

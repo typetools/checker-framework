@@ -18,7 +18,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
     }
 
     @Override
-    public void updateForAssignment(Node n, /*@Nullable*/ CFValue val) {
+    public void updateForAssignment(Node n, CFValue val) {
         // Do reassignment things here.
 
         super.updateForAssignment(n, val);
