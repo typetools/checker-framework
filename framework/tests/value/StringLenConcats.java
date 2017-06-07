@@ -6,7 +6,7 @@ class StringLenConcats {
 
     void stringLenConcat(@ArrayLen(3) String a, @ArrayLen(5) String b) {
         @ArrayLen(8) String ab = a + b;
-        @ArrayLen(4) String bxx = b + "xx";
+        @ArrayLen(7) String bxx = b + "xx";
     }
 
     void stringLenRangeConcat(
