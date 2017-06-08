@@ -54,21 +54,26 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * <p>Also issues warnings if the expression in a dependent annotation is not permitted.
      * Permitted expressions in dependent annotations are:
      *
-     * <p>1. final or effectively final variables 2. local variables 3. private fields 4. pure
-     * method calls all of whose arguments (including the receiver expression) are composed only of
-     * expressions in this list 5. accesses of a public final field whose access expression
-     * (sometimes called the receiver) is composed only of expressions in this list
+     * <ul>
+     *   <li>final or effectively final variables
+     *   <li>local variables
+     *   <li>private fields
+     *   <li>pure method calls all of whose arguments (including the receiver expression) are
+     *       composed only of expressions in this list
+     *   <li>accesses of a public final field whose access expression (sometimes called the
+     *       receiver) is composed only of expressions in this list
+     * </ul>
      *
      * <p>Any other expression results in a warning.
      */
     @Override
     public Void visitVariable(VariableTree node, Void p) {
-        Element elt = TreeUtils.elementFromDeclaration(node);
         AnnotatedTypeMirror atm = atypeFactory.getAnnotatedTypeLhs(node);
         AnnotationMirror anm = atm.getAnnotationInHierarchy(atypeFactory.UNKNOWN);
         if (anm != null && AnnotationUtils.hasElementValue(anm, "value")) {
             // This is a dependent annotation. If this is a local variable,
             // issue a warning; dependent annotations should not be written on local variables.
+            Element elt = TreeUtils.elementFromDeclaration(node);
             if (elt.getKind() == ElementKind.LOCAL_VARIABLE) {
                 checker.report(Result.warning(LOCAL_VAR_ANNO), node);
             }
@@ -108,8 +113,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                             Result.warning(
                                     DEPENDENT_NOT_PERMITTED,
                                     expr,
-                                    "fields in a dependent type must either be private or public and final with a receiver that is private, public and final, or a local variable"),
+                                    "fields in a dependent type must either be private or both public and final. The receiver "
+                                            + "object must be one of: a local variable; a private field; or a public, final field"),
                             tree);
+                    return false;
                 }
             }
             if (rec instanceof FlowExpressions.MethodCall) {
@@ -120,19 +127,23 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                             parametersArePermittedInDependentTypeAnno
                                     && checkIfPermittedInDependentTypeAnno(r.toString(), tree);
                 }
-                if (parametersArePermittedInDependentTypeAnno
-                        && PurityUtils.isSideEffectFree(atypeFactory, mcRec.getElement())
-                        && checkIfPermittedInDependentTypeAnno(
-                                mcRec.getReceiver().toString(), tree)) {
-                    return true;
-                } else {
+                if (!PurityUtils.isSideEffectFree(atypeFactory, mcRec.getElement())) {
                     // issue warning
                     checker.report(
                             Result.warning(
                                     DEPENDENT_NOT_PERMITTED,
                                     expr,
-                                    "all method calls in dependent types must be pure, have a receiver that is permitted in a dependent type annotation, and have parameters that are permitted in a dependent type annotation"),
+                                    "all method calls in dependent types must be pure"),
                             tree);
+                    return false;
+                }
+                if (parametersArePermittedInDependentTypeAnno
+                        && checkIfPermittedInDependentTypeAnno(
+                                mcRec.getReceiver().toString(), tree)) {
+                    return true;
+                } else {
+                    // warning will already have been issued in this case.
+                    return false;
                 }
             }
             checker.report(
