@@ -99,4 +99,9 @@ class StringLen {
         //:: error: (assignment.type.incompatible)
         @IntRange(from = 1, to = 11) int len1_11 = values.length();
     }
+
+    void arrayCast(@ArrayLen(1) String array) {
+        @ArrayLen(1) String cast1 = (String) array;
+        @ArrayLen(1) String cast2 = (@ArrayLen(1) String) array;
+    }
 }
