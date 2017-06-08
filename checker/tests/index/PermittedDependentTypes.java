@@ -73,4 +73,10 @@ class PermittedDependentTypes {
     void botch(@IndexFor("pother.y") int w) {
         // Permitted
     }
+
+    void notch() {
+        //:: warning: (local.variable.unsafe.dependent.annotation)
+        @IndexFor("y") int w;
+        @NonNegative int q;
+    }
 }
