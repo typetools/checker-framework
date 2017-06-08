@@ -1,13 +1,13 @@
-import java.util.TreeSet;
+import java.util.HashSet;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class TreeSetTest {
+class HashSetTest {
 
     public static void main(String[] args) {
 
         //:: error: (type.argument.type.incompatible)
-        TreeSet<@Nullable Integer> ts = new TreeSet<>();
+        HashSet<@Nullable Integer> hs = new HashSet<>();
 
-        ts.add(null);
+        hs.add(null);
     }
 }
