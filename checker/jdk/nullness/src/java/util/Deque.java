@@ -5,7 +5,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 // Subclasses of this interface/class may opt to prohibit
 // null elements
-public interface Deque<E extends @Nullable Object> extends Queue<E> {
+public interface Deque<E> extends Queue<E> {
   public abstract void addFirst(E a1);
   public abstract void addLast(E a1);
   public abstract boolean offerFirst(E a1);
