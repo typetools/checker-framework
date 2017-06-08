@@ -41,7 +41,7 @@ The main type annotations are
 \refqualclass{common/value/qual}{IntRange},
 \refqualclass{common/value/qual}{DoubleVal}, and
 \refqualclass{common/value/qual}{StringVal}.
-Additional type annotations for arrays are
+Additional type annotations for arrays and strings are
 \refqualclass{common/value/qual}{ArrayLen},
 \refqualclass{common/value/qual}{ArrayLenRange},
 and \refqualclass{common/value/qual}{MinLen}.
@@ -57,10 +57,11 @@ The set is limited to 10 entries; if a variable
 could be more than 10 different values, the Constant Value
 Checker gives up and its type becomes
 \refqualclass{common/value/qual}{IntRange} for integral types,
-\refqualclass{common/value/qual}{ArrayLenRange} for array types, and
+\refqualclass{common/value/qual}{ArrayLenRange} for array types,
+\refqualclass{common/value/qual}{ArrayLen} or \refqualclass{common/value/qual}{ArrayLenRange} for \<String>, and
 \refqualclass{common/value/qual}{UnknownVal} for all other types.
 The \<@ArrayLen> annotation means that at run time, the expression
-evaluates to an array whose length is one of the annotation's arguments.
+evaluates to an array or a string whose length is one of the annotation's arguments.
 
 % \refqualclass{checker/value/qual}{BottomVal}, meaning that the expression
 % is dead or always has the value \<null>.
@@ -262,7 +263,7 @@ warning message:
 
   The Constant Value Checker only tracks up to 10 possible values for an
   expression.  If you write an annotation with more values than will be
-  tracked, the annotation is replaced with \<@IntRange>, \<@ArrayLenRange>, or \<@UnknownVal>.
+  tracked, the annotation is replaced with \<@IntRange>, \<@ArrayLen>, \<@ArrayLenRange>, or \<@UnknownVal>.
 
 \end{itemize}
 \end{sloppypar}
