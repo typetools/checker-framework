@@ -112,10 +112,8 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
  * @since 1.2
  */
 
-// Subclasses of this interface/class may opt to prohibit null elements.  However, the only ones in
-// the JDK that do are RoleList, RoleUnresolvedList, and possibly AttributeList.  Those are niche
-// examples, so leave the annotation as "E extends @Nullable Object".
-public interface List<E extends @Nullable Object> extends Collection<E> {
+// Subclasses of this interface/class may opt to prohibit null elements.
+public interface List<E> extends Collection<E> {
     // Query Operations
 
     /**
