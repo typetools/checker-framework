@@ -1000,6 +1000,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         List<?> values = ValueCheckerUtils.getValuesCastedToType(oldAnno, newType);
                         newAnno = createResultingAnnotation(atm.getUnderlyingType(), values);
                     }
+
+                    if (TypesUtils.isString(newType)) {
+                        //VD: temporary special handling for strings
+                        newAnno =
+                                atypeFactory
+                                        .getQualifierHierarchy()
+                                        .greatestLowerBound(oldAnno, newAnno);
+                    }
+
                     atm.replaceAnnotation(newAnno);
                 }
             } else if (atm.getKind() == TypeKind.ARRAY) {
