@@ -4253,6 +4253,15 @@ public class CFGBuilder {
             return result;
         }
 
+        /**
+         * Create assignment node which represent increment or decrement.
+         *
+         * @param target Target tree for assignment node. If it's null, corresponding assignment
+         *     tree will be generated.
+         * @param expr Expression node to be incremented or decremented
+         * @param isIncrement True when it's increment
+         * @return
+         */
         private AssignmentNode createIncrementOrDecrementAssign(
                 Tree target, Node expr, boolean isIncrement) {
             ExpressionTree exprTree = (ExpressionTree) expr.getTree();
@@ -4298,6 +4307,11 @@ public class CFGBuilder {
             return extendWithNode(assignNode);
         }
 
+        /**
+         * Find nearest owner element(Method or Class) which holds current tree
+         *
+         * @return Nearest owner element of current tree
+         */
         private Element findOwner() {
             MethodTree enclosingMethod = TreeUtils.enclosingMethod(getCurrentPath());
             if (enclosingMethod != null) {
