@@ -4260,7 +4260,7 @@ public class CFGBuilder {
          *     tree will be generated.
          * @param expr Expression node to be incremented or decremented
          * @param isIncrement True when it's increment
-         * @return
+         * @return Assignment node for corresponding increment or decrement
          */
         private AssignmentNode createIncrementOrDecrementAssign(
                 Tree target, Node expr, boolean isIncrement) {
