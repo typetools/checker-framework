@@ -170,6 +170,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             } catch (Exception ex) {
                 // Catch any errors thrown by inferences.
                 inferredArgs = new LinkedHashMap<>();
+                if (showInferenceSteps) {
+                    checker.message(Kind.NOTE, "  exception: %s\n", ex.getLocalizedMessage());
+                }
             }
         }
 
