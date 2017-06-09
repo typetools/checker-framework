@@ -199,7 +199,7 @@ public class TypeArgInferenceUtil {
         }
     }
 
-    protected static AnnotatedTypeMirror assignedToExecutable(
+    private static AnnotatedTypeMirror assignedToExecutable(
             AnnotatedTypeFactory atypeFactory,
             TreePath path,
             ExecutableElement methodElt,
