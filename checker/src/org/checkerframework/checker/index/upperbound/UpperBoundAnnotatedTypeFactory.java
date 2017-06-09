@@ -44,15 +44,16 @@ import org.checkerframework.checker.index.searchindex.SearchIndexAnnotatedTypeFa
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -72,7 +73,9 @@ import org.checkerframework.javacutil.TreeUtils;
  * the MinLen Checker and comparing the min lengths of arrays to the known values of variables as
  * supplied by the Value Checker.
  */
-public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class UpperBoundAnnotatedTypeFactory
+        extends GenericAnnotatedTypeFactory<
+                CFValue, UpperBoundStore, UpperBoundTransfer, UpperBoundAnalysis> {
 
     public final AnnotationMirror UNKNOWN, BOTTOM, POLY;
 

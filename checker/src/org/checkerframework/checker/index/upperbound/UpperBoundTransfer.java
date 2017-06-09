@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.index.IndexAbstractTransfer;
-import org.checkerframework.checker.index.IndexRefinementInfo;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
@@ -21,24 +19,31 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
+import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
+import org.checkerframework.dataflow.cfg.node.LessThanNode;
+import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
 import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.util.NodeUtils;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
-import org.checkerframework.framework.flow.CFAnalysis;
-import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.ErrorReporter;
 
-public class UpperBoundTransfer extends IndexAbstractTransfer {
+public class UpperBoundTransfer
+        extends CFAbstractTransfer<CFValue, UpperBoundStore, UpperBoundTransfer> {
 
     private UpperBoundAnnotatedTypeFactory atypeFactory;
 
-    public UpperBoundTransfer(CFAnalysis analysis) {
+    public UpperBoundTransfer(UpperBoundAnalysis analysis) {
         super(analysis);
         atypeFactory = (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
     }
@@ -47,9 +52,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     // less than length of the array to which the new array is assigned.
     // For example, in "int[] array = new int[expr];", the type of expr is @LTEqLength("array").
     @Override
-    public TransferResult<CFValue, CFStore> visitAssignment(
-            AssignmentNode node, TransferInput<CFValue, CFStore> in) {
-        TransferResult<CFValue, CFStore> result = super.visitAssignment(node, in);
+    public TransferResult<CFValue, UpperBoundStore> visitAssignment(
+            AssignmentNode node, TransferInput<CFValue, UpperBoundStore> in) {
+        TransferResult<CFValue, UpperBoundStore> result = super.visitAssignment(node, in);
 
         Node expNode = node.getExpression();
 
@@ -90,16 +95,17 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * {@code node} is known to be {@code typeOfNode}. If the node is a plus or a minus then the
      * types of the left and right operands can be refined to include offsets. If the node is a
      * multiplication, its operands can also be refined. See {@link
-     * #propagateToAdditionOperand(LessThanLengthOf, Node, Node, TransferInput, CFStore)}, {@link
-     * #propagateToSubtractionOperands(LessThanLengthOf, NumericalSubtractionNode, TransferInput,
-     * CFStore)}, and {@link #propagateToMultiplicationOperand(LessThanLengthOf, Node, Node,
-     * TransferInput, CFStore)} for details.
+     * #propagateToAdditionOperand(LessThanLengthOf, Node, Node, TransferInput, UpperBoundStore)},
+     * {@link #propagateToSubtractionOperands(LessThanLengthOf, NumericalSubtractionNode,
+     * TransferInput, UpperBoundStore)}, and {@link
+     * #propagateToMultiplicationOperand(LessThanLengthOf, Node, Node, TransferInput,
+     * UpperBoundStore)} for details.
      */
     private void propagateToOperands(
             LessThanLengthOf typeOfNode,
             Node node,
-            TransferInput<CFValue, CFStore> in,
-            CFStore store) {
+            TransferInput<CFValue, UpperBoundStore> in,
+            UpperBoundStore store) {
         if (node instanceof NumericalAdditionNode) {
             Node right = ((NumericalAdditionNode) node).getRightOperand();
             Node left = ((NumericalAdditionNode) node).getLeftOperand();
@@ -129,8 +135,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             LessThanLengthOf typeOfMultiplication,
             Node node,
             Node other,
-            TransferInput<CFValue, CFStore> in,
-            CFStore store) {
+            TransferInput<CFValue, UpperBoundStore> in,
+            UpperBoundStore store) {
         if (atypeFactory.hasLowerBoundTypeByClass(other, Positive.class)) {
             Long minValue =
                     IndexUtil.getMinValue(
@@ -150,9 +156,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      *
      * <p>This means that the left node is less than or equal to the length of the array when the
      * right node is subtracted from the left node. Note that unlike {@link
-     * #propagateToAdditionOperand(LessThanLengthOf, Node, Node, TransferInput, CFStore)} and {@link
-     * #propagateToMultiplicationOperand(LessThanLengthOf, Node, Node, TransferInput, CFStore)},
-     * this method takes the NumericalSubtractionNode instead of the two operand nodes.
+     * #propagateToAdditionOperand(LessThanLengthOf, Node, Node, TransferInput, UpperBoundStore)}
+     * and {@link #propagateToMultiplicationOperand(LessThanLengthOf, Node, Node, TransferInput,
+     * UpperBoundStore)}, this method takes the NumericalSubtractionNode instead of the two operand
+     * nodes.
      *
      * @param typeOfSubtraction type of node
      * @param node subtraction node that has typeOfSubtraction
@@ -162,8 +169,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     private void propagateToSubtractionOperands(
             LessThanLengthOf typeOfSubtraction,
             NumericalSubtractionNode node,
-            TransferInput<CFValue, CFStore> in,
-            CFStore store) {
+            TransferInput<CFValue, UpperBoundStore> in,
+            UpperBoundStore store) {
         UBQualifier left = getUBQualifier(node.getLeftOperand(), in);
         UBQualifier newInfo = typeOfSubtraction.minusOffset(node.getRightOperand(), atypeFactory);
 
@@ -188,8 +195,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             LessThanLengthOf typeOfAddition,
             Node operand,
             Node other,
-            TransferInput<CFValue, CFStore> in,
-            CFStore store) {
+            TransferInput<CFValue, UpperBoundStore> in,
+            UpperBoundStore store) {
         UBQualifier operandQual = getUBQualifier(operand, in);
         UBQualifier newQual = operandQual.glb(typeOfAddition.plusOffset(other, atypeFactory));
 
@@ -204,13 +211,85 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     @Override
+    public TransferResult<CFValue, UpperBoundStore> visitGreaterThan(
+            GreaterThanNode node, TransferInput<CFValue, UpperBoundStore> in) {
+        TransferResult<CFValue, UpperBoundStore> result = super.visitGreaterThan(node, in);
+
+        UpperBoundRefinementInfo rfi = new UpperBoundRefinementInfo(result, analysis, node);
+        if (rfi.leftAnno == null || rfi.rightAnno == null) {
+            return result;
+        }
+        // Refine the then branch.
+        refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore, in);
+
+        // Refine the else branch, which is the inverse of the then branch.
+        refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
+
+        return rfi.newResult;
+    }
+
+    @Override
+    public TransferResult<CFValue, UpperBoundStore> visitGreaterThanOrEqual(
+            GreaterThanOrEqualNode node, TransferInput<CFValue, UpperBoundStore> in) {
+        TransferResult<CFValue, UpperBoundStore> result = super.visitGreaterThanOrEqual(node, in);
+
+        UpperBoundRefinementInfo rfi = new UpperBoundRefinementInfo(result, analysis, node);
+        if (rfi.leftAnno == null || rfi.rightAnno == null) {
+            return result;
+        }
+
+        // Refine the then branch.
+        refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore, in);
+
+        // Refine the else branch.
+        refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
+
+        return rfi.newResult;
+    }
+
+    @Override
+    public TransferResult<CFValue, UpperBoundStore> visitLessThanOrEqual(
+            LessThanOrEqualNode node, TransferInput<CFValue, UpperBoundStore> in) {
+        TransferResult<CFValue, UpperBoundStore> result = super.visitLessThanOrEqual(node, in);
+
+        UpperBoundRefinementInfo rfi = new UpperBoundRefinementInfo(result, analysis, node);
+        if (rfi.leftAnno == null || rfi.rightAnno == null) {
+            return result;
+        }
+
+        // Refine the then branch. A <= is just a flipped >=.
+        refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.thenStore, in);
+
+        // Refine the else branch.
+        refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
+        return rfi.newResult;
+    }
+
+    @Override
+    public TransferResult<CFValue, UpperBoundStore> visitLessThan(
+            LessThanNode node, TransferInput<CFValue, UpperBoundStore> in) {
+        TransferResult<CFValue, UpperBoundStore> result = super.visitLessThan(node, in);
+
+        UpperBoundRefinementInfo rfi = new UpperBoundRefinementInfo(result, analysis, node);
+        if (rfi.leftAnno == null || rfi.rightAnno == null) {
+            return result;
+        }
+
+        // Refine the then branch. A < is just a flipped >.
+        refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.thenStore, in);
+
+        // Refine the else branch.
+        refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
+        return rfi.newResult;
+    }
+
     protected void refineGT(
             Node larger,
             AnnotationMirror largerAnno,
             Node smaller,
             AnnotationMirror smallerAnno,
-            CFStore store,
-            TransferInput<CFValue, CFStore> in) {
+            UpperBoundStore store,
+            TransferInput<CFValue, UpperBoundStore> in) {
         // larger > smaller
         UBQualifier largerQual = UBQualifier.createUBQualifier(largerAnno);
         // larger + 1 >= smaller
@@ -233,14 +312,13 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * <p>Also, if the left expression is an array access, then the types of sub expressions of the
      * right are refined.
      */
-    @Override
     protected void refineGTE(
             Node left,
             AnnotationMirror leftAnno,
             Node right,
             AnnotationMirror rightAnno,
-            CFStore store,
-            TransferInput<CFValue, CFStore> in) {
+            UpperBoundStore store,
+            TransferInput<CFValue, UpperBoundStore> in) {
         UBQualifier leftQualifier = UBQualifier.createUBQualifier(leftAnno);
         UBQualifier rightQualifier = UBQualifier.createUBQualifier(rightAnno);
         UBQualifier refinedRight = rightQualifier.glb(leftQualifier);
@@ -254,23 +332,24 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     @Override
-    protected TransferResult<CFValue, CFStore> strengthenAnnotationOfEqualTo(
-            TransferResult<CFValue, CFStore> res,
+    protected TransferResult<CFValue, UpperBoundStore> strengthenAnnotationOfEqualTo(
+            TransferResult<CFValue, UpperBoundStore> res,
             Node firstNode,
             Node secondNode,
             CFValue firstValue,
             CFValue secondValue,
             boolean notEqualTo) {
-        TransferResult<CFValue, CFStore> result =
+        TransferResult<CFValue, UpperBoundStore> result =
                 super.strengthenAnnotationOfEqualTo(
                         res, firstNode, secondNode, firstValue, secondValue, notEqualTo);
-        IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, firstNode, secondNode);
+        UpperBoundRefinementInfo rfi =
+                new UpperBoundRefinementInfo(result, analysis, firstNode, secondNode);
         if (rfi.leftAnno == null || rfi.rightAnno == null) {
             return result;
         }
 
-        CFStore equalsStore = notEqualTo ? rfi.elseStore : rfi.thenStore;
-        CFStore notEqualStore = notEqualTo ? rfi.thenStore : rfi.elseStore;
+        UpperBoundStore equalsStore = notEqualTo ? rfi.elseStore : rfi.thenStore;
+        UpperBoundStore notEqualStore = notEqualTo ? rfi.thenStore : rfi.elseStore;
 
         refineEq(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, equalsStore);
 
@@ -285,7 +364,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             AnnotationMirror leftAnno,
             Node right,
             AnnotationMirror rightAnno,
-            CFStore store) {
+            UpperBoundStore store) {
         UBQualifier leftQualifier = UBQualifier.createUBQualifier(leftAnno);
         UBQualifier rightQualifier = UBQualifier.createUBQualifier(rightAnno);
         UBQualifier glb = rightQualifier.glb(leftQualifier);
@@ -309,7 +388,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * equal to that array length, then refine the other nodes type to less than the array length.
      */
     private void refineNeqArrayLength(
-            Node arrayLengthAccess, Node otherNode, AnnotationMirror otherNodeAnno, CFStore store) {
+            Node arrayLengthAccess,
+            Node otherNode,
+            AnnotationMirror otherNodeAnno,
+            UpperBoundStore store) {
         if (NodeUtils.isArrayLengthFieldAccess(arrayLengthAccess)) {
             UBQualifier otherQualifier = UBQualifier.createUBQualifier(otherNodeAnno);
             FieldAccess fa =
@@ -346,8 +428,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * .@LTLengthOf("f2").
      */
     @Override
-    public TransferResult<CFValue, CFStore> visitNumericalAddition(
-            NumericalAdditionNode n, TransferInput<CFValue, CFStore> in) {
+    public TransferResult<CFValue, UpperBoundStore> visitNumericalAddition(
+            NumericalAdditionNode n, TransferInput<CFValue, UpperBoundStore> in) {
         // type of leftNode + rightNode  is  glb(T, S) where
         // T = minusOffset(type(leftNode), rightNode) and
         // S = minusOffset(type(rightNode), leftNode)
@@ -414,8 +496,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * positive, then a - b should keep the types of a.
      */
     @Override
-    public TransferResult<CFValue, CFStore> visitNumericalSubtraction(
-            NumericalSubtractionNode n, TransferInput<CFValue, CFStore> in) {
+    public TransferResult<CFValue, UpperBoundStore> visitNumericalSubtraction(
+            NumericalSubtractionNode n, TransferInput<CFValue, UpperBoundStore> in) {
         UBQualifier left = getUBQualifier(n.getLeftOperand(), in);
         UBQualifier leftWithOffset = left.plusOffset(n.getRightOperand(), atypeFactory);
         if (atypeFactory.hasLowerBoundTypeByClass(n.getRightOperand(), NonNegative.class)
@@ -434,8 +516,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * of @LTEqLengthOf("a") and the value of a.length in the store.
      */
     @Override
-    public TransferResult<CFValue, CFStore> visitFieldAccess(
-            FieldAccessNode n, TransferInput<CFValue, CFStore> in) {
+    public TransferResult<CFValue, UpperBoundStore> visitFieldAccess(
+            FieldAccessNode n, TransferInput<CFValue, UpperBoundStore> in) {
         if (NodeUtils.isArrayLengthFieldAccess(n)) {
             FieldAccess arrayLength = FlowExpressions.internalReprOfFieldAccess(atypeFactory, n);
             Receiver arrayRec = arrayLength.getReceiver();
@@ -476,7 +558,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * @param in transfer input
      * @return the UBQualifier for node
      */
-    private UBQualifier getUBQualifier(Node n, TransferInput<CFValue, CFStore> in) {
+    private UBQualifier getUBQualifier(Node n, TransferInput<CFValue, UpperBoundStore> in) {
         QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
         Receiver rec = FlowExpressions.internalReprOf(atypeFactory, n);
         CFValue value = null;
@@ -511,18 +593,91 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         return UBQualifier.createUBQualifier(anno);
     }
 
-    private TransferResult<CFValue, CFStore> createTransferResult(
-            Node n, TransferInput<CFValue, CFStore> in, UBQualifier qualifier) {
+    private TransferResult<CFValue, UpperBoundStore> createTransferResult(
+            Node n, TransferInput<CFValue, UpperBoundStore> in, UBQualifier qualifier) {
         AnnotationMirror newAnno = atypeFactory.convertUBQualifierToAnnotation(qualifier);
         CFValue value = analysis.createSingleAnnotationValue(newAnno, n.getType());
         if (in.containsTwoStores()) {
-            CFStore thenStore = in.getThenStore();
-            CFStore elseStore = in.getElseStore();
+            UpperBoundStore thenStore = in.getThenStore();
+            UpperBoundStore elseStore = in.getElseStore();
             return new ConditionalTransferResult<>(
                     finishValue(value, thenStore, elseStore), thenStore, elseStore);
         } else {
-            CFStore info = in.getRegularStore();
+            UpperBoundStore info = in.getRegularStore();
             return new RegularTransferResult<>(finishValue(value, info), info);
+        }
+    }
+
+    /**
+     * This struct contains all of the information that the refinement functions need. It's called
+     * by each node function (i.e. greater than node, less than node, etc.) and then the results are
+     * passed to the refinement function in whatever order is appropriate for that node. Its
+     * constructor contains all of its logic.
+     */
+    private class UpperBoundRefinementInfo {
+
+        public Node left, right;
+        /**
+         * Annotation for left and right expressions. Might be null if dataflow doesn't have a value
+         * for the expression. *
+         */
+        public AnnotationMirror leftAnno, rightAnno;
+
+        public UpperBoundStore thenStore, elseStore;
+        public ConditionalTransferResult<CFValue, UpperBoundStore> newResult;
+
+        public UpperBoundRefinementInfo(
+                TransferResult<CFValue, UpperBoundStore> result,
+                CFAbstractAnalysis<CFValue, UpperBoundStore, UpperBoundTransfer> analysis,
+                Node r,
+                Node l) {
+            right = r;
+            left = l;
+
+            if (analysis.getValue(right) == null || analysis.getValue(left) == null) {
+                leftAnno = null;
+                rightAnno = null;
+                newResult =
+                        new ConditionalTransferResult<>(
+                                result.getResultValue(), thenStore, elseStore);
+            } else {
+                QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
+                rightAnno = getAnno(analysis.getValue(right).getAnnotations(), hierarchy);
+                leftAnno = getAnno(analysis.getValue(left).getAnnotations(), hierarchy);
+
+                thenStore = result.getThenStore();
+                elseStore = result.getElseStore();
+
+                newResult =
+                        new ConditionalTransferResult<>(
+                                result.getResultValue(), thenStore, elseStore);
+            }
+        }
+
+        public UpperBoundRefinementInfo(
+                TransferResult<CFValue, UpperBoundStore> result,
+                CFAbstractAnalysis<CFValue, UpperBoundStore, UpperBoundTransfer> analysis,
+                BinaryOperationNode node) {
+            this(result, analysis, node.getRightOperand(), node.getLeftOperand());
+        }
+
+        private AnnotationMirror getAnno(Set<AnnotationMirror> set, QualifierHierarchy hierarchy) {
+            if (set.size() == 1) {
+                return set.iterator().next();
+            }
+            if (set.size() == 0) {
+                return null;
+            }
+            Set<? extends AnnotationMirror> tops = hierarchy.getTopAnnotations();
+            if (tops.size() != 1) {
+                ErrorReporter.errorAbort(
+                        org.checkerframework.checker.index.upperbound.UpperBoundTransfer
+                                        .UpperBoundRefinementInfo.class
+                                + ": Found multiple tops, but expected one. \nFound: %s",
+                        tops.toString());
+                return null; // dead code
+            }
+            return hierarchy.findAnnotationInSameHierarchy(set, tops.iterator().next());
         }
     }
 }
