@@ -1,3 +1,5 @@
+// Test case for Issue 867:
+// https://github.com/typetools/checker-framework/issues/867
 import org.checkerframework.common.value.qual.*;
 
 class Issue867 {
