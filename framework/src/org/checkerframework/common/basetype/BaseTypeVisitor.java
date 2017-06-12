@@ -1114,8 +1114,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
             checkConstructorInvocation(dt, constructor, node);
         }
+        // Do not call super, as that would observe the arguments without
+        // a set assignment context.
+        scan(node.getEnclosingExpression(), p);
+        scan(node.getIdentifier(), p);
+        scan(node.getClassBody(), p);
 
-        return super.visitNewClass(node, p);
+        return null;
     }
 
     @Override
