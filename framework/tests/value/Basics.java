@@ -166,6 +166,7 @@ class Basics {
     public void intCastTest(@IntVal({0, 1}) int input) {
         @IntVal({0, 1}) int c = (int) input;
         @IntVal({0, 1}) int ac = (@IntVal({0, 1}) int) input;
+        @IntVal({0, 1, 2}) int sc = (@IntVal({0, 1, 2}) int) input;
         //:: warning: (cast.unsafe)
         @IntVal({1}) int uc = (@IntVal({1}) int) input;
     }
