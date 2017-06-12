@@ -288,7 +288,7 @@ public class ReflectiveEvaluator {
             for (Object[] arguments : listOfArguments) {
                 try {
                     results.add(constructor.newInstance(arguments));
-                } catch (ReflectiveOperationException e) {
+                } catch (Exception e) {
                     if (reportWarnings) {
                         checker.report(Result.warning("constructor.invocation.failed"), tree);
                     }
