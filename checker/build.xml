@@ -1396,6 +1396,8 @@ So, use our own archived version.
     </target>
 
 
+    <!-- Checks whether errorprone is available, but does not run errorprone.
+         To run errorprone, use the "check-errorprone" target. -->
     <target name="errorprone.check">
       <condition property="errorprone.exists">
         <available file="${errorprone.lib}" type="file"/>
