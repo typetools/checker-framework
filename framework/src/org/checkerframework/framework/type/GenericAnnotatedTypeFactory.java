@@ -57,7 +57,9 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -1224,6 +1226,45 @@ public abstract class GenericAnnotatedTypeFactory<
         return res;
     }
 
+    /**
+     * Returns the type of a varargs array of a method invocation or a constructor invocation.
+     *
+     * @param tree a method invocation or a constructor invocation
+     * @return AnnotatedTypeMirror of varargs array for a method or constructor invocation {@code
+     *     tree}
+     */
+    public AnnotatedTypeMirror getAnnotatedTypeVarargsArray(Tree tree) {
+        if (!useFlow) {
+            return null;
+        }
+
+        Node node;
+        List<Node> args;
+        switch (tree.getKind()) {
+            case METHOD_INVOCATION:
+                node = getNodeForTree(tree);
+                args = ((MethodInvocationNode) node).getArguments();
+                break;
+            case NEW_CLASS:
+                node = getNodeForTree(tree);
+                args = ((ObjectCreationNode) node).getArguments();
+                break;
+            default:
+                throw new AssertionError("Unexpected kind of tree: " + tree);
+        }
+
+        assert !args.isEmpty() : "Arguments are empty";
+        Node varargsArray = args.get(args.size() - 1);
+        Value value = getInferredValueFor(varargsArray);
+        if (value == null) {
+            return null;
+        }
+        AnnotatedTypeMirror varargsArrayType =
+                AnnotatedTypeMirror.createType(value.getUnderlyingType(), this, false);
+        varargsArrayType.replaceAnnotations(value.getAnnotations());
+        return varargsArrayType;
+    }
+
     @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(
             NewClassTree tree) {
@@ -1320,6 +1361,29 @@ public abstract class GenericAnnotatedTypeFactory<
                 performFlowAnalysis(classTree);
             }
         }
+    }
+
+    /**
+     * Returns the inferred value (by the org.checkerframework.dataflow analysis) for a given node.
+     */
+    private Value getInferredValueFor(Node node) {
+        if (node == null) {
+            ErrorReporter.errorAbort(
+                    "GenericAnnotatedTypeFactory.getInferredValueFor called with null node. Don't!");
+            return null; // dead code
+        }
+        Value as = null;
+        if (!analyses.isEmpty()) {
+            as = analyses.getFirst().getValue(node);
+        }
+        if (as == null
+                &&
+                // TODO: this comparison shouldn't be needed, but
+                // Daikon check-nullness started failing without it.
+                flowResult != null) {
+            as = flowResult.getValue(node);
+        }
+        return as;
     }
 
     /**

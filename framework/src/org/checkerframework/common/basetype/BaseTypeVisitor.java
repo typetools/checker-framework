@@ -937,6 +937,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         List<AnnotatedTypeMirror> params =
                 AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());
         checkArguments(params, node.getArguments());
+        checkVarargs(invokedMethod, node);
 
         if (isVectorCopyInto(invokedMethod)) {
             typeCheckVectorCopyIntoArgument(node, params);
@@ -954,6 +955,48 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // a set assignment context.
         scan(node.getMethodSelect(), p);
         return null; // super.visitMethodInvocation(node, p);
+    }
+
+    /**
+     * A helper method to check that the array type of actual varargs is a subtype of the
+     * corresponding required varargs, and issues "argument.invalid" error for it's not a subtype of
+     * the required one.
+     *
+     * <p>Note this method requires that type checking for the each elements of varargs is executed
+     * by caller.
+     *
+     * @see #checkArguments(List, List)
+     * @param invokedMethod the method type to be invoked
+     * @param tree method or constructor invocation tree
+     */
+    private void checkVarargs(AnnotatedExecutableType invokedMethod, Tree tree) {
+        if (!invokedMethod.isVarArgs()) {
+            return;
+        }
+
+        List<AnnotatedTypeMirror> formals = invokedMethod.getParameterTypes();
+        int numFormals = formals.size();
+        int lastArgIndex = numFormals - 1;
+        AnnotatedArrayType lastParamAnnotatedType = (AnnotatedArrayType) formals.get(lastArgIndex);
+        AnnotatedTypeMirror wrappedVarargsType = atypeFactory.getAnnotatedTypeVarargsArray(tree);
+
+        if (wrappedVarargsType == null) {
+            return;
+        }
+
+        // If the component type is intersection or including type variable by type inference,
+        // the comparison doesn't work well.
+        // We can consider that the both component type of actual and formal is Object,
+        // because type checking for elements will be done in checkArguments.
+        AnnotatedTypeMirror objectType =
+                atypeFactory.getAnnotatedType(elements.getTypeElement("java.lang.Object"));
+        lastParamAnnotatedType.setComponentType(objectType);
+        if (wrappedVarargsType instanceof AnnotatedArrayType) {
+            ((AnnotatedArrayType) wrappedVarargsType).setComponentType(objectType);
+        }
+
+        commonAssignmentCheck(
+                lastParamAnnotatedType, wrappedVarargsType, tree, "argument.type.incompatible");
     }
 
     /**
@@ -1111,6 +1154,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 AnnotatedTypes.expandVarArgs(atypeFactory, constructor, passedArguments);
 
         checkArguments(params, passedArguments);
+        checkVarargs(constructor, node);
 
         List<AnnotatedTypeParameterBounds> paramBounds = new ArrayList<>();
         for (AnnotatedTypeVariable param : constructor.getTypeVariables()) {
@@ -2205,6 +2249,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * <p>Note this method requires the lists to have the same length, as it does not handle cases
      * like var args.
      *
+     * @see #checkVarargs(AnnotatedExecutableType, Tree)
      * @param requiredArgs the required types
      * @param passedArgs the expressions passed to the corresponding types
      */

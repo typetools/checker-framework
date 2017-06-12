@@ -4,10 +4,10 @@ package java.lang.reflect;
 
 class Method {
 
-   @Top Object invoke(@ReflectBottom Object obj, @ReflectBottom Object @ReflectBottom [] args) @Top;
+   @Top Object invoke(@ReflectBottom Object obj, @ReflectBottom Object @Top [] args) @Top;
 
 }
 
 class Constructor {
-  @Top Object newInstance(@ReflectBottom Object obj, @ReflectBottom Object @ReflectBottom [] args) @Top;
+  @Top Object newInstance(@ReflectBottom Object obj, @ReflectBottom Object @Top [] args) @Top;
 }

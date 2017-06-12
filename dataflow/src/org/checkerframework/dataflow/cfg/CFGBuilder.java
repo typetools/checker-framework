@@ -2145,55 +2145,46 @@ public class CFGBuilder {
                 TypeMirror lastParamType = formals.get(lastArgIndex).asType();
                 List<Node> dimensions = new ArrayList<>();
                 List<Node> initializers = new ArrayList<>();
-
-                if (numActuals == numFormals - 1) {
-                    // Apply method invocation conversion to all actual
-                    // arguments, then create and append an empty array
+                if (numActuals == numFormals
+                        && types.isAssignable(
+                                InternalUtils.typeOf(actualExprs.get(numActuals - 1)),
+                                lastParamType)) {
+                    // Normal call with no array creation, apply method
+                    // invocation conversion to all arguments.
                     for (int i = 0; i < numActuals; i++) {
                         Node actualVal = scan(actualExprs.get(i), null);
                         convertedNodes.add(
                                 methodInvocationConvert(actualVal, formals.get(i).asType()));
                     }
+                } else {
+                    assert lastParamType instanceof ArrayType
+                            : "variable argument formal must be an array";
+                    // Apply method invocation conversion to lastArgIndex
+                    // arguments and use the remaining ones to initialize
+                    // an array.
+                    for (int i = 0; i < lastArgIndex; i++) {
+                        Node actualVal = scan(actualExprs.get(i), null);
+                        convertedNodes.add(
+                                methodInvocationConvert(actualVal, formals.get(i).asType()));
+                    }
+
+                    List<ExpressionTree> inits = new ArrayList<ExpressionTree>();
+                    TypeMirror elemType = ((ArrayType) lastParamType).getComponentType();
+                    for (int i = lastArgIndex; i < numActuals; i++) {
+                        inits.add(actualExprs.get(i));
+                        Node actualVal = scan(actualExprs.get(i), null);
+                        initializers.add(assignConvert(actualVal, elemType));
+                    }
+
+                    NewArrayTree wrappedVarargs = treeBuilder.buildNewArray(elemType, inits);
+                    handleArtificialTree(wrappedVarargs);
 
                     Node lastArgument =
-                            new ArrayCreationNode(null, lastParamType, dimensions, initializers);
+                            new ArrayCreationNode(
+                                    wrappedVarargs, lastParamType, dimensions, initializers);
                     extendWithNode(lastArgument);
 
                     convertedNodes.add(lastArgument);
-                } else {
-                    TypeMirror actualType = InternalUtils.typeOf(actualExprs.get(lastArgIndex));
-                    if (numActuals == numFormals && types.isAssignable(actualType, lastParamType)) {
-                        // Normal call with no array creation, apply method
-                        // invocation conversion to all arguments.
-                        for (int i = 0; i < numActuals; i++) {
-                            Node actualVal = scan(actualExprs.get(i), null);
-                            convertedNodes.add(
-                                    methodInvocationConvert(actualVal, formals.get(i).asType()));
-                        }
-                    } else {
-                        assert lastParamType instanceof ArrayType
-                                : "variable argument formal must be an array";
-                        // Apply method invocation conversion to lastArgIndex
-                        // arguments and use the remaining ones to initialize
-                        // an array.
-                        for (int i = 0; i < lastArgIndex; i++) {
-                            Node actualVal = scan(actualExprs.get(i), null);
-                            convertedNodes.add(
-                                    methodInvocationConvert(actualVal, formals.get(i).asType()));
-                        }
-
-                        TypeMirror elemType = ((ArrayType) lastParamType).getComponentType();
-                        for (int i = lastArgIndex; i < numActuals; i++) {
-                            Node actualVal = scan(actualExprs.get(i), null);
-                            initializers.add(assignConvert(actualVal, elemType));
-                        }
-
-                        Node lastArgument =
-                                new ArrayCreationNode(
-                                        null, lastParamType, dimensions, initializers);
-                        extendWithNode(lastArgument);
-                        convertedNodes.add(lastArgument);
-                    }
                 }
             } else {
                 for (int i = 0; i < numActuals; i++) {
