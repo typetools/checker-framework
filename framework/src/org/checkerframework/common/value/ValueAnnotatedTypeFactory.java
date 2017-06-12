@@ -945,11 +945,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         List<?> values = ValueCheckerUtils.getValuesCastedToType(oldAnno, newType);
                         newAnno = createResultingAnnotation(atm.getUnderlyingType(), values);
                     }
-                    atm.replaceAnnotation(newAnno);
+                    atm.addMissingAnnotations(Collections.singleton(newAnno));
                 }
             } else if (atm.getKind() == TypeKind.ARRAY) {
                 if (tree.getExpression().getKind() == Kind.NULL_LITERAL) {
-                    atm.replaceAnnotation(BOTTOMVAL);
+                    atm.addMissingAnnotations(Collections.singleton(BOTTOMVAL));
                 }
             }
             return null;
