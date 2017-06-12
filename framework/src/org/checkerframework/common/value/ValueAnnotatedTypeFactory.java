@@ -1037,7 +1037,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     TypeMirror newType = atm.getUnderlyingType();
                     AnnotationMirror newAnno;
                     Range range;
-                    if (isIntRange(oldAnno)
+
+                    if (TypesUtils.isString(newType) || newType.getKind() == TypeKind.ARRAY) {
+                        // Strings and arrays do not allow conversions
+                        newAnno = oldAnno;
+                    } else if (isIntRange(oldAnno)
                             && (range = getRange(oldAnno)).isWiderThan(MAX_VALUES)) {
                         Class<?> newClass = ValueCheckerUtils.getClassFromType(newType);
                         if (newClass == String.class) {
@@ -1052,14 +1056,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     } else {
                         List<?> values = ValueCheckerUtils.getValuesCastedToType(oldAnno, newType);
                         newAnno = createResultingAnnotation(atm.getUnderlyingType(), values);
-                    }
-
-                    if (TypesUtils.isString(newType)) {
-                        //VD: temporary special handling for strings
-                        newAnno =
-                                atypeFactory
-                                        .getQualifierHierarchy()
-                                        .greatestLowerBound(oldAnno, newAnno);
                     }
 
                     atm.addMissingAnnotations(Collections.singleton(newAnno));
