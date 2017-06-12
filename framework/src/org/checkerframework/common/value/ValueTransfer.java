@@ -41,6 +41,8 @@ import org.checkerframework.dataflow.cfg.node.IntegerRemainderNode;
 import org.checkerframework.dataflow.cfg.node.LeftShiftNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
+import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
 import org.checkerframework.dataflow.cfg.node.NumericalMinusNode;
@@ -362,6 +364,14 @@ public class ValueTransfer extends CFTransfer {
         return result;
     }
 
+    @Override
+    public TransferResult<CFValue, CFStore> visitMethodInvocation(
+            MethodInvocationNode n, TransferInput<CFValue, CFStore> p) {
+        TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, p);
+        refineStringAtLengthInvocation(n, result.getRegularStore());
+        return result;
+    }
+
     /**
      * If array.length is encountered, transform its @IntVal annotation into an @ArrayLen annotation
      * for array.
@@ -370,8 +380,41 @@ public class ValueTransfer extends CFTransfer {
         if (!NodeUtils.isArrayLengthFieldAccess(arrayLengthNode)) {
             return;
         }
+
+        refineAtLengthAccess(arrayLengthNode, arrayLengthNode.getReceiver(), store);
+    }
+
+    private void refineStringAtLengthInvocation(
+            MethodInvocationNode stringLengthNode, CFStore store) {
+        MethodAccessNode methodAccessNode = stringLengthNode.getTarget();
+
+        // VD: use annotated type factory to compare the method
+        if (methodAccessNode.getMethod().getSimpleName().toString().equals("length")
+                && TypesUtils.isString(methodAccessNode.getReceiver().getType())) {
+
+            refineAtLengthAccess(stringLengthNode, methodAccessNode.getReceiver(), store);
+        }
+    }
+
+    private AnnotationMirror getArrayAnnotation(Node arrayNode) {
+        AnnotationMirror arrayAnno =
+                atypefactory.getAnnotationMirror(arrayNode.getTree(), StringVal.class);
+        if (arrayAnno == null) {
+            arrayAnno = atypefactory.getAnnotationMirror(arrayNode.getTree(), ArrayLen.class);
+        }
+        if (arrayAnno == null) {
+            arrayAnno = atypefactory.getAnnotationMirror(arrayNode.getTree(), ArrayLenRange.class);
+        }
+
+        return arrayAnno;
+    }
+
+    private void refineAtLengthAccess(Node lengthNode, Node receiverNode, CFStore store) {
         Receiver arrayLenRec =
-                FlowExpressions.internalReprOf(analysis.getTypeFactory(), arrayLengthNode);
+                FlowExpressions.internalReprOf(analysis.getTypeFactory(), lengthNode);
+
+        // VD: crashes if String.length is not @Pure
+
         CFValue value = store.getValue(arrayLenRec);
         if (value == null) {
             return;
@@ -384,8 +427,7 @@ public class ValueTransfer extends CFTransfer {
         if (AnnotationUtils.areSameByClass(lengthAnno, BottomVal.class)) {
             // If the array's length is bottom, then this is dead code, so the array's type
             // should also be bottom.
-            Receiver arrayRec =
-                    FlowExpressions.internalReprOf(atypefactory, arrayLengthNode.getReceiver());
+            Receiver arrayRec = FlowExpressions.internalReprOf(atypefactory, receiverNode);
             store.insertValue(arrayRec, lengthAnno);
             return;
         }
@@ -400,15 +442,7 @@ public class ValueTransfer extends CFTransfer {
             return;
         }
         AnnotationMirror newArrayAnno = rolv.createAnnotation(atypefactory);
-        AnnotationMirror oldArrayAnno =
-                atypefactory.getAnnotationMirror(
-                        arrayLengthNode.getReceiver().getTree(), ArrayLen.class);
-
-        if (oldArrayAnno == null) {
-            oldArrayAnno =
-                    atypefactory.getAnnotationMirror(
-                            arrayLengthNode.getReceiver().getTree(), ArrayLenRange.class);
-        }
+        AnnotationMirror oldArrayAnno = getArrayAnnotation(receiverNode);
 
         AnnotationMirror combinedAnno;
         // If the array doesn't have an @ArrayLen annotation, use the new annotation.
@@ -422,9 +456,7 @@ public class ValueTransfer extends CFTransfer {
                             .getQualifierHierarchy()
                             .greatestLowerBound(oldArrayAnno, newArrayAnno);
         }
-        Receiver arrayRec =
-                FlowExpressions.internalReprOf(
-                        analysis.getTypeFactory(), arrayLengthNode.getReceiver());
+        Receiver arrayRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiverNode);
         store.insertValue(arrayRec, combinedAnno);
     }
 
@@ -1130,6 +1162,8 @@ public class ValueTransfer extends CFTransfer {
 
             if (node instanceof FieldAccessNode) {
                 refineArrayAtLengthAccess((FieldAccessNode) internal, store);
+            } else if (node instanceof MethodInvocationNode) {
+                refineStringAtLengthInvocation((MethodInvocationNode) internal, store);
             }
         }
     }
