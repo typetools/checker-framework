@@ -422,6 +422,52 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(factory);
         }
 
+        private AnnotationMirror glbOfStringVal(
+                AnnotationMirror stringValAnno, AnnotationMirror otherAnno) {
+            List<String> values =
+                    AnnotationUtils.getElementValueArray(
+                            stringValAnno, "value", String.class, true);
+
+            if (AnnotationUtils.areSameByClass(otherAnno, StringVal.class)) {
+                // Intersection of value lists
+                List<String> otherValues =
+                        AnnotationUtils.getElementValueArray(
+                                otherAnno, "value", String.class, true);
+
+                values.retainAll(otherValues);
+            } else if (AnnotationUtils.areSameByClass(otherAnno, ArrayLen.class)) {
+                // Retain strings of correct lengths
+
+                List<Integer> otherLengths =
+                        AnnotationUtils.getElementValueArray(
+                                otherAnno, "value", Integer.class, true);
+
+                ArrayList<String> result = new ArrayList<String>();
+                for (String s : values) {
+                    if (otherLengths.contains(s.length())) {
+                        result.add(s);
+                    }
+                }
+                values = result;
+            } else if (AnnotationUtils.areSameByClass(otherAnno, ArrayLenRange.class)) {
+                // Retain strings of lengths from a range
+
+                Range otherRange = getRange(otherAnno);
+
+                ArrayList<String> result = new ArrayList<String>();
+                for (String s : values) {
+                    if (otherRange.contains(s.length())) {
+                        result.add(s);
+                    }
+                }
+                values = result;
+            } else {
+                return BOTTOMVAL;
+            }
+
+            return createStringAnnotation(values);
+        }
+
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (isSubtype(a1, a2)) {
@@ -429,7 +475,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (isSubtype(a2, a1)) {
                 return a2;
             } else {
-                // Simply return BOTTOMVAL if not related. Refine this if discover more use cases
+
+                if (AnnotationUtils.areSameByClass(a1, StringVal.class)) {
+                    return glbOfStringVal(a1, a2);
+                } else if (AnnotationUtils.areSameByClass(a2, StringVal.class)) {
+                    return glbOfStringVal(a2, a1);
+                }
+
+                // Simply return BOTTOMVAL in other cases. Refine this if discover more use cases
                 // that need a more precision GLB.
                 return BOTTOMVAL;
             }
