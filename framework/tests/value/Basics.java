@@ -163,6 +163,16 @@ class Basics {
         @IntRange(from = 0, to = 30) int test9 = a;
     }
 
+    public void intCastTest(@IntVal({0, 1}) int input) {
+        @IntVal({0, 1}) int c = (int) input;
+        @IntVal({0, 1}) int ac = (@IntVal({0, 1}) int) input;
+        @IntVal({0, 1, 2}) int sc = (@IntVal({0, 1, 2}) int) input;
+        //:: warning: (cast.unsafe)
+        @IntVal({1}) int uc = (@IntVal({1}) int) input;
+        //:: warning: (cast.unsafe)
+        @IntVal({2}) int bc = (@IntVal({2}) int) input;
+    }
+
     public void IntDoubleTest(
             @IntVal({0, 1}) int iv,
             @IntRange(from = 2, to = 3) int ir,
