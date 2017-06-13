@@ -316,8 +316,9 @@ Here is an example of one good way to proceed.
 \end{Verbatim}
 
 \item
-  Implement and test type introduction rules, if any (Section~\ref{creating-type-introduction}).
+  Implement type introduction rules, if any (Section~\ref{creating-type-introduction}).
 
+  Test your type introduction rules.
   For example, if your type system sets the qualifier for manifest literal
   integers and for array lengths, you would write a test case like the following:
 
@@ -331,11 +332,12 @@ Here is an example of one good way to proceed.
 \end{Verbatim}
 
 \item
-  Optionally, implement and test dataflow refinement rules
+  Optionally, implement dataflow refinement rules
   (Section~\ref{creating-dataflow}).
 
-  Here is an example.  If, after an arithmetic comparison, your type system infers
-  which expressions are now known to be non-negative, then you could write a
+  Test them if you wrote any.
+  For instance, if after an arithmetic comparison, your type system infers
+  which expressions are now known to be non-negative, you could write a
   test case such as:
 
 \begin{Verbatim}
