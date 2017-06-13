@@ -921,6 +921,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     public Boolean visitWildcard_Declared(
             AnnotatedWildcardType subtype, AnnotatedDeclaredType supertype, VisitHistory visited) {
         if (subtype.isUninferredTypeArgument() && supertype.getTypeArguments().isEmpty()) {
+            // visitWildcardSubtype doesn't check uninferred type arguments, because the
+            // underlying Java types may not be in the correct relationship.  But, if the
+            // declared type does not have type arguments, then checking primary annotations is
+            // sufficient.
             AnnotationMirror subtypeAnno = subtype.getEffectiveAnnotationInHierarchy(currentTop);
             AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
             return isAnnoSubtype(subtypeAnno, supertypeAnno, false);
