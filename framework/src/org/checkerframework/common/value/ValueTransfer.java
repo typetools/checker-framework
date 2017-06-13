@@ -388,10 +388,7 @@ public class ValueTransfer extends CFTransfer {
             MethodInvocationNode stringLengthNode, CFStore store) {
         MethodAccessNode methodAccessNode = stringLengthNode.getTarget();
 
-        // VD: use annotated type factory to compare the method
-        if (methodAccessNode.getMethod().getSimpleName().toString().equals("length")
-                && TypesUtils.isString(methodAccessNode.getReceiver().getType())) {
-
+        if (atypefactory.isStringLengthMethod(methodAccessNode.getMethod())) {
             refineAtLengthAccess(stringLengthNode, methodAccessNode.getReceiver(), store);
         }
     }

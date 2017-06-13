@@ -103,6 +103,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Helper class that evaluates statically executable methods, constructors, and fields. */
     private final ReflectiveEvaluator evaluator;
 
+    private final ExecutableElement lengthMethod;
+
     static {
         Set<String> backingSet = new HashSet<String>(18);
         backingSet.add("int");
@@ -146,6 +148,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // be created for @NonNegative in the future.
         addAliasedAnnotation(
                 "org.checkerframework.checker.index.qual.Positive", createIntRangeFromPositive());
+
+        lengthMethod = TreeUtils.getMethod("java.lang.String", "length", 0, processingEnv);
 
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
             this.postInit();
@@ -1130,13 +1134,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return getDeclAnnotation(method, StaticallyExecutable.class) != null;
         }
 
-        private boolean isStringLengthInvocation(ExpressionTree tree) {
-            ExecutableElement lengthMethod =
-                    TreeUtils.getMethod("java.lang.String", "length", 0, processingEnv);
-
-            return TreeUtils.isMethodInvocation(tree, lengthMethod, processingEnv);
-        }
-
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
             if (handledByValueChecker(type)
@@ -1160,7 +1157,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     argValues = null;
                 }
 
-                if (isStringLengthInvocation(tree)) {
+                if (TreeUtils.isMethodInvocation(tree, lengthMethod, processingEnv)) {
                     AnnotatedTypeMirror receiverType = getReceiverType(tree);
                     AnnotationMirror resultAnno = createArrayLengthResultAnnotation(receiverType);
                     if (resultAnno != null) {
@@ -1284,6 +1281,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private boolean handledByValueChecker(AnnotatedTypeMirror type) {
             return coveredClassStrings.contains(type.getUnderlyingType().toString());
         }
+    }
+
+    boolean isStringLengthMethod(ExecutableElement method) {
+        return method == lengthMethod;
     }
 
     AnnotationMirror createArrayLengthResultAnnotation(AnnotatedTypeMirror receiverType) {
