@@ -1,0 +1,15 @@
+import org.checkerframework.checker.optional.qual.*;
+
+package java.util;
+
+public final class Locale implements Cloneable, Serializable {
+  public @Interned String getCountry();
+  public @Interned String getVariant();
+}
+
+public final class Optional {
+    public static <T> @Present Optional<T> of(T value);
+// PROBLEM:    public T get(@Present Optional<T> this);
+// PROBLEM:    public T get(@Present Optional this);
+//    public <X extends Throwable> T orElseThrow(@Present Optional<T> this, Supplier<? extends X> exceptionSupplier) throws X;
+}
