@@ -7,6 +7,7 @@ import org.checkerframework.checker.i18n.I18nChecker;
 import org.checkerframework.checker.i18nformatter.I18nFormatterChecker;
 import org.checkerframework.checker.index.IndexChecker;
 import org.checkerframework.checker.interning.InterningChecker;
+import org.checkerframework.checker.optional.OptionalChecker;
 import org.checkerframework.checker.linear.LinearChecker;
 import org.checkerframework.checker.lock.LockChecker;
 import org.checkerframework.checker.nullness.NullnessChecker;
@@ -28,6 +29,12 @@ public class CheckerActions {
     public static class NullnessAction extends RunCheckerAction {
         public NullnessAction() {
             super(NullnessChecker.class.getCanonicalName());
+        }
+    }
+
+    public static class OptionalAction extends RunCheckerAction {
+        public OptionalAction() {
+            super(OptionalChecker.class.getCanonicalName());
         }
     }
 

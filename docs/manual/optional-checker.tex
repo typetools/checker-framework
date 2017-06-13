@@ -24,13 +24,13 @@ Stuart Marks gave
 \item
   Prefer alternative APIs over Optional.isPresent() and Optional.get().
 \item
-  It’s generally a bad idea to create an Optional for the specific purpose of chaining methods from it to get a value.
+  It's generally a bad idea to create an Optional for the specific purpose of chaining methods from it to get a value.
 \item
-  If an Optional chain has a nested Optional chain, or has an intermediate result of Optional, it’s probably too complex.
+  If an Optional chain has a nested Optional chain, or has an intermediate result of Optional, it's probably too complex.
 \item
   Avoid using Optional in fields, method parameters, and collections.
 \item
-  Don’t use an Optional to wrap any collection type (List, Set, Map).
+  Don't use an Optional to wrap any collection type (List, Set, Map).
   Instead, use an empty collection to represent the absence of values.
 \end{enumerate}
 

@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @Documented
-@PolymorphicQualifier(UnknownOptional.class)
+@PolymorphicQualifier(MaybePresent.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface PolyPresent {}

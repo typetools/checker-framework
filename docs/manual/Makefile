@@ -9,6 +9,7 @@ manual-style.tex \
 introduction.tex \
 nullness-checker.tex \
 map-key-checker.tex \
+optional-checker.tex \
 interning-checker.tex \
 lock-checker.tex \
 index-checker.tex \
