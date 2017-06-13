@@ -1,12 +1,13 @@
-import org.checkerframework.checker.optional.qual.*;
+import org.checkerframework.checker.optional.qual.MaybePresent;
+import org.checkerframework.checker.optional.qual.Present;
 
 public class SubtypeCheck {
 
     void foo(@MaybePresent int mp, @Present int p) {
         @MaybePresent int a = mp;
         @MaybePresent int b = p;
-        //::
-        @Present int c = mp; // expected error on this line
+        //:: error: assignment.type.incompatible
+        @Present int c = mp;
         @Present int d = p;
     }
 }
