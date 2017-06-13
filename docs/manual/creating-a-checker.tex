@@ -128,7 +128,7 @@ Thus, checker implementations follow a very formulaic structure.
 To illustrate, a checker for MyProp must be laid out as follows:
 %
 \begin{Verbatim}
-mymodule/
+myPackage/
   | qual/                               type qualifiers
   | MyPropVisitor.java                  [optional] type rules
   | MyPropAnnotatedTypeFactory.java     [optional] type introduction and dataflow rules
@@ -215,7 +215,7 @@ your qualifier heirarchy:
 \begin{alltt}
 $ javac \textbackslash
     -processor org.checkerframework.common.subtyping.SubtypingChecker \textbackslash
-    -Aquals=\textit{mymodule.qual.Qual1},\textit{mymodule.qual.Qual2},\textit{...} \textbackslash
+    -Aquals=\textit{myPackage.qual.Qual1},\textit{myPackage.qual.Qual2},\textit{...} \textbackslash
     SourceFile.java
 \end{alltt}
 %
@@ -224,7 +224,7 @@ subclass to the \<-processor> flag instead:
 %
 \begin{alltt}
 $ javac \textbackslash
-    -processor \textit{mymodule.MyPropChecker} \textbackslash
+    -processor \textit{myPackage.MyPropChecker} \textbackslash
     SourceFile.java
 \end{alltt}
 
@@ -262,7 +262,8 @@ Here is an example of one good way to proceed.
   Implement the type qualifiers and hierarchy
   (Section~\ref{creating-typequals}).
 
-  Write simple test cases to test your type hierarchy.  For instance, if
+  Write simple test cases that consist of only assignments,
+  to test your type hierarchy.  For instance, if
   your type hierarchy consists of a supertype \<@UnknownSign> and a subtype
   \<@NonNegative>, then you could write a test case such as:
 
@@ -275,7 +276,7 @@ Here is an example of one good way to proceed.
   }
 \end{Verbatim}
 
-  Type-check these test files using the Subtyping Checker
+  Type-check your test files using the Subtyping Checker
   (\chapterpageref{subtyping-checker}).
 
 \item
