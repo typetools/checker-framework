@@ -38,33 +38,41 @@ building it declaratively on top of the Subtyping Checker, and then return to
 this chapter when you need more expressiveness or power than the Subtyping
 Checker affords.
 
-You can also create your own checker by customizing a different existing
-checker.  Specific checkers that are designed for extension include
-the Subtyping Checker (\chapterpageref{subtyping-checker}),
-the Fake Enumeration Checker (\chapterpageref{fenum-checker}),
-the Units Checker (\chapterpageref{units-checker}),
- and a typestate checker (\chapterpageref{typestate-checker}).
-Or, you can copy and then modify a different existing checker --- whether
-one distributed with the Checker Framework or a third-party one.
-(One good choice to copy and modify is the Regex Checker
-(\chapterpageref{regex-checker}); a bad choice is the Nullness Checker,
-which is more sophisticated than anything you want to start out building.)
+Three choices for creating your own checker are:
+\begin{itemize}
+\item
+  Customizing an existing checker.
+  Checkers that are designed for extension include
+  the Subtyping Checker (\chapterpageref{subtyping-checker}),
+  the Fake Enumeration Checker (\chapterpageref{fenum-checker}),
+  the Units Checker (\chapterpageref{units-checker}),
+  and a typestate checker (\chapterpageref{typestate-checker}).
+\item
+  Follow the instructions in this chapter to create a checker from scratch.
+  This enables creation of checkers that are more powerful than customizing
+  an existing checker.
+\item
+  Copy and then modify a different existing checker --- whether
+  one distributed with the Checker Framework or a third-party one.
+  This can be fast, or you can get tangled up if you don't fully understand
+  the subtleties of the existing checker that you are modifying.
+  Oftentimes following the instructions in this chapter is easier.
+  (One good choice to copy and modify is the Regex Checker
+  (\chapterpageref{regex-checker}); a bad choice is the Nullness Checker,
+  which is more sophisticated than anything you want to start out building.)
+\end{itemize}
 
-The rest of this chapter contains many details for people who want to write more powerful
-checkers.
-You do not need all of the details, at least at first.
+You do not need all of the details in this chapter, at least at first.
 In addition to reading this chapter of the manual, you may find it helpful
 to examine the implementations of the checkers that are distributed with
-the Checker Framework.  You can even create your checker by modifying one
-of those.
+the Checker Framework.
 The Javadoc documentation of the framework and the checkers is in the
 distribution and is also available online at
 \myurl{https://checkerframework.org/api/}.
 
 If you write a new checker and wish to advertise it to the world, let us
-know so we can mention it in the Checker Framework Manual, link to
-it from the webpages, or include it in the Checker Framework distribution.
-For examples, see \chapterpageref{third-party-checkers}.
+know so we can mention it in \chapterpageref{third-party-checkers}
+or even include it in the Checker Framework distribution.
 
 
 \section{How checkers build on the Checker Framework\label{creating-tool-relationships}}
@@ -111,7 +119,7 @@ Other \par tools
 
 The Base Checker
 (more precisely, the \refclass{common/basetype}{BaseTypeChecker})
-enforces the standard subtyping rules on extended types.
+enforces the standard subtyping rules.
 The Subtyping Checker is a simple use of the Base Checker that supports
 providing type qualifiers on the command line.
 You usually want to build your checker on the Base Checker.
@@ -152,12 +160,14 @@ Framework:
 
 \item{\ref{creating-extending-visitor}}
   \textbf{Type rules.}  You specify the type system semantics (type
-  rules), violation of which yields a type error.  There are two types of
+  rules), violation of which yields a type error.  A type system has two types of
   rules.
 \begin{itemize}
 \item
   Subtyping rules related to the type hierarchy, such as that every
-  assignment and pseudo-assignment satisfies a subtyping relationship.
+  assignment
+  % and pseudo-assignment
+  satisfies a subtyping relationship.
   Your checker automatically inherits these subtyping rules from the Base
   Checker (Chapter~\ref{subtyping-checker}), so there is nothing for you to do.
 \item
@@ -191,13 +201,17 @@ Framework:
 \section{Compiling and using a custom checker\label{creating-compiling}}
 
 \begin{sloppypar}
-You can place your checker's source files wherever you like.  When you
+You can place your checker's source files wherever you like.
+Forking the Checker Framework repository and putting your files in parallel
+to existing checker implementations is one convenient choice.
+
+  When you
 compile your checker,
 \<\$CHECKERFRAMEWORK/checker/dist/checker.jar> and
 \<\$CHECKERFRAMEWORK/checker/dist/javac.jar>
 should be on your classpath.  (If you wish to modify an existing checker in place,
 or to place the source code for your new checker in your own private copy of the
-Checker Framework source code, then you need to be able to re-compile the
+Checker Framework source code, then you need to be able to compile the
 Checker Framework, as described in Section~\ref{build-source}.)
 \end{sloppypar}
 
@@ -207,27 +221,18 @@ Section~\ref{creating-debugging-options} for information on debugging a
 checker.
 
 Once your custom checker is written, using it is very similar to using a
-built-in checker (Section~\ref{running}).  Note that your custom checker's
-compiled files must be on the Java classpath.  If your custom checker builds on
-the Subtyping Checker, use the \<-Aquals> option to indicate the classes in
-your qualifier heirarchy:
-%
+built-in checker (Section~\ref{running}):
+simply pass the fully-qualified name of your \<BaseTypeChecker>
+subclass to the \<-processor> command-line option:
 \begin{alltt}
-$ javac \textbackslash
-    -processor org.checkerframework.common.subtyping.SubtypingChecker \textbackslash
-    -Aquals=\textit{mymodule.qual.Qual1},\textit{mymodule.qual.Qual2},\textit{...} \textbackslash
+  javac \textbackslash
+    -processor \textit{mypackage.MyPropChecker} \textbackslash
     SourceFile.java
 \end{alltt}
-%
-Otherwise, simply pass the fully-qualified name of your \<BaseTypeChecker>
-subclass to the \<-processor> flag instead:
-%
-\begin{alltt}
-$ javac \textbackslash
-    -processor \textit{mymodule.MyPropChecker} \textbackslash
-    SourceFile.java
-\end{alltt}
-
+Note that your custom checker's
+compiled files must be on the Java classpath.
+Invoking a custom checker that builds on
+the Subtyping Checker is slightly different (Section~\ref{subtyping-using}).
 
 
 
@@ -1958,7 +1963,7 @@ There are several other miscellaneous tasks:
   file \<checker/build.xml>.
 \item
   Integrate your new checker with the Eclipse plugin.
-  See \$CHECKERFRAMEWORK/eclipse/README-developers.html\#add-checker for instructions.
+  See \<\$CHECKERFRAMEWORK/eclipse/README-developers.html\#add-checker>/ for instructions.
 \end{itemize}
 
 
