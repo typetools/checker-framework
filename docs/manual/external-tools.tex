@@ -562,16 +562,20 @@ allprojects {
 
 \section{Android Studio 3.0 and the Android Gradle Plugin 3.0\label{android-gradle}}
 
-Android Studio 3.0 and Android Gradle Plugin 3.0.0 support type annotations.
-(See \url{https://developer.android.com/studio/preview/features/java8-support.html} for more details.)
-This section explains how to configure your Andriod project to use the Checker Framework.  All the changes should be made to the module's build.gradle file -- not the app's build.gradle file.
+Android Studio 3.0 and Android Gradle Plugin 3.0.0 support type
+annotations.  (See
+\url{https://developer.android.com/studio/preview/features/java8-support.html}
+for more details.)  This section explains how to configure your Andriod
+project to use the Checker Framework.  All the changes should be made to
+the module's \<build.gradle> file --- not the app's \<build.gradle> file.
 
 \begin{enumerate}
 
-\item In your module's build.gradle file, set the source and target compatiblity to \<JavaVersion.VERSION\_1\_8>
+\item In your module's \<build.gradle> file, set the source and target
+  compatiblity to \<JavaVersion.VERSION\_1\_8>
 
- \begin{Verbatim}
- android {
+\begin{Verbatim}
+android {
     ...
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -580,7 +584,7 @@ This section explains how to configure your Andriod project to use the Checker F
 }
 \end{Verbatim}
 
-\item Add a build variant for running checkers. (in your module's build.gradle file)
+\item Add a build variant for running checkers.
 
  \begin{Verbatim}
  android {
@@ -590,14 +594,14 @@ This section explains how to configure your Andriod project to use the Checker F
         checkTypes {
             javaCompileOptions.annotationProcessorOptions.
                     classNames.add("org.checkerframework.checker.nullness.NullnessChecker")
-            // You can pass options like so
+            // You can pass options like so:
             // javaCompileOptions.annotationProcessorOptions.arguments.put("warns", "")
         }
     }
 }
 \end{Verbatim}
 
-\item Add a dependency configurations for the annotated JDK:
+\item Add a dependency configuration for the annotated JDK:
 
 \begin{mysmall}
 \begin{Verbatim}
@@ -624,7 +628,7 @@ dependencies {
 \end{Verbatim}
 \end{mysmall}
 
-\item Direct all tasks of type \<JavaCompile> used by the CheckTypes build variant to use the annotated jdk.
+\item Direct all tasks of type \<JavaCompile> used by the CheckTypes build variant to use the annotated JDK.
 \begin{mysmall}
 \begin{Verbatim}
 gradle.projectsEvaluated {
