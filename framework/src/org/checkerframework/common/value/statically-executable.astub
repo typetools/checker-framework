@@ -1,5 +1,4 @@
 import org.checkerframework.common.value.qual.*;
-import org.checkerframework.dataflow.qual.*;
 
 package android.util;
 
@@ -283,7 +282,7 @@ class String{
     @StaticallyExecutable int lastIndexOf(int ch, int fromIndex);
     @StaticallyExecutable int lastIndexOf(String str);
     @StaticallyExecutable int lastIndexOf(String str, int fromIndex);
-    @StaticallyExecutable @Pure int length();
+    @StaticallyExecutable int length();
     @StaticallyExecutable boolean matches(String regex);
     @StaticallyExecutable int offsetByCodePoints(int index, int codePointOffset);
     @StaticallyExecutable boolean regionMatches(boolean ignoreCase, int toffset, String other, int ooffset, int len);

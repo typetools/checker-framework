@@ -410,7 +410,9 @@ public class ValueTransfer extends CFTransfer {
         Receiver arrayLenRec =
                 FlowExpressions.internalReprOf(analysis.getTypeFactory(), lengthNode);
 
-        // VD: crashes if String.length is not @Pure
+        if (arrayLenRec instanceof FlowExpressions.Unknown) {
+            return;
+        }
 
         CFValue value = store.getValue(arrayLenRec);
         if (value == null) {
