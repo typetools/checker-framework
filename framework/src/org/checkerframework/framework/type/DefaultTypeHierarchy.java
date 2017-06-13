@@ -921,7 +921,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     public Boolean visitWildcard_Declared(
             AnnotatedWildcardType subtype, AnnotatedDeclaredType supertype, VisitHistory visited) {
         if (subtype.isUninferredTypeArgument() && supertype.getTypeArguments().isEmpty()) {
-            return isPrimarySubtype(subtype.getExtendsBound(), supertype);
+            AnnotationMirror subtypeAnno = subtype.getEffectiveAnnotationInHierarchy(currentTop);
+            AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
+            return isAnnoSubtype(subtypeAnno, supertypeAnno, false);
         }
         return visitWildcardSubtype(subtype, supertype, visited);
     }
@@ -938,7 +940,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     public Boolean visitWildcard_Primitive(
             AnnotatedWildcardType subtype, AnnotatedPrimitiveType supertype, VisitHistory visited) {
         if (subtype.isUninferredTypeArgument()) {
-            return isPrimarySubtype(subtype.getExtendsBound(), supertype);
+            AnnotationMirror subtypeAnno = subtype.getEffectiveAnnotationInHierarchy(currentTop);
+            AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
+            return isAnnoSubtype(subtypeAnno, supertypeAnno, false);
         }
         return visitWildcardSubtype(subtype, supertype, visited);
     }
