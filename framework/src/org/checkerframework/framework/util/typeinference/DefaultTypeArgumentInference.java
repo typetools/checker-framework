@@ -123,7 +123,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         final List<AnnotatedTypeMirror> argTypes =
                 TypeArgInferenceUtil.getArgumentTypes(expressionTree, typeFactory);
-        TreePath pathToExpression = typeFactory.getPath(expressionTree);
+        final TreePath pathToExpression = typeFactory.getPath(expressionTree);
         final AnnotatedTypeMirror assignedTo =
                 TypeArgInferenceUtil.assignedTo(typeFactory, pathToExpression);
 
@@ -139,40 +139,44 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
 
         final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
-        Map<TypeVariable, AnnotatedTypeMirror> inferredArgs;
+
         if (assignedTo == null && TreeUtils.getAssignmentContext(pathToExpression) != null) {
+            // If the type of the assignment context isn't found, but the expression is assigned,
+            // then don't attempt to infere type arguments, because the Java type inferred will be
+            // incorrect.  The assignment type is null when it includes uninferred type arguments.
+            // For example:
+            // <T> T outMethod()
+            // <U> void inMethod(U u);
+            // inMethod(outMethod())
+            // would require solving the constraints for both type argument inferences simultaneously
+            Map<TypeVariable, AnnotatedTypeMirror> inferredArgs = new LinkedHashMap<>();
+            handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
+            return inferredArgs;
+        }
+
+        Map<TypeVariable, AnnotatedTypeMirror> inferredArgs;
+        try {
+            inferredArgs =
+                    infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets, true);
+            if (showInferenceSteps) {
+                checker.message(Kind.NOTE, "  after infer: %s\n", inferredArgs);
+            }
+            handleNullTypeArguments(
+                    typeFactory,
+                    methodElem,
+                    methodType,
+                    argTypes,
+                    assignedTo,
+                    targets,
+                    inferredArgs);
+            if (showInferenceSteps) {
+                checker.message(Kind.NOTE, "  after handleNull: %s\n", inferredArgs);
+            }
+        } catch (Exception ex) {
+            // Catch any errors thrown by inference.
             inferredArgs = new LinkedHashMap<>();
-        } else {
-            try {
-                inferredArgs =
-                        infer(
-                                typeFactory,
-                                argTypes,
-                                assignedTo,
-                                methodElem,
-                                methodType,
-                                targets,
-                                true);
-                if (showInferenceSteps) {
-                    checker.message(Kind.NOTE, "  after infer: %s\n", inferredArgs);
-                }
-                handleNullTypeArguments(
-                        typeFactory,
-                        methodElem,
-                        methodType,
-                        argTypes,
-                        assignedTo,
-                        targets,
-                        inferredArgs);
-                if (showInferenceSteps) {
-                    checker.message(Kind.NOTE, "  after handleNull: %s\n", inferredArgs);
-                }
-            } catch (Exception ex) {
-                // Catch any errors thrown by inferences.
-                inferredArgs = new LinkedHashMap<>();
-                if (showInferenceSteps) {
-                    checker.message(Kind.NOTE, "  exception: %s\n", ex.getLocalizedMessage());
-                }
+            if (showInferenceSteps) {
+                checker.message(Kind.NOTE, "  exception: %s\n", ex.getLocalizedMessage());
             }
         }
 
