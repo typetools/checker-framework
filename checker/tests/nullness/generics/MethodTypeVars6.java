@@ -23,7 +23,6 @@ class PairSubSwitching<SS extends @Nullable Object, TS extends @Nullable Object>
 
 class Test1<X extends @Nullable Object> {
     APair<@Nullable X, @Nullable X> test1(@Nullable X p) {
-        //:: warning: (cast.unsafe)
         return APair.<@Nullable X, @Nullable X>of(p, (X) null);
     }
 }
@@ -42,7 +41,7 @@ class Test2<X extends @Nullable Object> {
 
 class Test3<X extends @Nullable Object> {
     APair<@NonNull X, @NonNull X> test1(@Nullable X p) {
-        //:: error: (return.type.incompatible) :: warning: (cast.unsafe)
+        //:: error: (return.type.incompatible)
         return APair.of(p, (X) null);
     }
 }

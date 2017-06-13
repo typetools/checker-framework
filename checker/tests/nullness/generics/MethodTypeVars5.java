@@ -61,9 +61,8 @@ class MethodTypeVars5 {
         if (x != null) {
             return x.get();
         } else {
-            // The Nullness Checker should not issue a cast.unsafe warning,
-            // but the KeyFor Checker does, so suppress that warning.
-            @SuppressWarnings({"unchecked", "keyfor:cast.unsafe"})
+            // This won't work at runtime, but whatever.
+            @SuppressWarnings("unchecked")
             T res = (T) new Object();
             return res;
         }

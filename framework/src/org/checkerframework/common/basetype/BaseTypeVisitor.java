@@ -1475,32 +1475,37 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // TODO: the same number of arguments actually doesn't guarantee anything.
                     return false;
                 }
+            } else if (castType.getKind() == TypeKind.TYPEVAR
+                    && exprType.getKind() == TypeKind.TYPEVAR) {
+                // If both the cast type and the casted expression are type variables, then check the
+                // bounds.
+                Set<AnnotationMirror> lowerBoundAnnotationsCast =
+                        AnnotatedTypes.findEffectiveLowerBoundAnnotations(
+                                qualifierHierarchy, castType);
+                Set<AnnotationMirror> lowerBoundAnnotationsExpr =
+                        AnnotatedTypes.findEffectiveLowerBoundAnnotations(
+                                qualifierHierarchy, exprType);
+                return qualifierHierarchy.isSubtype(
+                                lowerBoundAnnotationsExpr, lowerBoundAnnotationsCast)
+                        && qualifierHierarchy.isSubtype(
+                                exprType.getEffectiveAnnotations(),
+                                castType.getEffectiveAnnotations());
             }
-        }
+            Set<AnnotationMirror> castAnnos;
+            if (castType.getKind() == TypeKind.TYPEVAR) {
+                // If the cast type is a type var, but the expression is not, then check that the
+                // type of the expression is a subtype of the lower bound.
+                castAnnos =
+                        AnnotatedTypes.findEffectiveLowerBoundAnnotations(
+                                qualifierHierarchy, castType);
+            } else {
+                castAnnos = castType.getAnnotations();
+            }
 
-        if (castType.getKind() == TypeKind.TYPEVAR && exprType.getKind() == TypeKind.TYPEVAR) {
-            // If both the cast type and the casted expression are type variables, then check the
-            // bounds.
-            Set<AnnotationMirror> lowerBoundAnnotationsCast =
-                    AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, castType);
-            Set<AnnotationMirror> lowerBoundAnnotationsExpr =
-                    AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, exprType);
-            return qualifierHierarchy.isSubtype(
-                            lowerBoundAnnotationsExpr, lowerBoundAnnotationsCast)
-                    && qualifierHierarchy.isSubtype(
-                            exprType.getEffectiveAnnotations(), castType.getEffectiveAnnotations());
+            return qualifierHierarchy.isSubtype(exprType.getEffectiveAnnotations(), castAnnos);
         }
-        Set<AnnotationMirror> castAnnos;
-        if (castType.getKind() == TypeKind.TYPEVAR) {
-            // If the cast type is a type var, but the expression is not, then check that the
-            // type of the expression is a subtype of the lower bound.
-            castAnnos =
-                    AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, castType);
-        } else {
-            castAnnos = castType.getAnnotations();
-        }
-
-        return qualifierHierarchy.isSubtype(exprType.getEffectiveAnnotations(), castAnnos);
+        return qualifierHierarchy.isSubtype(
+                exprType.getEffectiveAnnotations(), castType.getEffectiveAnnotations());
     }
 
     @Override

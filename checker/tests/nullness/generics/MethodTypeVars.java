@@ -17,9 +17,6 @@ public class MethodTypeVars {
 }
 
 class A {
-    // The Nullness Checker should not issue a cast.unsafe warning,
-    // but the KeyFor Checker does, so suppress that warning.
-    @SuppressWarnings("keyfor:cast.unsafe")
     public static <T extends @NonNull Object> T badMethod(T t) {
         //:: warning: [unchecked] unchecked cast
         return (T) new Object();
