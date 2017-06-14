@@ -29,7 +29,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import org.checkerframework.checker.optional.qual.*;
+import org.checkerframework.checker.optional.qual.Present;
+import org.checkerframework.framework.qual.EnsuresQualifierIf;
 
 /**
  * A container object which may or may not contain a non-null value.
@@ -144,6 +145,7 @@ public final class Optional<T> {
      *
      * @return {@code true} if there is a value present, otherwise {@code false}
      */
+    @EnsuresQualifierIf(result = true, expression = "this", qualifier = Present.class)
     public boolean isPresent() {
         return value != null;
     }

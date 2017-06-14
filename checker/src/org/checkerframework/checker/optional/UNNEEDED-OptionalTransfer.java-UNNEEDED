@@ -30,15 +30,13 @@ import org.checkerframework.javacutil.TypesUtils;
 public class OptionalTransfer extends CFTransfer {
 
     protected final AnnotationMirror PRESENT =
-            analysis.getTypeFactory().AnnotationUtils.fromClass(elements, Present.class);
+        AnnotationUtils.fromClass(getElementUtils(), Present.class);
 
     public OptionalTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
     }
 
-    // TODO: These are special cases for isOptional(String, int) and asOptional(String, int).
-    // They should be replaced by adding an @EnsuresQualifierIf annotation that supports
-    // specifying attributes.
+    // This is a special case for isPresent().
     @Override
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
@@ -52,13 +50,13 @@ public class OptionalTransfer extends CFTransfer {
             ClassNameNode cnn = (ClassNameNode) receiver;
             String receiverName = cnn.getElement().toString();
             if (isOptionalClassname(receiverName)) {
-                result = handleOptionalUtil(n, method, result);
+                result = handleOptional(n, method, result);
             }
         }
         return result;
     }
 
-    private TransferResult<CFValue, CFStore> handleOptionalUtil(
+    private TransferResult<CFValue, CFStore> handleOptional(
             MethodInvocationNode n,
             ExecutableElement method,
             TransferResult<CFValue, CFStore> result) {
@@ -70,6 +68,10 @@ public class OptionalTransfer extends CFTransfer {
             ConditionalTransferResult<CFValue, CFStore> newResult =
                     new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
+            Receiver firstParam =
+                    FlowExpressions.internalReprOf(
+                            factory.getContext().getAnnotationProvider(), n.getArgument(0));
+
             // add annotation with correct group count (if possible,
             // optional annotation without count otherwise)
             Node count = n.getArgument(1);
@@ -80,8 +82,7 @@ public class OptionalTransfer extends CFTransfer {
             } else {
                 groupCount = 0;
             }
-            AnnotationMirror optionalAnnotation = factory.createOptionalAnnotation();
-            thenStore.insertValue(firstParam, optionalAnnotation);
+            thenStore.insertValue(firstParam, PRESENT);
             return newResult;
         } else if (ElementUtils.matchesElement(
                 method, AS_OPTIONAL_METHOD_NAME, String.class, int.class)) {
