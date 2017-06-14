@@ -982,13 +982,14 @@ type systems with and without run-time tests.
 
 The steps to customizing type refinement are:
 \begin{enumerate}
-\item{\ref{creating-dataflow-create-classes}} Create required class and configure its
-    use
-\item{\ref{creating-dataflow-override-methods}} Override methods that handle
-    \refclass{dataflow/cfg/node}{Node}s of interest
-\item{\ref{creating-dataflow-determine-expressions}} Determine which expressions will be
-    refined
-\item{\ref{creating-dataflow-implement-refinement}} Implement the refinement
+\item{\S\ref{creating-dataflow-determine-expressions}}
+  Determine which expressions will be refined.
+\item{\S\ref{creating-dataflow-create-classes}}
+  Create required class and configure its use.
+\item{\S\ref{creating-dataflow-override-methods}}
+  Override methods that handle \refclass{dataflow/cfg/node}{Node}s of interest.
+\item{\S\ref{creating-dataflow-implement-refinement}}
+  Implement the refinement.
 \end{enumerate}
 
 The Regex Checker's dataflow customization for the
@@ -1000,6 +1001,71 @@ flow-sensitive type refinement, and the control flow graph (CFG) data
 structure that it uses, in the
 \href{https://checkerframework.org/manual/checker-framework-dataflow-manual.pdf}{Dataflow
   Manual}.
+
+
+\subsection{Determine expressions to refine the types of\label{creating-dataflow-determine-expressions}}
+
+A run-time check or run-time
+operation involves multiple expressions (arguments, results).
+Determine which expression the customization will refine.  This is
+usually specific to the type system and run-time test.
+There is no code to write in this step; you are merely determining
+the design of your type refinement.
+
+For the program operation \code{op(a,b)}, you can refine
+the types in either or both of the following ways:
+\begin{enumerate}
+\item Change the result type of the entire expression \code{op(a,b)}.
+
+As an example (and as the running example of implementing a dataflow
+refinement), the \code{RegexUtil.asRegex} method is declared as:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  @Regex(0) String asRegex(String s, int groups) { ... }
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\noindent
+This annotation is sound and conservative:  it says that an expression such
+as \code{RegexUtil.asRegex(myString, myInt)} has type \code{@Regex(0)
+  String}.  However, this annotation is imprecise.  When the \code{group}
+argument is known at compile time, a better estimate can be given.  For
+example, \code{RegexUtil.asRegex(myString, 2)} has type \code{@Regex(2)
+  String}.
+
+\item Change the type of some other expression, such as \code{a} or \code{b}.
+
+As an example, consider an equality test in the Nullness type system:
+
+\begin{Verbatim}
+  @Nullable String s;
+    if (s != null) {
+      ...
+    } else {
+      ...
+    }
+\end{Verbatim}
+
+The type of \<s != null> is always \<@NonNull boolean>.  However, in the
+true branch, the type of \<s> can be refined to \<@NonNull String>.
+
+\end{enumerate}
+
+If you are refining the types of arguments or the result of a method call,
+then you may be able to implement your flow-sensitive refinement rules by
+just writing \refqualclass{framework/qual}{EnsuresQualifier} and/or
+\refqualclass{framework/qual}{EnsuresQualifierIf} annotations.
+When this is possible, it is the best approach.
+
+Sections~\ref{creating-dataflow-create-classes}--\ref{creating-dataflow-implement-refinement}
+explain how to create a transfer class when the
+\refqualclass{framework/qual}{EnsuresQualifier} and
+\refqualclass{framework/qual}{EnsuresQualifierIf} annotations are insufficient.
 
 
 \subsection{Create required class\label{creating-dataflow-create-classes}}
@@ -1020,6 +1086,10 @@ As an example, the Regex Checker's extended
 different directory for your \<\emph{MyChecker}Transfer> class, you will
 also need to override the \<createFlowTransferFunction> method in your type
 factory to return to return a new instance of the class.)
+
+(As a reminder, use of \refqualclass{framework/qual}{EnsuresQualifier} and
+\refqualclass{framework/qual}{EnsuresQualifierIf} may obviate the need for
+a transfer class.)
 
 %% More extended directions about what do to if the name is non-standard.
 % If the checker's extended \refclass{framework/flow}{CFTransfer}
@@ -1171,59 +1241,6 @@ VariableTree:
 \end{Verbatim}
 
 
-\subsection{Determine the expressions to refine the types of\label{creating-dataflow-determine-expressions}}
-
-A run-time check or run-time
-operation involves multiple expressions (arguments, results).
-Determine which expression the customization will refine.  This is
-usually specific to the type system and run-time test.
-There is no code to write in this step; you are merely determining
-the design of your type refinement.
-
-For the program operation \code{op(a,b)}, you can refine
-the types in either or both of the following ways:
-\begin{enumerate}
-\item Change the result type of the entire expression \code{op(a,b)}.
-
-As an example (and as the running example of implementing a dataflow
-refinement), the \code{RegexUtil.asRegex} method is declared as:
-
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{Verbatim}
-  @Regex(0) String asRegex(String s, int groups) { ... }
-\end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-
-\noindent
-This annotation is sound and conservative:  it says that an expression such
-as \code{RegexUtil.asRegex(myString, myInt)} has type \code{@Regex(0)
-  String}.  However, this annotation is imprecise.  When the \code{group}
-argument is known at compile time, a better estimate can be given.  For
-example, \code{RegexUtil.asRegex(myString, 2)} has type \code{@Regex(2)
-  String}.
-
-\item Change type of some other expression, such as \code{a} or \code{b}.
-
-As an example, consider an equality test in the Nullness type system:
-
-\begin{Verbatim}
-  @Nullable String s;
-    if (s != null) {
-      ...
-    } else {
-      ...
-    }
-\end{Verbatim}
-
-The type of \<s != null> is always \<@NonNull boolean>.  However, in the
-true branch, the type of \<s> can be refined to \<@NonNull String>.
-
-\end{enumerate}
-
 
 \subsection{Implement the refinement\label{creating-dataflow-implement-refinement}}
 
@@ -1337,7 +1354,7 @@ Constant Value Checker (\chapterpageref{constant-value-checker}).
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX
-  \begin{Verbatim}
+\begin{Verbatim}
   AnnotationMirror regexAnnotation;
   Node count = n.getArgument(1);
   if (count instanceof IntegerLiteralNode) {
@@ -1346,7 +1363,7 @@ Constant Value Checker (\chapterpageref{constant-value-checker}).
     Integer groupCount = iln.getValue();
     regexAnnotation = factory.createRegexAnnotation(groupCount);
   } else {
-    // argument is not literal integer; fall back to @Regex(0).
+    // argument is not a literal integer; fall back to @Regex(), which is the same as @Regex(0)
     regexAnnotation = AnnotationUtils.fromClass(factory.getElementUtils(), Regex.class);
   }
 \end{Verbatim}
