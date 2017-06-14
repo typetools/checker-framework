@@ -12,7 +12,9 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Pair;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Map;
@@ -305,13 +307,7 @@ public class TypeAnnotationUtils {
      */
     private static <RET> RET call8or9(Call8or9<RET> tc) {
         try {
-            boolean hasNine;
-            try {
-                hasNine = SourceVersion.valueOf("RELEASE_9") != null;
-            } catch (IllegalArgumentException iae) {
-                hasNine = false;
-            }
-            if (hasNine) {
+            if (hasReleaseNine) {
                 return tc.call9();
             } else {
                 boolean hasEight;
@@ -334,6 +330,251 @@ public class TypeAnnotationUtils {
         }
     }
 
+    private static final boolean hasReleaseNine;
+
+    private static final Object TAP_field_emptyPath_value;
+    private static final TypeAnnotationPosition TAP_field_unknown_value;
+
+    private static final Field TAP_field_bound_index;
+    private static final Field TAP_field_parameter_index;
+    private static final Field TAP_field_pos;
+    private static final Field TAP_field_type;
+    private static final Field TAP_field_type_index;
+
+    private static final Method TAP_meth_classExtends;
+    private static final Method TAP_meth_copy;
+    private static final Method TAP_meth_field;
+    private static final Method TAP_meth_methodParameter;
+    private static final Method TAP_meth_methodReceiver;
+    private static final Method TAP_meth_methodReturn;
+    private static final Method TAP_meth_methodThrows;
+    private static final Method TAP_meth_methodTypeParameter;
+    private static final Method TAP_meth_methodTypeParameterBound;
+    private static final Method TAP_meth_typeParameter;
+    private static final Method TAP_meth_typeParameterBound;
+
+    static {
+        boolean hasNine;
+        try {
+            hasNine = SourceVersion.valueOf("RELEASE_9") != null;
+        } catch (IllegalArgumentException iae) {
+            hasNine = false;
+        }
+        hasReleaseNine = hasNine;
+
+        if (hasReleaseNine) {
+            Object otmp;
+            try {
+                otmp = TypeAnnotationPosition.class.getField("emptyPath").get(null);
+            } catch (Throwable t) {
+                otmp = null;
+            }
+            TAP_field_emptyPath_value = otmp;
+
+            TypeAnnotationPosition taptmp;
+            try {
+                taptmp =
+                        (TypeAnnotationPosition)
+                                TypeAnnotationPosition.class.getField("unknown").get(null);
+            } catch (Throwable t) {
+                taptmp = null;
+            }
+            TAP_field_unknown_value = taptmp;
+
+            Method methodtmp;
+            try {
+                methodtmp =
+                        TypeAnnotationPosition.class.getMethod(
+                                "classExtends", int.class, int.class);
+            } catch (Throwable t) {
+                methodtmp = null;
+            }
+            TAP_meth_classExtends = methodtmp;
+
+            try {
+                methodtmp =
+                        TypeAnnotationPosition.class.getMethod(
+                                "copy", TypeAnnotationPosition.class);
+            } catch (Throwable t) {
+                methodtmp = null;
+            }
+            TAP_meth_copy = methodtmp;
+
+            try {
+                methodtmp = TypeAnnotationPosition.class.getMethod("field", int.class);
+            } catch (Throwable t) {
+                methodtmp = null;
+            }
+            TAP_meth_field = methodtmp;
+
+            try {
+                methodtmp =
+                        TypeAnnotationPosition.class.getMethod(
+                                "methodParameter", int.class, int.class);
+            } catch (Throwable t) {
+                methodtmp = null;
+            }
+            TAP_meth_methodParameter = methodtmp;
+
+            try {
+                methodtmp = TypeAnnotationPosition.class.getMethod("methodReceiver", int.class);
+            } catch (Throwable t) {
+                methodtmp = null;
+            }
+            TAP_meth_methodReceiver = methodtmp;
+
+            try {
+                methodtmp = TypeAnnotationPosition.class.getMethod("methodReturn", int.class);
+            } catch (Throwable t) {
+                methodtmp = null;
+            }
+            TAP_meth_methodReturn = methodtmp;
+
+            try {
+                methodtmp =
+                        TypeAnnotationPosition.class.getMethod(
+                                "methodThrows", List.class, JCLambda.class, int.class, int.class);
+
+            } catch (Throwable t) {
+                methodtmp = null;
+            }
+            TAP_meth_methodThrows = methodtmp;
+
+            try {
+                methodtmp =
+                        TypeAnnotationPosition.class.getMethod(
+                                "methodTypeParameter",
+                                List.class,
+                                JCLambda.class,
+                                int.class,
+                                int.class);
+
+            } catch (Throwable t) {
+                methodtmp = null;
+            }
+            TAP_meth_methodTypeParameter = methodtmp;
+
+            try {
+                methodtmp =
+                        TypeAnnotationPosition.class.getMethod(
+                                "methodTypeParameterBound",
+                                List.class,
+                                JCLambda.class,
+                                int.class,
+                                int.class,
+                                int.class);
+
+            } catch (Throwable t) {
+                methodtmp = null;
+            }
+            TAP_meth_methodTypeParameterBound = methodtmp;
+
+            try {
+                methodtmp =
+                        TypeAnnotationPosition.class.getMethod(
+                                "typeParameter", List.class, JCLambda.class, int.class, int.class);
+
+            } catch (Throwable t) {
+                methodtmp = null;
+            }
+            TAP_meth_typeParameter = methodtmp;
+            try {
+                methodtmp =
+                        TypeAnnotationPosition.class.getMethod(
+                                "typeParameterBound",
+                                List.class,
+                                JCLambda.class,
+                                int.class,
+                                int.class,
+                                int.class);
+
+            } catch (Throwable t) {
+                methodtmp = null;
+            }
+            TAP_meth_typeParameterBound = methodtmp;
+
+            TAP_field_bound_index = null;
+            TAP_field_parameter_index = null;
+            TAP_field_pos = null;
+            TAP_field_type = null;
+            TAP_field_type_index = null;
+
+        } else {
+            Field fieldtmp;
+            try {
+                fieldtmp = TypeAnnotationPosition.class.getField("bound_index");
+            } catch (Throwable t) {
+                fieldtmp = null;
+            }
+            TAP_field_bound_index = fieldtmp;
+
+            try {
+                fieldtmp = TypeAnnotationPosition.class.getField("parameter_index");
+            } catch (Throwable t) {
+                fieldtmp = null;
+            }
+            TAP_field_parameter_index = fieldtmp;
+
+            try {
+                fieldtmp = TypeAnnotationPosition.class.getField("pos");
+            } catch (Throwable t) {
+                fieldtmp = null;
+            }
+            TAP_field_pos = fieldtmp;
+
+            try {
+                fieldtmp = TypeAnnotationPosition.class.getField("type");
+            } catch (Throwable t) {
+                fieldtmp = null;
+            }
+            TAP_field_type = fieldtmp;
+
+            try {
+                fieldtmp = TypeAnnotationPosition.class.getField("type_index");
+            } catch (Throwable t) {
+                fieldtmp = null;
+            }
+            TAP_field_type_index = fieldtmp;
+
+            TAP_field_emptyPath_value = null;
+            TAP_field_unknown_value = null;
+
+            TAP_meth_classExtends = null;
+            TAP_meth_copy = null;
+            TAP_meth_field = null;
+            TAP_meth_methodParameter = null;
+            TAP_meth_methodReceiver = null;
+            TAP_meth_methodReturn = null;
+            TAP_meth_methodThrows = null;
+            TAP_meth_methodTypeParameter = null;
+            TAP_meth_methodTypeParameterBound = null;
+            TAP_meth_typeParameter = null;
+            TAP_meth_typeParameterBound = null;
+        }
+        /*
+        TAP_field_emptyPath_value = null;
+        TAP_field_unknown_value = null;
+
+        TAP_field_bound_index = null;
+        TAP_field_parameter_index = null;
+        TAP_field_pos = null;
+        TAP_field_type = null;
+        TAP_field_type_index = null;
+
+        TAP_meth_classExtends = null;
+        TAP_meth_copy = null;
+        TAP_meth_field = null;
+        TAP_meth_methodParameter = null;
+        TAP_meth_methodReceiver = null;
+        TAP_meth_methodReturn = null;
+        TAP_meth_methodThrows = null;
+        TAP_meth_methodTypeParameter = null;
+        TAP_meth_methodTypeParameterBound = null;
+        TAP_meth_typeParameter = null;
+        TAP_meth_typeParameterBound = null;
+        */
+    }
+
     public static TypeAnnotationPosition unknownTAPosition() {
         return call8or9(
                 new Call8or9<TypeAnnotationPosition>() {
@@ -347,8 +588,7 @@ public class TypeAnnotationUtils {
                     public TypeAnnotationPosition call9()
                             throws IllegalArgumentException, IllegalAccessException,
                                     NoSuchFieldException, SecurityException {
-                        return (TypeAnnotationPosition)
-                                TypeAnnotationPosition.class.getField("unknown").get(null);
+                        return TAP_field_unknown_value;
                     }
                 });
     }
@@ -362,10 +602,8 @@ public class TypeAnnotationUtils {
                                     IllegalArgumentException, NoSuchFieldException,
                                     SecurityException {
                         TypeAnnotationPosition tapos = TypeAnnotationPosition.class.newInstance();
-                        TypeAnnotationPosition.class
-                                .getField("type")
-                                .set(tapos, TargetType.METHOD_RETURN);
-                        TypeAnnotationPosition.class.getField("pos").set(tapos, pos);
+                        TAP_field_type.set(tapos, TargetType.METHOD_RETURN);
+                        TAP_field_pos.set(tapos, pos);
                         return tapos;
                     }
 
@@ -374,10 +612,7 @@ public class TypeAnnotationUtils {
                             throws IllegalAccessException, IllegalArgumentException,
                                     InvocationTargetException, NoSuchMethodException,
                                     SecurityException {
-                        return (TypeAnnotationPosition)
-                                TypeAnnotationPosition.class
-                                        .getMethod("methodReturn", int.class)
-                                        .invoke(null, pos);
+                        return (TypeAnnotationPosition) TAP_meth_methodReturn.invoke(null, pos);
                     }
                 });
     }
@@ -391,10 +626,8 @@ public class TypeAnnotationUtils {
                                     IllegalArgumentException, NoSuchFieldException,
                                     SecurityException {
                         TypeAnnotationPosition tapos = TypeAnnotationPosition.class.newInstance();
-                        TypeAnnotationPosition.class
-                                .getField("type")
-                                .set(tapos, TargetType.METHOD_RECEIVER);
-                        TypeAnnotationPosition.class.getField("pos").set(tapos, pos);
+                        TAP_field_type.set(tapos, TargetType.METHOD_RECEIVER);
+                        TAP_field_pos.set(tapos, pos);
                         return tapos;
                     }
 
@@ -403,10 +636,7 @@ public class TypeAnnotationUtils {
                             throws IllegalAccessException, IllegalArgumentException,
                                     InvocationTargetException, NoSuchMethodException,
                                     SecurityException {
-                        return (TypeAnnotationPosition)
-                                TypeAnnotationPosition.class
-                                        .getMethod("methodReceiver", int.class)
-                                        .invoke(null, pos);
+                        return (TypeAnnotationPosition) TAP_meth_methodReceiver.invoke(null, pos);
                     }
                 });
     }
@@ -420,11 +650,9 @@ public class TypeAnnotationUtils {
                                     IllegalArgumentException, NoSuchFieldException,
                                     SecurityException {
                         TypeAnnotationPosition tapos = TypeAnnotationPosition.class.newInstance();
-                        TypeAnnotationPosition.class
-                                .getField("type")
-                                .set(tapos, TargetType.METHOD_FORMAL_PARAMETER);
-                        TypeAnnotationPosition.class.getField("parameter_index").set(tapos, pidx);
-                        TypeAnnotationPosition.class.getField("pos").set(tapos, pos);
+                        TAP_field_type.set(tapos, TargetType.METHOD_FORMAL_PARAMETER);
+                        TAP_field_parameter_index.set(tapos, pidx);
+                        TAP_field_pos.set(tapos, pos);
                         return tapos;
                     }
 
@@ -434,9 +662,7 @@ public class TypeAnnotationUtils {
                                     InvocationTargetException, NoSuchMethodException,
                                     SecurityException {
                         return (TypeAnnotationPosition)
-                                TypeAnnotationPosition.class
-                                        .getMethod("methodParameter", int.class, int.class)
-                                        .invoke(null, pidx, pos);
+                                TAP_meth_methodParameter.invoke(null, pidx, pos);
                     }
                 });
     }
@@ -450,9 +676,9 @@ public class TypeAnnotationUtils {
                                     IllegalArgumentException, NoSuchFieldException,
                                     SecurityException {
                         TypeAnnotationPosition tapos = TypeAnnotationPosition.class.newInstance();
-                        TypeAnnotationPosition.class.getField("type").set(tapos, TargetType.THROWS);
-                        TypeAnnotationPosition.class.getField("type_index").set(tapos, tidx);
-                        TypeAnnotationPosition.class.getField("pos").set(tapos, pos);
+                        TAP_field_type.set(tapos, TargetType.THROWS);
+                        TAP_field_type_index.set(tapos, tidx);
+                        TAP_field_pos.set(tapos, pos);
                         return tapos;
                     }
 
@@ -462,21 +688,8 @@ public class TypeAnnotationUtils {
                                     InvocationTargetException, NoSuchMethodException,
                                     SecurityException, NoSuchFieldException {
                         return (TypeAnnotationPosition)
-                                TypeAnnotationPosition.class
-                                        .getMethod(
-                                                "methodThrows",
-                                                List.class,
-                                                JCLambda.class,
-                                                int.class,
-                                                int.class)
-                                        .invoke(
-                                                null,
-                                                TypeAnnotationPosition.class
-                                                        .getField("emptyPath")
-                                                        .get(null),
-                                                null,
-                                                tidx,
-                                                pos);
+                                TAP_meth_methodThrows.invoke(
+                                        null, TAP_field_emptyPath_value, null, tidx, pos);
                     }
                 });
     }
@@ -490,8 +703,8 @@ public class TypeAnnotationUtils {
                                     IllegalArgumentException, NoSuchFieldException,
                                     SecurityException {
                         TypeAnnotationPosition tapos = TypeAnnotationPosition.class.newInstance();
-                        TypeAnnotationPosition.class.getField("type").set(tapos, TargetType.FIELD);
-                        TypeAnnotationPosition.class.getField("pos").set(tapos, pos);
+                        TAP_field_type.set(tapos, TargetType.FIELD);
+                        TAP_field_pos.set(tapos, pos);
                         return tapos;
                     }
 
@@ -500,10 +713,7 @@ public class TypeAnnotationUtils {
                             throws IllegalAccessException, IllegalArgumentException,
                                     InvocationTargetException, NoSuchMethodException,
                                     SecurityException {
-                        return (TypeAnnotationPosition)
-                                TypeAnnotationPosition.class
-                                        .getMethod("field", int.class)
-                                        .invoke(null, pos);
+                        return (TypeAnnotationPosition) TAP_meth_field.invoke(null, pos);
                     }
                 });
     }
@@ -517,11 +727,9 @@ public class TypeAnnotationUtils {
                                     IllegalArgumentException, NoSuchFieldException,
                                     SecurityException {
                         TypeAnnotationPosition tapos = TypeAnnotationPosition.class.newInstance();
-                        TypeAnnotationPosition.class
-                                .getField("type")
-                                .set(tapos, TargetType.CLASS_EXTENDS);
-                        TypeAnnotationPosition.class.getField("type_index").set(tapos, implidx);
-                        TypeAnnotationPosition.class.getField("pos").set(tapos, pos);
+                        TAP_field_type.set(tapos, TargetType.CLASS_EXTENDS);
+                        TAP_field_type_index.set(tapos, implidx);
+                        TAP_field_pos.set(tapos, pos);
                         return tapos;
                     }
 
@@ -531,9 +739,7 @@ public class TypeAnnotationUtils {
                                     InvocationTargetException, NoSuchMethodException,
                                     SecurityException {
                         return (TypeAnnotationPosition)
-                                TypeAnnotationPosition.class
-                                        .getMethod("classExtends", int.class, int.class)
-                                        .invoke(null, implidx, pos);
+                                TAP_meth_classExtends.invoke(null, implidx, pos);
                     }
                 });
     }
@@ -547,11 +753,9 @@ public class TypeAnnotationUtils {
                                     IllegalArgumentException, NoSuchFieldException,
                                     SecurityException {
                         TypeAnnotationPosition tapos = TypeAnnotationPosition.class.newInstance();
-                        TypeAnnotationPosition.class
-                                .getField("type")
-                                .set(tapos, TargetType.CLASS_TYPE_PARAMETER);
-                        TypeAnnotationPosition.class.getField("parameter_index").set(tapos, tpidx);
-                        TypeAnnotationPosition.class.getField("pos").set(tapos, pos);
+                        TAP_field_type.set(tapos, TargetType.CLASS_TYPE_PARAMETER);
+                        TAP_field_parameter_index.set(tapos, tpidx);
+                        TAP_field_pos.set(tapos, pos);
                         return tapos;
                     }
 
@@ -561,21 +765,8 @@ public class TypeAnnotationUtils {
                                     InvocationTargetException, NoSuchMethodException,
                                     SecurityException, NoSuchFieldException {
                         return (TypeAnnotationPosition)
-                                TypeAnnotationPosition.class
-                                        .getMethod(
-                                                "typeParameter",
-                                                List.class,
-                                                JCLambda.class,
-                                                int.class,
-                                                int.class)
-                                        .invoke(
-                                                null,
-                                                TypeAnnotationPosition.class
-                                                        .getField("emptyPath")
-                                                        .get(null),
-                                                null,
-                                                tpidx,
-                                                pos);
+                                TAP_meth_typeParameter.invoke(
+                                        null, TAP_field_emptyPath_value, null, tpidx, pos);
                     }
                 });
     }
@@ -590,11 +781,9 @@ public class TypeAnnotationUtils {
                                     IllegalArgumentException, NoSuchFieldException,
                                     SecurityException {
                         TypeAnnotationPosition tapos = TypeAnnotationPosition.class.newInstance();
-                        TypeAnnotationPosition.class
-                                .getField("type")
-                                .set(tapos, TargetType.METHOD_TYPE_PARAMETER);
-                        TypeAnnotationPosition.class.getField("parameter_index").set(tapos, tpidx);
-                        TypeAnnotationPosition.class.getField("pos").set(tapos, pos);
+                        TAP_field_type.set(tapos, TargetType.METHOD_TYPE_PARAMETER);
+                        TAP_field_parameter_index.set(tapos, tpidx);
+                        TAP_field_pos.set(tapos, pos);
                         return tapos;
                     }
 
@@ -604,21 +793,8 @@ public class TypeAnnotationUtils {
                                     InvocationTargetException, NoSuchMethodException,
                                     SecurityException, NoSuchFieldException {
                         return (TypeAnnotationPosition)
-                                TypeAnnotationPosition.class
-                                        .getMethod(
-                                                "methodTypeParameter",
-                                                List.class,
-                                                JCLambda.class,
-                                                int.class,
-                                                int.class)
-                                        .invoke(
-                                                null,
-                                                TypeAnnotationPosition.class
-                                                        .getField("emptyPath")
-                                                        .get(null),
-                                                null,
-                                                tpidx,
-                                                pos);
+                                TAP_meth_methodTypeParameter.invoke(
+                                        null, TAP_field_emptyPath_value, null, tpidx, pos);
                     }
                 });
     }
@@ -633,12 +809,10 @@ public class TypeAnnotationUtils {
                                     IllegalArgumentException, NoSuchFieldException,
                                     SecurityException {
                         TypeAnnotationPosition tapos = TypeAnnotationPosition.class.newInstance();
-                        TypeAnnotationPosition.class
-                                .getField("type")
-                                .set(tapos, TargetType.CLASS_TYPE_PARAMETER_BOUND);
-                        TypeAnnotationPosition.class.getField("parameter_index").set(tapos, tpidx);
-                        TypeAnnotationPosition.class.getField("bound_index").set(tapos, bndidx);
-                        TypeAnnotationPosition.class.getField("pos").set(tapos, pos);
+                        TAP_field_type.set(tapos, TargetType.CLASS_TYPE_PARAMETER_BOUND);
+                        TAP_field_parameter_index.set(tapos, tpidx);
+                        TAP_field_bound_index.set(tapos, bndidx);
+                        TAP_field_pos.set(tapos, pos);
                         return tapos;
                     }
 
@@ -648,23 +822,8 @@ public class TypeAnnotationUtils {
                                     InvocationTargetException, NoSuchMethodException,
                                     SecurityException, NoSuchFieldException {
                         return (TypeAnnotationPosition)
-                                TypeAnnotationPosition.class
-                                        .getMethod(
-                                                "typeParameterBound",
-                                                List.class,
-                                                JCLambda.class,
-                                                int.class,
-                                                int.class,
-                                                int.class)
-                                        .invoke(
-                                                null,
-                                                TypeAnnotationPosition.class
-                                                        .getField("emptyPath")
-                                                        .get(null),
-                                                null,
-                                                tpidx,
-                                                bndidx,
-                                                pos);
+                                TAP_meth_typeParameterBound.invoke(
+                                        null, TAP_field_emptyPath_value, null, tpidx, bndidx, pos);
                     }
                 });
     }
@@ -679,12 +838,10 @@ public class TypeAnnotationUtils {
                                     IllegalArgumentException, NoSuchFieldException,
                                     SecurityException {
                         TypeAnnotationPosition tapos = TypeAnnotationPosition.class.newInstance();
-                        TypeAnnotationPosition.class
-                                .getField("type")
-                                .set(tapos, TargetType.METHOD_TYPE_PARAMETER_BOUND);
-                        TypeAnnotationPosition.class.getField("parameter_index").set(tapos, tpidx);
-                        TypeAnnotationPosition.class.getField("bound_index").set(tapos, bndidx);
-                        TypeAnnotationPosition.class.getField("pos").set(tapos, pos);
+                        TAP_field_type.set(tapos, TargetType.METHOD_TYPE_PARAMETER_BOUND);
+                        TAP_field_parameter_index.set(tapos, tpidx);
+                        TAP_field_bound_index.set(tapos, bndidx);
+                        TAP_field_pos.set(tapos, pos);
                         return tapos;
                     }
 
@@ -694,23 +851,8 @@ public class TypeAnnotationUtils {
                                     InvocationTargetException, NoSuchMethodException,
                                     SecurityException, NoSuchFieldException {
                         return (TypeAnnotationPosition)
-                                TypeAnnotationPosition.class
-                                        .getMethod(
-                                                "methodTypeParameterBound",
-                                                List.class,
-                                                JCLambda.class,
-                                                int.class,
-                                                int.class,
-                                                int.class)
-                                        .invoke(
-                                                null,
-                                                TypeAnnotationPosition.class
-                                                        .getField("emptyPath")
-                                                        .get(null),
-                                                null,
-                                                tpidx,
-                                                bndidx,
-                                                pos);
+                                TAP_meth_methodTypeParameterBound.invoke(
+                                        null, TAP_field_emptyPath_value, null, tpidx, bndidx, pos);
                     }
                 });
     }
@@ -731,10 +873,7 @@ public class TypeAnnotationUtils {
                             throws IllegalArgumentException, IllegalAccessException,
                                     NoSuchFieldException, SecurityException,
                                     InvocationTargetException, NoSuchMethodException {
-                        return (TypeAnnotationPosition)
-                                TypeAnnotationPosition.class
-                                        .getMethod("copy", TypeAnnotationPosition.class)
-                                        .invoke(null, tapos);
+                        return (TypeAnnotationPosition) TAP_meth_copy.invoke(null, tapos);
                     }
                 });
     }
@@ -744,7 +883,7 @@ public class TypeAnnotationUtils {
                     NoSuchFieldException, SecurityException {
         TypeAnnotationPosition res = TypeAnnotationPosition.class.newInstance();
         res.isValidOffset = tapos.isValidOffset;
-        TypeAnnotationPosition.class.getField("bound_index").set(res, tapos.bound_index);
+        TAP_field_bound_index.set(res, tapos.bound_index);
         res.exception_index = tapos.exception_index;
         res.location = List.from(tapos.location);
         if (tapos.lvarIndex != null) {
@@ -757,15 +896,17 @@ public class TypeAnnotationUtils {
             res.lvarOffset = Arrays.copyOf(tapos.lvarOffset, tapos.lvarOffset.length);
         }
         res.offset = tapos.offset;
+        // TODO
         TypeAnnotationPosition.class.getField("onLambda").set(res, tapos.onLambda);
-        TypeAnnotationPosition.class.getField("parameter_index").set(res, tapos.parameter_index);
-        TypeAnnotationPosition.class.getField("pos").set(res, tapos.pos);
-        TypeAnnotationPosition.class.getField("type").set(res, tapos.type);
-        TypeAnnotationPosition.class.getField("type_index").set(res, tapos.type_index);
+        TAP_field_parameter_index.set(res, tapos.parameter_index);
+        TAP_field_pos.set(res, tapos.pos);
+        TAP_field_type.set(res, tapos.type);
+        TAP_field_type_index.set(res, tapos.type_index);
         return res;
     }
 
-    public static Type unannotatedType(final Type in) {
+    public static Type unannotatedType(final TypeMirror in) {
+        final Type impl = (Type) in;
         return call8or9(
                 new Call8or9<Type>() {
                     @Override
@@ -773,12 +914,12 @@ public class TypeAnnotationUtils {
                             throws IllegalAccessException, IllegalArgumentException,
                                     InvocationTargetException, NoSuchMethodException,
                                     SecurityException {
-                        return (Type) Type.class.getMethod("unannotatedType").invoke(in);
+                        return (Type) Type.class.getMethod("unannotatedType").invoke(impl);
                     }
 
                     @Override
                     public Type call9() {
-                        return in;
+                        return impl;
                     }
                 });
     }
