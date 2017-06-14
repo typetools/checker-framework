@@ -1,5 +1,14 @@
 package org.checkerframework.framework.stub;
 
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.IndexUnit;
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,22 +29,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.stubparser.ast.CompilationUnit;
-import org.checkerframework.stubparser.ast.IndexUnit;
-import org.checkerframework.stubparser.ast.Node;
-import org.checkerframework.stubparser.ast.body.BodyDeclaration;
-import org.checkerframework.stubparser.ast.body.ConstructorDeclaration;
-import org.checkerframework.stubparser.ast.body.FieldDeclaration;
-import org.checkerframework.stubparser.ast.body.MethodDeclaration;
-import org.checkerframework.stubparser.ast.body.Parameter;
-import org.checkerframework.stubparser.ast.body.TypeDeclaration;
-import org.checkerframework.stubparser.ast.body.VariableDeclarator;
-import org.checkerframework.stubparser.ast.type.ClassOrInterfaceType;
-import org.checkerframework.stubparser.ast.type.PrimitiveType;
-import org.checkerframework.stubparser.ast.type.ReferenceType;
-import org.checkerframework.stubparser.ast.type.VoidType;
-import org.checkerframework.stubparser.ast.type.WildcardType;
-import org.checkerframework.stubparser.ast.visitor.SimpleVoidVisitor;
 
 /** Utility class for stub files */
 public class StubUtil {
@@ -47,7 +40,7 @@ public class StubUtil {
         if (indexOfDot == -1) {
             // classes not within a package needs to be the first in the index file
             assert !indexFile.getCompilationUnits().isEmpty();
-            assert indexFile.getCompilationUnits().get(0).getPackage() == null;
+            assert indexFile.getCompilationUnits().get(0).getPackageDeclaration() == null;
             return findDeclaration(className, indexFile.getCompilationUnits().get(0));
         }
 
@@ -55,8 +48,9 @@ public class StubUtil {
         final String simpleName = className.substring(indexOfDot + 1);
 
         for (CompilationUnit cu : indexFile.getCompilationUnits()) {
-            if (cu.getPackage() != null
-                    && cu.getPackage().getName().getName().equals(packageName)) {
+            if (cu.getPackageDeclaration() != null
+                    // TODO Make sure the object exists
+                    && cu.getPackageDeclaration().get().getNameAsString().equals(packageName)) {
                 TypeDeclaration type = findDeclaration(simpleName, cu);
                 if (type != null) {
                     return type;
@@ -81,7 +75,9 @@ public class StubUtil {
             return null;
         }
 
-        for (BodyDeclaration member : type.getMembers()) {
+        // TODO Fix the problem with row type
+        NodeList<BodyDeclaration<?>> members = type.getMembers();
+        for (BodyDeclaration<?> member : members) {
             if (!(member instanceof FieldDeclaration)) {
                 continue;
             }
@@ -105,7 +101,8 @@ public class StubUtil {
 
         String methodRep = toString(method);
 
-        for (BodyDeclaration member : type.getMembers()) {
+        NodeList<BodyDeclaration<?>> members = type.getMembers();
+        for (BodyDeclaration<?> member : members) {
             if (member instanceof MethodDeclaration) {
                 if (toString((MethodDeclaration) member).equals(methodRep)) {
                     return member;
@@ -131,15 +128,15 @@ public class StubUtil {
     }
 
     /*package-scope*/ static String toString(MethodDeclaration method) {
-        return ElementPrinter.toString(method);
+        return method.toString();
     }
 
     /*package-scope*/ static String toString(ConstructorDeclaration constructor) {
-        return ElementPrinter.toString(constructor);
+        return constructor.toString();
     }
 
     /*package-scope*/ static String toString(VariableDeclarator field) {
-        return field.getId().getName();
+        return field.getNameAsString();
     }
 
     /*package-scope*/ static String toString(FieldDeclaration field) {
@@ -218,7 +215,7 @@ public class StubUtil {
         return null; // dead code
     }
 
-    private static final class ElementPrinter extends SimpleVoidVisitor<Void> {
+    /*private static final class ElementPrinter extends SimpleVoidVisitor<Void> {
         public static String toString(Node n) {
             ElementPrinter printer = new ElementPrinter();
             n.accept(printer, null);
@@ -337,7 +334,7 @@ public class StubUtil {
             // TODO: Why?
             ErrorReporter.errorAbort("StubUtil: don't print type args!");
         }
-    }
+    }*/
 
     public static List<StubResource> allStubFiles(String stub) {
         List<StubResource> resources = new ArrayList<StubResource>();
