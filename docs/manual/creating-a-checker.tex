@@ -276,6 +276,7 @@ Here is an example of one good way to proceed.
   void foo(@UnknownSign int us, @NonNegative int nn) {
     @UnknownSign int a = us;
     @UnknownSign int b = nn;
+    //:: error: assignment.type.incompatible
     @NonNegative int c = us;  // expected error on this line
     @NonNegative int d = nn;
   }
@@ -291,7 +292,16 @@ Here is an example of one good way to proceed.
   are the same.
 
 \item
+  Annotate parts of the JDK, if relevant
+  (Section~\ref{creating-a-checker-annotated-jdk}).
+
+  Write test cases for at least some of the annotated JDK methods to ensure
+  that the annotations are being properly read by your checker.
+
+\item
   Implement type rules, if any (Section~\ref{creating-extending-visitor}).
+  (Some type systems need JDK annotations but don't have any additional
+  type rules.)
 
   Write simple test cases to test the type rules, and ensure that the
   type-checker behaves as expected on those test files.
@@ -306,8 +316,9 @@ Here is an example of one good way to proceed.
 \end{Verbatim}
 
 \item
-  Implement and test type introduction rules, if any (Section~\ref{creating-type-introduction}).
+  Implement type introduction rules, if any (Section~\ref{creating-type-introduction}).
 
+  Test your type introduction rules.
   For example, if your type system sets the qualifier for manifest literal
   integers and for array lengths, you would write a test case like the following:
 
@@ -321,9 +332,10 @@ Here is an example of one good way to proceed.
 \end{Verbatim}
 
 \item
-  Optionally, implement and test dataflow refinement rules
+  Optionally, implement dataflow refinement rules
   (Section~\ref{creating-dataflow}).
 
+  Test them if you wrote any.
   For instance, if after an arithmetic comparison, your type system infers
   which expressions are now known to be non-negative, you could write a
   test case such as:
@@ -416,10 +428,10 @@ directory should be placed in the same directory as your Checker's source file.
 
 For example, the Nullness Checker's source file is located at
 \<.../nullness/NullnessChecker.java>. The \<NonNull> qualifier is located in the
-directory \<.../nullness/qual>.
+directory \<.../nullness/qual/>.
 
-The Checker Framework automatically treats any annotation that has this value
-and is declared in the qual package as a type qualifier.
+The Checker Framework automatically treats any annotation that
+is declared in the qual package as a type qualifier.
 (See Section \ref{creating-indicating-supported-annotations} for more details.)
 
 % \noindent
@@ -433,7 +445,11 @@ and is declared in the qual package as a type qualifier.
 % exceptions, such as \<@SuppressWarnings>).
 
 Your type system should include a top qualifier and a bottom qualifier
-(Section~\ref{creating-bottom-and-top-qualifier}).  You should also define a
+(Section~\ref{creating-bottom-and-top-qualifier}).
+In most cases, the bottom qualifier should be meta-annotated with
+\<@ImplicitFor(literals=LiteralKind.NULL)>.
+
+You should also define a
 polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
 (Section~\ref{qualifier-polymorphism}).
 
@@ -632,9 +648,13 @@ Your type hierarchy must have a bottom qualifier
 --- a qualifier that is a (direct or indirect) subtype of every other
 qualifier.
 
-Your type system must give \<null> the bottom type.  (The only exception
+Your type system must give \<null> the bottom type.
+(The only exception
 is if the type system has special treatment for \<null> values, as the
-Nullness Checker does.)  This legal code
+Nullness Checker does.)
+A way to do this is to meta-annotate your bottom type with
+\<@ImplicitFor(literals=LiteralKind.NULL)>.
+This legal code
 will not type-check unless \<null> has the bottom type:
 \begin{Verbatim}
 <T> T f() {
@@ -957,97 +977,153 @@ which is the Checker Framework's representation of an annotated type.
 
 \section{Dataflow: enhancing flow-sensitive type qualifier inference\label{creating-dataflow}}
 
-By default, every checker performs automatic type refinement, also known as
-flow inference, as described
+By default, every checker performs flow-sensitive type refinement, also known as
+local type inference, as described
 in Section~\ref{type-refinement}.
 
-In the uncommon case that you wish to disable flow inference in your
-checker, put the following two lines at the beginning of the constructor
-for your subtype of
-\refclass{common/basetype}{BaseAnnotatedTypeFactory}:
-
-\begin{Verbatim}
-        // use true to enable flow inference, false to disable it
-        super(checker, false);
-\end{Verbatim}
-
-You can enhance the Checker Framework's built-in flow-sensitive type refinement,
-so that it is more powerful and is customized to your type system. In
-particular, your enhancement will yield a more refined type for certain
-expressions.
-
-Most enhancements to type refinement are based on a
-run-time test specific to the type system, and not all type systems have
-applicable run-time tests.  See
-Section~\refwithpageparen{type-refinement-runtime-tests} to determine whether
-run-time tests are applicable to your type system.
-
-The Checker Framework's type refinement is implemented with a dataflow algorithm
-which can be customized to enhance the built-in type refinement. The next
-sections detail dataflow customization.  It would also be helpful to read the
-\href{https://checkerframework.org/manual/checker-framework-dataflow-manual.pdf}
-{Dataflow Manual}, which gives a more in-depth description of the Checker
-Framework's dataflow framework, including the control flow graph.
+This section of the manual explains how to enhance the Checker Framework's
+built-in flow-sensitive type refinement.
+Most commonly, you will inform the Checker Framework about a run-time test
+that gives information about the type qualifiers in your type system.
+Section~\refwithpageparen{type-refinement-runtime-tests} gives examples of
+type systems with and without run-time tests.
 
 The steps to customizing type refinement are:
 \begin{enumerate}
-\item{\ref{creating-dataflow-create-classes}} Create required class and configure its
-    use
-\item{\ref{creating-dataflow-override-methods}} Override methods that handle
-    \refclass{dataflow/cfg/node}{Node}s of interest
-\item{\ref{creating-dataflow-determine-expressions}} Determine which expressions will be
-    refined
-\item{\ref{creating-dataflow-implement-refinement}} Implement the refinement
+\item{\S\ref{creating-dataflow-determine-expressions}}
+  Determine which expressions will be refined.
+\item{\S\ref{creating-dataflow-create-classes}}
+  Create required class and configure its use.
+\item{\S\ref{creating-dataflow-override-methods}}
+  Override methods that handle \refclass{dataflow/cfg/node}{Node}s of interest.
+\item{\S\ref{creating-dataflow-implement-refinement}}
+  Implement the refinement.
 \end{enumerate}
 
 The Regex Checker's dataflow customization for the
 \refmethod{checker/regex}{RegexUtil}{asRegex}{-java.lang.String-}
 run-time check is used as an example throughout the steps.
 
+If needed, you can find more details about the implementation of
+flow-sensitive type refinement, and the control flow graph (CFG) data
+structure that it uses, in the
+\href{https://checkerframework.org/manual/checker-framework-dataflow-manual.pdf}{Dataflow
+  Manual}.
 
-\subsection{Create required class and configure its use\label{creating-dataflow-create-classes}}
 
-The following class must be created to customize dataflow. This class must
-be included on the classpath like other components of your checker.
+\subsection{Determine expressions to refine the types of\label{creating-dataflow-determine-expressions}}
 
+A run-time check or run-time
+operation involves multiple expressions (arguments, results).
+Determine which expression the customization will refine.  This is
+usually specific to the type system and run-time test.
+There is no code to write in this step; you are merely determining
+the design of your type refinement.
+
+For the program operation \code{op(a,b)}, you can refine
+the types in either or both of the following ways:
 \begin{enumerate}
-\item \textbf{Create a class that extends
-    \refclass{framework/flow}{CFTransfer}}
+\item Change the result type of the entire expression \code{op(a,b)}.
 
-  \refclass{framework/flow}{CFTransfer} performs the default Checker
-  Framework type refinement.  The extended class will add functionality by
-  overriding superclass methods.
-
-  The Regex Checker's extended \refclass{framework/flow}{CFTransfer} is
-  \refclass{checker/regex}{RegexTransfer}.
-
-\item \textbf{Configure the checker's type factory to use the extended
-    \refclass{framework/flow}{CFTransfer}}
-
-If the checker's extended \refclass{framework/flow}{CFTransfer}
-starts with the name of the type system, then the type factory will use the
-transfer class without further configuration. For example, if the checker
-class is \<FooChecker>, then if the transfer class is \<FooTransfer>, then it is
-not necessary to configure the type factory
-to use \<FooTransfer>.  If some other naming convention is used, then
-to configure your checker's type factory to use the new extended
-\refclass{framework/flow}{CFTransfer}, override the
-\code{createFlowTransferFunction} method in your type factory to return a new instance
-of the extended \refclass{framework/flow}{CFTransfer}.
+As an example (and as the running example of implementing a dataflow
+refinement), the \code{RegexUtil.asRegex} method is declared as:
 
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
-  @Override
-  public CFTransfer createFlowTransferFunction(
-          CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
-      return new RegexTransfer((CFAnalysis) analysis);
-  }
+  @Regex(0) String asRegex(String s, int groups) { ... }
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
+
+\noindent
+This annotation is sound and conservative:  it says that an expression such
+as \code{RegexUtil.asRegex(myString, myInt)} has type \code{@Regex(0)
+  String}.  However, this annotation is imprecise.  When the \code{group}
+argument is known at compile time, a better estimate can be given.  For
+example, \code{RegexUtil.asRegex(myString, 2)} has type \code{@Regex(2)
+  String}.
+
+\item Change the type of some other expression, such as \code{a} or \code{b}.
+
+As an example, consider an equality test in the Nullness type system:
+
+\begin{Verbatim}
+  @Nullable String s;
+    if (s != null) {
+      ...
+    } else {
+      ...
+    }
+\end{Verbatim}
+
+The type of \<s != null> is always \<@NonNull boolean>.  However, in the
+true branch, the type of \<s> can be refined to \<@NonNull String>.
+
+\end{enumerate}
+
+If you are refining the types of arguments or the result of a method call,
+then you may be able to implement your flow-sensitive refinement rules by
+just writing \refqualclass{framework/qual}{EnsuresQualifier} and/or
+\refqualclass{framework/qual}{EnsuresQualifierIf} annotations.
+When this is possible, it is the best approach.
+
+Sections~\ref{creating-dataflow-create-classes}--\ref{creating-dataflow-implement-refinement}
+explain how to create a transfer class when the
+\refqualclass{framework/qual}{EnsuresQualifier} and
+\refqualclass{framework/qual}{EnsuresQualifierIf} annotations are insufficient.
+
+
+\subsection{Create required class\label{creating-dataflow-create-classes}}
+
+In the same directory as \<\emph{MyChecker}Checker.java>, create a class
+named \<\emph{MyChecker}Transfer> that extends
+\refclass{framework/flow}{CFTransfer}.
+
+Leave the class body empty for now.  Your class will add functionality by
+overriding methods of CFTransfer, which performs the default Checker
+Framework type refinement.
+
+As an example, the Regex Checker's extended
+\refclass{framework/flow}{CFTransfer} is
+\refclass{checker/regex}{RegexTransfer}.
+
+(If you disregard the instructions above and choose a different name or a
+different directory for your \<\emph{MyChecker}Transfer> class, you will
+also need to override the \<createFlowTransferFunction> method in your type
+factory to return to return a new instance of the class.)
+
+(As a reminder, use of \refqualclass{framework/qual}{EnsuresQualifier} and
+\refqualclass{framework/qual}{EnsuresQualifierIf} may obviate the need for
+a transfer class.)
+
+%% More extended directions about what do to if the name is non-standard.
+% If the checker's extended \refclass{framework/flow}{CFTransfer}
+% starts with the name of the type system, then the type factory will use the
+% transfer class without further configuration. For example, if the checker
+% class is \<FooChecker>, then if the transfer class is \<FooTransfer>, then it is
+% not necessary to configure the type factory
+% to use \<FooTransfer>.  If some other naming convention is used, then
+% to configure your checker's type factory to use the new extended
+% \refclass{framework/flow}{CFTransfer}, override the
+% \code{createFlowTransferFunction} method in your type factory to return a new instance
+% of the extended \refclass{framework/flow}{CFTransfer}.
+%
+% %BEGIN LATEX
+% \begin{smaller}
+% %END LATEX
+% \begin{Verbatim}
+%   @Override
+%   public CFTransfer createFlowTransferFunction(
+%           CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+%       return new RegexTransfer((CFAnalysis) analysis);
+%   }
+% \end{Verbatim}
+% %BEGIN LATEX
+% \end{smaller}
+% %END LATEX
 
 %% The text below is true, but not required.
 %\item \textbf{Create a class that extends
@@ -1108,53 +1184,25 @@ of the extended \refclass{framework/flow}{CFTransfer}.
 %\end{smaller}
 %%END LATEX
 
-\end{enumerate}
 
 \subsection{Override methods that handle Nodes of interest\label{creating-dataflow-override-methods}}
 
-At this point, your checker is configured to use your extended
-\refclass{framework/flow}{CFTransfer}, but it uses only the default
-behavior. Next, in your extended \refclass{framework/flow}{CFTransfer}
+Decide what source code syntax is relevant to the the run-time checks or
+run-time operations you are trying to support.  The CFG (control flow
+graph) represents source code as \refclass{dataflow/cfg/node}{Node}, a
+node in the abstract syntax tree of the program being checked (see
+\href{#creating-dataflow-representation}{``Program representation''} below).
+
+In your extended \refclass{framework/flow}{CFTransfer}
 override the visitor method that handles the \refclass{dataflow/cfg/node}{Node}s
-relevant to your run-time check or run-time operation can be used to refine
-types.
+relevant to your run-time check or run-time operation.
+Leave the body of the overriding method empty for now.
 
-A \refclass{dataflow/cfg/node}{Node} is basically equivalent to a javac compiler
-\refTreeclass{tree}{Tree}.  A tree is a node in the abstract syntax tree of the
-program being checked. See Section~\ref{creating-javac-tips} for more information about trees.
-
-As an example, for the statement \<String a = "";>, the corresponding
-abstract syntax tree structure is:
-\begin{Verbatim}
-VariableTree:
-  name: "a"
-  type:
-    IdentifierTree
-      name: String
-  initializer:
-    LiteralTree
-      value: ""
-\end{Verbatim}
-
-A \refclass{dataflow/cfg/node}{Node} generally maps one-to-one with a
-\refTreeclass{tree}{Tree}. When dataflow processes a method, it translates
-\refTreeclass{tree}{Tree}s into \refclass{dataflow/cfg/node}{Node}s and then
-calls the appropriate visit method on
-\refclass{framework/flow}{CFAbstractTransfer} which then performs the dataflow
-analysis for the passed in \refclass{dataflow/cfg/node}{Node}.
-
-Decide what \refclass{dataflow/cfg/node}{Node} kinds are of interest with
-respect to the run-time checks or run-time operations you are trying to support.
-The \refclass{dataflow/cfg/node}{Node} subclasses can be found in the
-\code{org.checkerframework.dataflow.cfg.node} package.  Some examples are
-\refclass{dataflow/cfg/node}{EqualToNode},
-\refclass{dataflow/cfg/node}{LeftShiftNode},
-\refclass{dataflow/cfg/node}{VariableDeclarationNode}.
-
-The Regex Checker refines the type of a run-time test method call, so
-\refclass{checker/regex}{RegexTransfer} overrides the method that handles
-\refclass{dataflow/cfg/node}{MethodInvocationNode}s,
-\code{visitMethodInvocation}.
+For example, the Regex Checker refines the type of a run-time test method
+call.  A method call is represented by a
+\refclass{dataflow/cfg/node}{MethodInvocationNode}.  Therefore,
+\refclass{checker/regex}{RegexTransfer} overrides the
+\code{visitMethodInvocation} method:
 
 %BEGIN LATEX
 \begin{smaller}
@@ -1167,49 +1215,57 @@ The Regex Checker refines the type of a run-time test method call, so
 \end{smaller}
 %END LATEX
 
-\subsection{Determine the expressions to refine the types of\label{creating-dataflow-determine-expressions}}
 
-There are usually multiple expressions used in a run-time check or run-time
-operation; determine which expression the customization will refine.  This is
-usually specific to the type system and run-time test.
+\subsubsection{Program representation\label{creating-dataflow-representation}}
+
+% A \refclass{dataflow/cfg/node}{Node} generally maps one-to-one with a
+% \refTreeclass{tree}{Tree}. When dataflow processes a method, it translates
+% \refTreeclass{tree}{Tree}s into \refclass{dataflow/cfg/node}{Node}s and then
+% calls the appropriate visit method on
+% \refclass{framework/flow}{CFAbstractTransfer} which then performs the dataflow
+% analysis for the passed in \refclass{dataflow/cfg/node}{Node}.
+
+The \refclass{dataflow/cfg/node}{Node} subclasses can be found in the
+\code{org.checkerframework.dataflow.cfg.node} package.  Some examples are
+\refclass{dataflow/cfg/node}{EqualToNode},
+\refclass{dataflow/cfg/node}{LeftShiftNode},
+\refclass{dataflow/cfg/node}{VariableDeclarationNode}.
+
+A \refclass{dataflow/cfg/node}{Node}
+is basically equivalent to a javac compiler \refTreeclass{tree}{Tree}.
+
+See Section~\ref{creating-javac-tips} for more information about \refTreeclass{tree}{Tree}s.
+As an example, the statement \<String a = "";>, is represented as this
+abstract syntax tree:
+\begin{Verbatim}
+VariableTree:
+  name: "a"
+  type:
+    IdentifierTree
+      name: String
+  initializer:
+    LiteralTree
+      value: ""
+\end{Verbatim}
+
+
+
+\subsection{Implement the refinement\label{creating-dataflow-implement-refinement}}
 
 \begin{sloppypar}
-Expressions are refined by modifying the return value of a visitor method in
-\refclass{framework/flow}{CFAbstractTransfer}.
-\refclass{framework/flow}{CFAbstractTransfer} visitor methods return a
-\refclass{dataflow/analysis}{TransferResult}.  The constructor of a
-\refclass{dataflow/analysis}{TransferResult} takes two parameters: the resulting
-type for the \refclass{dataflow/cfg/node}{Node} being evaluated (the result
-type) and a map from expressions in scopes to estimates of their types (a
-\refclass{dataflow/analysis}{Store}).
+Each visitor method in \refclass{framework/flow}{CFAbstractTransfer}
+returns a \refclass{dataflow/analysis}{TransferResult}.  A
+\refclass{dataflow/analysis}{TransferResult} represents the
+refined information that is known after an operation.  It has two
+components:  the result type for the \refclass{dataflow/cfg/node}{Node}
+being evaluated, and a map from expressions in scope to estimates of their
+types (a \refclass{dataflow/analysis}{Store}).  Each of these components is
+relevant to one of the two cases in
+Section~\ref{creating-dataflow-determine-expressions}:
 \end{sloppypar}
 
-For the program operation \code{op(a,b)}, an enhancement may improve the Checker
-Framework's types in either or both of the following ways:
 \begin{enumerate}
-\item Changing the resulting type to refine the estimate of the type of entire
-    expression \code{op(a,b)}.
-
-As an example (and as the running example of
-implementing a dataflow refinement),
-the \code{RegexUtil.asRegex} method is declared as:
-
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{Verbatim}
-  @Regex(0) String asRegex(String s, int groups) { ... }
-\end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-
-\noindent
-which means that an expression such as \code{RegexUtil.asRegex(myString, myInt)}
-has type \code{@Regex(0) String}. When \code{int} parameter \code{group} is
-known or can be inferred at compile time, a better estimate can be given.  For
-example, \code{RegexUtil.asRegex(myString, 2)} has type \code{@Regex(2) String}.
-
+\item
 \begin{sloppypar}
 Changing the \refclass{dataflow/analysis}{TransferResult}'s result type changes
 the type that is returned by the \refclass{framework/type}{AnnotatedTypeFactory}
@@ -1220,32 +1276,14 @@ visited.  (Remember that \refclass{common/basetype}{BaseTypeVisitor} uses the
 \refTreeclass{tree}{Tree}s.)
 \end{sloppypar}
 
-When \refclass{checker/regex}{RegexTransfer} evaluates a
+For example, When \refclass{checker/regex}{RegexTransfer} evaluates a
 \code{RegexUtils.asRegex} invocation, it updates the
 \refclass{dataflow/analysis}{TransferResult}'s result type. This changes the
 type of the \code{RegexUtils.asRegex} invocation when its
 \refTreeclass{tree}{Tree} is looked up by the
-\refclass{framework/type}{AnnotatedTypeFactory}.  Regex Checker's
-\code{visitMethodInvocation} is shown in more detail in
-Section~\ref{creating-dataflow-implement-refinement}.
+\refclass{framework/type}{AnnotatedTypeFactory}.  See below for details.
 
-\item Changing the store to refine the estimate of some other expression, such
-    as \code{a} or \code{b}.
-
-As an example, consider an equality test.
-
-\begin{Verbatim}
-  @Nullable String s;
-    if (s != null) {
-    ...
-    }
-\end{Verbatim}
-
-The type of \<s != null> is always \<@NonNull boolean> (dataflow analysis
-does not affect it), but in the true branch, the type of \<s> can be
-refined to \<@NonNull String>.
-
-
+\item
 Updating the \refclass{dataflow/analysis}{Store} treats an expression as
 having a refined type for the remainder of the method or conditional block. For
 example, when the Nullness Checker's dataflow evaluates \code{myvar != null}, it
@@ -1260,24 +1298,26 @@ binary expressions or casts, cannot be stored in the
 \end{enumerate}
 
 
-\subsection{Implement the refinement\label{creating-dataflow-implement-refinement}}
-
 \begin{sloppypar}
-This section details implementing the visitor method
+The rest of this section details implementing the visitor method
 \code{RegexTransfer.visitMethodInvocation} for the \code{RegexUtil.asRegex}
 run-time test.  You can find other examples of visitor methods in
 \refclass{checker/lock}{LockTransfer} and
 \refclass{checker/formatter}{FormatterTransfer}.
 \end{sloppypar}
 
+
+
 \begin{enumerate}
 \item \textbf{Determine if the visited \refclass{dataflow/cfg/node}{Node} is of
     interest}
 
-The visitor method for a \refclass{dataflow/cfg/node}{Node} is invoked for all
-instances of that \refclass{dataflow/cfg/node}{Node} kind in the program, so the
-\refclass{dataflow/cfg/node}{Node} must be inspected to determine if it is an
-instance of the desired run-time test or operation. For example,
+A visitor method is invoked for all
+instances of a given \refclass{dataflow/cfg/node}{Node} kind in the
+program.
+The visitor must inspect the
+\refclass{dataflow/cfg/node}{Node} to determine if it is an
+instance of the desired run-time test or operation.  For example,
 \code{visitMethodInvocation} is called when dataflow processes any method
 invocation, but the \refclass{checker/regex}{RegexTransfer} should only refine
 the result of \code{RegexUtils.asRegex} invocations:
@@ -1293,13 +1333,12 @@ the result of \code{RegexUtils.asRegex} invocations:
     ExecutableElement method = target.getMethod();
     Node receiver = target.getReceiver();
     if (receiver instanceof ClassNameNode) {
-      ClassNameNode cn = (ClassNameNode) receiver;
-      String receiverName = cn.getElement().toString();
+      String receiverName = ((ClassNameNode) receiver).getElement().toString();
 
-      // Is this a RegexUtil.isRegex(s, groups) method call?
-      if (isRegexUtil(receiverName)) {
-        if (ElementUtils.matchesElement(method,
-          null, IS_REGEX_METHOD_NAME, String.class, int.class)) {
+      // Is this a call to method RegexUtil.isRegex(s, groups)?
+      if (receiverName.equals("RegexUtil")
+          && ElementUtils.matchesElement(method,
+                 null, "isRegex", String.class, int.class)) {
             ...
 \end{Verbatim}
 %BEGIN LATEX
@@ -1308,46 +1347,31 @@ the result of \code{RegexUtils.asRegex} invocations:
 
 \item \textbf{Determine the refined type}
 
-Some run-time tests, like the null comparison test, have a deterministic type
-refinement, e.g. the Nullness Checker always refines the argument in the
-expression to \code{@NonNull}.  However, sometimes the refined type is dependent
-on the parts of run-time test or operation itself, such as arguments passed to
-it.
+Sometimes the refined type is dependent on the parts of the operation,
+such as arguments passed to it.
 
 For example, the refined type of \code{RegexUtils.asRegex} is dependent on the
 integer argument to the method call. The \refclass{checker/regex}{RegexTransfer}
-uses this argument to build the resulting type \code{@Regex(i)}, where \code{i}
-is the value of the integer argument.  Note that currently this code only uses
+uses this argument to build the resulting type \code{@Regex(\emph{i})}, where \code{\emph{i}}
+is the value of the integer argument.  For simplicity the below code only uses
 the value of the integer argument if the argument was an integer literal.  It
 could be extended to use the value of the argument if it was any compile-time
 constant or was inferred at compile time by another analysis, such as the
-\ref{constant-value-checker}.
-
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-  \begin{Verbatim}
-  AnnotationMirror regexAnnotation;
-  Node count = n.getArgument(1);
-  if (count instanceof IntegerLiteralNode) {
-    IntegerLiteralNode iln = (IntegerLiteralNode) count;
-    Integer groupCount = iln.getValue();
-    regexAnnotation = factory.createRegexAnnotation(groupCount);
-
-\end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-
-If the integer argument was not a literal integer, the
-\refclass{checker/regex}{RegexTransfer} falls back to refining the type to just
-\code{@Regex(0)}.
+Constant Value Checker (\chapterpageref{constant-value-checker}).
 
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
+  AnnotationMirror regexAnnotation;
+  Node count = n.getArgument(1);
+  if (count instanceof IntegerLiteralNode) {
+    // argument is a literal integer
+    IntegerLiteralNode iln = (IntegerLiteralNode) count;
+    Integer groupCount = iln.getValue();
+    regexAnnotation = factory.createRegexAnnotation(groupCount);
   } else {
+    // argument is not a literal integer; fall back to @Regex(), which is the same as @Regex(0)
     regexAnnotation = AnnotationUtils.fromClass(factory.getElementUtils(), Regex.class);
   }
 \end{Verbatim}
@@ -1355,14 +1379,14 @@ If the integer argument was not a literal integer, the
 \end{smaller}
 %END LATEX
 
+
 \item \textbf{Return a \refclass{dataflow/analysis}{TransferResult} with the
     refined types}
 
-As discussed in Section~\ref{creating-dataflow-determine-expressions}, the type of an
-expression is refined by modifying the
-\refclass{dataflow/analysis}{TransferResult}.  Since the
-\refclass{checker/regex}{RegexTransfer} is updating the type of the run-time
-test itself, it will update the result type and not the
+Recall that the type of an expression is refined by modifying the
+\refclass{dataflow/analysis}{TransferResult} returned by a visitor method.
+Since the \refclass{checker/regex}{RegexTransfer} is updating the type of
+the run-time test itself, it will update the result type and not the
 \refclass{dataflow/analysis}{Store}.
 
 A \refclass{framework/flow}{CFValue} is created to hold the type inferred.
@@ -1393,11 +1417,26 @@ result type.
 \end{smaller}
 %END LATEX
 
-Finally, when the Regex Checker encounters a \code{RegexUtils.asRegex} method
-call, the checker will refine the return type of the method if it can determine
-the value of the integer parameter at compile time.
+As a result of this code, when the Regex Checker encounters a
+\code{RegexUtils.asRegex} method call, the checker will refine the return
+type of the method if it can determine the value of the integer parameter
+at compile time.
 
 \end{enumerate}
+
+
+\subsection{Disabling flow-sensitive inference\label{creating-dataflow-disable}}
+
+In the uncommon case that you wish to disable the Checker Framework's
+built-in flow inference in your checker (this is different than choosing
+not to extend it as described in Section~\ref{creating-dataflow}), put the
+following two lines at the beginning of the constructor for your subtype of
+\refclass{common/basetype}{BaseAnnotatedTypeFactory}:
+
+\begin{Verbatim}
+        // disable flow inference
+        super(checker, false);
+\end{Verbatim}
 
 
 \section{The checker class:  Compiler interface\label{creating-compiler-interface}}
@@ -2214,4 +2253,9 @@ without warnings or errors.
 %%  LocalWords:  AnnotationProvider FooTransfer createFlowTransferFunction
 %%  LocalWords:  SupportedLintOptions myoption StubFiles scriptfile outdir
 %%  LocalWords:  somedir Acfgviz Averbosecfg cfgviz MyVisualizer init
-%%  LocalWords:  VizClassName CFGVisualizer
+%%  LocalWords:  VizClassName CFGVisualizer MyProp MyPropChecker mypackage
+%  LocalWords:  SourceFile NonNegative JavaExpression DependentTypesHelper
+%  LocalWords:  createDependentTypesHelper boolean regex subclasses README
+%  LocalWords:  formatter nChecker nSubchecker AprintVerboseGenerics
+%  LocalWords:  AshowInferenceSteps DefaultTypeArgumentInference Graphviz
+%  LocalWords:  javacutil
