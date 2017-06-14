@@ -1508,9 +1508,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             return qualifierHierarchy.isSubtype(exprType.getEffectiveAnnotations(), castAnnos);
+        } else {
+            // checkCastElementType option wasn't specified, so only check effective annotations,
+            return qualifierHierarchy.isSubtype(
+                    exprType.getEffectiveAnnotations(), castType.getEffectiveAnnotations());
         }
-        return qualifierHierarchy.isSubtype(
-                exprType.getEffectiveAnnotations(), castType.getEffectiveAnnotations());
     }
 
     @Override
