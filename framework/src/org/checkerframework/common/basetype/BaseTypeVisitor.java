@@ -913,15 +913,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedExecutableType invokedMethod = mfuPair.first;
         List<AnnotatedTypeMirror> typeargs = mfuPair.second;
 
-        for (AnnotatedTypeMirror typearg : typeargs) {
-            if (typearg.getKind() == TypeKind.WILDCARD
-                    && ((AnnotatedWildcardType) typearg).isUninferredTypeArgument()) {
-                checker.report(
-                        Result.failure(
-                                "type.arguments.not.inferred",
-                                invokedMethod.getElement().getSimpleName()),
-                        node);
-                break; // only issue error once per method
+        if (checker.hasOption("conservativeUninferredTypeArguments")) {
+            for (AnnotatedTypeMirror typearg : typeargs) {
+                if (typearg.getKind() == TypeKind.WILDCARD
+                        && ((AnnotatedWildcardType) typearg).isUninferredTypeArgument()) {
+                    checker.report(
+                            Result.failure(
+                                    "type.arguments.not.inferred",
+                                    invokedMethod.getElement().getSimpleName()),
+                            node);
+                    break; // only issue error once per method
+                }
             }
         }
 
