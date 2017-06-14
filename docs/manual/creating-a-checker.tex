@@ -428,10 +428,10 @@ directory should be placed in the same directory as your Checker's source file.
 
 For example, the Nullness Checker's source file is located at
 \<.../nullness/NullnessChecker.java>. The \<NonNull> qualifier is located in the
-directory \<.../nullness/qual>.
+directory \<.../nullness/qual/>.
 
-The Checker Framework automatically treats any annotation that has this value
-and is declared in the qual package as a type qualifier.
+The Checker Framework automatically treats any annotation that
+is declared in the qual package as a type qualifier.
 (See Section \ref{creating-indicating-supported-annotations} for more details.)
 
 % \noindent
@@ -445,7 +445,11 @@ and is declared in the qual package as a type qualifier.
 % exceptions, such as \<@SuppressWarnings>).
 
 Your type system should include a top qualifier and a bottom qualifier
-(Section~\ref{creating-bottom-and-top-qualifier}).  You should also define a
+(Section~\ref{creating-bottom-and-top-qualifier}).
+In most cases, the bottom qualifier should be meta-annotated with
+\<@ImplicitFor(literals=LiteralKind.NULL)>.
+
+You should also define a
 polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
 (Section~\ref{qualifier-polymorphism}).
 
@@ -644,9 +648,13 @@ Your type hierarchy must have a bottom qualifier
 --- a qualifier that is a (direct or indirect) subtype of every other
 qualifier.
 
-Your type system must give \<null> the bottom type.  (The only exception
+Your type system must give \<null> the bottom type.
+(The only exception
 is if the type system has special treatment for \<null> values, as the
-Nullness Checker does.)  This legal code
+Nullness Checker does.)
+A way to do this is to meta-annotate your bottom type with
+\<@ImplicitFor(literals=LiteralKind.NULL)>.
+This legal code
 will not type-check unless \<null> has the bottom type:
 \begin{Verbatim}
 <T> T f() {
