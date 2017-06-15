@@ -115,7 +115,6 @@
     <isset property="isMac"/>
   </condition>
 
-
   <target name="-run-google-java-format.check">
     <condition property="run-google-java-format.exists">
       <available file="${checker.loc}/bin-devel/.run-google-java-format" type="dir"/>
