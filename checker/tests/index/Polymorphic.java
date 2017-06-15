@@ -28,12 +28,13 @@ class Polymorphic {
     // SameLen tests
     void samelen_id(int @SameLen("#2") [] a, int[] a2) {
         int[] banana;
-        int @SameLen("a2") [] b = samelen_identity(a);
+        int @SameLen("a2") [] a3 = samelen_identity(a);
         //:: error: (assignment.type.incompatible)
-        int @SameLen("banana") [] c = samelen_identity(b);
+        int @SameLen("banana") [] c = samelen_identity(a3);
     }
 
     // UpperBound tests
+    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void ubc_id(
             int[] a,
             int[] b,

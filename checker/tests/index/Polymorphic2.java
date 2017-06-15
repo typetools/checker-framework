@@ -23,8 +23,8 @@ class Polymorphic2 {
         return flag ? a : b;
     }
 
-    int[] array1 = new int[2];
-    int[] array2 = new int[2];
+    final int[] array1 = new int[2];
+    final int[] array2 = new int[2];
 
     void testSameLen(int @SameLen("array1") [] a, int @SameLen("array2") [] b) {
         int[] x = merge(a, b);
@@ -36,6 +36,7 @@ class Polymorphic2 {
         return flag ? a : b;
     }
     // UpperBound tests
+    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void testUpperBound(@LTLengthOf("array1") int a, @LTLengthOf("array2") int b) {
         int x = merge(a, b);
         //:: error: (assignment.type.incompatible)
@@ -46,6 +47,7 @@ class Polymorphic2 {
         @LTLengthOf("array1") int zz = mergeUpperBound(a, b);
     }
 
+    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void testUpperBound2(@LTLengthOf("array1") int a, @LTEqLengthOf("array1") int b) {
         @LTEqLengthOf("array1") int x = merge(a, b);
         //:: error: (assignment.type.incompatible)

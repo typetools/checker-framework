@@ -1,8 +1,9 @@
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 
+@SuppressWarnings("local.variable.unsafe.dependent.annotation")
 class RefineGTE {
-    int[] arr = {1};
+    final int[] arr = {1};
 
     void testLTL(@LTLengthOf("arr") int test) {
         // The reason for the parsing is so that the Value Checker
@@ -29,10 +30,7 @@ class RefineGTE {
         }
     }
 
-    void testLTEL(@LTEqLengthOf("arr") int test) {
-        //:: error: (assignment.type.incompatible)
-        @LTEqLengthOf("arr") int a = Integer.parseInt("1");
-
+    void testLTEL(@LTEqLengthOf("arr") int test, int a) {
         //:: error: (assignment.type.incompatible)
         @LTEqLengthOf("arr") int a3 = Integer.parseInt("3");
 

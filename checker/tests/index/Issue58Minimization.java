@@ -32,11 +32,12 @@ class Issue58Minimization {
         }
     }
 
-    void ubc_test(int[] a, @LTEqLengthOf("#1") int x) {
+    @LTLengthOf("#1") int ubc_test(int[] a, @LTEqLengthOf("#1") int x) {
         int z;
         if ((z = x) != a.length) {
-            @LTLengthOf("a") int y = z;
+            return z;
         }
+        return a.length - 1;
     }
 
     void samelen_test(int[] a, int[] c) {

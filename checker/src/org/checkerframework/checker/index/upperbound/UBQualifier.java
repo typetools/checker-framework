@@ -810,6 +810,17 @@ public abstract class UBQualifier {
             return "LessThanLengthOf{" + "map=" + map + '}';
         }
 
+        public List<String> getOffsetsAsStrings() {
+            List<String> offsets = new ArrayList<>();
+            for (String arr : map.keySet()) {
+                Set<OffsetEquation> offs = map.get(arr);
+                for (OffsetEquation e : offs) {
+                    offsets.addAll(e.getTerms());
+                }
+            }
+            return offsets;
+        }
+
         public Iterable<? extends String> getArrays() {
             return map.keySet();
         }

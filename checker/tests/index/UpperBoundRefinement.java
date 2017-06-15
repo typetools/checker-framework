@@ -4,6 +4,7 @@ import org.checkerframework.checker.index.qual.LTLengthOf;
 public class UpperBoundRefinement {
     // If expression i has type @LTLengthOf(value = "f2", offset = "f1.length") int and expression
     // j is less than or equal to the length of f1, then the type of i + j is @LTLengthOf("f2")
+    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void test(int[] f1, int[] f2) {
         @LTLengthOf(value = "f2", offset = "f1.length") int i = (f2.length - 1) - f1.length;
         @LTLengthOf("f1") int j = f1.length - 1;

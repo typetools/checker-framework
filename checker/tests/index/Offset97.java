@@ -3,6 +3,7 @@
 import org.checkerframework.checker.index.qual.*;
 
 public class Offset97 {
+    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
     public static void m2() {
         int[] a = {1, 2, 3, 4, 5};
         @IndexFor("a") int i = 4;

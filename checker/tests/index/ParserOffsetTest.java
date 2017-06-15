@@ -17,33 +17,41 @@ public class ParserOffsetTest {
         }
     }
 
-    public void subtraction2(String[] a, @IndexFor("#1") int i) {
+    public @IndexFor("#1") int subtraction2(String[] a, @IndexFor("#1") int i) {
         if (i < a.length - 1) {
-            @IndexFor("a") int j = i + 1;
+            return i + 1;
+        } else {
+            return i;
         }
     }
 
-    public void addition2(String[] a, @IndexFor("#1") int i) {
+    public @IndexFor("#1") int addition2(String[] a, @IndexFor("#1") int i) {
         if ((i + 1) < a.length) {
-            @IndexFor("a") int j = i + 1;
+            return i + 1;
+        } else {
+            return i;
         }
     }
 
-    public void addition3(String[] a, @IndexFor("#1") int i) {
+    public @IndexFor("#1") int addition3(String[] a, @IndexFor("#1") int i) {
         if ((i + 5) < a.length) {
-            @IndexFor("a") int j = i + 5;
+            return i + 5;
+        } else {
+            return i;
         }
     }
 
     @SuppressWarnings("lowerbound")
-    public void subtraction3(String[] a, @NonNegative int k) {
+    public @LTLengthOf("#1") int subtraction3(String[] a, @NonNegative int k) {
         if (k - 5 < a.length) {
             String s = a[k - 5];
-            @IndexFor("a") int j = k - 5;
+            return k - 5;
+        } else {
+            return a.length - 1;
         }
     }
 
-    @SuppressWarnings("lowerbound")
+    @SuppressWarnings({"lowerbound", "local.variable.unsafe.dependent.annotation"})
     public void subtraction4(String[] a, @IndexFor("#1") int i) {
         if (1 - i < a.length) {
             // The error on this assignment is a false positive.
@@ -55,32 +63,51 @@ public class ParserOffsetTest {
         }
     }
 
-    @SuppressWarnings("lowerbound")
-    public void subtraction5(String[] a, int i) {
+    public @LTLengthOf("#1") int subtraction5(String[] a, int i) {
         if (1 - i < a.length) {
-            //:: error: (assignment.type.incompatible)
-            @IndexFor("a") int j = i;
+            //:: error: (return.type.incompatible)
+            return i;
+        } else {
+            return a.length - 1;
         }
     }
 
-    @SuppressWarnings("lowerbound")
-    public void subtraction6(String[] a, int i, int j) {
+    public @LTLengthOf("#1") int subtraction6(String[] a, int i, int j) {
         if (i - j < a.length - 1) {
-            @IndexFor("a") int k = i - j;
-            //:: error: (assignment.type.incompatible)
-            @IndexFor("a") int k1 = i;
+            return i - j;
+        } else {
+            return a.length - 1;
         }
     }
 
-    public void multiplication1(String[] a, int i, @Positive int j) {
+    public @LTLengthOf("#1") int subtraction7(String[] a, int i, int j) {
+        if (i - j < a.length - 1) {
+            //:: error: (return.type.incompatible)
+            return i;
+        } else {
+            return a.length - 1;
+        }
+    }
+
+    public @IndexFor("#1") Integer multiplication1(String[] a, int i, @Positive int j) {
         if ((i * j) < (a.length + j)) {
-            //:: error: (assignment.type.incompatible)
-            @IndexFor("a") int k = i;
-            //:: error: (assignment.type.incompatible)
-            @IndexFor("a") int k1 = j;
+            //:: error: (return.type.incompatible)
+            return i;
+        } else {
+            return null;
         }
     }
 
+    public @IndexFor("#1") Integer multiplication1again(String[] a, int i, @Positive int j) {
+        if ((i * j) < (a.length + j)) {
+            //:: error: (return.type.incompatible)
+            return j;
+        } else {
+            return null;
+        }
+    }
+
+    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
     public void multiplication2(String @ArrayLen(5) [] a, @IntVal(-2) int i, @IntVal(20) int j) {
         if ((i * j) < (a.length - 20)) {
             @LTLengthOf("a") int k1 = i;

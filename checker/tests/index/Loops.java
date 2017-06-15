@@ -15,6 +15,7 @@ public final class Loops {
         }
     }
 
+    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
     public void test2(int[] a, int[] array) {
         int offset = array.length - 1;
         int offset2 = array.length - 1;
@@ -55,7 +56,7 @@ public final class Loops {
         for (int i = patternLength; i > 0; i--) {}
     }
 
-    public void test5(
+    public @LTLengthOf(value = "#1", offset = "-1000") int test5(
             int[] a,
             @LTLengthOf(value = "#1", offset = "-1000") int offset,
             @LTLengthOf("#1") int offset2) {
@@ -70,7 +71,7 @@ public final class Loops {
             //:: error: (compound.assignment.type.incompatible)
             offset2 += offset;
         }
-        //:: error: (assignment.type.incompatible)
-        @LTLengthOf(value = "#1", offset = "-1000") int x = otherOffset;
+        //:: error: (return.type.incompatible)
+        return otherOffset;
     }
 }

@@ -2,6 +2,7 @@
 
 import org.checkerframework.checker.index.qual.*;
 
+@SuppressWarnings("local.variable.unsafe.dependent.annotation")
 public class SubtractingNonNegatives {
     public static void m4(int[] a, @IndexFor("#1") int i, @IndexFor("#1") int j) {
         int k = i;

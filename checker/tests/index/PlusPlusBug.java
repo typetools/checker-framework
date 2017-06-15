@@ -1,7 +1,7 @@
 import org.checkerframework.checker.index.qual.*;
 
 public class PlusPlusBug {
-    int[] array = {};
+    final int[] array = {};
 
     void test(@LTLengthOf("array") int x) {
         //TODO: This should issue an error

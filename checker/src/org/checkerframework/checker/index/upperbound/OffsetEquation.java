@@ -117,6 +117,18 @@ public class OffsetEquation {
     }
 
     /**
+     * @return all of the terms in this offset equation, without considering whether they are added
+     *     or subtracted (i.e. all terms are returned). This is useful for determining whether the
+     *     qualifier this offset equation is part of has been invalidated by a reassignment.
+     */
+    public List<String> getTerms() {
+        List<String> allTerms = new ArrayList<>();
+        allTerms.addAll(addedTerms);
+        allTerms.addAll(subtractedTerms);
+        return allTerms;
+    }
+
+    /**
      * Makes a copy of this offset and removes any added terms that are accesses to the length of
      * the listed arrays. If any terms were removed, then the copy is returned. Otherwise, null is
      * returned.

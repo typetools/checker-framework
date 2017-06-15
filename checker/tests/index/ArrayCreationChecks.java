@@ -2,6 +2,7 @@
 
 import org.checkerframework.checker.index.qual.*;
 
+@SuppressWarnings("local.variable.unsafe.dependent.annotation")
 class ArrayCreationChecks {
 
     void test1(@Positive int x, @Positive int y) {

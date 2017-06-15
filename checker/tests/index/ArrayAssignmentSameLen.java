@@ -10,8 +10,10 @@ public class ArrayAssignmentSameLen {
         i_index = index;
     }
 
+    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void test1(int[] a, int[] b, @LTEqLengthOf("#1") int index) {
         int[] array = a;
+
         @LTLengthOf(
             value = {"array", "b"},
             offset = {"0", "-3"}
@@ -20,6 +22,7 @@ public class ArrayAssignmentSameLen {
         int i = index;
     }
 
+    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void test2(int[] a, int[] b, @LTLengthOf("#1") int i) {
         int[] c = a;
         //:: error: (assignment.type.incompatible)
@@ -27,17 +30,19 @@ public class ArrayAssignmentSameLen {
         @LTLengthOf("c") int y = i;
     }
 
+    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void test3(int[] a, @LTLengthOf("#1") int i, @NonNegative int x) {
         int[] c1 = a;
-        // See useTest3 for an example of why this assignment should fail.
+        // See useTest3 for an example of why this return should fail.
         @LTLengthOf(
             value = {"c1", "c1"},
             offset = {"0", "x"}
         )
         //:: error: (assignment.type.incompatible)
-        int z = i;
+        int y = i;
     }
 
+    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void test4(
             int[] a,
             @LTLengthOf(
@@ -51,11 +56,11 @@ public class ArrayAssignmentSameLen {
             value = {"c1", "c1"},
             offset = {"0", "x"}
         )
-        int z = i;
+        int y = i;
     }
 
     void useTest3() {
-        int[] a = {1, 3};
-        test3(a, 0, 10);
+        int[] z = {1, 3};
+        test3(z, 0, 10);
     }
 }

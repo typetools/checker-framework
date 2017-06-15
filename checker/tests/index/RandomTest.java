@@ -2,6 +2,7 @@ import java.util.Random;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 
 public class RandomTest {
+    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void test() {
         Random rand = new Random();
         int[] a = new int[8];

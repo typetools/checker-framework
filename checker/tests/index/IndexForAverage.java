@@ -4,13 +4,18 @@ import org.checkerframework.checker.index.qual.*;
 
 public class IndexForAverage {
 
-    public static void bug(int[] a, @IndexFor("#1") int i, @IndexFor("#1") int j) {
-        @IndexFor("a") int k = (i + j) / 2;
+    public static @IndexFor("#1") int bug(int[] a, @IndexFor("#1") int i, @IndexFor("#1") int j) {
+        return (i + j) / 2;
     }
 
-    public static void bug2(int[] a, @IndexFor("#1") int i, @IndexFor("#1") int j) {
-        @LTLengthOf("a") int k = ((i - 1) + j) / 2;
-        //:: error: (assignment.type.incompatible)
-        @LTLengthOf("a") int h = ((i + 1) + j) / 2;
+    public static @LTLengthOf("#1") int bug2(
+            int[] a, @IndexFor("#1") int i, @IndexFor("#1") int j) {
+        return ((i - 1) + j) / 2;
+    }
+
+    public static @LTLengthOf("#1") int bug3(
+            int[] a, @IndexFor("#1") int i, @IndexFor("#1") int j) {
+        //:: error: (return.type.incompatible)
+        return ((i + 1) + j) / 2;
     }
 }
