@@ -11,16 +11,14 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * The bottom type for the Upper Bound type system. Programmers should not need to write this type.
+ * The bottom type in the Upper Bound type system. Programmers should rarely write this type.
  *
  * @checker_framework.manual #index-checker Index Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
 @SubtypeOf(LTOMLengthOf.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
-@ImplicitFor(
-    literals = {LiteralKind.NULL},
-    typeNames = {java.lang.Void.class}
-)
+@ImplicitFor(literals = LiteralKind.NULL, typeNames = java.lang.Void.class)
 public @interface UpperBoundBottom {}

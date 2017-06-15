@@ -29,11 +29,13 @@ import org.checkerframework.javacutil.AnnotationProvider;
  * javac -proc:only -processor org.checkerframework.common.util.count.Locations <em>MyFile.java ...</em>
  * </pre>
  *
- * <p>Counting the number of lines of the processor's output yields the annotation location count
- * (e.g., by piping the output to {@code wc}). Because the processor outputs a single line of text
- * describing type of each annotation location it encounters, you can obtain the count for specific
- * annotation location types (i.e., possible local variable annotations, or possible method receiver
- * annotations) by filtering the output accordingly (e.g., with {@code grep}).
+ * <p>You probably want to pipe the output through another program:
+ *
+ * <ul>
+ *   <li>Total annotation count: {@code ... | wc}.
+ *   <li>Breakdown by location type: {@code ... | sort | uniq -c}
+ *   <li>Count for only certain location types: use {@code grep}
+ * </ul>
  *
  * <p>By default, this utility displays annotation locations only. The following two options may be
  * used to adjust the output:

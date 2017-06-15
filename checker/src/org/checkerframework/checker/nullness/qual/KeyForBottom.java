@@ -10,21 +10,21 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Used internally by the type system; should never be written by a programmer.
+ * The bottom type in the Map Key type system. Programmers should rarely write this type.
  *
  * @checker_framework.manual #map-key-checker Map Key Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
 @InvisibleQualifier
 @SubtypeOf(KeyFor.class)
 @DefaultFor({TypeUseLocation.LOWER_BOUND})
-@ImplicitFor(
-    literals = {LiteralKind.NULL},
-    typeNames = {java.lang.Void.class}
-)
+@ImplicitFor(literals = LiteralKind.NULL, typeNames = java.lang.Void.class)
 public @interface KeyForBottom {}

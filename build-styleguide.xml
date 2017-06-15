@@ -5,7 +5,8 @@
   It contains targets to automatically enforce a common style.
   The fileset "formatted.java.files" must contain the files to reformat.
 -->
-<project name="styleguide">
+<project name="styleguide"
+         xmlns:if="ant:if" xmlns:unless="ant:unless">
 
   <property name="style.grep.args" value="-r -n -e"/>
 
@@ -45,7 +46,8 @@
       <arg line="${style.grep.args}"/>
       <arg value="[^\\]\b\(else\|finally\|try\){\|}\(catch\|else\|finally\)\b\|){\($\|[^0-9]\)\|\b\(catch\|for\|if\|while\)("/>
       <arg line="${style.grep.files}"/>
-      <arg line="--exclude=build-styleguide.xml --exclude=Makefile"/>
+      <arg value="--exclude=build-styleguide.xml"/>
+      <arg value="--exclude=Makefile"/>
     </exec>
     <fail message="Missing space:${line.separator}${missingspace}">
       <condition>
@@ -113,15 +115,36 @@
     <isset property="isMac"/>
   </condition>
 
+  <target name="-run-google-java-format.check">
+    <condition property="run-google-java-format.exists">
+      <available file="${checker.loc}/bin-devel/.run-google-java-format" type="dir"/>
+    </condition>
+  </target>
+
   <target name="-get-run-google-java-format"
-          description="Obtain or update run-google-java-format project">
-    <exec executable="/bin/sh">
-      <arg value="-c"/>
-      <arg value="cd ${checker.loc}/bin-devel &amp;&amp; ((cd .run-google-java-format &amp;&amp; git pull -q) || git clone -q https://github.com/plume-lib/run-google-java-format.git .run-google-java-format)"/>
+          description="Obtain the run-google-java-format project"
+          depends="-run-google-java-format.check"
+          unless="run-google-java-format.exists">
+    <exec executable="git"
+          dir="${checker.loc}/bin-devel">
+      <arg value="clone"/>
+      <arg value="-q"/>
+      <arg value="https://github.com/plume-lib/run-google-java-format.git"/>
+      <arg value=".run-google-java-format"/>
     </exec>
   </target>
 
-  <target name="reformat" depends="-get-run-google-java-format"
+  <target name="-update-run-google-java-format"
+          description="Update the run-google-java-format project"
+          depends="-get-run-google-java-format">
+    <exec executable="git"
+          dir="${checker.loc}/bin-devel/.run-google-java-format">
+      <arg value="pull"/>
+      <arg value="-q"/>
+    </exec>
+  </target>
+
+  <target name="reformat" depends="-update-run-google-java-format"
           description="Reformat Java code">
     <apply executable="python" parallel="true" maxparallel="${maxparallel}" failonerror="true">
       <arg value="${checker.loc}/bin-devel/.run-google-java-format/run-google-java-format.py"/>
@@ -130,13 +153,26 @@
     </apply>
   </target>
 
-  <target name="check-format" depends="-get-run-google-java-format"
+  <target name="check-format" depends="-update-run-google-java-format"
           description="Check Java code formatting">
-    <apply executable="python" parallel="true" maxparallel="${maxparallel}" failonerror="true">
+    <apply executable="python" parallel="true" maxparallel="${maxparallel}"
+       failonerror="false" resultproperty="check.format.result"
+       outputproperty="check.format.stdout" errorproperty="check.format.stderr">
       <arg value="${checker.loc}/bin-devel/.run-google-java-format/check-google-java-format.py"/>
       <arg value="--aosp"/>    <!-- 4-space indentation -->
       <fileset refid="formatted.java.files"/>
     </apply>
+    <echo unless:blank="${check.format.stdout}">${check.format.stdout}</echo>
+    <echo unless:blank="${check.format.stderr}">${check.format.stderr}</echo>
+    <echo unless:blank="${check.format.stderr}">Fix syntax errors, then re-run:  ant check-format</echo>
+    <echo unless:blank="${check.format.stdout}" if:blank="${check.format.stderr}">Try running:  ant reformat</echo>
+    <fail>
+      <condition>
+        <not>
+          <equals arg1="0" arg2="${check.format.result}"/>
+        </not>
+      </condition>
+    </fail>
   </target>
 
 </project>

@@ -1,5 +1,8 @@
 package org.checkerframework.checker.index.qual;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
+
 /**
  * An integer that is either -1 or is a valid index for each of the given sequences.
  *
@@ -22,6 +25,7 @@ package org.checkerframework.checker.index.qual;
  * @see LTLengthOf
  * @checker_framework.manual #index-checker Index Checker
  */
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface IndexOrLow {
     /** Sequences that the annotated expression is a valid index for (or it's -1). */
     String[] value() default {};

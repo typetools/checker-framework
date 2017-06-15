@@ -44,8 +44,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * <p>Two {@code @GuardedBy} annotations with different argument expressions are unrelated by
  * subtyping.
  *
- * <p>
- *
  * @see Holding
  * @checker_framework.manual #lock-checker Lock Checker
  * @checker_framework.manual #lock-examples-guardedby Example use of @GuardedBy

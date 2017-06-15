@@ -128,12 +128,12 @@ public class DoubleMath extends NumberMath<Double> {
     }
 
     @Override
-    public Number signedSiftRight(Number right) {
+    public Number signedShiftRight(Number right) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Number unsignedSiftRight(Number right) {
+    public Number unsignedShiftRight(Number right) {
         throw new UnsupportedOperationException();
     }
 

@@ -111,55 +111,60 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
-            if (AnnotationUtils.areSame(sub, sup)
-                    || AnnotationUtils.areSameByClass(sup, UnknownClass.class)
-                    || AnnotationUtils.areSameByClass(sub, WholeProgramInferenceBottom.class)
-                    || AnnotationUtils.areSameByClass(sup, Top.class)) {
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSame(subAnno, superAnno)
+                    || AnnotationUtils.areSameByClass(superAnno, UnknownClass.class)
+                    || AnnotationUtils.areSameByClass(subAnno, WholeProgramInferenceBottom.class)
+                    || AnnotationUtils.areSameByClass(superAnno, Top.class)) {
                 return true;
             }
 
-            if (AnnotationUtils.areSameByClass(sub, UnknownClass.class)
-                    || AnnotationUtils.areSameByClass(sup, WholeProgramInferenceBottom.class)) {
+            if (AnnotationUtils.areSameByClass(subAnno, UnknownClass.class)
+                    || AnnotationUtils.areSameByClass(
+                            superAnno, WholeProgramInferenceBottom.class)) {
                 return false;
             }
 
-            if (AnnotationUtils.areSameByClass(sub, Top.class)) {
+            if (AnnotationUtils.areSameByClass(subAnno, Top.class)) {
                 return false;
             }
 
-            if (AnnotationUtils.areSameByClass(sub, ImplicitAnno.class)
-                    && (AnnotationUtils.areSameByClass(sup, Sibling1.class)
-                            || AnnotationUtils.areSameByClass(sup, Sibling2.class)
-                            || AnnotationUtils.areSameByClass(sup, SiblingWithFields.class))) {
+            if (AnnotationUtils.areSameByClass(subAnno, ImplicitAnno.class)
+                    && (AnnotationUtils.areSameByClass(superAnno, Sibling1.class)
+                            || AnnotationUtils.areSameByClass(superAnno, Sibling2.class)
+                            || AnnotationUtils.areSameByClass(
+                                    superAnno, SiblingWithFields.class))) {
                 return true;
             }
 
-            if ((AnnotationUtils.areSameByClass(sub, Sibling1.class)
-                            || AnnotationUtils.areSameByClass(sub, Sibling2.class)
-                            || AnnotationUtils.areSameByClass(sub, ImplicitAnno.class)
-                            || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class))
-                    && AnnotationUtils.areSameByClass(sup, Parent.class)) {
+            if ((AnnotationUtils.areSameByClass(subAnno, Sibling1.class)
+                            || AnnotationUtils.areSameByClass(subAnno, Sibling2.class)
+                            || AnnotationUtils.areSameByClass(subAnno, ImplicitAnno.class)
+                            || AnnotationUtils.areSameByClass(subAnno, SiblingWithFields.class))
+                    && AnnotationUtils.areSameByClass(superAnno, Parent.class)) {
                 return true;
             }
 
-            if ((AnnotationUtils.areSameByClass(sub, Sibling1.class)
-                            || AnnotationUtils.areSameByClass(sub, Sibling2.class)
-                            || AnnotationUtils.areSameByClass(sub, ImplicitAnno.class)
-                            || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class)
-                            || AnnotationUtils.areSameByClass(sub, Parent.class))
-                    && AnnotationUtils.areSameByClass(sup, DefaultType.class)) {
+            if ((AnnotationUtils.areSameByClass(subAnno, Sibling1.class)
+                            || AnnotationUtils.areSameByClass(subAnno, Sibling2.class)
+                            || AnnotationUtils.areSameByClass(subAnno, ImplicitAnno.class)
+                            || AnnotationUtils.areSameByClass(subAnno, SiblingWithFields.class)
+                            || AnnotationUtils.areSameByClass(subAnno, Parent.class))
+                    && AnnotationUtils.areSameByClass(superAnno, DefaultType.class)) {
                 return true;
             }
 
-            if (AnnotationUtils.areSameByClass(sub, SiblingWithFields.class)
-                    && AnnotationUtils.areSameByClass(sup, SiblingWithFields.class)) {
+            if (AnnotationUtils.areSameByClass(subAnno, SiblingWithFields.class)
+                    && AnnotationUtils.areSameByClass(superAnno, SiblingWithFields.class)) {
                 List<String> subVal1 =
-                        AnnotationUtils.getElementValueArray(sub, "value", String.class, true);
+                        AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
                 List<String> supVal1 =
-                        AnnotationUtils.getElementValueArray(sup, "value", String.class, true);
-                String subVal2 = AnnotationUtils.getElementValue(sub, "value2", String.class, true);
-                String supVal2 = AnnotationUtils.getElementValue(sup, "value2", String.class, true);
+                        AnnotationUtils.getElementValueArray(
+                                superAnno, "value", String.class, true);
+                String subVal2 =
+                        AnnotationUtils.getElementValue(subAnno, "value2", String.class, true);
+                String supVal2 =
+                        AnnotationUtils.getElementValue(superAnno, "value2", String.class, true);
                 return subVal1.equals(supVal1) && subVal2.equals(supVal2);
             }
             return false;

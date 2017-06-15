@@ -1,6 +1,6 @@
-## This file, checker/jdk/Makefile.jdk, is linked from
+## This file, checker/jdk/Makefile.jdk, is included from
 ## each subdirectory of checker/jdk/ .  For example,
-## checker/jdk/nullness/Makefile is a symbolic link to this file.
+## checker/jdk/nullness/Makefile includes this file.
 
 
 # Variables
@@ -39,7 +39,7 @@ classes: $(SOURCES)
 	mkdir -p build
 	@echo "Building the JDK..."
 # TODO: fix all issues and remove -Awarns
-	@$(CHECKER_JAVAC) -J-Xmx2500M -XDignore.symbol.file -d build -processor $(JDKDIR) -AprintErrorStack -Awarns $?
+	@$(CHECKER_JAVAC) -J-Xmx2500M -XDignore.symbol.file -d build -processor $(JDKDIR) -AprintErrorStack -Awarns -Xmaxwarns 5000 $?
 
 build/%.expected: build/%.class
 	@$(JAVAP) -cp $(JAVADOCLIB) $(subst /,.,$*)  | grep public | sed 's/ native / /g' | sed 's/? extends java\/lang\/Object/?/g' | sort > $@

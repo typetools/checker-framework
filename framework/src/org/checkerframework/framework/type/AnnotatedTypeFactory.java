@@ -74,6 +74,7 @@ import org.checkerframework.common.reflection.ReflectionResolver;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.FieldInvariant;
 import org.checkerframework.framework.qual.FromByteCode;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.InheritedAnnotation;
@@ -81,6 +82,7 @@ import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.StubParser;
 import org.checkerframework.framework.stub.StubResource;
@@ -98,6 +100,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
+import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -180,8 +183,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * This formatter is used for converting AnnotatedTypeMirrors to Strings. This formatter will be
-     * passed to all AnnotatedTypeMirrors created by this factory and will be used in their toString
-     * methods.
+     * used by all AnnotatedTypeMirrors created by this factory in their toString methods.
      */
     protected final AnnotatedTypeFormatter typeFormatter;
 
@@ -468,7 +470,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotationUtils.fromClass(
                         elements, org.checkerframework.dataflow.qual.TerminatesExecution.class));
 
-        initilizeReflectionResolution();
+        initializeReflectionResolution();
 
         if (this.getClass().equals(AnnotatedTypeFactory.class)) {
             this.parseStubFiles();
@@ -480,7 +482,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return wholeProgramInference;
     }
 
-    protected void initilizeReflectionResolution() {
+    protected void initializeReflectionResolution() {
         if (checker.shouldResolveReflection()) {
             boolean debug = "debug".equals(checker.getOption("resolveReflection"));
 
@@ -501,15 +503,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.root = root;
         treePathCache.clear();
         pathHack.clear();
-        // Clear the caches with trees because once the compilation unit changes,
-        // the trees may be modified and lose type arguments.
-        elementToTreeCache.clear();
-        fromTreeCache.clear();
-        classAndMethodTreeCache.clear();
 
-        // There is no need to clear the following cache, it is limited by cache size and it
-        // contents won't change between compilation units.
-        // elementCache.clear();
+        if (shouldCache) {
+            // Clear the caches with trees because once the compilation unit changes,
+            // the trees may be modified and lose type arguments.
+            elementToTreeCache.clear();
+            fromTreeCache.clear();
+            classAndMethodTreeCache.clear();
+
+            // There is no need to clear the following cache, it is limited by cache size and it
+            // contents won't change between compilation units.
+            // elementCache.clear();
+        }
     }
 
     @SideEffectFree
@@ -664,7 +669,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * TypeArgumentInference infers the method type arguments when they are not explicitly written.
      */
     protected TypeArgumentInference createTypeArgumentInference() {
-        return new DefaultTypeArgumentInference();
+        return new DefaultTypeArgumentInference(this);
     }
 
     public TypeArgumentInference getTypeArgumentInference() {
@@ -845,6 +850,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
         return new DefaultAnnotatedTypeFormatter(
                 checker.hasOption("printVerboseGenerics"), checker.hasOption("printAllQualifiers"));
+    }
+
+    public AnnotatedTypeFormatter getAnnotatedTypeFormatter() {
+        return typeFormatter;
     }
 
     protected AnnotationFormatter createAnnotationFormatter() {
@@ -1282,7 +1291,117 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public void postAsMemberOf(
             AnnotatedTypeMirror type, AnnotatedTypeMirror owner, Element element) {
+        if (element.getKind() == ElementKind.FIELD) {
+            addAnnotationFromFieldInvariant(type, owner, (VariableElement) element);
+        }
         addComputedTypeAnnotations(element, type);
+    }
+
+    /**
+     * Adds the qualifier specified by a field invariant for {@code field} to {@code type}.
+     *
+     * @param type annotated type to which the annotation is added
+     * @param accessedVia the annotated type of the receiver of the accessing tree. (Only used to
+     *     get the type element of the underling type.)
+     * @param field element representing the field
+     */
+    protected void addAnnotationFromFieldInvariant(
+            AnnotatedTypeMirror type, AnnotatedTypeMirror accessedVia, VariableElement field) {
+        TypeElement typeElement = InternalUtils.getTypeElement(accessedVia.getUnderlyingType());
+        if (ElementUtils.enclosingClass(field).equals(typeElement)) {
+            // If the field is declared in the accessedVia class, then the field in the invariant
+            // cannot be this field, even if the field has the same name.
+            return;
+        }
+
+        FieldInvariants invariants = getFieldInvariants(typeElement);
+        if (invariants == null) {
+            return;
+        }
+        List<AnnotationMirror> invariantAnnos = invariants.getQualifiersFor(field.getSimpleName());
+        type.replaceAnnotations(invariantAnnos);
+    }
+
+    /**
+     * Returns the field invariants for the given class.
+     *
+     * <p>Subclass may implement their own field invariant annotations if {@link FieldInvariant} is
+     * not expressive enough. They must override this method to properly create AnnotationMirror and
+     * also override {@link #getFieldInvariantDeclarationAnnotations()} to return their field
+     * invariants.
+     *
+     * @param element class for which to get invariants
+     * @return fields invariants for {@code element}
+     */
+    public FieldInvariants getFieldInvariants(TypeElement element) {
+        if (element == null) {
+            return null;
+        }
+        AnnotationMirror fieldInvarAnno = getDeclAnnotation(element, FieldInvariant.class);
+        if (fieldInvarAnno == null) {
+            return null;
+        }
+        List<String> fields =
+                AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, true);
+        List<Name> classes =
+                AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", true);
+        List<AnnotationMirror> qualifiers = new ArrayList<>();
+        for (Name name : classes) {
+            qualifiers.add(AnnotationUtils.fromName(elements, name));
+        }
+        if (fields.size() > qualifiers.size()) {
+            int difference = fields.size() - qualifiers.size();
+            for (int i = 0; i < difference; i++) {
+                qualifiers.add(qualifiers.get(0));
+            }
+        }
+        if (fields.size() != qualifiers.size()) {
+            // FieldInvariant wasn't written correctly, so just return the object, the
+            // BaseTypeVisitor will issue an error.
+            return new FieldInvariants(fields, qualifiers);
+        }
+
+        // Only keep qualifiers that are supported by this checker.  (The other qualifiers cannot
+        // be checked by this checker, so they must be ignored.)
+        List<String> supportFields = new ArrayList<>();
+        List<AnnotationMirror> supportedQualifiers = new ArrayList<>();
+        for (int i = 0; i < fields.size(); i++) {
+            if (isSupportedQualifier(qualifiers.get(i))) {
+                supportedQualifiers.add(qualifiers.get(i));
+                supportFields.add(fields.get(i));
+            }
+        }
+        if (supportFields.isEmpty() && qualifiers.isEmpty()) {
+            return null;
+        }
+
+        return new FieldInvariants(supportFields, supportedQualifiers);
+    }
+
+    /**
+     * Returns the AnnotationTree which is a use of one of the field invariant annotations (as
+     * specified via {@link #getFieldInvariantDeclarationAnnotations()}. If one isn't found, null is
+     * returned.
+     *
+     * @param annoTrees trees to look
+     * @return Returns the AnnotationTree which is a use of one of the field invariant annotations
+     *     or null if one isn't found
+     */
+    public AnnotationTree getFieldInvariantAnnotationTree(
+            List<? extends AnnotationTree> annoTrees) {
+        List<AnnotationMirror> annos = InternalUtils.annotationsFromTypeAnnotationTrees(annoTrees);
+        for (int i = 0; i < annos.size(); i++) {
+            for (Class<? extends Annotation> clazz : getFieldInvariantDeclarationAnnotations())
+                if (AnnotationUtils.areSameByClass(annos.get(i), clazz)) {
+                    return annoTrees.get(i);
+                }
+        }
+        return null;
+    }
+
+    /** Returns the set of classes of field invariant annotations. */
+    protected Set<Class<? extends Annotation>> getFieldInvariantDeclarationAnnotations() {
+        return Collections.<Class<? extends Annotation>>singleton(FieldInvariant.class);
     }
 
     /**
@@ -1856,7 +1975,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected static void adaptGetClassReturnTypeToReceiver(
             final AnnotatedExecutableType getClassType, final AnnotatedTypeMirror receiverType) {
-        final AnnotatedTypeMirror newBound = receiverType.getErased();
+        // TODO: should the receiver type ever be a declaration??
+        // Work on removing the asUse() call.
+        final AnnotatedTypeMirror newBound = receiverType.getErased().asUse();
 
         final AnnotatedTypeMirror returnType = getClassType.getReturnType();
         if (returnType == null
@@ -2223,9 +2344,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 this.getQualifierHierarchy().getTypeQualifiers(), a);
     }
 
-    /** Add the annotation clazz as an alias for the annotation type. */
+    /** Add the annotation {@code clazz} as an alias for the annotation {@code type}. */
     protected void addAliasedAnnotation(Class<?> alias, AnnotationMirror type) {
-        aliases.put(alias.getCanonicalName(), type);
+        addAliasedAnnotation(alias.getCanonicalName(), type);
+    }
+
+    /**
+     * Add the annotation whose canonical name is given by {@code canonicalName} as an alias for the
+     * annotation {@code type}.
+     */
+    protected void addAliasedAnnotation(String canonicalName, AnnotationMirror type) {
+        aliases.put(canonicalName, type);
     }
 
     /**
@@ -2835,7 +2964,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         Set<AnnotationMirror> results = AnnotationUtils.createAnnotationSet();
         // Retrieving the annotations from the element.
-        results.addAll(elt.getAnnotationMirrors());
+        List<? extends AnnotationMirror> fromEle = elements.getAllAnnotationMirrors(elt);
+        for (AnnotationMirror annotation : fromEle) {
+            try {
+                results.add(annotation);
+            } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
+                // If a CompletionFailure occurs, issue a warning.
+                checker.report(
+                        Result.warning(
+                                "annotation.not.completed",
+                                ElementUtils.getVerboseName(elt),
+                                annotation),
+                        annotation.getAnnotationType().asElement());
+            }
+        }
+
         // If declAnnosFromStubFiles == null, return the annotations in the element.
         if (declAnnosFromStubFiles != null) {
             // Adding @FromByteCode annotation to declAnnosFromStubFiles entry with key
@@ -2885,12 +3028,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
                         // Fix for Issue 348: If a CompletionFailure occurs,
                         // issue a warning.
-                        checker.message(
-                                Kind.WARNING,
-                                annotation.getAnnotationType().asElement(),
-                                "annotation.not.completed",
-                                ElementUtils.getVerboseName(elt),
-                                annotation);
+                        checker.report(
+                                Result.warning(
+                                        "annotation.not.completed",
+                                        ElementUtils.getVerboseName(elt),
+                                        annotation),
+                                annotation.getAnnotationType().asElement());
                         continue;
                     }
                     if (AnnotationUtils.containsSameByClass(
@@ -2955,12 +3098,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 // I didn't find a nicer alternative to check whether the Symbol can be completed.
                 // The completer field of a Symbol might be non-null also in successful cases.
                 // Issue a warning (exception only happens once) and continue.
-                checker.message(
-                        Kind.WARNING,
-                        annotation.getAnnotationType().asElement(),
-                        "annotation.not.completed",
-                        ElementUtils.getVerboseName(element),
-                        annotation);
+                checker.report(
+                        Result.warning(
+                                "annotation.not.completed",
+                                ElementUtils.getVerboseName(element),
+                                annotation),
+                        annotation.getAnnotationType().asElement());
                 continue;
             }
             // First call copier, if exception, continue normal modula laws.
@@ -3050,8 +3193,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * If {@code wildcard}'s upper bound is a super type of {@code annotatedTypeMirror}, this method
      * returns an AnnotatedTypeMirror with the same qualifiers as {@code annotatedTypeMirror}, but
-     * the underlying Java type is the the most specific base type of {@code annotatedTypeMirror}
-     * whose erasure type is equivalent to the upper bound of {@code wildcard}.
+     * the underlying Java type is the most specific base type of {@code annotatedTypeMirror} whose
+     * erasure type is equivalent to the upper bound of {@code wildcard}.
      *
      * <p>Otherwise, returns {@code annotatedTypeMirror} unmodified.
      *
@@ -3096,6 +3239,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param wildcard AnnotatedWildcardType whose upper bound is used to widen
      * @return {@code annotatedTypeMirror} widen to the upper bound of {@code wildcard}
      */
+    // TODO: BoundsInitializer#initializeExtendsBound(AnnotatedWildcardType) and
+    // SupertypeFinder#fixWildcardBound have similar logic for handling unbounded wildcards.
+    // Merging those methods and this into AnnotatedWildcardType would improve the code greatly and
+    // still be easier than implementing all of capture conversion
     public AnnotatedTypeMirror widenToUpperBound(
             final AnnotatedTypeMirror annotatedTypeMirror, final AnnotatedWildcardType wildcard) {
         final TypeMirror toModifyTypeMirror = annotatedTypeMirror.getUnderlyingType();

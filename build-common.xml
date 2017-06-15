@@ -72,8 +72,8 @@
         <java fork="true"
               outputproperty="compiler.version"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
-            <arg line="-version"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+            <arg value="-version"/>
         </java>
 
         <condition property="compiler.exists.jsr308">
@@ -125,7 +125,7 @@ points to version ${build.version} of the 'javac.jar' library."/>
               failonerror="true"
               classpath="${javac.lib}:${javadoc.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
@@ -136,9 +136,10 @@ points to version ${build.version} of the 'javac.jar' library."/>
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
-            <arg line="-d ${build}"/>
-            <arg line="${javacutil.loc}/src/org/checkerframework/javacutil/dist/ManualTaglet.java"/>
-            <arg line="-version"/>
+            <arg value="-d"/>
+            <arg value="${build}"/>
+            <arg value="${javacutil.loc}/src/org/checkerframework/javacutil/dist/ManualTaglet.java"/>
+            <arg value="-version"/>
         </java>
     </target>
 
@@ -146,7 +147,7 @@ points to version ${build.version} of the 'javac.jar' library."/>
     <target name="tags" depends="prep" description="Create Emacs TAGS table">
         <exec executable="/bin/sh" failonerror="true">
             <arg value="-c"/>
-            <arg value="etags `find . \( -name jdk \) -prune -o -name '*.java' -print | sort-directory-order`"/>
+            <arg value="ctags -e -f TAGS `find . \( -name jdk \) -prune -o -name '*.java' -print | sort-directory-order`"/>
         </exec>
     </target>
 

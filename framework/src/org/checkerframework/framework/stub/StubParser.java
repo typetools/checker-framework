@@ -38,6 +38,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.stubparser.JavaParser;
 import org.checkerframework.stubparser.ast.CompilationUnit;
 import org.checkerframework.stubparser.ast.ImportDeclaration;
@@ -501,7 +502,7 @@ public class StubParser {
             */
         }
 
-        annotateTypeParameters(typeArguments, typeParameters);
+        annotateTypeParameters(atypes, typeArguments, typeParameters);
         annotateSupertypes(decl, type);
         putNew(atypes, elt, type);
         List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
@@ -568,7 +569,7 @@ public class StubParser {
         addDeclAnnotations(declAnnos, elt);
 
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
-        annotateTypeParameters(methodType.getTypeVariables(), decl.getTypeParameters());
+        annotateTypeParameters(atypes, methodType.getTypeVariables(), decl.getTypeParameters());
         typeParameters.addAll(methodType.getTypeVariables());
         annotate(methodType.getReturnType(), decl.getType());
 
@@ -846,7 +847,9 @@ public class StubParser {
     }
 
     private void annotateTypeParameters(
-            List<? extends AnnotatedTypeMirror> typeArguments, List<TypeParameter> typeParameters) {
+            Map<Element, AnnotatedTypeMirror> atypes,
+            List<? extends AnnotatedTypeMirror> typeArguments,
+            List<TypeParameter> typeParameters) {
         if (typeParameters == null) {
             return;
         }
@@ -875,6 +878,7 @@ public class StubParser {
                     stubWarnIfNotFound("Annotations on intersection types are not yet supported");
                 }
             }
+            putNew(atypes, paramType.getUnderlyingType().asElement(), paramType);
         }
     }
 
@@ -1247,7 +1251,7 @@ public class StubParser {
             IntegerLiteralExpr ilexpr = (IntegerLiteralExpr) expr;
             ExecutableElement var = builder.findElement(name);
             TypeMirror expected = var.getReturnType();
-            if (expected.getKind() == TypeKind.DECLARED) {
+            if (expected.getKind() == TypeKind.DECLARED || TypesUtils.isIntegral(expected)) {
                 builder.setValue(name, Integer.valueOf(ilexpr.getValue()));
             } else if (expected.getKind() == TypeKind.ARRAY) {
                 Integer[] arr = {Integer.valueOf(ilexpr.getValue())};

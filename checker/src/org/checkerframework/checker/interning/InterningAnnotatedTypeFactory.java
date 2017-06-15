@@ -156,8 +156,8 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Unbox type and replace any interning type annotations with @Interned since all all primitives
-     * can safely use ==. See case 4 in the class comments.
+     * Unbox type and replace any interning type annotations with @Interned since all primitives can
+     * safely use ==. See case 4 in the class comments.
      */
     @Override
     public AnnotatedPrimitiveType getUnboxedType(AnnotatedDeclaredType type) {

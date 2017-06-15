@@ -134,9 +134,6 @@ public abstract class AnnotatedTypeMirror {
     /** Actual type wrapped with this AnnotatedTypeMirror */
     protected final TypeMirror actualType;
 
-    /** Used to format AnnotatedTypeMirrors into strings for printing. */
-    protected final AnnotatedTypeFormatter formatter;
-
     /** The annotations on this type. */
     // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
     // the class name of Annotation instead.
@@ -159,7 +156,6 @@ public abstract class AnnotatedTypeMirror {
         this.actualType = type;
         assert atypeFactory != null;
         this.atypeFactory = atypeFactory;
-        this.formatter = atypeFactory.typeFormatter;
     }
 
     @Override
@@ -730,12 +726,12 @@ public abstract class AnnotatedTypeMirror {
     @SideEffectFree
     @Override
     public final String toString() {
-        return formatter.format(this);
+        return atypeFactory.getAnnotatedTypeFormatter().format(this);
     }
 
     @SideEffectFree
     public final String toString(boolean verbose) {
-        return formatter.format(this, verbose);
+        return atypeFactory.getAnnotatedTypeFormatter().format(this, verbose);
     }
 
     /**
@@ -1521,21 +1517,16 @@ public abstract class AnnotatedTypeMirror {
          * @param type the lower bound type
          */
         void setLowerBound(AnnotatedTypeMirror type) {
-            if (type != null) {
-                type = type.asUse();
+            if (type == null || type.isDeclaration()) {
+                ErrorReporter.errorAbort(
+                        "Lower bounds should never be null or a declaration.\n"
+                                + "  new bound = "
+                                + type
+                                + "\n  type = "
+                                + this);
             }
             this.lowerBound = type;
-        }
-
-        /**
-         * Sets the lower bound of this type variable without calling asUse (and therefore making a
-         * copy)
-         */
-        void setLowerBoundField(AnnotatedTypeMirror type) {
-            this.lowerBound = type;
-            if (lowerBound != null) {
-                fixupBoundAnnotations();
-            }
+            fixupBoundAnnotations();
         }
 
         /**
@@ -1620,23 +1611,16 @@ public abstract class AnnotatedTypeMirror {
          * @param type the upper bound type
          */
         void setUpperBound(AnnotatedTypeMirror type) {
-            if (type.isDeclaration()) {
+            if (type == null || type.isDeclaration()) {
                 ErrorReporter.errorAbort(
-                        "Upper bounds should never contain declarations.\n" + "type=" + type);
+                        "Upper bounds should never be null or a declaration.\n"
+                                + "  new bound = "
+                                + type
+                                + "\n  type = "
+                                + this);
             }
             this.upperBound = type;
-        }
-
-        /**
-         * Set the upper bound of this variable type without making a copy using asUse
-         *
-         * @param type the upper bound type
-         */
-        void setUpperBoundField(final AnnotatedTypeMirror type) {
-            this.upperBound = type;
-            if (upperBound != null) {
-                fixupBoundAnnotations();
-            }
+            fixupBoundAnnotations();
         }
 
         /**
@@ -1909,13 +1893,16 @@ public abstract class AnnotatedTypeMirror {
          * @param type the type of the lower bound
          */
         void setSuperBound(AnnotatedTypeMirror type) {
-            if (type != null) {
-                type = type.asUse();
+            if (type == null || type.isDeclaration()) {
+                ErrorReporter.errorAbort(
+                        "Super bounds should never be null or a declaration.\n"
+                                + "  new bound = "
+                                + type
+                                + "\n  type = "
+                                + this);
             }
             this.superBound = type;
-            if (superBound != null) {
-                fixupBoundAnnotations();
-            }
+            fixupBoundAnnotations();
         }
 
         public AnnotatedTypeMirror getSuperBoundField() {
@@ -1940,13 +1927,16 @@ public abstract class AnnotatedTypeMirror {
          * @param type the type of the upper bound
          */
         void setExtendsBound(AnnotatedTypeMirror type) {
-            if (type != null) {
-                type = type.asUse();
+            if (type == null || type.isDeclaration()) {
+                ErrorReporter.errorAbort(
+                        "Extends bounds should never be null or a declaration.\n"
+                                + "  new bound = "
+                                + type
+                                + "\n  type = "
+                                + this);
             }
             this.extendsBound = type;
-            if (extendsBound != null) {
-                fixupBoundAnnotations();
-            }
+            fixupBoundAnnotations();
         }
 
         public AnnotatedTypeMirror getExtendsBoundField() {

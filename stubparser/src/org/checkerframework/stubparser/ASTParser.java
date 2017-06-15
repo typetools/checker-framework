@@ -3174,7 +3174,7 @@ final class ASTParser implements ASTParserConstants {
         jj_consume_token(RBRACKET);
                                                                                                                i++;
       }
-                                                                                                                           ret[0] = inits; ret[1] = new Integer(i);
+                                                                                                                           ret[0] = inits; ret[1] = Integer.valueOf(i);
     } else {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LBRACKET:
@@ -3193,7 +3193,7 @@ final class ASTParser implements ASTParserConstants {
           }
         }
         expr = ArrayInitializer();
-                                                            ret[0] = new Integer(i); ret[1] = expr;
+                                                            ret[0] = Integer.valueOf(i); ret[1] = expr;
         break;
       default:
         jj_la1[110] = jj_gen;

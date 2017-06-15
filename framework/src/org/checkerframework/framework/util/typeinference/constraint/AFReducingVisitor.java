@@ -162,7 +162,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     /**
      * I believe there should be only 1 way to have a constraint of this form: {@code visit
      * (Array<T>, T [])} At this point, I don't think that's a valid argument for a formal
-     * parameter. If this occurs is is because of idiosyncrasies with the Checker Framework . We're
+     * parameter. If this occurs it is because of idiosyncrasies with the Checker Framework . We're
      * going to skip this case for now.
      */
     @Override

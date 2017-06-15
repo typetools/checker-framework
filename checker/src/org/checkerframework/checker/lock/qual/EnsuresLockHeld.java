@@ -11,8 +11,6 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 /**
  * Indicates that the given expressions are held if the method terminates successfully.
  *
- * <p>
- *
  * @see EnsuresLockHeldIf
  * @checker_framework.manual #lock-checker Lock Checker
  * @checker_framework.manual #ensureslockheld-examples Example use of @EnsuresLockHeld

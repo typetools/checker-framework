@@ -14,14 +14,11 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 @SubtypeOf({NTDMiddle.class, NTDSide.class})
-@TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND})
 @DefaultInUncheckedCodeFor({TypeUseLocation.LOWER_BOUND})
 @DefaultFor({TypeUseLocation.LOWER_BOUND})
-@ImplicitFor(
-    typeNames = Void.class,
-    literals = {LiteralKind.NULL}
-)
+@ImplicitFor(typeNames = Void.class, literals = LiteralKind.NULL)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
 public @interface NTDBottom {}

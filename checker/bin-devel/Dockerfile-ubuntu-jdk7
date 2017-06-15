@@ -19,6 +19,7 @@ RUN apt-get -qqy update && apt-get -qqy install \
   make \
   mercurial \
   unzip \
+  wget \
   openjdk-7-jdk \
 && apt-get -qqy remove openjdk-8-jre-headless:amd64 \
 && apt-get clean \

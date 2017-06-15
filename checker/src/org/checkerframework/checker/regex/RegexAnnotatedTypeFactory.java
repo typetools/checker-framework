@@ -82,7 +82,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * The value method of the PartialRegex qualifier.
      *
-     * @see org.checkerframework.checker.regex.classic.qual.PartialRegex
+     * @see org.checkerframework.checker.regex.qual.PartialRegex
      */
     private final ExecutableElement partialRegexValue;
 
@@ -181,7 +181,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * A custom qualifier hierarchy for the Regex Checker. This makes a regex annotation a subtype
      * of all regex annotations with lower group count values. For example, {@code @Regex(3)} is a
-     * subtype of {@code @Regex(1)}. All regex annotations are subtypes of {@code @Regex} which has
+     * subtype of {@code @Regex(1)}. All regex annotations are subtypes of {@code @Regex}, which has
      * a default value of 0.
      */
     private final class RegexQualifierHierarchy extends GraphQualifierHierarchy {
@@ -191,28 +191,28 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameIgnoringValues(rhs, REGEX)
-                    && AnnotationUtils.areSameIgnoringValues(lhs, REGEX)) {
-                int rhsValue = getRegexValue(rhs);
-                int lhsValue = getRegexValue(lhs);
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, REGEX)
+                    && AnnotationUtils.areSameIgnoringValues(superAnno, REGEX)) {
+                int rhsValue = getRegexValue(subAnno);
+                int lhsValue = getRegexValue(superAnno);
                 return lhsValue <= rhsValue;
             }
             // TODO: subtyping between PartialRegex?
             // Ignore annotation values to ensure that annotation is in supertype map.
-            if (AnnotationUtils.areSameIgnoringValues(lhs, REGEX)) {
-                lhs = REGEX;
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, REGEX)) {
+                superAnno = REGEX;
             }
-            if (AnnotationUtils.areSameIgnoringValues(rhs, REGEX)) {
-                rhs = REGEX;
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, REGEX)) {
+                subAnno = REGEX;
             }
-            if (AnnotationUtils.areSameIgnoringValues(lhs, PARTIALREGEX)) {
-                lhs = PARTIALREGEX;
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, PARTIALREGEX)) {
+                superAnno = PARTIALREGEX;
             }
-            if (AnnotationUtils.areSameIgnoringValues(rhs, PARTIALREGEX)) {
-                rhs = PARTIALREGEX;
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, PARTIALREGEX)) {
+                subAnno = PARTIALREGEX;
             }
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
 
         /** Gets the value out of a regex annotation. */
@@ -258,7 +258,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return true;
     }
 
-    private class RegexPropagationAnnotator extends PropagationTreeAnnotator {
+    private static class RegexPropagationAnnotator extends PropagationTreeAnnotator {
 
         public RegexPropagationAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
@@ -327,7 +327,9 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     type.removeAnnotationInHierarchy(REGEX);
                     // ...and add a new one with the correct group count value.
                     type.addAnnotation(createRegexAnnotation(lGroupCount + rGroupCount));
-                } else if (lExprPoly && rExprPoly || lExprPoly && rExprRE || lExprRE && rExprPoly) {
+                } else if ((lExprPoly && rExprPoly)
+                        || (lExprPoly && rExprRE)
+                        || (lExprRE && rExprPoly)) {
                     type.addAnnotation(PolyRegex.class);
                 } else if (lExprPart && rExprPart) {
                     String lRegex = getPartialRegexValue(lExpr);
@@ -418,8 +420,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Returns the value of the Regex annotation on the given type or NULL if there is no Regex
          * annotation. If type is a TYPEVAR, WILDCARD, or INTERSECTION type, visit first their
-         * primary annotation then visit their upper bounds to get the Regex annotation. It's get
-         * "minimum" regex count because, depending on the bounds of a typevar or wildcard, the
+         * primary annotation then visit their upper bounds to get the Regex annotation. The method
+         * gets "minimum" regex count because, depending on the bounds of a typevar or wildcard, the
          * actual type may have more than the upper bound's count.
          *
          * @param type type that may carry a Regex annotation

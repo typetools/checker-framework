@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Troubleshooting and getting help\label{troubleshooting}}
+\chapter{Troubleshooting, getting help, and contributing\label{troubleshooting}}
 
 \begin{sloppypar}
 The manual might already answer your question, so first please look for
@@ -12,7 +12,8 @@ To report bugs, please see Section~\ref{reporting-bugs}.
 If you want to help out, you can give feedback (including on the
 documentation), choose a bug and fix it, or select a
 project from the ideas list at
-\url{https://github.com/typetools/checker-framework/wiki/Ideas}.
+% \url{https://github.com/typetools/checker-framework/wiki/Ideas}.
+\url{https://checkerframework.org/gsoc-2017-ideas.html}.
 \end{sloppypar}
 
 
@@ -540,6 +541,36 @@ You want the one with a name like
 Add this .jar file to your build path.
 
 
+\item
+When one formal parameter's annotation references another formal
+parameter's name, as in this constructor:
+
+\begin{smaller}
+\begin{Verbatim}
+public String(char value[], @IndexFor("value") int offset, @IndexOrHigh("value") int count) { ... }
+\end{Verbatim}
+\end{smaller}
+
+\noindent
+you will get an error such as
+
+\begin{smaller}
+\begin{Verbatim}[]
+[expression.unparsable.type.invalid] Expression in dependent type annotation invalid:
+[error for expression: myParamName error: myParamName: identifier not found]
+\end{Verbatim}
+\end{smaller}
+
+Section~\ref{java-expressions-as-arguments} explains that you need to use
+a different syntax to refer to a formal parameter:
+
+\begin{smaller}
+\begin{Verbatim}
+public String(char value[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int count) { ... }
+\end{Verbatim}
+\end{smaller}
+
+
 \end{itemize}
 
 
@@ -564,6 +595,35 @@ they have a different representation in bytecode.  More importantly,
 means that the compiler permits uses of the former in some locations where
 it issues a warning for the latter.  You can suppress the warning.
 
+A message of the form
+
+\begin{Verbatim}
+  error: annotation values must be of the form 'name=value'
+        @LTLengthOf("firstName", "lastName") int index;
+                    ^
+\end{Verbatim}
+
+\noindent
+is caused by incorrect Java syntax.  When you supply a set of multiple
+values as an annotation argument, you need to put curly braces around them:
+
+\begin{Verbatim}
+        @LTLengthOf({"firstName", "lastName"}) int index;
+\end{Verbatim}
+
+A message of the form
+
+\begin{Verbatim}
+  Error: cannot find symbol
+\end{Verbatim}
+
+\noindent
+for an annotation type that is imported, and is a applied to a
+statically-imported enum, is caused by a javac bug, unrelated to the
+Checker Framework.  See
+\url{https://bugs.openjdk.java.net/browse/JDK-7101822} and \url{https://bugs.openjdk.java.net/browse/JDK-8169095}.
+% Also see https://github.com/typetools/checker-framework/issues/1304
+
 
 \subsection{Unable to build the checker, or to run programs\label{common-problems-running-java}}
 
@@ -573,6 +633,7 @@ An error like this
 Unsupported major.minor version 52.0
 \end{Verbatim}
 
+\noindent
 means that you have compiled some files into the Java 8 format (version
 52.0), but you are trying to run them with Java 7 or earlier.
 Likewise, ``Unsupported major.minor version 51.0''
@@ -636,9 +697,10 @@ helpful if you:
 \item
   Indicate exactly what you did.  Don't skip any steps, and don't merely
   describe your actions in words.  Show the exact commands by attaching a
-  file or using cut-and-paste from your command shell.  A screenshot is not
-  as useful as plaintext, and if you can only reproduce the problem in an
-  IDE but not from the command line, then the problem is with the IDE\@.
+  file or using cut-and-paste from your command shell.  Always include
+  plaintext, not just a screenshot.  Try to reproduce the problem from the
+  command line as well as from an IDE or within a build system; that helps
+  to indicate whether the problem is with the IDE or build system.
 \item
   Include all files that are necessary to reproduce the problem.  This
   includes every file that is used by any of the commands you reported, and
@@ -674,6 +736,11 @@ instance, for the Nullness
 Checker, see directory \<checker-framework/checker/tests/nullness/>.
 But, please report your bug even if you do not report it in this format.
 
+When reporting bugs, please focus on realistic scenarios and well-written
+code.  We are sure that you can make up artificial code that stymies the
+type-checker!  Those aren't a good use of your time to report nor the
+maintainers' time to evaluate and fix.
+
 
 \section{Building from source\label{build-source}}
 
@@ -688,6 +755,11 @@ the Checker Framework, rather than an official release.
 % checkers and of the checker framework.  It may also help you to debug
 % problems more effectively.
 
+The Checker Framework can be easily built on Unix (Linux and Mac).  You
+might have trouble building on Windows.  If so, you can switch to Unix (at
+least for building, if not for running, the Checker Framework) or you can
+report the problems to the Checker Framework developers.
+
 
 \subsection{Install prerequisites\label{building-prerequisites}}
 
@@ -695,8 +767,15 @@ You need to install several packages in order to build the Checker
 Framework.  The following command installs them for Ubuntu:
 
 \begin{Verbatim}
-sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial openjdk-8-jdk unzip
+sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial openjdk-8-jdk texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended unzip
 \end{Verbatim}
+
+If you are building on Windows, here is an \emph{incomplete} list of needed
+prerequisites:
+\begin{itemize}
+\item
+  Install MSYS to obtain the \<cp> and \<make> commands.
+\end{itemize}
 
 
 \subsection{Obtain the source\label{building-obtain-source}}
@@ -883,9 +962,6 @@ an IDE such as Eclipse.
 \item
 Install needed packages; see Section~\ref{building-prerequisites} for
 instructions.
-% To build the manual, you will need \LaTeX and
-% {\hevea} (\myurl{http://hevea.inria.fr/}) installed, and either
-% \<rsvg-convert> or \<convert>.
 
 \item
 Run \code{make} in the \code{docs/manual} directory to build both the PDF and HTML versions of the manual.
@@ -902,6 +978,24 @@ Run the
 \ahref{https://docs.travis-ci.com/user/getting-started/#To-get-started-with-Travis-CI\%3A}{Travis-CI getting started directions},
 though note that the \<.travis.yml> files already exist, so only the first
 two steps may be necessary.
+
+To save time, by default the Travis jobs download a pre-built version of
+the JDK rather than building the JDK from the sources in the Checker
+Framework repository.  This means that if you make a change to the
+annotated JDK, your tests will fail.  Here is how to deal with this issue:
+\begin{enumerate}
+\item
+In your pull request, edit file \<.travis.yml> so that it rebuilds
+the JDK (some jobs might time out).
+\item Verify that all tests pass.
+\item A Checker Framework developer needs to update the pre-built JDK from
+  your branch.
+\item
+  Undo your edits to file \<.travis.yml>.
+\item Verify that all tests pass.
+\item A Checker Framework developer will merge your branch.
+\end{enumerate}
+
 
 \subsection{Code style\label{code-style}}
 
@@ -920,6 +1014,18 @@ If the pre-commit hook or \<ant reformat> fails with an
 "Argument list too long" error, then create a \code{local.properties} file
 in the top-level directory that sets the property \code{maxparallel} to 4000.  If the error is still issued, reduce the number and
 try again.
+
+
+\section{Contributing fixes (creating a pull request)\label{pull-request}}
+
+Please see the document
+\ahref{http://homes.cs.washington.edu/\%7emernst/advice/github-pull-request.html}{How
+  to create and review a GitHub pull request} for instructions about how to
+create a pull request, which is the way you can contribute code to the
+Checker Framework project.  Thanks in advance for your participation!
+
+For writing new test cases, see file
+\ahref{https://raw.githubusercontent.com/typetools/checker-framework/master/checker/tests/README}{\<checker-framework/checker/tests/README>}.
 
 
 \section{Publications\label{publications}\label{learning-more}}
@@ -1127,6 +1233,7 @@ Eric Spishak,
 Google Inc.\ (via @wmdietlGC),
 Javier Thaine,
 Jeff Luo,
+Jiasen (Jason) Xu,
 Jonathan Burke,
 Kivanc Muslu,
 Konstantin Weitz,
@@ -1148,6 +1255,7 @@ Steph Dietzel,
 Stuart Pernsteiner,
 Suzanne Millstein,
 Trask Stalnaker,
+Vlastimil Dort,
 Werner Dietl.
 %
 In addition, too many users to list have provided valuable feedback, which

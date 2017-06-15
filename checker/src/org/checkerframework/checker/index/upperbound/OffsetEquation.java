@@ -1,11 +1,11 @@
 package org.checkerframework.checker.index.upperbound;
 
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
@@ -188,9 +188,9 @@ public class OffsetEquation {
     }
 
     /**
-     * Returns true if this equation is is a single int value.
+     * Returns true if this equation is a single int value.
      *
-     * @return true if this equation is is a single int value.
+     * @return true if this equation is a single int value.
      */
     public boolean isInt() {
         return addedTerms.isEmpty() && subtractedTerms.isEmpty();
@@ -418,16 +418,14 @@ public class OffsetEquation {
             Node node, UpperBoundAnnotatedTypeFactory factory, char op) {
         assert op == '+' || op == '-';
         if (node.getTree() != null && TreeUtils.isExpressionTree(node.getTree())) {
-            Integer i;
-            if (op == '+') {
-                i = factory.valMinFromExpressionTree((ExpressionTree) node.getTree());
-            } else {
-                i = factory.valMaxFromExpressionTree((ExpressionTree) node.getTree());
-                i = i == null ? null : -i;
-            }
+            Long i =
+                    IndexUtil.getExactValue(node.getTree(), factory.getValueAnnotatedTypeFactory());
             if (i != null) {
+                if (op == '-') {
+                    i = -i;
+                }
                 OffsetEquation eq = new OffsetEquation();
-                eq.addInt(i);
+                eq.addInt(i.intValue());
                 return eq;
             }
         }
@@ -442,8 +440,8 @@ public class OffsetEquation {
      * on the value of op.
      *
      * <p>Otherwise the return equation is created by converting the node to a {@link
-     * FlowExpressions.Receiver} and then then added as a term to the returned equation. If op is
-     * '-' then it is a subtracted term.
+     * FlowExpressions.Receiver} and then added as a term to the returned equation. If op is '-'
+     * then it is a subtracted term.
      *
      * @param node Node from which to create offset equation
      * @param factory AnnotationTypeFactory

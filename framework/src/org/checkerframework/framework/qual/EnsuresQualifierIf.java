@@ -16,12 +16,12 @@ import java.lang.annotation.Target;
  *
  * <p>Here is an example use:
  *
- * <pre>
+ * <pre><code>
  *   {@literal @}EnsuresQualifierIf(result = true, expression = "#1", qualifier = Odd.class)
  *    boolean isOdd(final int p1, int p2) {
  *        return p1 % 2 == 1;
  *    }
- * </pre>
+ * </code></pre>
  *
  * <p>This annotation is only applicable to methods with a boolean return type.
  *

@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
@@ -220,9 +221,6 @@ import org.checkerframework.javacutil.TreeUtils;
     // org.checkerframework.framework.type.AnnotatedTypeMirror.toString()
     "printAllQualifiers",
 
-    // Print qualifier parameters using annotations instead of the <<Q>> format.
-    "printQualifierParametersAsAnnotations",
-
     // Whether to print [] around a set of type parameters in order to clearly see where they end
     // e.g.  <E extends F, F extends Object>
     // without this option the E is printed as:   E extends F extends Object
@@ -266,6 +264,10 @@ import org.checkerframework.javacutil.TreeUtils;
     // Output all subtyping checks
     // org.checkerframework.common.basetype.BaseTypeVisitor
     "showchecks",
+
+    // Output information about intermediate steps in method type argument inference
+    // org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference
+    "showInferenceSteps",
 
     /// Visualizing the CFG
 
@@ -941,6 +943,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         } else {
             previousErrorCompilationUnit = null;
         }
+        if (visitor == null) {
+            // typeProcessingStart invokes initChecker, which should
+            // have set the visitor. If the field is still null, an
+            // exception occured during initialization, which was already
+            // logged there. Don't also cause a NPE here.
+            return;
+        }
         if (p.getCompilationUnit() != currentRoot) {
             currentRoot = p.getCompilationUnit();
             visitor.setRoot(currentRoot);
@@ -1041,7 +1050,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @throws IllegalArgumentException if {@code source} is neither a {@link Tree} nor an {@link
      *     Element}
      */
-    public void message(
+    private void message(
             Diagnostic.Kind kind,
             Object source,
             /*@CompilerMessageKey*/ String msgKey,
@@ -1144,11 +1153,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (source instanceof Element) {
             messager.printMessage(kind, messageText, (Element) source);
         } else if (source instanceof Tree) {
-            Trees.instance(processingEnv)
-                    .printMessage(kind, messageText, (Tree) source, currentRoot);
+            printMessage(kind, messageText, (Tree) source, currentRoot);
         } else {
             ErrorReporter.errorAbort("invalid position source: " + source.getClass().getName());
         }
+    }
+
+    /**
+     * Do not call this method directly. Call {@link #report(Result, Object)} instead. (This method
+     * exists so that the BaseTypeChecker can override it and treat messages from compound checkers
+     * differently.)
+     */
+    protected void printMessage(
+            Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
+        Trees.instance(processingEnv).printMessage(kind, message, source, root);
     }
 
     /**
@@ -1165,19 +1183,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Print a non-localized message using the javac messager. This is preferable to using
      * System.out or System.err, but should only be used for exceptional cases that don't happen in
-     * correct usage. Localized messages should be raised using {@link
-     * SourceChecker#message(Diagnostic.Kind, Object, String, Object...)}.
+     * correct usage. Localized messages should be raised using {@link SourceChecker#report(Result,
+     * Object)}.
      *
      * @param kind the kind of message to print
      * @param msg the message text
      * @param args optional arguments to substitute in the message
-     * @see SourceChecker#message(Diagnostic.Kind, Object, String, Object...)
+     * @see SourceChecker#report(Result, Object)
      */
     public void message(Diagnostic.Kind kind, String msg, Object... args) {
+        String ftdmsg = String.format(msg, args);
         if (messager != null) {
-            messager.printMessage(kind, String.format(msg, args));
+            messager.printMessage(kind, ftdmsg);
         } else {
-            System.err.println(kind + ": " + String.format(msg, args));
+            System.err.println(kind + ": " + ftdmsg);
         }
     }
 
@@ -1219,8 +1238,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *       {@link #getSuppressWarningsKeys()} (e.g., {@code "nullness"} for Nullness, {@code
      *       "regex"} for Regex)
      *   <li>{@code "suppress-key:error-key}, where the suppress-key is as above, and error-key is a
-     *       prefix of the errors that it may suppress. So "nullness:generic.argument", would
-     *       suppress any errors in the Nullness Checker related to generic.argument.
+     *       prefix or suffix of the errors that it may suppress. So "nullness:generic.argument",
+     *       would suppress any errors in the Nullness Checker related to generic.argument.
      * </ol>
      *
      * @param anno the @SuppressWarnings annotation written by the user
@@ -1830,7 +1849,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected final Collection<String> getStandardSuppressWarningsKeys() {
         SuppressWarningsKeys annotation = this.getClass().getAnnotation(SuppressWarningsKeys.class);
 
-        Set<String> result = new HashSet<>();
+        // TreeSet ensures keys are returned in a consistent order.
+        Set<String> result = new TreeSet<>();
         result.add(SUPPRESS_ALL_KEY);
 
         if (annotation != null) {

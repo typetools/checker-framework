@@ -9,20 +9,21 @@ import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * The bottom qualifier for the Compiler Message Key Checker.
+ * The bottom type in the Compiler Message Key type system. Programmers should rarely write this
+ * type.
  *
  * @checker_framework.manual #compilermsgs-checker Compiler Message Key Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
 @SubtypeOf(CompilerMessageKey.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@ImplicitFor(
-    typeNames = {java.lang.Void.class},
-    literals = {LiteralKind.NULL}
-)
+@TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
+@ImplicitFor(typeNames = java.lang.Void.class, literals = LiteralKind.NULL)
 @DefaultFor(TypeUseLocation.LOWER_BOUND)
 public @interface CompilerMessageKeyBottom {}

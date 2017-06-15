@@ -1,10 +1,8 @@
 package org.checkerframework.checker.index;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
@@ -15,6 +13,10 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 
+/**
+ * This class provides methods shared by the Index Checker's internal checkers in their transfer
+ * functions. In particular, it provides a common framework for visiting comparison operators.
+ */
 public abstract class IndexAbstractTransfer extends CFTransfer {
 
     protected CFAnalysis analysis;
@@ -112,13 +114,4 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
             AnnotationMirror rightAnno,
             CFStore store,
             TransferInput<CFValue, CFStore> in);
-
-    protected boolean isArrayLengthFieldAccess(Node node) {
-        if (!(node instanceof FieldAccessNode)) {
-            return false;
-        }
-        FieldAccessNode fieldAccess = (FieldAccessNode) node;
-        return fieldAccess.getFieldName().equals("length")
-                && fieldAccess.getReceiver().getType().getKind() == TypeKind.ARRAY;
-    }
 }

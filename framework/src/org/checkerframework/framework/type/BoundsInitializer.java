@@ -369,6 +369,10 @@ public class BoundsInitializer {
             final WildcardType underlyingType = wildcard.getUnderlyingType();
             TypeMirror underlyingExtendsBound = underlyingType.getExtendsBound();
             if (underlyingExtendsBound == null) {
+                //TODO: AnnotatedTypeFactory#widenToUpperBound) and
+                // SupertypeFinder#fixWildcardBound have similar logic for handling unbounded wildcards.
+                // Merging those methods and this into AnnotatedWildcardType would improve the code greatly and
+                // still be easier than implementing all of capture conversion
                 // Take the upper bound of the type variable the wildcard is bound to.
                 underlyingExtendsBound =
                         TypesUtils.wildUpperBound(
@@ -529,7 +533,7 @@ public class BoundsInitializer {
          * that of sourceType
          */
         @SuppressWarnings("serial")
-        private class ReferenceMap extends LinkedHashMap<BoundPath, AnnotatedTypeVariable> {
+        private static class ReferenceMap extends LinkedHashMap<BoundPath, AnnotatedTypeVariable> {
             //TODO: EXPLAINED LINK DUE TO TYPEVAR SLED
         }
 
@@ -578,7 +582,7 @@ public class BoundsInitializer {
 
             for (final Entry<BoundPath, AnnotatedTypeVariable> pathToRef : refMap.entrySet()) {
                 final BoundPath path = pathToRef.getKey();
-                final AnnotatedTypeVariable replacement = pathToRef.getValue();
+                final AnnotatedTypeVariable replacement = pathToRef.getValue().asUse();
 
                 AnnotatedTypeMirror parent = traverseToParent(type, path);
                 BoundPathNode terminus = path.getLast();
@@ -603,7 +607,7 @@ public class BoundsInitializer {
         final AnnotatedTypeMirror upperBound =
                 AnnotatedTypeMirror.createType(
                         typeVar.getUnderlyingType().getUpperBound(), typeVar.atypeFactory, false);
-        typeVar.setUpperBoundField(upperBound);
+        typeVar.setUpperBound(upperBound);
         return upperBound;
     }
 
@@ -618,7 +622,7 @@ public class BoundsInitializer {
         }
         final AnnotatedTypeMirror lowerBound =
                 AnnotatedTypeMirror.createType(lb, typeVar.atypeFactory, false);
-        typeVar.setLowerBoundField(lowerBound);
+        typeVar.setLowerBound(lowerBound);
         return lowerBound;
     }
 
@@ -836,7 +840,7 @@ public class BoundsInitializer {
 
         @Override
         public void setType(AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
-            ((AnnotatedTypeVariable) parent).setUpperBoundField(replacement);
+            ((AnnotatedTypeVariable) parent).setUpperBound(replacement);
         }
 
         @Override
@@ -866,7 +870,7 @@ public class BoundsInitializer {
 
         @Override
         public void setType(AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
-            ((AnnotatedTypeVariable) parent).setLowerBoundField(replacement);
+            ((AnnotatedTypeVariable) parent).setLowerBound(replacement);
         }
 
         @Override

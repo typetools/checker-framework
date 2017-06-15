@@ -24,7 +24,7 @@ send us a link and a short description.
 \section{Units and dimensions checker\label{units-and-dimensions-checker}}
 
 A checker for units and dimensions is available at
-\url{http://www.lexspoon.org/expannots/}.
+\url{https://www.lexspoon.org/expannots/}.
 
 Unlike the Units Checker that is distributed with the Checker Framework
 (see Section~\ref{units-checker}), this checker includes dynamic checks and
@@ -37,11 +37,12 @@ Checker Framework and of the javac compiler.
 
 Loci~\cite{WrigstadPMZV2009}, a checker for thread locality, is available at
 \url{http://www.it.uu.se/research/upmarc/loci/}.
-Developer resources are available at the project page
-\url{http://java.net/projects/loci/}.
+%% This URL is broken as of
+% Developer resources are available at the project page
+% \url{http://java.net/projects/loci/}.
 
 % A paper was publishd in ECOOP 2009, release 0.1 was made in March 2011,
-% but as of October 2013 the manual is still listed as "forthcoming".
+% but as of October 2013 and June 2017 the manual is still listed as "forthcoming".
 
 
 % In a mail from Amanj Mahmud <amanjpro@gmail.com> on 28.03.2011:
@@ -149,9 +150,28 @@ It is available from
 \href{http://www.jooq.org/}{jOOQ} is a database API that lets you build
 typesafe SQL queries.  jOOQ version 3.0.9 and later ships with a SQL
 checker that provides even more safety:  it ensures ensure that you don't
-use SQL features that are not not supported by your database
+use SQL features that are not supported by your database
 implementation.  You can learn about the SQL checker at
 \url{https://blog.jooq.org/2016/05/09/jsr-308-and-the-checker-framework-add-even-more-typesafety-to-jooq-3-9/}.
+
+
+\section{Glacier:  Class immutability\label{glacier-immutability-checker}}
+
+\href{http://mcoblenz.github.io/Glacier/}{Glacier}~\cite{CoblenzNAMS2017}
+enforces transitive class immutability in Java.  According to its webpage:
+
+\begin{itemize}
+\item
+  Transitive: if a class is immutable, then every field must be
+  immutable. This means that all reachable state from an immutable object's
+  fields is immutable.
+\item
+  Class: the immutability of an object depends only on its class's
+  immutability declaration.
+\item
+  Immutability: state in an object is not changable through any reference to
+  the object.
+\end{itemize}
 
 
 % LocalWords:  SCJ EnerJ CheckLT unsanitized JavaUI CCS IGJ OIGJ FIO08

@@ -207,7 +207,7 @@ public class ElementAnnotationUtil {
                 possiblyBoth.add(anno);
 
             } else {
-                // A TypePathEntry of WILDCARD indicates that is is placed on the bound
+                // A TypePathEntry of WILDCARD indicates that it is placed on the bound
                 // use the type of the wildcard bound to determine which set to put it in
 
                 if (isInFrontOfWildcard) {

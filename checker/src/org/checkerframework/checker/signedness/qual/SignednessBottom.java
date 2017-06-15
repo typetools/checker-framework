@@ -6,16 +6,20 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TargetLocations;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * The bottom qualifier in the Unsigned Type System. It is only assigned to a value in error.
+ * The bottom type in the Unsigned type system. Programmers should rarely write this type.
  *
  * @checker_framework.manual #signedness-checker Signedness Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
-@Target({ElementType.TYPE_USE})
 @SubtypeOf({Constant.class})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
 @ImplicitFor(
-    literals = {LiteralKind.NULL},
+    literals = LiteralKind.NULL,
     types = {TypeKind.NULL}
 )
 public @interface SignednessBottom {}

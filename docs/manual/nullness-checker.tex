@@ -433,17 +433,29 @@ More examples of the use of these annotations appear in the Javadoc for
 
 \subsection{Nullness and arrays\label{nullness-arrays}}
 
-The components of a newly created object of reference type are all
-null. Only after initialization can the array actually be considered
-to contain non-null components.
-Therefore, the following is not allowed:
+Suppose that you declare an array to contain non-null elements.
+Currently, the Nullness Checker does not verify that all the elements of the
+array are initialized to a non-null value.  This is an unsoundness in the
+checker.
+
+To make the Nullness Checker conservatively reject code that may leave a
+non-null value in an array, use the command-line option
+\code{-Alint=forbidnonnullarraycomponents}.  The opiton is currently disabled
+because it makes the checker issue many false positive errors.
+% TODO: flip the default after collecting more data.
+
+When the \code{-Alint=forbidnonnullarraycomponents} option is supplied,
+the following is not allowed:
 
 \begin{Verbatim}
-  @NonNull Object [] oa = new @NonNull Object[10]; // error
+  Object [] oa = new Object[10]; // error
 \end{Verbatim}
 
-Instead, one creates a nullable or lazy-nonnull array, initializes
-each component, and then assigns the result to a non-null array:
+\noindent
+(recall that \<Object> means the same thing as \<@NonNull Object>).
+
+Instead, your code needs to create a nullable or lazy-nonnull array, initialize
+each component, and then assign the result to a non-null array:
 
 \begin{Verbatim}
   @MonotonicNonNull Object [] temp = new @MonotonicNonNull Object[10];
@@ -461,11 +473,6 @@ then write a \<@SuppressWarnings> annotation.
 
 % TODO: explain more aspects, give more examples.
 
-You need to supply the \code{-Alint=forbidnonnullarraycomponents}
-command-line option to enable this behavior.
-For backwards-compatibility reasons, the default behavior is currently
-to unsoundly allow non-null array components.
-% TODO: flip the default after collecting more data.
 
 
 \subsection{Run-time checks for nullness\label{nullness-runtime-checks}}
@@ -582,9 +589,7 @@ Use of \<@SuppressWarnings("nullness:generic.argument")> causes the Nullness
 Checker to suppress warnings related to misuse of generic type
 arguments.  One use for this key is when a class is declared to take only
 \<@NonNull> type arguments, but you want to instantiate the class with a
-\<@Nullable> type argument, as in \code{List<@Nullable Object>}.  For a more
-complete explanation of this example, see
-Section~\refwithpage{faq-list-map-nonnull-typeargs}.
+\<@Nullable> type argument, as in \code{List<@Nullable Object>}.
 
 The Nullness Checker also permits you to use assertions or method calls to
 suppress warnings; see below.
@@ -1122,13 +1127,18 @@ See the article
 explanation of the
 \href{http://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html#benefits-of-nullable}{benefits of \<@Nullable> over \<Optional>}.
 
-The \<Optional> class provides utility routines to reduce clutter when
+Java's \<Optional> class provides utility routines to reduce clutter when
 using \<Optional>.  The Nullness Checker provides an
 \refclass{checker/nullness}{Opt} class that provides all the same methods,
 but written for regular possibly-null Java references.
 
 
 \section{Initialization Checker\label{initialization-checker}}
+
+The Initialization Checker determines whether an object is initialized or
+not.  For any object that is not fully initialized, the Nullness Checker
+treats its fields as possibly-null --- even fields annotated as
+\<@NonNull>.
 
 Every object's fields start out as null.  By the time the constructor
 finishes executing, the \<@NonNull> fields have been set to a different
@@ -1191,6 +1201,8 @@ references to \code{this} that escape the constructor (say, by being stored
 in a field or passed to a method before initialization is complete).
 Use of initialization annotations is rare in most code.
 
+\label{underinitialization-examples}
+
 The most common use for the \<@UnderInitialization> annotation is for a
 helper routine that is called by constructor.  For example:
 
@@ -1211,6 +1223,22 @@ helper routine that is called by constructor.  For example:
       field2 = new Object();
       field3 = new Object();
     }
+
+    public MyClass(String arg1, String arg2, String arg3) {
+      this.field1 = arg1;
+      this.field2 = arg2;
+      this.field3 = arg3;
+      checkRep();
+    }
+
+    // Verify that the representation invariants are satisfied.
+    // Works as long as the MyClass fields are initialized, even if the reciever's
+    // class is a subclass of MyClass and not all of the subclass fields are initialized.
+    private void checkRep(@UnderInitialization(MyClass.class) MyClass this) {
+      ...
+    }
+
+
   }
 \end{Verbatim}
 
@@ -1223,6 +1251,37 @@ parameter in comments (see Section~\ref{annotations-in-comments}):
 % Most readers can
 % skip this section on first reading; you can return to it once you have
 % mastered the rest of the Nullness Checker.
+
+Note that it would not be sound to type {@code this} as fully {@link Initialized} anywhere in
+a constructor (with the exception of final classes, for which the set
+of all fields is known),
+because there might be subclasses with uninitialized fields. The following example shows why:
+
+\begin{Verbatim}
+class A {
+   @NonNull String a;
+   public A() {
+       a = "";
+       // Now, all fields of A are initialized.
+       // However, if this constructor is invoked as part of 'new B()', then
+       // the fields of B are not yet initialized.
+       // If we would type 'this' as @Initialized, then the following call is valid:
+       foo();
+   }
+   void foo() {}
+}
+
+class B extends A {
+   @NonNull String b;
+   @Override
+   void foo() {
+       // Dereferencing 'b' is ok, since 'this' is @Initialized and 'b' @NonNull.
+       // However, when executing 'new B()', this line throws a null-pointer exception.
+       b.toString();
+   }
+}
+\end{Verbatim}
+
 
 \subsection{Initialization qualifiers\label{initialization-qualifiers}}
 
@@ -2121,11 +2180,11 @@ Within the constructor,
 \code{this} starts out with \refqualclass{checker/nullness/qual}{Raw} type.
 As soon as all of the \refqualclass{checker/nullness/qual}{NonNull} fields
 in class $C$ have been initialized, then \code{this} is treated as
-\refqualclass{checker/initialization/qual}{NonRaw}\code{(\emph{C})}.
+\refqualclass{checker/nullness/qual}{NonRaw}\code{(\emph{C})}.
 This means that \code{this} is still being initialized, but all
 initialization of $C$'s fields is complete, including all fields of supertypes.
 Eventually, when all constructors complete, the type is simply
-\refqualclass{checker/initialization/qual}{NonRaw}.
+\refqualclass{checker/nullness/qual}{NonRaw}.
 
 The Nullness Checker issues an error if the constructor fails to initialize
 any \code{@NonNull} field.  This ensures that the object is in a legal (non-raw)

@@ -34,6 +34,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @see MonotonicNonNull
  * @see org.checkerframework.checker.nullness.AbstractNullnessChecker
  * @checker_framework.manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
 @SubtypeOf(MonotonicNonNull.class)
 @ImplicitFor(

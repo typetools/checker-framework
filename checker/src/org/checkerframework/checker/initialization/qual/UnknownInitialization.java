@@ -11,26 +11,28 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * This type qualifier belongs to the freedom-before-commitment type-system for tracking
- * initialization. This type-system is not used on its own, but in conjunction with some other
- * type-system that wants to ensure safe initialization. For instance, {@link
- * org.checkerframework.checker.nullness.NullnessChecker} uses freedom-before-commitment to track
- * initialization of {@link NonNull} fields.
+ * This type qualifier indicates how much of an object has been fully initialized. An object is
+ * fully initialized when each of its fields contains a value that satisfies the field's
+ * declaration.
  *
- * <p>This type qualifier indicates that the object might not have been fully initialized. An object
- * is fully initialized when each of its fields contains a value that satisfies its type qualifier.
- * What type qualifiers are considered depends on the checker; for instance, the {@link
- * org.checkerframework.checker.nullness.NullnessChecker} considers {@link NonNull}.
+ * <p>An expression of type {@code @UnknownInitialization(T.class)} refers to an object that has all
+ * fields of {@code T} (and any super-classes) initialized. Just {@code @UnknownInitialization} is
+ * equivalent to {@code @UnknownInitialization(Object.class)}. Please see the manual for examples of
+ * how to use the annotation (the link appears below).
  *
- * <p>Therefore, reading a field of an object of type {@link UnknownInitialization} might yield a
- * value that does not correspond to the declared type qualifier for that field. For instance, in
- * the {@link org.checkerframework.checker.nullness.NullnessChecker}, a field might be {@code null}
- * even if it has been annotated as {@link NonNull}.
+ * <p>Reading a field of an object of type {@code @UnknownInitialization} might yield a value that
+ * does not correspond to the declared type qualifier for that field. For instance, consider a
+ * non-null field:
  *
- * <p>More precisely, an expression of type {@code @UnknownInitialization(T.class)} refers to an
- * object that has all fields of {@code T} (and any super-classes) initialized (e.g., to a non-null
- * value in the {@link org.checkerframework.checker.nullness.NullnessChecker}). Just
- * {@code @UnknownInitialization} is equivalent to {@code @UnknownInitialization(Object.class)}.
+ * <pre>@NonNull Object f;</pre>
+ *
+ * In a partially-initialized object, field {@code f} might be {@code null} despite its
+ * {@literal @}{@link NonNull} type annotation.
+ *
+ * <p>What type qualifiers on the field are considered depends on the checker; for instance, the
+ * {@link org.checkerframework.checker.nullness.NullnessChecker} considers {@link NonNull}. The
+ * initialization type system (called "freedom before commitment") is not used on its own, but in
+ * conjunction with some other type-system that wants to ensure safe initialization.
  *
  * @checker_framework.manual #initialization-checker Initialization Checker
  */

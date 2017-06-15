@@ -5,6 +5,8 @@ import org.checkerframework.checker.signedness.qual.*;
 public class Utils {
 
     public void getTests(
+            @Unsigned int uint,
+            @Signed int sint,
             @Unsigned short ushort,
             @Signed short sshort,
             @Unsigned byte ubyte,
@@ -12,6 +14,11 @@ public class Utils {
             @Unsigned byte[] ubyteArr,
             @Signed byte[] sbyteArr,
             ByteBuffer b) {
+
+        //:: error: (assignment.type.incompatible)
+        sint = SignednessUtil.getUnsignedInt(b);
+
+        uint = SignednessUtil.getUnsignedInt(b);
 
         //:: error: (assignment.type.incompatible)
         sshort = SignednessUtil.getUnsignedShort(b);

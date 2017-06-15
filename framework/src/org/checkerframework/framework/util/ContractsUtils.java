@@ -55,7 +55,7 @@ public class ContractsUtils {
             PRECONDITION("precondition"),
             POSTCONDTION("postcondition"),
             CONDITIONALPOSTCONDTION("conditional.postcondition");
-            public String errorKey;
+            public final String errorKey;
 
             Kind(String errorKey) {
                 this.errorKey = errorKey;

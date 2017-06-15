@@ -58,7 +58,7 @@ public class AnnotationUtils {
 
     /** Caching for annotation creation. */
     private static final Map<CharSequence, AnnotationMirror> annotationsFromNames =
-            new HashMap<CharSequence, AnnotationMirror>();
+            Collections.synchronizedMap(new HashMap<CharSequence, AnnotationMirror>());
 
     private static final int ANNOTATION_CACHE_SIZE = 500;
 
@@ -67,21 +67,27 @@ public class AnnotationUtils {
      * so they can be compared with ==.
      */
     private static final Map<AnnotationMirror, /*@Interned*/ String> annotationMirrorNames =
-            CollectionUtils.createLRUCache(ANNOTATION_CACHE_SIZE);
+            Collections.synchronizedMap(
+                    CollectionUtils.<AnnotationMirror, /*@Interned*/ String>createLRUCache(
+                            ANNOTATION_CACHE_SIZE));
 
     /**
      * Cache simple names of AnnotationMirrors for faster access. Values in the map are interned
      * Strings, so they can be compared with ==.
      */
     private static final Map<AnnotationMirror, /*@Interned*/ String> annotationMirrorSimpleNames =
-            CollectionUtils.createLRUCache(ANNOTATION_CACHE_SIZE);
+            Collections.synchronizedMap(
+                    CollectionUtils.<AnnotationMirror, /*@Interned*/ String>createLRUCache(
+                            ANNOTATION_CACHE_SIZE));
 
     /**
      * Cache names of classes representing AnnotationMirrors for faster access. Values in the map
      * are interned Strings, so they can be compared with ==.
      */
     private static final Map<Class<? extends Annotation>, /*@Interned*/ String>
-            annotationClassNames = new HashMap<Class<? extends Annotation>, /*@Interned*/ String>();
+            annotationClassNames =
+                    Collections.synchronizedMap(
+                            new HashMap<Class<? extends Annotation>, /*@Interned*/ String>());
 
     /**
      * Creates an {@link AnnotationMirror} given by a particular fully-qualified name.
@@ -92,8 +98,9 @@ public class AnnotationUtils {
      * @return an {@link AnnotationMirror} of type {@code} name
      */
     public static AnnotationMirror fromName(Elements elements, CharSequence name) {
-        if (annotationsFromNames.containsKey(name)) {
-            return annotationsFromNames.get(name);
+        AnnotationMirror res = annotationsFromNames.get(name);
+        if (res != null) {
+            return res;
         }
         final DeclaredType annoType = typeFromName(elements, name);
         if (annoType == null) {
@@ -163,10 +170,10 @@ public class AnnotationUtils {
 
     /** @return the fully-qualified name of an annotation as a String */
     public static final /*@Interned*/ String annotationName(AnnotationMirror annotation) {
-        if (annotationMirrorNames.containsKey(annotation)) {
-            return annotationMirrorNames.get(annotation);
+        String res = annotationMirrorNames.get(annotation);
+        if (res != null) {
+            return res;
         }
-
         final DeclaredType annoType = annotation.getAnnotationType();
         final TypeElement elm = (TypeElement) annoType.asElement();
         /*@Interned*/ String name = elm.getQualifiedName().toString().intern();
@@ -176,10 +183,10 @@ public class AnnotationUtils {
 
     /** @return the simple name of an annotation as a String */
     public static String annotationSimpleName(AnnotationMirror annotation) {
-        if (annotationMirrorSimpleNames.containsKey(annotation)) {
-            return annotationMirrorSimpleNames.get(annotation);
+        String res = annotationMirrorSimpleNames.get(annotation);
+        if (res != null) {
+            return res;
         }
-
         final DeclaredType annoType = annotation.getAnnotationType();
         final TypeElement elm = (TypeElement) annoType.asElement();
         /*@Interned*/ String name = elm.getSimpleName().toString().intern();
@@ -235,10 +242,8 @@ public class AnnotationUtils {
 
     /** Checks that the annotation {@code am} has the name of {@code anno}. Values are ignored. */
     public static boolean areSameByClass(AnnotationMirror am, Class<? extends Annotation> anno) {
-        /*@Interned*/ String canonicalName;
-        if (annotationClassNames.containsKey(anno)) {
-            canonicalName = annotationClassNames.get(anno);
-        } else {
+        /*@Interned*/ String canonicalName = annotationClassNames.get(anno);
+        if (canonicalName == null) {
             canonicalName = anno.getCanonicalName().intern();
             annotationClassNames.put(anno, canonicalName);
         }
@@ -364,9 +369,19 @@ public class AnnotationUtils {
             new Comparator<AnnotationMirror>() {
                 @Override
                 public int compare(AnnotationMirror a1, AnnotationMirror a2) {
+                    // AnnotationMirror.toString() prints the elements of an annotation in the
+                    // order in which they were written. So, use areSame to check for equality.
+                    if (AnnotationUtils.areSame(a1, a2)) {
+                        return 0;
+                    }
+
                     String n1 = a1.toString();
                     String n2 = a2.toString();
 
+                    // Because the AnnotationMirror.toString prints the annotation as it appears
+                    // in source code, the order in which annotations of the same class are
+                    // sorted may be confusing.  For example, it might order
+                    // @IntRange(from=1, to=MAX) before @IntRange(to=MAX,from=0).
                     return n1.compareTo(n2);
                 }
             };
@@ -550,10 +565,11 @@ public class AnnotationUtils {
     }
 
     /**
-     * Get the Name of the class that is referenced by attribute 'name'. This is a convenience
-     * method for the most common use-case. Like getElementValue(anno, name,
-     * ClassType.class).getQualifiedName(), but this method ensures consistent use of the qualified
-     * name.
+     * Get the Name of the class that is referenced by attribute {@code name}.
+     *
+     * <p>This is a convenience method for the most common use-case. Like getElementValue(anno,
+     * name, ClassType.class).getQualifiedName(), but this method ensures consistent use of the
+     * qualified name.
      */
     public static Name getElementValueClassName(
             AnnotationMirror anno, CharSequence name, boolean useDefaults) {
@@ -562,9 +578,21 @@ public class AnnotationUtils {
         return ct.asElement().getQualifiedName();
     }
 
+    /** Get the list of Names of the classes that are referenced by attribute {@code name}. */
+    public static List<Name> getElementValueClassNames(
+            AnnotationMirror anno, CharSequence name, boolean useDefaults) {
+        List<Type.ClassType> la =
+                getElementValueArray(anno, name, Type.ClassType.class, useDefaults);
+        List<Name> names = new ArrayList<>();
+        for (Type.ClassType classType : la) {
+            names.add(classType.asElement().getQualifiedName());
+        }
+        return names;
+    }
+
     /**
-     * Get the Class that is referenced by attribute 'name'. This method uses Class.forName to load
-     * the class. It returns null if the class wasn't found.
+     * Get the Class that is referenced by attribute {@code name}. This method uses Class.forName to
+     * load the class. It returns null if the class wasn't found.
      */
     public static Class<?> getElementValueClass(
             AnnotationMirror anno, CharSequence name, boolean useDefaults) {
@@ -574,14 +602,11 @@ public class AnnotationUtils {
             Class<?> cls = Class.forName(cn.toString(), true, classLoader);
             return cls;
         } catch (ClassNotFoundException e) {
-            ErrorReporter.errorAbort(
-                    "Could not load class '"
-                            + cn
-                            + "' for field '"
-                            + name
-                            + "' in annotation "
-                            + anno,
-                    e);
+            String msg =
+                    String.format(
+                            "Could not load class '%s' for field '%s' in annotation %s",
+                            cn, name, anno);
+            ErrorReporter.errorAbort(msg, e);
             return null; // dead code
         }
     }

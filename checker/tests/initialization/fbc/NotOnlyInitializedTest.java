@@ -25,7 +25,7 @@ public class NotOnlyInitializedTest {
     }
 
     static void testDeref2(@UnderInitialization NotOnlyInitializedTest o) {
-        // o is not fully iniatlized, so we cannot dereference it's fields
+        // o is not fully iniatlized, so we cannot dereference its fields
         //:: error: (dereference.of.nullable)
         o.f.toString();
         //:: error: (dereference.of.nullable)

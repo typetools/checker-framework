@@ -15,7 +15,7 @@ import org.checkerframework.javacutil.ErrorReporter;
 /**
  * This struct contains all of the information that the refinement functions need. It's called by
  * each node function (i.e. greater than node, less than node, etc.) and then the results are passed
- * to the refinement function in whatever order is appropriate for that node. It's constructor
+ * to the refinement function in whatever order is appropriate for that node. Its constructor
  * contains all of its logic.
  */
 public class IndexRefinementInfo {
