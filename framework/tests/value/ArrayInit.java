@@ -71,7 +71,6 @@ class ArrayInit {
 
     public void initilizer() {
         int @ArrayLen(3) [] ints = new int[] {2, 2, 2};
-        byte @StringVal("d%") [] bytes = new byte[] {100, '%'};
         char @StringVal("-A%") [] chars = new char[] {45, 'A', '%'};
         int @ArrayLen(3) [] ints2 = {2, 2, 2};
     }

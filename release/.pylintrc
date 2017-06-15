@@ -68,7 +68,7 @@ disable=fixme,line-too-long,wildcard-import,invalid-name,too-many-arguments,too-
 
 # Set the output format. Available formats are text, parseable, colorized, msvs
 # (visual studio) and html. You can also give a reporter class, eg
-# mypackage.mymodule.MyReporterClass.
+# myPackage1.myPackage2.MyReporterClass.
 output-format=text
 
 # Put messages in a separate file for each module / package specified on the
