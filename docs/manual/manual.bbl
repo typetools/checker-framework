@@ -95,7 +95,7 @@ Colin~S. Gordon, Werner Dietl, Michael~D. Ernst, and Dan Grossman.
 \bibitem[Goe06]{Goetz2006:typedef}
 Brian Goetz.
 \newblock The pseudo-typedef antipattern: Extension is not type definition.
-\newblock \url{http://www.ibm.com/developerworks/java/library/j-jtp02216/},
+\newblock \url{https://www.ibm.com/developerworks/java/library/j-jtp02216/},
   February~21, 2006.
 
 \bibitem[GPB{\etalchar{+}}06]{Goetz2006}
