@@ -686,7 +686,7 @@ public class AnnotatedTypes {
             if (lastArg.getKind() == TypeKind.ARRAY
                     && (getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType) lastArg)
                             // If the array depths don't match, but the component type of the vararg is a
-                            // type variable, then that type variable might later be subsuited for an array
+                            // type variable, then that type variable might later be substituted for an array.
                             || varargs.getComponentType().getKind() == TypeKind.TYPEVAR)) {
                 return parameters;
             }
