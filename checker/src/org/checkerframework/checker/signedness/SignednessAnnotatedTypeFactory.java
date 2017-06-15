@@ -1,8 +1,8 @@
 package org.checkerframework.checker.signedness;
 
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
