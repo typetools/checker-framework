@@ -1,5 +1,9 @@
 package org.checkerframework.checker.index.upperbound;
 
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+*/
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,10 +31,13 @@ import org.checkerframework.javacutil.ElementUtils;
 
 public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
 
-    private static String NO_REASSIGN = "reassignment.not.permitted";
-    private static String NO_REASSIGN_FIELD = "reassignment.field.not.permitted";
-    private static String SIDE_EFFECTING_METHOD = "side.effect.invalidation";
-    private static String NO_REASSIGN_FIELD_METHOD = "reassignment.field.not.permitted.method";
+    private static /*@CompilerMessageKey*/ String NO_REASSIGN = "reassignment.not.permitted";
+    private static /*@CompilerMessageKey*/ String NO_REASSIGN_FIELD =
+            "reassignment.field.not.permitted";
+    private static /*@CompilerMessageKey*/ String SIDE_EFFECTING_METHOD =
+            "side.effect.invalidation";
+    private static /*@CompilerMessageKey*/ String NO_REASSIGN_FIELD_METHOD =
+            "reassignment.field.not.permitted.method";
 
     private enum CheckController {
         NAME_ONLY,
