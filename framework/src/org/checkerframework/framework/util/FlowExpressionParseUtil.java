@@ -49,6 +49,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
@@ -1139,6 +1140,21 @@ public class FlowExpressionParseUtil {
             return cs.asType();
         } else {
             return type.getEnclosingType();
+        }
+    }
+
+    public static Receiver internalReprOfVariable(
+            AnnotatedTypeFactory provider, VariableTree tree) {
+        Element elt = TreeUtils.elementFromDeclaration(tree);
+        Receiver receiverF = FlowExpressions.internalRepOfImplicitReceiver(elt);
+        FlowExpressionParseUtil.FlowExpressionContext context =
+                new FlowExpressionParseUtil.FlowExpressionContext(
+                        receiverF, null, provider.getContext());
+        try {
+            return FlowExpressionParseUtil.parse(
+                    tree.getName().toString(), context, provider.getPath(tree), false);
+        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+            return null;
         }
     }
 

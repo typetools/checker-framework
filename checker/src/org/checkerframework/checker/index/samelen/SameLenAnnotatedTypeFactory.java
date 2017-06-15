@@ -81,7 +81,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree tree) {
         AnnotatedTypeMirror atm = super.getAnnotatedTypeLhs(tree);
         if (tree.getKind() == Tree.Kind.VARIABLE) {
-            String varName;
+            String varName = null;
             Element elt = TreeUtils.elementFromDeclaration((VariableTree) tree);
             if (elt.getKind() == ElementKind.LOCAL_VARIABLE
                     || elt.getKind() == ElementKind.RESOURCE_VARIABLE
@@ -89,20 +89,10 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || elt.getKind() == ElementKind.PARAMETER) {
                 varName = elt.getSimpleName().toString();
             } else {
-                Receiver receiverF = FlowExpressions.internalRepOfImplicitReceiver(elt);
-                FlowExpressionParseUtil.FlowExpressionContext context =
-                        new FlowExpressionParseUtil.FlowExpressionContext(
-                                receiverF, null, getContext());
-                try {
-                    varName =
-                            FlowExpressionParseUtil.parse(
-                                            ((VariableTree) tree).getName().toString(),
-                                            context,
-                                            getPath(tree),
-                                            false)
-                                    .toString();
-                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                    varName = null;
+                Receiver r =
+                        FlowExpressionParseUtil.internalReprOfVariable(this, (VariableTree) tree);
+                if (r != null) {
+                    varName = r.toString();
                 }
             }
             if (varName != null) {
