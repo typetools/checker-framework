@@ -685,7 +685,9 @@ public class AnnotatedTypes {
             AnnotatedTypeMirror lastArg = args.get(args.size() - 1);
             if (lastArg.getKind() == TypeKind.ARRAY
                     && (getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType) lastArg)
-                            || (varargs.getComponentType().getKind() == TypeKind.TYPEVAR))) {
+                            // If the array depths don't match, but the component type of the vararg is a
+                            // type variable, then that type variable might later be subsuited for an array
+                            || varargs.getComponentType().getKind() == TypeKind.TYPEVAR)) {
                 return parameters;
             }
         }
