@@ -24,6 +24,7 @@ class Reassignment {
             //:: error: (array.access.unsafe.high)
             int j = arr[i];
             //:: error: (reassignment.field.not.permitted.method)
+            //:: error: (reassignment.not.permitted)
             b = new int[0];
         }
     }
@@ -31,6 +32,7 @@ class Reassignment {
     void methodCallTest(@NonNegative int x) {
         if (x < id(b).length) {
             //:: error: (reassignment.field.not.permitted.method)
+            //:: error: (reassignment.not.permitted)
             b = new int[0];
             //:: error: (array.access.unsafe.high)
             int y = id(b)[x];
