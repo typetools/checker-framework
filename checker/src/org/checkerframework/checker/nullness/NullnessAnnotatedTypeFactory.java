@@ -515,13 +515,12 @@ public class NullnessAnnotatedTypeFactory
      *
      * <p>In other words, is the lower bound @NonNull?
      *
-     * @param field field that might have invariant annotation
-     * @return whether or not field has the invariant annotation
+     * @param type of field that might have invariant annotation
+     * @return whether or not type has the invariant annotation
      */
     @Override
-    protected boolean hasFieldInvariantAnnotation(VariableTree field) {
+    protected boolean hasFieldInvariantAnnotation(AnnotatedTypeMirror type) {
         AnnotationMirror invariant = getFieldInvariantAnnotation();
-        AnnotatedTypeMirror type = getAnnotatedType(field);
         Set<AnnotationMirror> lowerBounds =
                 AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type);
         return AnnotationUtils.containsSame(lowerBounds, invariant);
