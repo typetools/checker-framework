@@ -184,9 +184,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
                 // If both types are type variables, take the direct annotations.
                 type.addMissingAnnotations(exprType.getAnnotations());
             }
-            // else do nothing
-            // TODO: What should we do if the type is a type variable, but the expression
-            // is not?
+            // else do nothing.
         } else {
             // Use effective annotations from the expression, to get upper bound
             // of type variables.

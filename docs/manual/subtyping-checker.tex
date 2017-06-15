@@ -50,7 +50,7 @@ notation:
 \begin{alltt}
   javac -classpath \textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
         -processor org.checkerframework.common.subtyping.SubtypingChecker \ttbs
-        -Aquals=\textit{myModule.qual.MyQual},\textit{myModule.qual.OtherQual} MyFile.java ...
+        -Aquals=\textit{myPackage.qual.MyQual},\textit{myPackage.qual.OtherQual} MyFile.java ...
 \end{alltt}
 
 The annotations listed in \code{-Aquals} must be accessible to
@@ -71,13 +71,13 @@ using a colon-no-space-separated notation. For example:
 \end{alltt}
 
 Note that in these two examples, the compiled class file of the
-\<myModule.qual.MyQual> and \<myModule.qual.OtherQual> annotations must exist
+\<myPackage.qual.MyQual> and \<myPackage.qual.OtherQual> annotations must exist
 in either the \<myProject/bin> directory or the \<myLibrary/bin> directory. The
 following placement of the class files will work with the above commands:
 
 \begin{alltt}
-  .../myProject/bin/myModule/qual/MyQual.class
-  .../myLibrary/bin/myModule/qual/OtherQual.class
+  .../myProject/bin/myPackage/qual/MyQual.class
+  .../myLibrary/bin/myPackage/qual/OtherQual.class
 \end{alltt}
 
 The two options can be used at the same time to provide groups of annotations
@@ -108,7 +108,7 @@ Define two annotations for the \code{Encrypted} and \code{PossiblyUnencrypted} q
 
 % alltt because it uses \textit
 \begin{alltt}
-package \textit{myModule}.qual;
+package \textit{myPackage}.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
@@ -125,7 +125,7 @@ public @interface Encrypted \{\}
 
 % alltt because it uses \textit
 \begin{alltt}
-package \textit{myModule}.qual;
+package \textit{myPackage}.qual;
 
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -148,7 +148,7 @@ See Section~\ref{creating-define-type-qualifiers}.
 Don't forget to compile these classes:
 
 \begin{Verbatim}
-$ javac myModule/qual/Encrypted.java myModule/qual/PossiblyUnencrypted.java
+$ javac myPackage/qual/Encrypted.java myPackage/qual/PossiblyUnencrypted.java
 \end{Verbatim}
 
 The resulting \<.class> files should either be on your classpath, or on the
@@ -159,7 +159,7 @@ processor path (set via the \<-processorpath> command-line option to javac).
   \code{YourProgram.java}):
 
 \begin{alltt}
-import \textit{myModule}.qual.Encrypted;
+import \textit{myPackage}.qual.Encrypted;
 
 ...
 
@@ -196,11 +196,11 @@ capability of any realistic type system.
 
 \begin{alltt}
   javac -processorpath \textit{myqualpath} -processor org.checkerframework.common.subtyping.SubtypingChecker \
-        -Aquals=\textit{myModule.qual.Encrypted},\textit{myModule.qual.PossiblyUnencrypted} YourProgram.java
+        -Aquals=\textit{myPackage.qual.Encrypted},\textit{myPackage.qual.PossiblyUnencrypted} YourProgram.java
 
 YourProgram.java:42: incompatible types.
-found   : @myModule.qual.PossiblyUnencrypted java.lang.String
-required: @myModule.qual.Encrypted java.lang.String
+found   : @myPackage.qual.PossiblyUnencrypted java.lang.String
+required: @myPackage.qual.Encrypted java.lang.String
     sendOverInternet(password);
                      ^
 \end{alltt}
@@ -218,15 +218,15 @@ the directories to the boot classpath, for example:
 
 \begin{sloppypar}
 Note that in these two examples, the compiled class file of the
-\<myModule.qual.Encrypted> and \<myModule.qual.PossiblyUnencrypted> annotations
+\<myPackage.qual.Encrypted> and \<myPackage.qual.PossiblyUnencrypted> annotations
 must exist in either the \<myProject/bin> directory or the \<myLibrary/bin>
 directory. The following placement of the class files will work with the above
 commands:
 \end{sloppypar}
 
 \begin{alltt}
-  .../myProject/bin/myModule/qual/Encrypted.class
-  .../myProject/bin/myModule/qual/PossiblyUnencrypted.class
+  .../myProject/bin/myPackage/qual/Encrypted.class
+  .../myProject/bin/myPackage/qual/PossiblyUnencrypted.class
 \end{alltt}
 
 \end{enumerate}
@@ -354,7 +354,7 @@ parameter type.
 % LocalWords:  CharSequence classpath nullness quals SuppressWarnings classfile
 % LocalWords:  uncapitalized processorpath Warski MyFile YourProgram qual
 %%  LocalWords:  bootclasspath PossiblyUnencrypted myProject myLibrary msg
-%%  LocalWords:  ElementType myqualpath sendOverInternet myModule typedefs
+%%  LocalWords:  ElementType myqualpath sendOverInternet myPackage typedefs
 %%  LocalWords:  SubtypeOf LiteralKind DefaultFor TypeUseLocation fenum
 %%  LocalWords:  DefaultQualifierInHierarchy sendText sendPassword MyType
 %  LocalWords:  getUserPassword CompassDirection MyTypeUnknown NotMyType
