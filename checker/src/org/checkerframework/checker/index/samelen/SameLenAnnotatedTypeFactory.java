@@ -14,6 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.index.qual.PolyLength;
 import org.checkerframework.checker.index.qual.PolySameLen;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.SameLenBottom;
@@ -53,6 +54,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         BOTTOM = AnnotationUtils.fromClass(elements, SameLenBottom.class);
         POLY = AnnotationUtils.fromClass(elements, PolySameLen.class);
         addAliasedAnnotation(PolyAll.class, POLY);
+        addAliasedAnnotation(PolyLength.class, POLY);
 
         this.postInit();
     }

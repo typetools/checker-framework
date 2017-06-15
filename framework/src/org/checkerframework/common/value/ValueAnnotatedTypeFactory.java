@@ -147,6 +147,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(
                 "org.checkerframework.checker.index.qual.Positive", createIntRangeFromPositive());
 
+        // PolyLength is syntactic sugar for both @PolySameLen and @PolyValue
+        addAliasedAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
+
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
             this.postInit();
         }

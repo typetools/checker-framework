@@ -4,9 +4,9 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 /**
- * Syntactic sugar for both @PolyMinLen and @PolySameLen.
+ * Syntactic sugar for both @PolyValue and @PolySameLen.
  *
- * @see PolyMinLen
+ * @see org.checkerframework.common.value.qual.PolyValue
  * @see PolySameLen
  * @checker_framework.manual #index-checker Index Checker
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
