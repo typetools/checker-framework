@@ -14,7 +14,7 @@ class Reassignment {
     }
 
     void test0(@IndexFor("id(c)") int i) {
-        //:: error: (reassignment.not.permitted)
+        //:: error: (reassignment.field.not.permitted.method)
         c = new int[0];
     }
 
@@ -23,20 +23,20 @@ class Reassignment {
             arr = new int[0];
             //:: error: (array.access.unsafe.high)
             int j = arr[i];
-            //:: error: (reassignment.not.permitted)
+            //:: error: (reassignment.field.not.permitted.method)
             b = new int[0];
         }
     }
 
     void methodCallTest(@NonNegative int x) {
         if (x < id(b).length) {
-            //:: error: (reassignment.not.permitted)
+            //:: error: (reassignment.field.not.permitted.method)
             b = new int[0];
             //:: error: (array.access.unsafe.high)
-            @IndexFor("id(b)")
-            int y = x;
+            int y = id(b)[x];
         }
         if (b.length > 0) {
+            //:: error: (side.effect.invalidation)
             test(b, 0, b.length - 1);
         }
     }
