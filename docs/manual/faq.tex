@@ -65,7 +65,6 @@ the answers, or other questions to include here.
 fully-qualified type name?
 
 \faqtocpara{\ref{faq-semantics-section}: Semantics of type annotations}
-\\ \ref{faq-list-map-nonnull-typeargs}: Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>?
 \\ \ref{faq-typestate}: How can I handle typestate, or phases of my program with different data properties?
 \\ \ref{faq-implicit-bounds}: Why are explicit and implicit bounds defaulted differently?
 \\ \ref{faq-runtime-retention}: Why are type annotations declared with \<@Retention(RetentionPolicy.RUNTIME)>?
@@ -85,6 +84,7 @@ fully-qualified type name?
 \\ \ref{faq-jsr-308}: What is the relationship between the Checker Framework and JSR 308?
 \\ \ref{faq-checked-exceptions}: Is there a type-checker for managing checked and unchecked exceptions?
 \\ \ref{faq-pluggable-type-checking}: How does pluggable type-checking work?
+\\ \ref{faq-classpath-to-use-annotated-library}: What classpath is needed to use an annotated library?
 
 
 \section{Motivation for pluggable type-checking\label{faq-motivation-section}}
@@ -666,7 +666,7 @@ the false positive in the Checker Framework issue tracker
 %
 Finally, you could improve the Checker Framework to make it more
 precise, so that it does not suffer that false positive (see
-Section~\ref{below}).
+Section~\ref{faq-false-positive-extend-checker-framework}).
 
 
 \subsection{How can I improve the Checker Framework to eliminate a false positive warning?\label{faq-false-positive-extend-checker-framework}}
@@ -1152,171 +1152,6 @@ error: scoping construct cannot be annotated with type-use annotation
 \section{Semantics of type annotations\label{faq-semantics-section}}
 
 
-\subsection{Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>?\label{faq-list-map-nonnull-typeargs}}
-
-The annotation on \<java.util.Collection> only allows non-null elements:
-
-\begin{Verbatim}
-  public interface Collection<E extends @NonNull Object> {
-    ...
-  }
-\end{Verbatim}
-
-\noindent
-Thus, you will get a type error if you write code like
-\code{Collection<@Nullable Object>}.
-A nullable
-type parameter is also forbidden for certain other collections, including
-\<AbstractCollection>, \<List>, \<Map>, and \<Queue>.
-
-% AbstractCollection has no documentation of its own regarding nullness,
-% but it implements Collection.
-
-% The JML specifications of the add() method says
-%       @   signals (NullPointerException)
-%       @             (* not allowed to add null *);
-%       ...
-%       @   signals (NullPointerException)
-%       @             (* not allowed to add null *);
-% In other words, the method might throw NullPointerException, but the JML
-% spec does not say under what circumstances.
-
-The \<extends @NonNull Object> bound is a direct consequence of the design
-of the collections classes; it merely formalizes the Javadoc specification.
-The Javadoc for \<Collection> states:
-
-\begin{quote}
-  Some list implementations have restrictions on the elements that they may
-  contain. For example, some implementations prohibit null elements, \ldots
-\end{quote}
-
-Here are some consequences of the requirement to detect all nullness errors
-at compile time.  If even one subclass of a given collection class may
-prohibit null, then the collection class and all its subclasses must
-prohibit null.  Conversely, if a collection class is specified to accept
-null, then all its subclasses must honor that specification.
-
-The Checker Framework's annotations make apparent a flaw in the JDK
-design, and helps you to avoid problems that might be caused by that flaw.
-
-
-\paragraph{Justification from type theory\label{faq-list-map-nonnull-typeargs-junification-from-type-theory}}
-Suppose \<B> is a subtype of \<A>.
-Then an overriding method in \<B> must have a stronger (or equal) signature
-than the overridden method in~\<A>.  In a stronger signature, the formal
-parameter types may be supertypes, and the return type may be a subtype.
-Here are examples:
-
-\begin{Verbatim}
-  class A           {  @NonNull Object Number m1( @NonNull Object arg) { ... } }
-  class B extends A { @Nullable Object Number m1( @NonNull Object arg) { ... } } // error!
-  class C extends A {  @NonNull Object Number m1(@Nullable Object arg) { ... } } // OK
-  class D           { @Nullable Object Number m2(@Nullable Object arg) { ... } }
-  class E extends D {  @NonNull Object Number m2(@Nullable Object arg) { ... } } // OK
-  class F extends D { @Nullable Object Number m2( @NonNull Object arg) { ... } } // error!
-\end{Verbatim}
-
-According to these rules, since some subclasses of \<Collection> do not
-permit nulls, then \<Collection> cannot either:
-
-\begin{Verbatim}
-  // does not permit null elements
-  class PriorityQueue<E> implements Collection<E> {
-    boolean add(E);
-    ...
-  }
-  // must not permit null elements, or PriorityQueue would not be a subtype of Collection
-  interface Collection<E> {
-    boolean add(E);
-    ...
-  }
-\end{Verbatim}
-
-
-\paragraph{Justification from checker behavior\label{faq-list-map-nonnull-typeargs-justification-from-behavior}}
-
-Suppose that you changed the bound in the \<Collection> declaration to
-\<extends @Nullable Object>.  Then, the checker would issue no warning for
-this method:
-
-\begin{Verbatim}
-  static void addNull(Collection l) {
-    l.add(null);
-  }
-\end{Verbatim}
-
-\noindent
-However, calling this method \emph{can} result in a null pointer exception,
-for instance caused by the following code:
-
-\begin{Verbatim}
-  addNull(new PriorityQueue());
-\end{Verbatim}
-
-\noindent
-Therefore, the bound must remain as \<extends @NonNull Object>.
-
-By contrast, this code is OK because \<ArrayList> is documented to support
-null elements:
-
-\begin{Verbatim}
-  static void addNull(ArrayList l) {
-    l.add(null);
-  }
-\end{Verbatim}
-
-\noindent
-Therefore, the upper bound in \<ArrayList> is \<extends @Nullable Object>.
-Any subclass of \<ArrayList> must also support null elements.
-
-
-
-
-% Every implementation of List seems to permit null.
-% Examples of Collection that do not permit null:
-% BlockingQueue family:
-%   BlockingQueue, BlockingDeque, ArrayBlockingQueue, DelayQueue, LinkedBlockingDeque, LinkedBlockingQueue, PriorityBlockingQueue, SynchronousQueue
-% PriorityQueue
-% probably lots of other queues.
-
-% A similar argument applies to \<Map>.
-% For example, \<ConcurrentHashMap> and \<Hashtable> implement \<Map> but do
-% not permit \<null> to be used as a key or value.  Therefore, \<Map> must
-% not permit \<null> to be used as a key or value
-
-
-% The Checker Framework is designed to warn you whenever your code might
-% throw a null pointer exception.  If you want to be safe, you will never put
-% \<null> in a \<List> of unknown provenance, because that \<List> might not
-% accept null.
-
-
-
-\paragraph{Suppressing warnings\label{faq-list-map-nonnull-typeargs-suppressing-warnings}}
-
-Suppose your program has a list variable, and you know that any list referenced
-by that variable will definitely support null elements.  Then, you can suppress the
-warning:
-
-\begin{Verbatim}
-  @SuppressWarnings("nullness:generic.argument") // any list passed to this
-  method will support null elements
-  static void addNull(List l) {
-    l.add(null);
-  }
-\end{Verbatim}
-
-\noindent
-You need to use \<@SuppressWarnings("nullness:generic.argument")>
-whenever you use a collection that may contain \<null> elements in
-contradiction to its documentation.  Fortunately, such uses are relatively
-rare.
-
-
-For more details on suppressing nullness warnings, see
-Section~\ref{suppressing-warnings-nullness}.
-
-
 \subsection{How can I handle typestate, or phases of my program with different data properties?\label{faq-typestate}}
 
 Sometimes, your program works in phases that have different behavior.  For
@@ -1756,15 +1591,39 @@ the declared type of the left-hand side.
 \end{itemize}
 
 
+\subsection{What classpath is needed to use an annotated library?\label{faq-classpath-to-use-annotated-library}}
+
+Suppose that you distribute a library, which contains Checker Framework
+annotations such as \<@Nullable>.  This enables clients of the library to
+use the Checker Framework to type-check their programs.  To do so, they
+must have the Checker Framework annotations on their classpath, for
+instance by using the Checker Framework Compiler.
+
+Clients who do not wish to perform pluggable type-checking do not need to
+have the Checker Framework annotations (\<checker.jar> or
+\<checker-qual.jar>) in their classpath, either when compiling or running
+their programs.
+
+The JVM does not issue a link error if an annotation is not found when a
+class is loaded.  (By contrast, the JVM does issue a link error if a
+superclass, or a parameter/return/field type, is not found.)
+Likewise, there is no problem compiling against a library even if the
+library's annotations are not on the classpath.
+These are properties of Java, and are not specific to the Checker
+Framework's annotations.
+
+
+
 % LocalWords:  toolset AbstractCollection ConcurrentHashMap NullnessUtil
 % LocalWords:  castNonNull createWidget backporting JCIP's GuardedBy Awarns PMD
 % LocalWords:  ElementType nullness bytecodes Jlint Hashtable SuppressWarnings
 %  LocalWords:  RegexUtil compareTo myA requiresB nullable java myobject
 %  LocalWords:  multithreading myfield Regex NonEmpty Xmaxerrs Xmaxwarns
-%  LocalWords:  MonotonicNonNull EnsuresNonNull myFieldName pre dev
+%  LocalWords:  MonotonicNonNull EnsuresNonNull myFieldName pre dev API's
 %  LocalWords:  m1 m2 RequiresNonNull AconcurrentSemantics MyQual plugin
 %  LocalWords:  MyClass MyMoreRestrictiveQual TOPTYPEANNO DEFAULTANNO api
 %%  LocalWords:  OtherClass Goetz antipattern subclassed varargs regexes
-%%  LocalWords:  featureful RetentionPolicy instanceof contravariance
+%%  LocalWords:  featureful RetentionPolicy instanceof contravariance qual
 %%  LocalWords:  NoSuchElementException binarySearch subclasses
 %%  LocalWords:  intExample1 intExample2 requiresPositive
+%%  LocalWords:  IllegalFormatException

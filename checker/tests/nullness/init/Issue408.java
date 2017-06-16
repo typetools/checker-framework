@@ -1,6 +1,6 @@
 // Test case for Issue 408:
 // https://github.com/typetools/checker-framework/issues/408
-//@skip-test
+// @skip-test
 
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 

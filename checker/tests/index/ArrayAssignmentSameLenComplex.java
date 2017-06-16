@@ -1,7 +1,7 @@
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.NonNegative;
 
-//@skip-test until #127 is resolved.
+// @skip-test until #127 is resolved.
 
 public class ArrayAssignmentSameLenComplex {
 

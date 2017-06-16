@@ -33,7 +33,8 @@
           depends="clean">
     <mkdir dir="bin"/>
     <jsr308.javac fork="true" srcdir="src" destdir="bin" includeantruntime="false">
-      <compilerarg line="-processor org.checkerframework.checker.tainting.TaintingChecker"/>
+      <compilerarg value="-processor"/>
+      <compilerarg value="org.checkerframework.checker.tainting.TaintingChecker"/>
     </jsr308.javac>
   </target>
 
@@ -42,7 +43,8 @@
           depends="clean">
     <mkdir dir="bin"/>
     <jsr308.javac fork="true" srcdir="src" destdir="bin" includeantruntime="false">
-      <compilerarg line="-processor org.checkerframework.checker.tainting.TaintingChecker"/>
+      <compilerarg value="-processor"/>
+      <compilerarg value="org.checkerframework.checker.tainting.TaintingChecker"/>
       <compilerarg value="-Awarns"/>
     </jsr308.javac>
   </target>

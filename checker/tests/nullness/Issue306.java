@@ -1,9 +1,11 @@
 // Test case for Issue 306:
 // https://github.com/typetools/checker-framework/issues/306
+
+// @skip-test until the issue is fixed
+
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-//@skip-test
 class Issue306 {
     @MonotonicNonNull Object x;
 

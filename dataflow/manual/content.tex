@@ -2,13 +2,17 @@
 \section{Introduction}
 
 This document describes a \emph{Dataflow Framework} for the
-Java Programming Language.  In particular, the framework is designed
-to be used in the Checker Framework, a framework that adds pluggable
-types to the Java type system.
+Java Programming Language.  The framework
+used in the \href{https://checkerframework.org/}{Checker Framework}, in
+\href{http://errorprone.info/}{Error Prone}, in internal tools used at
+Uber, and on other contexts.
 
-The primary purpose of the Dataflow Framework is to enable
-flow-sensitive type checking in the Checker Framework, which serves to
-reduce the burden of annotating a program.  The Dataflow Framework was
+The primary purpose of the Dataflow Framework is to estimate values:
+that is, to determine that, on a particular line of source code, what
+values a variable might contain.  This can also determine that a variable
+has a more precise type than its declared type.  This enables
+flow-sensitive type checking in the Checker Framework, which
+reduces the burden of annotating a program.  The Dataflow Framework was
 designed with several goals in mind.  First, to encourage other uses
 of the framework, it is written as a separate package that can be
 built and used with no dependence on the Checker Framework.  Second,
@@ -22,8 +26,6 @@ checker in the Checker Framework. The
 \href{https://docs.google.com/document/d/1oYzbOrrS4ZEEx4wQgIHbijNzcI5CiQAq_-1NrOS8JME/edit?usp=sharing}{Dataflow User's Guide}
 gives an introduction to customizing dataflow to add checker specific
 enhancements.
-
-
 
 The Dataflow Framework's result (\autoref{sec:analysis_result_class})
 is an abstract value for each expression (an estimate of the
@@ -1909,7 +1911,7 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  TransferFunction NodeVisitor TransferResults isRegex lst
 %  LocalWords:  CFAbstractTransfer AbstractNodeVisitor asRegex ClassTree
 %  LocalWords:  InitializationTransfer visitMethodInvocation RegexTransfer
-%  LocalWords:  CFAbstractAnalysis NullnessTransfer RegexChecker's lp
+%  LocalWords:  CFAbstractAnalysis NullnessTransfer RegexChecker's lp Uber
 %  LocalWords:  AnalysisResult AnnotatedTypeFactory AnnotatedTypeFactorys
 %  LocalWords:  AnnotationProvider getAnnotatedType BaseTypeChecker
 %  LocalWords:  GenericAnnotatedTypeFactory FlowAnalysis CFAnalysis
@@ -1936,7 +1938,8 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  IdentifierTree FieldAccessNode ImplicitThisNode unboxing
 %  LocalWords:  TreePath pathHack MethodTree VarSymbol DetachedVarSymbols
 %  LocalWords:  DeclarationFromElement BoxedClass treeLookup getValue
-%  LocalWords:  nodeValues AdditionNode postconversion treelookup
+%  LocalWords:  nodeValues AdditionNode postconversion treelookup desugar
 %  LocalWords:  LocalVariableNode AconcurrentSemantics MonotonicNonNull
 %  LocalWords:  MonotonicQualifier IntegerLiteralNode EqualToNode
-%  LocalWords:  ConstSimple SelfReference PureMethodCall
+%  LocalWords:  ConstSimple SelfReference PureMethodCall javacutil
+%  LocalWords:  stubparser TreeParser TreeBuilder DetachedVarSymbol
