@@ -200,25 +200,25 @@ Framework:
 
 \section{Compiling and using a custom checker\label{creating-compiling}}
 
-\begin{sloppypar}
 You can place your checker's source files wherever you like.
-Forking the Checker Framework repository and putting your files in parallel
-to existing checker implementations is one convenient choice.
+\begin{itemize}
+\item
+  Forking the Checker Framework repository and putting your files in
+  parallel to existing checker implementations is a particularly convenient
+  choice.  You must be able to compile the Checker Framework
+  (Section~\ref{build-source}).
+\item
+  \begin{sloppypar}
+  If you put your checker elsewhere, then when you compile your checker,
+  the classpath must include \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>
+  and \<\$CHECKERFRAMEWORK/checker/dist/javac.jar>.
+  \end{sloppypar}
+\end{itemize}
 
-  When you
-compile your checker,
-\<\$CHECKERFRAMEWORK/checker/dist/checker.jar> and
-\<\$CHECKERFRAMEWORK/checker/dist/javac.jar>
-should be on your classpath.  (If you wish to modify an existing checker in place,
-or to place the source code for your new checker in your own private copy of the
-Checker Framework source code, then you need to be able to compile the
-Checker Framework, as described in Section~\ref{build-source}.)
-\end{sloppypar}
-
-You may also wish to consult Section~\ref{creating-testing-framework} for
-information on testing a checker and
-Section~\ref{creating-debugging-options} for information on debugging a
-checker.
+% You may also wish to consult Section~\ref{creating-testing-framework} for
+% information on testing a checker and
+% Section~\ref{creating-debugging-options} for information on debugging a
+% checker.
 
 Once your custom checker is written, using it is very similar to using a
 built-in checker (Section~\ref{running}):
@@ -290,6 +290,13 @@ Here is an example of one good way to proceed.
   (Section~\ref{creating-compiler-interface}).
   Ensure that you can still type-check your test files and that the results
   are the same.
+
+\item
+  If your checker source code is in a clone of the Checker Framework
+  repository, integrate your checker with the Checker Framework's Ant
+  targets for testing (Section~\ref{creating-testing-framework}).  This
+  will make it much more convenient to run tests, and to ensure that they
+  are passing, as your work proceeds.
 
 \item
   Annotate parts of the JDK, if relevant
@@ -1605,14 +1612,14 @@ options).
 To specify a simple boolean flag, add:
 
 \begin{alltt}
-\refqualclass{framework/source}{SupportedLintOptions}(\{"myflag"\})
+  \refqualclass{framework/source}{SupportedLintOptions}(\{"myflag"\})
 \end{alltt}
 
 to your checker subclass.
 The value of the flag can be queried using
 
 \begin{Verbatim}
-checker.getLintOption("myflag", false)
+  checker.getLintOption("myflag", false)
 \end{Verbatim}
 
 The second argument sets the default value that should be returned.
@@ -1620,7 +1627,7 @@ The second argument sets the default value that should be returned.
 To pass a flag on the command line, call javac as follows:
 
 \begin{Verbatim}
-javac -processor MyChecker -Alint=myflag
+  javac -processor MyChecker -Alint=myflag
 \end{Verbatim}
 
 
@@ -1630,19 +1637,19 @@ For more complicated options, one can use the standard annotation
 processing \code{@SupportedOptions} annotation on the checker, as in:
 
 \begin{alltt}
-\refqualclass{framework/source}{SupportedOptions}(\{"myoption"\})
+  \refqualclass{framework/source}{SupportedOptions}(\{"myoption"\})
 \end{alltt}
 
 The value of the option can be queried using
 
 \begin{Verbatim}
-checker.getOption("myoption")
+  checker.getOption("myoption")
 \end{Verbatim}
 
 To pass an option on the command line, call javac as follows:
 
 \begin{Verbatim}
-javac -processor MyChecker -Amyoption=p1,p2
+  javac -processor MyChecker -Amyoption=p1,p2
 \end{Verbatim}
 
 The value is returned as a single string and you have to perform the
@@ -1682,6 +1689,17 @@ checker.
 % Don't repeat the information here, to prevent them from getting out of sync.
 It is extensively documented in file \<checker-framework/checker/tests/README>.
 \end{sloppypar}
+
+If your checker's source code is within a fork of the Checker Framework
+repository, then you can copy the testing infrastructure used by some
+existing type system.  Here are some of the tasks you will perform:
+
+\begin{itemize}
+\item Add a \code{\emph{mychecker}-tests} build target in file
+  \<checker-framework/checker/build.xml> and ensure all tests pass.
+
+\item Make sure \code{all-tests} tests the new checker.
+\end{itemize}
 
 
 \section{Debugging options\label{creating-debugging-options}}
@@ -2183,10 +2201,8 @@ the following:
 
 \begin{itemize}
 
-\item Add a \code{XXX-tests} build target in file
-  \<checker-framework/checker/build.xml> and ensure all tests pass.
-
-\item Make sure \code{all-tests} tests the new checker.
+\item Create Ant targets for testing, as described in
+  Section~\ref{creating-testing-framework}.
 
 \item Extend the \code{check-compilermsgs} target to include the
 compiler messages property file of the new checker in
@@ -2258,4 +2274,5 @@ without warnings or errors.
 %  LocalWords:  createDependentTypesHelper boolean regex subclasses README
 %  LocalWords:  formatter nChecker nSubchecker AprintVerboseGenerics
 %  LocalWords:  AshowInferenceSteps DefaultTypeArgumentInference Graphviz
-%  LocalWords:  javacutil
+%  LocalWords:  javacutil LiteralKind EnsuresQualifier EnsuresQualifierIf
+%%  LocalWords:  mychecker

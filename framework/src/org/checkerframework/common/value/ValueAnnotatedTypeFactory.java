@@ -152,6 +152,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         lengthMethod = TreeUtils.getMethod("java.lang.String", "length", 0, processingEnv);
 
+        // PolyLength is syntactic sugar for both @PolySameLen and @PolyValue
+        addAliasedAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
+
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
             this.postInit();
         }
