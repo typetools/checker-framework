@@ -19,7 +19,7 @@ class Reassignment {
         c = new int[0];
     }
 
-    void test(int[] arr, int i, @IndexFor("d") int k) {
+    void test(int[] arr, int i, @IndexFor("#1") int k) {
         if (i > 0 && i < arr.length) {
             arr = new int[0];
             //:: error: (array.access.unsafe.high)
