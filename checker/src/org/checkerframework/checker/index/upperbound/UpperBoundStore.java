@@ -171,7 +171,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         }
     }
 
-    void findEnclosedTypes(
+    private void findEnclosedTypes(
             List<AnnotatedTypeMirror> enclosedTypes, List<? extends Element> enclosedElts) {
         for (Element e : enclosedElts) {
             AnnotatedTypeMirror atm = analysis.getTypeFactory().getAnnotatedType(e);
@@ -187,6 +187,34 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         }
     }
 
+    /**
+     * This function handles the meat of checking whether an annotation is invalid. If the
+     * annotation is invalid (i.e. it should be unrefined or it should result in a warning) then
+     * this function returns true. Otherwise, it returns false.
+     *
+     * <p>{@code anno} is the annotation to be checked. If it is not dependent, false is returned.
+     * Otherwise, a UBQualifier is created, and all the things it depends on (as Strings) are
+     * collected and canonicalized.
+     *
+     * <p>Then, the appropriate checks are made based on the {@code checkController} and true is
+     * returned if any of the them fail. If the {@code report} flag is set, failing a check (i.e.
+     * returning true) also results in issuing an appropriate error at location {@code n}.
+     *
+     * <p>There are three possible checks: <l>
+     * <li>Does the annotation depend on the {@code canonicalTargetName} parameter?
+     * <li>Does the annotation depend on any non-final references?
+     * <li>Does the annotation include any method calls? </l>
+     *
+     *     <p>The CheckController contains an option for just the first, an option for the first and
+     *     second, and an option for the second and third. These are the only possible sets of
+     *     invalidations (according to the document that is reproduced as the JavaDoc on this
+     *     class).
+     *
+     *     <p>The CheckController also contains information that is used in deciding which report is
+     *     issued: it contains separate options for its third option (i.e. the second and third
+     *     items in the list) so that different messages can be issued for field reassignment
+     *     invalidation and invalidation because of a call to a non-side-effect free method.
+     */
     private boolean checkAnno(
             AnnotationMirror anno,
             String canonicalTargetName,
@@ -199,15 +227,15 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         UBQualifier.LessThanLengthOf qual =
                 (UBQualifier.LessThanLengthOf) UBQualifier.createUBQualifier(anno);
 
-        List<String> strings = new ArrayList<>();
+        List<String> dependencies = new ArrayList<>();
         for (String s : qual.getArrays()) {
-            strings.add(s);
+            dependencies.add(s);
         }
-        strings.addAll(qual.getOffsetsAsStrings());
+        dependencies.addAll(qual.getOffsetsAsStrings());
 
-        List<String> canonicalStrings = new ArrayList<>();
-        FlowExpressions.Receiver r = null;
-        for (String s : strings) {
+        List<String> canonicalDependencies = new ArrayList<>();
+        for (String s : dependencies) {
+            FlowExpressions.Receiver r = null;
             try {
                 TreePath path = analysis.getTypeFactory().getPath(n.getTree());
                 if (path != null) {
@@ -219,7 +247,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
             if (r == null) {
                 return false;
             }
-            canonicalStrings.add(r.toString());
+            canonicalDependencies.add(r.toString());
             while (r instanceof FlowExpressions.FieldAccess) {
                 // I included an exception here for "this", because otherwise the rules don't make sense - any
                 // field, including final ones, would be invalidated, since it's impossible to know if this is
@@ -281,13 +309,13 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                 }
                 for (FlowExpressions.Receiver param :
                         ((FlowExpressions.MethodCall) r).getParameters()) {
-                    canonicalStrings.add(param.toString());
+                    canonicalDependencies.add(param.toString());
                 }
             }
         }
         if ((checkController == CheckController.NAME_AND_METHOD_CALLS
                         || checkController == CheckController.NAME_ONLY)
-                && canonicalStrings.contains(canonicalTargetName)) {
+                && canonicalDependencies.contains(canonicalTargetName)) {
             if (report) {
                 checker.report(
                         Result.failure(
