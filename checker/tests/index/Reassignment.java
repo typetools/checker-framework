@@ -5,6 +5,7 @@ class Reassignment {
 
     private int[] b;
     private int[] c;
+    private int[] d;
 
     @IndexFor("b") int bi;
 
@@ -18,21 +19,19 @@ class Reassignment {
         c = new int[0];
     }
 
-    void test(int[] arr, int i, @IndexFor("b") int k) {
+    void test(int[] arr, int i, @IndexFor("d") int k) {
         if (i > 0 && i < arr.length) {
             arr = new int[0];
             //:: error: (array.access.unsafe.high)
             int j = arr[i];
             //:: error: (reassignment.field.not.permitted.method)
-            //:: error: (reassignment.not.permitted)
-            b = new int[0];
+            d = new int[0];
         }
     }
 
     void methodCallTest(@NonNegative int x) {
         if (x < id(b).length) {
             //:: error: (reassignment.field.not.permitted.method)
-            //:: error: (reassignment.not.permitted)
             b = new int[0];
             //:: error: (array.access.unsafe.high)
             int y = id(b)[x];
