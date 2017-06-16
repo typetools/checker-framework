@@ -103,6 +103,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Helper class that evaluates statically executable methods, constructors, and fields. */
     private final ReflectiveEvaluator evaluator;
 
+    /** String.length() method */
     private final ExecutableElement lengthMethod;
 
     static {
@@ -426,6 +427,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(factory);
         }
 
+        /**
+         * Computes greatest lower bound of a @StringVal annotation with another value checker
+         * annotation.
+         *
+         * @param stringValAnno annotation of type @StringVal
+         * @param otherAnno annotation from the value checker hierarchy
+         * @return greatest lower bound of {@code stringValAnno} and {@code otherAnno}
+         */
         private AnnotationMirror glbOfStringVal(
                 AnnotationMirror stringValAnno, AnnotationMirror otherAnno) {
             List<String> values =
@@ -1261,10 +1270,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /** Determines whether a method is the {@code String.length()} method. */
     boolean isStringLengthMethod(ExecutableElement method) {
         return method == lengthMethod;
     }
 
+    /**
+     * Returns a constant value annotation for a length of an array or string type with a constant
+     * value annotation
+     */
     AnnotationMirror createArrayLengthResultAnnotation(AnnotatedTypeMirror receiverType) {
         AnnotationMirror arrayAnno = receiverType.getAnnotation(ArrayLen.class);
         if (arrayAnno != null) {

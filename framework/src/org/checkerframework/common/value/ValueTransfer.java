@@ -384,6 +384,10 @@ public class ValueTransfer extends CFTransfer {
         refineAtLengthAccess(arrayLengthNode, arrayLengthNode.getReceiver(), store);
     }
 
+    /**
+     * If string.length() is encountered, transform its @IntVal annotation into an @ArrayLen
+     * annotation for string.
+     */
     private void refineStringAtLengthInvocation(
             MethodInvocationNode stringLengthNode, CFStore store) {
         MethodAccessNode methodAccessNode = stringLengthNode.getTarget();
@@ -393,6 +397,7 @@ public class ValueTransfer extends CFTransfer {
         }
     }
 
+    /** Gets a value checker annotation relevant for an array or a string. */
     private AnnotationMirror getArrayAnnotation(Node arrayNode) {
         AnnotationMirror arrayAnno =
                 atypefactory.getAnnotationMirror(arrayNode.getTree(), StringVal.class);
@@ -406,10 +411,15 @@ public class ValueTransfer extends CFTransfer {
         return arrayAnno;
     }
 
+    /**
+     * Transform @IntVal or @IntRange annotations of a array or string length into an @ArrayLen
+     * or @ArrayLenRange annotation for the array or string.
+     */
     private void refineAtLengthAccess(Node lengthNode, Node receiverNode, CFStore store) {
         Receiver arrayLenRec =
                 FlowExpressions.internalReprOf(analysis.getTypeFactory(), lengthNode);
 
+        // If the expression is not representable (for example if String.length() for some reason is not marked @Pure, then do not refine.
         if (arrayLenRec instanceof FlowExpressions.Unknown) {
             return;
         }
@@ -473,6 +483,10 @@ public class ValueTransfer extends CFTransfer {
         return stringConcatenation(n.getLeftOperand(), n.getRightOperand(), p, result);
     }
 
+    /**
+     * Calculates possible lengths of a result of string concatenation of strings with known
+     * lengths.
+     */
     private List<Integer> calculateLengthAddition(
             List<Integer> leftLengths, List<Integer> rightLengths) {
         ArrayList<Integer> result = new ArrayList<Integer>();
@@ -488,6 +502,10 @@ public class ValueTransfer extends CFTransfer {
         return result;
     }
 
+    /**
+     * Calculates a range of possible lengths of a result of string concatenation of strings with
+     * known ranges of lengths.
+     */
     private Range calculateLengthRangeAddition(Range leftLengths, Range rightLengths) {
         return leftLengths.plus(rightLengths).intersect(Range.INT_EVERYTHING);
     }

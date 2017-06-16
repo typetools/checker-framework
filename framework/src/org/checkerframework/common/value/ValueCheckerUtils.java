@@ -94,6 +94,7 @@ public class ValueCheckerUtils {
     public static List<?> getValuesCastedToType(AnnotationMirror anno, TypeMirror castTo) {
         Class<?> castType = ValueCheckerUtils.getClassFromType(castTo);
         List<?> values = null;
+
         if (AnnotationUtils.areSameByClass(anno, DoubleVal.class)) {
             values = convertDoubleVal(anno, castType, castTo);
         } else if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
@@ -264,8 +265,8 @@ public class ValueCheckerUtils {
     /**
      * Gets a list of lengths for a list of string values.
      *
-     * @param values List of string values.
-     * @return List of unique lengths of strings in {@code values}.
+     * @param values list of string values
+     * @return list of unique lengths of strings in {@code values}
      */
     public static List<Integer> getLengthsForStringValues(List<String> values) {
         List<Integer> lengths = new ArrayList<Integer>();
