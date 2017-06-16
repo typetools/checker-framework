@@ -4,7 +4,6 @@ import org.checkerframework.dataflow.qual.Pure;
 class Reassignment {
 
     private int[] b;
-    private int[] c;
     private int[] d;
 
     @IndexFor("b") int bi;
@@ -14,13 +13,9 @@ class Reassignment {
         return a;
     }
 
-    void test0(@IndexFor("id(c)") int i) {
-        //:: error: (reassignment.field.not.permitted.method)
-        c = new int[0];
-    }
-
     void test(int[] arr, int i, @IndexFor("#1") int k) {
         if (i > 0 && i < arr.length) {
+            //:: error: (reassignment.not.permitted)
             arr = new int[0];
             //:: error: (array.access.unsafe.high)
             int j = arr[i];
@@ -37,7 +32,6 @@ class Reassignment {
             int y = id(b)[x];
         }
         if (b.length > 0) {
-            //:: error: (side.effect.invalidation)
             test(b, 0, b.length - 1);
         }
     }
