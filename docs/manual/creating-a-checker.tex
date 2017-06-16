@@ -57,8 +57,9 @@ Three choices for creating your own checker are:
   This can be fast, or you can get tangled up if you don't fully understand
   the subtleties of the existing checker that you are modifying.
   Oftentimes following the instructions in this chapter is easier.
-  (One good choice to copy and modify is the Regex Checker
-  (\chapterpageref{regex-checker}); a bad choice is the Nullness Checker,
+  (If you are going to copy a checker, one good choice to copy and modify
+  is the Regex Checker (\chapterpageref{regex-checker}).  A bad choice is
+  the Nullness Checker (\chapterpageref{nullness-checker}),
   which is more sophisticated than anything you want to start out building.)
 \end{itemize}
 
@@ -246,13 +247,13 @@ Here is an example of one good way to proceed.
 
 \begin{enumerate}
 \item
-  Before you start coding, first write the user manual, which explains the
-  type system, what it guarantees, how to use it, etc., from the point of
-  view of a user.
-  This will help you flesh out your goals and the concepts, which are
-  easier to understand and change in text than in an implementation.
-  Section~\ref{creating-documenting-a-checker} gives a suggested structure for the
-  manual chapter, which will help you avoid omitting any parts.
+  Before you start coding, first write the user manual.  The manual
+  explains the type system, what it guarantees, how to use it, etc., from
+  the point of view of a user.  Writing the manual will help you flesh out
+  your goals and the concepts, which are easier to understand and change in
+  text than in an implementation.
+  Section~\ref{creating-documenting-a-checker} gives a suggested structure
+  for the manual chapter, which will help you avoid omitting any parts.
   Get feedback from someone else at this point to ensure that your manual
   is comprehensible.
 
@@ -784,9 +785,10 @@ Then, call \<toString()> on the \<FlowExpressions.Receiver> object.
 A type system's rules define which operations on values of a
 particular type are forbidden.
 These rules must be defined procedurally, not declaratively.
+Put them in a file \<\emph{MyChecker}Visitor.java}> that extends
+\refclass{common/basetype}.
 
-The Checker Framework provides a \textit{base visitor class},
-\refclass{common/basetype}{BaseTypeVisitor}, that performs type-checking at each node of a
+BaseTypeVisitor performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
 \href{http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/}{Tree
@@ -796,18 +798,14 @@ and it issues a warning (by calling
 {-org.checkerframework.framework.source.Result-java.lang.Object-})
 whenever the type system is violated.
 
+Most type-checkers
+override only a few methods in \refclass{common/basetype}{BaseTypeVisitor}.
 A checker's visitor overrides one method in the base visitor for each special
-rule in the type qualifier system.  Most type-checkers
-override only a few methods in \refclass{common/basetype}{BaseTypeVisitor};
-the overridden version does its own checks and also invokes the version in
-its superclass so that standard checks are also performed.  For example, the
-visitor for the Nullness type system of Chapter~\ref{nullness-checker}
-contains a single 4-line method that warns if an expression of nullable type
-is dereferenced, as in:
-\begin{Verbatim}
-  myObject.hashCode();  // invalid dereference
-\end{Verbatim}
-
+rule in the type qualifier system.
+The the last line of the overridden version is
+\<return super.visit\emph{TreeType}(node, p);>
+so that, if the method didn't raise any error,
+the superclass version can perform standard checks.
 
 
 By default, \refclass{common/basetype}{BaseTypeVisitor} performs subtyping checks that are
@@ -858,23 +856,23 @@ similar to Java subtype rules, but taking the type qualifiers into account.
 \subsection{AST traversal\label{creating-ast-traversal}}
 
 The Checker Framework needs to do its own traversal of the AST even though
-it operates as an ordinary annotation processor~\cite{JSR269}.  Annotation
-processors can utilize a visitor for Java code, but that visitor only
+it operates as an ordinary annotation processor~\cite{JSR269}.  Java
+provides a visitor for Java code that is intended to be used by annotation
+processors, but that visitor only
 visits the public elements of Java code, such as classes, fields, methods,
 and method arguments --- it does not visit code bodies or various other
 locations.  The Checker Framework hardly uses the built-in visitor --- as
 soon as the built-in visitor starts to visit a class, then the Checker
 Framework's visitor takes over and visits all of the class's source code.
 
-Because there is no standard API for the AST of Java code\footnote{Actually,
-there is a standard API for Java ASTs --- JSR 198 (Extension API for
-Integrated Development Environments)~\cite{JSR198}.  If tools were to
-implement it
-(which would just require writing wrappers or adapters), then the Checker
-Framework and similar tools could be portable among different compilers and
-IDEs.}, the Checker
-Framework uses the javac implementation.  This is why the Checker Framework
-is not deeply integrated with Eclipse, but runs as an external tool (see
+Because there is no standard API for the AST of Java
+code\footnote{Actually, there is a standard API for Java ASTs --- JSR 198
+  (Extension API for Integrated Development Environments)~\cite{JSR198}.
+  If tools were to implement it (which would just require writing wrappers
+  or adapters), then the Checker Framework and similar tools could be
+  portable among different compilers and IDEs.}, the Checker Framework uses
+the javac implementation.  This is why the Checker Framework is not deeply
+integrated with Eclipse or IntelliJ IDEA, but runs as an external tool (see
 Section~\ref{eclipse}).
 
 
@@ -882,8 +880,8 @@ Section~\ref{eclipse}).
 
 It may be tempting to write a type-checking rule for method invocation,
 where your rule checks the name of the method being called and then treats
-the method in a special way.  This is usually the wrong approach.  It
-is better to write annotations, in a stub file
+the method in a special way.  This is sometimes necessary but is usually
+the wrong approach.  It is better to write annotations, in a stub file
 (Chapter~\ref{annotating-libraries}), and leave the work to the standard
 type-checking rules.
 
@@ -1534,7 +1532,7 @@ type qualifiers, but each of its component checkers should do so.
 
 Sometimes, multiple checkers work together and should always be run
 together.  There are two different ways to bundle multiple checkers
-together, by creating an ``aggregate checker'' or a ``compound checker''.
+together, by creating either an ``aggregate checker'' or a ``compound checker''.
 
 
 \begin{enumerate}
