@@ -1143,19 +1143,22 @@ public class FlowExpressionParseUtil {
         }
     }
 
-    public static Receiver internalReprOfVariable(
-            AnnotatedTypeFactory provider, VariableTree tree) {
+    public static Receiver internalReprOfVariable(AnnotatedTypeFactory provider, VariableTree tree)
+            throws FlowExpressionParseException {
         Element elt = TreeUtils.elementFromDeclaration(tree);
+
+        if (elt.getKind() == ElementKind.LOCAL_VARIABLE
+                || elt.getKind() == ElementKind.RESOURCE_VARIABLE
+                || elt.getKind() == ElementKind.EXCEPTION_PARAMETER
+                || elt.getKind() == ElementKind.PARAMETER) {
+            return new LocalVariable(elt);
+        }
         Receiver receiverF = FlowExpressions.internalRepOfImplicitReceiver(elt);
         FlowExpressionParseUtil.FlowExpressionContext context =
                 new FlowExpressionParseUtil.FlowExpressionContext(
                         receiverF, null, provider.getContext());
-        try {
-            return FlowExpressionParseUtil.parse(
-                    tree.getName().toString(), context, provider.getPath(tree), false);
-        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-            return null;
-        }
+        return FlowExpressionParseUtil.parse(
+                tree.getName().toString(), context, provider.getPath(tree), false);
     }
 
     ///////////////////////////////////////////////////////////////////////////

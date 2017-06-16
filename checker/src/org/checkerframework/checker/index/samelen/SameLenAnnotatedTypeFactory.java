@@ -15,8 +15,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.PolyLength;
 import org.checkerframework.checker.index.qual.PolySameLen;
@@ -36,6 +34,7 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -83,21 +82,16 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree tree) {
         AnnotatedTypeMirror atm = super.getAnnotatedTypeLhs(tree);
         if (tree.getKind() == Tree.Kind.VARIABLE) {
-            String varName = null;
-            Element elt = TreeUtils.elementFromDeclaration((VariableTree) tree);
-            if (elt.getKind() == ElementKind.LOCAL_VARIABLE
-                    || elt.getKind() == ElementKind.RESOURCE_VARIABLE
-                    || elt.getKind() == ElementKind.EXCEPTION_PARAMETER
-                    || elt.getKind() == ElementKind.PARAMETER) {
-                varName = elt.getSimpleName().toString();
-            } else {
-                Receiver r =
-                        FlowExpressionParseUtil.internalReprOfVariable(this, (VariableTree) tree);
-                if (r != null) {
-                    varName = r.toString();
-                }
+            Receiver r;
+            try {
+                r = FlowExpressionParseUtil.internalReprOfVariable(this, (VariableTree) tree);
+            } catch (FlowExpressionParseException ex) {
+                r = null;
             }
-            if (varName != null) {
+
+            if (r != null) {
+                String varName = r.toString();
+
                 AnnotationMirror anm = atm.getAnnotation(SameLen.class);
                 if (anm != null) {
                     List<String> slArrays = IndexUtil.getValueOfAnnotationWithStringArgument(anm);
