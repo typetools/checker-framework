@@ -267,42 +267,48 @@ public class ReflectiveEvaluator {
 
     public List<?> evaluteConstructorCall(
             ArrayList<List<?>> argValues, NewClassTree tree, TypeMirror typeToCreate) {
+        Constructor<?> constructor;
         try {
             // get the constructor
-            Constructor<?> constructor = getConstructorObject(tree, typeToCreate);
-            if (constructor == null) {
-                return null;
-            }
-
-            List<Object[]> listOfArguments;
-            if (argValues == null) {
-                // Method does not have arguments
-                listOfArguments = new ArrayList<Object[]>();
-                listOfArguments.add(null);
-            } else {
-                // Find all possible argument sets
-                listOfArguments = cartesianProduct(argValues, argValues.size() - 1);
-            }
-
-            List<Object> results = new ArrayList<>();
-            for (Object[] arguments : listOfArguments) {
-                try {
-                    results.add(constructor.newInstance(arguments));
-                } catch (ReflectiveOperationException e) {
-                    if (reportWarnings) {
-                        checker.report(Result.warning("constructor.invocation.failed"), tree);
-                    }
-                    return null;
-                }
-            }
-            return results;
-
-        } catch (ReflectiveOperationException e) {
+            constructor = getConstructorObject(tree, typeToCreate);
+        } catch (Exception e) {
+            // Catch all exception so that the checker doesn't crash
             if (reportWarnings) {
-                checker.report(Result.warning("constructor.evaluation.failed"), tree);
+                checker.report(Result.warning("constructor.invocation.failed"), tree);
             }
             return null;
         }
+        if (constructor == null) {
+            return null;
+        }
+
+        List<Object[]> listOfArguments;
+        if (argValues == null) {
+            // Method does not have arguments
+            listOfArguments = new ArrayList<Object[]>();
+            listOfArguments.add(null);
+        } else {
+            // Find all possible argument sets
+            listOfArguments = cartesianProduct(argValues, argValues.size() - 1);
+        }
+
+        List<Object> results = new ArrayList<>();
+        for (Object[] arguments : listOfArguments) {
+            try {
+                results.add(constructor.newInstance(arguments));
+            } catch (Exception e) {
+                if (reportWarnings) {
+                    checker.report(
+                            Result.warning(
+                                    "constructor.evaluation.failed",
+                                    typeToCreate,
+                                    PluginUtil.join(", ", arguments)),
+                            tree);
+                }
+                return null;
+            }
+        }
+        return results;
     }
 
     private Constructor<?> getConstructorObject(NewClassTree tree, TypeMirror typeToCreate)

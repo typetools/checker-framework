@@ -13,6 +13,13 @@ Cyrille Artho.
 \newblock Master's thesis, Swiss Federal Institute of Technology, March~15,
   2001.
 
+\bibitem[CNA{\etalchar{+}}17]{CoblenzNAMS2017}
+Michael Coblenz, Whitney Nelson, Jonathan Aldrich, Brad Myers, and Joshua
+  Sunshine.
+\newblock Glacier: Transitive class immutability for {Java}.
+\newblock In {\em ICSE 2017, Proceedings of the 39th International Conference
+  on Software Engineering}, pages 496--506, Buenos Aires, Argentina, May 2017.
+
 \bibitem[Cop05]{Copeland2005}
 Tom Copeland.
 \newblock {\em PMD Applied}.
@@ -88,7 +95,7 @@ Colin~S. Gordon, Werner Dietl, Michael~D. Ernst, and Dan Grossman.
 \bibitem[Goe06]{Goetz2006:typedef}
 Brian Goetz.
 \newblock The pseudo-typedef antipattern: Extension is not type definition.
-\newblock \url{http://www.ibm.com/developerworks/java/library/j-jtp02216/},
+\newblock \url{https://www.ibm.com/developerworks/java/library/j-jtp02216/},
   February~21, 2006.
 
 \bibitem[GPB{\etalchar{+}}06]{Goetz2006}

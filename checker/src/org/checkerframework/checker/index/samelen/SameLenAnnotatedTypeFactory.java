@@ -5,6 +5,7 @@ import static org.checkerframework.checker.index.IndexUtil.getValueOfAnnotationW
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -14,6 +15,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.index.IndexUtil;
+import org.checkerframework.checker.index.qual.PolyLength;
 import org.checkerframework.checker.index.qual.PolySameLen;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.SameLenBottom;
@@ -31,6 +34,7 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -53,6 +57,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         BOTTOM = AnnotationUtils.fromClass(elements, SameLenBottom.class);
         POLY = AnnotationUtils.fromClass(elements, PolySameLen.class);
         addAliasedAnnotation(PolyAll.class, POLY);
+        addAliasedAnnotation(PolyLength.class, POLY);
 
         this.postInit();
     }
@@ -71,6 +76,37 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new SameLenQualifierHierarchy(factory);
+    }
+
+    @Override
+    public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree tree) {
+        AnnotatedTypeMirror atm = super.getAnnotatedTypeLhs(tree);
+        if (tree.getKind() == Tree.Kind.VARIABLE) {
+            Receiver r;
+            try {
+                r = FlowExpressionParseUtil.internalReprOfVariable(this, (VariableTree) tree);
+            } catch (FlowExpressionParseException ex) {
+                r = null;
+            }
+
+            if (r != null) {
+                String varName = r.toString();
+
+                AnnotationMirror anm = atm.getAnnotation(SameLen.class);
+                if (anm != null) {
+                    List<String> slArrays = IndexUtil.getValueOfAnnotationWithStringArgument(anm);
+                    if (slArrays.contains(varName)) {
+                        slArrays.remove(varName);
+                    }
+                    if (slArrays.size() == 0) {
+                        atm.replaceAnnotation(UNKNOWN);
+                    } else {
+                        atm.replaceAnnotation(createSameLen(slArrays.toArray(new String[0])));
+                    }
+                }
+            }
+        }
+        return atm;
     }
 
     /**

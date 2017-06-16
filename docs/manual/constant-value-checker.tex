@@ -24,7 +24,7 @@ The Constant Value Checker uses type annotations to indicate the value of
 an expression (Section~\ref{constant-value-checker-type-annotations}), and
 it uses method annotations to indicate methods that the Constant Value
 Checker can execute at compile time
-(Section~\ref{staticallyexecutable-annotation}).
+(Section~\ref{constant-value-staticallyexecutable-annotation}).
 
 
 \subsection{Type Annotations\label{constant-value-checker-type-annotations}}
@@ -61,6 +61,11 @@ Checker gives up and its type becomes
 \refqualclass{common/value/qual}{UnknownVal} for all other types.
 The \<@ArrayLen> annotation means that at run time, the expression
 evaluates to an array whose length is one of the annotation's arguments.
+
+The \<@StringVal> annotation may be applied to a char array.  Although byte
+arrays are often converted to/from strings, the \<@StringVal> annotation may
+not be applied to them.  This is because the conversion depends on the
+platform's character set.
 
 % \refqualclass{checker/value/qual}{BottomVal}, meaning that the expression
 % is dead or always has the value \<null>.
@@ -149,8 +154,15 @@ $\Rightarrow$
 \label{fig-constant-value-refactoring}
 \end{figure}
 
+\ifonbuffalo{\relax}\else{
+  The Constant Value Checker trusts the
+  \refqualclass{checker/index/qual}{Positive} annotation.  If your code
+  contains a \refqualclass{checker/index/qual}{Positive} annotation, then
+  in order to guarantee soundness, you must run the Index Checker whenever
+  you run the Constant Value Checker.
+}\fi
 
-\subsection{Compile-time execution of expressions\label{staticallyexecutable-annotation}}
+\subsection{Compile-time execution of expressions\label{constant-value-compile-time-execution}}
 
 Whenever all the operands of an expression are compile-time constants (that
 is, their types have constant-value type annotations), the Constant Value
@@ -159,9 +171,14 @@ optimizations performed by the compiler and does not affect the code that
 is generated.
 
 The Constant Value Checker statically executes operators that do
-not throw exceptions (e.g., \<+>, \<->, \code{<\relax<}, \<!=>), and also
-calls to methods annotated with
-\refqualclass{common/value/qual}{StaticallyExecutable}.
+not throw exceptions (e.g., \<+>, \<->, \code{<\relax<}, \<!=>).
+
+
+\subsection{\<@StaticallyExecutable> methods and the classpath\label{constant-value-staticallyexecutable-annotation}}
+
+The Constant Value Checker statically executes methods annotated with
+\refqualclass{common/value/qual}{StaticallyExecutable}, \emph{if the
+method has already been compiled and is on the classpath}.
 
 \begin{figure}
 \begin{Verbatim}
@@ -182,29 +199,25 @@ public void bar() {
 \label{fig-staticallyexecutable}
 \end{figure}
 
-\begin{sloppypar}
 A \<@StaticallyExecutable> method must
 be \refqualclass{dataflow/qual}{Pure} (side-effect-free and
 deterministic).
+
 Additionally, a \<@StaticallyExecutable> method and any method it calls must be on
 the classpath for the compiler, because they are reflectively called at
-compile-time to perform the constant value analysis. Any standard
-library methods (such as those annotated as \<@StaticallyExecutable> in file
-\<statically-executable.astub>) will already be on the
-classpath.
-\end{sloppypar}
-
-\begin{sloppypar}
+compile-time to perform the constant value analysis.
+% Standard library methods (such as those annotated as \<@StaticallyExecutable>
+% in file \<statically-executable.astub>) will already be on the classpath.
 To use \<@StaticallyExecutable> on methods in your own code, you should
 first compile the code without the Constant Value Checker and then add
 the location of the resulting \code{.class} files to the
-classpath. This can be done by either adding the destination path to
-your environment variable \code{CLASSPATH} or by passing the
-argument \code{-classpath path/to/class/files} to the call. The latter
-would look similar to:
-\code{-processor org.checkerframework.common.value.ValueChecker
--Astubs=statically-executable.astub -classpath \$CLASSPATH:\$MY\_PROJECT/build/}
-\end{sloppypar}
+classpath. For example, the command-line arguments to the Checker Framework
+might include:
+\begin{Verbatim}
+  -processor org.checkerframework.common.value.ValueChecker
+  -Astubs=statically-executable.astub
+  -classpath $CLASSPATH:MY_PROJECT/build/
+\end{Verbatim}
 
 
 \section{Warnings\label{value-checker-warnings}}
@@ -260,4 +273,5 @@ warning message:
 \end{sloppypar}
 %%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange
 %  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
-%%  LocalWords:  classpath AreportEvalWarns
+%%  LocalWords:  classpath AreportEvalWarns ArrayLen ArrayLenRange MinLen
+%%  LocalWords:  PolyValue

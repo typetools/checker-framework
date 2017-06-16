@@ -459,14 +459,17 @@ unbounded wildcards.  The two wildcards in the
 following example are equivalent.
 
 \begin{Verbatim}
-class MyList<@Nullable T extends @Nullable Object> {}
+class MyList<@NonNull T extends @Nullable Object> {}
 
-List<? extends Object> listOfNonNulls;
-List<@NonNull ? extends @NonNull Object> listOfNonNulls2;
+MyList<? extends Object> listOfNonNulls;
+MyList<@NonNull ? extends @NonNull Object> listOfNonNulls2;
 \end{Verbatim}
 
 Note, the upper bound of the wildcard \code{? extends Object} is defaulted to
 \code{@NonNull} using the CLIMB-to-top rule (see Section~\ref{climb-to-top}).
+Also note that the \code{MyList} class declaration could have been more succinctly
+written as: \code{class MyList<T extends @Nullable Object>} where the lower bound
+is implicitly the bottom annotation: \code {@NonNull}.
 
 \subsection{Default qualifiers for \<.class> files (conservative library defaults)\label{defaults-classfile}}
 

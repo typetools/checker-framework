@@ -1,7 +1,7 @@
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.*;
 
-//@skip-test -- should be fixed, but is a bit tricky to implement, so defer for now.
+// @skip-test -- should be fixed, but is a bit tricky to implement, so defer for now.
 // See https://github.com/typetools/checker-framework/issues/223
 class Constructors {
 

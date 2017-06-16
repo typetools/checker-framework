@@ -150,31 +150,47 @@ are some annotations that give multiple types of information:
    For a description of qualifier polymorphism, see
    Section~\ref{qualifier-polymorphism}.
 
+ \item[\refqualclass{checker/index/qual}{PolyLength}]
+   is a special polymorphic qualifier that combines
+   \refqualclass{checker/index/qual}{PolySameLen} and
+   \refqualclass{common/value/qual}{PolyValue} from the
+   Constant Value Checker (see \chapterpageref{constant-value-checker}).
+   \refqualclass{checker/index/qual}{PolyLength} exists
+   as a shorthand for these two annotations, since
+   they often appear together.
+
 \end{description}
 
 \section{Lower bounds\label{index-lowerbound}}
 
 The Index Checker issues an error when
 a sequence is indexed by an integer that might be negative.
-It uses a type system (Figure~\ref{fig-index-int-types}) with the following
+The Lower Bound Checker uses a type system (Figure~\ref{fig-index-int-types}) with the following
 qualifiers:
 
 \begin{description}
 \item[\refqualclass{checker/index/qual}{Positive}]
   The value is 1 or greater, so it is not too low to be used as an index.
+  Note that this annotation is trusted by the Constant Value Checker,
+  so if the Constant Value Checker is run on code containing this annotation,
+  the Lower Bound Checker must be run on the same code in order to
+  guarantee soundness.
 \item[\refqualclass{checker/index/qual}{NonNegative}]
   The value is 0 or greater, so it is not too low to be used as an index.
 \item[\refqualclass{checker/index/qual}{GTENegativeOne}]
   The value is -1 or greater.
   It may not be used as an index for a sequence, because it might be too low.
   (``\<GTE>'' stands for ``Greater Than or Equal to''.)
-\item[\refqualclass{checker/index/qual}{LowerBoundUnknown}]
-  There is no information about the value.
-  It may not be used as an index for a sequence, because it might be too low.
 \item[\refqualclass{checker/index/qual}{PolyLowerBound}]
   indicates qualifier polymorphism.
   For a description of qualifier polymorphism, see
   Section~\ref{qualifier-polymorphism}.
+\item[\refqualclass{checker/index/qual}{LowerBoundUnknown}]
+  There is no information about the value.
+  It may not be used as an index for a sequence, because it might be too low.
+\item[\refqualclass{checker/index/qual}{LowerBoundBottom}]
+    The value cannot take on any integral types. The bottom type, which
+    should not need to be written by the programmer.
 \end{description}
 
 \begin{figure}
@@ -236,6 +252,11 @@ or \code{@LTOMLengthOf("arr")}.
   \code{@LTEqLengthOf("a")} and \code{@LTEqLengthOf("b")}.
   (``\<LTEq>'' stands for ``Less Than or Equal to''.)
 
+ \item[\refqualclass{checker/index/qual}{PolyUpperBound}]
+   indicates qualifier polymorphism.
+   For a description of qualifier polymorphism, see
+   Section~\ref{qualifier-polymorphism}.
+
 \item[\refqualclasswithparams{checker/index/qual}{LTOMLengthOf}{String[] names}]
   An expression with this type
   has value at least 2 less than the length of each sequence listed in \<names>.
@@ -266,11 +287,6 @@ or \code{@LTOMLengthOf("arr")}.
 \item[\refqualclass{checker/index/qual}{UpperBoundBottom}]
   This is the bottom type for the upper bound type system. It should
   never need to be written by the programmer.
-
- \item[\refqualclass{checker/index/qual}{PolyUpperBound}]
-   indicates qualifier polymorphism.
-   For a description of qualifier polymorphism, see
-   Section~\ref{qualifier-polymorphism}.
 
 \end{description}
 
@@ -383,6 +399,10 @@ When needed, you can specify which sequences have the same length using the foll
   are \textit{not} subtypes of each other. However, if at least one
   sequence is named by both types, the types are actually the same,
   because all the named sequences must have the same length.
+\item[\refqualclass{checker/index/qual}{PolySameLen}]
+  indicates qualifier polymorphism.
+  For a description of qualifier polymorphism, see
+  Section~\ref{qualifier-polymorphism}.
 \item[\refqualclass{checker/index/qual}{SameLenUnknown}]
   No information is known about which other sequences have the same length
   as this one.
@@ -390,10 +410,6 @@ When needed, you can specify which sequences have the same length using the foll
 \item[\refqualclass{checker/index/qual}{SameLenBottom}]
   This is the bottom type, and programmers should rarely need to write it.
   \code{null} has this type.
-\item[\refqualclass{checker/index/qual}{PolySameLen}]
-  indicates qualifier polymorphism.
-  For a description of qualifier polymorphism, see
-  Section~\ref{qualifier-polymorphism}.
 \end{description}
 
 
