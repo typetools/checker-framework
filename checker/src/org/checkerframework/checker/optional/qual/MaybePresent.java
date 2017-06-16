@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The {@link java.lang.Optional Optional} container may or may not contain a value.
+ * The {@link java.util.Optional Optional} container may or may not contain a value.
  *
  * @checker_framework.manual #optional-checker Optional Checker
  */

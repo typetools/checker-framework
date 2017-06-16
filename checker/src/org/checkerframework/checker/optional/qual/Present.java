@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The {@link java.lang.Optional Optional} container definitely contains a (non-null) value.
+ * The {@link java.util.Optional Optional} container definitely contains a (non-null) value.
  *
  * @checker_framework.manual #optional-checker Optional Checker
  */
