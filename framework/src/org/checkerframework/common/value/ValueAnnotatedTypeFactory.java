@@ -786,15 +786,26 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return superValues.contains("") && getMaxLenValue(subAnno) == 0;
             } else if (AnnotationUtils.areSameByClass(superAnno, ArrayLen.class)
                     && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
-
-                // List<String> subValues =
-                //     AnnotationUtils.getElementValueArray(subAnno, "value", Integer.class, true);
-                //VD: check whether it is correct
-                return isSubtype(convertStringValToArrayLen(subAnno), superAnno);
+                // StringVal is a subtype of ArrayLen, if all the strings have one of the correct lengths
+                List<String> subValues =
+                        AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
+                List<Integer> superValues =
+                        AnnotationUtils.getElementValueArray(
+                                superAnno, "value", Integer.class, true);
+                for (String value : subValues) {
+                    if (!superValues.contains(value.length())) return false;
+                }
+                return true;
             } else if (AnnotationUtils.areSameByClass(superAnno, ArrayLenRange.class)
                     && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
-                //VD: check whether it is correct
-                return isSubtype(convertStringValToArrayLenRange(subAnno), superAnno);
+                // StringVal is a subtype of ArrayLenRange, if all the strings have a length from the range
+                List<String> subValues =
+                        AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
+                Range superRange = getRange(superAnno);
+                for (String value : subValues) {
+                    if (!superRange.contains(value.length())) return false;
+                }
+                return true;
             } else {
                 return false;
             }
@@ -1694,8 +1705,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
-        // VD: do we need to handle MinLen?
-
         // arrayLenRangeAnno rangeAnno is well-formed, i.e., 'from' is less than or equal to 'to'.
 
         return new Range(
@@ -1873,7 +1882,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         } else if (AnnotationUtils.areSameByClass(annotation, ArrayLen.class)) {
             return Collections.max(getArrayLength(annotation));
         } else if (AnnotationUtils.areSameByClass(annotation, StringVal.class)) {
-            //VD: optimize
             return Collections.max(getArrayLength(convertStringValToArrayLen(annotation)));
         } else {
             return null;
@@ -1899,7 +1907,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         } else if (AnnotationUtils.areSameByClass(annotation, ArrayLen.class)) {
             return Collections.min(getArrayLength(annotation));
         } else if (AnnotationUtils.areSameByClass(annotation, StringVal.class)) {
-            //VD: optimize
             return Collections.min(getArrayLength(convertStringValToArrayLen(annotation)));
         } else {
             return null;
