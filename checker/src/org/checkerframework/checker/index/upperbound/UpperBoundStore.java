@@ -148,8 +148,6 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
 
     void findEnclosedTypes(
             List<AnnotatedTypeMirror> enclosedTypes, List<? extends Element> enclosedElts) {
-        for (Element e : enclosedElts) {}
-
         for (Element e : enclosedElts) {
             AnnotatedTypeMirror atm = analysis.getTypeFactory().getAnnotatedType(e);
             enclosedTypes.add(atm);
