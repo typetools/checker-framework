@@ -2,6 +2,7 @@ import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.value.qual.StringVal;
 
 class StringLenConcats {
@@ -65,5 +66,9 @@ class StringLenConcats {
         @StringVal({"aaa123", "bbbbb123"}) String cConst = c + intConst;
         @ArrayLen({4, 5, 6, 7, 8, 9, 10, 11, 12}) String cRange = c + intRange;
         @ArrayLen({6, 7, 8, 9, 10, 11}) String cPositive = c + positiveRange;
+    }
+
+    void minLenConcat(@MinLen(5) String s, @MinLen(7) String t) {
+        @MinLen(12) String st = s + t;
     }
 }

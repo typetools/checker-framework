@@ -2,6 +2,7 @@ import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.value.qual.StringVal;
 
 class StringLen {
@@ -98,6 +99,10 @@ class StringLen {
 
         //:: error: (assignment.type.incompatible)
         @IntRange(from = 1, to = 11) int len1_11 = values.length();
+    }
+
+    void minLenLength(@MinLen(5) String s) {
+        @IntRange(from = 5) int l = s.length();
     }
 
     void arrayCast(@ArrayLen(1) String array) {
