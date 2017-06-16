@@ -17,7 +17,7 @@ public class Issue1345 {
     }
 
     void filterPresent_Optional(Stream<@Nullable BigDecimal> s) {
-        Stream<@NonNull BigDecimal> filtered = s.<BigDecimal>filter(TestFilter::isNonNull);
+        Stream<@NonNull BigDecimal> filtered = s.<BigDecimal>filter(Issue1345::isNonNull);
     }
 
     void filterPresent_Opt(@Nullable Object p) {
