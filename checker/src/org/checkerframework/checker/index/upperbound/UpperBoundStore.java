@@ -12,7 +12,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
@@ -87,23 +86,20 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         if (n.getType().getKind() == TypeKind.ARRAY) {
             if (n instanceof LocalVariableNode) {
                 // Do not warn about assigning to a final variable. javac handles this.
-                if (!((LocalVariableNode) n).getElement().getModifiers().contains(Modifier.FINAL)) {
+                if (!ElementUtils.isFinal(((LocalVariableNode) n).getElement())) {
                     checkController = CheckController.NAME_ONLY;
                 }
             }
             if (n instanceof FieldAccessNode) {
                 // Do not warn about assigning to a final field. javac handles this.
-                if (!((FieldAccessNode) n).getElement().getModifiers().contains(Modifier.FINAL)) {
+                if (!ElementUtils.isFinal(((FieldAccessNode) n).getElement())) {
                     checkController = CheckController.NAME_AND_METHOD_CALLS;
                 }
             }
         } else {
             if (n instanceof FieldAccessNode) {
                 if (!n.getType().getKind().isPrimitive()) {
-                    if (!((FieldAccessNode) n)
-                            .getElement()
-                            .getModifiers()
-                            .contains(Modifier.FINAL)) {
+                    if (!ElementUtils.isFinal(((FieldAccessNode) n).getElement())) {
                         checkController = CheckController.NONFINAL_REFS_AND_METHOD_CALLS;
                     }
                 }
@@ -152,8 +148,6 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
 
     void findEnclosedTypes(
             List<AnnotatedTypeMirror> enclosedTypes, List<? extends Element> enclosedElts) {
-        for (Element e : enclosedElts) {}
-
         for (Element e : enclosedElts) {
             AnnotatedTypeMirror atm = analysis.getTypeFactory().getAnnotatedType(e);
             enclosedTypes.add(atm);
