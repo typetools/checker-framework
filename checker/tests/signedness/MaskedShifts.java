@@ -327,13 +327,13 @@ public class MaskedShifts {
     public void ZeroShiftTests(@Unsigned int unsigned, @Signed int signed) {
         @UnknownSignedness int testRes;
 
-        // Tests that shift by zero passes for and masks
+        // Tests shift by zero followed by "and" mask
         testRes = (unsigned >>> 0) & 0xFFFFFFFF;
         testRes = (unsigned >> 0) & 0xFFFFFFFF;
         testRes = (signed >>> 0) & 0xFFFFFFFF;
         testRes = (signed >> 0) & 0xFFFFFFFF;
 
-        // Tests that shift by zero passes for or masks
+        // Tests shift by zero followed by "or" mask
         testRes = (unsigned >>> 0) | 0x0;
         testRes = (unsigned >> 0) | 0x0;
         testRes = (signed >>> 0) | 0x0;
