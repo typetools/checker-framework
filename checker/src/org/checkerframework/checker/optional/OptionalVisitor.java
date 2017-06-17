@@ -53,57 +53,74 @@ public class OptionalVisitor
         MethodInvocationTree invok = (MethodInvocationTree) e;
         ExpressionTree methodSelect = invok.getMethodSelect();
         ExpressionTree receiver = ((MemberSelectTree) methodSelect).getExpression();
-        return receiver;
+        return TreeUtils.skipParens(receiver);
     }
 
     @Override
     public Void visitConditionalExpression(ConditionalExpressionTree node, Void p) {
-        // Pattern match for:  VAR.isPresent() ? VAR.get().METHOD() : VALUE
-        // Prefer:  VAR.map(METHOD).orElse(VALUE);
-
-        ExpressionTree condExpr = node.getCondition();
-        ExpressionTree trueExpr = node.getTrueExpression();
-        ExpressionTree falseExpr = node.getFalseExpression();
-
-        if (isCallToIsPresent(condExpr)) {
-            MethodInvocationTree isPresentInvok = (MethodInvocationTree) condExpr;
-            ExpressionTree isPresent = isPresentInvok.getMethodSelect();
-            System.out.printf("isPresentInvok=%s, isPresent=%s%n", isPresentInvok, isPresent);
-            if (isPresent instanceof MemberSelectTree) {
-                ExpressionTree receiver = ((MemberSelectTree) isPresent).getExpression();
-                System.out.printf("receiver=%s%n", receiver);
-                if (trueExpr instanceof MethodInvocationTree) {
-                    MethodInvocationTree trueMethodInvok = (MethodInvocationTree) trueExpr;
-                    List<? extends ExpressionTree> trueArgs = trueMethodInvok.getArguments();
-                    System.out.printf(
-                            "trueMethodInvok=%s, trueArgs=%s%n", trueMethodInvok, trueArgs);
-                    if (trueArgs.isEmpty()) {
-                        MemberSelectTree trueMethod =
-                                (MemberSelectTree) trueMethodInvok.getMethodSelect();
-                        ExpressionTree trueReceiver = trueMethod.getExpression();
-                        System.out.printf(
-                                "trueMethod=%s, trueReceiver=%s%n", trueMethod, trueReceiver);
-                        if (isCallToGet(trueReceiver)) {
-                            ExpressionTree getReceiver = receiver(trueReceiver);
-                            System.out.printf("getReceiver=%s%n", getReceiver);
-                            // What is a better way to do this than string comparison?
-                            if (receiver.toString().equals(getReceiver.toString())) {
-                                System.out.printf("issuing warning");
-                                checker.report(
-                                        Result.warning(
-                                                "prefer.map.and.orelse",
-                                                receiver,
-                                                // The literal "CONTAININGCLASS::" is gross.
-                                                // Figure out a way to improve it.
-                                                trueMethod.getIdentifier(),
-                                                falseExpr),
-                                        node);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        System.out.printf("visitConditionalExpression(%s)%n", node);
+        handleTernaryIsPresentGet(node);
         return super.visitConditionalExpression(node, p);
+    }
+
+    /*
+     * Pattern match for:  {@code VAR.isPresent() ? VAR.get().METHOD() : VALUE}
+     *
+     * <p>Prefer:  {@code VAR.map(METHOD).orElse(VALUE);}
+     */
+    public void handleTernaryIsPresentGet(ConditionalExpressionTree node) {
+
+        System.out.printf("handleTernaryIsPresentGet(%s)%n", node);
+
+        ExpressionTree condExpr = TreeUtils.skipParens(node.getCondition());
+        ExpressionTree trueExpr = TreeUtils.skipParens(node.getTrueExpression());
+        ExpressionTree falseExpr = TreeUtils.skipParens(node.getFalseExpression());
+
+        System.out.printf(
+                "condExpr=%s, trueExpr=%s, falseExpr=%s%n", condExpr, trueExpr, falseExpr);
+
+        if (!isCallToIsPresent(condExpr)) {
+            return;
+        }
+        MethodInvocationTree isPresentInvok = (MethodInvocationTree) condExpr;
+        ExpressionTree isPresent = isPresentInvok.getMethodSelect();
+        System.out.printf("isPresentInvok=%s, isPresent=%s%n", isPresentInvok, isPresent);
+        if (!(isPresent instanceof MemberSelectTree)) {
+            return;
+        }
+        ExpressionTree receiver =
+                TreeUtils.skipParens(((MemberSelectTree) isPresent).getExpression());
+        System.out.printf("receiver=%s%n", receiver);
+        if (!(trueExpr instanceof MethodInvocationTree)) {
+            return;
+        }
+        MethodInvocationTree trueMethodInvok = (MethodInvocationTree) trueExpr;
+        List<? extends ExpressionTree> trueArgs = trueMethodInvok.getArguments();
+        System.out.printf("trueMethodInvok=%s, trueArgs=%s%n", trueMethodInvok, trueArgs);
+        if (!trueArgs.isEmpty()) {
+            return;
+        }
+        MemberSelectTree trueMethod = (MemberSelectTree) trueMethodInvok.getMethodSelect();
+        ExpressionTree trueReceiver = TreeUtils.skipParens(trueMethod.getExpression());
+        System.out.printf("trueMethod=%s, trueReceiver=%s%n", trueMethod, trueReceiver);
+        if (!isCallToGet(trueReceiver)) {
+            return;
+        }
+        ExpressionTree getReceiver = receiver(trueReceiver);
+        System.out.printf("getReceiver=%s%n", getReceiver);
+
+        // What is a better way to do this than string comparison?
+        if (receiver.toString().equals(getReceiver.toString())) {
+            System.out.printf("issuing warning");
+            checker.report(
+                    Result.warning(
+                            "prefer.map.and.orelse",
+                            receiver,
+                            // The literal "CONTAININGCLASS::" is gross.
+                            // Figure out a way to improve it.
+                            trueMethod.getIdentifier(),
+                            falseExpr),
+                    node);
+        }
     }
 }
