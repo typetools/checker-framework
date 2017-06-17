@@ -161,7 +161,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
      */
     private static void convert(AScene scene, InputStream in, OutputStream out)
             throws IOException, DefException, ParseException {
-        IndexUnit iu = JavaParser.parse(in);
+        IndexUnit iu = JavaParser.parseIndexUnit(in);
         extractScene(iu, scene);
         try (Writer w = new BufferedWriter(new OutputStreamWriter(out))) {
             IndexFileWriter.write(scene, w);

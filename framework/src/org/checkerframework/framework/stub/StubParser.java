@@ -147,7 +147,7 @@ public class StubParser {
         }
         IndexUnit parsedindex;
         try {
-            parsedindex = JavaParser.parse(inputStream);
+            parsedindex = JavaParser.parseIndexUnit(inputStream);
         } catch (Exception e) {
             ErrorReporter.errorAbort(
                     "StubParser: exception from JavaParser.parse for file " + filename, e);
