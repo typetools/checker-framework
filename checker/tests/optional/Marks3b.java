@@ -1,5 +1,8 @@
 import java.util.Optional;
 
+/**
+ * Test case for rule #3: "Prefer alternative APIs over Optional.isPresent() and Optional.get()."
+ */
 @SuppressWarnings("optional.parameter")
 public class Marks3b {
 

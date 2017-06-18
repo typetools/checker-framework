@@ -1,10 +1,9 @@
 import java.util.Optional;
 
-// "It’s generally a bad idea to create an Optional for the specific purpose of chaining methods
-// from it to get a value."
-// Optional creation: of, ofNullable.
-// Things that eliminate Optional: get, orElse, orElseGet, orElseThrow.
-
+/**
+ * Test case for rule #4: "It’s generally a bad idea to create an Optional for the specific purpose
+ * of chaining from it to get a value."
+ */
 public class Marks4 {
 
     String getDefault() {

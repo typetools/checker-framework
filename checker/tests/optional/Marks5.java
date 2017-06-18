@@ -3,6 +3,10 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import org.checkerframework.checker.optional.qual.Present;
 
+/**
+ * Test case for rule #5: "If an Optional chain has a nested Optional chain, or has an intermediate
+ * result of Optional, it’s probably too complex."
+ */
 @SuppressWarnings("optional.parameter")
 public class Marks5 {
 

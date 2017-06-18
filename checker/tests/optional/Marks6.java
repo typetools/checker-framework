@@ -4,11 +4,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Test cases for two rules:
+ *
+ * <p>Rule #6: "Avoid using Optional in fields, method parameters, and collections."
+ *
+ * <p>Rule #7: "Don’t use an Optional to wrap any collection type (List, Set, Map). Instead, use an
+ * empty collection to represent the absence of values.
+ */
 public class Marks6 {
-
-    // Rule #6:  Avoid using Optional in fields, method parameters, and collections.
-    // Rule #7:  Don’t use an Optional to wrap any collection type (List, Set, Map).
-    //           Instead, use an empty collection to represent the absence of values.
 
     //:: error: (optional.field)
     Optional<String> optionalField;

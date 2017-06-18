@@ -1,6 +1,9 @@
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Test case for rule #3: "Prefer alternative APIs over Optional.isPresent() and Optional.get()."
+ */
 public class Marks3a {
 
     class Customer {
