@@ -1,6 +1,7 @@
 import org.checkerframework.checker.optional.qual.MaybePresent;
 import org.checkerframework.checker.optional.qual.Present;
 
+/** Basic test of subtyping. */
 public class SubtypeCheck {
 
     void foo(@MaybePresent int mp, @Present int p) {
