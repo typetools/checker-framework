@@ -337,9 +337,14 @@ checker as an annotation processor directly.
 
 \begin{enumerate}
 
-\item Declare a dependency on the Checker Framework artifacts.  Find the
+\item Declare a dependency on the Checker Framework artifacts, either from
+  Maven Central or from a local directory.  Find the
   existing \code{<dependencies>} section and add the following new
   \code{<dependency>} items:
+
+\begin{enumerate}
+\item
+  To obtain artifacts from Maven Central:
 
 \begin{alltt}
   <dependencies>
@@ -371,17 +376,48 @@ checker as an annotation processor directly.
   </dependencies>
 \end{alltt}
 
-If you wish to use a local version of the Checker Framework (for example,
-one that you have built from source), then add two lines just before each
-occurrence of \code{</dependency>}:
+\item
+  To use a local version of the Checker Framework (for example,
+  one that you have built from source):
 
 \begin{alltt}
-      <scope>system</scope>
-      <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/\emph{artifactID}.jar</systemPath>
-\end{alltt}
+  <dependencies>
+    ... existing <dependency> items ...
 
-\noindent
-where \emph{artifactID} is a jar file name, such as \<checker-qual>.
+    <!-- annotations from the Checker Framework: nullness, interning, locking, ... -->
+    <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>checker-qual</artifactId>
+      <version>\ReleaseVersion{}</version>
+      <scope>system</scope>
+      <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/checker-qual.jar</systemPath>
+    </dependency>
+    <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>checker</artifactId>
+      <version>\ReleaseVersion{}</version>
+      <scope>system</scope>
+      <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/checker.jar</systemPath>
+    </dependency>
+    <!-- The Type Annotations compiler. Uncomment if using Java 7 or annotations in comments. -->
+    <!-- <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>compiler</artifactId>
+      <version>\ReleaseVersion{}</version>
+      <scope>system</scope>
+      <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/compiler.jar</systemPath>
+    </dependency> -->
+    <!-- The annotated JDK to use (change to jdk7 if using Java 7). -->
+    <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>jdk8</artifactId>
+      <version>\ReleaseVersion{}</version>
+      <scope>system</scope>
+      <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/jdk8.jar</systemPath>
+    </dependency>
+  </dependencies>
+\end{alltt}
+\end{enumerate}
 
 
 \item Use Maven properties to hold the locations of the
