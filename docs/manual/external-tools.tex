@@ -342,33 +342,33 @@ checker as an annotation processor directly.
   \code{<dependency>} items:
 
 \begin{alltt}
-    <dependencies>
-        ... existing <dependency> items ...
+  <dependencies>
+    ... existing <dependency> items ...
 
-        <!-- annotations from the Checker Framework: nullness, interning, locking, ... -->
-        <dependency>
-            <groupId>org.checkerframework</groupId>
-            <artifactId>checker-qual</artifactId>
-            <version>\ReleaseVersion{}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.checkerframework</groupId>
-            <artifactId>checker</artifactId>
-            <version>\ReleaseVersion{}</version>
-        </dependency>
-        <!-- The Type Annotations compiler. Uncomment if using Java 7 or annotations in comments. -->
-        <!-- <dependency>
-            <groupId>org.checkerframework</groupId>
-            <artifactId>compiler</artifactId>
-            <version>\ReleaseVersion{}</version>
-        </dependency> -->
-        <!-- The annotated JDK to use (change to jdk7 if using Java 7). -->
-        <dependency>
-            <groupId>org.checkerframework</groupId>
-            <artifactId>jdk8</artifactId>
-            <version>\ReleaseVersion{}</version>
-        </dependency>
-    </dependencies>
+    <!-- annotations from the Checker Framework: nullness, interning, locking, ... -->
+    <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>checker-qual</artifactId>
+      <version>\ReleaseVersion{}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>checker</artifactId>
+      <version>\ReleaseVersion{}</version>
+    </dependency>
+    <!-- The Type Annotations compiler. Uncomment if using Java 7 or annotations in comments. -->
+    <!-- <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>compiler</artifactId>
+      <version>\ReleaseVersion{}</version>
+    </dependency> -->
+    <!-- The annotated JDK to use (change to jdk7 if using Java 7). -->
+    <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>jdk8</artifactId>
+      <version>\ReleaseVersion{}</version>
+    </dependency>
+  </dependencies>
 \end{alltt}
 
 If you wish to use a local version of the Checker Framework (for example,
@@ -376,8 +376,8 @@ one that you have built from source), then add two lines just before each
 occurrence of \code{</dependency>}:
 
 \begin{alltt}
-            <scope>system</scope>
-            <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/\emph{artifactID}.jar</systemPath>
+      <scope>system</scope>
+      <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/\emph{artifactID}.jar</systemPath>
 \end{alltt}
 
 \noindent
@@ -392,11 +392,11 @@ First, create the properties in the \code{properties} section of the POM:
 
 \begin{alltt}
 <properties>
-    <!-- These properties will be set by the Maven Dependency plugin -->
-    <!-- Change to jdk7 if using Java 7 -->
-    <annotatedJdk>$\{org.checkerframework:jdk8:jar\}</annotatedJdk>
-    <!-- Uncomment to use the type annotations compiler. -->
-    <!-- <typeAnnotationsJavac>$\{org.checkerframework:compiler:jar\}</typeAnnotationsJavac> -->
+  <!-- These properties will be set by the Maven Dependency plugin -->
+  <!-- Change to jdk7 if using Java 7 -->
+  <annotatedJdk>$\{org.checkerframework:jdk8:jar\}</annotatedJdk>
+  <!-- Uncomment to use the type annotations compiler. -->
+  <!-- <typeAnnotationsJavac>$\{org.checkerframework:compiler:jar\}</typeAnnotationsJavac> -->
 </properties>
 \end{alltt}
 
@@ -404,18 +404,18 @@ Change the reference to the \code{maven-dependency-plugin} within the \code{<plu
 section, or add it if it is not present.
 
 \begin{alltt}
-    <plugin>
-        <!-- This plugin will set properties values using dependency information -->
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-            <execution>
-                <goals>
-                    <goal>properties</goal>
-                </goals>
-            </execution>
-        </executions>
-    </plugin>
+  <plugin>
+    <!-- This plugin will set properties values using dependency information -->
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-dependency-plugin</artifactId>
+    <executions>
+      <execution>
+        <goals>
+          <goal>properties</goal>
+        </goals>
+      </execution>
+    </executions>
+  </plugin>
 \end{alltt}
 
 
@@ -427,26 +427,30 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
 
 \begin{mysmall}
 \begin{alltt}
-    <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.6.1</version>
-        <configuration>
-            <!-- Change source and target to 1.7 if using Java 7 -->
-            <source>1.8</source>
-            <target>1.8</target>
-            <fork>true</fork>
-            <annotationProcessors>
-                <!-- Add all the checkers you want to enable here -->
-                <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
-            </annotationProcessors>
-            <compilerArgs>
-                <!-- location of the annotated JDK, which comes from a Maven dependency -->
-                <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
-                <!-- Uncomment the following line to use the type annotations compiler. -->
-                <!-- <arg>-J-Xbootclasspath/p:$\{typeAnnotationsJavac\}</arg> -->
-            </compilerArgs>
-        </configuration>
-    </plugin>
+  <plugin>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.6.1</version>
+    <configuration>
+      <!-- Change source and target to 1.7 if using Java 7 -->
+      <source>1.8</source>
+      <target>1.8</target>
+      <fork>true</fork>
+      <compilerArguments>
+        <Xmaxerrs>10000</Xmaxerrs>
+        <Xmaxwarns>10000</Xmaxwarns>
+      </compilerArguments>
+      <annotationProcessors>
+        <!-- Add all the checkers you want to enable here -->
+        <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
+      </annotationProcessors>
+      <compilerArgs>
+        <!-- location of the annotated JDK, which comes from a Maven dependency -->
+        <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
+        <!-- Uncomment the following line to use the type annotations compiler. -->
+        <!-- <arg>-J-Xbootclasspath/p:$\{typeAnnotationsJavac\}</arg> -->
+      </compilerArgs>
+    </configuration>
+  </plugin>
 \end{alltt}
 \end{mysmall}
 
@@ -937,6 +941,7 @@ In this example, a nullness checker is run:
                 <compilerarg line="${ap.proc.none.internal}"/>
                 <compilerarg line="-processor org.checkerframework.checker.nullness.NullnessChecker"/>
                 <compilerarg line="-Xmaxerrs 10000"/>
+                <compilerarg line="-Xmaxwarns 10000"/>
                 <customize/>
             </jsr308.javac>
         </sequential>
