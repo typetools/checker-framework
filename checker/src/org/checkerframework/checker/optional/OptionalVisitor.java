@@ -101,7 +101,6 @@ public class OptionalVisitor
 
     @Override
     public Void visitConditionalExpression(ConditionalExpressionTree node, Void p) {
-        // System.out.printf("visitConditionalExpression(%s)%n", node);
         handleTernaryIsPresentGet(node);
         return super.visitConditionalExpression(node, p);
     }
@@ -115,47 +114,37 @@ public class OptionalVisitor
      */
     public void handleTernaryIsPresentGet(ConditionalExpressionTree node) {
 
-        // System.out.printf("handleTernaryIsPresentGet(%s)%n", node);
-
         ExpressionTree condExpr = TreeUtils.skipParens(node.getCondition());
         ExpressionTree trueExpr = TreeUtils.skipParens(node.getTrueExpression());
         ExpressionTree falseExpr = TreeUtils.skipParens(node.getFalseExpression());
-
-        // System.out.printf("condExpr=%s, trueExpr=%s, falseExpr=%s%n", condExpr, trueExpr, falseExpr);
 
         if (!isCallToIsPresent(condExpr)) {
             return;
         }
         MethodInvocationTree isPresentInvok = (MethodInvocationTree) condExpr;
         ExpressionTree isPresent = isPresentInvok.getMethodSelect();
-        // System.out.printf("isPresentInvok=%s, isPresent=%s%n", isPresentInvok, isPresent);
         if (!(isPresent instanceof MemberSelectTree)) {
             return;
         }
         ExpressionTree receiver =
                 TreeUtils.skipParens(((MemberSelectTree) isPresent).getExpression());
-        // System.out.printf("receiver=%s%n", receiver);
         if (!(trueExpr instanceof MethodInvocationTree)) {
             return;
         }
         MethodInvocationTree trueMethodInvok = (MethodInvocationTree) trueExpr;
         List<? extends ExpressionTree> trueArgs = trueMethodInvok.getArguments();
-        // System.out.printf("trueMethodInvok=%s, trueArgs=%s%n", trueMethodInvok, trueArgs);
         if (!trueArgs.isEmpty()) {
             return;
         }
         MemberSelectTree trueMethod = (MemberSelectTree) trueMethodInvok.getMethodSelect();
         ExpressionTree trueReceiver = TreeUtils.skipParens(trueMethod.getExpression());
-        // System.out.printf("trueMethod=%s, trueReceiver=%s%n", trueMethod, trueReceiver);
         if (!isCallToGet(trueReceiver)) {
             return;
         }
         ExpressionTree getReceiver = receiver(trueReceiver);
-        // System.out.printf("getReceiver=%s%n", getReceiver);
 
         // What is a better way to do this than string comparison?
         if (receiver.toString().equals(getReceiver.toString())) {
-            // System.out.printf("issuing warning");
             checker.report(
                     Result.warning(
                             "prefer.map.and.orelse",
@@ -170,7 +159,6 @@ public class OptionalVisitor
 
     @Override
     public Void visitIf(IfTree node, Void p) {
-        // System.out.printf("visitIf: %s%n", node);
         handleConditionalStatementIsPresentGet(node);
         return super.visitIf(node, p);
     }
@@ -188,9 +176,6 @@ public class OptionalVisitor
         StatementTree thenStmt = TreeUtils.skipBlocks(node.getThenStatement());
         StatementTree elseStmt = TreeUtils.skipBlocks(node.getElseStatement());
 
-        // System.out.printf("condExpr=%s (%s)%n", condExpr, condExpr.getKind());
-        // System.out.printf("thenStmt=%s (%s)%n", condExpr, condExpr.getKind());
-        // System.out.printf("elseStmt=%s (%s)%n", elseStmt, elseStmt != null ? elseStmt.getKind() : null);
         if (!(elseStmt == null
                 || (elseStmt.getKind() == Tree.Kind.BLOCK
                         && ((BlockTree) elseStmt).getStatements().isEmpty()))) {
@@ -201,7 +186,6 @@ public class OptionalVisitor
             return;
         }
         ExpressionTree receiver = receiver(condExpr);
-        // System.out.printf("receiver=%s%n", receiver);
         if (thenStmt.getKind() != Kind.EXPRESSION_STATEMENT) {
             return;
         }
@@ -211,24 +195,19 @@ public class OptionalVisitor
         }
         MethodInvocationTree invok = (MethodInvocationTree) thenExpr;
         List<? extends ExpressionTree> args = invok.getArguments();
-        // System.out.printf("invok=%s, args=%s%n", invok, args);
         if (args.size() != 1) {
             return;
         }
         ExpressionTree arg = TreeUtils.skipParens(args.get(0));
-        // System.out.printf("arg=%s%n", arg);
         if (!isCallToGet(arg)) {
             return;
         }
         ExpressionTree getReceiver = receiver(arg);
-        // System.out.printf("getReceiver=%s%n", getReceiver);
         if (!receiver.toString().equals(getReceiver.toString())) {
             return;
         }
         ExpressionTree method = invok.getMethodSelect();
-        // System.out.printf("method=%s%n", method);
 
-        // System.out.printf("issuing warning%n");
         String methodString = method.toString();
         int dotPos = methodString.lastIndexOf(".");
         if (dotPos != -1) {
@@ -241,7 +220,6 @@ public class OptionalVisitor
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-        // System.out.printf("visitMethodInvocation: %s%n", node);
         handleCreationElimination(node);
         return super.visitMethodInvocation(node, p);
     }
@@ -304,29 +282,23 @@ public class OptionalVisitor
          */
         @Override
         public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
-            // System.out.printf("%nisValid(%s, %s)%n", type, tree);
             TypeMirror tm = type.getUnderlyingType();
             if (isCollectionType(tm, tree)) {
-                // System.out.printf("It's a collection%n", type);
                 DeclaredType type1 = (DeclaredType) (type.getUnderlyingType());
                 List<? extends TypeMirror> typeArgs = type1.getTypeArguments();
-                // System.out.printf("typeArgs.size()=%d%n", typeArgs.size());
                 if (typeArgs.size() == 1) {
                     // TODO: handle collections that have more than one type parameter
                     TypeMirror typeArg = typeArgs.get(0);
                     if (isOptionalType(typeArg, null)) {
-                        // System.out.printf("Raising error because it's Optional: %s%n", typeArg);
                         checker.report(Result.failure("optional.as.element.type"), tree);
                     }
                 }
             } else if (isOptionalType(tm, tree)) {
-                // System.out.printf("It's Optional: %s%n", tm);
                 List<? extends TypeMirror> typeArgs =
                         ((DeclaredType) (type.getUnderlyingType())).getTypeArguments();
                 assert typeArgs.size() == 1;
                 TypeMirror typeArg = typeArgs.get(0);
                 if (isCollectionType(typeArg, null)) {
-                    // System.out.printf("It's a collection: %s%n", typeArg);
                     checker.report(Result.failure("optional.collection"), tree);
                 }
             }
@@ -335,18 +307,14 @@ public class OptionalVisitor
     }
 
     private boolean isCollectionType(TypeMirror tm, Tree tree) {
-        // System.out.printf("isCollectionType(%s (%s))%n", tm, tm.getKind());
         if (tm.getKind() == TypeKind.DECLARED) {
             DeclaredType type1 = (DeclaredType) tm;
             TypeElement elt1 = (TypeElement) type1.asElement();
             List<TypeElement> superTypes = ElementUtils.getSuperTypes(elements, elt1);
-            // System.out.printf("superTypes = %s%n", superTypes);
             for (TypeElement superType : superTypes) {
-                // System.out.printf("Checking superType %s %s%n", superType, superType.getQualifiedName());
                 // For some reason, testing superType.getQualifiedName() does not work here
                 // even though it prints idenically
                 if (superType.getQualifiedName().toString().equals("java.util.Collection")) {
-                    // System.out.printf("  -> isCollectionType returning true%n");
                     return true;
                 }
             }
@@ -355,11 +323,9 @@ public class OptionalVisitor
     }
 
     private boolean isOptionalType(TypeMirror tm, Tree tree) {
-        // System.out.printf("isOptionalType(%s (%s))%n", tm, tm.getKind());
         if (tm.getKind() == TypeKind.DECLARED) {
             DeclaredType type1 = (DeclaredType) tm;
             TypeElement elt1 = (TypeElement) type1.asElement();
-            // System.out.printf("  -> isOptionalType returning for %s%n", elt1.getQualifiedName());
             return elt1.getQualifiedName().toString().equals("java.util.Optional");
         }
         return false;

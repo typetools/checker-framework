@@ -8,7 +8,7 @@ import org.checkerframework.checker.i18n.I18nChecker;
 import org.checkerframework.checker.i18nformatter.I18nFormatterChecker;
 import org.checkerframework.checker.index.IndexChecker;
 import org.checkerframework.checker.interning.InterningChecker;
-import org.checkerframework.checker.interning.OptionalChecker;
+import org.checkerframework.checker.optional.OptionalChecker;
 import org.checkerframework.checker.linear.LinearChecker;
 import org.checkerframework.checker.lock.LockChecker;
 import org.checkerframework.checker.nullness.NullnessChecker;

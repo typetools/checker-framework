@@ -339,10 +339,9 @@ public class ElementUtils {
     }
 
     /**
-     * Determine all type elements for the classes and interfaces referenced (directly or
-     * indirectly) in the extends/implements clauses of the given type element. TODO: can we learn
-     * from the implementation of
-     * com.sun.tools.javac.model.JavacElements.getAllMembers(TypeElement)?
+     * Determine all type elements for the classes and interfaces referenced in the
+     * extends/implements clauses of the given type element. TODO: can we learn from the
+     * implementation of com.sun.tools.javac.model.JavacElements.getAllMembers(TypeElement)?
      */
     public static List<TypeElement> getSuperTypes(Elements elements, TypeElement type) {
 
