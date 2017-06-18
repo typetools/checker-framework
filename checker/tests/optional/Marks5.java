@@ -3,6 +3,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import org.checkerframework.checker.optional.qual.Present;
 
+@SuppressWarnings("optional.parameter")
 public class Marks5 {
 
     // Each method adds first and second, treating empty as zero, returning an Optional of the sum,

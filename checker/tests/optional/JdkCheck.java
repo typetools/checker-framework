@@ -3,6 +3,7 @@ import java.util.function.Supplier;
 import org.checkerframework.checker.optional.qual.MaybePresent;
 import org.checkerframework.checker.optional.qual.Present;
 
+@SuppressWarnings("optional.parameter")
 public class JdkCheck {
 
     boolean isPresentTest1(@Present Optional<String> pos) {
@@ -20,7 +21,7 @@ public class JdkCheck {
 
     String orElseThrowTest2(
             @MaybePresent Optional<String> mos, Supplier<RuntimeException> exceptionSupplier) {
-        //:: error: method.invocation.invalid
+        //:: error: (method.invocation.invalid)
         return mos.orElseThrow(exceptionSupplier);
     }
 
@@ -29,7 +30,7 @@ public class JdkCheck {
     }
 
     String getTest2(@MaybePresent Optional<String> mos) {
-        //:: error: method.invocation.invalid
+        //:: error: (method.invocation.invalid)
         return mos.get();
     }
 
@@ -42,7 +43,7 @@ public class JdkCheck {
     }
 
     @Present Optional<String> ofNullableTest1(String s) {
-        //:: error: return.type.incompatible
+        //:: error: (return.type.incompatible)
         return Optional.ofNullable(s);
     }
 

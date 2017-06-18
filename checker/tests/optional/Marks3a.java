@@ -16,7 +16,7 @@ public class Marks3a {
     String customerNameByID_acceptable(List<Customer> custList, int custID) {
         Optional<Customer> opt = custList.stream().filter(c -> c.getID() == custID).findFirst();
 
-        //:: warning: better code is possible
+        //:: warning: (prefer.map.and.orelse)
         return opt.isPresent() ? opt.get().getName() : "UNKNOWN";
     }
 

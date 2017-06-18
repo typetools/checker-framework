@@ -12,6 +12,7 @@ public class Marks4 {
     }
 
     String process_bad(String s) {
+        //:: warning: (introduce.eliminate.optional)
         return Optional.ofNullable(s).orElseGet(this::getDefault);
     }
 

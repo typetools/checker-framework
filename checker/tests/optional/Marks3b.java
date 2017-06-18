@@ -1,5 +1,6 @@
 import java.util.Optional;
 
+@SuppressWarnings("optional.parameter")
 public class Marks3b {
 
     class Task {}
@@ -11,7 +12,7 @@ public class Marks3b {
     Executor executor;
 
     void bad(Optional<Task> oTask) {
-        //:: warning: better code is possible
+        //:: warning: (prefer.ifpresent)
         if (oTask.isPresent()) {
             executor.runTask(oTask.get());
         }

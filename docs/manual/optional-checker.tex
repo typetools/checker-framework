@@ -10,7 +10,7 @@ The article
 \href{https://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html}{Nothing
   is better than the \<Optional> type} explains why you may wish to use
 regular nullable references rather than \<Optional>.  However, if you do use
-\<Optional>, then the Optional Checker will help you avoid some of
+\<Optional>, then the Optional Checker will help you avoid
 \<Optional>'s pitfalls.
 
 Stuart Marks gave
@@ -41,9 +41,20 @@ Stuart Marks gave
 
 Rule \#1 is guaranteed by the Nullness Checker
 (\chapterpageref{nullness-checker}).
-Rule \#2 is guaranteed by the Optional Checker, described in this chapter.
-Rules \#3--\#7 may be checked by the Optional Checker in the future.
+Rules \#2--\#7 are guaranteed by the Optional Checker, described in this chapter.
+(Exception:  Rule \#5 is not yet implemented and will be checked by the
+Optional Checker in the future.)
 % They are all AST checks that would be easy to add later.
+
+
+\section{How to run the Optional Checker\label{optional-run-checker}}
+
+To obtain all guarantees about correct use of \<Optional>, you should run
+both the Nullness Checker and the Optional Checker:
+
+\begin{Verbatim}
+javac -processor nullness,optional ...
+\end{Verbatim}
 
 
 \section{Optional annotations\label{optional-annotations}}
