@@ -9,7 +9,7 @@ import java.util.Set;
  *
  * <p>Rule #6: "Avoid using Optional in fields, method parameters, and collections."
  *
- * <p>Rule #7: "Don’t use an Optional to wrap any collection type (List, Set, Map). Instead, use an
+ * <p>Rule #7: "Don't use an Optional to wrap any collection type (List, Set, Map). Instead, use an
  * empty collection to represent the absence of values.
  */
 public class Marks6 {
