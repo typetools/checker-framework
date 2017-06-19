@@ -5,17 +5,16 @@ import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IfTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import java.util.Collection;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -29,6 +28,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The OptionalVisitor enforces the Optional Checker rules. These rules are described in detail in
@@ -47,6 +47,8 @@ public class OptionalVisitor
     private final ExecutableElement orElseMethod;
     private final ExecutableElement orElseThrowMethod;
 
+    private final TypeMirror collectionType;
+
     public OptionalVisitor(BaseTypeChecker checker) {
         super(checker);
         getMethod = getOptionalMethod("get", 0);
@@ -56,6 +58,7 @@ public class OptionalVisitor
         orElseGetMethod = getOptionalMethod("orElseGet", 1);
         orElseMethod = getOptionalMethod("orElse", 1);
         orElseThrowMethod = getOptionalMethod("orElseThrow", 1);
+        collectionType = types.erasure(TypesUtils.typeFromClass(types, elements, Collection.class));
     }
 
     @Override
@@ -97,14 +100,6 @@ public class OptionalVisitor
                 || ElementUtils.isMethod(invoked, orElseThrowMethod, env);
     }
 
-    /** e is a MethodInvocationTree */
-    private ExpressionTree receiver(ExpressionTree e) {
-        MethodInvocationTree invok = (MethodInvocationTree) e;
-        ExpressionTree methodSelect = invok.getMethodSelect();
-        ExpressionTree receiver = ((MemberSelectTree) methodSelect).getExpression();
-        return TreeUtils.skipParens(receiver);
-    }
-
     @Override
     public Void visitConditionalExpression(ConditionalExpressionTree node, Void p) {
         handleTernaryIsPresentGet(node);
@@ -127,37 +122,29 @@ public class OptionalVisitor
         if (!isCallToIsPresent(condExpr)) {
             return;
         }
-        MethodInvocationTree isPresentInvok = (MethodInvocationTree) condExpr;
-        ExpressionTree isPresent = isPresentInvok.getMethodSelect();
-        if (!(isPresent instanceof MemberSelectTree)) {
+        ExpressionTree receiver = TreeUtils.getReceiverTree(condExpr);
+
+        if (trueExpr.getKind() != Kind.METHOD_INVOCATION) {
             return;
         }
-        ExpressionTree receiver =
-                TreeUtils.skipParens(((MemberSelectTree) isPresent).getExpression());
-        if (!(trueExpr instanceof MethodInvocationTree)) {
-            return;
-        }
-        MethodInvocationTree trueMethodInvok = (MethodInvocationTree) trueExpr;
-        List<? extends ExpressionTree> trueArgs = trueMethodInvok.getArguments();
-        if (!trueArgs.isEmpty()) {
-            return;
-        }
-        MemberSelectTree trueMethod = (MemberSelectTree) trueMethodInvok.getMethodSelect();
-        ExpressionTree trueReceiver = TreeUtils.skipParens(trueMethod.getExpression());
+        ExpressionTree trueReceiver = TreeUtils.getReceiverTree(trueExpr);
         if (!isCallToGet(trueReceiver)) {
             return;
         }
-        ExpressionTree getReceiver = receiver(trueReceiver);
+        ExpressionTree getReceiver = TreeUtils.getReceiverTree(trueReceiver);
 
         // What is a better way to do this than string comparison?
         if (receiver.toString().equals(getReceiver.toString())) {
+            ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
+
             checker.report(
                     Result.warning(
                             "prefer.map.and.orelse",
                             receiver,
                             // The literal "CONTAININGCLASS::" is gross.
-                            // Figure out a way to improve it.
-                            trueMethod.getIdentifier(),
+                            // TODO: add this to the error message.
+                            //ElementUtils.getQualifiedClassName(ele);
+                            ele.getSimpleName(),
                             falseExpr),
                     node);
         }
@@ -191,7 +178,7 @@ public class OptionalVisitor
         if (!isCallToIsPresent(condExpr)) {
             return;
         }
-        ExpressionTree receiver = receiver(condExpr);
+        ExpressionTree receiver = TreeUtils.getReceiverTree(condExpr);
         if (thenStmt.getKind() != Kind.EXPRESSION_STATEMENT) {
             return;
         }
@@ -208,7 +195,7 @@ public class OptionalVisitor
         if (!isCallToGet(arg)) {
             return;
         }
-        ExpressionTree getReceiver = receiver(arg);
+        ExpressionTree getReceiver = TreeUtils.getReceiverTree(arg);
         if (!receiver.toString().equals(getReceiver.toString())) {
             return;
         }
@@ -241,8 +228,8 @@ public class OptionalVisitor
         if (!isOptionalElimation(node)) {
             return;
         }
-        ExpressionTree receiver = receiver(node);
-        if (!((receiver instanceof MethodInvocationTree)
+        ExpressionTree receiver = TreeUtils.getReceiverTree(node);
+        if (!(receiver.getKind() == Kind.METHOD_INVOCATION
                 && isOptionalCreation((MethodInvocationTree) receiver))) {
             return;
         }
@@ -259,7 +246,7 @@ public class OptionalVisitor
     public Void visitVariable(VariableTree node, Void p) {
         VariableElement ve = TreeUtils.elementFromDeclaration(node);
         TypeMirror tm = ve.asType();
-        if (isOptionalType(tm, null)) {
+        if (isOptionalType(tm)) {
             ElementKind ekind = TreeUtils.elementFromDeclaration(node).getKind();
             if (ekind.isField()) {
                 checker.report(Result.failure("optional.field"), node);
@@ -289,22 +276,22 @@ public class OptionalVisitor
         @Override
         public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
             TypeMirror tm = type.getUnderlyingType();
-            if (isCollectionType(tm, tree)) {
+            if (isCollectionType(tm)) {
                 DeclaredType type1 = (DeclaredType) (type.getUnderlyingType());
                 List<? extends TypeMirror> typeArgs = type1.getTypeArguments();
                 if (typeArgs.size() == 1) {
                     // TODO: handle collections that have more than one type parameter
                     TypeMirror typeArg = typeArgs.get(0);
-                    if (isOptionalType(typeArg, null)) {
+                    if (isOptionalType(typeArg)) {
                         checker.report(Result.failure("optional.as.element.type"), tree);
                     }
                 }
-            } else if (isOptionalType(tm, tree)) {
+            } else if (isOptionalType(tm)) {
                 List<? extends TypeMirror> typeArgs =
                         ((DeclaredType) (type.getUnderlyingType())).getTypeArguments();
                 assert typeArgs.size() == 1;
                 TypeMirror typeArg = typeArgs.get(0);
-                if (isCollectionType(typeArg, null)) {
+                if (isCollectionType(typeArg)) {
                     checker.report(Result.failure("optional.collection"), tree);
                 }
             }
@@ -312,28 +299,12 @@ public class OptionalVisitor
         }
     }
 
-    private boolean isCollectionType(TypeMirror tm, Tree tree) {
-        if (tm.getKind() == TypeKind.DECLARED) {
-            DeclaredType type1 = (DeclaredType) tm;
-            TypeElement elt1 = (TypeElement) type1.asElement();
-            List<TypeElement> superTypes = ElementUtils.getSuperTypes(elements, elt1);
-            for (TypeElement superType : superTypes) {
-                // For some reason, testing superType.getQualifiedName() does not work here
-                // even though it prints idenically
-                if (superType.getQualifiedName().toString().equals("java.util.Collection")) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    private boolean isCollectionType(TypeMirror tm) {
+        // Null type is also a subtype of Collection, but that's not useful.
+        return tm.getKind() == TypeKind.DECLARED && types.isSubtype(tm, collectionType);
     }
 
-    private boolean isOptionalType(TypeMirror tm, Tree tree) {
-        if (tm.getKind() == TypeKind.DECLARED) {
-            DeclaredType type1 = (DeclaredType) tm;
-            TypeElement elt1 = (TypeElement) type1.asElement();
-            return elt1.getQualifiedName().toString().equals("java.util.Optional");
-        }
-        return false;
+    private boolean isOptionalType(TypeMirror tm) {
+        return TypesUtils.isDeclaredOfName(tm, "java.util.Optional");
     }
 }
