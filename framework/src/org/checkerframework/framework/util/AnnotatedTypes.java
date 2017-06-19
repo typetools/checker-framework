@@ -535,8 +535,6 @@ public class AnnotatedTypes {
             final ExpressionTree expr,
             final ExecutableElement elt,
             final AnnotatedExecutableType preType) {
-        //TODO: TEMPORARY KLUDGE
-        atypeFactory.getTypeArgumentInference().adaptMethodType(atypeFactory, expr, preType);
 
         // Is the method a generic method?
         if (elt.getTypeParameters().isEmpty()) {
@@ -686,7 +684,10 @@ public class AnnotatedTypes {
             // Check if one sent an element or an array
             AnnotatedTypeMirror lastArg = args.get(args.size() - 1);
             if (lastArg.getKind() == TypeKind.ARRAY
-                    && getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType) lastArg)) {
+                    && (getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType) lastArg)
+                            // If the array depths don't match, but the component type of the vararg is a
+                            // type variable, then that type variable might later be substituted for an array.
+                            || varargs.getComponentType().getKind() == TypeKind.TYPEVAR)) {
                 return parameters;
             }
         }

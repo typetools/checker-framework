@@ -112,8 +112,8 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
  * @since 1.2
  */
 
-// Subclasses of this interface/class may opt to prohibit null elements
-public interface List<E extends @Nullable Object> extends Collection<E> {
+// Subclasses of this interface/class may opt to prohibit null elements.
+public interface List<E> extends Collection<E> {
     // Query Operations
 
     /**

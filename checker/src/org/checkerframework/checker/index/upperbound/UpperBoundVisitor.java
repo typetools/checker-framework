@@ -28,6 +28,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFactory> {
 
     private static final String UPPER_BOUND = "array.access.unsafe.high";
+    private static final String UPPER_BOUND_CONST = "array.access.unsafe.high.constant";
+    private static final String UPPER_BOUND_RANGE = "array.access.unsafe.high.range";
 
     public UpperBoundVisitor(BaseTypeChecker checker) {
         super(checker);
@@ -98,8 +100,48 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return;
         }
 
-        checker.report(
-                Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName), indexTree);
+        // We can issue three different errors:
+        // 1. If the index is a compile-time constant, issue an error that describes the array type.
+        // 2. If the index is a compile-time range and has no upperbound qualifier,
+        //    issue an error that names the upperbound of the range and the array's type.
+        // 3. If neither of the above, issue an error that names the upper bound type.
+
+        if (IndexUtil.getExactValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory())
+                != null) {
+            // Note that valMax is equal to the exact value in this case.
+            checker.report(
+                    Result.failure(
+                            UPPER_BOUND_CONST,
+                            valMax,
+                            atypeFactory
+                                    .getValueAnnotatedTypeFactory()
+                                    .getAnnotatedType(arrTree)
+                                    .toString(),
+                            valMax + 1,
+                            valMax + 1),
+                    indexTree);
+        } else if (valMax != null && qualifier.isUnknown()) {
+
+            checker.report(
+                    Result.failure(
+                            UPPER_BOUND_RANGE,
+                            atypeFactory
+                                    .getValueAnnotatedTypeFactory()
+                                    .getAnnotatedType(indexTree)
+                                    .toString(),
+                            atypeFactory
+                                    .getValueAnnotatedTypeFactory()
+                                    .getAnnotatedType(arrTree)
+                                    .toString(),
+                            arrName,
+                            arrName,
+                            valMax + 1),
+                    indexTree);
+        } else {
+            checker.report(
+                    Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName, arrName),
+                    indexTree);
+        }
     }
 
     @Override

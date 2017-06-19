@@ -40,6 +40,10 @@ set -o xtrace
 
 export SHELLOPTS
 
+SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
+if [[ "$SLUGOWNER" == "" ]]; then
+  SLUGOWNER=typetools
+fi
 
 ./.travis-build-without-test.sh ${BUILDJDK}
 # The above command builds or downloads the JDK, so there is no need for a
@@ -71,13 +75,37 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   ##  * daikon-typecheck: (takes 2 hours)
 
   # checker-framework-inference: 18 minutes
-  (cd .. && git clone --depth 1 https://github.com/typetools/checker-framework-inference.git)
+  set +e
+  echo "Running: git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-"
+  git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-
+  if [ "$?" -ne 0 ]; then
+    CFISLUGOWNER=typetools
+  else
+    CFISLUGOWNER=${SLUGOWNER}
+  fi
+  set -e
+  echo "Running:  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
+  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)
+  echo "... done: (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
+
   export AFU=`pwd`/../annotation-tools/annotation-file-utilities
   export PATH=$AFU/scripts:$PATH
   (cd ../checker-framework-inference && gradle dist && ant -f tests.xml run-tests)
 
   # plume-lib-typecheck: 30 minutes
-  (cd .. && git clone https://github.com/mernst/plume-lib.git)
+  set +e
+  echo "Running: git ls-remote https://github.com/${SLUGOWNER}/plume-lib.git &>-"
+  git ls-remote https://github.com/${SLUGOWNER}/plume-lib.git &>-
+  if [ "$?" -ne 0 ]; then
+    PLSLUGOWNER=mernst
+  else
+    PLSLUGOWNER=${SLUGOWNER}
+  fi
+  set -e
+  echo "Running:  (cd .. && git clone --depth 1 https://github.com/${PLSLUGOWNER}/plume-lib.git)"
+  (cd .. && git clone https://github.com/${PLSLUGOWNER}/plume-lib.git)
+  echo "... done: (cd .. && git clone --depth 1 https://github.com/${PLSLUGOWNER}/plume-lib.git)"
+
   export CHECKERFRAMEWORK=`pwd`
   (cd ../plume-lib/java && make check-types)
 
@@ -89,7 +117,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   # sparta: 1 minute, but the command is "true"!
   # TODO: requires Android installation (and at one time, it caused weird
   # Travis hangs if enabled without Android installation).
-  # (cd .. && git clone --depth 1 https://github.com/typetools/sparta.git)
+  # (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/sparta.git)
   # (cd ../sparta && ant jar all-tests)
 
 fi

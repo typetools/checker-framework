@@ -122,7 +122,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         backingSet.add("java.lang.Long");
         backingSet.add("short");
         backingSet.add("java.lang.Short");
-        backingSet.add("byte[]");
+        backingSet.add("char[]");
         coveredClassStrings = Collections.unmodifiableSet(backingSet);
     }
 
@@ -147,6 +147,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // be created for @NonNegative in the future.
         addAliasedAnnotation(
                 "org.checkerframework.checker.index.qual.Positive", createIntRangeFromPositive());
+
+        // PolyLength is syntactic sugar for both @PolySameLen and @PolyValue
+        addAliasedAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
 
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
             this.postInit();
@@ -753,9 +756,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror newQual;
                 Class<?> clazz = ValueCheckerUtils.getClassFromType(type.getUnderlyingType());
                 String stringVal = null;
-                if (clazz.equals(byte[].class)) {
-                    stringVal = getByteArrayStringVal(initializers);
-                } else if (clazz.equals(char[].class)) {
+                if (clazz.equals(char[].class)) {
                     stringVal = getCharArrayStringVal(initializers);
                 }
 
@@ -875,29 +876,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        /** Convert a byte array to a String. Return null if unable to convert. */
-        private String getByteArrayStringVal(List<? extends ExpressionTree> initializers) {
-            // True iff every element of the array is a literal.
-            boolean allLiterals = true;
-            byte[] bytes = new byte[initializers.size()];
-            for (int i = 0; i < initializers.size(); i++) {
-                ExpressionTree e = initializers.get(i);
-                if (e.getKind() == Tree.Kind.INT_LITERAL) {
-                    bytes[i] = (byte) (((Integer) ((LiteralTree) e).getValue()).intValue());
-                } else if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
-                    bytes[i] = (byte) (((Character) ((LiteralTree) e).getValue()).charValue());
-                } else {
-                    allLiterals = false;
-                }
-            }
-            if (allLiterals) {
-                return new String(bytes);
-            }
-            // If any part of the initializer isn't known,
-            // the stringval isn't known.
-            return null;
-        }
-
         /** Convert a char array to a String. Return null if unable to convert. */
         private String getCharArrayStringVal(List<? extends ExpressionTree> initializers) {
             boolean allLiterals = true;
@@ -946,11 +924,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         List<?> values = ValueCheckerUtils.getValuesCastedToType(oldAnno, newType);
                         newAnno = createResultingAnnotation(atm.getUnderlyingType(), values);
                     }
-                    atm.replaceAnnotation(newAnno);
+                    atm.addMissingAnnotations(Collections.singleton(newAnno));
                 }
             } else if (atm.getKind() == TypeKind.ARRAY) {
                 if (tree.getExpression().getKind() == Kind.NULL_LITERAL) {
-                    atm.replaceAnnotation(BOTTOMVAL);
+                    atm.addMissingAnnotations(Collections.singleton(BOTTOMVAL));
                 }
             }
             return null;
@@ -1070,14 +1048,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitNewClass(NewClassTree tree, AnnotatedTypeMirror type) {
-            boolean wrapperClass =
-                    TypesUtils.isBoxedPrimitive(type.getUnderlyingType())
-                            || TypesUtils.isDeclaredOfName(
-                                    type.getUnderlyingType(), "java.lang.String");
-
-            if (wrapperClass
-                    || (handledByValueChecker(type)
-                            && methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree)))) {
+            if (handledByValueChecker(type)
+                    && methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree))) {
                 // get argument values
                 List<? extends ExpressionTree> arguments = tree.getArguments();
                 ArrayList<List<?>> argValues;
@@ -1207,11 +1179,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 stringVals.add((String) o);
             }
             return createStringAnnotation(stringVals);
-        } else if (ValueCheckerUtils.getClassFromType(resultType) == byte[].class) {
+        } else if (ValueCheckerUtils.getClassFromType(resultType) == char[].class) {
             List<String> stringVals = new ArrayList<>(values.size());
             for (Object o : values) {
-                if (o instanceof byte[]) {
-                    stringVals.add(new String((byte[]) o));
+                if (o instanceof char[]) {
+                    stringVals.add(new String((char[]) o));
                 } else {
                     stringVals.add(o.toString());
                 }
@@ -1598,7 +1570,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns the set of possible values as a sorted listed with no duplicate values. Returns the
+     * Returns the set of possible values as a sorted list with no duplicate values. Returns the
      * empty list if no values are possible (for dead code). Returns null if any value is possible
      * -- that is, if no estimate can be made -- and this includes when there is no constant-value
      * annotation so the argument is null.
@@ -1613,12 +1585,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         List<Long> list = AnnotationUtils.getElementValueArray(intAnno, "value", Long.class, true);
-        ValueCheckerUtils.removeDuplicates(list);
+        list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }
 
     /**
-     * Returns the set of possible values as a sorted listed with no duplicate values. Returns the
+     * Returns the set of possible values as a sorted list with no duplicate values. Returns the
      * empty list if no values are possible (for dead code). Returns null if any value is possible
      * -- that is, if no estimate can be made -- and this includes when there is no constant-value
      * annotation so the argument is null.
@@ -1631,14 +1603,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         List<Double> list =
                 AnnotationUtils.getElementValueArray(doubleAnno, "value", Double.class, true);
-        ValueCheckerUtils.removeDuplicates(list);
+        list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }
 
     /**
-     * Returns the set of possible array lengths as a sorted listed with no duplicate values.
-     * Returns the empty list if no values are possible (for dead code). Returns null if any value
-     * is possible -- that is, if no estimate can be made -- and this includes when there is no
+     * Returns the set of possible array lengths as a sorted list with no duplicate values. Returns
+     * the empty list if no values are possible (for dead code). Returns null if any value is
+     * possible -- that is, if no estimate can be made -- and this includes when there is no
      * constant-value annotation so the argument is null.
      *
      * @param arrayAnno an {@code @ArrayLen} annotation, or null
@@ -1649,12 +1621,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         List<Integer> list =
                 AnnotationUtils.getElementValueArray(arrayAnno, "value", Integer.class, true);
-        ValueCheckerUtils.removeDuplicates(list);
+        list = ValueCheckerUtils.removeDuplicates(list);
         return list;
     }
 
     /**
-     * Returns the set of possible values as a sorted listed with no duplicate values. Returns the
+     * Returns the set of possible values as a sorted list with no duplicate values. Returns the
      * empty list if no values are possible (for dead code). Returns null if any value is possible
      * -- that is, if no estimate can be made -- and this includes when there is no constant-value
      * annotation so the argument is null.
@@ -1675,7 +1647,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns the set of possible values as a sorted listed with no duplicate values. Returns the
+     * Returns the set of possible values as a sorted list with no duplicate values. Returns the
      * empty list if no values are possible (for dead code). Returns null if any value is possible
      * -- that is, if no estimate can be made -- and this includes when there is no constant-value
      * annotation so the argument is null.
