@@ -925,6 +925,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             // underlying Java types may not be in the correct relationship.  But, if the
             // declared type does not have type arguments, then checking primary annotations is
             // sufficient.
+            // For example, if the wildcard is ? extends @Nullable Object and the supertype is
+            // @Nullable String, then it is safe to return true. However if the supertype is
+            // @NullableList<@NonNull String> then it's not possible to decide if it is a subtype of
+            // the wildcard.
             AnnotationMirror subtypeAnno = subtype.getEffectiveAnnotationInHierarchy(currentTop);
             AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
             return isAnnoSubtype(subtypeAnno, supertypeAnno, false);
