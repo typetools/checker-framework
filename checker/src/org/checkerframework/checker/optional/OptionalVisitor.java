@@ -65,7 +65,7 @@ public class OptionalVisitor
 
     private ExecutableElement getOptionalMethod(String methodName, int params) {
         return TreeUtils.getMethod(
-                "java.util.Optional.class", methodName, params, atypeFactory.getProcessingEnv());
+                "java.util.Optional", methodName, params, atypeFactory.getProcessingEnv());
     }
 
     /** @return true iff expression is a call to java.util.Optional.get */
