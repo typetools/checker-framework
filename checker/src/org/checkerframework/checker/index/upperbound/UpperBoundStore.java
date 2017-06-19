@@ -35,33 +35,42 @@ import org.checkerframework.javacutil.ElementUtils;
  * affected by the side effect.
  *
  * <p>If the side effect is a reassignment to a local variable, arr1, these are only expressions
- * that include any of: <l>
- * <li>arr1 </l>
+ * that include any of:
  *
- *     <p>If the side effect is a reassignment to an array field, arr1, these are expressions that
- *     include any of: <l>
- * <li>arr1
- * <li>a method call </l>
+ * <ul>
+ *   <li>arr1
+ * </ul>
  *
- *     <p>If the side effect is a reassignment to a non-array reference (non-primitive) field or a
- *     call to a non-side-effect-free method, these are expressions that include any of: <l>
- * <li>a non-final field whose type is not an array
- * <li>a method call </l>
+ * <p>If the side effect is a reassignment to an array field, arr1, these are expressions that
+ * include any of:
  *
- *     <p>If the side effect is a reassignment to a primitive field, no expressions are affected.
+ * <ul>
+ *   <li>arr1
+ *   <li>a method call
+ * </ul>
  *
- *     <p>Let V be all the variables with a type in T. In particular, for a reassignment “arr1 = …”,
- *     V includes every int variable with type LT[E]L("...arr1...").
+ * <p>If the side effect is a reassignment to a non-array reference (non-primitive) field or a call
+ * to a non-side-effect-free method, these are expressions that include any of:
  *
- *     <p>For every variable v in V: If v is in the refinement store, then unrefine the int
- *     variable. (No need to check the final unrefined type; it will be handled by the next rule if
- *     it still has type @LT[E]L).).
+ * <ul>
+ *   <li>a non-final field whose type is not an array
+ *   <li>a method call
+ * </ul>
  *
- *     <p>For every type t in T: If t is not a refined type (not from the store), then it is a
- *     user-written type such as @LT[E]L("...arr1...") or a possible alias. The type-checker issues
- *     an error, stating that this is an illegal assignment. The type-checker suggests that the user
- *     should either make the array variable final or (if the possible reassignment was a method
- *     call) annotate the method as @SideEffectFree.
+ * <p>If the side effect is a reassignment to a primitive field, no expressions are affected.
+ *
+ * <p>Let V be all the variables with a type in T. In particular, for a reassignment “arr1 = …”, V
+ * includes every int variable with type LT[E]L("...arr1...").
+ *
+ * <p>For every variable v in V: If v is in the refinement store, then unrefine the int variable.
+ * (No need to check the final unrefined type; it will be handled by the next rule if it still has
+ * type @LT[E]L).).
+ *
+ * <p>For every type t in T: If t is not a refined type (not from the store), then it is a
+ * user-written type such as @LT[E]L("...arr1...") or a possible alias. The type-checker issues an
+ * error, stating that this is an illegal assignment. The type-checker suggests that the user should
+ * either make the array variable final or (if the possible reassignment was a method call) annotate
+ * the method as @SideEffectFree.
  */
 public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
 
@@ -199,20 +208,22 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
      * <p>Then, the appropriate checks are made based on the {@code checkController} the result is
      * returned.
      *
-     * <p>There are three possible checks: <l>
-     * <li>Does the annotation depend on the {@code canonicalTargetName} parameter?
-     * <li>Does the annotation depend on any non-final references?
-     * <li>Does the annotation include any method calls? </l>
+     * <p>There are three possible checks:
      *
-     *     <p>The CheckController contains an option for just the first, an option for the first and
-     *     second, and an option for the second and third. These are the only possible sets of
-     *     invalidations (according to the document that is reproduced as the JavaDoc on this
-     *     class).
+     * <ul>
+     *   <li>Does the annotation depend on the {@code canonicalTargetName} parameter?
+     *   <li>Does the annotation depend on any non-final references?
+     *   <li>Does the annotation include any method calls?
+     * </ul>
      *
-     *     <p>The CheckController also contains information that is used in deciding which report is
-     *     issued: it contains separate options for its third option (i.e. the second and third
-     *     items in the list) so that different messages can be issued for field reassignment
-     *     invalidation and invalidation because of a call to a non-side-effect free method.
+     * <p>The CheckController contains an option for just the first, an option for the first and
+     * second, and an option for the second and third. These are the only possible sets of
+     * invalidations (according to the document that is reproduced as the JavaDoc on this class).
+     *
+     * <p>The CheckController also contains information that is used in deciding which report is
+     * issued: it contains separate options for its third option (i.e. the second and third items in
+     * the list) so that different messages can be issued for field reassignment invalidation and
+     * invalidation because of a call to a non-side-effect free method.
      */
     private Result checkAnno(
             AnnotationMirror anno,
