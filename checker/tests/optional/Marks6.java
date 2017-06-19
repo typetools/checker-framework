@@ -1,3 +1,5 @@
+// @below-java8-jdk-skip-test
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

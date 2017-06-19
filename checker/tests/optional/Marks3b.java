@@ -1,3 +1,5 @@
+// @below-java8-jdk-skip-test
+
 import java.util.Optional;
 
 /**
