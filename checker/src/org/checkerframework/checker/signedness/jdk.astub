@@ -43,3 +43,27 @@ class Long {
 
     public static @Unsigned long remainderUnsigned(@Unsigned long dividend, @Unsigned long divisor);
 }
+
+package java.util;
+
+class Arrays {
+    public static void fill(@PolySignedness byte[] a, @PolySignedness byte val);
+
+    public static void fill(@PolySignedness char[] a, @PolySignedness char val);
+
+    public static void fill(@PolySignedness short[] a, @PolySignedness short val);
+
+    public static void fill(@PolySignedness int[] a, @PolySignedness int val);
+
+    public static void fill(@PolySignedness long[] a, @PolySignedness long val);
+
+    public static void fill(@PolySignedness byte[] a, int fromIndex, int toIndex, @PolySignedness byte val);
+
+    public static void fill(@PolySignedness char[] a, int fromIndex, int toIndex, @PolySignedness char val);
+
+    public static void fill(@PolySignedness short[] a, int fromIndex, int toIndex, @PolySignedness short val);
+
+    public static void fill(@PolySignedness int[] a, int fromIndex, int toIndex, @PolySignedness int val);
+
+    public static void fill(@PolySignedness long[] a, int fromIndex, int toIndex, @PolySignedness long val);
+}
