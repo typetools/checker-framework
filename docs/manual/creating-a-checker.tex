@@ -311,6 +311,17 @@ Here is an example of one good way to proceed.
   (Some type systems need JDK annotations but don't have any additional
   type rules.)
 
+  Before implementing type rules (or any other code in your type-checker),
+  you are recommended to read the javadoc for the utility routines in the
+  \<org.checkerframework.javacutil> package, especially
+  \refclass{javacutil}{AnnotationUtils},
+  \refclass{javacutil}{ElementUtils},
+  \refclass{javacutil}{TreeUtils},
+  \refclass{javacutil}{TypeAnnotationUtils}, and
+  \refclass{javacutil}{TypesUtils}.  Familiarity with
+  them will help you to know how to access needed information and avoid
+  reimplementing existing functionality.
+
   Write simple test cases to test the type rules, and ensure that the
   type-checker behaves as expected on those test files.
   For example, if your type system forbids indexing an array by a
