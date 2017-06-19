@@ -11,6 +11,7 @@ import org.checkerframework.checker.interning.InterningChecker;
 import org.checkerframework.checker.linear.LinearChecker;
 import org.checkerframework.checker.lock.LockChecker;
 import org.checkerframework.checker.nullness.NullnessChecker;
+import org.checkerframework.checker.optional.OptionalChecker;
 import org.checkerframework.checker.propkey.PropertyKeyChecker;
 import org.checkerframework.checker.regex.RegexChecker;
 import org.checkerframework.checker.signature.SignatureChecker;
@@ -60,6 +61,7 @@ public class CheckerInfo {
                     Arrays.asList(
                             new CheckerInfo("Nullness Checker", NullnessChecker.class),
                             new CheckerInfo("Interning Checker", InterningChecker.class),
+                            new CheckerInfo("Optional Checker", OptionalChecker.class),
                             new CheckerInfo("Lock Checker", LockChecker.class),
                             new CheckerInfo("Fenum Checker", FenumChecker.class),
                             new CheckerInfo("Index Checker", IndexChecker.class),

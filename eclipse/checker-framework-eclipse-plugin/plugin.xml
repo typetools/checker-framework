@@ -107,6 +107,11 @@
             style="push">
           </command>
           <command
+            commandId="checkers.eclipse.runOptional"
+            label="Optional Checker"
+            style="push">
+          </command>
+          <command
             commandId="checkers.eclipse.runinterning"
             label="Interning Checker"
             style="push">
@@ -226,6 +231,12 @@
       defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$NullnessAction"
       id="checkers.eclipse.runnullness"
       name="Run Nullness Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$OptionalAction"
+      id="checkers.eclipse.runOptional"
+      name="Run Optional Checker">
     </command>
     <command
       categoryId="checkers.eclipse.category"

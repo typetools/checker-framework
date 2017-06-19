@@ -10,6 +10,7 @@ import org.checkerframework.checker.interning.InterningChecker;
 import org.checkerframework.checker.linear.LinearChecker;
 import org.checkerframework.checker.lock.LockChecker;
 import org.checkerframework.checker.nullness.NullnessChecker;
+import org.checkerframework.checker.optional.OptionalChecker;
 import org.checkerframework.checker.propkey.PropertyKeyChecker;
 import org.checkerframework.checker.regex.RegexChecker;
 import org.checkerframework.checker.signature.SignatureChecker;
@@ -28,6 +29,12 @@ public class CheckerActions {
     public static class NullnessAction extends RunCheckerAction {
         public NullnessAction() {
             super(NullnessChecker.class.getCanonicalName());
+        }
+    }
+
+    public static class OptionalAction extends RunCheckerAction {
+        public OptionalAction() {
+            super(OptionalChecker.class.getCanonicalName());
         }
     }
 
