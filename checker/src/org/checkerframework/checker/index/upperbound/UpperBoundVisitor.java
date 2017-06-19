@@ -101,10 +101,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
 
         // We can issue three different errors:
-        // 1. if the index is a compile time constant, issue an error that describes the array type
-        // 2. if the index is a compile time range and has no upperbound qualifier,
-        //    issue an error that names the upperbound of the range and the array's type
-        // 3. if neither of the above, issue an error that names the upper bound type
+        // 1. If the index is a compile-time constant, issue an error that describes the array type.
+        // 2. If the index is a compile-time range and has no upperbound qualifier,
+        //    issue an error that names the upperbound of the range and the array's type.
+        // 3. If neither of the above, issue an error that names the upper bound type.
 
         if (IndexUtil.getExactValue(indexTree, atypeFactory.getValueAnnotatedTypeFactory())
                 != null) {
