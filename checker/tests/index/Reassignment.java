@@ -31,6 +31,7 @@ class Reassignment {
             int y = id(b)[x];
         }
         if (b.length > 0) {
+            //:: error: (side.effect.invalidation)
             test(b, 0, b.length - 1);
         }
     }

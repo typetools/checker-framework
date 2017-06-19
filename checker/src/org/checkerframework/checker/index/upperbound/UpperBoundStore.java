@@ -83,11 +83,16 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
             "reassignment.field.not.permitted.method";
     private SourceChecker checker;
 
+    /**
+     * This enum is used by {@link UpperBoundStore#checkAnno(AnnotationMirror, String, Node,
+     * CheckController)} to determine which properties of an annotation to check based on what kind
+     * of side-effect has occurred.
+     */
     private enum CheckController {
-        NAME_ONLY,
-        NAME_AND_METHOD_CALLS,
-        NONFINAL_REFS_AND_METHOD_CALLS,
-        NONFINAL_REFS_AND_METHOD_CALLS_METHOD
+        LOCAL_VAR_REASSIGNMENT,
+        ARRAY_FIELD_REASSIGNMENT,
+        NON_ARRAY_FIELD_REASSIGNMENT,
+        SIDE_EFFECTING_METHOD_CALL
     }
 
     public UpperBoundStore(UpperBoundAnalysis analysis, boolean sequentialSemantics) {
@@ -116,9 +121,9 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
             findEnclosedTypes(enclosedTypes, enclosedElts);
 
             // Should include all method calls and non-array references, but not the name of the method.
-            clearFromStore("", n, CheckController.NONFINAL_REFS_AND_METHOD_CALLS_METHOD);
+            clearFromStore("", n, CheckController.SIDE_EFFECTING_METHOD_CALL);
             checkForRemainingAnnotations(
-                    enclosedTypes, "", n, CheckController.NONFINAL_REFS_AND_METHOD_CALLS_METHOD);
+                    enclosedTypes, "", n, CheckController.SIDE_EFFECTING_METHOD_CALL);
         }
     }
 
@@ -134,20 +139,20 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
             if (n instanceof LocalVariableNode) {
                 // Do not warn about assigning to a final variable. javac handles this.
                 if (!ElementUtils.isEffectivelyFinal(((LocalVariableNode) n).getElement())) {
-                    checkController = CheckController.NAME_ONLY;
+                    checkController = CheckController.LOCAL_VAR_REASSIGNMENT;
                 }
             }
             if (n instanceof FieldAccessNode) {
                 // Do not warn about assigning to a final field. javac handles this.
                 if (!ElementUtils.isEffectivelyFinal(((FieldAccessNode) n).getElement())) {
-                    checkController = CheckController.NAME_AND_METHOD_CALLS;
+                    checkController = CheckController.ARRAY_FIELD_REASSIGNMENT;
                 }
             }
         } else {
             if (n instanceof FieldAccessNode) {
                 if (!n.getType().getKind().isPrimitive()) {
                     if (!ElementUtils.isEffectivelyFinal(((FieldAccessNode) n).getElement())) {
-                        checkController = CheckController.NONFINAL_REFS_AND_METHOD_CALLS;
+                        checkController = CheckController.NON_ARRAY_FIELD_REASSIGNMENT;
                     }
                 }
             }
@@ -205,6 +210,9 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
      * Otherwise, an UBQualifier is created, and all the things it depends on (as Strings) are
      * collected and canonicalized.
      *
+     * <p>{@code canonicalTargetName} is the canonicalized (i.e. viewpoint-adapted, etc.) name of
+     * the field being reassigned, if applicable.
+     *
      * <p>Then, the appropriate checks are made based on the {@code checkController} the result is
      * returned.
      *
@@ -216,14 +224,13 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
      *   <li>Does the annotation include any method calls?
      * </ul>
      *
-     * <p>The CheckController contains an option for just the first, an option for the first and
-     * second, and an option for the second and third. These are the only possible sets of
-     * invalidations (according to the document that is reproduced as the JavaDoc on this class).
-     *
-     * <p>The CheckController also contains information that is used in deciding which report is
-     * issued: it contains separate options for its third option (i.e. the second and third items in
-     * the list) so that different messages can be issued for field reassignment invalidation and
-     * invalidation because of a call to a non-side-effect free method.
+     * <p>The CheckController is named based on the kind of side-effect that is occurring, which
+     * determines which checks will occur. The CheckController value {@link
+     * CheckController#LOCAL_VAR_REASSIGNMENT} means just the first check is performed. The value
+     * {@link CheckController#ARRAY_FIELD_REASSIGNMENT} indicates that the first and second checks
+     * should be performed. Both {@link CheckController#NON_ARRAY_FIELD_REASSIGNMENT} and {@link
+     * CheckController#SIDE_EFFECTING_METHOD_CALL} indicate that the second and third checks should
+     * occur, but that different errors should be issued.
      */
     private Result checkAnno(
             AnnotationMirror anno,
@@ -259,16 +266,14 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                 return Result.SUCCESS;
             }
             canonicalDependencies.add(r.toString());
+            // This while loops cycles through all of the fields being accessed.
+            // A loop is needed to handle arbitrarily long expressions of the form
+            // field1.field2.field3...
             while (r instanceof FlowExpressions.FieldAccess) {
-                // I included an exception here for "this", because otherwise the rules don't make sense - any
-                // field, including final ones, would be invalidated, since it's impossible to know if this is
-                // final or not. But this can't be modified by calling other code, so it's fine.
-                if (checkController == CheckController.NONFINAL_REFS_AND_METHOD_CALLS
-                        || checkController
-                                == CheckController.NONFINAL_REFS_AND_METHOD_CALLS_METHOD) {
-                    if (!((FlowExpressions.FieldAccess) r).getReceiver().toString().equals("this")
-                            && !((FlowExpressions.FieldAccess) r).isFinal()) {
-                        if (checkController == CheckController.NONFINAL_REFS_AND_METHOD_CALLS) {
+                if (checkController == CheckController.NON_ARRAY_FIELD_REASSIGNMENT
+                        || checkController == CheckController.SIDE_EFFECTING_METHOD_CALL) {
+                    if (!r.isUnmodifiableByOtherCode()) {
+                        if (checkController == CheckController.NON_ARRAY_FIELD_REASSIGNMENT) {
                             return Result.failure(NO_REASSIGN_FIELD, anno.toString());
                         } else {
                             return Result.failure(SIDE_EFFECTING_METHOD, anno.toString());
@@ -276,6 +281,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                     } else {
                         FlowExpressions.Receiver oldR = r;
                         try {
+                            // Get the next field (possibly containing another field).
                             r =
                                     factory.getReceiverFromJavaExpressionString(
                                             ((FlowExpressions.FieldAccess) r).getField().toString(),
@@ -283,6 +289,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                         } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
                         }
                         if (oldR.equals(r)) {
+                            // Reached the end of the field access chain.
                             break;
                         }
                     }
@@ -291,11 +298,11 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                 }
             }
             if (r instanceof FlowExpressions.MethodCall) {
-                if (checkController == CheckController.NAME_AND_METHOD_CALLS
-                        || checkController == CheckController.NONFINAL_REFS_AND_METHOD_CALLS) {
+                if (checkController == CheckController.ARRAY_FIELD_REASSIGNMENT
+                        || checkController == CheckController.NON_ARRAY_FIELD_REASSIGNMENT) {
                     return Result.failure(NO_REASSIGN_FIELD_METHOD, anno.toString());
                 }
-                if (checkController == CheckController.NONFINAL_REFS_AND_METHOD_CALLS_METHOD) {
+                if (checkController == CheckController.SIDE_EFFECTING_METHOD_CALL) {
                     return Result.failure(SIDE_EFFECTING_METHOD, anno.toString());
                 }
                 for (FlowExpressions.Receiver param :
@@ -304,8 +311,8 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                 }
             }
         }
-        if ((checkController == CheckController.NAME_AND_METHOD_CALLS
-                        || checkController == CheckController.NAME_ONLY)
+        if ((checkController == CheckController.ARRAY_FIELD_REASSIGNMENT
+                        || checkController == CheckController.LOCAL_VAR_REASSIGNMENT)
                 && canonicalDependencies.contains(canonicalTargetName)) {
             return Result.failure(
                     NO_REASSIGN, canonicalTargetName, anno.toString(), canonicalTargetName);
