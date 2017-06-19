@@ -189,16 +189,15 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
 
     /**
      * This function handles the meat of checking whether an annotation is invalid. If the
-     * annotation is invalid (i.e. it should be unrefined or it should result in a warning) then
-     * this function returns true. Otherwise, it returns false.
+     * annotation is invalid (i.e. it should be unrefined or it should result in a warning) then the
+     * return Results is a failure; Otherwise, it returns a success.
      *
-     * <p>{@code anno} is the annotation to be checked. If it is not dependent, false is returned.
-     * Otherwise, a UBQualifier is created, and all the things it depends on (as Strings) are
+     * <p>{@code anno} is the annotation to be checked. If it is not dependent, success is returned.
+     * Otherwise, an UBQualifier is created, and all the things it depends on (as Strings) are
      * collected and canonicalized.
      *
-     * <p>Then, the appropriate checks are made based on the {@code checkController} and true is
-     * returned if any of the them fail. If the {@code report} flag is set, failing a check (i.e.
-     * returning true) also results in issuing an appropriate error at location {@code n}.
+     * <p>Then, the appropriate checks are made based on the {@code checkController} the result is
+     * returned.
      *
      * <p>There are three possible checks: <l>
      * <li>Does the annotation depend on the {@code canonicalTargetName} parameter?
@@ -215,14 +214,15 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
      *     items in the list) so that different messages can be issued for field reassignment
      *     invalidation and invalidation because of a call to a non-side-effect free method.
      */
-    private boolean checkAnno(
+    private Result checkAnno(
             AnnotationMirror anno,
             String canonicalTargetName,
             Node n,
-            CheckController checkController,
-            boolean report) {
+            CheckController checkController) {
+        UpperBoundAnnotatedTypeFactory factory =
+                (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
         if (!AnnotationUtils.hasElementValue(anno, "value")) {
-            return false;
+            return Result.SUCCESS;
         }
         UBQualifier.LessThanLengthOf qual =
                 (UBQualifier.LessThanLengthOf) UBQualifier.createUBQualifier(anno);
@@ -237,15 +237,15 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         for (String s : dependencies) {
             FlowExpressions.Receiver r = null;
             try {
-                TreePath path = analysis.getTypeFactory().getPath(n.getTree());
+                TreePath path = factory.getPath(n.getTree());
                 if (path != null) {
-                    r = analysis.getTypeFactory().getReceiverFromJavaExpressionString(s, path);
+                    r = factory.getReceiverFromJavaExpressionString(s, path);
                 }
 
             } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
             }
             if (r == null) {
-                return false;
+                return Result.SUCCESS;
             }
             canonicalDependencies.add(r.toString());
             while (r instanceof FlowExpressions.FieldAccess) {
@@ -257,28 +257,18 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                                 == CheckController.NONFINAL_REFS_AND_METHOD_CALLS_METHOD) {
                     if (!((FlowExpressions.FieldAccess) r).getReceiver().toString().equals("this")
                             && !((FlowExpressions.FieldAccess) r).isFinal()) {
-                        if (report) {
-                            if (checkController == CheckController.NONFINAL_REFS_AND_METHOD_CALLS) {
-                                checker.report(
-                                        Result.failure(NO_REASSIGN_FIELD, anno.toString()),
-                                        n.getTree());
-                            } else {
-                                checker.report(
-                                        Result.failure(SIDE_EFFECTING_METHOD, anno.toString()),
-                                        n.getTree());
-                            }
+                        if (checkController == CheckController.NONFINAL_REFS_AND_METHOD_CALLS) {
+                            return Result.failure(NO_REASSIGN_FIELD, anno.toString());
+                        } else {
+                            return Result.failure(SIDE_EFFECTING_METHOD, anno.toString());
                         }
-                        return true;
                     } else {
                         FlowExpressions.Receiver oldR = r;
                         try {
                             r =
-                                    analysis.getTypeFactory()
-                                            .getReceiverFromJavaExpressionString(
-                                                    ((FlowExpressions.FieldAccess) r)
-                                                            .getField()
-                                                            .toString(),
-                                                    analysis.getTypeFactory().getPath(n.getTree()));
+                                    factory.getReceiverFromJavaExpressionString(
+                                            ((FlowExpressions.FieldAccess) r).getField().toString(),
+                                            factory.getPath(n.getTree()));
                         } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
                         }
                         if (oldR.equals(r)) {
@@ -292,20 +282,10 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
             if (r instanceof FlowExpressions.MethodCall) {
                 if (checkController == CheckController.NAME_AND_METHOD_CALLS
                         || checkController == CheckController.NONFINAL_REFS_AND_METHOD_CALLS) {
-                    if (report) {
-                        checker.report(
-                                Result.failure(NO_REASSIGN_FIELD_METHOD, anno.toString()),
-                                n.getTree());
-                    }
-                    return true;
+                    return Result.failure(NO_REASSIGN_FIELD_METHOD, anno.toString());
                 }
                 if (checkController == CheckController.NONFINAL_REFS_AND_METHOD_CALLS_METHOD) {
-                    if (report) {
-                        checker.report(
-                                Result.failure(SIDE_EFFECTING_METHOD, anno.toString()),
-                                n.getTree());
-                    }
-                    return true;
+                    return Result.failure(SIDE_EFFECTING_METHOD, anno.toString());
                 }
                 for (FlowExpressions.Receiver param :
                         ((FlowExpressions.MethodCall) r).getParameters()) {
@@ -316,18 +296,10 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         if ((checkController == CheckController.NAME_AND_METHOD_CALLS
                         || checkController == CheckController.NAME_ONLY)
                 && canonicalDependencies.contains(canonicalTargetName)) {
-            if (report) {
-                checker.report(
-                        Result.failure(
-                                NO_REASSIGN,
-                                canonicalTargetName,
-                                anno.toString(),
-                                canonicalTargetName),
-                        n.getTree());
-            }
-            return true;
+            return Result.failure(
+                    NO_REASSIGN, canonicalTargetName, anno.toString(), canonicalTargetName);
         }
-        return false;
+        return Result.SUCCESS;
     }
 
     void checkForRemainingAnnotations(
@@ -337,7 +309,10 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
             CheckController checkController) {
         for (AnnotatedTypeMirror atm : enclosedTypes) {
             for (AnnotationMirror anno : atm.getAnnotations()) {
-                checkAnno(anno, canonicalTargetName, n, checkController, true);
+                Result r = checkAnno(anno, canonicalTargetName, n, checkController);
+                if (r.isFailure()) {
+                    checker.report(r, n.getTree());
+                }
             }
         }
     }
@@ -351,7 +326,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         for (FlowExpressions.Receiver r : map.keySet()) {
             Set<AnnotationMirror> annos = map.get(r).getAnnotations();
             for (AnnotationMirror anno : annos) {
-                if (checkAnno(anno, canonicalTargetName, n, checkController, false)) {
+                if (checkAnno(anno, canonicalTargetName, n, checkController).isFailure()) {
                     toClear.add(r);
                 }
             }
