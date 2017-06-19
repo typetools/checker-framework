@@ -1,7 +1,16 @@
 package org.checkerframework.checker.optional;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IfTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
@@ -56,10 +65,7 @@ public class OptionalVisitor
 
     private ExecutableElement getOptionalMethod(String methodName, int params) {
         return TreeUtils.getMethod(
-                java.util.Optional.class.getName(),
-                methodName,
-                params,
-                atypeFactory.getProcessingEnv());
+                "java.util.Optional.class", methodName, params, atypeFactory.getProcessingEnv());
     }
 
     /** @return true iff expression is a call to java.util.Optional.get */
@@ -105,12 +111,12 @@ public class OptionalVisitor
         return super.visitConditionalExpression(node, p);
     }
 
-    /*
+    /**
      * Part of rule #3.
      *
-     * Pattern match for:  {@code VAR.isPresent() ? VAR.get().METHOD() : VALUE}
+     * <p>Pattern match for: {@code VAR.isPresent() ? VAR.get().METHOD() : VALUE}
      *
-     * <p>Prefer:  {@code VAR.map(METHOD).orElse(VALUE);}
+     * <p>Prefer: {@code VAR.map(METHOD).orElse(VALUE);}
      */
     public void handleTernaryIsPresentGet(ConditionalExpressionTree node) {
 
@@ -163,12 +169,12 @@ public class OptionalVisitor
         return super.visitIf(node, p);
     }
 
-    /*
+    /**
      * Part of rule #3.
      *
-     * Pattern match for: {@code if (VAR.isPresent()) { METHOD(VAR.get()); }}
+     * <p>Pattern match for: {@code if (VAR.isPresent()) { METHOD(VAR.get()); }}
      *
-     * <p>Prefer:  {@code VAR.ifPresent(METHOD);}
+     * <p>Prefer: {@code VAR.ifPresent(METHOD);}
      */
     public void handleConditionalStatementIsPresentGet(IfTree node) {
 
