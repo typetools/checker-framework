@@ -67,6 +67,9 @@ public class OptionalVisitor
     }
 
     private ExecutableElement getOptionalMethod(String methodName, int params) {
+        if (elements.getTypeElement("java.util.Optional") == null) {
+            ErrorReporter.errorAbort("The Optional Checker requires Java 8.");
+        }
         return TreeUtils.getMethod(
                 "java.util.Optional", methodName, params, atypeFactory.getProcessingEnv());
     }
@@ -147,6 +150,17 @@ public class OptionalVisitor
                             ele.getSimpleName(),
                             falseExpr),
                     node);
+        }
+    }
+
+    /** Return true if the two trees represent the same expression. */
+    private boolean sameExpression(ExpressionTree tree1, ExpressionTree tree2) {
+        Receiver r1 = FlowExpressions.internalReprOf(atypeFactory, tree1);
+        Receiver r2 = FlowExpressions.internalReprOf(atypeFactory, tree1);
+        if (r1 != null && !r1.containsUnknown() && r2 != null && !r2.containsUnknown()) {
+            return r1.equals(r2);
+        } else {
+            return tree1.toString().equals(tree2.toString());
         }
     }
 
@@ -299,8 +313,8 @@ public class OptionalVisitor
         }
     }
 
+    /** Return true if tm represents a subtype of Collection (other than the Null type). */
     private boolean isCollectionType(TypeMirror tm) {
-        // Null type is also a subtype of Collection, but that's not useful.
         return tm.getKind() == TypeKind.DECLARED && types.isSubtype(tm, collectionType);
     }
 
