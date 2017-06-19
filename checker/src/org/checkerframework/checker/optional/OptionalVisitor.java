@@ -273,7 +273,10 @@ public class OptionalVisitor
         return super.visitVariable(node, p);
     }
 
-    /** Handles part of Rule #6, and also Rule #7. */
+    /**
+     * Handles part of Rule #6, and also Rule #7: Don't permit {@code Collection<Optional<...>>} or
+     * {@code Optional<Collection<...>>}..
+     */
     private final class OptionalTypeValidator extends BaseTypeValidator {
 
         public OptionalTypeValidator(
@@ -320,6 +323,7 @@ public class OptionalVisitor
         return tm.getKind() == TypeKind.DECLARED && types.isSubtype(tm, collectionType);
     }
 
+    /** Return true if tm represents java.util.Optional. */
     private boolean isOptionalType(TypeMirror tm) {
         return TypesUtils.isDeclaredOfName(tm, "java.util.Optional");
     }
