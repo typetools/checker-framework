@@ -36,6 +36,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+
 /** A utility class for working with annotations. */
 public class AnnotationUtils {
 
