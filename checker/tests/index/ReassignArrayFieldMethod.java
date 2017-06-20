@@ -23,7 +23,7 @@ class ReassignArrayFieldMethod {
             // which this *might* invalidate (it doesn't in this case).
             //:: error: (reassignment.field.not.permitted.method)
             b = new int[0];
-            //:: error: (array.access.unsafe.high)
+            //:: error: (array.access.unsafe.high.range)
             int k = this.id(b)[x];
         }
     }

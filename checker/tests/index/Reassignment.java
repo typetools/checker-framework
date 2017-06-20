@@ -17,7 +17,7 @@ class Reassignment {
         if (i > 0 && i < arr.length) {
             //:: error: (reassignment.not.permitted)
             arr = new int[0];
-            //:: error: (array.access.unsafe.high)
+            //:: error: (array.access.unsafe.high.range)
             int j = arr[i];
             d = new int[0];
         }
@@ -27,7 +27,7 @@ class Reassignment {
         if (x < id(b).length) {
             //:: error: (reassignment.not.permitted)
             b = new int[0];
-            //:: error: (array.access.unsafe.high)
+            //:: error: (array.access.unsafe.high.range)
             int y = id(b)[x];
         }
         if (b.length > 0) {
