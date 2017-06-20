@@ -38,6 +38,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.stubparser.JavaParser;
 import org.checkerframework.stubparser.ast.CompilationUnit;
 import org.checkerframework.stubparser.ast.ImportDeclaration;
@@ -1250,7 +1251,7 @@ public class StubParser {
             IntegerLiteralExpr ilexpr = (IntegerLiteralExpr) expr;
             ExecutableElement var = builder.findElement(name);
             TypeMirror expected = var.getReturnType();
-            if (expected.getKind() == TypeKind.DECLARED) {
+            if (expected.getKind() == TypeKind.DECLARED || TypesUtils.isIntegral(expected)) {
                 builder.setValue(name, Integer.valueOf(ilexpr.getValue()));
             } else if (expected.getKind() == TypeKind.ARRAY) {
                 Integer[] arr = {Integer.valueOf(ilexpr.getValue())};

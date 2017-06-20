@@ -12,7 +12,6 @@ import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
-import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
@@ -32,7 +31,6 @@ import org.checkerframework.dataflow.cfg.node.BitwiseXorNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalAndNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
-import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.FloatingDivisionNode;
 import org.checkerframework.dataflow.cfg.node.FloatingRemainderNode;
@@ -44,7 +42,6 @@ import org.checkerframework.dataflow.cfg.node.LeftShiftNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.NotEqualNode;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
 import org.checkerframework.dataflow.cfg.node.NumericalMinusNode;
 import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
@@ -142,13 +139,28 @@ public class ValueTransfer extends CFTransfer {
             return ValueAnnotatedTypeFactory.getCharValues(intAnno);
         }
 
-        intAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
-        if (intAnno != null) {
+        if (atypefactory.isIntRange(value.getAnnotations())) {
+            intAnno =
+                    atypefactory
+                            .getQualifierHierarchy()
+                            .findAnnotationInHierarchy(
+                                    value.getAnnotations(), atypefactory.UNKNOWNVAL);
             Range range = ValueAnnotatedTypeFactory.getRange(intAnno);
             return ValueCheckerUtils.getValuesFromRange(range, Character.class);
         }
 
         return new ArrayList<Character>();
+    }
+
+    private AnnotationMirror getValueAnnotation(Node subNode, TransferInput<CFValue, CFStore> p) {
+        CFValue value = p.getValueOfSubNode(subNode);
+        return getValueAnnotation(value);
+    }
+
+    private AnnotationMirror getValueAnnotation(CFValue cfValue) {
+        return atypefactory
+                .getQualifierHierarchy()
+                .findAnnotationInHierarchy(cfValue.getAnnotations(), atypefactory.UNKNOWNVAL);
     }
 
     /**
@@ -157,26 +169,23 @@ public class ValueTransfer extends CFTransfer {
      */
     private List<? extends Number> getNumericalValues(
             Node subNode, TransferInput<CFValue, CFStore> p) {
-        CFValue value = p.getValueOfSubNode(subNode);
-        List<? extends Number> values = null;
-        AnnotationMirror intValAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
-        if (intValAnno != null) {
-            values = AnnotationUtils.getElementValueArray(intValAnno, "value", Long.class, true);
-        }
-        AnnotationMirror doubleValAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), DoubleVal.class);
-        if (doubleValAnno != null) {
-            values =
-                    AnnotationUtils.getElementValueArray(
-                            doubleValAnno, "value", Double.class, true);
-        }
-        AnnotationMirror bottomValAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
-        if (bottomValAnno != null) {
+        AnnotationMirror valueAnno = getValueAnnotation(subNode, p);
+        return getNumericalValues(subNode, valueAnno);
+    }
+
+    private List<? extends Number> getNumericalValues(Node subNode, AnnotationMirror valueAnno) {
+
+        if (valueAnno == null || AnnotationUtils.areSameByClass(valueAnno, UnknownVal.class)) {
+            return null;
+        } else if (AnnotationUtils.areSameByClass(valueAnno, BottomVal.class)) {
             return new ArrayList<>();
         }
-        if (values == null) {
+        List<? extends Number> values;
+        if (AnnotationUtils.areSameByClass(valueAnno, IntVal.class)) {
+            values = AnnotationUtils.getElementValueArray(valueAnno, "value", Long.class, true);
+        } else if (AnnotationUtils.areSameByClass(valueAnno, DoubleVal.class)) {
+            values = AnnotationUtils.getElementValueArray(valueAnno, "value", Double.class, true);
+        } else {
             return null;
         }
         return NumberUtils.castNumbers(subNode.getType(), values);
@@ -184,46 +193,41 @@ public class ValueTransfer extends CFTransfer {
 
     /** Get possible integer range from annotation. */
     private Range getIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
-        CFValue value = p.getValueOfSubNode(subNode);
-        Range range = Range.EVERYTHING;
-        AnnotationMirror intRangeAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
-        if (intRangeAnno != null) {
-            range = ValueAnnotatedTypeFactory.getRange(intRangeAnno);
-        }
-        AnnotationMirror intValAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
-        if (intValAnno != null) {
+        AnnotationMirror val = getValueAnnotation(subNode, p);
+        return getIntRangeFromAnnotation(subNode, val);
+    }
+
+    private Range getIntRangeFromAnnotation(Node node, AnnotationMirror val) {
+        Range range;
+        if (val == null || AnnotationUtils.areSameByClass(val, UnknownVal.class)) {
+            range = Range.EVERYTHING;
+        } else if (atypefactory.isIntRange(val)) {
+            range = ValueAnnotatedTypeFactory.getRange(val);
+        } else if (AnnotationUtils.areSameByClass(val, IntVal.class)) {
             List<Long> values =
-                    AnnotationUtils.getElementValueArray(intValAnno, "value", Long.class, true);
+                    AnnotationUtils.getElementValueArray(val, "value", Long.class, true);
             range = ValueCheckerUtils.getRangeFromValues(values);
-        }
-        AnnotationMirror doubleValAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), DoubleVal.class);
-        if (doubleValAnno != null) {
+        } else if (AnnotationUtils.areSameByClass(val, DoubleVal.class)) {
             List<Double> values =
-                    AnnotationUtils.getElementValueArray(
-                            doubleValAnno, "value", Double.class, true);
+                    AnnotationUtils.getElementValueArray(val, "value", Double.class, true);
             range = ValueCheckerUtils.getRangeFromValues(values);
-        }
-        AnnotationMirror bottomValAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
-        if (bottomValAnno != null) {
+        } else if (AnnotationUtils.areSameByClass(val, BottomVal.class)) {
             return Range.NOTHING;
+        } else {
+            range = Range.EVERYTHING;
         }
-        return NumberUtils.castRange(subNode.getType(), range);
+        return NumberUtils.castRange(node.getType(), range);
     }
 
     /** a helper function to determine if this node is annotated with @IntRange */
     private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
-        return AnnotationUtils.containsSameByClass(value.getAnnotations(), IntRange.class);
+        return atypefactory.isIntRange(value.getAnnotations());
     }
 
     /** a helper function to determine if this node is annotated with @UnknownVal */
-    private boolean isIntegralUnknownVal(Node node, TransferInput<CFValue, CFStore> p) {
-        CFValue value = p.getValueOfSubNode(node);
-        return AnnotationUtils.containsSameByClass(value.getAnnotations(), UnknownVal.class)
+    private boolean isIntegralUnknownVal(Node node, AnnotationMirror anno) {
+        return AnnotationUtils.areSameByClass(anno, UnknownVal.class)
                 && TypesUtils.isIntegral(node.getType());
     }
 
@@ -274,73 +278,62 @@ public class ValueTransfer extends CFTransfer {
         if (!NodeUtils.isArrayLengthFieldAccess(arrayLengthNode)) {
             return;
         }
-        CFValue value =
-                store.getValue(
-                        FlowExpressions.internalReprOf(analysis.getTypeFactory(), arrayLengthNode));
+        Receiver arrayLenRec =
+                FlowExpressions.internalReprOf(analysis.getTypeFactory(), arrayLengthNode);
+        CFValue value = store.getValue(arrayLenRec);
         if (value == null) {
             return;
         }
 
-        boolean isIntRange = false;
-
-        AnnotationMirror lengthAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
-
+        AnnotationMirror lengthAnno = getValueAnnotation(value);
         if (lengthAnno == null) {
-            lengthAnno =
-                    AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class);
-            isIntRange = true;
+            return;
         }
-
-        if (lengthAnno != null) {
-            RangeOrListOfValues rolv;
-            if (isIntRange) {
-                rolv = new RangeOrListOfValues(ValueAnnotatedTypeFactory.getRange(lengthAnno));
-            } else {
-                List<Long> lengthValues = ValueAnnotatedTypeFactory.getIntValues(lengthAnno);
-                rolv =
-                        new RangeOrListOfValues(
-                                RangeOrListOfValues.convertLongsToInts(lengthValues));
-            }
-            AnnotationMirror newArrayAnno = rolv.createAnnotation(atypefactory);
-            AnnotationMirror oldArrayAnno =
-                    atypefactory.getAnnotationMirror(
-                            arrayLengthNode.getReceiver().getTree(), ArrayLen.class);
-
-            if (oldArrayAnno == null) {
-                oldArrayAnno =
-                        atypefactory.getAnnotationMirror(
-                                arrayLengthNode.getReceiver().getTree(), ArrayLenRange.class);
-            }
-
-            AnnotationMirror combinedAnno;
-            // If the array doesn't have an @ArrayLen annotation, use the new annotation.
-            // If it does have an annotation, combine the facts known about the array
-            // with the facts known about its length using GLB.
-            if (oldArrayAnno == null) {
-                combinedAnno = newArrayAnno;
-            } else {
-                combinedAnno =
-                        atypefactory
-                                .getQualifierHierarchy()
-                                .greatestLowerBound(oldArrayAnno, newArrayAnno);
-            }
-            Receiver arrayRec =
-                    FlowExpressions.internalReprOf(
-                            analysis.getTypeFactory(), arrayLengthNode.getReceiver());
-            store.insertValue(arrayRec, combinedAnno);
-        } else {
+        if (AnnotationUtils.areSameByClass(lengthAnno, BottomVal.class)) {
             // If the array's length is bottom, then this is dead code, so the array's type
             // should also be bottom.
-            lengthAnno =
-                    AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
-            if (lengthAnno != null) {
-                Receiver arrayRec =
-                        FlowExpressions.internalReprOf(
-                                analysis.getTypeFactory(), arrayLengthNode.getReceiver());
-                store.insertValue(arrayRec, lengthAnno);
-            }
+            Receiver arrayRec =
+                    FlowExpressions.internalReprOf(atypefactory, arrayLengthNode.getReceiver());
+            store.insertValue(arrayRec, lengthAnno);
+            return;
         }
+
+        RangeOrListOfValues rolv;
+        if (atypefactory.isIntRange(lengthAnno)) {
+            rolv = new RangeOrListOfValues(ValueAnnotatedTypeFactory.getRange(lengthAnno));
+        } else if (AnnotationUtils.areSameByClass(lengthAnno, IntVal.class)) {
+            List<Long> lengthValues = ValueAnnotatedTypeFactory.getIntValues(lengthAnno);
+            rolv = new RangeOrListOfValues(RangeOrListOfValues.convertLongsToInts(lengthValues));
+        } else {
+            return;
+        }
+        AnnotationMirror newArrayAnno = rolv.createAnnotation(atypefactory);
+        AnnotationMirror oldArrayAnno =
+                atypefactory.getAnnotationMirror(
+                        arrayLengthNode.getReceiver().getTree(), ArrayLen.class);
+
+        if (oldArrayAnno == null) {
+            oldArrayAnno =
+                    atypefactory.getAnnotationMirror(
+                            arrayLengthNode.getReceiver().getTree(), ArrayLenRange.class);
+        }
+
+        AnnotationMirror combinedAnno;
+        // If the array doesn't have an @ArrayLen annotation, use the new annotation.
+        // If it does have an annotation, combine the facts known about the array
+        // with the facts known about its length using GLB.
+        if (oldArrayAnno == null) {
+            combinedAnno = newArrayAnno;
+        } else {
+            combinedAnno =
+                    atypefactory
+                            .getQualifierHierarchy()
+                            .greatestLowerBound(oldArrayAnno, newArrayAnno);
+        }
+        Receiver arrayRec =
+                FlowExpressions.internalReprOf(
+                        analysis.getTypeFactory(), arrayLengthNode.getReceiver());
+        store.insertValue(arrayRec, combinedAnno);
     }
 
     @Override
@@ -504,13 +497,19 @@ public class ValueTransfer extends CFTransfer {
                         resultValues.add(nmLeft.plus(right));
                         break;
                     case DIVISION:
-                        resultValues.add(nmLeft.divide(right));
+                        Number result = nmLeft.divide(right);
+                        if (result != null) {
+                            resultValues.add(result);
+                        }
                         break;
                     case MULTIPLICATION:
                         resultValues.add(nmLeft.times(right));
                         break;
                     case REMAINDER:
-                        resultValues.add(nmLeft.remainder(right));
+                        Number resultR = nmLeft.remainder(right);
+                        if (resultR != null) {
+                            resultValues.add(resultR);
+                        }
                         break;
                     case SUBTRACTION:
                         resultValues.add(nmLeft.minus(right));
@@ -800,41 +799,37 @@ public class ValueTransfer extends CFTransfer {
 
     private List<Boolean> calculateBinaryComparison(
             Node leftNode,
+            CFValue leftValue,
             Node rightNode,
+            CFValue rightValue,
             ComparisonOperators op,
-            TransferInput<CFValue, CFStore> p,
             CFStore thenStore,
             CFStore elseStore) {
-        if (isIntRange(leftNode, p)
-                || isIntRange(rightNode, p)
-                || isIntegralUnknownVal(rightNode, p)
-                || isIntegralUnknownVal(leftNode, p)) {
+        AnnotationMirror leftAnno = getValueAnnotation(leftValue);
+        AnnotationMirror rightAnno = getValueAnnotation(rightValue);
+
+        if (atypefactory.isIntRange(leftAnno)
+                || atypefactory.isIntRange(rightAnno)
+                || isIntegralUnknownVal(rightNode, rightAnno)
+                || isIntegralUnknownVal(leftNode, leftAnno)) {
             // If either is @UnknownVal, then refineIntRanges will treat it as the max range and
             // thus refine it if possible.  Also, if either is an @IntVal, then it will be
             // converted to a range.  This is less precise in some cases, but avoids the
             // complexity of comparing a list of values to a range. (This could be implemented in
             // the future.)
-            return refineIntRanges(leftNode, rightNode, op, p, thenStore, elseStore);
+            return refineIntRanges(
+                    leftNode, leftAnno, rightNode, rightAnno, op, thenStore, elseStore);
         }
         List<Boolean> resultValues = new ArrayList<>();
 
-        List<? extends Number> lefts = getNumericalValues(leftNode, p);
-        List<? extends Number> rights = getNumericalValues(rightNode, p);
+        List<? extends Number> lefts = getNumericalValues(leftNode, leftAnno);
+        List<? extends Number> rights = getNumericalValues(rightNode, rightAnno);
 
         if (lefts == null || rights == null) {
             // Appropriately handle bottom when something is compared to bottom.
-            AnnotationMirror leftAnno =
-                    atypefactory
-                            .getAnnotatedType(leftNode.getTree())
-                            .getAnnotationInHierarchy(atypefactory.BOTTOMVAL);
-            AnnotationMirror rightAnno =
-                    atypefactory
-                            .getAnnotatedType(rightNode.getTree())
-                            .getAnnotationInHierarchy(atypefactory.BOTTOMVAL);
-
             if (AnnotationUtils.areSame(leftAnno, atypefactory.BOTTOMVAL)
                     || AnnotationUtils.areSame(rightAnno, atypefactory.BOTTOMVAL)) {
-                return new ArrayList<Boolean>();
+                return new ArrayList<>();
             }
             return null;
         }
@@ -897,13 +892,15 @@ public class ValueTransfer extends CFTransfer {
      */
     private List<Boolean> refineIntRanges(
             Node leftNode,
+            AnnotationMirror leftAnno,
             Node rightNode,
+            AnnotationMirror rightAnno,
             ComparisonOperators op,
-            TransferInput<CFValue, CFStore> p,
             CFStore thenStore,
             CFStore elseStore) {
-        Range leftRange = getIntRange(leftNode, p);
-        Range rightRange = getIntRange(rightNode, p);
+
+        Range leftRange = getIntRangeFromAnnotation(leftNode, leftAnno);
+        Range rightRange = getIntRangeFromAnnotation(rightNode, rightAnno);
 
         final Range thenRightRange;
         final Range thenLeftRange;
@@ -1009,9 +1006,10 @@ public class ValueTransfer extends CFTransfer {
         List<Boolean> resultValues =
                 calculateBinaryComparison(
                         n.getLeftOperand(),
+                        p.getValueOfSubNode(n.getLeftOperand()),
                         n.getRightOperand(),
+                        p.getValueOfSubNode(n.getRightOperand()),
                         ComparisonOperators.LESS_THAN,
-                        p,
                         thenStore,
                         elseStore);
         TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
@@ -1027,9 +1025,10 @@ public class ValueTransfer extends CFTransfer {
         List<Boolean> resultValues =
                 calculateBinaryComparison(
                         n.getLeftOperand(),
+                        p.getValueOfSubNode(n.getLeftOperand()),
                         n.getRightOperand(),
+                        p.getValueOfSubNode(n.getRightOperand()),
                         ComparisonOperators.LESS_THAN_EQ,
-                        p,
                         thenStore,
                         elseStore);
         TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
@@ -1045,9 +1044,10 @@ public class ValueTransfer extends CFTransfer {
         List<Boolean> resultValues =
                 calculateBinaryComparison(
                         n.getLeftOperand(),
+                        p.getValueOfSubNode(n.getLeftOperand()),
                         n.getRightOperand(),
+                        p.getValueOfSubNode(n.getRightOperand()),
                         ComparisonOperators.GREATER_THAN,
-                        p,
                         thenStore,
                         elseStore);
         TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
@@ -1063,9 +1063,10 @@ public class ValueTransfer extends CFTransfer {
         List<Boolean> resultValues =
                 calculateBinaryComparison(
                         n.getLeftOperand(),
+                        p.getValueOfSubNode(n.getLeftOperand()),
                         n.getRightOperand(),
+                        p.getValueOfSubNode(n.getRightOperand()),
                         ComparisonOperators.GREATER_THAN_EQ,
-                        p,
                         thenStore,
                         elseStore);
         TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
@@ -1073,50 +1074,39 @@ public class ValueTransfer extends CFTransfer {
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitEqualTo(
-            EqualToNode n, TransferInput<CFValue, CFStore> p) {
-        TransferResult<CFValue, CFStore> transferResult = super.visitEqualTo(n, p);
-        if (TypesUtils.isPrimitive(n.getLeftOperand().getType())
-                || TypesUtils.isPrimitive(n.getRightOperand().getType())) {
+    protected TransferResult<CFValue, CFStore> strengthenAnnotationOfEqualTo(
+            TransferResult<CFValue, CFStore> transferResult,
+            Node firstNode,
+            Node secondNode,
+            CFValue firstValue,
+            CFValue secondValue,
+            boolean notEqualTo) {
+        if (firstValue == null) {
+            return transferResult;
+        }
+        if (TypesUtils.isNumeric(firstNode.getType())
+                || TypesUtils.isNumeric(secondNode.getType())) {
             CFStore thenStore = transferResult.getThenStore();
             CFStore elseStore = transferResult.getElseStore();
             // At least one must be a primitive otherwise reference equality is used.
             List<Boolean> resultValues =
                     calculateBinaryComparison(
-                            n.getLeftOperand(),
-                            n.getRightOperand(),
-                            ComparisonOperators.EQUAL,
-                            p,
+                            firstNode,
+                            firstValue,
+                            secondNode,
+                            secondValue,
+                            notEqualTo ? ComparisonOperators.NOT_EQUAL : ComparisonOperators.EQUAL,
                             thenStore,
                             elseStore);
+            if (transferResult.getResultValue() == null) {
+                // Happens for case labels
+                return transferResult;
+            }
             TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
             return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
         }
-        return transferResult;
-    }
-
-    @Override
-    public TransferResult<CFValue, CFStore> visitNotEqual(
-            NotEqualNode n, TransferInput<CFValue, CFStore> p) {
-        TransferResult<CFValue, CFStore> transferResult = super.visitNotEqual(n, p);
-        if (TypesUtils.isPrimitive(n.getLeftOperand().getType())
-                || TypesUtils.isPrimitive(n.getRightOperand().getType())) {
-            CFStore thenStore = transferResult.getThenStore();
-            CFStore elseStore = transferResult.getElseStore();
-            // At least one must be a primitive otherwise reference equality is
-            // used.
-            List<Boolean> resultValues =
-                    calculateBinaryComparison(
-                            n.getLeftOperand(),
-                            n.getRightOperand(),
-                            ComparisonOperators.NOT_EQUAL,
-                            p,
-                            thenStore,
-                            elseStore);
-            TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
-            return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
-        }
-        return transferResult;
+        return super.strengthenAnnotationOfEqualTo(
+                transferResult, firstNode, secondNode, firstValue, secondValue, notEqualTo);
     }
 
     enum ConditionalOperators {

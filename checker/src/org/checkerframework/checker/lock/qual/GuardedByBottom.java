@@ -21,7 +21,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @checker_framework.manual #bottom-type the bottom type
  */
 @SubtypeOf({GuardedBy.class, GuardSatisfied.class})
-@ImplicitFor(literals = {LiteralKind.NULL})
+@ImplicitFor(literals = LiteralKind.NULL)
 @Documented
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})

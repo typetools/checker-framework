@@ -1,4 +1,11 @@
-import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.checker.index.qual.LTEqLengthOf;
+import org.checkerframework.checker.index.qual.LTLengthOf;
+import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.checker.index.qual.PolyLowerBound;
+import org.checkerframework.checker.index.qual.PolySameLen;
+import org.checkerframework.checker.index.qual.PolyUpperBound;
+import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.framework.qual.PolyAll;
 
 class Polymorphic2 {
@@ -12,20 +19,6 @@ class Polymorphic2 {
         return flag ? a : b;
     }
 
-    int @PolyMinLen [] mergeMinLen(int @PolyMinLen [] a, int @PolyMinLen [] b) {
-        return flag ? a : b;
-    }
-
-    void testMinLen(int @MinLen(2) [] a, int @MinLen(5) [] b) {
-        int @MinLen(2) [] x = merge(a, b);
-        //:: error: (assignment.type.incompatible)
-        int @MinLen(5) [] y = merge(a, b);
-
-        int @MinLen(2) [] z = mergeMinLen(a, b);
-        //:: error: (assignment.type.incompatible)
-        int @MinLen(5) [] zz = mergeMinLen(a, b);
-    }
-
     int @PolySameLen [] mergeSameLen(int @PolySameLen [] a, int @PolySameLen [] b) {
         return flag ? a : b;
     }
@@ -37,10 +30,6 @@ class Polymorphic2 {
         int[] x = merge(a, b);
         //:: error: (assignment.type.incompatible)
         int @SameLen("array1") [] y = merge(a, b);
-
-        int[] z = mergeMinLen(a, b);
-        //:: error: (assignment.type.incompatible)
-        int @SameLen("array1") [] zz = mergeMinLen(a, b);
     }
 
     @PolyUpperBound int mergeUpperBound(@PolyUpperBound int a, @PolyUpperBound int b) {

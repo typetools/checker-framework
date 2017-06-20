@@ -1,5 +1,5 @@
-import org.checkerframework.checker.index.qual.MinLen;
 import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.common.value.qual.MinLen;
 
 public class NonNegArrayLength {
 
