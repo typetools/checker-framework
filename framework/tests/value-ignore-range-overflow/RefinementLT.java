@@ -8,8 +8,8 @@ public class RefinementLT {
         @IntRange(from = 0) int aa = a;
         if (-1 < a) {
             @IntRange(from = 0) int b = a;
-            //:: error: (assignment.type.incompatible)
             @IntRange(from = -1) int b1 = a;
+            //:: error: (assignment.type.incompatible)
             @IntRange(from = 1) int b2 = a;
         } else {
             //:: error: (assignment.type.incompatible)
@@ -47,8 +47,8 @@ public class RefinementLT {
             @IntRange(from = 0) int k = j;
         } else {
             @IntRange(from = 0) int l = j;
-            //:: error: (assignment.type.incompatible)
             @IntRange(from = -1) int l1 = j;
+            //:: error: (assignment.type.incompatible)
             @IntRange(from = 1) int l2 = j;
         }
 

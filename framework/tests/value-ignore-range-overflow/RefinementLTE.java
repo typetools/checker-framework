@@ -36,6 +36,7 @@ public class RefinementLTE {
         //:: error: (assignment.type.incompatible)
         @IntRange(from = 0) int aa = a;
         if (a <= -1) {
+            //:: error: (assignment.type.incompatible)
             @IntRange(from = -1) int b0 = a;
             //:: error: (assignment.type.incompatible)
             @IntRange(from = 0) int b = a;
