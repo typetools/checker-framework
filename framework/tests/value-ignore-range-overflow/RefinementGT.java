@@ -42,7 +42,9 @@ public class RefinementGT {
             @IntRange(from = -1) int b = a;
         } else {
             @IntRange(from = -1) int c = a;
+            //:: error: (assignment.type.incompatible)
             @IntRange(from = 0) int c1 = a;
+            //:: error: (assignment.type.incompatible)
             @IntRange(from = 1) int c2 = a;
         }
 
