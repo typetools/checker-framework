@@ -135,6 +135,23 @@ when getting started, but you should always examine their results.
 % Nullness (Section~\ref{nullness-inference}) type system.
 
 
+\subsection{Tips for annotating a library\label{annotating-tips}}
+
+When you annotate a library, you should only add annotations and, when
+necessary, documentation of those annotations.
+
+Do not change the library's code or documentation, or make changes to
+formatting or whitespace.  Doing so will increase the size of the diffs
+between upstream and your version.  Unnecessary diffs make it harder for
+others to understand what you have done, and they make it harder to pull
+changes from upstream into the annotated library.
+
+While annotating the library, you may discover bugs or missing/wrong
+documentation.  If you have a documentation improvement or a bug fix, then
+pull-request them against the upstream version of the library.  This will
+benefit all users of the library.
+
+
 \subsection{Creating a new annotated JDK\label{annotating-jdk}}
 
 When you create a new checker, you need to also supply annotations for
@@ -691,8 +708,8 @@ in a stub file one has to write
 \end{Verbatim}
 
 \item
-  Annotations can only use string, boolean, or integer literals; other literals are not
-  yet supported.
+  Annotations can only use string, boolean, or integer literals; other
+  literals are not yet supported.
 \end{itemize}
 
 If these limitations are a problem, then you should insert annotations
@@ -748,5 +765,5 @@ read whether the library's annotations are parsed.
 %%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs bcel mkdir
 %%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1 cd
 %%  LocalWords:  TypeSystem2 TypeSystem3 AuseDefaultsForUncheckedCode ln
-%  LocalWords:  mychecker DIRS README TypeSystem un debugJSR org
+%  LocalWords:  mychecker DIRS README TypeSystem un debugJSR org boolean
 %  LocalWords:  AstubWarnIfOverwritesBytecode
