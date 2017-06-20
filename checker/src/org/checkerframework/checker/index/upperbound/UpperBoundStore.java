@@ -124,8 +124,8 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
             findEnclosedTypes(enclosedTypes, enclosedElts);
 
             // Should include all method calls and non-array references, but not the name of the method.
-            clearFromStore("", n, SideEffect.SIDE_EFFECTING_METHOD_CALL);
-            checkAnnotationsInClass(enclosedTypes, "", n, SideEffect.SIDE_EFFECTING_METHOD_CALL);
+            clearFromStore(null, n, SideEffect.SIDE_EFFECTING_METHOD_CALL);
+            checkAnnotationsInClass(enclosedTypes, null, n, SideEffect.SIDE_EFFECTING_METHOD_CALL);
         }
     }
 
@@ -180,10 +180,8 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
 
             FlowExpressions.Receiver rec =
                     FlowExpressions.internalReprOf(analysis.getTypeFactory(), n);
-            String canonicalTargetName = rec.toString();
-
-            clearFromStore(canonicalTargetName, n, sideEffect);
-            checkAnnotationsInClass(enclosedTypes, canonicalTargetName, n, sideEffect);
+            clearFromStore(rec, n, sideEffect);
+            checkAnnotationsInClass(enclosedTypes, rec, n, sideEffect);
         }
     }
 
@@ -235,7 +233,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
      * occur, but that different errors should be issued.
      */
     private Result checkAnno(
-            AnnotationMirror anno, String reassignedFieldName, Node n, SideEffect sideEffect) {
+            AnnotationMirror anno, Receiver reassignedFieldName, Node n, SideEffect sideEffect) {
         UpperBoundAnnotatedTypeFactory factory =
                 (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
         if (!AnnotationUtils.hasElementValue(anno, "value")) {
@@ -250,7 +248,6 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         }
         dependencies.addAll(qual.getOffsetsAsStrings());
 
-        List<String> canonicalDependencies = new ArrayList<>();
         for (String dependency : dependencies) {
             FlowExpressions.Receiver r;
             try {
@@ -265,25 +262,29 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
             if (r == null) {
                 continue;
             }
+            if ((sideEffect == SideEffect.ARRAY_FIELD_REASSIGNMENT
+                            || sideEffect == SideEffect.LOCAL_VAR_REASSIGNMENT)
+                    && r.containsSyntacticEqualReceiver(reassignedFieldName)) {
+                return Result.failure(
+                        NO_REASSIGN, reassignedFieldName, anno.toString(), reassignedFieldName);
+            }
+
             // This while loops cycles through all of the fields being accessed and/or methods
             // called.
             // field1.method.field3...
             while (r != null) {
-                canonicalDependencies.add(r.toString());
                 if (r instanceof FieldAccess) {
                     FieldAccess fieldAccess = (FieldAccess) r;
-                    if (r.isUnmodifiableByOtherCode()) {
-                        r = fieldAccess.getReceiver();
-                    } else {
+                    if (!r.isUnmodifiableByOtherCode()) {
                         if (sideEffect == SideEffect.NON_ARRAY_FIELD_REASSIGNMENT) {
                             return Result.failure(NO_REASSIGN_FIELD, anno.toString());
                         } else if (sideEffect == SideEffect.SIDE_EFFECTING_METHOD_CALL) {
                             return Result.failure(SIDE_EFFECTING_METHOD, anno.toString());
                         }
                     }
+                    r = fieldAccess.getReceiver();
                 } else if (r instanceof MethodCall) {
                     MethodCall methodCall = (MethodCall) r;
-                    r = methodCall.getReceiver();
                     switch (sideEffect) {
                         case ARRAY_FIELD_REASSIGNMENT:
                         case NON_ARRAY_FIELD_REASSIGNMENT:
@@ -291,27 +292,20 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                         case SIDE_EFFECTING_METHOD_CALL:
                             return Result.failure(SIDE_EFFECTING_METHOD, anno.toString());
                         default:
-                            for (Receiver param : methodCall.getParameters()) {
-                                canonicalDependencies.add(param.toString());
-                            }
+                            r = methodCall.getReceiver();
                     }
                 } else {
                     break;
                 }
             }
         }
-        if ((sideEffect == SideEffect.ARRAY_FIELD_REASSIGNMENT
-                        || sideEffect == SideEffect.LOCAL_VAR_REASSIGNMENT)
-                && canonicalDependencies.contains(reassignedFieldName)) {
-            return Result.failure(
-                    NO_REASSIGN, reassignedFieldName, anno.toString(), reassignedFieldName);
-        }
+
         return Result.SUCCESS;
     }
 
     void checkAnnotationsInClass(
             List<AnnotatedTypeMirror> enclosedTypes,
-            String canonicalTargetName,
+            Receiver canonicalTargetName,
             Node n,
             SideEffect sideEffect) {
         for (AnnotatedTypeMirror atm : enclosedTypes) {
@@ -327,7 +321,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
     void buildClearListForString(
             Map<? extends FlowExpressions.Receiver, CFValue> map,
             List<FlowExpressions.Receiver> toClear,
-            String canonicalTargetName,
+            Receiver canonicalTargetName,
             Node n,
             SideEffect sideEffect) {
         for (FlowExpressions.Receiver r : map.keySet()) {
@@ -340,7 +334,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         }
     }
 
-    void clearFromStore(String canonicalTargetName, Node n, SideEffect sideEffect) {
+    void clearFromStore(Receiver canonicalTargetName, Node n, SideEffect sideEffect) {
         List<FlowExpressions.Receiver> toClear = new ArrayList<>();
         buildClearListForString(localVariableValues, toClear, canonicalTargetName, n, sideEffect);
         buildClearListForString(methodValues, toClear, canonicalTargetName, n, sideEffect);
