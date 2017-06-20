@@ -9,6 +9,9 @@ public class RefinementGT {
         if (a > -1) {
             /** a is NN now */
             @IntRange(from = 0) int b = a;
+            @IntRange(from = -1) int b1 = a;
+            //:: error: (assignment.type.incompatible)
+            @IntRange(from = 1) int b2 = a;
         } else {
             //:: error: (assignment.type.incompatible)
             @IntRange(from = 0) int c = a;
@@ -39,6 +42,8 @@ public class RefinementGT {
             @IntRange(from = -1) int b = a;
         } else {
             @IntRange(from = -1) int c = a;
+            @IntRange(from = 0) int c1 = a;
+            @IntRange(from = 1) int c2 = a;
         }
 
         if (0 > j) {

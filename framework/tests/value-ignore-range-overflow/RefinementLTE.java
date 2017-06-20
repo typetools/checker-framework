@@ -15,6 +15,9 @@ public class RefinementLTE {
 
         if (0 <= j) {
             @IntRange(from = 0) int k = j;
+            @IntRange(from = -1) int k1 = j;
+            //:: error: (assignment.type.incompatible)
+            @IntRange(from = 1) int k2 = j;
         } else {
             //:: error: (assignment.type.incompatible)
             @IntRange(from = 0) int l = j;
@@ -33,8 +36,11 @@ public class RefinementLTE {
         //:: error: (assignment.type.incompatible)
         @IntRange(from = 0) int aa = a;
         if (a <= -1) {
+            @IntRange(from = -1) int b0 = a;
             //:: error: (assignment.type.incompatible)
             @IntRange(from = 0) int b = a;
+            //:: error: (assignment.type.incompatible)
+            @IntRange(from = 1) int b2 = a;
         } else {
             @IntRange(from = 0) int c = a;
         }

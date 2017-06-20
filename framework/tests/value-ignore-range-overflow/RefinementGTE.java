@@ -15,6 +15,9 @@ public class RefinementGTE {
 
         if (j >= 0) {
             @IntRange(from = 0) int k = j;
+            @IntRange(from = 1) int k1 = j;
+            //:: error: (assignment.type.incompatible)
+            @IntRange(from = -1) int k2 = j;
         } else {
             //:: error: (assignment.type.incompatible)
             @IntRange(from = 0) int l = j;
@@ -37,6 +40,9 @@ public class RefinementGTE {
             @IntRange(from = 1) int k = j;
         } else {
             @IntRange(from = 1) int l = j;
+            //:: error: (assignment.type.incompatible)
+            @IntRange(from = -1) int l1 = j;
+            @IntRange(from = 0) int l2 = j;
         }
 
         if (1 >= s) {
