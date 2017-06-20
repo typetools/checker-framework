@@ -297,8 +297,6 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     /**
      * Tests whether a method invocation is an invocation of {@link Comparable#compareTo}.
      *
-     * <p>
-     *
      * @param node a method invocation node
      * @return true iff {@code node} is a invocation of {@code compareTo()}
      */

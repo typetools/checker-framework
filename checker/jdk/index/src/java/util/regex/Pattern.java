@@ -25,6 +25,7 @@
 
 package java.util.regex;
 import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.common.value.qual.*;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -1191,7 +1192,7 @@ public final class Pattern
      * @return  The array of strings computed by splitting the input
      *          around matches of this pattern
      */
-    public String @MinLen(1) [] split(CharSequence input, int limit) {
+    public String [] split(CharSequence input, int limit) {
         int index = 0;
         boolean matchLimited = limit > 0;
         ArrayList<String> matchList = new ArrayList<>();
@@ -1256,7 +1257,7 @@ public final class Pattern
      * @return  The array of strings computed by splitting the input
      *          around matches of this pattern
      */
-    public String @MinLen(1) [] split(CharSequence input) {
+    public String [] split(CharSequence input) {
         return split(input, 0);
     }
 

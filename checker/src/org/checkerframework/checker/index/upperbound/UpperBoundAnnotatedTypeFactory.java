@@ -22,8 +22,6 @@ import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.lowerbound.LowerBoundAnnotatedTypeFactory;
 import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
-import org.checkerframework.checker.index.minlen.MinLenAnnotatedTypeFactory;
-import org.checkerframework.checker.index.minlen.MinLenChecker;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.index.qual.IndexOrLow;
@@ -127,14 +125,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private SearchIndexAnnotatedTypeFactory getSearchIndexAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(SearchIndexChecker.class);
-    }
-
-    /**
-     * Provides a way to query the Min Len (minimum length) Checker, which computes the lengths of
-     * arrays.
-     */
-    MinLenAnnotatedTypeFactory getMinLenAnnotatedTypeFactory() {
-        return getTypeFactoryOfSubchecker(MinLenChecker.class);
     }
 
     /**
@@ -566,7 +556,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (TreeUtils.isArrayLengthAccess(numeratorTree) && divisor > 1) {
                 String arrayName = ((MemberSelectTree) numeratorTree).getExpression().toString();
                 int minlen =
-                        getMinLenAnnotatedTypeFactory()
+                        getValueAnnotatedTypeFactory()
                                 .getMinLenFromString(
                                         arrayName, numeratorTree, getPath(numeratorTree));
                 if (minlen > 0) {

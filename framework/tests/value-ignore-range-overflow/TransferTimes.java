@@ -24,4 +24,3 @@ public class TransferTimes {
         @IntRange(from = 0) int o = k * k;
     }
 }
-//a comment

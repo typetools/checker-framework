@@ -16,10 +16,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @SubtypeOf({NTDMiddle.class, NTDSide.class})
 @DefaultInUncheckedCodeFor({TypeUseLocation.LOWER_BOUND})
 @DefaultFor({TypeUseLocation.LOWER_BOUND})
-@ImplicitFor(
-    typeNames = Void.class,
-    literals = {LiteralKind.NULL}
-)
+@ImplicitFor(typeNames = Void.class, literals = LiteralKind.NULL)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

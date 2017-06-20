@@ -1203,6 +1203,8 @@ references to \code{this} that escape the constructor (say, by being stored
 in a field or passed to a method before initialization is complete).
 Use of initialization annotations is rare in most code.
 
+\label{underinitialization-examples}
+
 The most common use for the \<@UnderInitialization> annotation is for a
 helper routine that is called by constructor.  For example:
 
@@ -1223,6 +1225,22 @@ helper routine that is called by constructor.  For example:
       field2 = new Object();
       field3 = new Object();
     }
+
+    public MyClass(String arg1, String arg2, String arg3) {
+      this.field1 = arg1;
+      this.field2 = arg2;
+      this.field3 = arg3;
+      checkRep();
+    }
+
+    // Verify that the representation invariants are satisfied.
+    // Works as long as the MyClass fields are initialized, even if the reciever's
+    // class is a subclass of MyClass and not all of the subclass fields are initialized.
+    private void checkRep(@UnderInitialization(MyClass.class) MyClass this) {
+      ...
+    }
+
+
   }
 \end{Verbatim}
 
@@ -1235,6 +1253,37 @@ parameter in comments (see Section~\ref{annotations-in-comments}):
 % Most readers can
 % skip this section on first reading; you can return to it once you have
 % mastered the rest of the Nullness Checker.
+
+Note that it would not be sound to type {@code this} as fully {@link Initialized} anywhere in
+a constructor (with the exception of final classes, for which the set
+of all fields is known),
+because there might be subclasses with uninitialized fields. The following example shows why:
+
+\begin{Verbatim}
+class A {
+   @NonNull String a;
+   public A() {
+       a = "";
+       // Now, all fields of A are initialized.
+       // However, if this constructor is invoked as part of 'new B()', then
+       // the fields of B are not yet initialized.
+       // If we would type 'this' as @Initialized, then the following call is valid:
+       foo();
+   }
+   void foo() {}
+}
+
+class B extends A {
+   @NonNull String b;
+   @Override
+   void foo() {
+       // Dereferencing 'b' is ok, since 'this' is @Initialized and 'b' @NonNull.
+       // However, when executing 'new B()', this line throws a null-pointer exception.
+       b.toString();
+   }
+}
+\end{Verbatim}
+
 
 \subsection{Initialization qualifiers\label{initialization-qualifiers}}
 

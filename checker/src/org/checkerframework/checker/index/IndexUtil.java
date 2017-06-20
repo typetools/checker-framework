@@ -4,10 +4,10 @@ import com.sun.source.tree.Tree;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.index.minlen.MinLenAnnotatedTypeFactory;
-import org.checkerframework.checker.index.qual.MinLen;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -29,12 +29,23 @@ public class IndexUtil {
     }
 
     /**
-     * Get the list of possible values from an AnnotatedTypeMirror containing an IntVal. Empty list
-     * means no possible values (dead code). Returns null if the AnnotatedTypeMirror doesn't contain
-     * an IntVal.
+     * Returns a range representing the possible integral values represented by the passed {@code
+     * AnnotatedTypeMirror}. If the passed {@code AnnotatedTypeMirror} does not contain an {@code
+     * IntRange} annotation or an {@code IntVal} annotation, returns null.
      */
-    public static List<Long> getPossibleValues(AnnotatedTypeMirror valueType) {
-        return ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
+    public static Range getPossibleValues(
+            AnnotatedTypeMirror valueType, ValueAnnotatedTypeFactory valueAnnotatedTypeFactory) {
+        if (valueAnnotatedTypeFactory.isIntRange(valueType.getAnnotations())) {
+            return ValueAnnotatedTypeFactory.getRange(valueType.getAnnotation(IntRange.class));
+        } else {
+            List<Long> values =
+                    ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
+            if (values != null) {
+                return new Range(Collections.min(values), Collections.max(values));
+            } else {
+                return null;
+            }
+        }
     }
 
     /**
@@ -45,9 +56,9 @@ public class IndexUtil {
      */
     public static Long getExactValue(Tree tree, ValueAnnotatedTypeFactory factory) {
         AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
-        List<Long> possibleValues = getPossibleValues(valueType);
-        if (possibleValues != null && possibleValues.size() == 1) {
-            return possibleValues.get(0);
+        Range possibleValues = getPossibleValues(valueType, factory);
+        if (possibleValues != null && possibleValues.from == possibleValues.to) {
+            return possibleValues.from;
         } else {
             return null;
         }
@@ -60,9 +71,9 @@ public class IndexUtil {
      */
     public static Long getMinValue(Tree tree, ValueAnnotatedTypeFactory factory) {
         AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
-        List<Long> possibleValues = getPossibleValues(valueType);
-        if (possibleValues != null && possibleValues.size() != 0) {
-            return Collections.min(possibleValues);
+        Range possibleValues = getPossibleValues(valueType, factory);
+        if (possibleValues != null) {
+            return possibleValues.from;
         } else {
             return null;
         }
@@ -75,32 +86,21 @@ public class IndexUtil {
      */
     public static Long getMaxValue(Tree tree, ValueAnnotatedTypeFactory factory) {
         AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
-        List<Long> possibleValues = getPossibleValues(valueType);
-        if (possibleValues != null && possibleValues.size() != 0) {
-            return Collections.max(possibleValues);
+        Range possibleValues = getPossibleValues(valueType, factory);
+        if (possibleValues != null) {
+            return possibleValues.to;
         } else {
             return null;
         }
     }
 
     /**
-     * Queries the MinLen Checker to determine if there is a known minimum length for the array
-     * represented by {@code tree}. If not, returns -1.
+     * Queries the Value Checker to determine if there is a known minimum length for the array
+     * represented by {@code tree}. If not, returns null.
      */
-    public static int getMinLen(Tree tree, MinLenAnnotatedTypeFactory minLenAnnotatedTypeFactory) {
-        AnnotatedTypeMirror minLenType = minLenAnnotatedTypeFactory.getAnnotatedType(tree);
-        AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
-        return getMinLen(anm);
-    }
-
-    /**
-     * Returns the MinLen value of the given annotation mirror, or -1 if the annotation mirror is
-     * null.
-     */
-    public static int getMinLen(AnnotationMirror anm) {
-        if (anm == null) {
-            return -1;
-        }
-        return AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
+    public static Integer getMinLen(
+            Tree tree, ValueAnnotatedTypeFactory valueAnnotatedTypeFactory) {
+        AnnotatedTypeMirror minLenType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
+        return valueAnnotatedTypeFactory.getMinLenValue(minLenType);
     }
 }

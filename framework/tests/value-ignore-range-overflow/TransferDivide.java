@@ -56,4 +56,3 @@ public class TransferDivide {
         @IntRange(from = 0) int y = x / 2;
     }
 }
-//a comment
