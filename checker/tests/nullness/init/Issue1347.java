@@ -1,4 +1,4 @@
-// Issue1347 case for Issue 1347.
+// Test case for Issue 1347.
 // https://github.com/typetools/checker-framework/issues/1347
 
 class Issue1347<T> {
@@ -15,6 +15,7 @@ class Issue1347<T> {
         this.t2 = t;
         this.o = new Object();
     }
+
     //:: error: (initialization.fields.uninitialized)
     Issue1347(T t, String s) {
         this.t = t;
