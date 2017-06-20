@@ -33,8 +33,8 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * The OptionalVisitor enforces the Optional Checker rules. These rules are described in detail in
- * the Checker Framework Manual.
+ * The OptionalVisitor enforces the Optional Checker rules. These rules are described in the Checker
+ * Framework Manual.
  *
  * @checker_framework.manual #optional-checker Optional Checker
  */

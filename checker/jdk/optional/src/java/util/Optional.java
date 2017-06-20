@@ -29,6 +29,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.optional.qual.Present;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 
@@ -50,7 +51,7 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
  *
  * @since 1.8
  */
-public final class Optional<T> {
+public final @NonNull class Optional<T> {
     /**
      * Common instance for {@code empty()}.
      */
