@@ -125,8 +125,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
 
             // Should include all method calls and non-array references, but not the name of the method.
             clearFromStore("", n, SideEffect.SIDE_EFFECTING_METHOD_CALL);
-            checkForRemainingAnnotations(
-                    enclosedTypes, "", n, SideEffect.SIDE_EFFECTING_METHOD_CALL);
+            checkAnnotationsInClass(enclosedTypes, "", n, SideEffect.SIDE_EFFECTING_METHOD_CALL);
         }
     }
 
@@ -184,7 +183,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
             String canonicalTargetName = rec.toString();
 
             clearFromStore(canonicalTargetName, n, sideEffect);
-            checkForRemainingAnnotations(enclosedTypes, canonicalTargetName, n, sideEffect);
+            checkAnnotationsInClass(enclosedTypes, canonicalTargetName, n, sideEffect);
         }
     }
 
@@ -310,7 +309,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         return Result.SUCCESS;
     }
 
-    void checkForRemainingAnnotations(
+    void checkAnnotationsInClass(
             List<AnnotatedTypeMirror> enclosedTypes,
             String canonicalTargetName,
             Node n,
