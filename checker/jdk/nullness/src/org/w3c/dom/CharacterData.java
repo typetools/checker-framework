@@ -72,7 +72,7 @@ public interface CharacterData extends Node {
      *   fit in a <code>DOMString</code> variable on the implementation
      *   platform.
      */
-    @Pure public String getData()
+    @SideEffectFree public String getData()
                             throws DOMException;
     /**
      * The character data of the node that implements this interface. The DOM
