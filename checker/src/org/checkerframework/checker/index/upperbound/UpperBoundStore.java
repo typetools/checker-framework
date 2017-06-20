@@ -284,6 +284,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                     }
                 } else if (r instanceof MethodCall) {
                     MethodCall methodCall = (MethodCall) r;
+                    r = methodCall.getReceiver();
                     switch (sideEffect) {
                         case ARRAY_FIELD_REASSIGNMENT:
                         case NON_ARRAY_FIELD_REASSIGNMENT:
@@ -295,6 +296,8 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                                 canonicalDependencies.add(param.toString());
                             }
                     }
+                } else {
+                    break;
                 }
             }
         }
