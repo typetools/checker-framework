@@ -62,7 +62,7 @@ class ReassignArrayField {
         void test22(Pr p, int i) {
             for (i = 0; i < p.c.length; i++) {
                 p.c = new int[0];
-                //:: error: (array.access.unsafe.high)
+                //:: error: (array.access.unsafe.high.range)
                 int k = p.c[i];
             }
             p.b = new int[0];
@@ -104,7 +104,7 @@ class ReassignArrayField {
     void test22(Pu p, int i) {
         for (i = 0; i < p.a.length; i++) {
             p.a = new int[0];
-            //:: error: (array.access.unsafe.high)
+            //:: error: (array.access.unsafe.high.range)
             int k = p.a[i];
         }
         p.b = new int[0];
