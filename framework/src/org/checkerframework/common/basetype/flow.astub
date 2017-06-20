@@ -125,6 +125,7 @@ public class Object {
 public final class String {
     @Pure public String intern();
     @Pure public int lastIndexOf(int ch);
+    @Pure int length();
     @Pure public String substring(int beginIndex);
 }
 

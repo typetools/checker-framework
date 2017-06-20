@@ -277,11 +277,13 @@ class Basics {
 
         @UnknownVal String c = "";
 
-        a = c; // This should succeed if a is treated as @UnknownVal
+        //:: error: (assignment.type.incompatible)
+        a = c; // This should not succeed if a is treated as @ArrayLen(1)
 
         //:: warning: (too.many.values.given)
         @StringVal({"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"}) String d = "h";
 
-        d = "b" + d; // This should succeed since d is @UnknownVal
+        //:: error: (assignment.type.incompatible)
+        d = "b" + d; // This should not succeed since d is @ArrayLen(1)
     }
 }
