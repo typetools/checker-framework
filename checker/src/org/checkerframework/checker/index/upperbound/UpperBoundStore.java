@@ -7,8 +7,10 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -346,8 +348,12 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
             Receiver reassignedVariable,
             Node n,
             SideEffectKind sideEffectKind) {
-        for (FlowExpressions.Receiver r : map.keySet()) {
-            Set<AnnotationMirror> annos = map.get(r).getAnnotations();
+
+        Set<Entry<? extends Receiver, CFValue>> eset = new HashSet<>();
+        eset.addAll(map.entrySet());
+        for (Entry<? extends Receiver, CFValue> entry : eset) {
+            Receiver r = entry.getKey();
+            Set<AnnotationMirror> annos = entry.getValue().getAnnotations();
             for (AnnotationMirror anno : annos) {
                 List<Receiver> dependents = getDependentReceivers(anno, n);
                 for (Receiver dependent : dependents) {
