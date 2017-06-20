@@ -210,7 +210,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
      * Otherwise, an UBQualifier is created, and all the things it depends on (as Strings) are
      * collected and canonicalized.
      *
-     * <p>{@code canonicalTargetName} is the canonicalized (i.e. viewpoint-adapted, etc.) name of
+     * <p>{@code reassignedFieldName} is the canonicalized (i.e. viewpoint-adapted, etc.) name of
      * the field being reassigned, if applicable.
      *
      * <p>Then, the appropriate checks are made based on the {@code checkController} the result is
@@ -219,7 +219,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
      * <p>There are three possible checks:
      *
      * <ul>
-     *   <li>Does the annotation depend on the {@code canonicalTargetName} parameter?
+     *   <li>Does the annotation depend on the {@code reassignedFieldName} parameter?
      *   <li>Does the annotation depend on any non-final references?
      *   <li>Does the annotation include any method calls?
      * </ul>
@@ -234,7 +234,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
      */
     private Result checkAnno(
             AnnotationMirror anno,
-            String canonicalTargetName,
+            String reassignedFieldName,
             Node n,
             CheckController checkController) {
         UpperBoundAnnotatedTypeFactory factory =
@@ -313,9 +313,9 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         }
         if ((checkController == CheckController.ARRAY_FIELD_REASSIGNMENT
                         || checkController == CheckController.LOCAL_VAR_REASSIGNMENT)
-                && canonicalDependencies.contains(canonicalTargetName)) {
+                && canonicalDependencies.contains(reassignedFieldName)) {
             return Result.failure(
-                    NO_REASSIGN, canonicalTargetName, anno.toString(), canonicalTargetName);
+                    NO_REASSIGN, reassignedFieldName, anno.toString(), reassignedFieldName);
         }
         return Result.SUCCESS;
     }
