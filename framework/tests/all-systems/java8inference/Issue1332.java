@@ -1,11 +1,11 @@
 // Test case for Issue 1332.
 // https://github.com/typetools/checker-framework/issues/1332
 // @below-java8-jdk-skip-test
-// @skip-test
 
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @SuppressWarnings("") // check for crashes
 abstract class Issue1332 {
@@ -18,4 +18,13 @@ abstract class Issue1332 {
     }
 
     abstract <T> T getOnlyElement(Iterable<T> iterable);
+
+    private void test1() {
+        byte[][] byteArrayArray = new byte[][] {};
+        Stream<byte[]> stream = Stream.of(byteArrayArray);
+    }
+
+    private void test2() {
+        Stream<byte[]> stream = Stream.of(new byte[][] {});
+    }
 }
