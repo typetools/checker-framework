@@ -15,6 +15,9 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -25,7 +28,7 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 
@@ -85,10 +88,10 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
 
     /**
      * This enum is used by {@link UpperBoundStore#checkAnno(AnnotationMirror, String, Node,
-     * CheckController)} to determine which properties of an annotation to check based on what kind
-     * of side-effect has occurred.
+     * SideEffect)} to determine which properties of an annotation to check based on what kind of
+     * side-effect has occurred.
      */
-    private enum CheckController {
+    private enum SideEffect {
         LOCAL_VAR_REASSIGNMENT,
         ARRAY_FIELD_REASSIGNMENT,
         NON_ARRAY_FIELD_REASSIGNMENT,
@@ -121,9 +124,9 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
             findEnclosedTypes(enclosedTypes, enclosedElts);
 
             // Should include all method calls and non-array references, but not the name of the method.
-            clearFromStore("", n, CheckController.SIDE_EFFECTING_METHOD_CALL);
+            clearFromStore("", n, SideEffect.SIDE_EFFECTING_METHOD_CALL);
             checkForRemainingAnnotations(
-                    enclosedTypes, "", n, CheckController.SIDE_EFFECTING_METHOD_CALL);
+                    enclosedTypes, "", n, SideEffect.SIDE_EFFECTING_METHOD_CALL);
         }
     }
 
@@ -133,33 +136,33 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         super.updateForAssignment(n, val);
 
         // This code determines the list of dependences in types that are to be invalidated
-        CheckController checkController = null;
+        SideEffect sideEffect = null;
 
         if (n.getType().getKind() == TypeKind.ARRAY) {
             if (n instanceof LocalVariableNode) {
                 // Do not warn about assigning to a final variable. javac handles this.
                 if (!ElementUtils.isEffectivelyFinal(((LocalVariableNode) n).getElement())) {
-                    checkController = CheckController.LOCAL_VAR_REASSIGNMENT;
+                    sideEffect = SideEffect.LOCAL_VAR_REASSIGNMENT;
                 }
             }
             if (n instanceof FieldAccessNode) {
                 // Do not warn about assigning to a final field. javac handles this.
                 if (!ElementUtils.isEffectivelyFinal(((FieldAccessNode) n).getElement())) {
-                    checkController = CheckController.ARRAY_FIELD_REASSIGNMENT;
+                    sideEffect = SideEffect.ARRAY_FIELD_REASSIGNMENT;
                 }
             }
         } else {
             if (n instanceof FieldAccessNode) {
                 if (!n.getType().getKind().isPrimitive()) {
                     if (!ElementUtils.isEffectivelyFinal(((FieldAccessNode) n).getElement())) {
-                        checkController = CheckController.NON_ARRAY_FIELD_REASSIGNMENT;
+                        sideEffect = SideEffect.NON_ARRAY_FIELD_REASSIGNMENT;
                     }
                 }
             }
         }
 
         // Find all possibly-invalidated types
-        if (checkController != null) {
+        if (sideEffect != null) {
             Element elt;
             // So that assignments into arrays are treated correctly, as well as type casts
             if (n instanceof FieldAccessNode) {
@@ -180,8 +183,8 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                     FlowExpressions.internalReprOf(analysis.getTypeFactory(), n);
             String canonicalTargetName = rec.toString();
 
-            clearFromStore(canonicalTargetName, n, checkController);
-            checkForRemainingAnnotations(enclosedTypes, canonicalTargetName, n, checkController);
+            clearFromStore(canonicalTargetName, n, sideEffect);
+            checkForRemainingAnnotations(enclosedTypes, canonicalTargetName, n, sideEffect);
         }
     }
 
@@ -213,7 +216,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
      * <p>{@code reassignedFieldName} is the canonicalized (i.e. viewpoint-adapted, etc.) name of
      * the field being reassigned, if applicable.
      *
-     * <p>Then, the appropriate checks are made based on the {@code checkController} the result is
+     * <p>Then, the appropriate checks are made based on the {@code sideEffect} the result is
      * returned.
      *
      * <p>There are three possible checks:
@@ -224,19 +227,16 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
      *   <li>Does the annotation include any method calls?
      * </ul>
      *
-     * <p>The CheckController is named based on the kind of side-effect that is occurring, which
-     * determines which checks will occur. The CheckController value {@link
-     * CheckController#LOCAL_VAR_REASSIGNMENT} means just the first check is performed. The value
-     * {@link CheckController#ARRAY_FIELD_REASSIGNMENT} indicates that the first and second checks
-     * should be performed. Both {@link CheckController#NON_ARRAY_FIELD_REASSIGNMENT} and {@link
-     * CheckController#SIDE_EFFECTING_METHOD_CALL} indicate that the second and third checks should
+     * <p>The SideEffect is named based on the kind of side-effect that is occurring, which
+     * determines which checks will occur. The SideEffect value {@link
+     * SideEffect#LOCAL_VAR_REASSIGNMENT} means just the first check is performed. The value {@link
+     * SideEffect#ARRAY_FIELD_REASSIGNMENT} indicates that the first and second checks should be
+     * performed. Both {@link SideEffect#NON_ARRAY_FIELD_REASSIGNMENT} and {@link
+     * SideEffect#SIDE_EFFECTING_METHOD_CALL} indicate that the second and third checks should
      * occur, but that different errors should be issued.
      */
     private Result checkAnno(
-            AnnotationMirror anno,
-            String reassignedFieldName,
-            Node n,
-            CheckController checkController) {
+            AnnotationMirror anno, String reassignedFieldName, Node n, SideEffect sideEffect) {
         UpperBoundAnnotatedTypeFactory factory =
                 (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
         if (!AnnotationUtils.hasElementValue(anno, "value")) {
@@ -252,67 +252,54 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         dependencies.addAll(qual.getOffsetsAsStrings());
 
         List<String> canonicalDependencies = new ArrayList<>();
-        for (String s : dependencies) {
-            FlowExpressions.Receiver r = null;
+        for (String dependency : dependencies) {
+            FlowExpressions.Receiver r;
             try {
                 TreePath path = factory.getPath(n.getTree());
-                if (path != null) {
-                    r = factory.getReceiverFromJavaExpressionString(s, path);
+                if (path == null) {
+                    continue;
                 }
-
-            } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                r = factory.getReceiverFromJavaExpressionString(dependency, path);
+            } catch (FlowExpressionParseException e) {
+                continue;
             }
             if (r == null) {
-                return Result.SUCCESS;
+                continue;
             }
-            canonicalDependencies.add(r.toString());
-            // This while loops cycles through all of the fields being accessed.
-            // A loop is needed to handle arbitrarily long expressions of the form
-            // field1.field2.field3...
-            while (r instanceof FlowExpressions.FieldAccess) {
-                if (checkController == CheckController.NON_ARRAY_FIELD_REASSIGNMENT
-                        || checkController == CheckController.SIDE_EFFECTING_METHOD_CALL) {
-                    if (!r.isUnmodifiableByOtherCode()) {
-                        if (checkController == CheckController.NON_ARRAY_FIELD_REASSIGNMENT) {
+            // This while loops cycles through all of the fields being accessed and/or methods
+            // called.
+            // field1.method.field3...
+            while (r != null) {
+                canonicalDependencies.add(r.toString());
+                if (r instanceof FieldAccess) {
+                    FieldAccess fieldAccess = (FieldAccess) r;
+                    if (r.isUnmodifiableByOtherCode()) {
+                        r = fieldAccess.getReceiver();
+                    } else {
+                        if (sideEffect == SideEffect.NON_ARRAY_FIELD_REASSIGNMENT) {
                             return Result.failure(NO_REASSIGN_FIELD, anno.toString());
-                        } else {
+                        } else if (sideEffect == SideEffect.SIDE_EFFECTING_METHOD_CALL) {
                             return Result.failure(SIDE_EFFECTING_METHOD, anno.toString());
                         }
-                    } else {
-                        FlowExpressions.Receiver oldR = r;
-                        try {
-                            // Get the next field (possibly containing another field).
-                            r =
-                                    factory.getReceiverFromJavaExpressionString(
-                                            ((FlowExpressions.FieldAccess) r).getField().toString(),
-                                            factory.getPath(n.getTree()));
-                        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                        }
-                        if (oldR.equals(r)) {
-                            // Reached the end of the field access chain.
-                            break;
-                        }
                     }
-                } else {
-                    break;
-                }
-            }
-            if (r instanceof FlowExpressions.MethodCall) {
-                if (checkController == CheckController.ARRAY_FIELD_REASSIGNMENT
-                        || checkController == CheckController.NON_ARRAY_FIELD_REASSIGNMENT) {
-                    return Result.failure(NO_REASSIGN_FIELD_METHOD, anno.toString());
-                }
-                if (checkController == CheckController.SIDE_EFFECTING_METHOD_CALL) {
-                    return Result.failure(SIDE_EFFECTING_METHOD, anno.toString());
-                }
-                for (FlowExpressions.Receiver param :
-                        ((FlowExpressions.MethodCall) r).getParameters()) {
-                    canonicalDependencies.add(param.toString());
+                } else if (r instanceof MethodCall) {
+                    MethodCall methodCall = (MethodCall) r;
+                    switch (sideEffect) {
+                        case ARRAY_FIELD_REASSIGNMENT:
+                        case NON_ARRAY_FIELD_REASSIGNMENT:
+                            return Result.failure(NO_REASSIGN_FIELD_METHOD, anno.toString());
+                        case SIDE_EFFECTING_METHOD_CALL:
+                            return Result.failure(SIDE_EFFECTING_METHOD, anno.toString());
+                        default:
+                            for (Receiver param : methodCall.getParameters()) {
+                                canonicalDependencies.add(param.toString());
+                            }
+                    }
                 }
             }
         }
-        if ((checkController == CheckController.ARRAY_FIELD_REASSIGNMENT
-                        || checkController == CheckController.LOCAL_VAR_REASSIGNMENT)
+        if ((sideEffect == SideEffect.ARRAY_FIELD_REASSIGNMENT
+                        || sideEffect == SideEffect.LOCAL_VAR_REASSIGNMENT)
                 && canonicalDependencies.contains(reassignedFieldName)) {
             return Result.failure(
                     NO_REASSIGN, reassignedFieldName, anno.toString(), reassignedFieldName);
@@ -324,10 +311,10 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
             List<AnnotatedTypeMirror> enclosedTypes,
             String canonicalTargetName,
             Node n,
-            CheckController checkController) {
+            SideEffect sideEffect) {
         for (AnnotatedTypeMirror atm : enclosedTypes) {
             for (AnnotationMirror anno : atm.getAnnotations()) {
-                Result r = checkAnno(anno, canonicalTargetName, n, checkController);
+                Result r = checkAnno(anno, canonicalTargetName, n, sideEffect);
                 if (r.isFailure()) {
                     checker.report(r, n.getTree());
                 }
@@ -340,25 +327,24 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
             List<FlowExpressions.Receiver> toClear,
             String canonicalTargetName,
             Node n,
-            CheckController checkController) {
+            SideEffect sideEffect) {
         for (FlowExpressions.Receiver r : map.keySet()) {
             Set<AnnotationMirror> annos = map.get(r).getAnnotations();
             for (AnnotationMirror anno : annos) {
-                if (checkAnno(anno, canonicalTargetName, n, checkController).isFailure()) {
+                if (checkAnno(anno, canonicalTargetName, n, sideEffect).isFailure()) {
                     toClear.add(r);
                 }
             }
         }
     }
 
-    void clearFromStore(String canonicalTargetName, Node n, CheckController checkController) {
+    void clearFromStore(String canonicalTargetName, Node n, SideEffect sideEffect) {
         List<FlowExpressions.Receiver> toClear = new ArrayList<>();
-        buildClearListForString(
-                localVariableValues, toClear, canonicalTargetName, n, checkController);
-        buildClearListForString(methodValues, toClear, canonicalTargetName, n, checkController);
-        buildClearListForString(classValues, toClear, canonicalTargetName, n, checkController);
-        buildClearListForString(fieldValues, toClear, canonicalTargetName, n, checkController);
-        buildClearListForString(arrayValues, toClear, canonicalTargetName, n, checkController);
+        buildClearListForString(localVariableValues, toClear, canonicalTargetName, n, sideEffect);
+        buildClearListForString(methodValues, toClear, canonicalTargetName, n, sideEffect);
+        buildClearListForString(classValues, toClear, canonicalTargetName, n, sideEffect);
+        buildClearListForString(fieldValues, toClear, canonicalTargetName, n, sideEffect);
+        buildClearListForString(arrayValues, toClear, canonicalTargetName, n, sideEffect);
         for (FlowExpressions.Receiver r : toClear) {
             this.clearValue(r);
         }
