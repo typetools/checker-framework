@@ -30,6 +30,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.optional.qual.Present;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 
@@ -60,7 +61,7 @@ public final @NonNull class Optional<T> {
     /**
      * If non-null, the value; if null, indicates no value is present
      */
-    private final T value;
+    private final @Nullable T value;
 
     /**
      * Constructs an empty instance.
@@ -121,7 +122,7 @@ public final @NonNull class Optional<T> {
      * @return an {@code Optional} with a present value if the specified value
      * is non-null, otherwise an empty {@code Optional}
      */
-    public static <T> Optional<T> ofNullable(T value) {
+    public static <T> Optional<T> ofNullable(@Nullable T value) {
         return value == null ? empty() : of(value);
     }
 
@@ -254,7 +255,7 @@ public final @NonNull class Optional<T> {
      * be null
      * @return the value, if present, otherwise {@code other}
      */
-    public T orElse(T other) {
+    public @PolyNull T orElse(@PolyNull T other) {
         return value != null ? value : other;
     }
 
