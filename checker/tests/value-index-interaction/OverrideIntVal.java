@@ -19,6 +19,14 @@ public class OverrideIntVal {
     @IntVal({0, 1, 2, 3}) int m2() {
         return 0;
     }
+
+    @GTENegativeOne int n() {
+        return -1;
+    }
+
+    @Positive int p() {
+        return 1;
+    }
 }
 
 class OverrideIntValSub extends OverrideIntVal {
@@ -30,6 +38,16 @@ class OverrideIntValSub extends OverrideIntVal {
     @Override
     @IntVal(0) int m2() {
         return 0;
+    }
+
+    @Override
+    @IntVal(0) int n() {
+        return 0;
+    }
+
+    @Override
+    @IntVal(2) int p() {
+        return 2;
     }
 }
 
