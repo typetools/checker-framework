@@ -84,7 +84,7 @@ public class StubParser {
     /** The file being parsed (makes error messages more informative). */
     private final String filename;
 
-    private final IndexUnit index;
+    private final StubUnit index;
     private final ProcessingEnvironment processingEnv;
     private final AnnotatedTypeFactory atypeFactory;
     private final Elements elements;
@@ -145,9 +145,9 @@ public class StubParser {
         if (debugStubParser) {
             stubDebug(String.format("parsing stub file %s%n", filename));
         }
-        IndexUnit parsedindex;
+        StubUnit parsedindex;
         try {
-            parsedindex = JavaParser.parseIndexUnit(inputStream);
+            parsedindex = JavaParser.parseStubUnit(inputStream);
         } catch (Exception e) {
             ErrorReporter.errorAbort(
                     "StubParser: exception from JavaParser.parse for file " + filename, e);
@@ -312,7 +312,7 @@ public class StubParser {
     }
 
     private void parse(
-            IndexUnit index,
+            StubUnit index,
             Map<Element, AnnotatedTypeMirror> atypes,
             Map<String, Set<AnnotationMirror>> declAnnos) {
         for (CompilationUnit cu : index.getCompilationUnits()) {

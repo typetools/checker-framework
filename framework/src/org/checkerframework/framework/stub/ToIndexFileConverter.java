@@ -161,7 +161,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
      */
     private static void convert(AScene scene, InputStream in, OutputStream out)
             throws IOException, DefException, ParseException {
-        IndexUnit iu = JavaParser.parseIndexUnit(in);
+        StubUnit iu = JavaParser.parseStubUnit(in);
         extractScene(iu, scene);
         try (Writer w = new BufferedWriter(new OutputStreamWriter(out))) {
             IndexFileWriter.write(scene, w);
@@ -173,9 +173,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
      * stub and scene in parallel, descending into them in the same way. It augments the existing
      * scene (it does not create a new scene).
      *
-     * @param iu {@link IndexUnit} representing stubfile
+     * @param iu {@link StubUnit} representing stubfile
      */
-    private static void extractScene(IndexUnit iu, AScene scene) {
+    private static void extractScene(StubUnit iu, AScene scene) {
         for (CompilationUnit cu : iu.getCompilationUnits()) {
             NodeList<TypeDeclaration<?>> typeDecls = cu.getTypes();
             if (typeDecls != null) {

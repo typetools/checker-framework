@@ -1,8 +1,8 @@
 package org.checkerframework.framework.stub;
 
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.IndexUnit;
 import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.StubUnit;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
@@ -33,8 +33,7 @@ import org.checkerframework.javacutil.Pair;
 /** Utility class for stub files */
 public class StubUtil {
 
-    /*package-scope*/ static TypeDeclaration findDeclaration(
-            String className, IndexUnit indexFile) {
+    /*package-scope*/ static TypeDeclaration findDeclaration(String className, StubUnit indexFile) {
         int indexOfDot = className.lastIndexOf('.');
 
         if (indexOfDot == -1) {
@@ -62,13 +61,12 @@ public class StubUtil {
         return null;
     }
 
-    /*package-scope*/ static TypeDeclaration findDeclaration(
-            TypeElement type, IndexUnit indexFile) {
+    /*package-scope*/ static TypeDeclaration findDeclaration(TypeElement type, StubUnit indexFile) {
         return findDeclaration(type.getQualifiedName().toString(), indexFile);
     }
 
     /*package-scope*/ static FieldDeclaration findDeclaration(
-            VariableElement field, IndexUnit indexFile) {
+            VariableElement field, StubUnit indexFile) {
         TypeDeclaration type =
                 findDeclaration((TypeElement) field.getEnclosingElement(), indexFile);
         if (type == null) {
@@ -92,7 +90,7 @@ public class StubUtil {
     }
 
     /*package-scope*/ static BodyDeclaration findDeclaration(
-            ExecutableElement method, IndexUnit indexFile) {
+            ExecutableElement method, StubUnit indexFile) {
         TypeDeclaration type =
                 findDeclaration((TypeElement) method.getEnclosingElement(), indexFile);
         if (type == null) {
