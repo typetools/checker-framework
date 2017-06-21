@@ -156,8 +156,10 @@ $\Rightarrow$
 
 \ifonbuffalo{\relax}\else{
   The Constant Value Checker trusts the
-  \refqualclass{checker/index/qual}{Positive} annotation.  If your code
-  contains a \refqualclass{checker/index/qual}{Positive} annotation, then
+  \refqualclass{checker/index/qual}{Positive},
+  \refqualclass{checker/index/qual}{NonNegative},
+  and \refqualclass{checker/index/qual}{GTENegativeOne} annotations.  If your code
+  contains any of these annotations, then
   in order to guarantee soundness, you must run the Index Checker whenever
   you run the Constant Value Checker.
 }\fi
