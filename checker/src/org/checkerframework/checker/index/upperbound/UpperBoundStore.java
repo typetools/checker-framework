@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -130,6 +129,22 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
             clearFromStore(null, n, SideEffectKind.SIDE_EFFECTING_METHOD_CALL);
             checkAnnotationsInClass(
                     enclosedTypes, null, n, SideEffectKind.SIDE_EFFECTING_METHOD_CALL);
+        }
+    }
+
+    void checkAnnotationsInClass(
+            List<AnnotatedTypeMirror> enclosedTypes,
+            Receiver canonicalTargetName,
+            Node n,
+            SideEffectKind sideEffectKind) {
+        for (AnnotatedTypeMirror atm : enclosedTypes) {
+            List<Receiver> rs = getDependentReceivers(atm.getAnnotations(), n);
+            for (Receiver r : rs) {
+                Result result = isSideEffected(r, canonicalTargetName, sideEffectKind);
+                if (result.isFailure()) {
+                    checker.report(result, n.getTree());
+                }
+            }
         }
     }
 
@@ -272,6 +287,14 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         return receivers;
     }
 
+    private List<Receiver> getDependentReceivers(Set<AnnotationMirror> annos, Node n) {
+        List<Receiver> receivers = new ArrayList<>();
+        for (AnnotationMirror anno : annos) {
+            receivers.addAll(getDependentReceivers(anno, n));
+        }
+        return receivers;
+    }
+
     /**
      * Checks if the {@code receiver} may be effect by the side effect.
      *
@@ -282,15 +305,11 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
      * @return non-null result
      */
     private Result isSideEffected(
-            Receiver receiver,
-            Receiver reassignedVariable,
-            SideEffectKind sideEffectKind,
-            AnnotationMirror anno) {
+            Receiver receiver, Receiver reassignedVariable, SideEffectKind sideEffectKind) {
         if ((sideEffectKind == SideEffectKind.ARRAY_FIELD_REASSIGNMENT
                         || sideEffectKind == SideEffectKind.LOCAL_VAR_REASSIGNMENT)
                 && receiver.containsSyntacticEqualReceiver(reassignedVariable)) {
-            return Result.failure(
-                    NO_REASSIGN, reassignedVariable, anno.toString(), reassignedVariable);
+            return Result.failure(NO_REASSIGN, reassignedVariable, "", reassignedVariable);
         }
 
         // This while loops cycles through all of the fields being accessed and/or methods
@@ -301,9 +320,9 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                 FieldAccess fieldAccess = (FieldAccess) receiver;
                 if (!receiver.isUnmodifiableByOtherCode()) {
                     if (sideEffectKind == SideEffectKind.NON_ARRAY_FIELD_REASSIGNMENT) {
-                        return Result.failure(NO_REASSIGN_FIELD, anno.toString());
+                        return Result.failure(NO_REASSIGN_FIELD, "");
                     } else if (sideEffectKind == SideEffectKind.SIDE_EFFECTING_METHOD_CALL) {
-                        return Result.failure(SIDE_EFFECTING_METHOD, anno.toString());
+                        return Result.failure(SIDE_EFFECTING_METHOD, "");
                     }
                 }
                 receiver = fieldAccess.getReceiver();
@@ -312,9 +331,9 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                 switch (sideEffectKind) {
                     case ARRAY_FIELD_REASSIGNMENT:
                     case NON_ARRAY_FIELD_REASSIGNMENT:
-                        return Result.failure(NO_REASSIGN_FIELD_METHOD, anno.toString());
+                        return Result.failure(NO_REASSIGN_FIELD_METHOD, "");
                     case SIDE_EFFECTING_METHOD_CALL:
-                        return Result.failure(SIDE_EFFECTING_METHOD, anno.toString());
+                        return Result.failure(SIDE_EFFECTING_METHOD, "");
                     default:
                         receiver = methodCall.getReceiver();
                 }
@@ -325,52 +344,28 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         return Result.SUCCESS;
     }
 
-    void checkAnnotationsInClass(
-            List<AnnotatedTypeMirror> enclosedTypes,
-            Receiver canonicalTargetName,
-            Node n,
-            SideEffectKind sideEffectKind) {
-        for (AnnotatedTypeMirror atm : enclosedTypes) {
-            for (AnnotationMirror anno : atm.getAnnotations()) {
-                List<Receiver> rs = getDependentReceivers(anno, n);
-                for (Receiver r : rs) {
-                    Result result = isSideEffected(r, canonicalTargetName, sideEffectKind, anno);
-                    if (result.isFailure()) {
-                        checker.report(result, n.getTree());
-                    }
-                }
-            }
-        }
-    }
+    /**
+     * Clears receivers from the store whose current value may be effected by the side effect.
+     *
+     * @param reassignedVar reassigned variable or null
+     * @param n current node
+     * @param sideEffect kind of side effect
+     */
+    private void clearFromStore(Receiver reassignedVar, Node n, SideEffectKind sideEffect) {
+        Set<Entry<? extends Receiver, CFValue>> receiverAnnotationEntry = new HashSet<>();
+        receiverAnnotationEntry.addAll(localVariableValues.entrySet());
+        receiverAnnotationEntry.addAll(methodValues.entrySet());
+        receiverAnnotationEntry.addAll(classValues.entrySet());
+        receiverAnnotationEntry.addAll(fieldValues.entrySet());
+        receiverAnnotationEntry.addAll(arrayValues.entrySet());
 
-    void clearReceiversFromMap(
-            Map<? extends FlowExpressions.Receiver, CFValue> map,
-            Receiver reassignedVariable,
-            Node n,
-            SideEffectKind sideEffectKind) {
-
-        Set<Entry<? extends Receiver, CFValue>> eset = new HashSet<>();
-        eset.addAll(map.entrySet());
-        for (Entry<? extends Receiver, CFValue> entry : eset) {
+        for (Entry<? extends Receiver, CFValue> entry : receiverAnnotationEntry) {
             Receiver r = entry.getKey();
-            Set<AnnotationMirror> annos = entry.getValue().getAnnotations();
-            for (AnnotationMirror anno : annos) {
-                List<Receiver> dependents = getDependentReceivers(anno, n);
-                for (Receiver dependent : dependents) {
-                    if (isSideEffected(dependent, reassignedVariable, sideEffectKind, anno)
-                            .isFailure()) {
-                        this.clearValue(r);
-                    }
+            for (Receiver dependent : getDependentReceivers(entry.getValue().getAnnotations(), n)) {
+                if (isSideEffected(dependent, reassignedVar, sideEffect).isFailure()) {
+                    this.clearValue(r);
                 }
             }
         }
-    }
-
-    void clearFromStore(Receiver reassignedVariable, Node n, SideEffectKind sideEffectKind) {
-        clearReceiversFromMap(localVariableValues, reassignedVariable, n, sideEffectKind);
-        clearReceiversFromMap(methodValues, reassignedVariable, n, sideEffectKind);
-        clearReceiversFromMap(classValues, reassignedVariable, n, sideEffectKind);
-        clearReceiversFromMap(fieldValues, reassignedVariable, n, sideEffectKind);
-        clearReceiversFromMap(arrayValues, reassignedVariable, n, sideEffectKind);
     }
 }
