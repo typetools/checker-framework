@@ -1,5 +1,9 @@
 package org.checkerframework.checker.index.upperbound;
 
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+*/
+
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +17,33 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.javacutil.AnnotationUtils;
 
 public class UpperBoundUtil {
+
+    /**
+     * This enum is used by {@link UpperBoundStore#isSideEffected(Receiver, Receiver,
+     * SideEffectKind, AnnotationMirror)} to determine which properties of an annotation to check
+     * based on what kind of side-effect has occurred.
+     */
+    public enum SideEffectKind {
+        LOCAL_VAR_REASSIGNMENT,
+        ARRAY_FIELD_REASSIGNMENT,
+        NON_ARRAY_FIELD_REASSIGNMENT,
+        SIDE_EFFECTING_METHOD_CALL
+    }
+
+    public enum SideEffectError {
+        NO_REASSIGN("reassignment.not.permitted"),
+        NO_REASSIGN_FIELD("reassignment.field.not.permitted"),
+        SIDE_EFFECTING_METHOD("side.effect.invalidation"),
+        NO_REASSIGN_FIELD_METHOD("reassignment.field.not.permitted.method"),
+        NO_ERROR("");
+
+        /*@CompilerMessageKey*/ String errorKey;
+
+        SideEffectError(String errorKey) {
+            this.errorKey = errorKey;
+        }
+    }
+
     /**
      * Checks if the {@code receiver} may be effect by the side effect.
      *
@@ -131,31 +162,5 @@ public class UpperBoundUtil {
             receivers.addAll(getDependentReceivers(anno, path, factory));
         }
         return receivers;
-    }
-
-    /**
-     * This enum is used by {@link UpperBoundStore#isSideEffected(Receiver, Receiver,
-     * SideEffectKind, AnnotationMirror)} to determine which properties of an annotation to check
-     * based on what kind of side-effect has occurred.
-     */
-    public enum SideEffectKind {
-        LOCAL_VAR_REASSIGNMENT,
-        ARRAY_FIELD_REASSIGNMENT,
-        NON_ARRAY_FIELD_REASSIGNMENT,
-        SIDE_EFFECTING_METHOD_CALL
-    }
-
-    public enum SideEffectError {
-        NO_REASSIGN("reassignment.not.permitted"),
-        NO_REASSIGN_FIELD("reassignment.field.not.permitted"),
-        SIDE_EFFECTING_METHOD("side.effect.invalidation"),
-        NO_REASSIGN_FIELD_METHOD("reassignment.field.not.permitted.method"),
-        NO_ERROR("");
-
-        String errorKey;
-
-        SideEffectError(String errorKey) {
-            this.errorKey = errorKey;
-        }
     }
 }

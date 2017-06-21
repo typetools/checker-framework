@@ -1,9 +1,5 @@
 package org.checkerframework.checker.index.upperbound;
 
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-*/
-
 import com.sun.source.util.TreePath;
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -19,7 +15,6 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.ElementUtils;
 
@@ -67,17 +62,13 @@ import org.checkerframework.javacutil.ElementUtils;
  * the method as @SideEffectFree.
  */
 public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
-    private SourceChecker checker;
 
     public UpperBoundStore(UpperBoundAnalysis analysis, boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
-        checker = analysis.getChecker();
     }
 
-    public UpperBoundStore(
-            UpperBoundAnalysis analysis, CFAbstractStore<CFValue, UpperBoundStore> other) {
+    public UpperBoundStore(CFAbstractStore<CFValue, UpperBoundStore> other) {
         super(other);
-        checker = analysis.getChecker();
     }
 
     @Override

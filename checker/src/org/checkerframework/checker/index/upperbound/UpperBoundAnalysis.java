@@ -27,7 +27,7 @@ public class UpperBoundAnalysis
 
     @Override
     public UpperBoundStore createCopiedStore(UpperBoundStore s) {
-        return new UpperBoundStore(this, s);
+        return new UpperBoundStore(s);
     }
 
     @Override
