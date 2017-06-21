@@ -4,16 +4,16 @@
 
 import java.util.Optional;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 class Test {
     static Optional<@NonNull String> getPossiblyEmptyString() {
         return Optional.ofNullable(null);
     }
 
-    static Optional<@Nullable String> getPossiblyEmptyString2() {
-        // The optional returned is still @NonNull.
-        //:: error: (return.type.incompatible)
-        return Optional.ofNullable(null);
-    }
+    // The type argument in "Optional<@Nullable String>" is illegal.
+    // static Optional<@Nullable String> getPossiblyEmptyString2() {
+    //     // The optional returned is still @NonNull.
+    //     //:: error: (return.type.incompatible)
+    //     return Optional.ofNullable(null);
+    // }
 }
