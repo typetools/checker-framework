@@ -9,7 +9,6 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -135,9 +134,9 @@ public class UpperBoundUtil {
     }
 
     /**
-     * This enum is used by {@link UpperBoundStore#checkAnno(AnnotationMirror, String, Node,
-     * SideEffectKind)} to determine which properties of an annotation to check based on what kind
-     * of side-effect has occurred.
+     * This enum is used by {@link UpperBoundStore#isSideEffected(Receiver, Receiver,
+     * SideEffectKind, AnnotationMirror)} to determine which properties of an annotation to check
+     * based on what kind of side-effect has occurred.
      */
     public enum SideEffectKind {
         LOCAL_VAR_REASSIGNMENT,
