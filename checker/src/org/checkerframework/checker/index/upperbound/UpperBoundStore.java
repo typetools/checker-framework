@@ -90,9 +90,9 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
     private SourceChecker checker;
 
     /**
-     * This enum is used by {@link UpperBoundStore#checkAnno(AnnotationMirror, String, Node,
-     * SideEffectKind)} to determine which properties of an annotation to check based on what kind
-     * of side-effect has occurred.
+     * This enum is used by {@link UpperBoundStore#isSideEffected(Receiver, Receiver,
+     * SideEffectKind, AnnotationMirror)} to determine which properties of an annotation to check
+     * based on what kind of side-effect has occurred.
      */
     private enum SideEffectKind {
         LOCAL_VAR_REASSIGNMENT,
