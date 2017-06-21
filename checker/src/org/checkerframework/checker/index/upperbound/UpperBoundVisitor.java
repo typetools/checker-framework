@@ -6,30 +6,39 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
+import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
+import org.checkerframework.checker.index.upperbound.UpperBoundUtil.SideEffectError;
+import org.checkerframework.checker.index.upperbound.UpperBoundUtil.SideEffectKind;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Warns about array accesses that could be too high. */
@@ -277,6 +286,93 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                     Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName, arrName),
                     indexTree);
         }
+    }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+        ExecutableElement elt = TreeUtils.elementFromUse(node);
+        if (!PurityUtils.isSideEffectFree(atypeFactory, elt)) {
+            checkAnnotationsInClass(
+                    elt,
+                    null,
+                    node,
+                    getCurrentPath(),
+                    UpperBoundUtil.SideEffectKind.SIDE_EFFECTING_METHOD_CALL);
+        }
+        return super.visitMethodInvocation(node, p);
+    }
+
+    @Override
+    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, String errorKey) {
+        super.commonAssignmentCheck(varTree, valueExp, errorKey);
+        if (varTree.getKind() == Kind.VARIABLE) {
+            // Not a reassignment, so nothing to check
+            return;
+        }
+        Element elt = InternalUtils.symbol(varTree);
+
+        if (elt != null
+                && (elt.getKind() == ElementKind.FIELD
+                        || elt.getKind() == ElementKind.PARAMETER
+                        || elt.getKind() == ElementKind.LOCAL_VARIABLE)
+                && !ElementUtils.isEffectivelyFinal(elt)) {
+            TypeKind typeKind = InternalUtils.typeOf(varTree).getKind();
+            Receiver field = FlowExpressions.internalReprOf(atypeFactory, (ExpressionTree) varTree);
+            SideEffectKind kind;
+            if (elt.getKind() == ElementKind.FIELD) {
+                if (typeKind == TypeKind.ARRAY) {
+                    kind = UpperBoundUtil.SideEffectKind.ARRAY_FIELD_REASSIGNMENT;
+                } else if (!typeKind.isPrimitive()) {
+                    kind = UpperBoundUtil.SideEffectKind.NON_ARRAY_FIELD_REASSIGNMENT;
+                } else {
+                    return;
+                }
+            } else if (typeKind == TypeKind.ARRAY) {
+                kind = SideEffectKind.LOCAL_VAR_REASSIGNMENT;
+            } else {
+                return;
+            }
+            checkAnnotationsInClass(elt, field, varTree, getCurrentPath(), kind);
+        }
+    }
+
+    private void checkAnnotationsInClass(
+            Element elt,
+            Receiver canonicalTargetName,
+            Tree tree,
+            TreePath path,
+            SideEffectKind sideEffectKind) {
+        List<? extends Element> enclosedElts =
+                ElementUtils.enclosingClass(elt).getEnclosedElements();
+        List<AnnotatedTypeMirror> enclosedTypes = findEnclosedTypes(enclosedElts);
+        for (AnnotatedTypeMirror atm : enclosedTypes) {
+            List<Receiver> rs =
+                    UpperBoundUtil.getDependentReceivers(atm.getAnnotations(), path, atypeFactory);
+            for (Receiver r : rs) {
+                SideEffectError result =
+                        UpperBoundUtil.isSideEffected(r, canonicalTargetName, sideEffectKind);
+                if (result != UpperBoundUtil.SideEffectError.NO_ERROR) {
+                    checker.report(Result.failure(result.errorKey, atm), tree);
+                }
+            }
+        }
+    }
+
+    private List<AnnotatedTypeMirror> findEnclosedTypes(List<? extends Element> enclosedElts) {
+        List<AnnotatedTypeMirror> enclosedTypes = new ArrayList<>();
+        for (Element e : enclosedElts) {
+            AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(e);
+            enclosedTypes.add(atm);
+            if (e.getKind() == ElementKind.METHOD) {
+                ExecutableElement ee = (ExecutableElement) e;
+                List<? extends Element> rgparam = ee.getParameters();
+                for (Element param : rgparam) {
+                    AnnotatedTypeMirror atmP = atypeFactory.getAnnotatedType(param);
+                    enclosedTypes.add(atmP);
+                }
+            }
+        }
+        return enclosedTypes;
     }
 
     @Override
