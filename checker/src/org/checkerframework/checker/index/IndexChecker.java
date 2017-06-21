@@ -46,7 +46,7 @@ import org.checkerframework.checker.index.upperbound.UpperBoundChecker;
  *       LT*LengthOf("a"). If the minimum length of a is in the correct relationship with the value
  *       on the right hand side, then the assignment is legal.
  *   <li>When checking whether an array access is legal, the UBC first checks the upper bound type
- *       of the index. If that fails, it checks if the index is a compile time constant. If it is,
+ *       of the index. If that fails, it checks if the index is a compile-time constant. If it is,
  *       then it queries the Value Checker to determine if the array is guaranteed to be longer than
  *       the value of the constant. If it is, the access is safe.
  *   <li>When compile time constants would improve the precision of reasoning about arithmetic, the

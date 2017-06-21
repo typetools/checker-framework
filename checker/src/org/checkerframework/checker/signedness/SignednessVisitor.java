@@ -1,7 +1,14 @@
 package org.checkerframework.checker.signedness;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.util.TreePath;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.signedness.qual.Signed;
@@ -91,6 +98,11 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     private boolean maskIgnoresMSB(Kind maskKind, LiteralTree shiftAmountLit, LiteralTree maskLit) {
         long shiftAmount = getLong(shiftAmountLit.getValue());
         long mask = getLong(maskLit.getValue());
+
+        // Shift of zero is a nop
+        if (shiftAmount == 0) {
+            return true;
+        }
 
         // Shift the shiftAmount most significant bits to become the shiftAmount least significant bits, zeroing out the
         // rest.
