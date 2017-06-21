@@ -33,7 +33,8 @@ import org.checkerframework.javacutil.Pair;
 /** Utility class for stub files */
 public class StubUtil {
 
-    /*package-scope*/ static TypeDeclaration findDeclaration(String className, StubUnit indexFile) {
+    /*package-scope*/ static TypeDeclaration<?> findDeclaration(
+            String className, StubUnit indexFile) {
         int indexOfDot = className.lastIndexOf('.');
 
         if (indexOfDot == -1) {
@@ -47,10 +48,9 @@ public class StubUtil {
         final String simpleName = className.substring(indexOfDot + 1);
 
         for (CompilationUnit cu : indexFile.getCompilationUnits()) {
-            if (cu.getPackageDeclaration() != null
-                    // TODO Make sure the object exists
+            if (cu.getPackageDeclaration().isPresent()
                     && cu.getPackageDeclaration().get().getNameAsString().equals(packageName)) {
-                TypeDeclaration type = findDeclaration(simpleName, cu);
+                TypeDeclaration<?> type = findDeclaration(simpleName, cu);
                 if (type != null) {
                     return type;
                 }
@@ -61,19 +61,19 @@ public class StubUtil {
         return null;
     }
 
-    /*package-scope*/ static TypeDeclaration findDeclaration(TypeElement type, StubUnit indexFile) {
+    /*package-scope*/ static TypeDeclaration<?> findDeclaration(
+            TypeElement type, StubUnit indexFile) {
         return findDeclaration(type.getQualifiedName().toString(), indexFile);
     }
 
     /*package-scope*/ static FieldDeclaration findDeclaration(
             VariableElement field, StubUnit indexFile) {
-        TypeDeclaration type =
+        TypeDeclaration<?> type =
                 findDeclaration((TypeElement) field.getEnclosingElement(), indexFile);
         if (type == null) {
             return null;
         }
 
-        // TODO Fix the problem with row type
         NodeList<BodyDeclaration<?>> members = type.getMembers();
         for (BodyDeclaration<?> member : members) {
             if (!(member instanceof FieldDeclaration)) {
@@ -89,9 +89,9 @@ public class StubUtil {
         return null;
     }
 
-    /*package-scope*/ static BodyDeclaration findDeclaration(
+    /*package-scope*/ static BodyDeclaration<?> findDeclaration(
             ExecutableElement method, StubUnit indexFile) {
-        TypeDeclaration type =
+        TypeDeclaration<?> type =
                 findDeclaration((TypeElement) method.getEnclosingElement(), indexFile);
         if (type == null) {
             return null;
@@ -114,10 +114,10 @@ public class StubUtil {
         return null;
     }
 
-    /*package-scope*/ static TypeDeclaration findDeclaration(
+    /*package-scope*/ static TypeDeclaration<?> findDeclaration(
             String simpleName, CompilationUnit cu) {
-        for (TypeDeclaration type : cu.getTypes()) {
-            if (simpleName.equals(type.getName())) {
+        for (TypeDeclaration<?> type : cu.getTypes()) {
+            if (simpleName.equals(type.getNameAsString())) {
                 return type;
             }
         }

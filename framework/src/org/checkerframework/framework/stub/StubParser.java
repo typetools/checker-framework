@@ -330,20 +330,17 @@ public class StubParser {
         final String packageName;
         final List<AnnotationExpr> packageAnnos;
 
-        if (cu.getPackageDeclaration() == null) {
+        if (!cu.getPackageDeclaration().isPresent()) {
             packageName = null;
             packageAnnos = null;
         } else {
-            //TODO Check the objec exists
             packageName = cu.getPackageDeclaration().get().getNameAsString();
-            //TODO Check the objec exists
             packageAnnos = cu.getPackageDeclaration().get().getAnnotations();
-            //TODO Check the objec exists
             parsePackage(cu.getPackageDeclaration().get(), atypes, declAnnos);
         }
         if (cu.getTypes() != null) {
-            for (TypeDeclaration typeDecl : cu.getTypes()) {
-                parse(typeDecl, packageName, packageAnnos, atypes, declAnnos);
+            for (TypeDeclaration<?> typeDeclaration : cu.getTypes()) {
+                parse(typeDeclaration, packageName, packageAnnos, atypes, declAnnos);
             }
         }
     }
@@ -366,7 +363,7 @@ public class StubParser {
     // typeDecl's name may be a binary name such as "A$B".
     // That is a hack because the StubParser does not handle nested classes.
     private void parse(
-            TypeDeclaration typeDecl,
+            TypeDeclaration<?> typeDecl,
             String packageName,
             List<AnnotationExpr> packageAnnos,
             Map<Element, AnnotatedTypeMirror> atypes,
@@ -412,10 +409,10 @@ public class StubParser {
                     parseType((ClassOrInterfaceDeclaration) typeDecl, typeElt, atypes, declAnnos));
         } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have annotations, right?
 
-        Map<Element, BodyDeclaration> elementsToDecl = getMembers(typeElt, typeDecl);
-        for (Map.Entry<Element, BodyDeclaration> entry : elementsToDecl.entrySet()) {
+        Map<Element, BodyDeclaration<?>> elementsToDecl = getMembers(typeElt, typeDecl);
+        for (Map.Entry<Element, BodyDeclaration<?>> entry : elementsToDecl.entrySet()) {
             final Element elt = entry.getKey();
-            final BodyDeclaration decl = entry.getValue();
+            final BodyDeclaration<?> decl = entry.getValue();
             if (elt.getKind().isField()) {
                 parseField((FieldDeclaration) decl, (VariableElement) elt, atypes, declAnnos);
             } else if (elt.getKind() == ElementKind.CONSTRUCTOR) {
@@ -889,19 +886,19 @@ public class StubParser {
 
     private static final Set<String> nestedClassWarnings = new HashSet<String>();
 
-    private Map<Element, BodyDeclaration> getMembers(
-            TypeElement typeElt, TypeDeclaration typeDecl) {
+    private Map<Element, BodyDeclaration<?>> getMembers(
+            TypeElement typeElt, TypeDeclaration<?> typeDecl) {
         assert (typeElt.getSimpleName().contentEquals(typeDecl.getNameAsString())
                         || typeDecl.getNameAsString()
                                 .endsWith("$" + typeElt.getSimpleName().toString()))
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
 
-        Map<Element, BodyDeclaration> result = new HashMap<>();
+        Map<Element, BodyDeclaration<?>> result = new HashMap<>();
 
         // TODO Fix the problem with row type
         NodeList<BodyDeclaration<?>> members = typeDecl.getMembers();
         for (int i = 0; i < members.size(); i++) {
-            BodyDeclaration member = members.get(i);
+            BodyDeclaration<?> member = members.get(i);
             if (member instanceof MethodDeclaration) {
                 Element elt = findElement(typeElt, (MethodDeclaration) member);
                 if (elt != null) {
@@ -1427,8 +1424,7 @@ public class StubParser {
             }
         }
 
-        // TODO Remove deffered method call
-        VariableElement res = findFieldElement(rcvElt, faexpr.getField().toString());
+        VariableElement res = findFieldElement(rcvElt, faexpr.getNameAsString());
         faexprcache.put(faexpr, res);
         return res;
     }

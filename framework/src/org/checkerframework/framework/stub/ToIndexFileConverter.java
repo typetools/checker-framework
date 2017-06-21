@@ -183,7 +183,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                 // TODO Refactor. Replace with simplier check
                 if (cu.getPackageDeclaration().isPresent()) {
                     PackageDeclaration pkgDecl = cu.getPackageDeclaration().get();
-                    for (TypeDeclaration typeDecl : typeDecls) {
+                    for (TypeDeclaration<?> typeDecl : typeDecls) {
                         ToIndexFileConverter converter =
                                 new ToIndexFileConverter(pkgDecl, impDecls, scene);
                         String pkgName = converter.pkgName;
@@ -378,7 +378,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         }
         type.accept(this, clazz);
         if (decls != null) {
-            for (BodyDeclaration decl : decls) {
+            for (BodyDeclaration<?> decl : decls) {
                 decl.accept(this, clazz);
             }
         }
@@ -409,8 +409,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
      * Copies information from an AST declaration node to an {@link ADeclaration}. Called by
      * visitors for BodyDeclaration subclasses.
      */
-    private Void visitDecl(BodyDeclaration decl, ADeclaration elem) {
-        List<AnnotationExpr> annoExprs = decl.getAnnotations();
+    private Void visitDecl(BodyDeclaration<?> decl, ADeclaration elem) {
+        NodeList<AnnotationExpr> annoExprs = decl.getAnnotations();
         if (annoExprs != null) {
             for (AnnotationExpr annoExpr : annoExprs) {
                 Annotation anno = extractAnnotation(annoExpr);
