@@ -78,14 +78,6 @@ import org.checkerframework.javacutil.ElementUtils;
  * the method as @SideEffectFree.
  */
 public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
-
-    private static /*@CompilerMessageKey*/ String NO_REASSIGN = "reassignment.not.permitted";
-    private static /*@CompilerMessageKey*/ String NO_REASSIGN_FIELD =
-            "reassignment.field.not.permitted";
-    private static /*@CompilerMessageKey*/ String SIDE_EFFECTING_METHOD =
-            "side.effect.invalidation";
-    private static /*@CompilerMessageKey*/ String NO_REASSIGN_FIELD_METHOD =
-            "reassignment.field.not.permitted.method";
     private SourceChecker checker;
 
     /**
@@ -98,6 +90,20 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         ARRAY_FIELD_REASSIGNMENT,
         NON_ARRAY_FIELD_REASSIGNMENT,
         SIDE_EFFECTING_METHOD_CALL
+    }
+
+    enum SideEffectError {
+        NO_REASSIGN("reassignment.not.permitted"),
+        NO_REASSIGN_FIELD("reassignment.field.not.permitted"),
+        SIDE_EFFECTING_METHOD("side.effect.invalidation"),
+        NO_REASSIGN_FIELD_METHOD("reassignment.field.not.permitted.method"),
+        NO_ERROR("");
+
+        String errorKey;
+
+        SideEffectError(String errorKey) {
+            this.errorKey = errorKey;
+        }
     }
 
     public UpperBoundStore(UpperBoundAnalysis analysis, boolean sequentialSemantics) {
@@ -140,9 +146,9 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         for (AnnotatedTypeMirror atm : enclosedTypes) {
             List<Receiver> rs = getDependentReceivers(atm.getAnnotations(), n);
             for (Receiver r : rs) {
-                Result result = isSideEffected(r, canonicalTargetName, sideEffectKind);
-                if (result.isFailure()) {
-                    checker.report(result, n.getTree());
+                SideEffectError result = isSideEffected(r, canonicalTargetName, sideEffectKind);
+                if (result != SideEffectError.NO_ERROR) {
+                    checker.report(Result.failure(result.errorKey, atm), n.getTree());
                 }
             }
         }
@@ -304,12 +310,12 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
      * @param anno just for errors
      * @return non-null result
      */
-    private Result isSideEffected(
+    private static SideEffectError isSideEffected(
             Receiver receiver, Receiver reassignedVariable, SideEffectKind sideEffectKind) {
         if ((sideEffectKind == SideEffectKind.ARRAY_FIELD_REASSIGNMENT
                         || sideEffectKind == SideEffectKind.LOCAL_VAR_REASSIGNMENT)
                 && receiver.containsSyntacticEqualReceiver(reassignedVariable)) {
-            return Result.failure(NO_REASSIGN, reassignedVariable, "", reassignedVariable);
+            return SideEffectError.NO_REASSIGN;
         }
 
         // This while loops cycles through all of the fields being accessed and/or methods
@@ -320,9 +326,9 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                 FieldAccess fieldAccess = (FieldAccess) receiver;
                 if (!receiver.isUnmodifiableByOtherCode()) {
                     if (sideEffectKind == SideEffectKind.NON_ARRAY_FIELD_REASSIGNMENT) {
-                        return Result.failure(NO_REASSIGN_FIELD, "");
+                        return SideEffectError.NO_REASSIGN_FIELD;
                     } else if (sideEffectKind == SideEffectKind.SIDE_EFFECTING_METHOD_CALL) {
-                        return Result.failure(SIDE_EFFECTING_METHOD, "");
+                        return SideEffectError.SIDE_EFFECTING_METHOD;
                     }
                 }
                 receiver = fieldAccess.getReceiver();
@@ -331,9 +337,9 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                 switch (sideEffectKind) {
                     case ARRAY_FIELD_REASSIGNMENT:
                     case NON_ARRAY_FIELD_REASSIGNMENT:
-                        return Result.failure(NO_REASSIGN_FIELD_METHOD, "");
+                        return SideEffectError.NO_REASSIGN_FIELD_METHOD;
                     case SIDE_EFFECTING_METHOD_CALL:
-                        return Result.failure(SIDE_EFFECTING_METHOD, "");
+                        return SideEffectError.SIDE_EFFECTING_METHOD;
                     default:
                         receiver = methodCall.getReceiver();
                 }
@@ -341,7 +347,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                 break;
             }
         }
-        return Result.SUCCESS;
+        return SideEffectError.NO_ERROR;
     }
 
     /**
@@ -362,7 +368,8 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         for (Entry<? extends Receiver, CFValue> entry : receiverAnnotationEntry) {
             Receiver r = entry.getKey();
             for (Receiver dependent : getDependentReceivers(entry.getValue().getAnnotations(), n)) {
-                if (isSideEffected(dependent, reassignedVar, sideEffect).isFailure()) {
+                if (isSideEffected(dependent, reassignedVar, sideEffect)
+                        != SideEffectError.NO_ERROR) {
                     this.clearValue(r);
                 }
             }
