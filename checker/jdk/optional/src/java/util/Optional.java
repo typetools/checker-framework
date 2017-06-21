@@ -53,7 +53,7 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
  *
  * @since 1.8
  */
-public final @NonNull class Optional<T> {
+public final @NonNull class Optional<T extends @NonNull Object> {
     /**
      * Common instance for {@code empty()}.
      */
@@ -123,7 +123,7 @@ public final @NonNull class Optional<T> {
      * @return an {@code Optional} with a present value if the specified value
      * is non-null, otherwise an empty {@code Optional}
      */
-    public static <T> Optional<T> ofNullable(@Nullable T value) {
+    public static <T> Optional<T extends @NonNull Object> ofNullable(@Nullable T value) {
         return value == null ? empty() : of(value);
     }
 

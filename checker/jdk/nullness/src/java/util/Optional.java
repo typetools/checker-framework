@@ -49,7 +49,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
  *
  * @since 1.8
  */
-public final class Optional<T extends @NonNull Object> {
+public final @NonNull class Optional<T extends @NonNull Object> {
     /**
      * Common instance for {@code empty()}.
      */
@@ -58,7 +58,7 @@ public final class Optional<T extends @NonNull Object> {
     /**
      * If non-null, the value; if null, indicates no value is present
      */
-    private final T value;
+    private final @Nullable T value;
 
     /**
      * Constructs an empty instance.
@@ -119,7 +119,7 @@ public final class Optional<T extends @NonNull Object> {
      * @return an {@code Optional} with a present value if the specified value
      * is non-null, otherwise an empty {@code Optional}
      */
-    public static <T> Optional<@NonNull T> ofNullable(@Nullable T value) {
+    public static <T> Optional<T extends @NonNull Object> ofNullable(@Nullable T value) {
         return value == null ? empty() : of(value);
     }
 
@@ -155,11 +155,13 @@ public final class Optional<T extends @NonNull Object> {
      * @param consumer block to be executed if a value is present
      * @throws NullPointerException if value is present and {@code consumer} is
      * null
-
+     */
+    /*
     public void ifPresent(Consumer<? super T> consumer) {
         if (value != null)
             consumer.accept(value);
-    }*/
+    }
+    */
 
     /**
      * If a value is present, and the value matches the given predicate,
@@ -172,7 +174,8 @@ public final class Optional<T extends @NonNull Object> {
      * otherwise an empty {@code Optional}
      * @throws NullPointerException if the predicate is null
      */
-    /*public Optional<T> filter(Predicate<? super T> predicate) {
+    /*
+    public Optional<T> filter(Predicate<? super T> predicate) {
         Objects.requireNonNull(predicate);
         if (!isPresent())
             return this;
@@ -285,13 +288,15 @@ public final class Optional<T extends @NonNull Object> {
      * @throws NullPointerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    /*public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
+    /*
+    public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
         if (value != null) {
             return value;
         } else {
             throw exceptionSupplier.get();
         }
-    }*/
+    }
+    */
 
     /**
      * Indicates whether some other object is "equal to" this Optional. The
