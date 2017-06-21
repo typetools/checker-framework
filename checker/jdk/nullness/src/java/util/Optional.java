@@ -119,7 +119,7 @@ public final @NonNull class Optional<T extends @NonNull Object> {
      * @return an {@code Optional} with a present value if the specified value
      * is non-null, otherwise an empty {@code Optional}
      */
-    public static <T> Optional<T extends @NonNull Object> ofNullable(@Nullable T value) {
+    public static <T extends @NonNull Object> Optional<T> ofNullable(@Nullable T value) {
         return value == null ? empty() : of(value);
     }
 
