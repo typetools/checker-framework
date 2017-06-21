@@ -101,75 +101,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     private boolean checkIfPermittedInDependentTypeAnno(String expr, Tree tree) {
+        FlowExpressions.Receiver rec;
         try {
-            FlowExpressions.Receiver rec =
-                    atypeFactory.getReceiverFromJavaExpressionString(expr, getCurrentPath());
-            if (rec.isUnmodifiableByOtherCode()) { // covers final and effectively final variables
-                return true;
-            }
-            if (rec instanceof FlowExpressions.LocalVariable) {
-                return true;
-            }
-            if (rec instanceof FlowExpressions.FieldAccess) {
-                FlowExpressions.FieldAccess faRec = (FlowExpressions.FieldAccess) rec;
-                if (faRec.getField().getModifiers().contains(Modifier.PRIVATE)
-                        || (faRec.getField().getModifiers().contains(Modifier.PUBLIC)
-                                && faRec.isFinal()
-                                && checkIfPermittedInDependentTypeAnno(
-                                        faRec.getReceiver().toString(), tree))) {
-                    return true;
-                } else {
-                    // issue warning
-                    checker.report(
-                            Result.warning(
-                                    DEPENDENT_NOT_PERMITTED,
-                                    expr,
-                                    "fields in a dependent type must either be private or both public and final. The receiver "
-                                            + "object must be one of: a local variable; a private field; or a public, final field"),
-                            tree);
-                    return false;
-                }
-            }
-            if (rec instanceof FlowExpressions.MethodCall) {
-                FlowExpressions.MethodCall mcRec = (FlowExpressions.MethodCall) rec;
-                boolean parametersArePermittedInDependentTypeAnno = true;
-                for (FlowExpressions.Receiver r : mcRec.getParameters()) {
-                    parametersArePermittedInDependentTypeAnno =
-                            parametersArePermittedInDependentTypeAnno
-                                    && checkIfPermittedInDependentTypeAnno(r.toString(), tree);
-                }
-                if (!PurityUtils.isSideEffectFree(atypeFactory, mcRec.getElement())) {
-                    // issue warning
-                    checker.report(
-                            Result.warning(
-                                    DEPENDENT_NOT_PERMITTED,
-                                    expr,
-                                    "all method calls in dependent types must be pure"),
-                            tree);
-                    return false;
-                }
-                if (parametersArePermittedInDependentTypeAnno
-                        && checkIfPermittedInDependentTypeAnno(
-                                mcRec.getReceiver().toString(), tree)) {
-                    return true;
-                } else {
-                    // warning will already have been issued in this case.
-                    return false;
-                }
-            }
-            checker.report(
-                    Result.warning(
-                            DEPENDENT_NOT_PERMITTED,
-                            expr,
-                            "the expression did not fit one of the categories of permitted expression in dependent types. Those categories are: \n           1. final or effectively final variables\n"
-                                    + "           2. local variables\n"
-                                    + "           3. private fields\n"
-                                    + "           4. pure method calls all of whose arguments (including the receiver expression)\n"
-                                    + "           are composed only of expressions in this list\n"
-                                    + "           5. accesses of a public final field whose access expression (sometimes called the\n"
-                                    + "           receiver) is composed only of expressions in this list"),
-                    tree);
-            return false;
+            rec = atypeFactory.getReceiverFromJavaExpressionString(expr, getCurrentPath());
         } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
             // issue warning
             checker.report(
@@ -177,6 +111,70 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                     tree);
             return false;
         }
+        // covers final and effectively final variables
+        if (rec.isUnmodifiableByOtherCode() || rec instanceof FlowExpressions.LocalVariable) {
+            return true;
+        }
+
+        if (rec instanceof FlowExpressions.FieldAccess) {
+            FlowExpressions.FieldAccess faRec = (FlowExpressions.FieldAccess) rec;
+            if (faRec.getField().getModifiers().contains(Modifier.PRIVATE)
+                    || (faRec.getField().getModifiers().contains(Modifier.PUBLIC)
+                            && faRec.isFinal()
+                            && checkIfPermittedInDependentTypeAnno(
+                                    faRec.getReceiver().toString(), tree))) {
+                return true;
+            } else {
+                // issue warning
+                checker.report(
+                        Result.warning(
+                                DEPENDENT_NOT_PERMITTED,
+                                expr,
+                                "fields in a dependent type must either be private or both public and final. The receiver "
+                                        + "object must be one of: a local variable; a private field; or a public, final field"),
+                        tree);
+                return false;
+            }
+        }
+        if (rec instanceof FlowExpressions.MethodCall) {
+            FlowExpressions.MethodCall mcRec = (FlowExpressions.MethodCall) rec;
+            boolean parametersArePermittedInDependentTypeAnno = true;
+            for (FlowExpressions.Receiver r : mcRec.getParameters()) {
+                parametersArePermittedInDependentTypeAnno =
+                        parametersArePermittedInDependentTypeAnno
+                                && checkIfPermittedInDependentTypeAnno(r.toString(), tree);
+            }
+            if (!PurityUtils.isSideEffectFree(atypeFactory, mcRec.getElement())) {
+                // issue warning
+                checker.report(
+                        Result.warning(
+                                DEPENDENT_NOT_PERMITTED,
+                                expr,
+                                "all method calls in dependent types must be pure"),
+                        tree);
+                return false;
+            }
+            if (parametersArePermittedInDependentTypeAnno
+                    && checkIfPermittedInDependentTypeAnno(mcRec.getReceiver().toString(), tree)) {
+                return true;
+            } else {
+                // warning will already have been issued in this case.
+                return false;
+            }
+        }
+        checker.report(
+                Result.warning(
+                        DEPENDENT_NOT_PERMITTED,
+                        expr,
+                        "the expression did not fit one of the categories of permitted expression in dependent types. Those categories are: \n           1. final or effectively final variables\n"
+                                + "           2. local variables\n"
+                                + "           3. private fields\n"
+                                + "           4. pure method calls all of whose arguments (including the receiver expression)\n"
+                                + "           are composed only of expressions in this list\n"
+                                + "           5. accesses of a public final field whose access expression (sometimes called the\n"
+                                + "           receiver) is composed only of expressions in this list"),
+                tree);
+        return false;
     }
 
     /**
