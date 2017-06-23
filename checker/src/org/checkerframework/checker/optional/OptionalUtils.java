@@ -52,6 +52,12 @@ public class OptionalUtils {
         if (!invoked.getSimpleName().toString().equals(name)) {
             return false;
         }
+        // For some reason, invoked.getReceiverType() is always null.
+        if (!invoked.getEnclosingElement().toString().equals("java.util.Optional")) {
+            return false;
+        }
+        // Is any more checking necessary, or will the method definitely return true
+        // once it reaches this point?
         ExecutableElement goal = getOptionalMethod(name, params, aTypeFactory);
         return ElementUtils.isMethod(invoked, goal, aTypeFactory.getProcessingEnv());
     }

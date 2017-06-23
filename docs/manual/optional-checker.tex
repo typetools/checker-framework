@@ -53,12 +53,20 @@ methods on an expression of \<Optional> type.
 
 \section{How to run the Optional Checker\label{optional-run-checker}}
 
-To obtain all guarantees about correct use of \<Optional>, you should run
-both the Nullness Checker and the Optional Checker:
-
 \begin{Verbatim}
-javac -processor nullness,optional ...
+javac -processor optional MyFile.java ...
 \end{Verbatim}
+
+The Optional Checker may issue warnings about nullness.
+This is because the Optional Checker runs the Nullness Checker internally.
+Correct use of \<Optional> requires reasoning about nullness (for
+example, the argument to
+  \sunjavadoc{java/util/Optional.html\#of-T-}{Optional.of(T)}
+must be non-null, and every expression of \<Optional> type must be
+non-null.
+You can suppress nullness warnings in parts of your code that are not
+relevant the \<Optional> type, when you are getting started.  Later, go
+back and make all of your code nullness-correct.
 
 
 \section{Optional annotations\label{optional-annotations}}

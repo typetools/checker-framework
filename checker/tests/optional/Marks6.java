@@ -17,7 +17,7 @@ import java.util.Set;
 public class Marks6 {
 
     //:: error: (optional.field)
-    Optional<String> optionalField;
+    Optional<String> optionalField = Optional.ofNullable(null);
 
     //:: error: (optional.parameter)
     void optionalParameter(Optional<String> arg) {}

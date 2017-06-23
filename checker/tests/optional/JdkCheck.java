@@ -1,7 +1,6 @@
 // @below-java8-jdk-skip-test
 
 import java.util.Optional;
-import java.util.function.Supplier;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.optional.qual.Present;
 
@@ -17,15 +16,16 @@ public class JdkCheck {
         return mos.isPresent();
     }
 
-    String orElseThrowTest1(
-            @Present Optional<String> pos, Supplier<RuntimeException> exceptionSupplier) {
-        return pos.orElseThrow(exceptionSupplier);
-    }
-
-    String orElseThrowTest2(Optional<String> mos, Supplier<RuntimeException> exceptionSupplier) {
-        //:: error: (method.invocation.invalid)
-        return mos.orElseThrow(exceptionSupplier);
-    }
+    // No JDK annotations on methods using Java 8 types yet.
+    // String orElseThrowTest1(
+    //         @Present Optional<String> pos, Supplier<RuntimeException> exceptionSupplier) {
+    //     return pos.orElseThrow(exceptionSupplier);
+    // }
+    //
+    // String orElseThrowTest2(Optional<String> mos, Supplier<RuntimeException> exceptionSupplier) {
+    //     //:: error: (method.invocation.invalid)
+    //     return mos.orElseThrow(exceptionSupplier);
+    // }
 
     String getTest1(@Present Optional<String> pos) {
         return pos.get();
