@@ -289,8 +289,14 @@ Here is a good way to proceed.
 \item
   Write the checker class itself
   (Section~\ref{creating-compiler-interface}).
+
   Ensure that you can still type-check your test files and that the results
-  are the same.
+  are the same.  You will not use the Subtyping Checker any more; you will
+  call the checker directly, as in
+
+\begin{Verbatim}
+  javac -processor mypackage.MyChecker File1.java File2.java ...
+\end{Verbatim}
 
 \item
   If your checker source code is in a clone of the Checker Framework
