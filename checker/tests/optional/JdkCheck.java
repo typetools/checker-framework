@@ -2,6 +2,7 @@
 
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.optional.qual.Present;
 
 /** Test JDK annotations. */
@@ -43,12 +44,20 @@ public class JdkCheck {
         return Optional.of(s);
     }
 
-    @Present Optional<String> ofNullableTest1(String s) {
+    @Present Optional<String> ofNullableTestPNble(@Nullable String s) {
         //:: error: (return.type.incompatible)
         return Optional.ofNullable(s);
     }
 
-    Optional<String> ofNullableTest2(String s) {
+    @Present Optional<String> ofNullableTestPNn(String s) {
+        return Optional.ofNullable(s);
+    }
+
+    Optional<String> ofNullableTestMNble(@Nullable String s) {
+        return Optional.ofNullable(s);
+    }
+
+    Optional<String> ofNullableTestMNn(String s) {
         return Optional.ofNullable(s);
     }
 }

@@ -12,7 +12,6 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import java.util.Collection;
 import java.util.List;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -27,8 +26,6 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -41,25 +38,10 @@ import org.checkerframework.javacutil.TypesUtils;
 public class OptionalVisitor
         extends BaseTypeVisitor</* OptionalAnnotatedTypeFactory*/ BaseAnnotatedTypeFactory> {
 
-    private final ExecutableElement getMethod;
-    private final ExecutableElement isPresentMethod;
-    private final ExecutableElement ofMethod;
-    private final ExecutableElement ofNullableMethod;
-    private final ExecutableElement orElseGetMethod;
-    private final ExecutableElement orElseMethod;
-    private final ExecutableElement orElseThrowMethod;
-
     private final TypeMirror collectionType;
 
     public OptionalVisitor(BaseTypeChecker checker) {
         super(checker);
-        getMethod = getOptionalMethod("get", 0);
-        isPresentMethod = getOptionalMethod("isPresent", 0);
-        ofMethod = getOptionalMethod("of", 1);
-        ofNullableMethod = getOptionalMethod("ofNullable", 1);
-        orElseGetMethod = getOptionalMethod("orElseGet", 1);
-        orElseMethod = getOptionalMethod("orElse", 1);
-        orElseThrowMethod = getOptionalMethod("orElseThrow", 1);
         collectionType = types.erasure(TypesUtils.typeFromClass(types, elements, Collection.class));
     }
 
@@ -68,41 +50,28 @@ public class OptionalVisitor
         return new OptionalTypeValidator(checker, this, atypeFactory);
     }
 
-    private ExecutableElement getOptionalMethod(String methodName, int params) {
-        if (elements.getTypeElement("java.util.Optional") == null) {
-            ErrorReporter.errorAbort("The Optional Checker requires Java 8.");
-        }
-        return TreeUtils.getMethod(
-                "java.util.Optional", methodName, params, atypeFactory.getProcessingEnv());
-    }
-
     /** @return true iff expression is a call to java.util.Optional.get */
     private boolean isCallToGet(ExpressionTree expression) {
-        return TreeUtils.isMethodInvocation(expression, getMethod, atypeFactory.getProcessingEnv());
+        return OptionalUtils.isMethodInvocation(expression, "get", 0, atypeFactory);
     }
 
     /** @return true iff expression is a call to java.util.Optional.isPresent */
     private boolean isCallToIsPresent(ExpressionTree expression) {
-        return TreeUtils.isMethodInvocation(
-                expression, isPresentMethod, atypeFactory.getProcessingEnv());
+        return OptionalUtils.isMethodInvocation(expression, "isPresent", 0, atypeFactory);
     }
 
     // Optional creation: of, ofNullable.
     private boolean isOptionalCreation(MethodInvocationTree methInvok) {
-        ExecutableElement invoked = TreeUtils.elementFromUse(methInvok);
-        ProcessingEnvironment env = atypeFactory.getProcessingEnv();
-        return ElementUtils.isMethod(invoked, ofMethod, env)
-                || ElementUtils.isMethod(invoked, ofNullableMethod, env);
+        return OptionalUtils.isMethodInvocation(methInvok, "of", 1, atypeFactory)
+                || OptionalUtils.isMethodInvocation(methInvok, "ofNullable", 1, atypeFactory);
     }
 
     // Optional elimination: get, orElse, orElseGet, orElseThrow.
     private boolean isOptionalElimation(MethodInvocationTree methInvok) {
-        ExecutableElement invoked = TreeUtils.elementFromUse(methInvok);
-        ProcessingEnvironment env = atypeFactory.getProcessingEnv();
-        return ElementUtils.isMethod(invoked, getMethod, env)
-                || ElementUtils.isMethod(invoked, orElseMethod, env)
-                || ElementUtils.isMethod(invoked, orElseGetMethod, env)
-                || ElementUtils.isMethod(invoked, orElseThrowMethod, env);
+        return OptionalUtils.isMethodInvocation(methInvok, "get", 0, atypeFactory)
+                || OptionalUtils.isMethodInvocation(methInvok, "orElse", 1, atypeFactory)
+                || OptionalUtils.isMethodInvocation(methInvok, "orElseGet", 1, atypeFactory)
+                || OptionalUtils.isMethodInvocation(methInvok, "orElseThrow", 1, atypeFactory);
     }
 
     @Override
@@ -124,6 +93,8 @@ public class OptionalVisitor
         ExpressionTree trueExpr = TreeUtils.skipParens(node.getTrueExpression());
         ExpressionTree falseExpr = TreeUtils.skipParens(node.getFalseExpression());
 
+        System.out.printf(
+                "Checking for isPresent: %s => %s%n", condExpr, isCallToIsPresent(condExpr));
         if (!isCallToIsPresent(condExpr)) {
             return;
         }
