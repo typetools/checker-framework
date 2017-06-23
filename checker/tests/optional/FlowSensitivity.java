@@ -1,11 +1,8 @@
 // @below-java8-jdk-skip-test
 
-import java.util.List;
 import java.util.Optional;
 
-/**
- * Test case for flow-sensitivity of Optional.isPresent().
- */
+/** Test case for flow-sensitivity of Optional.isPresent(). */
 @SuppressWarnings("optional.parameter")
 public class FlowSensitivity {
 
@@ -22,11 +19,9 @@ public class FlowSensitivity {
     }
 
     String hasCheck2(Optional<String> opt) {
-        if (! opt.isPresent()) {
+        if (!opt.isPresent()) {
             return "default";
         }
         return opt.get();
     }
-
 }
-
