@@ -11,35 +11,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
 
-/**
- * Adds {@link Optional} to the type of tree, in the following cases:
- *
- * <ol>
- *   <li value="1">a {@code String} or {@code char} literal that is a valid regular expression
- *   <li value="2">concatenation of two valid regular expression values (either {@code String} or
- *       {@code char}) or two partial regular expression values that make a valid regular expression
- *       when concatenated.
- *   <li value="3">for calls to Pattern.compile changes the group count value of the return type to
- *       be the same as the parameter. For calls to the asOptional methods of the classes in
- *       asOptionalClasses these asOptional methods will return a {@code @Optional String} with the
- *       same group count as the second argument to the call to asOptional.
- *       <!--<li value="4">initialization of a char array that when converted to a String
- * is a valid regular expression.</li>-->
- * </ol>
- *
- * Provides a basic analysis of concatenation of partial regular expressions to determine if a valid
- * regular expression is produced by concatenating non-regular expression Strings. Do do this,
- * {@link PartialOptional} is added to the type of tree in the following cases:
- *
- * <ol>
- *   <li value="1">a String literal that is not a valid regular expression.
- *   <li value="2">concatenation of two partial optional Strings that doesn't result in a optional
- *       String or a partial optional and optional String.
- * </ol>
- *
- * Also, adds {@link PolyOptional} to the type of String/char concatenation of a Optional and a
- * PolyOptional or two PolyOptionals.
- */
+/** Adds {@link Present} to the type of tree, for calls to ofNullable whose argument is @NonNull. */
 public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     // ExecutableElement OptionalVisitor.ofNullableMethod
