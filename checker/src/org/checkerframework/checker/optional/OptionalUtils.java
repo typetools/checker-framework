@@ -49,7 +49,7 @@ public class OptionalUtils {
         }
         MethodInvocationTree methInvok = (MethodInvocationTree) tree;
         ExecutableElement invoked = TreeUtils.elementFromUse(methInvok);
-        if (!invoked.getSimpleName().equals(name)) {
+        if (!invoked.getSimpleName().toString().equals(name)) {
             return false;
         }
         ExecutableElement goal = getOptionalMethod(name, params, aTypeFactory);
