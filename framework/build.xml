@@ -614,7 +614,17 @@
     <target name="value-tests" depends="jar,build-tests"
             description="Run tests for constant value propagation">
         <antcall target="-run-tests">
+            <param name="param" value="tests.ValueUncheckedDefaultsTest"/>
+        </antcall>
+        <antcall target="-run-tests">
             <param name="param" value="tests.ValueTest"/>
+        </antcall>
+    </target>
+
+    <target name="value-ignore-range-overflow-tests" depends="jar,build-tests"
+            description="Run tests for constant value propagation with no overflow for ranges">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.ValueIgnoreRangeOverflowTest"/>
         </antcall>
     </target>
 

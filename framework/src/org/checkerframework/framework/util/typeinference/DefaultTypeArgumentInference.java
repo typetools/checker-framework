@@ -1,12 +1,14 @@
 package org.checkerframework.framework.util.typeinference;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,6 +54,7 @@ import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -122,8 +125,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         final List<AnnotatedTypeMirror> argTypes =
                 TypeArgInferenceUtil.getArgumentTypes(expressionTree, typeFactory);
+        final TreePath pathToExpression = typeFactory.getPath(expressionTree);
         final AnnotatedTypeMirror assignedTo =
-                TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expressionTree));
+                TypeArgInferenceUtil.assignedTo(typeFactory, pathToExpression);
 
         SourceChecker checker = typeFactory.getContext().getChecker();
 
@@ -137,18 +141,45 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
 
         final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
-        final Map<TypeVariable, AnnotatedTypeMirror> inferredArgs =
-                infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets, true);
 
-        if (showInferenceSteps) {
-            checker.message(Kind.NOTE, "  after infer: %s\n", inferredArgs);
+        if (assignedTo == null && TreeUtils.getAssignmentContext(pathToExpression) != null) {
+            // If the type of the assignment context isn't found, but the expression is assigned,
+            // then don't attempt to infere type arguments, because the Java type inferred will be
+            // incorrect.  The assignment type is null when it includes uninferred type arguments.
+            // For example:
+            // <T> T outMethod()
+            // <U> void inMethod(U u);
+            // inMethod(outMethod())
+            // would require solving the constraints for both type argument inferences simultaneously
+            Map<TypeVariable, AnnotatedTypeMirror> inferredArgs = new LinkedHashMap<>();
+            handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
+            return inferredArgs;
         }
 
-        handleNullTypeArguments(
-                typeFactory, methodElem, methodType, argTypes, assignedTo, targets, inferredArgs);
-
-        if (showInferenceSteps) {
-            checker.message(Kind.NOTE, "  after handleNull: %s\n", inferredArgs);
+        Map<TypeVariable, AnnotatedTypeMirror> inferredArgs;
+        try {
+            inferredArgs =
+                    infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets, true);
+            if (showInferenceSteps) {
+                checker.message(Kind.NOTE, "  after infer: %s\n", inferredArgs);
+            }
+            handleNullTypeArguments(
+                    typeFactory,
+                    methodElem,
+                    methodType,
+                    argTypes,
+                    assignedTo,
+                    targets,
+                    inferredArgs);
+            if (showInferenceSteps) {
+                checker.message(Kind.NOTE, "  after handleNull: %s\n", inferredArgs);
+            }
+        } catch (Exception ex) {
+            // Catch any errors thrown by inference.
+            inferredArgs = new LinkedHashMap<>();
+            if (showInferenceSteps) {
+                checker.message(Kind.NOTE, "  exception: %s\n", ex.getLocalizedMessage());
+            }
         }
 
         handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);

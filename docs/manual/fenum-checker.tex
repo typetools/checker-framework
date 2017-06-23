@@ -68,7 +68,7 @@ The Fake Enum Checker supports two ways to introduce a new fake enum (fenum):
 file \code{\emph{MyFenum}.java}:
 
 \begin{alltt}
-package \textit{myModule}.qual;
+package \textit{myPackage}.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -134,7 +134,7 @@ through the \code{-Aquals} option, using a comma-no-space-separated notation:
 \begin{alltt}
   javac -classpath \textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
         -processor org.checkerframework.checker.fenum.FenumChecker \ttbs
-        -Aquals=\textit{myModule.qual.MyFenum} MyFile.java ...
+        -Aquals=\textit{myPackage.qual.MyFenum} MyFile.java ...
 \end{alltt}
 
 The annotations listed in \code{-Aquals} must be accessible to
@@ -154,12 +154,12 @@ using a colon-no-space-separated notation. For example:
 \end{alltt}
 
 Note that in these two examples, the compiled class file of the
-\<myModule.qual.MyFenum> annotation must exist in either the \<myProject/bin>
+\<myPackage.qual.MyFenum> annotation must exist in either the \<myProject/bin>
 directory or the \<myLibrary/bin> directory. The following placement of
 the class file will work with the above commands:
 
 \begin{alltt}
-  .../myProject/bin/myModule/qual/MyFenum.class
+  .../myProject/bin/myPackage/qual/MyFenum.class
 \end{alltt}
 
 The two options can be used at the same time to provide groups of annotations
@@ -296,7 +296,7 @@ primitive types as well as for reference types.
 \end{itemize}
 
 % LocalWords:  enums typesafe Fenum Fenums fenum MyFenum quals fenums Aquals
-% LocalWords:  TestStatic FenumC FenumD myModule RetentionPolicy IntDef
+% LocalWords:  TestStatic FenumC FenumD myPackage RetentionPolicy IntDef
 % LocalWords:  SubtypeOf FenumTop MyFile Enum enum AWT java jls qual
 %  LocalWords:  FenumUnqualified FenumBottom ElementType classpath
 %%  LocalWords:  bootclasspath AqualDirs myProject myLibrary

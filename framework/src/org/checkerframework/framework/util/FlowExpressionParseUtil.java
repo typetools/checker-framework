@@ -49,6 +49,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
@@ -1140,6 +1141,24 @@ public class FlowExpressionParseUtil {
         } else {
             return type.getEnclosingType();
         }
+    }
+
+    public static Receiver internalReprOfVariable(AnnotatedTypeFactory provider, VariableTree tree)
+            throws FlowExpressionParseException {
+        Element elt = TreeUtils.elementFromDeclaration(tree);
+
+        if (elt.getKind() == ElementKind.LOCAL_VARIABLE
+                || elt.getKind() == ElementKind.RESOURCE_VARIABLE
+                || elt.getKind() == ElementKind.EXCEPTION_PARAMETER
+                || elt.getKind() == ElementKind.PARAMETER) {
+            return new LocalVariable(elt);
+        }
+        Receiver receiverF = FlowExpressions.internalRepOfImplicitReceiver(elt);
+        FlowExpressionParseUtil.FlowExpressionContext context =
+                new FlowExpressionParseUtil.FlowExpressionContext(
+                        receiverF, null, provider.getContext());
+        return FlowExpressionParseUtil.parse(
+                tree.getName().toString(), context, provider.getPath(tree), false);
     }
 
     ///////////////////////////////////////////////////////////////////////////

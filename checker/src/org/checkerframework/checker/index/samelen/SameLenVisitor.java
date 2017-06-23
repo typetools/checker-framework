@@ -6,7 +6,6 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -48,8 +47,9 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
 
             Receiver rec = FlowExpressions.internalReprOf(atypeFactory, (ExpressionTree) valueTree);
             if (rec != null && SameLenAnnotatedTypeFactory.isReceiverToStringParsable(rec)) {
-                List<String> itself = Collections.singletonList(rec.toString());
-                AnnotationMirror newSameLen = atypeFactory.getCombinedSameLen(arraysInAnno, itself);
+                List<String> names = new ArrayList<>();
+                names.add(rec.toString());
+                AnnotationMirror newSameLen = atypeFactory.getCombinedSameLen(arraysInAnno, names);
                 valueType.replaceAnnotation(newSameLen);
             }
         }
