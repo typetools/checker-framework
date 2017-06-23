@@ -913,6 +913,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedExecutableType invokedMethod = mfuPair.first;
         List<AnnotatedTypeMirror> typeargs = mfuPair.second;
 
+        if (checker.hasOption("conservativeUninferredTypeArguments")) {
+            for (AnnotatedTypeMirror typearg : typeargs) {
+                if (typearg.getKind() == TypeKind.WILDCARD
+                        && ((AnnotatedWildcardType) typearg).isUninferredTypeArgument()) {
+                    checker.report(
+                            Result.failure(
+                                    "type.arguments.not.inferred",
+                                    invokedMethod.getElement().getSimpleName()),
+                            node);
+                    break; // only issue error once per method
+                }
+            }
+        }
+
         List<AnnotatedTypeParameterBounds> paramBounds = new ArrayList<>();
         for (AnnotatedTypeVariable param : invokedMethod.getTypeVariables()) {
             paramBounds.add(param.getBounds());
@@ -1419,12 +1433,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (!checker.getLintOption("cast:unsafe", true)) {
             return;
         }
-
-        boolean isSubtype = false;
+        AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(node);
+        AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
 
         // We cannot do a simple test of casting, as isSubtypeOf requires
         // the input types to be subtypes according to Java
-        AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(node);
+        if (!isTypeCastSafe(castType, exprType)) {
+            checker.report(
+                    Result.warning("cast.unsafe", exprType.toString(true), castType.toString(true)),
+                    node);
+        }
+    }
+
+    private boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
+        QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+
         if (castType.getKind() == TypeKind.DECLARED) {
             // eliminate false positives, where the annotations are
             // implicitly added by the declared type declaration
@@ -1434,62 +1457,75 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             (TypeElement) castDeclared.getUnderlyingType().asElement());
             if (AnnotationUtils.areSame(
                     castDeclared.getAnnotations(), elementType.getAnnotations())) {
-                isSubtype = true;
+                return true;
             }
         }
-        AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
 
-        if (!isSubtype) {
-            if (checker.hasOption("checkCastElementType")) {
-                AnnotatedTypeMirror newCastType;
-                if (castType.getKind() == TypeKind.TYPEVAR) {
-                    newCastType = ((AnnotatedTypeVariable) castType).getUpperBound();
-                } else {
-                    newCastType = castType;
-                }
-                AnnotatedTypeMirror newExprType;
-                if (exprType.getKind() == TypeKind.TYPEVAR) {
-                    newExprType = ((AnnotatedTypeVariable) exprType).getUpperBound();
-                } else {
-                    newExprType = exprType;
-                }
-
-                isSubtype = atypeFactory.getTypeHierarchy().isSubtype(newExprType, newCastType);
-                if (isSubtype) {
-                    if (newCastType.getKind() == TypeKind.ARRAY
-                            && newExprType.getKind() != TypeKind.ARRAY) {
-                        // Always warn if the cast contains an array, but the expression
-                        // doesn't, as in "(Object[]) o" where o is of type Object
-                        isSubtype = false;
-                    } else if (newCastType.getKind() == TypeKind.DECLARED
-                            && newExprType.getKind() == TypeKind.DECLARED) {
-                        int castSize =
-                                ((AnnotatedDeclaredType) newCastType).getTypeArguments().size();
-                        int exprSize =
-                                ((AnnotatedDeclaredType) newExprType).getTypeArguments().size();
-
-                        if (castSize != exprSize) {
-                            // Always warn if the cast and expression contain a different number of
-                            // type arguments, e.g. to catch a cast from "Object" to "List<@NonNull Object>".
-                            // TODO: the same number of arguments actually doesn't guarantee anything.
-                            isSubtype = false;
-                        }
-                    }
-                }
+        if (checker.hasOption("checkCastElementType")) {
+            AnnotatedTypeMirror newCastType;
+            if (castType.getKind() == TypeKind.TYPEVAR) {
+                newCastType = ((AnnotatedTypeVariable) castType).getUpperBound();
             } else {
-                // Only check the main qualifiers, ignoring array components and
-                // type arguments.
-                isSubtype =
-                        atypeFactory
-                                .getQualifierHierarchy()
-                                .isSubtype(
-                                        exprType.getEffectiveAnnotations(),
-                                        castType.getEffectiveAnnotations());
+                newCastType = castType;
             }
-        }
+            AnnotatedTypeMirror newExprType;
+            if (exprType.getKind() == TypeKind.TYPEVAR) {
+                newExprType = ((AnnotatedTypeVariable) exprType).getUpperBound();
+            } else {
+                newExprType = exprType;
+            }
 
-        if (!isSubtype) {
-            checker.report(Result.warning("cast.unsafe", exprType, castType), node);
+            if (!atypeFactory.getTypeHierarchy().isSubtype(newExprType, newCastType)) {
+                return false;
+            }
+            if (newCastType.getKind() == TypeKind.ARRAY
+                    && newExprType.getKind() != TypeKind.ARRAY) {
+                // Always warn if the cast contains an array, but the expression
+                // doesn't, as in "(Object[]) o" where o is of type Object
+                return false;
+            } else if (newCastType.getKind() == TypeKind.DECLARED
+                    && newExprType.getKind() == TypeKind.DECLARED) {
+                int castSize = ((AnnotatedDeclaredType) newCastType).getTypeArguments().size();
+                int exprSize = ((AnnotatedDeclaredType) newExprType).getTypeArguments().size();
+
+                if (castSize != exprSize) {
+                    // Always warn if the cast and expression contain a different number of
+                    // type arguments, e.g. to catch a cast from "Object" to "List<@NonNull Object>".
+                    // TODO: the same number of arguments actually doesn't guarantee anything.
+                    return false;
+                }
+            } else if (castType.getKind() == TypeKind.TYPEVAR
+                    && exprType.getKind() == TypeKind.TYPEVAR) {
+                // If both the cast type and the casted expression are type variables, then check the
+                // bounds.
+                Set<AnnotationMirror> lowerBoundAnnotationsCast =
+                        AnnotatedTypes.findEffectiveLowerBoundAnnotations(
+                                qualifierHierarchy, castType);
+                Set<AnnotationMirror> lowerBoundAnnotationsExpr =
+                        AnnotatedTypes.findEffectiveLowerBoundAnnotations(
+                                qualifierHierarchy, exprType);
+                return qualifierHierarchy.isSubtype(
+                                lowerBoundAnnotationsExpr, lowerBoundAnnotationsCast)
+                        && qualifierHierarchy.isSubtype(
+                                exprType.getEffectiveAnnotations(),
+                                castType.getEffectiveAnnotations());
+            }
+            Set<AnnotationMirror> castAnnos;
+            if (castType.getKind() == TypeKind.TYPEVAR) {
+                // If the cast type is a type var, but the expression is not, then check that the
+                // type of the expression is a subtype of the lower bound.
+                castAnnos =
+                        AnnotatedTypes.findEffectiveLowerBoundAnnotations(
+                                qualifierHierarchy, castType);
+            } else {
+                castAnnos = castType.getAnnotations();
+            }
+
+            return qualifierHierarchy.isSubtype(exprType.getEffectiveAnnotations(), castAnnos);
+        } else {
+            // checkCastElementType option wasn't specified, so only check effective annotations,
+            return qualifierHierarchy.isSubtype(
+                    exprType.getEffectiveAnnotations(), castType.getEffectiveAnnotations());
         }
     }
 

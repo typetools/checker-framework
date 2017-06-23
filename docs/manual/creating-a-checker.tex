@@ -57,8 +57,9 @@ Three choices for creating your own checker are:
   This can be fast, or you can get tangled up if you don't fully understand
   the subtleties of the existing checker that you are modifying.
   Oftentimes following the instructions in this chapter is easier.
-  (One good choice to copy and modify is the Regex Checker
-  (\chapterpageref{regex-checker}); a bad choice is the Nullness Checker,
+  (If you are going to copy a checker, one good choice to copy and modify
+  is the Regex Checker (\chapterpageref{regex-checker}).  A bad choice is
+  the Nullness Checker (\chapterpageref{nullness-checker}),
   which is more sophisticated than anything you want to start out building.)
 \end{itemize}
 
@@ -200,25 +201,25 @@ Framework:
 
 \section{Compiling and using a custom checker\label{creating-compiling}}
 
-\begin{sloppypar}
 You can place your checker's source files wherever you like.
-Forking the Checker Framework repository and putting your files in parallel
-to existing checker implementations is one convenient choice.
+\begin{itemize}
+\item
+  Forking the Checker Framework repository and putting your files in
+  parallel to existing checker implementations is a particularly convenient
+  choice.  You must be able to compile the Checker Framework
+  (Section~\ref{build-source}).
+\item
+  \begin{sloppypar}
+  If you put your checker elsewhere, then when you compile your checker,
+  the classpath must include \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>
+  and \<\$CHECKERFRAMEWORK/checker/dist/javac.jar>.
+  \end{sloppypar}
+\end{itemize}
 
-  When you
-compile your checker,
-\<\$CHECKERFRAMEWORK/checker/dist/checker.jar> and
-\<\$CHECKERFRAMEWORK/checker/dist/javac.jar>
-should be on your classpath.  (If you wish to modify an existing checker in place,
-or to place the source code for your new checker in your own private copy of the
-Checker Framework source code, then you need to be able to compile the
-Checker Framework, as described in Section~\ref{build-source}.)
-\end{sloppypar}
-
-You may also wish to consult Section~\ref{creating-testing-framework} for
-information on testing a checker and
-Section~\ref{creating-debugging-options} for information on debugging a
-checker.
+% You may also wish to consult Section~\ref{creating-testing-framework} for
+% information on testing a checker and
+% Section~\ref{creating-debugging-options} for information on debugging a
+% checker.
 
 Once your custom checker is written, using it is very similar to using a
 built-in checker (Section~\ref{running}):
@@ -246,13 +247,13 @@ Here is an example of one good way to proceed.
 
 \begin{enumerate}
 \item
-  Before you start coding, first write the user manual, which explains the
-  type system, what it guarantees, how to use it, etc., from the point of
-  view of a user.
-  This will help you flesh out your goals and the concepts, which are
-  easier to understand and change in text than in an implementation.
-  Section~\ref{creating-documenting-a-checker} gives a suggested structure for the
-  manual chapter, which will help you avoid omitting any parts.
+  Before you start coding, first write the user manual.  The manual
+  explains the type system, what it guarantees, how to use it, etc., from
+  the point of view of a user.  Writing the manual will help you flesh out
+  your goals and the concepts, which are easier to understand and change in
+  text than in an implementation.
+  Section~\ref{creating-documenting-a-checker} gives a suggested structure
+  for the manual chapter, which will help you avoid omitting any parts.
   Get feedback from someone else at this point to ensure that your manual
   is comprehensible.
 
@@ -292,6 +293,13 @@ Here is an example of one good way to proceed.
   are the same.
 
 \item
+  If your checker source code is in a clone of the Checker Framework
+  repository, integrate your checker with the Checker Framework's Ant
+  targets for testing (Section~\ref{creating-testing-framework}).  This
+  will make it much more convenient to run tests, and to ensure that they
+  are passing, as your work proceeds.
+
+\item
   Annotate parts of the JDK, if relevant
   (Section~\ref{creating-a-checker-annotated-jdk}).
 
@@ -302,6 +310,17 @@ Here is an example of one good way to proceed.
   Implement type rules, if any (Section~\ref{creating-extending-visitor}).
   (Some type systems need JDK annotations but don't have any additional
   type rules.)
+
+  Before implementing type rules (or any other code in your type-checker),
+  you are recommended to read the javadoc for the utility routines in the
+  \<org.checkerframework.javacutil> package, especially
+  \refclass{javacutil}{AnnotationUtils},
+  \refclass{javacutil}{ElementUtils},
+  \refclass{javacutil}{TreeUtils},
+  \refclass{javacutil}{TypeAnnotationUtils}, and
+  \refclass{javacutil}{TypesUtils}.  Familiarity with
+  them will help you to know how to access needed information and avoid
+  reimplementing existing functionality.
 
   Write simple test cases to test the type rules, and ensure that the
   type-checker behaves as expected on those test files.
@@ -428,10 +447,10 @@ directory should be placed in the same directory as your Checker's source file.
 
 For example, the Nullness Checker's source file is located at
 \<.../nullness/NullnessChecker.java>. The \<NonNull> qualifier is located in the
-directory \<.../nullness/qual>.
+directory \<.../nullness/qual/>.
 
-The Checker Framework automatically treats any annotation that has this value
-and is declared in the qual package as a type qualifier.
+The Checker Framework automatically treats any annotation that
+is declared in the qual package as a type qualifier.
 (See Section \ref{creating-indicating-supported-annotations} for more details.)
 
 % \noindent
@@ -445,7 +464,11 @@ and is declared in the qual package as a type qualifier.
 % exceptions, such as \<@SuppressWarnings>).
 
 Your type system should include a top qualifier and a bottom qualifier
-(Section~\ref{creating-bottom-and-top-qualifier}).  You should also define a
+(Section~\ref{creating-bottom-and-top-qualifier}).
+In most cases, the bottom qualifier should be meta-annotated with
+\<@ImplicitFor(literals=LiteralKind.NULL)>.
+
+You should also define a
 polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
 (Section~\ref{qualifier-polymorphism}).
 
@@ -644,9 +667,13 @@ Your type hierarchy must have a bottom qualifier
 --- a qualifier that is a (direct or indirect) subtype of every other
 qualifier.
 
-Your type system must give \<null> the bottom type.  (The only exception
+Your type system must give \<null> the bottom type.
+(The only exception
 is if the type system has special treatment for \<null> values, as the
-Nullness Checker does.)  This legal code
+Nullness Checker does.)
+A way to do this is to meta-annotate your bottom type with
+\<@ImplicitFor(literals=LiteralKind.NULL)>.
+This legal code
 will not type-check unless \<null> has the bottom type:
 \begin{Verbatim}
 <T> T f() {
@@ -769,9 +796,10 @@ Then, call \<toString()> on the \<FlowExpressions.Receiver> object.
 A type system's rules define which operations on values of a
 particular type are forbidden.
 These rules must be defined procedurally, not declaratively.
+Put them in a file \<\emph{MyChecker}Visitor.java> that extends
+\refclass{common/basetype}.
 
-The Checker Framework provides a \textit{base visitor class},
-\refclass{common/basetype}{BaseTypeVisitor}, that performs type-checking at each node of a
+BaseTypeVisitor performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
 \href{http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/}{Tree
@@ -781,18 +809,14 @@ and it issues a warning (by calling
 {-org.checkerframework.framework.source.Result-java.lang.Object-})
 whenever the type system is violated.
 
+Most type-checkers
+override only a few methods in \refclass{common/basetype}{BaseTypeVisitor}.
 A checker's visitor overrides one method in the base visitor for each special
-rule in the type qualifier system.  Most type-checkers
-override only a few methods in \refclass{common/basetype}{BaseTypeVisitor};
-the overridden version does its own checks and also invokes the version in
-its superclass so that standard checks are also performed.  For example, the
-visitor for the Nullness type system of Chapter~\ref{nullness-checker}
-contains a single 4-line method that warns if an expression of nullable type
-is dereferenced, as in:
-\begin{Verbatim}
-  myObject.hashCode();  // invalid dereference
-\end{Verbatim}
-
+rule in the type qualifier system.
+The the last line of the overridden version is
+\<return super.visit\emph{TreeType}(node, p);>
+so that, if the method didn't raise any error,
+the superclass version can perform standard checks.
 
 
 By default, \refclass{common/basetype}{BaseTypeVisitor} performs subtyping checks that are
@@ -843,23 +867,23 @@ similar to Java subtype rules, but taking the type qualifiers into account.
 \subsection{AST traversal\label{creating-ast-traversal}}
 
 The Checker Framework needs to do its own traversal of the AST even though
-it operates as an ordinary annotation processor~\cite{JSR269}.  Annotation
-processors can utilize a visitor for Java code, but that visitor only
+it operates as an ordinary annotation processor~\cite{JSR269}.  Java
+provides a visitor for Java code that is intended to be used by annotation
+processors, but that visitor only
 visits the public elements of Java code, such as classes, fields, methods,
 and method arguments --- it does not visit code bodies or various other
 locations.  The Checker Framework hardly uses the built-in visitor --- as
 soon as the built-in visitor starts to visit a class, then the Checker
 Framework's visitor takes over and visits all of the class's source code.
 
-Because there is no standard API for the AST of Java code\footnote{Actually,
-there is a standard API for Java ASTs --- JSR 198 (Extension API for
-Integrated Development Environments)~\cite{JSR198}.  If tools were to
-implement it
-(which would just require writing wrappers or adapters), then the Checker
-Framework and similar tools could be portable among different compilers and
-IDEs.}, the Checker
-Framework uses the javac implementation.  This is why the Checker Framework
-is not deeply integrated with Eclipse, but runs as an external tool (see
+Because there is no standard API for the AST of Java
+code\footnote{Actually, there is a standard API for Java ASTs --- JSR 198
+  (Extension API for Integrated Development Environments)~\cite{JSR198}.
+  If tools were to implement it (which would just require writing wrappers
+  or adapters), then the Checker Framework and similar tools could be
+  portable among different compilers and IDEs.}, the Checker Framework uses
+the javac implementation.  This is why the Checker Framework is not deeply
+integrated with Eclipse or IntelliJ IDEA, but runs as an external tool (see
 Section~\ref{eclipse}).
 
 
@@ -867,8 +891,8 @@ Section~\ref{eclipse}).
 
 It may be tempting to write a type-checking rule for method invocation,
 where your rule checks the name of the method being called and then treats
-the method in a special way.  This is usually the wrong approach.  It
-is better to write annotations, in a stub file
+the method in a special way.  This is sometimes necessary but is usually
+the wrong approach.  It is better to write annotations, in a stub file
 (Chapter~\ref{annotating-libraries}), and leave the work to the standard
 type-checking rules.
 
@@ -982,13 +1006,14 @@ type systems with and without run-time tests.
 
 The steps to customizing type refinement are:
 \begin{enumerate}
-\item{\ref{creating-dataflow-create-classes}} Create required class and configure its
-    use
-\item{\ref{creating-dataflow-override-methods}} Override methods that handle
-    \refclass{dataflow/cfg/node}{Node}s of interest
-\item{\ref{creating-dataflow-determine-expressions}} Determine which expressions will be
-    refined
-\item{\ref{creating-dataflow-implement-refinement}} Implement the refinement
+\item{\S\ref{creating-dataflow-determine-expressions}}
+  Determine which expressions will be refined.
+\item{\S\ref{creating-dataflow-create-classes}}
+  Create required class and configure its use.
+\item{\S\ref{creating-dataflow-override-methods}}
+  Override methods that handle \refclass{dataflow/cfg/node}{Node}s of interest.
+\item{\S\ref{creating-dataflow-implement-refinement}}
+  Implement the refinement.
 \end{enumerate}
 
 The Regex Checker's dataflow customization for the
@@ -1000,6 +1025,71 @@ flow-sensitive type refinement, and the control flow graph (CFG) data
 structure that it uses, in the
 \href{https://checkerframework.org/manual/checker-framework-dataflow-manual.pdf}{Dataflow
   Manual}.
+
+
+\subsection{Determine expressions to refine the types of\label{creating-dataflow-determine-expressions}}
+
+A run-time check or run-time
+operation involves multiple expressions (arguments, results).
+Determine which expression the customization will refine.  This is
+usually specific to the type system and run-time test.
+There is no code to write in this step; you are merely determining
+the design of your type refinement.
+
+For the program operation \code{op(a,b)}, you can refine
+the types in either or both of the following ways:
+\begin{enumerate}
+\item Change the result type of the entire expression \code{op(a,b)}.
+
+As an example (and as the running example of implementing a dataflow
+refinement), the \code{RegexUtil.asRegex} method is declared as:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  @Regex(0) String asRegex(String s, int groups) { ... }
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\noindent
+This annotation is sound and conservative:  it says that an expression such
+as \code{RegexUtil.asRegex(myString, myInt)} has type \code{@Regex(0)
+  String}.  However, this annotation is imprecise.  When the \code{group}
+argument is known at compile time, a better estimate can be given.  For
+example, \code{RegexUtil.asRegex(myString, 2)} has type \code{@Regex(2)
+  String}.
+
+\item Change the type of some other expression, such as \code{a} or \code{b}.
+
+As an example, consider an equality test in the Nullness type system:
+
+\begin{Verbatim}
+  @Nullable String s;
+    if (s != null) {
+      ...
+    } else {
+      ...
+    }
+\end{Verbatim}
+
+The type of \<s != null> is always \<@NonNull boolean>.  However, in the
+true branch, the type of \<s> can be refined to \<@NonNull String>.
+
+\end{enumerate}
+
+If you are refining the types of arguments or the result of a method call,
+then you may be able to implement your flow-sensitive refinement rules by
+just writing \refqualclass{framework/qual}{EnsuresQualifier} and/or
+\refqualclass{framework/qual}{EnsuresQualifierIf} annotations.
+When this is possible, it is the best approach.
+
+Sections~\ref{creating-dataflow-create-classes}--\ref{creating-dataflow-implement-refinement}
+explain how to create a transfer class when the
+\refqualclass{framework/qual}{EnsuresQualifier} and
+\refqualclass{framework/qual}{EnsuresQualifierIf} annotations are insufficient.
 
 
 \subsection{Create required class\label{creating-dataflow-create-classes}}
@@ -1020,6 +1110,10 @@ As an example, the Regex Checker's extended
 different directory for your \<\emph{MyChecker}Transfer> class, you will
 also need to override the \<createFlowTransferFunction> method in your type
 factory to return to return a new instance of the class.)
+
+(As a reminder, use of \refqualclass{framework/qual}{EnsuresQualifier} and
+\refqualclass{framework/qual}{EnsuresQualifierIf} may obviate the need for
+a transfer class.)
 
 %% More extended directions about what do to if the name is non-standard.
 % If the checker's extended \refclass{framework/flow}{CFTransfer}
@@ -1171,59 +1265,6 @@ VariableTree:
 \end{Verbatim}
 
 
-\subsection{Determine the expressions to refine the types of\label{creating-dataflow-determine-expressions}}
-
-A run-time check or run-time
-operation involves multiple expressions (arguments, results).
-Determine which expression the customization will refine.  This is
-usually specific to the type system and run-time test.
-There is no code to write in this step; you are merely determining
-the design of your type refinement.
-
-For the program operation \code{op(a,b)}, you can refine
-the types in either or both of the following ways:
-\begin{enumerate}
-\item Change the result type of the entire expression \code{op(a,b)}.
-
-As an example (and as the running example of implementing a dataflow
-refinement), the \code{RegexUtil.asRegex} method is declared as:
-
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{Verbatim}
-  @Regex(0) String asRegex(String s, int groups) { ... }
-\end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-
-\noindent
-This annotation is sound and conservative:  it says that an expression such
-as \code{RegexUtil.asRegex(myString, myInt)} has type \code{@Regex(0)
-  String}.  However, this annotation is imprecise.  When the \code{group}
-argument is known at compile time, a better estimate can be given.  For
-example, \code{RegexUtil.asRegex(myString, 2)} has type \code{@Regex(2)
-  String}.
-
-\item Change type of some other expression, such as \code{a} or \code{b}.
-
-As an example, consider an equality test in the Nullness type system:
-
-\begin{Verbatim}
-  @Nullable String s;
-    if (s != null) {
-      ...
-    } else {
-      ...
-    }
-\end{Verbatim}
-
-The type of \<s != null> is always \<@NonNull boolean>.  However, in the
-true branch, the type of \<s> can be refined to \<@NonNull String>.
-
-\end{enumerate}
-
 
 \subsection{Implement the refinement\label{creating-dataflow-implement-refinement}}
 
@@ -1337,7 +1378,7 @@ Constant Value Checker (\chapterpageref{constant-value-checker}).
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX
-  \begin{Verbatim}
+\begin{Verbatim}
   AnnotationMirror regexAnnotation;
   Node count = n.getArgument(1);
   if (count instanceof IntegerLiteralNode) {
@@ -1346,7 +1387,7 @@ Constant Value Checker (\chapterpageref{constant-value-checker}).
     Integer groupCount = iln.getValue();
     regexAnnotation = factory.createRegexAnnotation(groupCount);
   } else {
-    // argument is not literal integer; fall back to @Regex(0).
+    // argument is not a literal integer; fall back to @Regex(), which is the same as @Regex(0)
     regexAnnotation = AnnotationUtils.fromClass(factory.getElementUtils(), Regex.class);
   }
 \end{Verbatim}
@@ -1502,7 +1543,7 @@ type qualifiers, but each of its component checkers should do so.
 
 Sometimes, multiple checkers work together and should always be run
 together.  There are two different ways to bundle multiple checkers
-together, by creating an ``aggregate checker'' or a ``compound checker''.
+together, by creating either an ``aggregate checker'' or a ``compound checker''.
 
 
 \begin{enumerate}
@@ -1580,14 +1621,14 @@ options).
 To specify a simple boolean flag, add:
 
 \begin{alltt}
-\refqualclass{framework/source}{SupportedLintOptions}(\{"myflag"\})
+  \refqualclass{framework/source}{SupportedLintOptions}(\{"myflag"\})
 \end{alltt}
 
 to your checker subclass.
 The value of the flag can be queried using
 
 \begin{Verbatim}
-checker.getLintOption("myflag", false)
+  checker.getLintOption("myflag", false)
 \end{Verbatim}
 
 The second argument sets the default value that should be returned.
@@ -1595,7 +1636,7 @@ The second argument sets the default value that should be returned.
 To pass a flag on the command line, call javac as follows:
 
 \begin{Verbatim}
-javac -processor MyChecker -Alint=myflag
+  javac -processor MyChecker -Alint=myflag
 \end{Verbatim}
 
 
@@ -1605,19 +1646,19 @@ For more complicated options, one can use the standard annotation
 processing \code{@SupportedOptions} annotation on the checker, as in:
 
 \begin{alltt}
-\refqualclass{framework/source}{SupportedOptions}(\{"myoption"\})
+  \refqualclass{framework/source}{SupportedOptions}(\{"myoption"\})
 \end{alltt}
 
 The value of the option can be queried using
 
 \begin{Verbatim}
-checker.getOption("myoption")
+  checker.getOption("myoption")
 \end{Verbatim}
 
 To pass an option on the command line, call javac as follows:
 
 \begin{Verbatim}
-javac -processor MyChecker -Amyoption=p1,p2
+  javac -processor MyChecker -Amyoption=p1,p2
 \end{Verbatim}
 
 The value is returned as a single string and you have to perform the
@@ -1657,6 +1698,17 @@ checker.
 % Don't repeat the information here, to prevent them from getting out of sync.
 It is extensively documented in file \<checker-framework/checker/tests/README>.
 \end{sloppypar}
+
+If your checker's source code is within a fork of the Checker Framework
+repository, then you can copy the testing infrastructure used by some
+existing type system.  Here are some of the tasks you will perform:
+
+\begin{itemize}
+\item Add a \code{\emph{mychecker}-tests} build target in file
+  \<checker-framework/checker/build.xml> and ensure all tests pass.
+
+\item Make sure \code{all-tests} tests the new checker.
+\end{itemize}
 
 
 \section{Debugging options\label{creating-debugging-options}}
@@ -2158,10 +2210,8 @@ the following:
 
 \begin{itemize}
 
-\item Add a \code{XXX-tests} build target in file
-  \<checker-framework/checker/build.xml> and ensure all tests pass.
-
-\item Make sure \code{all-tests} tests the new checker.
+\item Create Ant targets for testing, as described in
+  Section~\ref{creating-testing-framework}.
 
 \item Extend the \code{check-compilermsgs} target to include the
 compiler messages property file of the new checker in
@@ -2233,4 +2283,5 @@ without warnings or errors.
 %  LocalWords:  createDependentTypesHelper boolean regex subclasses README
 %  LocalWords:  formatter nChecker nSubchecker AprintVerboseGenerics
 %  LocalWords:  AshowInferenceSteps DefaultTypeArgumentInference Graphviz
-%  LocalWords:  javacutil
+%  LocalWords:  javacutil LiteralKind EnsuresQualifier EnsuresQualifierIf
+%%  LocalWords:  mychecker

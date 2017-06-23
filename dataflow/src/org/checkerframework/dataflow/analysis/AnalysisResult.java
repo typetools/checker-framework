@@ -120,6 +120,11 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         if (node == null) {
             return null;
         }
+        return getStoreAfter(node);
+    }
+
+    /** @return the store immediately after a given {@link Node}. */
+    public S getStoreAfter(Node node) {
         return runAnalysisFor(node, false);
     }
 
