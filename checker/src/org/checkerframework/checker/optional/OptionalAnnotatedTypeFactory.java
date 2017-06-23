@@ -54,8 +54,7 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 boolean argIsNonNull = false;
 
                 if (argIsNonNull) {
-                    // Remove current @Optional annotation...
-                    // ...and add a new one with the correct group count value.
+                    // Remove current Optional annotation and add @Present.
                     type.replaceAnnotation(PRESENT);
                 }
             }
