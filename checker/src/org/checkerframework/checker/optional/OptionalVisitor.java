@@ -93,8 +93,6 @@ public class OptionalVisitor
         ExpressionTree trueExpr = TreeUtils.skipParens(node.getTrueExpression());
         ExpressionTree falseExpr = TreeUtils.skipParens(node.getFalseExpression());
 
-        System.out.printf(
-                "Checking for isPresent: %s => %s%n", condExpr, isCallToIsPresent(condExpr));
         if (!isCallToIsPresent(condExpr)) {
             return;
         }
