@@ -1,4 +1,4 @@
-import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.checker.index.qual.*;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.IntVal;
 
