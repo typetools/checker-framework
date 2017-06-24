@@ -137,8 +137,8 @@ public class InitializationTransfer<
                 // This was raised by Issue 244.
                 continue;
             }
-            AnnotatedTypeMirror fieldAnno = atypeFactory.getAnnotatedType(field);
-            if (fieldAnno.hasAnnotation(atypeFactory.getFieldInvariantAnnotation())) {
+            AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(field);
+            if (atypeFactory.hasFieldInvariantAnnotation(fieldType)) {
                 result.add(field);
             }
         }

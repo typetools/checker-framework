@@ -1,3 +1,6 @@
+// The test cases GenericNull, FieldAccess, and InferTypeArgs often fail together.
+// See the comments at GenericNull for some tips about what might be wrong.
+
 /**
  * This test came from running the ant check-compilermsgs in the checker-framework/checker directory
  * It's to test the result of type argument inference. We used to have the following
