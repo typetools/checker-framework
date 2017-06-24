@@ -155,7 +155,8 @@ public final class Optional<T extends @NonNull Object> {
      * @param consumer block to be executed if a value is present
      * @throws NullPointerException if value is present and {@code consumer} is
      * null
-
+     */
+    /*
     public void ifPresent(Consumer<? super T> consumer) {
         if (value != null)
             consumer.accept(value);
