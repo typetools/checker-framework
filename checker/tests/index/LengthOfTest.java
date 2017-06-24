@@ -6,7 +6,6 @@ class LengthOfTest {
         @IndexOrHigh("a") int y = x;
         //:: error: (assignment.type.incompatible)
         @IndexFor("a") int w = x;
-        @LengthOf("a")
-        int z = a.length;
+        @LengthOf("a") int z = a.length;
     }
 }
