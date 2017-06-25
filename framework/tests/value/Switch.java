@@ -17,9 +17,6 @@ class Switch {
                 @IntVal({1}) int z = x;
                 break;
             default:
-                // This should be a legal assignment, but dataflow is failing to
-                // identify this as an else branch.
-                //:: error: (assignment.type.incompatible)
                 @IntVal({3, 4, 5}) int q = x;
                 break;
         }
@@ -40,11 +37,10 @@ class Switch {
                 @IntVal({3}) int z1 = x;
                 break;
             default:
-                // This should be a legal assignment, but dataflow is failing to
-                // identify this as an else branch.  See Issue 1180
-                // https://github.com/typetools/checker-framework/issues/1180
-                //:: error: (assignment.type.incompatible)
                 @IntVal({4, 5}) int q = x;
+
+                //:: error: (assignment.type.incompatible)
+                @IntVal(5) int q2 = x;
                 break;
         }
     }
@@ -65,10 +61,6 @@ class Switch {
                 break;
             case 4:
             default:
-                // This should be a legal assignment, but dataflow is failing to
-                // identify this as an else branch.
-                // https://github.com/typetools/checker-framework/issues/1180
-                //:: error: (assignment.type.incompatible)
                 @IntVal({4, 5}) int q = x;
 
                 //:: error: (assignment.type.incompatible)
@@ -93,6 +85,27 @@ class Switch {
         @IntVal({1, 2, 3}) int y = x;
         //:: error: (assignment.type.incompatible)
         @IntVal(4) int y2 = x;
+    }
+
+    void test5(@IntVal({0, 1, 2, 3, 4}) int x) {
+        @IntVal({0, 1, 2, 3, 4, 5}) int y = x;
+        switch (y = y + 1) {
+            case 1:
+                @IntVal({1}) int a = y;
+                //:: error: (assignment.type.incompatible)
+                @IntVal({2}) int b = y;
+            case 2:
+            case 3:
+                @IntVal({1, 2, 3}) int c = y;
+                break;
+            default:
+                //:: error: (assignment.type.incompatible)
+                @IntVal({4}) int d = y;
+                //:: error: (assignment.type.incompatible)
+                @IntVal({5}) int e = y;
+                @IntVal({4, 5}) int f = y;
+                break;
+        }
     }
 
     void testInts(@IntRange(from = 0, to = 100) int x) {
@@ -123,7 +136,7 @@ class Switch {
         @IntVal({'a', 2, 'b'}) int y = x;
     }
 
-    void testStrings(String s) {
+    void testStrings1(String s) {
         switch (s) {
             case "Good":
                 @StringVal("Good") String x = s;
@@ -137,5 +150,26 @@ class Switch {
                 return;
         }
         @StringVal({"Good", "Bye", "Hello"}) String q = s;
+    }
+
+    void testStrings2(String s) {
+        String a;
+        switch (a = s) {
+            case "Good":
+                @StringVal("Good") String x1 = a;
+                @StringVal("Good") String x2 = s;
+            case "Bye":
+                @StringVal({"Good", "Bye"}) String y1 = a;
+                @StringVal({"Good", "Bye"}) String y2 = s;
+                break;
+            case "Hello":
+                @StringVal("Hello") String z1 = a;
+                @StringVal("Hello") String z2 = s;
+                break;
+            default:
+                return;
+        }
+        @StringVal({"Good", "Bye", "Hello"}) String q1 = a;
+        @StringVal({"Good", "Bye", "Hello"}) String q2 = s;
     }
 }

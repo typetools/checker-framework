@@ -736,8 +736,9 @@ public abstract class CFAbstractTransfer<
                         } else {
                             thenStore.insertValue(secondInternal, firstValue);
                         }
-                        return new ConditionalTransferResult<>(
-                                res.getResultValue(), thenStore, elseStore);
+                        res =
+                                new ConditionalTransferResult<>(
+                                        res.getResultValue(), thenStore, elseStore);
                     }
                 }
             }
@@ -1047,9 +1048,29 @@ public abstract class CFAbstractTransfer<
                         finishValue(null, store), in.getThenStore(), in.getElseStore(), false);
 
         V caseValue = in.getValueOfSubNode(n.getCaseOperand());
-        V switchValue = in.getValueOfSubNode(n.getSwitchOperand());
-        strengthenAnnotationOfEqualTo(
-                result, n.getCaseOperand(), n.getSwitchOperand(), caseValue, switchValue, false);
+        AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
+        V switchValue =
+                store.getValue(
+                        FlowExpressions.internalReprOf(
+                                analysis.getTypeFactory(), assign.getTarget()));
+        result =
+                strengthenAnnotationOfEqualTo(
+                        result,
+                        n.getCaseOperand(),
+                        assign.getExpression(),
+                        caseValue,
+                        switchValue,
+                        false);
+
+        // Update value of switch temporary variable
+        result =
+                strengthenAnnotationOfEqualTo(
+                        result,
+                        n.getCaseOperand(),
+                        assign.getTarget(),
+                        caseValue,
+                        switchValue,
+                        false);
         return result;
     }
 
