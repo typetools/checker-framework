@@ -219,7 +219,7 @@ public class OptionalVisitor
             return;
         }
 
-        checker.report(Result.warning("introduce.eliminate.optional"), node);
+        checker.report(Result.warning("introduce.eliminate"), node);
     }
 
     /**
