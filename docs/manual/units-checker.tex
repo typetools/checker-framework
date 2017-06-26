@@ -257,7 +257,7 @@ notation:
 \begin{alltt}
   javac -classpath \textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
         -processor org.checkerframework.checker.units.UnitsChecker \ttbs
-        -Aunits=\textit{myModule.qual.MyUnit},\textit{myModule.qual.MyOtherUnit} MyFile.java ...
+        -Aunits=\textit{myPackage.qual.MyUnit},\textit{myPackage.qual.MyOtherUnit} MyFile.java ...
 \end{alltt}
 
 The annotations listed in \code{-Aunits} must be accessible to
@@ -278,14 +278,14 @@ using a colon-no-space-separated notation. For example:
 \end{alltt}
 
 Note that in these two examples, the compiled class file of the
-\<myModule.qual.MyUnit> and \<myModule.qual.MyOtherUnit> annotations
+\<myPackage.qual.MyUnit> and \<myPackage.qual.MyOtherUnit> annotations
 must exist in either the \<myProject/bin> directory or the
 \<myLibrary/bin> directory. The following placement of the class files
 will work with the above commands:
 
 \begin{alltt}
-  .../myProject/bin/myModule/qual/MyUnit.class
-  .../myProject/bin/myModule/qual/MyOtherUnit.class
+  .../myProject/bin/myPackage/qual/MyUnit.class
+  .../myProject/bin/myPackage/qual/MyOtherUnit.class
 \end{alltt}
 
 The two options can be used at the same time to provide groups of annotations

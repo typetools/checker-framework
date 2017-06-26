@@ -59,9 +59,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * BaseTypeVisitor#validateTypeOf(Tree)}.
      *
      * @param type the type to validate
-     * @param tree the tree from which the type originated. Note that the tree might be a method
-     *     tree -- the return type should then be validated. Note that the tree might be a variable
-     *     tree -- the field type should then be validated.
+     * @param tree the tree from which the type originated. If the tree is a method tree, validate
+     *     its return type. If the tree is a variable tree, validate its field type.
      * @return true, iff the type is valid
      */
     @Override
