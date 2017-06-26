@@ -243,7 +243,7 @@ To make your job easier, we recommend that you build your type-checker
 incrementally, testing at each phase rather than trying to build the whole
 thing at once.
 
-Here is an example of one good way to proceed.
+Here is a good way to proceed.
 
 \begin{enumerate}
 \item
@@ -289,8 +289,14 @@ Here is an example of one good way to proceed.
 \item
   Write the checker class itself
   (Section~\ref{creating-compiler-interface}).
+
   Ensure that you can still type-check your test files and that the results
-  are the same.
+  are the same.  You will not use the Subtyping Checker any more; you will
+  call the checker directly, as in
+
+\begin{Verbatim}
+  javac -processor mypackage.MyChecker File1.java File2.java ...
+\end{Verbatim}
 
 \item
   If your checker source code is in a clone of the Checker Framework
@@ -406,26 +412,50 @@ subclassing \refclass{framework/type}{QualifierHierarchy} or
 
 Type qualifiers are defined as Java annotations.  In Java, an
 annotation is defined using the Java \code{@interface} keyword.
-For example, to define a two-qualifier hierarchy: the \<@Nullable> annotation which is the top
-qualifier in its type hierarchy:
+Here is how to define a two-qualifier hierarchy:
 
 \begin{Verbatim}
-  import java.lang.annotation.ElementType;
-  import java.lang.annotation.Target;
-  import org.checkerframework.framework.qual.SubtypeOf;
-  import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
-  @DefaultQualifierInHierarchy
-  @SubtypeOf({})
-  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface UnknownSign {}
+package mypackage.qual;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.SubtypeOf;
+/**
+ * The run-time value of the integer is unknown.
+ *
+ * @checker_framework.manual #nonnegative-checker Non-Negative Checker
+ */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf({})
+@DefaultQualifierInHierarchy
+public @interface UnknownSign {}
 
 
-  import java.lang.annotation.ElementType;
-  import java.lang.annotation.Target;
-  import org.checkerframework.framework.qual.SubtypeOf;
-  @SubtypeOf({UnknownSign.class})
-  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface NonNegative {}
+package mypackage.qual;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.LiteralKind;
+import org.checkerframework.framework.qual.SubtypeOf;
+/**
+ * Indicates that the value is greater than or equal to zero.
+ *
+ * @checker_framework.manual #nonnegative-checker Non-Negative Checker
+ */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf({UnknownSign.class})
+@ImplicitFor(literals = LiteralKind.NULL)
+public @interface NonNegative {}
 \end{Verbatim}
 
 The \refqualclass{framework/qual}{SubtypeOf} meta-annotation
@@ -1603,7 +1633,9 @@ checker once, and in an order consistent with all the dependences.
 
 A checker obtains information from its subcheckers (those that ran before
 it) by querying their \refclass{framework/type}{AnnotatedTypeFactory} to
-determine the types of variables.
+determine the types of variables.  Obtain the \<AnnotatedTypeFactory> by
+calling
+\refmethodterse{common/basetype}{BaseTypeChecker}{getTypeFactoryOfSubchecker}{-java.lang.Class-}.
 
 \end{enumerate}
 

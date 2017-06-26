@@ -136,6 +136,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         UNKNOWNVAL = AnnotationUtils.fromClass(elements, UnknownVal.class);
 
         reportEvalWarnings = checker.hasOption(ValueChecker.REPORT_EVAL_WARNS);
+        Range.IGNORE_OVERFLOW = checker.hasOption(ValueChecker.IGNORE_RANGE_OVERFLOW);
         evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
         // The actual ArrayLenRange is created by
@@ -1729,7 +1730,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationUtils.getElementValue(arrayLenRangeAnno, "to", Integer.class, true));
     }
 
-    /** Returns a {@code Range} bounded by the values specified in the given annotation. */
+    /**
+     * Returns a {@code Range} bounded by the values specified in the given {@code @Range}
+     * annotation. Also returns an appropriate range if an {@code @IntVal} annotation is passed.
+     * Returns {@code null} if the annotation is null or if the annotation is not an {@code
+     * IntRange}, {@code IntRangeFromPositive}, {@code IntVal}, or {@code ArrayLenRange}.
+     */
     public static Range getRange(AnnotationMirror rangeAnno) {
         if (rangeAnno == null) {
             return null;
@@ -1739,16 +1745,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return new Range(1, Integer.MAX_VALUE);
         }
 
+        if (AnnotationUtils.areSameByClass(rangeAnno, IntVal.class)) {
+            return ValueCheckerUtils.getRangeFromValues(getIntValues(rangeAnno));
+        }
+
         // Assume rangeAnno is well-formed, i.e., 'from' is less than or equal to 'to'.
         if (AnnotationUtils.areSameByClass(rangeAnno, IntRange.class)) {
             return new Range(
                     AnnotationUtils.getElementValue(rangeAnno, "from", Long.class, true),
                     AnnotationUtils.getElementValue(rangeAnno, "to", Long.class, true));
-        } else {
+        }
+
+        if (AnnotationUtils.areSameByClass(rangeAnno, ArrayLenRange.class)) {
             return new Range(
                     AnnotationUtils.getElementValue(rangeAnno, "from", Integer.class, true),
                     AnnotationUtils.getElementValue(rangeAnno, "to", Integer.class, true));
         }
+
+        return null;
     }
 
     /**

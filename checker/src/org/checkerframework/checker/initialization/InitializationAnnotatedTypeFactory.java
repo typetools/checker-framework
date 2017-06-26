@@ -163,6 +163,9 @@ public abstract class InitializationAnnotatedTypeFactory<
     /**
      * Returns whether or not {@code field} has the invariant annotation.
      *
+     * <p>This method is a convenience method for {@link
+     * #hasFieldInvariantAnnotation(AnnotatedTypeMirror)}.
+     *
      * <p>If the {@code field} is a type variable, this method returns true if any possible
      * instantiation of the type parameter could have the invariant annotation. See {@link
      * NullnessAnnotatedTypeFactory#hasFieldInvariantAnnotation(VariableTree)} for an example.
@@ -170,7 +173,22 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @param field field that might have invariant annotation
      * @return whether or not field has the invariant annotation
      */
-    protected abstract boolean hasFieldInvariantAnnotation(VariableTree field);
+    protected final boolean hasFieldInvariantAnnotation(VariableTree field) {
+        AnnotatedTypeMirror type = getAnnotatedType(field);
+        return hasFieldInvariantAnnotation(type);
+    }
+
+    /**
+     * Returns whether or not {@code type} has the invariant annotation.
+     *
+     * <p>If the {@code type} is a type variable, this method returns true if any possible
+     * instantiation of the type parameter could have the invariant annotation. See {@link
+     * NullnessAnnotatedTypeFactory#hasFieldInvariantAnnotation(VariableTree)} for an example.
+     *
+     * @param type of field that might have invariant annotation
+     * @return whether or not the type has the invariant annotation
+     */
+    protected abstract boolean hasFieldInvariantAnnotation(AnnotatedTypeMirror type);
 
     /** Returns a {@link UnderInitialization} annotation with a given type frame. */
     public AnnotationMirror createFreeAnnotation(TypeMirror typeFrame) {
