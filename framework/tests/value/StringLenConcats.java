@@ -19,6 +19,11 @@ class StringLenConcats {
         @ArrayLenRange(from = 13, to = 21) String bxx = b + "xx";
     }
 
+    void stringLenLenRangeConcat(
+            @ArrayLen({3, 4, 5}) String a, @ArrayLenRange(from = 10, to = 100) String b) {
+        @ArrayLenRange(from = 13, to = 105) String ab = a + b;
+    }
+
     void stringValLenConcat(
             @StringVal("constant") String a,
             @StringVal({"a", "b", "c"}) String b,

@@ -73,7 +73,6 @@ public class ValueTransfer extends CFTransfer {
 
     /** Returns a range of possible lengths for {@code subNode}, as casted to a String. */
     private Range getStringLengthRange(Node subNode, TransferInput<CFValue, CFStore> p) {
-        //VD: what if it is ArrayLen?
 
         CFValue value = p.getValueOfSubNode(subNode);
 
@@ -84,7 +83,7 @@ public class ValueTransfer extends CFTransfer {
             return ValueAnnotatedTypeFactory.getRange(arrayLenRangeAnno);
         }
 
-        // @StringVal, @UnknownVal, @BottomVal
+        // @UnknownVal, @BottomVal
         AnnotationMirror topAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), UnknownVal.class);
         if (topAnno != null) {
