@@ -401,17 +401,20 @@ public class ValueTransfer extends CFTransfer {
     }
 
     /** Gets a value checker annotation relevant for an array or a string. */
-    private AnnotationMirror getArrayAnnotation(Node arrayNode) {
-        AnnotationMirror arrayAnno =
-                atypefactory.getAnnotationMirror(arrayNode.getTree(), StringVal.class);
-        if (arrayAnno == null) {
-            arrayAnno = atypefactory.getAnnotationMirror(arrayNode.getTree(), ArrayLen.class);
+    private AnnotationMirror getArrayOrStringAnnotation(Node arrayOrStringNode) {
+        AnnotationMirror arrayOrStringAnno =
+                atypefactory.getAnnotationMirror(arrayOrStringNode.getTree(), StringVal.class);
+        if (arrayOrStringAnno == null) {
+            arrayOrStringAnno =
+                    atypefactory.getAnnotationMirror(arrayOrStringNode.getTree(), ArrayLen.class);
         }
-        if (arrayAnno == null) {
-            arrayAnno = atypefactory.getAnnotationMirror(arrayNode.getTree(), ArrayLenRange.class);
+        if (arrayOrStringAnno == null) {
+            arrayOrStringAnno =
+                    atypefactory.getAnnotationMirror(
+                            arrayOrStringNode.getTree(), ArrayLenRange.class);
         }
 
-        return arrayAnno;
+        return arrayOrStringAnno;
     }
 
     /**
@@ -419,15 +422,14 @@ public class ValueTransfer extends CFTransfer {
      * or @ArrayLenRange annotation for the array or string.
      */
     private void refineAtLengthAccess(Node lengthNode, Node receiverNode, CFStore store) {
-        Receiver arrayLenRec =
-                FlowExpressions.internalReprOf(analysis.getTypeFactory(), lengthNode);
+        Receiver lengthRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), lengthNode);
 
         // If the expression is not representable (for example if String.length() for some reason is not marked @Pure, then do not refine.
-        if (arrayLenRec instanceof FlowExpressions.Unknown) {
+        if (lengthRec instanceof FlowExpressions.Unknown) {
             return;
         }
 
-        CFValue value = store.getValue(arrayLenRec);
+        CFValue value = store.getValue(lengthRec);
         if (value == null) {
             return;
         }
@@ -437,10 +439,10 @@ public class ValueTransfer extends CFTransfer {
             return;
         }
         if (AnnotationUtils.areSameByClass(lengthAnno, BottomVal.class)) {
-            // If the array's length is bottom, then this is dead code, so the array's type
+            // If the length is bottom, then this is dead code, so the receiver type
             // should also be bottom.
-            Receiver arrayRec = FlowExpressions.internalReprOf(atypefactory, receiverNode);
-            store.insertValue(arrayRec, lengthAnno);
+            Receiver receiver = FlowExpressions.internalReprOf(atypefactory, receiverNode);
+            store.insertValue(receiver, lengthAnno);
             return;
         }
 
@@ -453,23 +455,21 @@ public class ValueTransfer extends CFTransfer {
         } else {
             return;
         }
-        AnnotationMirror newArrayAnno = rolv.createAnnotation(atypefactory);
-        AnnotationMirror oldArrayAnno = getArrayAnnotation(receiverNode);
+        AnnotationMirror newRecAnno = rolv.createAnnotation(atypefactory);
+        AnnotationMirror oldRecAnno = getArrayOrStringAnnotation(receiverNode);
 
-        AnnotationMirror combinedAnno;
-        // If the array doesn't have an @ArrayLen annotation, use the new annotation.
-        // If it does have an annotation, combine the facts known about the array
+        AnnotationMirror combinedRecAnno;
+        // If the receiver doesn't have an @ArrayLen annotation, use the new annotation.
+        // If it does have an annotation, combine the facts known about the receiver
         // with the facts known about its length using GLB.
-        if (oldArrayAnno == null) {
-            combinedAnno = newArrayAnno;
+        if (oldRecAnno == null) {
+            combinedRecAnno = newRecAnno;
         } else {
-            combinedAnno =
-                    atypefactory
-                            .getQualifierHierarchy()
-                            .greatestLowerBound(oldArrayAnno, newArrayAnno);
+            combinedRecAnno =
+                    atypefactory.getQualifierHierarchy().greatestLowerBound(oldRecAnno, newRecAnno);
         }
-        Receiver arrayRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiverNode);
-        store.insertValue(arrayRec, combinedAnno);
+        Receiver receiver = FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiverNode);
+        store.insertValue(receiver, combinedRecAnno);
     }
 
     @Override
