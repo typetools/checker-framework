@@ -21,24 +21,20 @@ public class ThisSuper {
             //:: error: (assignment.type.incompatible)
             super.superField = this.subField;
 
-            @FlowExp("super.field")
-            Object o1 = super.superField;
-            @FlowExp("this.field")
-            Object o2 = this.subField;
+            @FlowExp("super.field") Object o1 = super.superField;
+            @FlowExp("this.field") Object o2 = this.subField;
         }
     }
 
     class OuterClass {
         private final Object lock = new Object();
 
-        @FlowExp("this.lock")
-        Object field;
+        @FlowExp("this.lock") Object field;
 
         class InnerClass {
             private final Object lock = new Object();
             //:: error: (assignment.type.incompatible)
-            @FlowExp("this.lock")
-            Object field2 = field;
+            @FlowExp("this.lock") Object field2 = field;
         }
     }
 }
