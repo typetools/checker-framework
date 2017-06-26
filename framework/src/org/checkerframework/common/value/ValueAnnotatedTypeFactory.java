@@ -806,7 +806,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         AnnotationUtils.getElementValueArray(
                                 superAnno, "value", Integer.class, true);
                 for (String value : subValues) {
-                    if (!superValues.contains(value.length())) return false;
+                    if (!superValues.contains(value.length())) {
+                        return false;
+                    }
                 }
                 return true;
             } else if (AnnotationUtils.areSameByClass(superAnno, ArrayLenRange.class)
@@ -816,7 +818,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
                 Range superRange = getRange(superAnno);
                 for (String value : subValues) {
-                    if (!superRange.contains(value.length())) return false;
+                    if (!superRange.contains(value.length())) {
+                        return false;
+                    }
                 }
                 return true;
             } else {

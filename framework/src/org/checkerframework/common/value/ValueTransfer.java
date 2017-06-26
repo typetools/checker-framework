@@ -87,8 +87,9 @@ public class ValueTransfer extends CFTransfer {
         AnnotationMirror arrayLenRangeAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), ArrayLenRange.class);
 
-        if (arrayLenRangeAnno != null)
+        if (arrayLenRangeAnno != null) {
             return ValueAnnotatedTypeFactory.getArrayLenRange(arrayLenRangeAnno);
+        }
 
         // @StringVal, @UnknownVal, @BottomVal
         AnnotationMirror topAnno =
@@ -123,8 +124,9 @@ public class ValueTransfer extends CFTransfer {
         AnnotationMirror arrayLenAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), ArrayLen.class);
 
-        if (arrayLenAnno != null)
+        if (arrayLenAnno != null) {
             return AnnotationUtils.getElementValueArray(arrayLenAnno, "value", Integer.class, true);
+        }
 
         // @StringVal, @UnknownVal, @BottomVal
         AnnotationMirror topAnno =
@@ -495,7 +497,9 @@ public class ValueTransfer extends CFTransfer {
             for (int right : rightLengths) {
                 long resultLength = left + right;
                 // Lengths not fitting into int are not allowed
-                if (resultLength <= Integer.MAX_VALUE) result.add((int) resultLength);
+                if (resultLength <= Integer.MAX_VALUE) {
+                    result.add((int) resultLength);
+                }
             }
         }
 
