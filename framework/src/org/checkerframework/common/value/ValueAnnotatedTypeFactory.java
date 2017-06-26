@@ -493,6 +493,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return a2;
             } else {
 
+                // Implementation of GLB where one of the annotations is StringVal is needed
+                // for length-based refinement of constant string values. Other cases of length-based
+                // refinement are handled by subtype check.
                 if (AnnotationUtils.areSameByClass(a1, StringVal.class)) {
                     return glbOfStringVal(a1, a2);
                 } else if (AnnotationUtils.areSameByClass(a2, StringVal.class)) {
