@@ -280,10 +280,14 @@ class Basics {
         //:: error: (assignment.type.incompatible)
         a = c; // This should not succeed if a is treated as @ArrayLen(1)
 
+        @ArrayLen(1) String al = a; // a is @ArrayLen(1)
+
         //:: warning: (too.many.values.given)
         @StringVal({"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"}) String d = "h";
 
         //:: error: (assignment.type.incompatible)
         d = "b" + d; // This should not succeed since d is @ArrayLen(1)
+
+        @ArrayLen(1) String dl = d; // d is @ArrayLen(1)
     }
 }
