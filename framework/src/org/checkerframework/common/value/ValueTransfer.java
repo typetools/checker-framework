@@ -71,6 +71,25 @@ public class ValueTransfer extends CFTransfer {
         atypefactory = (ValueAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 
+    /** Returns a range of possible lengths for an integer from a range, as casted to a String. */
+    private Range getIntRangeStringLengthRange(Node subNode, TransferInput<CFValue, CFStore> p) {
+        Range valueRange = getIntRange(subNode, p);
+
+        // Get lengths of the bounds
+        int fromLength = Long.toString(valueRange.from).length();
+        int toLength = Long.toString(valueRange.to).length();
+
+        int lowerLength = Math.min(fromLength, toLength);
+        // In case the range contains 0, the minimum length is 1 even if both bounds are longer
+        if (valueRange.contains(0)) {
+            lowerLength = 1;
+        }
+
+        int upperLength = Math.max(fromLength, toLength);
+
+        return new Range(lowerLength, upperLength);
+    }
+
     /** Returns a range of possible lengths for {@code subNode}, as casted to a String. */
     private Range getStringLengthRange(Node subNode, TransferInput<CFValue, CFStore> p) {
 
@@ -83,16 +102,26 @@ public class ValueTransfer extends CFTransfer {
             return ValueAnnotatedTypeFactory.getRange(arrayLenRangeAnno);
         }
 
-        // @UnknownVal, @BottomVal
-        AnnotationMirror topAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), UnknownVal.class);
-        if (topAnno != null) {
-            return new Range(0, Integer.MAX_VALUE);
-        }
+        // @BottomVal
         AnnotationMirror bottomAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
         if (bottomAnno != null) {
             return Range.NOTHING;
+        }
+
+        TypeKind subNodeTypeKind = subNode.getType().getKind();
+
+        // handle values converted to string (ints, longs, longs with @IntRange)
+        if (subNode instanceof StringConversionNode) {
+            return getStringLengthRange(((StringConversionNode) subNode).getOperand(), p);
+        } else if (isIntRange(subNode, p)) {
+            return getIntRangeStringLengthRange(subNode, p);
+        } else if (subNodeTypeKind == TypeKind.INT) {
+            // ints are between 1 and 11 characters long
+            return new Range(1, 11);
+        } else if (subNodeTypeKind == TypeKind.LONG) {
+            // longs are between 1 and 20 characters long
+            return new Range(1, 20);
         }
 
         return new Range(0, Integer.MAX_VALUE);
@@ -122,29 +151,25 @@ public class ValueTransfer extends CFTransfer {
             return new ArrayList<Integer>();
         }
 
-        // handle values converted to string (characters, @IntRange for integers)
+        TypeKind subNodeTypeKind = subNode.getType().getKind();
+
+        // handle values converted to string (characters, bytes, shorts, ints with @IntRange)
         if (subNode instanceof StringConversionNode) {
             return getStringLengths(((StringConversionNode) subNode).getOperand(), p);
-        } else if (subNode.getType().getKind() == TypeKind.CHAR) {
-            // characters have always length 1
+        } else if (subNodeTypeKind == TypeKind.CHAR) {
+            // characters always have length 1
             return Collections.singletonList(1);
         } else if (isIntRange(subNode, p)) {
-            Range valueRange = getIntRange(subNode, p);
-
-            int fromLength = Long.toString(valueRange.from).length();
-            int toLength = Long.toString(valueRange.to).length();
-
-            int lowerLength = Math.min(fromLength, toLength);
-            if (valueRange.contains(0)) {
-                lowerLength = 1;
-            }
-
-            int upperLength = Math.max(fromLength, toLength);
-
-            Range lengthRange = new Range(lowerLength, upperLength);
-
+            // Try to get a list of lengths from a range of integer values converted to string
+            // @IntVal is not checked for, because if it is present, we would already have the actual string values
+            Range lengthRange = getIntRangeStringLengthRange(subNode, p);
             return ValueCheckerUtils.getValuesFromRange(lengthRange, Integer.class);
-
+        } else if (subNodeTypeKind == TypeKind.BYTE) {
+            // bytes are between 1 and 4 characters long
+            return ValueCheckerUtils.getValuesFromRange(new Range(1, 4), Integer.class);
+        } else if (subNodeTypeKind == TypeKind.SHORT) {
+            // shorts are between 1 and 6 characters long
+            return ValueCheckerUtils.getValuesFromRange(new Range(1, 6), Integer.class);
         } else {
             return null;
         }
