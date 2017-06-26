@@ -1907,7 +1907,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         } else if (AnnotationUtils.areSameByClass(annotation, ArrayLen.class)) {
             return Collections.max(getArrayLength(annotation));
         } else if (AnnotationUtils.areSameByClass(annotation, StringVal.class)) {
-            return Collections.max(getArrayLength(convertStringValToArrayLen(annotation)));
+            return Collections.max(
+                    ValueCheckerUtils.getLengthsForStringValues(getStringValues(annotation)));
         } else {
             return null;
         }
@@ -1932,7 +1933,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         } else if (AnnotationUtils.areSameByClass(annotation, ArrayLen.class)) {
             return Collections.min(getArrayLength(annotation));
         } else if (AnnotationUtils.areSameByClass(annotation, StringVal.class)) {
-            return Collections.min(getArrayLength(convertStringValToArrayLen(annotation)));
+            return Collections.min(
+                    ValueCheckerUtils.getLengthsForStringValues(getStringValues(annotation)));
         } else {
             return null;
         }
