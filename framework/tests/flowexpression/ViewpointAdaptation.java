@@ -18,11 +18,9 @@ public class ViewpointAdaptation {
         final MyClass myClass1 = new MyClass();
         final Object field = new Object();
 
-        @FlowExp("this.myClass1.field")
-        Object o1 = myClass1.annotatedField1;
+        @FlowExp("this.myClass1.field") Object o1 = myClass1.annotatedField1;
 
-        @FlowExp("this.myClass1.field")
-        Object o2 = myClass1.annotatedField2;
+        @FlowExp("this.myClass1.field") Object o2 = myClass1.annotatedField2;
 
         @FlowExp("field")
         //:: error: (assignment.type.incompatible)
