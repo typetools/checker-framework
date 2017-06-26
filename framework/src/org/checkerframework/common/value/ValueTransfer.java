@@ -515,13 +515,16 @@ public class ValueTransfer extends CFTransfer {
         return leftLengths.plus(rightLengths).intersect(Range.INT_EVERYTHING);
     }
 
+    /** Creates an annotation for a result of string concatenation. */
     private AnnotationMirror createAnnotationForStringConcatenation(
             Node leftOperand, Node rightOperand, TransferInput<CFValue, CFStore> p) {
 
+        // Try using sets of string values
         List<String> leftValues = getStringValues(leftOperand, p);
         List<String> rightValues = getStringValues(rightOperand, p);
 
         if (leftValues != null && rightValues != null) {
+            // Both operands have known string values, compute set of results
             List<String> concatValues = new ArrayList<>();
             if (leftValues.isEmpty()) {
                 leftValues = Collections.singletonList("null");
@@ -537,18 +540,22 @@ public class ValueTransfer extends CFTransfer {
             return atypefactory.createStringAnnotation(concatValues);
         }
 
+        // Try using sets of lengths
         List<Integer> leftLengths = getStringLengths(leftOperand, p, leftValues);
         List<Integer> rightLengths = getStringLengths(rightOperand, p, rightValues);
 
         if (leftLengths != null && rightLengths != null) {
+            // Both operands have known lengths, compute set of result lengths
             List<Integer> concatLengths = calculateLengthAddition(leftLengths, rightLengths);
             return atypefactory.createArrayLenAnnotation(concatLengths);
         }
 
+        // Try using ranges of lengths
         Range leftLengthRange = getStringLengthRange(leftOperand, p, leftLengths);
         Range rightLengthRange = getStringLengthRange(rightOperand, p, rightLengths);
 
         if (leftLengthRange != null && rightLengthRange != null) {
+            // Both operands have a length from a known range, compute a range of result lengths
             Range concatLengthRange =
                     calculateLengthRangeAddition(leftLengthRange, rightLengthRange);
             return atypefactory.createArrayLenRangeAnnotation(concatLengthRange);
