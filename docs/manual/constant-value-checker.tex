@@ -63,6 +63,12 @@ Checker gives up and its type becomes
 The \<@ArrayLen> annotation means that at run time, the expression
 evaluates to an array or a string whose length is one of the annotation's arguments.
 
+In the case of too many strings in \<@StringVal>, the values are forgotten
+and just the lengths are used in \<@ArrayLen>.
+If this would results in too many lengths,
+only the minimum and maximum lengths are used in \<@ArrayLenRange>,
+giving a range of possible lengths of the string.
+
 The \<@StringVal> annotation may be applied to a char array.  Although byte
 arrays are often converted to/from strings, the \<@StringVal> annotation may
 not be applied to them.  This is because the conversion depends on the
