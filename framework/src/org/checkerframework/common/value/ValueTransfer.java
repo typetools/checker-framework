@@ -71,17 +71,9 @@ public class ValueTransfer extends CFTransfer {
         atypefactory = (ValueAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 
-    /**
-     * Returns a range of possible lengths for {@code subNode}, as casted to a String.
-     *
-     * @param stringLengths a list of string lengths for subNode, or null
-     */
-    private Range getStringLengthRange(
-            Node subNode, TransferInput<CFValue, CFStore> p, List<Integer> stringLengths) {
+    /** Returns a range of possible lengths for {@code subNode}, as casted to a String. */
+    private Range getStringLengthRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         //VD: what if it is ArrayLen?
-        if (stringLengths != null) {
-            return ValueCheckerUtils.getRangeFromValues(stringLengths);
-        }
 
         CFValue value = p.getValueOfSubNode(subNode);
 
@@ -111,14 +103,8 @@ public class ValueTransfer extends CFTransfer {
      * Returns a list of possible lengths for {@code subNode}, as casted to a String. Returns null
      * if {@code subNode}'s type is top/unknown. Returns an empty list if {@code subNode}'s type is
      * bottom.
-     *
-     * @param stringValues a list of values for subNode, or null
      */
-    private List<Integer> getStringLengths(
-            Node subNode, TransferInput<CFValue, CFStore> p, List<String> stringValues) {
-        if (stringValues != null) {
-            return ValueCheckerUtils.getLengthsForStringValues(stringValues);
-        }
+    private List<Integer> getStringLengths(Node subNode, TransferInput<CFValue, CFStore> p) {
 
         CFValue value = p.getValueOfSubNode(subNode);
 
@@ -143,7 +129,7 @@ public class ValueTransfer extends CFTransfer {
 
         // @IntRange
         if (subNode instanceof StringConversionNode) {
-            return getStringLengths(((StringConversionNode) subNode).getOperand(), p, null);
+            return getStringLengths(((StringConversionNode) subNode).getOperand(), p);
         } else if (isIntRange(subNode, p)) {
             Range valueRange = getIntRange(subNode, p);
 
@@ -541,8 +527,14 @@ public class ValueTransfer extends CFTransfer {
         }
 
         // Try using sets of lengths
-        List<Integer> leftLengths = getStringLengths(leftOperand, p, leftValues);
-        List<Integer> rightLengths = getStringLengths(rightOperand, p, rightValues);
+        List<Integer> leftLengths =
+                leftValues != null
+                        ? ValueCheckerUtils.getLengthsForStringValues(leftValues)
+                        : getStringLengths(leftOperand, p);
+        List<Integer> rightLengths =
+                rightValues != null
+                        ? ValueCheckerUtils.getLengthsForStringValues(rightValues)
+                        : getStringLengths(rightOperand, p);
 
         if (leftLengths != null && rightLengths != null) {
             // Both operands have known lengths, compute set of result lengths
@@ -551,8 +543,14 @@ public class ValueTransfer extends CFTransfer {
         }
 
         // Try using ranges of lengths
-        Range leftLengthRange = getStringLengthRange(leftOperand, p, leftLengths);
-        Range rightLengthRange = getStringLengthRange(rightOperand, p, rightLengths);
+        Range leftLengthRange =
+                leftLengths != null
+                        ? ValueCheckerUtils.getRangeFromValues(leftLengths)
+                        : getStringLengthRange(leftOperand, p);
+        Range rightLengthRange =
+                rightLengths != null
+                        ? ValueCheckerUtils.getRangeFromValues(rightLengths)
+                        : getStringLengthRange(rightOperand, p);
 
         if (leftLengthRange != null && rightLengthRange != null) {
             // Both operands have a length from a known range, compute a range of result lengths
