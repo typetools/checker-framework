@@ -9,7 +9,7 @@ found   : @SameLenUnknown int @SameLen("y") []
 required: @SameLenUnknown int @SameLenBottom []
 OrderOfCheckers.java:14:57: compiler.err.proc.messager: [[all, index, lowerbound]:assignment.type.incompatible] incompatible types in assignment.
 found   : @LowerBoundUnknown int @LowerBoundUnknown []
-required: @GTENegativeOne int @LowerBoundUnknown []
+required: @LowerBoundBottom int @LowerBoundUnknown []
 OrderOfCheckers.java:14:57: compiler.err.proc.messager: [[all, index, upperbound]:assignment.type.incompatible] incompatible types in assignment.
 found   : @UpperBoundUnknown int @UpperBoundUnknown []
 required: @UpperBoundBottom int @UpperBoundUnknown []
