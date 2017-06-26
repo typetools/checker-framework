@@ -78,6 +78,7 @@ public class ValueTransfer extends CFTransfer {
      */
     private Range getStringLengthRange(
             Node subNode, TransferInput<CFValue, CFStore> p, List<Integer> stringLengths) {
+        //VD: what if it is ArrayLen?
         if (stringLengths != null) {
             return ValueCheckerUtils.getRangeFromValues(stringLengths);
         }
@@ -88,7 +89,7 @@ public class ValueTransfer extends CFTransfer {
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), ArrayLenRange.class);
 
         if (arrayLenRangeAnno != null) {
-            return ValueAnnotatedTypeFactory.getArrayLenRange(arrayLenRangeAnno);
+            return ValueAnnotatedTypeFactory.getRange(arrayLenRangeAnno);
         }
 
         // @StringVal, @UnknownVal, @BottomVal

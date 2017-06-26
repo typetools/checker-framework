@@ -1721,19 +1721,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return createIntRangeAnnotation(Collections.min(intValues), Collections.max(intValues));
     }
 
-    /** Returns a {@code Range} bounded by the array lengths specified in the given annotation. */
-    public static Range getArrayLenRange(AnnotationMirror arrayLenRangeAnno) {
-        if (arrayLenRangeAnno == null) {
-            return null;
-        }
-
-        // arrayLenRangeAnno rangeAnno is well-formed, i.e., 'from' is less than or equal to 'to'.
-
-        return new Range(
-                AnnotationUtils.getElementValue(arrayLenRangeAnno, "from", Integer.class, true),
-                AnnotationUtils.getElementValue(arrayLenRangeAnno, "to", Integer.class, true));
-    }
-
     /**
      * Returns a {@code Range} bounded by the values specified in the given {@code @Range}
      * annotation. Also returns an appropriate range if an {@code @IntVal} annotation is passed.
