@@ -5,26 +5,63 @@ import org.checkerframework.common.value.qual.*;
 class Issue867 {
     void test1() {
         @IntVal({0, 1}) int x = 0;
-        @IntVal(0) int y = x++;
-        @IntVal(1) int w = x;
+        @IntVal(0) int zero = x++;
+        @IntVal(1) int one = x;
+        //:: error: (compound.assignment.type.incompatible)
+        x++;
+
+        x = 1;
+        one = x--;
+        zero = x;
+        //:: error: (compound.assignment.type.incompatible)
+        x--;
     }
 
     void test2() {
         @IntVal({0, 1, 2}) int x = 0;
-        @IntVal(1) int y = x++ + x++;
-        @IntVal(2) int w = x;
+        @IntVal(1) int one = x++ + x++;
+        @IntVal(2) int two = x;
+        //:: error: (compound.assignment.type.incompatible)
+        x++;
+
+        x = 2;
+        @IntVal(3) int three = x-- + x--;
+        @IntVal(0) int zero = x;
+        //:: error: (compound.assignment.type.incompatible)
+        x--;
     }
 
     void test3() {
         @IntVal({0, 1, 2}) int x = 0;
-        @IntVal(2) int y = x++ + ++x;
-        @IntVal(2) int w = x;
+        @IntVal(2) int two = x++ + ++x;
+        two = x;
+        //:: error: (compound.assignment.type.incompatible)
+        x++;
+
+        x = 2;
+        two = x-- + --x;
+        @IntVal(0) int zero = x;
+        //:: error: (compound.assignment.type.incompatible)
+        x--;
     }
 
     void test4() {
         @IntVal({0, 1}) int x = 0;
-        m(x++);
+        m0(x++);
+        //:: error: (argument.type.incompatible)
+        m0(x);
+        //:: error: (compound.assignment.type.incompatible)
+        m1(x++);
+
+        x = 1;
+        m1(x--);
+        //:: error: (argument.type.incompatible)
+        m1(x);
+        //:: error: (compound.assignment.type.incompatible)
+        m0(x--);
     }
 
-    void m(@IntVal(0) int x) {}
+    void m0(@IntVal(0) int x) {}
+
+    void m1(@IntVal(1) int x) {}
 }

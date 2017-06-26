@@ -4191,50 +4191,53 @@ public class CFGBuilder {
 
                 case POSTFIX_DECREMENT:
                 case POSTFIX_INCREMENT:
-                    {
-                        ExpressionTree exprTree = tree.getExpression();
-                        Node expr = scan(exprTree, p);
-                        TypeMirror exprType = InternalUtils.typeOf(exprTree);
-
-                        VariableTree tempVarDecl =
-                                treeBuilder.buildVariableDecl(
-                                        exprType,
-                                        uniqueName("tempPostfix"),
-                                        findOwner(),
-                                        tree.getExpression());
-                        handleArtificialTree(tempVarDecl);
-                        VariableDeclarationNode tempVarDeclNode =
-                                new VariableDeclarationNode(tempVarDecl);
-                        tempVarDeclNode.setInSource(false);
-                        extendWithNode(tempVarDeclNode);
-
-                        Tree tempVar = treeBuilder.buildVariableUse(tempVarDecl);
-                        handleArtificialTree(tempVar);
-                        Node tempVarNode = new LocalVariableNode(tempVar);
-                        tempVarNode.setInSource(false);
-                        extendWithNode(tempVarNode);
-
-                        AssignmentNode tempAssignNode = new AssignmentNode(tree, tempVarNode, expr);
-                        tempAssignNode.setInSource(false);
-                        extendWithNode(tempAssignNode);
-
-                        boolean isIncrement = kind == Tree.Kind.POSTFIX_INCREMENT;
-                        createIncrementOrDecrementAssign(null, expr, isIncrement);
-
-                        Tree resultExpr = treeBuilder.buildVariableUse(tempVarDecl);
-                        handleArtificialTree(resultExpr);
-                        result = new LocalVariableNode(resultExpr);
-                        result.setInSource(false);
-                        extendWithNode(result);
-                        break;
-                    }
                 case PREFIX_DECREMENT:
                 case PREFIX_INCREMENT:
                     {
                         ExpressionTree exprTree = tree.getExpression();
                         Node expr = scan(exprTree, p);
-                        boolean isIncrement = kind == Tree.Kind.PREFIX_INCREMENT;
-                        result = createIncrementOrDecrementAssign(tree, expr, isIncrement);
+
+                        boolean isIncrement =
+                                kind == Tree.Kind.POSTFIX_INCREMENT
+                                        || kind == Kind.PREFIX_INCREMENT;
+                        boolean isPostfix =
+                                kind == Tree.Kind.POSTFIX_INCREMENT
+                                        || kind == Kind.POSTFIX_DECREMENT;
+                        result =
+                                createIncrementOrDecrementAssign(
+                                        isPostfix ? null : tree, expr, isIncrement);
+
+                        if (isPostfix) {
+                            TypeMirror exprType = InternalUtils.typeOf(exprTree);
+                            VariableTree tempVarDecl =
+                                    treeBuilder.buildVariableDecl(
+                                            exprType,
+                                            uniqueName("tempPostfix"),
+                                            findOwner(),
+                                            tree.getExpression());
+                            handleArtificialTree(tempVarDecl);
+                            VariableDeclarationNode tempVarDeclNode =
+                                    new VariableDeclarationNode(tempVarDecl);
+                            tempVarDeclNode.setInSource(false);
+                            extendWithNode(tempVarDeclNode);
+
+                            Tree tempVar = treeBuilder.buildVariableUse(tempVarDecl);
+                            handleArtificialTree(tempVar);
+                            Node tempVarNode = new LocalVariableNode(tempVar);
+                            tempVarNode.setInSource(false);
+                            extendWithNode(tempVarNode);
+
+                            AssignmentNode tempAssignNode =
+                                    new AssignmentNode(tree, tempVarNode, expr);
+                            tempAssignNode.setInSource(false);
+                            extendWithNode(tempAssignNode);
+
+                            Tree resultExpr = treeBuilder.buildVariableUse(tempVarDecl);
+                            handleArtificialTree(resultExpr);
+                            result = new LocalVariableNode(resultExpr);
+                            result.setInSource(false);
+                            extendWithNode(result);
+                        }
                         break;
                     }
 
