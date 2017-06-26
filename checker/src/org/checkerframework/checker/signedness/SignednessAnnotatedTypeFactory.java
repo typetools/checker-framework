@@ -1,12 +1,24 @@
 package org.checkerframework.checker.signedness;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.Tree;
+import java.lang.Byte;
+import java.lang.Integer;
+import java.lang.Long;
+import java.lang.Short;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.signedness.qual.UnknownSignedness;
+import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.index.IndexUtil;
+import org.checkerframework.checker.signedness.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -19,9 +31,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
 /** @checker_framework.manual #signedness-checker Signedness Checker */
 public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    // private final AnnotationMirror UNSIGNED;
-    // private final AnnotationMirror SIGNED;
     private final AnnotationMirror UNKNOWN_SIGNEDNESS;
+    private final AnnotationMirror UNSIGNED;
+    private final AnnotationMirror SIGNED;
+    private final AnnotationMirror CONSTANT;
 
     // These are commented out until issues with making boxed implicitly signed
     // are worked out. (https://github.com/typetools/checker-framework/issues/797)
@@ -34,9 +47,10 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        // UNSIGNED = AnnotationUtils.fromClass(elements, Unsigned.class);
-        // SIGNED = AnnotationUtils.fromClass(elements, Signed.class);
         UNKNOWN_SIGNEDNESS = AnnotationUtils.fromClass(elements, UnknownSignedness.class);
+        UNSIGNED = AnnotationUtils.fromClass(elements, Unsigned.class);
+        SIGNED = AnnotationUtils.fromClass(elements, Signed.class);
+        CONSTANT = AnnotationUtils.fromClass(elements, Constant.class);
 
         postInit();
     }
@@ -107,6 +121,14 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
+     * Provides a way to query the Constant Value Checker, which computes the values of expressions
+     * known at compile time (constant propagation and folding).
+     */
+    ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(ValueChecker.class);
+    }
+
+    /**
      * This TreeAnnotator ensures that booleans expressions are not given Unsigned or Signed
      * annotations by {@link PropagationTreeAnnotator} and that shift results take on the type of
      * their left operand.
@@ -150,6 +172,43 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
             annotateBoolean(type);
+            return null;
+        }
+
+        @Override
+        public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
+            TypeMirror javaType = type.getUnderlyingType();
+            ValueAnnotatedTypeFactory valFact = getValueAnnotatedTypeFactory();
+            Range treeRange = IndexUtil.getPossibleValues(valFact.getAnnotatedType(tree), valFact);
+
+            if (treeRange != null) {
+                switch (javaType.getKind()) {
+                    case BYTE:
+                    case CHAR:
+                        if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
+                            type.replaceAnnotation(CONSTANT);
+                        }
+                        break;
+                    case SHORT:
+                        if (treeRange.isWithin(0, Short.MAX_VALUE)) {
+                            type.replaceAnnotation(CONSTANT);
+                        }
+                        break;
+                    case INT:
+                        if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
+                            type.replaceAnnotation(CONSTANT);
+                        }
+                        break;
+                    case LONG:
+                        if (treeRange.isWithin(0, Long.MAX_VALUE)) {
+                            type.replaceAnnotation(CONSTANT);
+                        }
+                        break;
+                    default:
+                        // Nothing
+                }
+            }
+
             return null;
         }
     }
