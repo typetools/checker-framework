@@ -53,7 +53,22 @@ class StringLenConcats {
         @ArrayLen(3) String ab = a + b;
     }
 
-    void conversions(
+    void charConversions(
+            char c,
+            @IntVal({1, 100, 10000}) char d,
+            @ArrayLen({100, 200}) String s,
+            @ArrayLenRange(from = 100, to = 200) String t,
+            @StringVal({"a", "bb", "ccc", "dddd"}) String u) {
+        @ArrayLen({101, 201}) String sc = s + c;
+        @ArrayLen({101, 201}) String sd = s + d;
+
+        @ArrayLenRange(from = 101, to = 201) String tc = t + c;
+
+        @ArrayLen({2, 3, 4, 5}) String uc = u + c;
+        @ArrayLen({2, 3, 4, 5}) String ud = u + d;
+    }
+
+    void intConversions(
             @IntVal(123) int intConst,
             @IntRange(from = -100000, to = 100) int intRange,
             @IntRange(from = 100, to = 100000) int positiveRange,

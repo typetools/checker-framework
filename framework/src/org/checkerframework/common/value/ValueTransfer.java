@@ -107,6 +107,7 @@ public class ValueTransfer extends CFTransfer {
 
         CFValue value = p.getValueOfSubNode(subNode);
 
+        // @ArrayLen
         AnnotationMirror arrayLenAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), ArrayLen.class);
 
@@ -114,21 +115,19 @@ public class ValueTransfer extends CFTransfer {
             return AnnotationUtils.getElementValueArray(arrayLenAnno, "value", Integer.class, true);
         }
 
-        // @StringVal, @UnknownVal, @BottomVal
-        AnnotationMirror topAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), UnknownVal.class);
-        if (topAnno != null) {
-            return null;
-        }
+        // @BottomVal
         AnnotationMirror bottomAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
         if (bottomAnno != null) {
             return new ArrayList<Integer>();
         }
 
-        // @IntRange
+        // handle values converted to string (characters, @IntRange for integers)
         if (subNode instanceof StringConversionNode) {
             return getStringLengths(((StringConversionNode) subNode).getOperand(), p);
+        } else if (subNode.getType().getKind() == TypeKind.CHAR) {
+            // characters have always length 1
+            return Collections.singletonList(1);
         } else if (isIntRange(subNode, p)) {
             Range valueRange = getIntRange(subNode, p);
 
