@@ -1359,22 +1359,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 || (node.getKind() == Tree.Kind.POSTFIX_DECREMENT)
                 || (node.getKind() == Tree.Kind.POSTFIX_INCREMENT)) {
             AnnotatedTypeMirror varType = atypeFactory.getAnnotatedTypeLhs(node.getExpression());
-            Tree newValue = node;
-            AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(newValue);
+            AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(node);
 
             // When the operation is postfix, valueType is a type of a value before the
             // assignment. We override valueType with a type from a store, if it's provided.
             if (node.getKind() == Tree.Kind.POSTFIX_DECREMENT
                     || node.getKind() == Tree.Kind.POSTFIX_INCREMENT) {
-                CFAbstractStore<?, ?> store = atypeFactory.getStoreAfter(newValue);
+                CFAbstractStore<?, ?> store = atypeFactory.getStoreAfter(node);
                 if (store != null) {
                     CFAbstractValue<?> value =
                             store.getValue(
                                     FlowExpressions.internalReprOf(
                                             atypeFactory, node.getExpression()));
                     if (value != null) {
-                        valueType.clearAnnotations();
-                        valueType.addAnnotations(value.getAnnotations());
+                        valueType.replaceAnnotations(value.getAnnotations());
                     }
                 }
             }
