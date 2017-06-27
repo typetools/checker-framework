@@ -576,6 +576,20 @@ dependencies {
 }
 \end{Verbatim}
 
+Alternatively, you can declare the dependencies to a local version of the Checker Framework:
+
+\begin{Verbatim}
+dependencies {
+  ext.checkerframeworkdist = "$System.env.CHECKERFRAMEWORK/checker/dist"
+  checkerFrameworkAnnotatedJDK fileTree(dir: "${checkerframeworkdist}", include: "${jdkVersion}.jar")
+  if (targetJavaVersion.isJava7()) {
+    checkerFrameworkJavac fileTree(dir: "${checkerframeworkdist}", include: 'javac.jar')
+  }
+  checkerFramework fileTree(dir: "${checkerframeworkdist}", include: 'checker.jar')
+  compile fileTree(dir: "${checkerframeworkdist}", include: 'checker-qual.jar')
+}
+\end{Verbatim}
+
 \item Direct all tasks of type \<JavaCompile> to use the desired checkers:
 
 \begin{mysmall}
