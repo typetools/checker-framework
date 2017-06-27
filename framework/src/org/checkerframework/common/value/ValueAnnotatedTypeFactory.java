@@ -1699,23 +1699,23 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Converts an {@code @ArrayLen} annotation to an {@code @ArrayLenRange} annotation. */
-    public AnnotationMirror convertArrayLenToArrayLenRange(AnnotationMirror arrayLenAnno) {
-        List<Integer> values = getArrayLength(arrayLenAnno);
-        return createArrayLenRangeAnnotation(Collections.min(values), Collections.max(values));
-    }
-
     /** Converts an {@code @StringVal} annotation to an {@code @ArrayLenRange} annotation. */
-    public AnnotationMirror convertStringValToArrayLenRange(AnnotationMirror stringValAnno) {
+    private AnnotationMirror convertStringValToArrayLenRange(AnnotationMirror stringValAnno) {
         List<String> values = getStringValues(stringValAnno);
         List<Integer> lengths = ValueCheckerUtils.getLengthsForStringValues(values);
         return createArrayLenRangeAnnotation(Collections.min(lengths), Collections.max(lengths));
     }
 
     /** Converts an {@code @StringVal} annotation to an {@code @ArrayLen} annotation. */
-    public AnnotationMirror convertStringValToArrayLen(AnnotationMirror stringValAnno) {
+    private AnnotationMirror convertStringValToArrayLen(AnnotationMirror stringValAnno) {
         List<String> values = getStringValues(stringValAnno);
         return createArrayLenAnnotation(ValueCheckerUtils.getLengthsForStringValues(values));
+    }
+
+    /** Converts an {@code @ArrayLen} annotation to an {@code @ArrayLenRange} annotation. */
+    public AnnotationMirror convertArrayLenToArrayLenRange(AnnotationMirror arrayLenAnno) {
+        List<Integer> values = getArrayLength(arrayLenAnno);
+        return createArrayLenRangeAnnotation(Collections.min(values), Collections.max(values));
     }
 
     /** Converts an {@code @IntVal} annotation to an {@code @IntRange} annotation. */
