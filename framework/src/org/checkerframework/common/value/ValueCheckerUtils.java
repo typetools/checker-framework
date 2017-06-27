@@ -137,7 +137,7 @@ public class ValueCheckerUtils {
      * Get all possible values from the given type and cast them into a boxed primitive type.
      *
      * @param range the given range
-     * @param expectedType the expected type (must be a class type)
+     * @param expectedType the expected type (must be a boxed type, not a primitive type)
      * @return a list of all the values in the range
      */
     public static <T> List<T> getValuesFromRange(Range range, Class<T> expectedType) {
