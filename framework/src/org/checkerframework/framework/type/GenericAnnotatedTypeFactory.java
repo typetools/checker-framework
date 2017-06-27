@@ -278,7 +278,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * <p>The default tree annotator is a {@link ListTreeAnnotator} of the following:
      *
      * <ol>
-     *   <li>{@link PropagationTreeAnnotator}: Propagates annotations from subtrees.
+     *   <li>{@link PropagationTreeAnnotator}: Propagates annotations from subtrees
      *   <li>{@link ImplicitsTreeAnnotator}: Adds annotations based on {@link ImplicitFor}
      *       meta-annotations
      *   <li>{@link DependentTypesTreeAnnotator}: Adapts dependent annotations based on context

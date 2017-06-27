@@ -333,7 +333,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        // Don't call super.createTreeAnnotator because the it includes PropagationTreeAnnotator which is incorrect.
+        // Don't call super.createTreeAnnotator because it includes PropagationTreeAnnotator which is incorrect.
         return new ListTreeAnnotator(
                 new UnitsPropagationTreeAnnotator(this),
                 new ImplicitsTreeAnnotator(this),
