@@ -137,7 +137,7 @@ public class ValueCheckerUtils {
      * Get all possible values from the given type and cast them into a boxed primitive type.
      *
      * @param range the given range
-     * @param expectedType the expected type (must be a class type)
+     * @param expectedType the expected type (must be a boxed type, not a primitive type)
      * @return a list of all the values in the range
      */
     public static <T> List<T> getValuesFromRange(Range range, Class<T> expectedType) {
@@ -148,37 +148,35 @@ public class ValueCheckerUtils {
         if (range.isNothing()) {
             return values;
         }
-        if (expectedType == Integer.class) {
-            for (long value = range.from; value <= range.to; value++) {
-                values.add(expectedType.cast((int) value));
+
+        // Does not overflow, because the width has already been checked.
+        long length = range.to - range.from;
+
+        // Each value is computed as a sum of the first value and an offset within the range,
+        // to avoid comparing to range.to, which may be Long.MAX_VALUE
+        for (long offset = 0; offset <= length; offset++) {
+            long value = range.from + offset;
+
+            Object convertedValue;
+            if (expectedType == Integer.class) {
+                convertedValue = (int) value;
+            } else if (expectedType == Short.class) {
+                convertedValue = (short) value;
+            } else if (expectedType == Byte.class) {
+                convertedValue = (byte) value;
+            } else if (expectedType == Long.class) {
+                convertedValue = value;
+            } else if (expectedType == Double.class) {
+                convertedValue = (double) value;
+            } else if (expectedType == Float.class) {
+                convertedValue = (float) value;
+            } else if (expectedType == Character.class) {
+                convertedValue = (char) value;
+            } else {
+                throw new UnsupportedOperationException(
+                        "ValueCheckerUtils: unexpected class: " + expectedType);
             }
-        } else if (expectedType == Short.class) {
-            for (long value = range.from; value <= range.to; value++) {
-                values.add(expectedType.cast((short) value));
-            }
-        } else if (expectedType == Byte.class) {
-            for (long value = range.from; value <= range.to; value++) {
-                values.add(expectedType.cast((byte) value));
-            }
-        } else if (expectedType == Long.class) {
-            for (long value = range.from; value <= range.to; value++) {
-                values.add(expectedType.cast(value));
-            }
-        } else if (expectedType == Double.class) {
-            for (long value = range.from; value <= range.to; value++) {
-                values.add(expectedType.cast((double) value));
-            }
-        } else if (expectedType == Float.class) {
-            for (long value = range.from; value <= range.to; value++) {
-                values.add(expectedType.cast((float) value));
-            }
-        } else if (expectedType == Character.class) {
-            for (long value = range.from; value <= range.to; value++) {
-                values.add(expectedType.cast((char) value));
-            }
-        } else {
-            throw new UnsupportedOperationException(
-                    "ValueCheckerUtils: unexpected class: " + expectedType);
+            values.add(expectedType.cast(convertedValue));
         }
         return values;
     }
