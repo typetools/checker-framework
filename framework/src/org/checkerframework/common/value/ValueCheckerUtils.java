@@ -134,11 +134,10 @@ public class ValueCheckerUtils {
     }
 
     /**
-     * Get all possible values from the given type and cast them into Long type, Double type, or
-     * Character type accordingly. Only support casting to integral type and double type.
+     * Get all possible values from the given type and cast them into a boxed primitive type.
      *
      * @param range the given range
-     * @param expectedType the expected type
+     * @param expectedType the expected type (must be a class type)
      * @return a list of all the values in the range
      */
     public static <T> List<T> getValuesFromRange(Range range, Class<T> expectedType) {
@@ -149,27 +148,33 @@ public class ValueCheckerUtils {
         if (range.isNothing()) {
             return values;
         }
-        if (expectedType == Integer.class
-                || expectedType == int.class
-                || expectedType == Long.class
-                || expectedType == long.class
-                || expectedType == Short.class
-                || expectedType == short.class
-                || expectedType == Byte.class
-                || expectedType == byte.class) {
-            for (Long value = range.from; value <= range.to; value++) {
-                values.add(expectedType.cast(value.longValue()));
+        if (expectedType == Integer.class) {
+            for (long value = range.from; value <= range.to; value++) {
+                values.add(expectedType.cast((int) value));
             }
-        } else if (expectedType == Double.class
-                || expectedType == double.class
-                || expectedType == Float.class
-                || expectedType == float.class) {
-            for (Long value = range.from; value <= range.to; value++) {
-                values.add(expectedType.cast(value.doubleValue()));
+        } else if (expectedType == Short.class) {
+            for (long value = range.from; value <= range.to; value++) {
+                values.add(expectedType.cast((short) value));
             }
-        } else if (expectedType == Character.class || expectedType == char.class) {
-            for (Long value = range.from; value <= range.to; value++) {
-                values.add(expectedType.cast((char) value.intValue()));
+        } else if (expectedType == Byte.class) {
+            for (long value = range.from; value <= range.to; value++) {
+                values.add(expectedType.cast((byte) value));
+            }
+        } else if (expectedType == Long.class) {
+            for (long value = range.from; value <= range.to; value++) {
+                values.add(expectedType.cast(value));
+            }
+        } else if (expectedType == Double.class) {
+            for (long value = range.from; value <= range.to; value++) {
+                values.add(expectedType.cast((double) value));
+            }
+        } else if (expectedType == Float.class) {
+            for (long value = range.from; value <= range.to; value++) {
+                values.add(expectedType.cast((float) value));
+            }
+        } else if (expectedType == Character.class) {
+            for (long value = range.from; value <= range.to; value++) {
+                values.add(expectedType.cast((char) value));
             }
         } else {
             throw new UnsupportedOperationException(
