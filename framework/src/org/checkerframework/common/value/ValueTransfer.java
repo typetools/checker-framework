@@ -103,9 +103,7 @@ public class ValueTransfer extends CFTransfer {
         }
 
         // @BottomVal
-        AnnotationMirror bottomAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
-        if (bottomAnno != null) {
+        if (AnnotationUtils.containsSameByClass(value.getAnnotations(), BottomVal.class)) {
             return Range.NOTHING;
         }
 
@@ -145,9 +143,7 @@ public class ValueTransfer extends CFTransfer {
         }
 
         // @BottomVal
-        AnnotationMirror bottomAnno =
-                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
-        if (bottomAnno != null) {
+        if (AnnotationUtils.containsSameByClass(value.getAnnotations(), BottomVal.class)) {
             return new ArrayList<Integer>();
         }
 
