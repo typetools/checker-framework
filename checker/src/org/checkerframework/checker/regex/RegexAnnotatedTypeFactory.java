@@ -156,14 +156,6 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new RegexTransfer((CFAnalysis) analysis);
     }
 
-    @Override
-    public TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
-                new ImplicitsTreeAnnotator(this),
-                new RegexTreeAnnotator(this),
-                new RegexPropagationAnnotator(this));
-    }
-
     /** Returns a new Regex annotation with the given group count. */
     /*package-scope*/ AnnotationMirror createRegexAnnotation(int groupCount) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, Regex.class);
@@ -256,6 +248,16 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public TreeAnnotator createTreeAnnotator() {
+        // Don't call super.createTreeAnnotator because the PropagationTreeAnnotator types binary
+        // expressions as lub.
+        return new ListTreeAnnotator(
+                new ImplicitsTreeAnnotator(this),
+                new RegexTreeAnnotator(this),
+                new RegexPropagationAnnotator(this));
     }
 
     private static class RegexPropagationAnnotator extends PropagationTreeAnnotator {
