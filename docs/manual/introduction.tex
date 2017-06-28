@@ -606,9 +606,9 @@ Unsound checking: ignore some errors
   Ignore the possibility of overflow for range annotations such as
   \<@IntRange>; see Section~\ref{value-checker-overflow}.
 \item \<-Awarns>
-  Treat checker errors as warnings.  If you use this, you
-  may wish to also supply \code{-Xmaxwarns 10000}, because by default
-  \<javac> prints at most 100 warnings.  Don't supply \code{-Werror},
+  Treat checker errors as warnings.  If you use this, you may wish to also
+  supply \code{-Xmaxwarns 10000}, because by default \<javac> prints at
+  most 100 warnings.  If you use this, don't supply \code{-Werror},
   which is a javac argument to halt compilation if a warning is issued.
 \end{itemize}
 
