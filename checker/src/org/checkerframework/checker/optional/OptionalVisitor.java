@@ -18,6 +18,9 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.NullnessAnnotatedTypeFactory;
+import org.checkerframework.checker.nullness.NullnessChecker;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
@@ -26,6 +29,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -38,10 +42,13 @@ import org.checkerframework.javacutil.TypesUtils;
 public class OptionalVisitor
         extends BaseTypeVisitor</* OptionalAnnotatedTypeFactory*/ BaseAnnotatedTypeFactory> {
 
+    protected final NullnessAnnotatedTypeFactory nullnessTypeFactory;
+
     private final TypeMirror collectionType;
 
     public OptionalVisitor(BaseTypeChecker checker) {
         super(checker);
+        nullnessTypeFactory = checker.getTypeFactoryOfSubchecker(NullnessChecker.class);
         collectionType = types.erasure(TypesUtils.typeFromClass(types, elements, Collection.class));
     }
 
@@ -60,13 +67,21 @@ public class OptionalVisitor
         return OptionalUtils.isMethodInvocation(expression, "isPresent", 0, atypeFactory);
     }
 
-    // Optional creation: of, ofNullable.
+    /** @return true iff expression is a call to java.util.Optional.of */
+    private boolean isCallToOf(ExpressionTree expression) {
+        return OptionalUtils.isMethodInvocation(expression, "of", 1, atypeFactory);
+    }
+
+    /** @return true iff expression is a call to Optional creation: of, ofNullable. */
     private boolean isOptionalCreation(MethodInvocationTree methInvok) {
         return OptionalUtils.isMethodInvocation(methInvok, "of", 1, atypeFactory)
                 || OptionalUtils.isMethodInvocation(methInvok, "ofNullable", 1, atypeFactory);
     }
 
-    // Optional elimination: get, orElse, orElseGet, orElseThrow.
+    /**
+     * @return true iff expression is a call to Optional elimination: get, orElse, orElseGet,
+     *     orElseThrow.
+     */
     private boolean isOptionalElimation(MethodInvocationTree methInvok) {
         return OptionalUtils.isMethodInvocation(methInvok, "get", 0, atypeFactory)
                 || OptionalUtils.isMethodInvocation(methInvok, "orElse", 1, atypeFactory)
@@ -199,7 +214,31 @@ public class OptionalVisitor
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         handleCreationElimination(node);
+        handleOfRedundantly(node);
         return super.visitMethodInvocation(node, p);
+    }
+
+    /**
+     * Redundantly force the argument of {@code Optional.of} to be non-null.
+     *
+     * <p>This is enforced by the JDK annotations for the Nullness Checker, which is run as a
+     * subchecker of the Optional Checker. However, this error is issued even if a user suppresses
+     * all nullness warnings. A user may suppress this warning as well if desired.
+     */
+    public void handleOfRedundantly(MethodInvocationTree node) {
+        if (!isCallToOf(node)) {
+            return;
+        }
+
+        // Determine the Nullness annotation on the argument.
+        ExpressionTree arg0 = node.getArguments().get(0);
+        final AnnotatedTypeMirror argNullnessType = nullnessTypeFactory.getAnnotatedType(arg0);
+        boolean argIsNonNull =
+                AnnotationUtils.containsSameByClass(
+                        argNullnessType.getAnnotations(), NonNull.class);
+        if (!argIsNonNull) {
+            checker.report(Result.failure("of.nullable.argument"), arg0);
+        }
     }
 
     /**
@@ -234,9 +273,9 @@ public class OptionalVisitor
         if (isOptionalType(tm)) {
             ElementKind ekind = TreeUtils.elementFromDeclaration(node).getKind();
             if (ekind.isField()) {
-                checker.report(Result.failure("optional.field"), node);
+                checker.report(Result.warning("optional.field"), node);
             } else if (ekind == ElementKind.PARAMETER) {
-                checker.report(Result.failure("optional.parameter"), node);
+                checker.report(Result.warning("optional.parameter"), node);
             }
         }
         return super.visitVariable(node, p);
@@ -271,7 +310,7 @@ public class OptionalVisitor
                     // TODO: handle collections that have more than one type parameter
                     TypeMirror typeArg = typeArgs.get(0);
                     if (isOptionalType(typeArg)) {
-                        checker.report(Result.failure("optional.as.element.type"), tree);
+                        checker.report(Result.warning("optional.as.element.type"), tree);
                     }
                 }
             } else if (isOptionalType(tm)) {

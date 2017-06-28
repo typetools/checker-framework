@@ -36,11 +36,21 @@ public class JdkCheck {
         return mos.get();
     }
 
-    @Present Optional<String> ofTest1(String s) {
+    @Present Optional<String> ofTesPNn(String s) {
         return Optional.of(s);
     }
 
-    Optional<String> ofTest2(String s) {
+    Optional<String> ofTestMNn(String s) {
+        return Optional.of(s);
+    }
+
+    @Present Optional<String> ofTestPNble(@Nullable String s) {
+        //:: error: (of.nullable.argument) :: error: (type.argument.type.incompatible) :: error: (return.type.incompatible)
+        return Optional.of(s);
+    }
+
+    Optional<String> ofTestMNble(@Nullable String s) {
+        //:: error: (of.nullable.argument) :: error: (type.argument.type.incompatible) :: error: (return.type.incompatible)
         return Optional.of(s);
     }
 

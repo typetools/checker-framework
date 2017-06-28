@@ -89,7 +89,7 @@ public final @NonNull class Optional<T extends @NonNull Object> {
      * @param <T> Type of the non-existent value
      * @return an empty {@code Optional}
      */
-    public static<T> Optional<T> empty() {
+    public static <T extends @NonNull Object> Optional<T> empty() {
         @SuppressWarnings("unchecked")
         Optional<T> t = (Optional<T>) EMPTY;
         return t;
@@ -113,7 +113,7 @@ public final @NonNull class Optional<T extends @NonNull Object> {
      * @return an {@code Optional} with the value present
      * @throws NullPointerException if value is null
      */
-    public static <T> Optional<T> of(T value) {
+    public static <T extends @NonNull Object> Optional<T> of(T value) {
         return new Optional<>(value);
     }
 
