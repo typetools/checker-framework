@@ -40,9 +40,7 @@ import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -200,9 +198,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-                new LowerBoundTreeAnnotator(this),
-                new PropagationTreeAnnotator(this),
-                new ImplicitsTreeAnnotator(this));
+                new LowerBoundTreeAnnotator(this), super.createTreeAnnotator());
     }
 
     private class LowerBoundTreeAnnotator extends TreeAnnotator {
