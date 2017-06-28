@@ -24,6 +24,13 @@
  */
 package java.util;
 
+/*
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+*/
+
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
@@ -82,7 +89,7 @@ public final @NonNull class Optional<T extends @NonNull Object> {
      * @param <T> Type of the non-existent value
      * @return an empty {@code Optional}
      */
-    public static<T> Optional<T> empty() {
+    public static <T extends @NonNull Object> Optional<T> empty() {
         @SuppressWarnings("unchecked")
         Optional<T> t = (Optional<T>) EMPTY;
         return t;
@@ -106,7 +113,7 @@ public final @NonNull class Optional<T extends @NonNull Object> {
      * @return an {@code Optional} with the value present
      * @throws NullPointerException if value is null
      */
-    public static <T> Optional<T> of(T value) {
+    public static <T extends @NonNull Object> Optional<T> of(T value) {
         return new Optional<>(value);
     }
 
@@ -181,7 +188,8 @@ public final @NonNull class Optional<T extends @NonNull Object> {
             return this;
         else
             return predicate.test(value) ? this : empty();
-    }*/
+    }
+    */
 
     /**
      * If a value is present, apply the provided mapping function to it,
@@ -212,14 +220,16 @@ public final @NonNull class Optional<T extends @NonNull Object> {
      * otherwise an empty {@code Optional}
      * @throws NullPointerException if the mapping function is null
      */
-    /*public<U> Optional<U> map(Function<? super T, ? extends U> mapper) {
+    /*
+    public<U> Optional<U> map(Function<? super T, ? extends U> mapper) {
         Objects.requireNonNull(mapper);
         if (!isPresent())
             return empty();
         else {
             return Optional.ofNullable(mapper.apply(value));
         }
-    }*/
+    }
+    */
 
     /**
      * If a value is present, apply the provided {@code Optional}-bearing
@@ -238,14 +248,16 @@ public final @NonNull class Optional<T extends @NonNull Object> {
      * @throws NullPointerException if the mapping function is null or returns
      * a null result
      */
-    /*public<U> Optional<U> flatMap(Function<? super T, Optional<U>> mapper) {
+    /*
+    public<U> Optional<U> flatMap(Function<? super T, Optional<U>> mapper) {
         Objects.requireNonNull(mapper);
         if (!isPresent())
             return empty();
         else {
             return Objects.requireNonNull(mapper.apply(value));
         }
-    }*/
+    }
+    */
 
     /**
      * Return the value if present, otherwise return {@code other}.
@@ -268,9 +280,11 @@ public final @NonNull class Optional<T extends @NonNull Object> {
      * @throws NullPointerException if value is not present and {@code other} is
      * null
      */
-    /*public T orElseGet(Supplier<? extends T> other) {
+    /*
+    public T orElseGet(Supplier<? extends T> other) {
         return value != null ? value : other.get();
-    }*/
+    }
+    */
 
     /**
      * Return the contained value, if present, otherwise throw an exception

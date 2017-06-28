@@ -14,7 +14,7 @@ public class Marks3b {
         void runTask(Task t) {}
     }
 
-    Executor executor;
+    Executor executor = new Executor();
 
     void bad(Optional<Task> oTask) {
         //:: warning: (prefer.ifpresent)
