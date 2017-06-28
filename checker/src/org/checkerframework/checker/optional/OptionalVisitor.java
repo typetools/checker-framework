@@ -42,14 +42,16 @@ import org.checkerframework.javacutil.TypesUtils;
 public class OptionalVisitor
         extends BaseTypeVisitor</* OptionalAnnotatedTypeFactory*/ BaseAnnotatedTypeFactory> {
 
-    protected final NullnessAnnotatedTypeFactory nullnessTypeFactory;
-
     private final TypeMirror collectionType;
 
     public OptionalVisitor(BaseTypeChecker checker) {
         super(checker);
-        nullnessTypeFactory = checker.getTypeFactoryOfSubchecker(NullnessChecker.class);
         collectionType = types.erasure(TypesUtils.typeFromClass(types, elements, Collection.class));
+    }
+
+    /** Provides a way to query the Nullness Checker. */
+    NullnessAnnotatedTypeFactory getNullnessTypeFactory() {
+        return checker.getTypeFactoryOfSubchecker(NullnessChecker.class);
     }
 
     @Override
@@ -232,7 +234,7 @@ public class OptionalVisitor
 
         // Determine the Nullness annotation on the argument.
         ExpressionTree arg0 = node.getArguments().get(0);
-        final AnnotatedTypeMirror argNullnessType = nullnessTypeFactory.getAnnotatedType(arg0);
+        final AnnotatedTypeMirror argNullnessType = getNullnessTypeFactory().getAnnotatedType(arg0);
         boolean argIsNonNull =
                 AnnotationUtils.containsSameByClass(
                         argNullnessType.getAnnotations(), NonNull.class);
