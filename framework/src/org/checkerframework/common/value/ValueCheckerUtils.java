@@ -159,6 +159,7 @@ public class ValueCheckerUtils {
         // Each value is computed as a sum of the first value and an offset within the range,
         // to avoid having range.to as an upper bound of the loop. range.to can be Long.MAX_VALUE,
         // in which case a comparison value <= range.to would be always true.
+        // boundDifference is always much smaller than Long.MAX_VALUE
         for (long offset = 0; offset <= boundDifference; offset++) {
             long value = range.from + offset;
 
