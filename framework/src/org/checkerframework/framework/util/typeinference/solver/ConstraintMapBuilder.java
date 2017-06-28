@@ -13,6 +13,7 @@ import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.framework.util.typeinference.constraint.TIsU;
 import org.checkerframework.framework.util.typeinference.constraint.TSuperU;
 import org.checkerframework.framework.util.typeinference.constraint.TUConstraint;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 
 /** Converts a set of TUConstraints into a ConstraintMap. */
 public class ConstraintMapBuilder {
@@ -69,7 +70,8 @@ public class ConstraintMapBuilder {
             final AnnotatedTypeMirror typeU = constraint.relatedType;
 
             if (typeU.getKind() == TypeKind.TYPEVAR
-                    && targets.contains(TypeArgInferenceUtil.getUnannotatedType(typeU))) {
+                    && targets.contains(
+                            TypeAnnotationUtils.unannotatedType(typeU.getUnderlyingType()))) {
                 if (typeT.getAnnotations().isEmpty() && typeU.getAnnotations().isEmpty()) {
                     hierarchiesInRelation.addAll(tops);
 
@@ -103,7 +105,9 @@ public class ConstraintMapBuilder {
                     // This case also covers the case where i = j
                     if (!tAnnos.isEmpty()) {
                         addToPrimaryRelationship(
-                                TypeArgInferenceUtil.getUnannotatedTypeVariable(typeT),
+                                (TypeVariable)
+                                        TypeAnnotationUtils.unannotatedType(
+                                                typeT.getUnderlyingType()),
                                 constraint,
                                 result,
                                 tAnnos,
@@ -112,7 +116,9 @@ public class ConstraintMapBuilder {
 
                     if (!uAnnos.isEmpty()) {
                         addToPrimaryRelationship(
-                                (TypeVariable) TypeArgInferenceUtil.getUnannotatedType(typeU),
+                                (TypeVariable)
+                                        TypeAnnotationUtils.unannotatedType(
+                                                typeU.getUnderlyingType()),
                                 constraint,
                                 result,
                                 uAnnos,
@@ -121,12 +127,13 @@ public class ConstraintMapBuilder {
                 }
 
                 // This is the case where we have a relationship between two different targets (Ti <?> Tj and i != j)
-                if (!TypeArgInferenceUtil.getUnannotatedType(typeT)
-                        .equals(TypeArgInferenceUtil.getUnannotatedType(typeU))) {
+                if (!TypeAnnotationUtils.unannotatedType(typeT.getUnderlyingType())
+                        .equals(TypeAnnotationUtils.unannotatedType(typeU.getUnderlyingType()))) {
                     addToTargetRelationship(
-                            TypeArgInferenceUtil.getUnannotatedTypeVariable(typeT),
-                            TypeArgInferenceUtil.getUnannotatedTypeVariable(
-                                    (AnnotatedTypeVariable) typeU),
+                            (TypeVariable)
+                                    TypeAnnotationUtils.unannotatedType(typeT.getUnderlyingType()),
+                            (TypeVariable)
+                                    TypeAnnotationUtils.unannotatedType(typeU.getUnderlyingType()),
                             result,
                             constraint,
                             hierarchiesInRelation);
@@ -141,7 +148,8 @@ public class ConstraintMapBuilder {
                 }
 
                 addToTypeRelationship(
-                        TypeArgInferenceUtil.getUnannotatedTypeVariable(typeT),
+                        (TypeVariable)
+                                TypeAnnotationUtils.unannotatedType(typeT.getUnderlyingType()),
                         typeU,
                         result,
                         constraint,

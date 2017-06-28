@@ -236,13 +236,13 @@ public class InternalUtils {
 
     /** Returns whether a TypeVariable represents a captured type. */
     public static boolean isCaptured(TypeVariable typeVar) {
-        return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType((Type) typeVar)).isCaptured();
+        return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(typeVar)).isCaptured();
     }
 
     /** If typeVar is a captured wildcard, returns that wildcard; otherwise returns null. */
     public static WildcardType getCapturedWildcard(TypeVariable typeVar) {
         if (isCaptured(typeVar)) {
-            return ((CapturedType) TypeAnnotationUtils.unannotatedType((Type) typeVar)).wildcard;
+            return ((CapturedType) TypeAnnotationUtils.unannotatedType(typeVar)).wildcard;
         }
         return null;
     }
@@ -266,8 +266,8 @@ public class InternalUtils {
      */
     public static TypeMirror leastUpperBound(
             ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
-        Type t1 = ((Type) tm1).stripMetadataIfNeeded();
-        Type t2 = ((Type) tm2).stripMetadataIfNeeded();
+        Type t1 = TypeAnnotationUtils.unannotatedType(tm1);
+        Type t2 = TypeAnnotationUtils.unannotatedType(tm2);
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
         Types types = Types.instance(javacEnv.getContext());
         if (types.isSameType(t1, t2)) {
@@ -328,8 +328,8 @@ public class InternalUtils {
      */
     public static TypeMirror greatestLowerBound(
             ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
-        Type t1 = ((Type) tm1).stripMetadataIfNeeded();
-        Type t2 = ((Type) tm2).stripMetadataIfNeeded();
+        Type t1 = TypeAnnotationUtils.unannotatedType(tm1);
+        Type t2 = TypeAnnotationUtils.unannotatedType(tm2);
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
         Types types = Types.instance(javacEnv.getContext());
         if (types.isSameType(t1, t2)) {
@@ -379,7 +379,7 @@ public class InternalUtils {
             return methodType;
         }
         // TODO: find a nicer way to substitute type variables
-        String t = TypeAnnotationUtils.unannotatedType((Type) methodType).toString();
+        String t = TypeAnnotationUtils.unannotatedType(methodType).toString();
         Type finalReceiverType = (Type) substitutedReceiverType;
         int i = 0;
         for (TypeSymbol typeParam : finalReceiverType.tsym.getTypeParameters()) {

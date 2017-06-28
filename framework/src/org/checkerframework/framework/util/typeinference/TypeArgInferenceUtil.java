@@ -100,7 +100,7 @@ public class TypeArgInferenceUtil {
             final AnnotatedTypeMirror type, final Set<TypeVariable> targetTypeVars) {
         return type.getKind() == TypeKind.TYPEVAR
                 && targetTypeVars.contains(
-                        getUnannotatedTypeVariable((AnnotatedTypeVariable) type));
+                        TypeAnnotationUtils.unannotatedType(type.getUnderlyingType()));
     }
 
     /**
@@ -112,7 +112,8 @@ public class TypeArgInferenceUtil {
         final Set<TypeVariable> targets = new LinkedHashSet<>(annotatedTypeVars.size());
 
         for (final AnnotatedTypeVariable atv : annotatedTypeVars) {
-            targets.add(getUnannotatedTypeVariable(atv));
+            targets.add(
+                    (TypeVariable) TypeAnnotationUtils.unannotatedType(atv.getUnderlyingType()));
         }
 
         return targets;
@@ -322,7 +323,10 @@ public class TypeArgInferenceUtil {
         final List<TypeVariable> typeVars = new ArrayList<>(annotatedTypeVars.size());
 
         for (AnnotatedTypeVariable annotatedTypeVar : annotatedTypeVars) {
-            typeVars.add(getUnannotatedTypeVariable(annotatedTypeVar));
+            typeVars.add(
+                    (TypeVariable)
+                            TypeAnnotationUtils.unannotatedType(
+                                    annotatedTypeVar.getUnderlyingType()));
         }
 
         // note NULL values creep in because the underlying visitor uses them in various places
@@ -381,7 +385,7 @@ public class TypeArgInferenceUtil {
 
         @Override
         public Boolean visitTypeVariable(AnnotatedTypeVariable type, List<TypeVariable> typeVars) {
-            if (typeVars.contains(getUnannotatedTypeVariable(type))) {
+            if (typeVars.contains(TypeAnnotationUtils.unannotatedType(type.getUnderlyingType()))) {
                 return true;
             } else {
                 return super.visitTypeVariable(type, typeVars);
@@ -426,7 +430,7 @@ public class TypeArgInferenceUtil {
             final AnnotatedTypeMirror toModify) {
         final AnnotatedTypeMirror substitution =
                 substitutions.get(
-                        TypeAnnotationUtils.unannotatedType((Type) toModify.getUnderlyingType()));
+                        TypeAnnotationUtils.unannotatedType(toModify.getUnderlyingType()));
         if (substitution != null) {
             return substitution.deepCopy();
         }
