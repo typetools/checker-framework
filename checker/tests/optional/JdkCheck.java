@@ -45,12 +45,12 @@ public class JdkCheck {
     }
 
     @Present Optional<String> ofTestPNble(@Nullable String s) {
-        //:: error: (of.nullable.argument) :: error: (type.argument.type.incompatible) :: error: (return.type.incompatible)
+        //:: error: (of.nullable.argument) :: error: (return.type.incompatible)
         return Optional.of(s);
     }
 
     Optional<String> ofTestMNble(@Nullable String s) {
-        //:: error: (of.nullable.argument) :: error: (type.argument.type.incompatible) :: error: (return.type.incompatible)
+        //:: error: (of.nullable.argument) :: error: (return.type.incompatible)
         return Optional.of(s);
     }
 
