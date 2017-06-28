@@ -136,8 +136,11 @@ public class ValueCheckerUtils {
     /**
      * Get all possible values from the given type and cast them into a boxed primitive type.
      *
+     * <p>{@code expectedType} must be a boxed type, not a primitive type, because primitive types
+     * cannot be stored in a list.
+     *
      * @param range the given range
-     * @param expectedType the expected type (must be a boxed type, not a primitive type)
+     * @param expectedType the expected type
      * @return a list of all the values in the range
      */
     public static <T> List<T> getValuesFromRange(Range range, Class<T> expectedType) {
@@ -149,12 +152,14 @@ public class ValueCheckerUtils {
             return values;
         }
 
-        // Does not overflow, because the width has already been checked.
-        long length = range.to - range.from;
+        // The subtraction does not overflow, because the width has already been checked, so the
+        // bound difference is less than ValueAnnotatedTypeFactory.MAX_VALUES.
+        long boundDifference = range.to - range.from;
 
         // Each value is computed as a sum of the first value and an offset within the range,
-        // to avoid comparing to range.to, which may be Long.MAX_VALUE
-        for (long offset = 0; offset <= length; offset++) {
+        // to avoid having range.to as an upper bound of the loop. range.to can be Long.MAX_VALUE,
+        // in which case a comparison value <= range.to would be always true.
+        for (long offset = 0; offset <= boundDifference; offset++) {
             long value = range.from + offset;
 
             Object convertedValue;
