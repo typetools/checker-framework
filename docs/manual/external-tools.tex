@@ -581,6 +581,7 @@ Alternatively, you can declare the dependencies to a local version of the Checke
 \begin{Verbatim}
 dependencies {
   ext.checkerframeworkdist = "$System.env.CHECKERFRAMEWORK/checker/dist"
+  ext.jdkVersion = JavaVersion.current().isJava7() ? 'jdk7' : 'jdk8'
   checkerFrameworkAnnotatedJDK fileTree(dir: "${checkerframeworkdist}", include: "${jdkVersion}.jar")
   if (targetJavaVersion.isJava7()) {
     checkerFrameworkJavac fileTree(dir: "${checkerframeworkdist}", include: 'javac.jar')
