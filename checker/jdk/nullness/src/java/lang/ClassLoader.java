@@ -1,26 +1,26 @@
 /*
- * Copyright (c) 2013, 2015 Oracle and/or its affiliates. All rights reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ * Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+ * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  *
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
  *
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
  *
- * You should have received a copy of the GNU General Public License version
- * 2 along with this work; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
- * or visit www.oracle.com if you need additional information or have any
- * questions.
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
  */
 package java.lang;
 
@@ -29,10 +29,12 @@ import java.io.IOException;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.AccessControlContext;
 import java.security.CodeSource;
+import java.security.Policy;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -45,14 +47,15 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import sun.misc.CompoundEnumeration;
 import sun.misc.Resource;
 import sun.misc.URLClassPath;
-import sun.reflect.CallerSensitive;
+import sun.misc.VM;
+//import sun.reflect.CallerSensitive;
 import sun.reflect.Reflection;
 import sun.reflect.misc.ReflectUtil;
 import sun.security.util.SecurityConstants;
@@ -171,10 +174,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *   "java.net.URLClassLoader$3$1"
  * </pre></blockquote>
  *
- * {@code Class} objects for array classes are not created by {@code ClassLoader};
- * use the {@link Class#forName} method instead.
- *
- * @jls 13.1 The Form of a Binary
  * @see      #resolveClass(Class)
  * @since 1.0
  */
@@ -284,7 +283,8 @@ public abstract class ClassLoader {
         if (ParallelLoaders.isRegistered(this.getClass())) {
             parallelLockMap = new ConcurrentHashMap<>();
             package2certs = new ConcurrentHashMap<>();
-            domains = Collections.synchronizedSet(new HashSet<>());
+            domains =
+                Collections.synchronizedSet(new HashSet<ProtectionDomain>());
             assertionLock = new Object();
         } else {
             // no finer-grained lock; lock on the classloader instance
@@ -489,17 +489,17 @@ public abstract class ClassLoader {
     private void checkPackageAccess(Class<?> cls, ProtectionDomain pd) {
         final SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
-            if (ReflectUtil.isNonPublicProxyClass(cls)) {
+            /*if (ReflectUtil.isNonPublicProxyClass(cls)) {
                 for (Class<?> intf: cls.getInterfaces()) {
                     checkPackageAccess(intf, pd);
                 }
                 return;
-            }
+            }*/
 
             final String name = cls.getName();
             final int i = name.lastIndexOf('.');
             if (i != -1) {
-                AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                AccessController.doPrivileged(new PrivilegedAction<Void>() {
                     public Void run() {
                         sm.checkPackageAccess(name.substring(0, i));
                         return null;
@@ -832,7 +832,7 @@ public abstract class ClassLoader {
     {
         int len = b.remaining();
 
-        // Use byte[] if not a direct ByteBuffer:
+        // Use byte[] if not a direct ByteBufer:
         if (!b.isDirect()) {
             if (b.hasArray()) {
                 return defineClass(name, b.array(),
@@ -853,6 +853,9 @@ public abstract class ClassLoader {
         return c;
     }
 
+    private native Class<?> defineClass0(String name, byte[] b, int off, int len,
+                                         ProtectionDomain pd);
+
     private native Class<?> defineClass1(String name, byte[] b, int off, int len,
                                          ProtectionDomain pd, String source);
 
@@ -864,7 +867,8 @@ public abstract class ClassLoader {
     private boolean checkName(String name) {
         if ((name == null) || (name.length() == 0))
             return true;
-        if ((name.indexOf('/') != -1) || (name.charAt(0) == '['))
+        if ((name.indexOf('/') != -1)
+            || (!VM.allowArraySyntax() && (name.charAt(0) == '[')))
             return false;
         return true;
     }
@@ -914,10 +918,10 @@ public abstract class ClassLoader {
         // go through and make sure all the certs in one array
         // are in the other and vice-versa.
         boolean match;
-        for (Certificate cert : certs) {
+        for (int i = 0; i < certs.length; i++) {
             match = false;
-            for (Certificate pcert : pcerts) {
-                if (cert.equals(pcert)) {
+            for (int j = 0; j < pcerts.length; j++) {
+                if (certs[i].equals(pcerts[j])) {
                     match = true;
                     break;
                 }
@@ -926,10 +930,10 @@ public abstract class ClassLoader {
         }
 
         // now do the same for pcerts
-        for (Certificate pcert : pcerts) {
+        for (int i = 0; i < pcerts.length; i++) {
             match = false;
-            for (Certificate cert : certs) {
-                if (pcert.equals(cert)) {
+            for (int j = 0; j < certs.length; j++) {
+                if (pcerts[i].equals(certs[j])) {
                     match = true;
                     break;
                 }
@@ -956,10 +960,10 @@ public abstract class ClassLoader {
      * @see  #defineClass(String, byte[], int, int)
      */
     protected final void resolveClass(Class<?> c) {
-        if (c == null) {
-            throw new NullPointerException();
-        }
+        resolveClass0(c);
     }
+
+    private native void resolveClass0(Class<?> c);
 
     /**
      * Finds a class with the specified <a href="#name">binary name</a>,
@@ -1033,7 +1037,7 @@ public abstract class ClassLoader {
         return findLoadedClass0(name);
     }
 
-    private final native Class<?> findLoadedClass0(String name);
+    private native final Class<?> findLoadedClass0(String name);
 
     /**
      * Sets the signers of a class.  This should be invoked after defining a
@@ -1048,7 +1052,8 @@ public abstract class ClassLoader {
      * @since  1.1
      */
     protected final void setSigners(Class<?> c, Object[] signers) {
-        c.setSigners(signers);
+        // Does not compile in Java 7 at present.
+        // c.setSigners(signers);
     }
 
 
@@ -1136,7 +1141,7 @@ public abstract class ClassLoader {
         }
         tmp[1] = findResources(name);
 
-        return new CompoundEnumeration<URL>(tmp);
+        return new CompoundEnumeration<>(tmp);
     }
 
     /**
@@ -1173,7 +1178,9 @@ public abstract class ClassLoader {
      * @since  1.2
      */
     protected Enumeration<URL> findResources(String name) throws IOException {
-        return java.util.Collections.emptyEnumeration();
+        // Does not compile in Java 7 at present.
+        // return java.util.Collections.emptyEnumeration();
+        return new Vector<URL>().elements();
     }
 
     /**
@@ -1193,11 +1200,12 @@ public abstract class ClassLoader {
      *
      * @since   1.7
      */
-    @CallerSensitive
+//    @CallerSensitive
     protected static boolean registerAsParallelCapable() {
-        Class<? extends ClassLoader> callerClass =
+        /*Class<? extends ClassLoader> callerClass =
             Reflection.getCallerClass().asSubclass(ClassLoader.class);
-        return ParallelLoaders.register(callerClass);
+        return ParallelLoaders.register(callerClass);*/
+        return true;
     }
 
     /**
@@ -1357,17 +1365,14 @@ public abstract class ClassLoader {
      *
      * @since  1.2
      */
-    @CallerSensitive
+//    @CallerSensitive
     public final @Nullable ClassLoader getParent() {
         if (parent == null)
             return null;
         SecurityManager sm = System.getSecurityManager();
-        if (sm != null) {
-            // Check access to the parent class loader
-            // If the caller's class loader is same as this class loader,
-            // permission check is performed.
-            checkClassLoaderPermission(parent, Reflection.getCallerClass());
-        }
+        /*if (sm != null) {
+            checkClassLoaderPermission(this, Reflection.getCallerClass());
+        }*/
         return parent;
     }
 
@@ -1426,16 +1431,16 @@ public abstract class ClassLoader {
      *
      * @revised  1.4
      */
-    @CallerSensitive
+//    @CallerSensitive
     public static @Nullable ClassLoader getSystemClassLoader() {
         initSystemClassLoader();
         if (scl == null) {
             return null;
         }
         SecurityManager sm = System.getSecurityManager();
-        if (sm != null) {
+        /*if (sm != null) {
             checkClassLoaderPermission(scl, Reflection.getCallerClass());
-        }
+        }*/
         return scl;
     }
 
@@ -1506,14 +1511,11 @@ public abstract class ClassLoader {
             return null;
         }
         // Circumvent security check since this is package-private
-        return caller.getClassLoader0();
+        // Does not compile in Java 7 at present.
+        // return caller.getClassLoader0();
+        return null;
     }
 
-    /*
-     * Checks RuntimePermission("getClassLoader") permission
-     * if caller's class loader is not null and caller's class loader
-     * is not the same as or an ancestor of the given cl argument.
-     */
     static void checkClassLoaderPermission(ClassLoader cl, Class<?> caller) {
         SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
@@ -1583,17 +1585,18 @@ public abstract class ClassLoader {
                                     String implVendor, @Nullable URL sealBase)
         throws IllegalArgumentException
     {
-        Package pkg = getPackage(name);
-        if (pkg != null) {
-            throw new IllegalArgumentException(name);
+        synchronized (packages) {
+            Package pkg = getPackage(name);
+            if (pkg != null) {
+                throw new IllegalArgumentException(name);
+            }
+            // Does not compile in Java 7 at present.
+            // pkg = new Package(name, specTitle, specVersion, specVendor,
+            //                   implTitle, implVersion, implVendor,
+            //                   sealBase, this);
+            packages.put(name, pkg);
+            return pkg;
         }
-        pkg = new Package(name, specTitle, specVersion, specVendor,
-                          implTitle, implVersion, implVendor,
-                          sealBase, this);
-        if (packages.putIfAbsent(name, pkg) != null) {
-            throw new IllegalArgumentException(name);
-        }
-        return pkg;
     }
 
     /**
@@ -1609,12 +1612,26 @@ public abstract class ClassLoader {
      * @since  1.2
      */
     protected @Nullable Package getPackage(String name) {
-        Package pkg = packages.get(name);
+        Package pkg;
+        synchronized (packages) {
+            pkg = packages.get(name);
+        }
         if (pkg == null) {
             if (parent != null) {
                 pkg = parent.getPackage(name);
             } else {
-                pkg = Package.getSystemPackage(name);
+                // Does not compile in Java 7 at present.
+                // pkg = Package.getSystemPackage(name);
+            }
+            if (pkg != null) {
+                synchronized (packages) {
+                    Package pkg2 = packages.get(name);
+                    if (pkg2 == null) {
+                        packages.put(name, pkg);
+                    } else {
+                        pkg = pkg2;
+                    }
+                }
             }
         }
         return pkg;
@@ -1630,18 +1647,24 @@ public abstract class ClassLoader {
      * @since  1.2
      */
     protected Package[] getPackages() {
+        Map<String, Package> map;
+        synchronized (packages) {
+            map = new HashMap<>(packages);
+        }
         Package[] pkgs;
         if (parent != null) {
             pkgs = parent.getPackages();
         } else {
-            pkgs = Package.getSystemPackages();
+            // Does not compile in Java 7 at present
+            // pkgs = Package.getSystemPackages();
+            pkgs = null;
         }
-
-        Map<String, Package> map = packages;
         if (pkgs != null) {
-            map = new HashMap<>(packages);
-            for (Package pkg : pkgs) {
-                map.putIfAbsent(pkg.getName(), pkg);
+            for (int i = 0; i < pkgs.length; i++) {
+                String pkgName = pkgs[i].getName();
+                if (map.get(pkgName) == null) {
+                    map.put(pkgName, pkgs[i]);
+                }
             }
         }
         return map.values().toArray(new Package[map.size()]);
@@ -1705,6 +1728,7 @@ public abstract class ClassLoader {
 
         native long find(String name);
         native void unload(String name, boolean isBuiltin);
+        static native String findBuiltinLib(String name);
 
         public NativeLibrary(Class<?> fromClass, String name, boolean isBuiltin) {
             this.name = name;
@@ -1757,54 +1781,35 @@ public abstract class ClassLoader {
     private static String usr_paths[];
     private static String sys_paths[];
 
-    private static String[] initializePath(String propName) {
-        String ldPath = System.getProperty(propName, "");
-        int ldLen = ldPath.length();
-        char ps = File.pathSeparatorChar;
-        int psCount = 0;
-
-        if (ClassLoaderHelper.allowsQuotedPathElements &&
-                ldPath.indexOf('\"') >= 0) {
-            // First, remove quotes put around quoted parts of paths.
-            // Second, use a quotation mark as a new path separator.
-            // This will preserve any quoted old path separators.
-            char[] buf = new char[ldLen];
-            int bufLen = 0;
-            for (int i = 0; i < ldLen; ++i) {
-                char ch = ldPath.charAt(i);
-                if (ch == '\"') {
-                    while (++i < ldLen &&
-                            (ch = ldPath.charAt(i)) != '\"') {
-                        buf[bufLen++] = ch;
-                    }
-                } else {
-                    if (ch == ps) {
-                        psCount++;
-                        ch = '\"';
-                    }
-                    buf[bufLen++] = ch;
-                }
-            }
-            ldPath = new String(buf, 0, bufLen);
-            ldLen = bufLen;
-            ps = '\"';
-        } else {
-            for (int i = ldPath.indexOf(ps); i >= 0;
-                    i = ldPath.indexOf(ps, i + 1)) {
-                psCount++;
-            }
+    private static String[] initializePath(String propname) {
+        String ldpath = System.getProperty(propname, "");
+        String ps = File.pathSeparator;
+        int ldlen = ldpath.length();
+        int i, j, n;
+        // Count the separators in the path
+        i = ldpath.indexOf(ps);
+        n = 0;
+        while (i >= 0) {
+            n++;
+            i = ldpath.indexOf(ps, i + 1);
         }
 
-        String[] paths = new String[psCount + 1];
-        int pathStart = 0;
-        for (int j = 0; j < psCount; ++j) {
-            int pathEnd = ldPath.indexOf(ps, pathStart);
-            paths[j] = (pathStart < pathEnd) ?
-                    ldPath.substring(pathStart, pathEnd) : ".";
-            pathStart = pathEnd + 1;
+        // allocate the array of paths - n :'s = n + 1 path elements
+        String[] paths = new String[n + 1];
+
+        // Fill the array with paths from the ldpath
+        n = i = 0;
+        j = ldpath.indexOf(ps);
+        while (j >= 0) {
+            if (j - i > 0) {
+                paths[n++] = ldpath.substring(i, j);
+            } else if (j - i == 0) {
+                paths[n++] = ".";
+            }
+            i = j + 1;
+            j = ldpath.indexOf(ps, i);
         }
-        paths[psCount] = (pathStart < ldLen) ?
-                ldPath.substring(pathStart, ldLen) : ".";
+        paths[n] = ldpath.substring(i, ldlen);
         return paths;
     }
 
@@ -1837,50 +1842,50 @@ public abstract class ClassLoader {
                 throw new UnsatisfiedLinkError("Can't load " + libfilename);
             }
         }
-        for (String sys_path : sys_paths) {
-            File libfile = new File(sys_path, System.mapLibraryName(name));
+        for (int i = 0 ; i < sys_paths.length ; i++) {
+            File libfile = new File(sys_paths[i], System.mapLibraryName(name));
             if (loadLibrary0(fromClass, libfile)) {
                 return;
             }
-            libfile = ClassLoaderHelper.mapAlternativeName(libfile);
+            /*libfile = ClassLoaderHelper.mapAlternativeName(libfile);
             if (libfile != null && loadLibrary0(fromClass, libfile)) {
                 return;
-            }
+            }*/
         }
         if (loader != null) {
-            for (String usr_path : usr_paths) {
-                File libfile = new File(usr_path, System.mapLibraryName(name));
+            for (int i = 0 ; i < usr_paths.length ; i++) {
+                File libfile = new File(usr_paths[i],
+                                        System.mapLibraryName(name));
                 if (loadLibrary0(fromClass, libfile)) {
                     return;
                 }
-                libfile = ClassLoaderHelper.mapAlternativeName(libfile);
+                /*libfile = ClassLoaderHelper.mapAlternativeName(libfile);
                 if (libfile != null && loadLibrary0(fromClass, libfile)) {
                     return;
-                }
+                }*/
             }
         }
         // Oops, it failed
         throw new UnsatisfiedLinkError("no " + name + " in java.library.path");
     }
 
-    static native String findBuiltinLib(String name);
-
     private static boolean loadLibrary0(Class<?> fromClass, final File file) {
         // Check to see if we're attempting to access a static library
-        String name = findBuiltinLib(file.getName());
+        String name = NativeLibrary.findBuiltinLib(file.getName());
         boolean isBuiltin = (name != null);
         if (!isBuiltin) {
-            name = AccessController.doPrivileged(
-                new PrivilegedAction<String>() {
-                    public String run() {
-                        try {
-                            return file.exists() ? file.getCanonicalPath() : null;
-                        } catch (IOException e) {
-                            return null;
-                        }
-                    }
-                });
-            if (name == null) {
+            boolean exists = AccessController.doPrivileged(
+                new PrivilegedAction<Object>() {
+                    public Object run() {
+                        return file.exists() ? Boolean.TRUE : null;
+                    }})
+                != null;
+            if (!exists) {
+                return false;
+            }
+            try {
+                name = file.getCanonicalPath();
+            } catch (IOException e) {
                 return false;
             }
         }
@@ -2143,7 +2148,7 @@ public abstract class ClassLoader {
                 return result.booleanValue();
 
             // Check for most specific package entry
-            int dotIndex = className.lastIndexOf('.');
+            int dotIndex = className.lastIndexOf(".");
             if (dotIndex < 0) { // default package
                 result = packageAssertionStatus.get(null);
                 if (result != null)
@@ -2154,7 +2159,7 @@ public abstract class ClassLoader {
                 result = packageAssertionStatus.get(className);
                 if (result != null)
                     return result.booleanValue();
-                dotIndex = className.lastIndexOf('.', dotIndex-1);
+                dotIndex = className.lastIndexOf(".", dotIndex-1);
             }
 
             // Return the classloader default
@@ -2207,38 +2212,5 @@ class SystemClassLoaderAction
             new Object[] { parent });
         Thread.currentThread().setContextClassLoader(sys);
         return sys;
-    }
-}
-
-/*
- * A utility class that will enumerate over an array of enumerations.
- */
-final class CompoundEnumeration<E> implements Enumeration<E> {
-    private final Enumeration<E>[] enums;
-    private int index;
-
-    public CompoundEnumeration(Enumeration<E>[] enums) {
-        this.enums = enums;
-    }
-
-    private boolean next() {
-        while (index < enums.length) {
-            if (enums[index] != null && enums[index].hasMoreElements()) {
-                return true;
-            }
-            index++;
-        }
-        return false;
-    }
-
-    public boolean hasMoreElements() {
-        return next();
-    }
-
-    public E nextElement() {
-        if (!next()) {
-            throw new NoSuchElementException();
-        }
-        return enums[index].nextElement();
     }
 }

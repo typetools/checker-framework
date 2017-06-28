@@ -20,8 +20,6 @@ public final class Class<T> extends Object implements java.io.Serializable, java
   @Pure public boolean isSynthetic() { throw new RuntimeException("skeleton method"); }
   public String getName() { throw new RuntimeException("skeleton method"); }
   public @Nullable ClassLoader getClassLoader() { throw new RuntimeException("skeleton method"); }
-  @Nullable ClassLoader getClassLoader0() { throw new RuntimeException("skeleton method"); }
-  @Override
   public java.lang.reflect.TypeVariable<Class<T>>[] getTypeParameters() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect. @Nullable Type getGenericSuperclass() { throw new RuntimeException("skeleton method"); }
   @Pure public @Nullable Package getPackage() { throw new RuntimeException("skeleton method"); }
@@ -65,8 +63,6 @@ public final class Class<T> extends Object implements java.io.Serializable, java
   public java.lang.annotation.Annotation[] getDeclaredAnnotations() { throw new RuntimeException("skeleton method"); }
   @Pure public native @Nullable Class<?> getComponentType();
   public native Object @Nullable [] getSigners();
-  // TODO: check signature
-  public native void setSigners(Object @Nullable [] s);
   public native @Nullable Class<?> getDeclaringClass();
   @Pure public native boolean isPrimitive();
   @EnsuresNonNullIf(expression="getComponentType()", result=true)

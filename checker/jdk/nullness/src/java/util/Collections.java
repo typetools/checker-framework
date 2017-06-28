@@ -46,7 +46,6 @@ public class Collections {
   public static <E> List<E> checkedList(List<E> a1, Class<E> a2) { throw new RuntimeException("skeleton method"); }
   public static <K, V> Map<K, V> checkedMap(Map<K, V> a1, Class<K> a2, Class<V> a3) { throw new RuntimeException("skeleton method"); }
   public static <K, V> SortedMap<K, V> checkedSortedMap(SortedMap<K, V> a1, Class<K> a2, Class<V> a3) { throw new RuntimeException("skeleton method"); }
-  public final static <T> Enumeration<T> emptyEnumeration() { throw new RuntimeException("skeleton method"); }
   public final static <T> Set<T> emptySet() { throw new RuntimeException("skeleton method"); }
   public final static <T> List<T> emptyList() { throw new RuntimeException("skeleton method"); }
   public final static <K,V> Map<K, V> emptyMap() { throw new RuntimeException("skeleton method"); }
