@@ -21,10 +21,10 @@ esac
 binaryDir="${mydir}"/../dist
 
 # langtools build dir for Jenkins
-if [ -z "$LT_BIN" ] || [ "$LT_BIN" = "" ]; then
+if [ -z "${LT_BIN}" ] || [ "${LT_BIN}" = "" ]; then
    ltBinDir="${mydir}"/../../../jsr308-langtools/build/modules
 else
-   ltBinDir="$LT_BIN"
+   ltBinDir="${LT_BIN}"
 fi
 
 ltBinDirAll="${ltBinDir}"/java.compiler/:"${ltBinDir}"/jdk.compiler/:"${ltBinDir}"/jdk.deps/:"${ltBinDir}"/jdk.javadoc/:"${ltBinDir}"/jdk.jdeps/:"${ltBinDir}"/jdk.jshell/:

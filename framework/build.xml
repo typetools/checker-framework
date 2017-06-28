@@ -159,7 +159,7 @@
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-framework.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${stubparser.lib}:${javacutil.lib}:${dataflow.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
+              classpath="${javac.lib}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
 
@@ -219,7 +219,7 @@
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${javac.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
+                 classpath="${build}:${javac.lib}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
                  excludepackagenames="org.checkerframework.framework.stub"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
             <package name="org.checkerframework.javacutil.*"/>
@@ -275,7 +275,7 @@
 
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${junit.lib}:${hamcrest.lib}:${build}:${javacutil.lib}:${dataflow.lib}:${annotation-file-utilities.lib}"
+              classpath="${javac.lib}:${build}:${javacutil.lib}:${dataflow.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
 
@@ -312,8 +312,8 @@
                 <pathelement path="${framework.lib}"/>
                 <pathelement path="${tests.build}"/>
                 <pathelement path="${junit.lib}"/>
-                <pathelement path="${annotation-file-utilities.lib}"/>
                 <pathelement path="${hamcrest.lib}"/>
+                <pathelement path="${annotation-file-utilities.lib}"/>
             </classpath>
 
             <formatter type="xml"/>
@@ -358,8 +358,8 @@
               <pathelement path="${framework.lib}"/>
               <pathelement path="${tests.build}"/>
               <pathelement path="${junit.lib}"/>
-              <pathelement path="${annotation-file-utilities.lib}"/>
               <pathelement path="${hamcrest.lib}"/>
+              <pathelement path="${annotation-file-utilities.lib}"/>
           </classpath>
 
           <formatter type="xml"/>

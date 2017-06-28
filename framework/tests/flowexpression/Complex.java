@@ -16,10 +16,9 @@ public class Complex {
     void test() {
         for (int c = 0; c < categories.length; c++) {
 
-            for (@FlowExp("categories[c].fields")
-            String field : sortedKeySet(categories[c].fields)) {
-                @FlowExp("categories[c].fields")
-                String f = field;
+            for (
+            @FlowExp("categories[c].fields") String field : sortedKeySet(categories[c].fields)) {
+                @FlowExp("categories[c].fields") String f = field;
             }
         }
     }

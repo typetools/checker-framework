@@ -1227,6 +1227,7 @@ So, use our own archived version.
             <sequential>
                 <!--As of version 4.2-b02, a NullPointerException is thrown without making this dir-->
                 <mkdir dir="${build}/jtreg/all/report/html"/>
+                <mkdir dir="${build}/jtreg/all/report/text"/>
 
                 <property name="coverage.options" value=""/>    <!-- default -->
                 <property name="coverage.classpath" value=""/>  <!-- default -->
