@@ -600,8 +600,9 @@ allprojects {
         compile.options.compilerArgs = [
                 '-processor', 'org.checkerframework.checker.nullness.NullnessChecker',
                 '-processorpath', "${configurations.checkerFramework.asPath}",
+                '-Xmaxerrs', '10000',
                 // uncomment to turn Checker Framework errors into warnings
-                // '-Awarns',
+                // '-Awarns', '-Xmaxwarns', '10000',
                 "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
         ]
         if (targetJavaVersion.isJava7()) {
