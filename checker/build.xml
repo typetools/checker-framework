@@ -225,7 +225,7 @@
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}:${javaparser.core.lib}"
+              classpath="${javac.lib}:${framework.lib}:${javaparser.core.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -1435,7 +1435,7 @@ So, use our own archived version.
         <javac failonerror="true"
                 includeantruntime="false"
                 debug="true"
-                classpath="${checker.lib}:${junit.lib}:${hamcrest.lib}"
+                classpath="${checker.lib}:${javaparser.core.lib}:${junit.lib}:${hamcrest.lib}"
                 srcdir="${framework.loc}/${src}:${dataflow.loc}/${src}:${javacutil.loc}/${src}:${stubparser.loc}/${src}:${src}"
                 includes="**/*.java"
                 excludes="**/javacutil/dist/**"
