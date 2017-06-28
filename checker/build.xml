@@ -380,6 +380,7 @@
             <fileset dir="${build}/org/checkerframework"/>
          </delete>
 
+        <unjar src="${javaparser.core.lib}" dest="${build}" />
         <unjar src="${stubparser.lib}" dest="${build}" />
         <!-- Work-around for Issue 894, see above. -->
         <unjar src="${checker.lib}" dest="${build}" />
