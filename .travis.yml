@@ -19,11 +19,11 @@ matrix:
 env:
 ## Jobs used when downloading JDK during testing.
 ## all-tests = junit + nonjunit + demos.  Separately, test building the JDK.
-  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=all-tests
-  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=jdk.jar
+# Stub Parser requires JDK 8:  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=all-tests
+# Stub Parser requires JDK 8:  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=jdk.jar
   - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=all-tests
   - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=jdk.jar
-  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=downstream
+# Stub Parser requires JDK 8:  - BUILDJDK=downloadjdk JDKVER=jdk7 GROUP=downstream
   - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=downstream
   - BUILDJDK=downloadjdk JDKVER=jdkany GROUP=misc
 ## Jobs used when building JDK during testing.
