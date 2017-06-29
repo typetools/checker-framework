@@ -17,6 +17,7 @@ import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.PluginUtil;
+import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -597,12 +598,13 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
 
     /**
      * Checks that the wildcard is not an uninferred type argument. If it is, errorAbort will be
-     * called.
+     * called. The error will be caught in {@link DefaultTypeArgumentInference#infer} and inference
+     * will be aborted, but type-checking will continue.
      */
     private void checkForUninferredTypes(AnnotatedWildcardType wildcardType) {
         if (wildcardType.isUninferredTypeArgument()) {
             ErrorReporter.errorAbort(
-                    "Can't make a constraint that includes an uninferred " + "type argument.");
+                    "Can't make a constraint that includes an uninferred type argument.");
         }
     }
 }
