@@ -24,6 +24,13 @@
  */
 package java.util;
 
+/*
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+*/
+
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
@@ -49,7 +56,10 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
  *
  * @since 1.8
  */
-public final class Optional<T extends @NonNull Object> {
+// The type annotation on an instantiation of Optional is meaningless.
+// Optional<@NonNull String> and Optional<@Nullable String> have the same
+// meaning, but unfortunately are not interchangeable.
+public final @NonNull class Optional<T extends @Nullable Object> {
     /**
      * Common instance for {@code empty()}.
      */
@@ -58,7 +68,7 @@ public final class Optional<T extends @NonNull Object> {
     /**
      * If non-null, the value; if null, indicates no value is present
      */
-    private final T value;
+    private final @Nullable T value;
 
     /**
      * Constructs an empty instance.
@@ -82,7 +92,7 @@ public final class Optional<T extends @NonNull Object> {
      * @param <T> Type of the non-existent value
      * @return an empty {@code Optional}
      */
-    public static<T> Optional<T> empty() {
+    public static <T extends @Nullable Object> Optional<T> empty() {
         @SuppressWarnings("unchecked")
         Optional<T> t = (Optional<T>) EMPTY;
         return t;
@@ -94,7 +104,7 @@ public final class Optional<T extends @NonNull Object> {
      * @param value the non-null value to be present
      * @throws NullPointerException if value is null
      */
-    private Optional(T value) {
+    private Optional(@NonNull T value) {
         this.value = Objects.requireNonNull(value);
     }
 
@@ -106,7 +116,7 @@ public final class Optional<T extends @NonNull Object> {
      * @return an {@code Optional} with the value present
      * @throws NullPointerException if value is null
      */
-    public static <T> Optional<T> of(T value) {
+    public static <T extends @Nullable Object> Optional<T> of(@NonNull T value) {
         return new Optional<>(value);
     }
 
@@ -119,7 +129,7 @@ public final class Optional<T extends @NonNull Object> {
      * @return an {@code Optional} with a present value if the specified value
      * is non-null, otherwise an empty {@code Optional}
      */
-    public static <T> Optional<@NonNull T> ofNullable(@Nullable T value) {
+    public static <T extends @Nullable Object> Optional<T> ofNullable(@Nullable T value) {
         return value == null ? empty() : of(value);
     }
 
@@ -132,7 +142,7 @@ public final class Optional<T extends @NonNull Object> {
      *
      * @see Optional#isPresent()
      */
-    public T get() {
+    public @NonNull T get() {
         if (value == null) {
             throw new NoSuchElementException("No value present");
         }
@@ -155,11 +165,13 @@ public final class Optional<T extends @NonNull Object> {
      * @param consumer block to be executed if a value is present
      * @throws NullPointerException if value is present and {@code consumer} is
      * null
-
+     */
+    /*
     public void ifPresent(Consumer<? super T> consumer) {
         if (value != null)
             consumer.accept(value);
-    }*/
+    }
+    */
 
     /**
      * If a value is present, and the value matches the given predicate,
@@ -172,13 +184,15 @@ public final class Optional<T extends @NonNull Object> {
      * otherwise an empty {@code Optional}
      * @throws NullPointerException if the predicate is null
      */
-    /*public Optional<T> filter(Predicate<? super T> predicate) {
+    /*
+    public Optional<T> filter(Predicate<? super T> predicate) {
         Objects.requireNonNull(predicate);
         if (!isPresent())
             return this;
         else
             return predicate.test(value) ? this : empty();
-    }*/
+    }
+    */
 
     /**
      * If a value is present, apply the provided mapping function to it,
@@ -209,14 +223,16 @@ public final class Optional<T extends @NonNull Object> {
      * otherwise an empty {@code Optional}
      * @throws NullPointerException if the mapping function is null
      */
-    /*public<U> Optional<U> map(Function<? super T, ? extends U> mapper) {
+    /*
+    public<U> Optional<U> map(Function<? super T, ? extends U> mapper) {
         Objects.requireNonNull(mapper);
         if (!isPresent())
             return empty();
         else {
             return Optional.ofNullable(mapper.apply(value));
         }
-    }*/
+    }
+    */
 
     /**
      * If a value is present, apply the provided {@code Optional}-bearing
@@ -235,14 +251,16 @@ public final class Optional<T extends @NonNull Object> {
      * @throws NullPointerException if the mapping function is null or returns
      * a null result
      */
-    /*public<U> Optional<U> flatMap(Function<? super T, Optional<U>> mapper) {
+    /*
+    public<U> Optional<U> flatMap(Function<? super T, Optional<U>> mapper) {
         Objects.requireNonNull(mapper);
         if (!isPresent())
             return empty();
         else {
             return Objects.requireNonNull(mapper.apply(value));
         }
-    }*/
+    }
+    */
 
     /**
      * Return the value if present, otherwise return {@code other}.
@@ -265,9 +283,11 @@ public final class Optional<T extends @NonNull Object> {
      * @throws NullPointerException if value is not present and {@code other} is
      * null
      */
-    /*public T orElseGet(Supplier<? extends T> other) {
+    /*
+    public T orElseGet(Supplier<? extends T> other) {
         return value != null ? value : other.get();
-    }*/
+    }
+    */
 
     /**
      * Return the contained value, if present, otherwise throw an exception
@@ -285,13 +305,15 @@ public final class Optional<T extends @NonNull Object> {
      * @throws NullPointerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    /*public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
+    /*
+    public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
         if (value != null) {
             return value;
         } else {
             throw exceptionSupplier.get();
         }
-    }*/
+    }
+    */
 
     /**
      * Indicates whether some other object is "equal to" this Optional. The
