@@ -10,6 +10,7 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,6 @@ import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.qual.PolyAll;
@@ -34,6 +34,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -47,7 +48,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
-public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class KeyForAnnotatedTypeFactory
+        extends GenericAnnotatedTypeFactory<
+                KeyForValue, KeyForStore, KeyForTransfer, KeyForAnalysis> {
 
     protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR, KEYFORBOTTOM;
 
@@ -251,15 +254,19 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return whether or not the expression is a key for the map
      */
     public boolean isKeyForMap(String mapExpression, ExpressionTree tree) {
+        Collection<String> maps = null;
         AnnotatedTypeMirror type = getAnnotatedType(tree);
         AnnotationMirror keyForAnno = type.getAnnotation(KeyFor.class);
-        if (keyForAnno == null) {
-            return false;
+        if (keyForAnno != null) {
+            maps = AnnotationUtils.getElementValueArray(keyForAnno, "value", String.class, false);
+        } else {
+            KeyForValue value = getInferredValueFor(tree);
+            if (value != null && value.keyForMaps != null) {
+                maps = value.keyForMaps;
+            }
         }
 
-        List<String> val =
-                AnnotationUtils.getElementValueArray(keyForAnno, "value", String.class, false);
-        return val.contains(mapExpression);
+        return maps != null && maps.contains(mapExpression);
     }
 
     @Override
