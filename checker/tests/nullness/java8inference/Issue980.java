@@ -24,6 +24,8 @@ public class Issue980 {
         // This assignment issues a warning due to incompatible types:
         List<String> collectedStrings = s.collect(Collectors.toList());
 
+        // This issues an error because type argument inference fails on the above statement.
+        //:: error: (dereference.of.nullable)
         collectedStrings.forEach(System.out::println);
     }
 }
