@@ -7,7 +7,10 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
-public final class Class<T> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
+// The type annotation on an instantiation of Class is meaningless.
+// Class<@NonNull String> and Class<@Nullable String> have the same
+// meaning, but unfortunately are not interchangeable.
+public final class Class<T extends @Nullable Object> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
   private static final long serialVersionUID = 0;
   protected Class() {}
   @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
@@ -54,7 +57,7 @@ public final class Class<T> extends Object implements java.io.Serializable, java
   public boolean desiredAssertionStatus() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isEnum() { throw new RuntimeException("skeleton method"); }
   public @NonNull T @Nullable [] getEnumConstants() { throw new RuntimeException("skeleton method"); }
-  java.util.Map<String, T> enumConstantDirectory() { throw new RuntimeException("skeleton method"); }
+  java.util.Map<String, @NonNull T> enumConstantDirectory() { throw new RuntimeException("skeleton method"); }
   public @PolyNull T cast(@PolyNull Object a1) { throw new RuntimeException("skeleton method"); }
   public <U> Class<? extends U> asSubclass(Class<U> a1) { throw new RuntimeException("skeleton method"); }
   public <A extends java.lang.annotation.Annotation> @Nullable A getAnnotation(Class<A> a1) { throw new RuntimeException("skeleton method"); }

@@ -1,5 +1,7 @@
 // Test case for Issue 366:
 // https://github.com/typetools/checker-framework/issues/366
+// but amended for Issue 1098:
+// https://github.com/typetools/checker-framework/issues/1098
 // @below-java8-jdk-skip-test
 
 import java.util.Optional;
@@ -12,8 +14,6 @@ class Test {
     }
 
     static Optional<@Nullable String> getPossiblyEmptyString2() {
-        // The optional returned is still @NonNull.
-        //:: error: (return.type.incompatible)
         return Optional.ofNullable(null);
     }
 }
