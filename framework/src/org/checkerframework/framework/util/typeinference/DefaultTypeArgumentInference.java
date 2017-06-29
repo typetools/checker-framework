@@ -3,7 +3,6 @@ package org.checkerframework.framework.util.typeinference;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;

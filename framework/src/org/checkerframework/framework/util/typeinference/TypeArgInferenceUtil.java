@@ -15,7 +15,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -468,13 +467,5 @@ public class TypeArgInferenceUtil {
         }
 
         return lubType;
-    }
-
-    public static Type getUnannotatedType(AnnotatedTypeMirror atm) {
-        return TypeAnnotationUtils.unannotatedType((Type) atm.getUnderlyingType());
-    }
-
-    public static TypeVariable getUnannotatedTypeVariable(AnnotatedTypeVariable atv) {
-        return (TypeVariable) TypeAnnotationUtils.unannotatedType((Type) atv.getUnderlyingType());
     }
 }

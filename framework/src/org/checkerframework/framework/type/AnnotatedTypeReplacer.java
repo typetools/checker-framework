@@ -43,10 +43,7 @@ public class AnnotatedTypeReplacer {
 
         @Override
         public AnnotatedTypeMirror visit(AnnotatedTypeMirror type) {
-            return type.accept(
-                    this,
-                    new IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>(
-                            originalMappings));
+            return type.accept(this, new IdentityHashMap<>(originalMappings));
         }
 
         @Override

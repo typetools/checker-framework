@@ -392,7 +392,8 @@ public class TypeAnnotationUtils {
         }
     }
 
-    public static Type unannotatedType(final Type in) {
-        return in.stripMetadataIfNeeded();
+    public static Type unannotatedType(final TypeMirror in) {
+        final Type impl = (Type) in;
+        return impl.stripMetadataIfNeeded();
     }
 }
