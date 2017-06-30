@@ -2,6 +2,7 @@ package org.checkerframework.common.value;
 /*>>>
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 */
+
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
@@ -202,8 +203,28 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             if (castType.getKind() == TypeKind.LONG && castRange.isLongEverything()) {
                 return p;
             }
+            if (Range.IGNORE_OVERFLOW) {
+                // Range.IGNORE_OVERFLOW is only set if this checker is ignoring overflow.
+                // In that case, do not warn if the range of the expression encompasses
+                // the whole type being casted to (i.e. the warning is actually about overflow).
+                Range exprRange = ValueAnnotatedTypeFactory.getRange(exprAnno);
+                switch (castType.getKind()) {
+                    case BYTE:
+                        exprRange = exprRange.byteRange();
+                        break;
+                    case SHORT:
+                        exprRange = exprRange.shortRange();
+                        break;
+                    case INT:
+                        exprRange = exprRange.intRange();
+                        break;
+                    default:
+                }
+                if (castRange.equals(exprRange)) {
+                    return p;
+                }
+            }
         }
-
         return super.visitTypeCast(node, p);
     }
 }
