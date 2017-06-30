@@ -9,10 +9,16 @@ class GetClassTest {
         i.getClass();
         Class<?> a = i.getClass();
         // Type arguments don't match
-        @SuppressWarnings("fenum:assignment.type.incompatible")
+        @SuppressWarnings({
+            "fenum:assignment.type.incompatible",
+            "nullness:assignment.type.incompatible"
+        })
         Class<? extends Object> b = i.getClass();
         // Type arguments don't match
-        @SuppressWarnings("fenum:assignment.type.incompatible")
+        @SuppressWarnings({
+            "fenum:assignment.type.incompatible",
+            "nullness:assignment.type.incompatible"
+        })
         Class<? extends Integer> c = i.getClass();
 
         Class<?> d = i.getClass();
@@ -21,6 +27,10 @@ class GetClassTest {
     }
 
     void m(Date d) {
+        @SuppressWarnings({
+            "fenum:assignment.type.incompatible",
+            "nullness:assignment.type.incompatible"
+        })
         Class<? extends Date> c = d.getClass();
     }
 }
