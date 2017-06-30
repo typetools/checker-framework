@@ -3,8 +3,6 @@
 
 // @below-java8-jdk-skip-test
 
-// @skip-test until the issue is fixed
-
 import java.util.Optional;
 
 class Issue1098 {

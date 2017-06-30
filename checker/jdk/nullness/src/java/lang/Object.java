@@ -16,7 +16,7 @@ public class Object {
   public final void wait(@UnknownInitialization @Raw Object this) throws InterruptedException { throw new RuntimeException("skeleton method"); }
 
   private static native void registerNatives();
-  @Pure public final native Class<? extends @NonNull Object> getClass(@UnknownInitialization @Raw Object this);
+  @Pure public final native Class<?> getClass(@UnknownInitialization @Raw Object this);
   @Pure public native int hashCode();
   @SideEffectFree protected native Object clone() throws CloneNotSupportedException;
   public final native void notify();
