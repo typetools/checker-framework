@@ -1,3 +1,12 @@
+---------------------------------------------------------------------------
+
+Version 2.??, 3 July 2017
+
+Verified that the Checker Framework builds from source on Windows Subsystem
+for Linux, on Windows 10 Creators Edition.
+
+---------------------------------------------------------------------------
+
 Version 2.1.12, 1 June 2017
 
 The manual links to Glacier, a class immutability checker.
@@ -2367,7 +2376,7 @@ Checker Framework API
     classes in a single file
   Added better support for annotated wildcard type bounds
   Added AnnotatedTypeFactory.annotateImplicit() methods to replace
-    overriding the getAnntoatedType() methods directly
+    overriding the getAnnotatedType() methods directly
   Fixed a bug in which constructor arguments were not checked
 
 Interned Checker

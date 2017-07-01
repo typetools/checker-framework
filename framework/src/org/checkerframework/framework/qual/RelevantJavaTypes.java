@@ -13,8 +13,7 @@ import java.lang.annotation.Target;
  *
  * <p>{@code Object[].class} implies that the checker is interested in all array types; all other
  * array classes are ignored. A boxed type, such as {@code Integer.class}, implies that the checker
- * is interested in both the boxed type, {@code Integer}, and the unboxed, primitive type, {@code
- * int}.
+ * is interested in both the boxed type {@code Integer}, and the unboxed primitive type {@code int}.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -24,8 +23,8 @@ public @interface RelevantJavaTypes {
     /**
      * Classes that are relevant to the checker. {@code Object[].class} implies that the checker is
      * interested in all array types; all other array classes are ignored. A boxed type, such as
-     * {@code Integer.class}, implies that the checker is interested in both the boxed type, {@code
-     * Integer}, and the unboxed, primitive type, {@code int}.
+     * {@code Integer.class}, implies that the checker is interested in both the boxed type {@code
+     * Integer}, and the unboxed primitive type {@code int}.
      */
     Class<?>[] value();
 }
