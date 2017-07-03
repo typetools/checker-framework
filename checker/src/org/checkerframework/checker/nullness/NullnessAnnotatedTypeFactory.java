@@ -55,6 +55,7 @@ import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.DependentTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -301,11 +302,23 @@ public class NullnessAnnotatedTypeFactory
                 super.methodFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
 
-        if (method.getReturnType().getKind() == TypeKind.WILDCARD
-                && ((AnnotatedWildcardType) method.getReturnType()).isUninferredTypeArgument()
-                && !checker.hasOption("conservativeUninferredTypeArguments")) {
-            method.getReturnType().replaceAnnotations(qualHierarchy.getBottomAnnotations());
-        }
+        // Change the type any uninferred type arguments to @NonNull @Initialized.
+        SimpleAnnotatedTypeScanner<Void, Void> scan =
+                new SimpleAnnotatedTypeScanner<Void, Void>() {
+                    @Override
+                    protected Void defaultAction(AnnotatedTypeMirror type, Void aVoid) {
+                        if (type == null) {
+                            return null;
+                        }
+                        if (type.getKind() == TypeKind.WILDCARD
+                                && ((AnnotatedWildcardType) type).isUninferredTypeArgument()
+                                && !checker.hasOption("conservativeUninferredTypeArguments")) {
+                            type.replaceAnnotations(qualHierarchy.getBottomAnnotations());
+                        }
+                        return null;
+                    }
+                };
+        scan.visit(method.getReturnType());
 
         systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
