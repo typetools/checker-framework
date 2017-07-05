@@ -5,7 +5,6 @@ import org.checkerframework.checker.nullness.qual.*;
 */
 
 import com.github.javaparser.JavaParser;
-import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
@@ -377,7 +376,7 @@ public class StubParser {
         if (typeElt == null) {
             boolean warn = true;
             if (typeDecl.getAnnotations() != null) {
-                // TODO Change from row time to generic
+                // TODO Change from raw time to generic
                 NodeList<AnnotationExpr> annotations = typeDecl.getAnnotations();
                 for (int i = 0; i < annotations.size(); i++) {
                     AnnotationExpr anno = annotations.get(i);
@@ -895,7 +894,7 @@ public class StubParser {
 
         Map<Element, BodyDeclaration<?>> result = new HashMap<>();
 
-        // TODO Fix the problem with row type
+        // TODO Fix the problem with raw type
         NodeList<BodyDeclaration<?>> members = typeDecl.getMembers();
         for (int i = 0; i < members.size(); i++) {
             BodyDeclaration<?> member = members.get(i);
