@@ -772,6 +772,18 @@ sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial 
  texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended unzip
 \end{Verbatim}
 
+% Building Checker Framework from source on Mac OS
+
+The installation of prerequisites is a bit different on Mac OS, but still easy most of the time with \ahref{https://brew.sh}{Homebrew} through the following commands:
+
+\begin{Verbatim}
+brew update
+brew install caskroom/cask/brew-cask
+brew install git ant hevea mercurial librsvg unzip make
+brew cask install java
+brew cask install mactex
+\end{Verbatim}
+
 If you are building on Windows 10, then run \<bash> to obtain a version of
 Ubuntu (provided by the Windows Subsystem for Linux) and follow the Ubuntu
 instructions.
