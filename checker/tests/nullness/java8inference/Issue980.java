@@ -23,6 +23,7 @@ public class Issue980 {
 
         List<String> collectedStrings = s.collect(Collectors.toList());
 
+        //:: error: (dereference.of.nullable)
         collectedStrings.forEach(System.out::println);
     }
 }
