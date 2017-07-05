@@ -1959,7 +1959,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Java special-cases the return type of {@link java.lang.Class.getClass() getClass()}. Though
+     * Java special-cases the return type of {@link java.lang.Class#getClass() getClass()}. Though
      * the method has a return type of {@code Class<?>}, the compiler special cases this return-type
      * and changes the bound of the type argument to the erasure of the receiver type. For example:
      *
@@ -1969,7 +1969,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * </ul>
      *
      * @param getClassType this must be a type representing a call to Object.getClass otherwise a
-     *     runtime exception will be thrown
+     *     runtime exception will be thrown. It is modified by side effect.
      * @param receiverType the receiver type of the method invocation (not the declared receiver
      *     type)
      */
