@@ -5,7 +5,7 @@ import org.checkerframework.checker.formatter.qual.FormatMethod;
 public class ConversionNull2 {
     static void main(String... p) {
         Formatter f1 = new Formatter();
-        Formatter f2 = new Formatter();
+        MyFormatter f2 = new MyFormatter();
 
         f1.format("%d %s", 0, null);
         f2.format("%d %s", 0, null);
