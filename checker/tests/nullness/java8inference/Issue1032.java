@@ -7,7 +7,7 @@
 import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.*;
 
-class StreamMap {
+class Issue1032 {
 
     @SuppressWarnings("nullness")
     static @NonNull String castStringToNonNull(@Nullable String arg) {
