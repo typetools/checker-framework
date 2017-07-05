@@ -1955,12 +1955,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             adaptGetClassReturnTypeToReceiver(methodType, receiverType);
         }
 
-        if (methodType.getReturnType().getKind() == TypeKind.WILDCARD
-                && ((AnnotatedWildcardType) methodType.getReturnType()).isUninferredTypeArgument()
-                && !checker.hasOption("conservativeUninferredTypeArguments")) {
-            methodType.getReturnType().replaceAnnotations(qualHierarchy.getBottomAnnotations());
-        }
-
         return Pair.of(methodType, typeargs);
     }
 
