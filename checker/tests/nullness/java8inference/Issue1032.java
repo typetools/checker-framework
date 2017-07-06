@@ -7,7 +7,7 @@
 import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.*;
 
-class StreamMap {
+class Issue1032 {
 
     @SuppressWarnings("nullness")
     static @NonNull String castStringToNonNull(@Nullable String arg) {
@@ -15,7 +15,7 @@ class StreamMap {
     }
 
     Stream<@NonNull String> mapStringCast1(Stream<@Nullable String> arg) {
-        return arg.map(StreamMap::castStringToNonNull);
+        return arg.map(Issue1032::castStringToNonNull);
     }
 
     @SuppressWarnings("nullness")
@@ -24,10 +24,10 @@ class StreamMap {
     }
 
     Stream<@NonNull String> mapStringCast2(Stream<@Nullable String> arg) {
-        return arg.map(StreamMap::<String>castTToNonNull);
+        return arg.map(Issue1032::<String>castTToNonNull);
     }
 
     <T> Stream<@NonNull T> mapTCast(Stream<@Nullable T> arg) {
-        return arg.map(StreamMap::<T>castTToNonNull);
+        return arg.map(Issue1032::<T>castTToNonNull);
     }
 }
