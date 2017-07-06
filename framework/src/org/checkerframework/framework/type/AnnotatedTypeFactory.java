@@ -2752,21 +2752,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         // 1. jdk.astub
         if (!checker.hasOption("ignorejdkastub")) {
-            InputStream in = null;
-            in = checker.getClass().getResourceAsStream("jdk.astub");
-            if (in != null) {
-                StubParser stubParser = new StubParser("jdk.astub", in, this, processingEnv);
-                stubParser.parse(typesFromStubFiles, declAnnosFromStubFiles);
-            }
+            parseStubFile(
+                    checker.getClass(), "jdk.astub", typesFromStubFiles, declAnnosFromStubFiles);
         }
 
         // 2. flow.astub
         // stub file for type-system independent annotations
-        InputStream input = BaseTypeChecker.class.getResourceAsStream("flow.astub");
-        if (input != null) {
-            StubParser stubParser = new StubParser("flow.astub", input, this, processingEnv);
-            stubParser.parse(typesFromStubFiles, declAnnosFromStubFiles);
-        }
+        parseStubFile(
+                BaseTypeChecker.class, "jdk.astub", typesFromStubFiles, declAnnosFromStubFiles);
 
         // Stub files specified via stubs compiler option, stubs system property,
         // stubs env. variable, or @Stubfiles
@@ -2803,7 +2796,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         // Parse stub files specified via stubs compiler option, stubs system property,
-        // stubs env. variable, or @Stubfiles
+        // stubs environment variable, or @Stubfiles annotation.
         for (String stubPath : allStubFiles) {
             if (stubPath == null || stubPath.isEmpty()) {
                 continue;
@@ -2816,8 +2809,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
             List<StubResource> stubs = StubUtil.allStubFiles(stubPathFull);
             if (stubs.size() == 0) {
-                InputStream in = null;
-                in = checker.getClass().getResourceAsStream(stubPath);
+                InputStream in = checker.getClass().getResourceAsStream(stubPath);
                 if (in != null) {
                     StubParser stubParser = new StubParser(stubPath, in, this, processingEnv);
                     stubParser.parse(typesFromStubFiles, declAnnosFromStubFiles);
@@ -2850,6 +2842,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         this.typesFromStubFiles = typesFromStubFiles;
         this.declAnnosFromStubFiles = declAnnosFromStubFiles;
+    }
+
+    /** Parse the given stub file name. Does nothing if it cannot be found. */
+    private void parseStubFile(
+            Class<?> checkerClass,
+            String stubfilename,
+            Map<Element, AnnotatedTypeMirror> typesFromStubFiles,
+            Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles) {
+        InputStream in = checkerClass.getResourceAsStream("jdk.astub");
+        if (in == null) {
+            return;
+        }
+        String pkg = checkerClass.getPackage().getName();
+        if (!pkg.equals("")) {
+            pkg = pkg.replace('.', '/') + "/";
+        }
+        StubParser stubParser = new StubParser(pkg + stubfilename, in, this, processingEnv);
+        stubParser.parse(typesFromStubFiles, declAnnosFromStubFiles);
     }
 
     /**
