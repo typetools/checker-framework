@@ -2759,7 +2759,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // 2. flow.astub
         // stub file for type-system independent annotations
         parseStubFile(
-                BaseTypeChecker.class, "jdk.astub", typesFromStubFiles, declAnnosFromStubFiles);
+                BaseTypeChecker.class, "flow.astub", typesFromStubFiles, declAnnosFromStubFiles);
 
         // Stub files specified via stubs compiler option, stubs system property,
         // stubs env. variable, or @Stubfiles
