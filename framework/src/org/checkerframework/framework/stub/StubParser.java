@@ -796,8 +796,8 @@ public class StubParser {
                 && !decl.getAnnotations().isEmpty()) {
             stubAlwaysWarn(
                     String.format(
-                            "parseConstructor: constructor of a top-level class cannot have receiver annotations%n"
-                                    + "Constructor: %s%n"
+                            "parseConstructor: constructor of a top-level class cannot have receiver annotations\n"
+                                    + "Constructor: %s\n"
                                     + "Receiver annotations: %s",
                             methodType, decl.getAnnotations()));
         } else {
