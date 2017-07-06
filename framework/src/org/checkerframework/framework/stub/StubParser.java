@@ -5,6 +5,7 @@ import org.checkerframework.checker.nullness.qual.*;
 */
 
 import com.github.javaparser.JavaParser;
+import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
@@ -973,13 +974,47 @@ public class StubParser {
         final int wantedMethodParams =
                 (methodDecl.getParameters() == null) ? 0 : methodDecl.getParameters().size();
         // TODO Make sure assignment was changed right
-        final String wantedMethodString = methodDecl.getDeclarationAsString();
+        final String wantedMethodString = StubUtil.toString(methodDecl);
         for (ExecutableElement method : ElementUtils.getAllMethodsIn(elements, typeElt)) {
             // do heuristics first
+            // TODO Remove redundant logging
+            stubDebug(
+                    "Before 1. "
+                            + StubUtil.toString(method)
+                            + "\n"
+                            + "Before 2. "
+                            + wantedMethodString
+                            + "\n"
+                            + "Before 3. "
+                            + (StubUtil.toString(method).equals(wantedMethodString)));
             if (wantedMethodParams == method.getParameters().size()
-                    && wantedMethodName.contentEquals(method.getSimpleName())
+                    && wantedMethodName.contentEquals(method.getSimpleName().toString())
                     && StubUtil.toString(method).equals(wantedMethodString)) {
                 return method;
+            } else {
+                // TODO Remove redundant logging
+                stubDebug(
+                        "For method "
+                                + wantedMethodString
+                                + "\n"
+                                + "For method "
+                                + wantedMethodName
+                                + "\n"
+                                + "Stub util method "
+                                + StubUtil.toString(method)
+                                + "\n"
+                                + "simple name string "
+                                + method.getSimpleName().toString()
+                                + "\n"
+                                + "1. "
+                                + (wantedMethodParams == method.getParameters().size())
+                                + "\n"
+                                + "2. "
+                                + (wantedMethodName.contentEquals(
+                                        method.getSimpleName().toString()))
+                                + "\n"
+                                + "3. "
+                                + (StubUtil.toString(method).equals(wantedMethodString)));
             }
         }
         stubWarnIfNotFound("Method " + wantedMethodString + " not found in type " + typeElt);
