@@ -17,12 +17,10 @@ public class Issue980 {
         List<String> collectedStrings1 = s.collect(Collectors.<String>toList());
         // This works:
         List<@Nullable String> collectedStrings2 = s.collect(Collectors.toList());
-        // This works:
-        @SuppressWarnings("nullness")
-        List<String> collectedStrings3 = s.collect(Collectors.toList());
 
         List<String> collectedStrings = s.collect(Collectors.toList());
 
+        // False positive.
         //:: error: (dereference.of.nullable)
         collectedStrings.forEach(System.out::println);
     }
