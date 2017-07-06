@@ -281,16 +281,6 @@ public class InternalUtils {
         if (t2.getKind() == TypeKind.NULL) {
             return t1;
         }
-        // Special case for primitives.
-        if (TypesUtils.isPrimitive(t1) || TypesUtils.isPrimitive(t2)) {
-            if (types.isAssignable(t1, t2)) {
-                return t2;
-            } else if (types.isAssignable(t2, t1)) {
-                return t1;
-            } else {
-                return processingEnv.getTypeUtils().getNoType(TypeKind.NONE);
-            }
-        }
         if (t1.getKind() == TypeKind.WILDCARD) {
             WildcardType wc1 = (WildcardType) t1;
             Type bound = (Type) wc1.getExtendsBound();
@@ -310,6 +300,17 @@ public class InternalUtils {
                 return elements.getTypeElement("java.lang.Object").asType();
             }
             t2 = bound;
+        }
+        // Special case for primitives.
+        if (TypesUtils.isPrimitive(t1) || TypesUtils.isPrimitive(t2)) {
+            if (types.isAssignable(t1, t2)) {
+                return t2;
+            } else if (types.isAssignable(t2, t1)) {
+                return t1;
+            } else {
+                Elements elements = processingEnv.getElementUtils();
+                return elements.getTypeElement("java.lang.Object").asType();
+            }
         }
         return types.lub(t1, t2);
     }
