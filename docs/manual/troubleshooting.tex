@@ -835,7 +835,9 @@ This needs to be an Oracle JDK.
 (The \<JAVA\_HOME> environment
 variable might already be set, because it is needed for Ant to work.)
 
-In the bash shell, putting the following command in your \code{.bashrc} file
+\begin{enumerate}
+\item
+{\bf [Ubuntu]} In the bash shell, putting the following command in your \code{.bashrc} file
 \emph{sometimes} works (it might
 not because \<java> might be the version in the JDK or in the JRE):
 % Can someone give a simpler command?
@@ -848,6 +850,16 @@ not because \<java> might be the version in the JDK or in the JRE):
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
+
+\item
+{\bf [Mac OSX 10.5 or later]} It is recommended to set the \code{\$JAVA\_HOME} variable to \</usr/libexec/java\_home>, just export \code{\$JAVA\_HOME} in file \code{.bash\_profile} or \code{.profile}.
+\begin{smaller}
+\begin{Verbatim}
+  export JAVA_HOME=$(/usr/libexec/java_home)
+\end{Verbatim}
+\end{smaller}
+
+\end{enumerate}
 
 \item
 Compile the Type Annotations tools:
