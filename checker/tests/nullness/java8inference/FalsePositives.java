@@ -1,0 +1,49 @@
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Queue;
+
+public class FalsePositives {
+    static class Partitioning<F> {}
+
+    public static <T> List<Partitioning<T>> partitionInto(Queue<T> elts, int k) {
+        if (elts.size() < k) {
+            throw new IllegalArgumentException();
+        }
+        return partitionIntoHelper(elts, Arrays.asList(new Partitioning<T>()), k, 0);
+    }
+
+    public static <T> List<Partitioning<T>> partitionIntoHelper(
+            Queue<T> elts,
+            List<Partitioning<T>> resultSoFar,
+            int numEmptyParts,
+            int numNonemptyParts) {
+        throw new RuntimeException();
+    }
+
+    interface Box<T> {}
+
+    interface Function<P, R> {
+        R apply(P p);
+    }
+
+    interface Utils {
+        <I, O> Box<O> foo(Box<I> input, Function<? super I, ? extends O> function);
+
+        <I, O> Function<I, O> bar(Function<? super I, ? extends O> function);
+    }
+
+    class Test {
+        Box<Integer> demo(Utils u, Box<String> bs) {
+            return u.foo(bs, u.bar((String s) -> 5));
+        }
+
+        Integer ugh(String n) {
+            return 5;
+        }
+
+        Box<Integer> demo2(Utils u, Box<String> bs) {
+            return u.foo(bs, u.bar(this::ugh));
+        }
+    }
+}

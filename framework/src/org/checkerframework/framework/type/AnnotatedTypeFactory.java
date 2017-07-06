@@ -308,6 +308,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final Map<Element, Tree> elementToTreeCache;
 
     /**
+     * Whether to ignore uninferred type arguments. This is a temporary flag to work around Issue
+     * 979.
+     */
+    public final boolean ignoreUninferredTypeArguments;
+
+    /**
      * Constructs a factory from the given {@link ProcessingEnvironment} instance and syntax tree
      * root. (These parameters are required so that the factory may conduct the appropriate
      * annotation-gathering analyses on certain tree types.)
@@ -363,6 +369,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             !"NullnessAnnotatedTypeFactory"
                                     .equals(this.getClass().getSimpleName()));
         }
+        ignoreUninferredTypeArguments = !checker.hasOption("conservativeUninferredTypeArguments");
     }
 
     /**

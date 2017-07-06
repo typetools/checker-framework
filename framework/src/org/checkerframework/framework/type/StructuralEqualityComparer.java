@@ -445,6 +445,11 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         }
 
         visited.add(type1, type2);
+        if (type1.atypeFactory.ignoreUninferredTypeArguments
+                && (type1.isUninferredTypeArgument() || type2.isUninferredTypeArgument())) {
+            return true;
+        }
+
         return areEqual(type1.getExtendsBound(), type2.getExtendsBound(), visited)
                 && areEqual(type1.getSuperBound(), type2.getSuperBound(), visited);
     }
@@ -494,6 +499,10 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         }
 
         visited.add(type1, type2);
+
+        if (type1.atypeFactory.ignoreUninferredTypeArguments && type1.isUninferredTypeArgument()) {
+            return true;
+        }
         return areEqual(type1.getExtendsBound(), type2.getUpperBound(), visited)
                 && areEqual(type1.getSuperBound(), type2.getLowerBound(), visited);
     }
