@@ -591,8 +591,10 @@ public class StubParser {
         }
 
         if (methodType.getReceiverType() == null
+                // TODO Fix - here should be receiver annotations. Remove && false
                 && decl.getAnnotations() != null
-                && !decl.getAnnotations().isEmpty()) {
+                && !decl.getAnnotations().isEmpty()
+                && false) {
             stubAlwaysWarn(
                     String.format(
                             "parseMethod: static methods cannot have receiver annotations\n"
@@ -792,8 +794,10 @@ public class StubParser {
         }
 
         if (methodType.getReceiverType() == null
+                // TODO Fix - here should be receiver annotations. Remove && false
                 && decl.getAnnotations() != null
-                && !decl.getAnnotations().isEmpty()) {
+                && !decl.getAnnotations().isEmpty()
+                && false) {
             stubAlwaysWarn(
                     String.format(
                             "parseConstructor: constructor of a top-level class cannot have receiver annotations\n"
