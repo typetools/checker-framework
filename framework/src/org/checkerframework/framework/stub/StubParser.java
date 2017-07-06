@@ -595,8 +595,8 @@ public class StubParser {
                 && !decl.getAnnotations().isEmpty()) {
             stubAlwaysWarn(
                     String.format(
-                            "parseMethod: static methods cannot have receiver annotations%n"
-                                    + "Method: %s%n"
+                            "parseMethod: static methods cannot have receiver annotations\n"
+                                    + "Method: %s\n"
                                     + "Receiver annotations: %s",
                             methodType, decl.getAnnotations()));
         } else {
