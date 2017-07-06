@@ -725,8 +725,7 @@ public class StubParser {
         ClassOrInterfaceType declType = unwrapDeclaredType(typeDef);
         if (atype.getKind() == TypeKind.DECLARED && declType != null) {
             AnnotatedDeclaredType adeclType = (AnnotatedDeclaredType) atype;
-            // TODO Check the object exists
-            if (declType.getTypeArguments() != null
+            if (declType.getTypeArguments().isPresent()
                     && !declType.getTypeArguments().get().isEmpty()
                     && !adeclType.getTypeArguments().isEmpty()) {
                 assert declType.getTypeArguments().get().size()
@@ -747,12 +746,16 @@ public class StubParser {
             AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atype;
             WildcardType wildcardDef = (WildcardType) typeDef;
             if (wildcardDef.getExtendedType() != null) {
-                // TODO Check the object exists. Simplify the logic
-                annotate(wildcardType.getExtendsBound(), wildcardDef.getExtendedType().get());
+                // TODO Simplify the logic
+                if (wildcardDef.getExtendedType().isPresent()) {
+                    annotate(wildcardType.getExtendsBound(), wildcardDef.getExtendedType().get());
+                }
                 annotate(wildcardType.getSuperBound(), typeDef.getAnnotations());
             } else if (wildcardDef.getSuperType() != null) {
-                // TODO Check the object exists. Simplify the logic
-                annotate(wildcardType.getSuperBound(), wildcardDef.getSuperType().get());
+                // TODO Simplify the logic
+                if (wildcardDef.getSuperType().isPresent()) {
+                    annotate(wildcardType.getSuperBound(), wildcardDef.getSuperType().get());
+                }
                 annotate(wildcardType.getExtendsBound(), typeDef.getAnnotations());
             } else {
                 annotate(atype, typeDef.getAnnotations());

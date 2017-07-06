@@ -1,14 +1,12 @@
 package org.checkerframework.framework.stub;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.StubUnit;
-import com.github.javaparser.ast.body.BodyDeclaration;
-import com.github.javaparser.ast.body.ConstructorDeclaration;
-import com.github.javaparser.ast.body.FieldDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.TypeDeclaration;
-import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.type.*;
+import com.github.javaparser.ast.visitor.SimpleVoidVisitor;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -126,11 +124,11 @@ public class StubUtil {
     }
 
     /*package-scope*/ static String toString(MethodDeclaration method) {
-        return method.toString();
+        return ElementPrinter.toString(method);
     }
 
     /*package-scope*/ static String toString(ConstructorDeclaration constructor) {
-        return constructor.toString();
+        return ElementPrinter.toString(constructor);
     }
 
     /*package-scope*/ static String toString(VariableDeclarator field) {
@@ -213,7 +211,7 @@ public class StubUtil {
         return null; // dead code
     }
 
-    /*private static final class ElementPrinter extends SimpleVoidVisitor<Void> {
+    private static final class ElementPrinter extends SimpleVoidVisitor<Void> {
         public static String toString(Node n) {
             ElementPrinter printer = new ElementPrinter();
             n.accept(printer, null);
@@ -264,10 +262,11 @@ public class StubUtil {
 
         @Override
         public void visit(Parameter n, Void arg) {
-            if (n.getId().getArrayCount() > 0) {
+            // TODO Implement this check
+            /*if (n.getId().getArrayCount() > 0) {
                 ErrorReporter.errorAbort(
                         "StubUtil: put array brackets on the type, not the variable: " + n);
-            }
+            }*/
 
             n.getType().accept(this, arg);
             if (n.isVarArgs()) {
@@ -284,28 +283,28 @@ public class StubUtil {
         @Override
         public void visit(PrimitiveType n, Void arg) {
             switch (n.getType()) {
-                case Boolean:
+                case BOOLEAN:
                     sb.append("boolean");
                     break;
-                case Byte:
+                case BYTE:
                     sb.append("byte");
                     break;
-                case Char:
+                case CHAR:
                     sb.append("char");
                     break;
-                case Double:
+                case DOUBLE:
                     sb.append("double");
                     break;
-                case Float:
+                case FLOAT:
                     sb.append("float");
                     break;
-                case Int:
+                case INT:
                     sb.append("int");
                     break;
-                case Long:
+                case LONG:
                     sb.append("long");
                     break;
-                case Short:
+                case SHORT:
                     sb.append("short");
                     break;
                 default:
@@ -313,13 +312,14 @@ public class StubUtil {
             }
         }
 
-        @Override
+        // TODO Pull to the parent
+        /*@Override
         public void visit(ReferenceType n, Void arg) {
             n.getType().accept(this, arg);
             for (int i = 0; i < n.getArrayCount(); ++i) {
                 sb.append("[]");
             }
-        }
+        }*/
 
         @Override
         public void visit(VoidType n, Void arg) {
@@ -332,7 +332,7 @@ public class StubUtil {
             // TODO: Why?
             ErrorReporter.errorAbort("StubUtil: don't print type args!");
         }
-    }*/
+    }
 
     public static List<StubResource> allStubFiles(String stub) {
         List<StubResource> resources = new ArrayList<StubResource>();
