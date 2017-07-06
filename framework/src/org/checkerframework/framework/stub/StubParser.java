@@ -84,7 +84,7 @@ public class StubParser {
     /** The file being parsed (makes error messages more informative). */
     private final String filename;
 
-    private final StubUnit index;
+    private final StubUnit stubUnit;
     private final ProcessingEnvironment processingEnv;
     private final AnnotatedTypeFactory atypeFactory;
     private final Elements elements;
@@ -145,15 +145,15 @@ public class StubParser {
         if (debugStubParser) {
             stubDebug(String.format("parsing stub file %s%n", filename));
         }
-        StubUnit parsedindex;
+        StubUnit parsedStubUnit;
         try {
-            parsedindex = JavaParser.parseStubUnit(inputStream);
+            parsedStubUnit = JavaParser.parseStubUnit(inputStream);
         } catch (Exception e) {
             ErrorReporter.errorAbort(
                     "StubParser: exception from JavaParser.parse for file " + filename, e);
-            parsedindex = null; // dead code, but needed for def. assignment checks
+            parsedStubUnit = null; // dead code, but needed for def. assignment checks
         }
-        this.index = parsedindex;
+        this.stubUnit = parsedStubUnit;
 
         // getSupportedAnnotations also sets imports. This should be refactored to be nicer.
         supportedAnnotations = getSupportedAnnotations();
@@ -221,8 +221,8 @@ public class StubParser {
 
     /** @see #supportedAnnotations */
     private Map<String, AnnotationMirror> getSupportedAnnotations() {
-        assert !index.getCompilationUnits().isEmpty();
-        CompilationUnit cu = index.getCompilationUnits().get(0);
+        assert !stubUnit.getCompilationUnits().isEmpty();
+        CompilationUnit cu = stubUnit.getCompilationUnits().get(0);
 
         Map<String, AnnotationMirror> result = new HashMap<String, AnnotationMirror>();
 
@@ -308,7 +308,7 @@ public class StubParser {
     public void parse(
             Map<Element, AnnotatedTypeMirror> atypes,
             Map<String, Set<AnnotationMirror>> declAnnos) {
-        parse(this.index, atypes, declAnnos);
+        parse(this.stubUnit, atypes, declAnnos);
     }
 
     private void parse(
