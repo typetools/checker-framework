@@ -603,8 +603,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (!supportedTypeQualifiers.contains(superQualifier)) {
                     continue;
                 }
-                AnnotationMirror superAnno = null;
-                superAnno = AnnotationUtils.fromClass(elements, superQualifier);
+                AnnotationMirror superAnno = AnnotationUtils.fromClass(elements, superQualifier);
                 factory.addSubtype(typeQualifierAnno, superAnno);
             }
         }
