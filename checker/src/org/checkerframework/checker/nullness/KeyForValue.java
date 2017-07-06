@@ -17,11 +17,11 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * information is required when adding the @KeyFor qualifier to the type is not a refinement of
  * type. For example,
  *
- * <pre>{@code
- * Map<T, Object> map = ...;
- * <T> T method(T param) {
+ * <pre>
+ * {@code Map<T, Object> map = ...;}
+ * {@code <T> T method(T param) { }
  *   if (map.contains(param) {
- *     @NonNull Object o = map.get(param);
+ *     {@code @NonNull Object o = map.get(param);}
  *     return param;
  *   }
  * }
