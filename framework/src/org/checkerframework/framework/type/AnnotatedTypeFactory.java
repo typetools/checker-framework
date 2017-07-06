@@ -3514,7 +3514,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             wildcardType.getExtendsBound().getUnderlyingType();
                     final TypeMirror typeParamUbType =
                             bounds.get(i).getUpperBound().getUnderlyingType();
-                    if (isExtendsWildcard(wildcardType)) {
+                    if (wildcardType.isUninferredTypeArgument()) {
+                        newTypeArguments.set(i, wildcardType);
+                    } else if (isExtendsWildcard(wildcardType)) {
                         TypeMirror glbType =
                                 InternalUtils.greatestLowerBound(
                                         this.checker.getProcessingEnvironment(),
