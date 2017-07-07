@@ -63,10 +63,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     protected final boolean ignoreRawTypes;
     protected final boolean invariantArrayComponents;
 
-    // Some subtypes of DefaultTypeHierarchy will allow covariant type arguments in certain
-    // cases.  This field identifies those cases.  See isContainedBy.
-    protected final boolean covariantTypeArgs;
-
     //TODO: Incorporate feedback from David/Suzanne
     // IMPORTANT_NOTE:
     // For MultigraphQualifierHierarchies, we check the subtyping relationship of each annotation
@@ -129,15 +125,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             final QualifierHierarchy qualifierHierarchy,
             boolean ignoreRawTypes,
             boolean invariantArrayComponents) {
-        this(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents, false);
-    }
-
-    public DefaultTypeHierarchy(
-            final BaseTypeChecker checker,
-            final QualifierHierarchy qualifierHierarchy,
-            boolean ignoreRawTypes,
-            boolean invariantArrayComponents,
-            boolean covariantTypeArgs) {
         this.checker = checker;
         this.qualifierHierarchy = qualifierHierarchy;
         this.rawnessComparer = createRawnessComparer();
@@ -145,7 +132,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
         this.ignoreRawTypes = ignoreRawTypes;
         this.invariantArrayComponents = invariantArrayComponents;
-        this.covariantTypeArgs = covariantTypeArgs;
 
         ignoreUninferredTypeArguments = !checker.hasOption("conservativeUninferredTypeArguments");
     }
@@ -553,8 +539,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
                 final AnnotatedTypeMirror superTypeArg = supertypeTypeArgs.get(i);
                 final AnnotatedTypeMirror subTypeArg = subtypeTypeArgs.get(i);
                 final boolean covariant =
-                        this.covariantTypeArgs
-                                || (covariantArgIndexes != null && covariantArgIndexes.contains(i));
+                        covariantArgIndexes != null && covariantArgIndexes.contains(i);
 
                 if (!compareTypeArgs(
                         subTypeArg, superTypeArg, supertypeRaw, subtypeRaw, covariant, visited)) {
