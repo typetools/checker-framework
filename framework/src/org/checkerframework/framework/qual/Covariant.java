@@ -1,4 +1,4 @@
-package org.checkerframework.checker.nullness.qual;
+package org.checkerframework.framework.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -6,7 +6,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-// TODO: move to org.checkerframework.framework.qual package.
 /**
  * A marker annotation, written on a class declaration, that signifies that one or more of the
  * class's type parameters can be treated covariantly. For example, if {@code MyClass} has a single

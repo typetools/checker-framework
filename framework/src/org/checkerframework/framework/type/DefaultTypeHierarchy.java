@@ -17,6 +17,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.Covariant;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
@@ -31,6 +32,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.framework.util.TypeArgumentMapper;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
@@ -130,14 +132,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         this(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents, false);
     }
 
-    public DefaultRawnessComparer createRawnessComparer() {
-        return new DefaultRawnessComparer(this);
-    }
-
-    public StructuralEqualityComparer createEqualityComparer() {
-        return new StructuralEqualityComparer(rawnessComparer);
-    }
-
     public DefaultTypeHierarchy(
             final BaseTypeChecker checker,
             final QualifierHierarchy qualifierHierarchy,
@@ -154,6 +148,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         this.covariantTypeArgs = covariantTypeArgs;
 
         ignoreUninferredTypeArguments = !checker.hasOption("conservativeUninferredTypeArguments");
+    }
+
+    public DefaultRawnessComparer createRawnessComparer() {
+        return new DefaultRawnessComparer(this);
+    }
+
+    public StructuralEqualityComparer createEqualityComparer() {
+        return new StructuralEqualityComparer(rawnessComparer);
     }
 
     /**
@@ -537,14 +539,26 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
                 return true;
             }
 
-            if (supertypeTypeArgs.size() > 0) {
-                for (int i = 0; i < supertypeTypeArgs.size(); i++) {
-                    final AnnotatedTypeMirror superTypeArg = supertypeTypeArgs.get(i);
-                    final AnnotatedTypeMirror subTypeArg = subtypeTypeArgs.get(i);
-                    if (!compareTypeArgs(
-                            subTypeArg, superTypeArg, supertypeRaw, subtypeRaw, visited)) {
-                        return false;
-                    }
+            final TypeElement supertypeElem =
+                    (TypeElement) supertype.getUnderlyingType().asElement();
+            List<Integer> covariantArgIndexes = null;
+            AnnotationMirror covam =
+                    supertype.atypeFactory.getDeclAnnotation(supertypeElem, Covariant.class);
+            if (covam != null) {
+                covariantArgIndexes =
+                        AnnotationUtils.getElementValueArray(covam, "value", Integer.class, false);
+            }
+
+            for (int i = 0; i < supertypeTypeArgs.size(); i++) {
+                final AnnotatedTypeMirror superTypeArg = supertypeTypeArgs.get(i);
+                final AnnotatedTypeMirror subTypeArg = subtypeTypeArgs.get(i);
+                final boolean covariant =
+                        this.covariantTypeArgs
+                                || (covariantArgIndexes != null && covariantArgIndexes.contains(i));
+
+                if (!compareTypeArgs(
+                        subTypeArg, superTypeArg, supertypeRaw, subtypeRaw, covariant, visited)) {
+                    return false;
                 }
             }
         }
@@ -563,13 +577,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             AnnotatedTypeMirror superTypeArg,
             boolean subtypeRaw,
             boolean supertypeRaw,
+            boolean isCovariant,
             VisitHistory visited) {
-
         if (subtypeRaw || supertypeRaw) {
             return rawnessComparer.isValidInHierarchy(subTypeArg, superTypeArg, currentTop, visited)
-                    || isContainedBy(subTypeArg, superTypeArg, visited, this.covariantTypeArgs);
+                    || isContainedBy(subTypeArg, superTypeArg, visited, isCovariant);
         } else {
-            return isContainedBy(subTypeArg, superTypeArg, visited, this.covariantTypeArgs);
+            return isContainedBy(subTypeArg, superTypeArg, visited, isCovariant);
         }
     }
 
