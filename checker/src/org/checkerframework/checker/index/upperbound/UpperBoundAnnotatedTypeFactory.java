@@ -581,7 +581,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * if numeratorTree is a + b and divisor greater than 1, and a and b are less than the
-         * length of some array, then (a + b) / divisor is less than the length of that array.
+         * length of some sequence, then (a + b) / divisor is less than the length of that sequence.
          */
         private UBQualifier plusTreeDivideByVal(int divisor, ExpressionTree numeratorTree) {
             numeratorTree = TreeUtils.skipParens(numeratorTree);
@@ -598,14 +598,16 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (left.isLessThanLengthQualifier() && right.isLessThanLengthQualifier()) {
                 LessThanLengthOf leftLTL = (LessThanLengthOf) left;
                 LessThanLengthOf rightLTL = (LessThanLengthOf) right;
-                List<String> arrays = new ArrayList<>();
-                for (String array : leftLTL.getArrays()) {
-                    if (rightLTL.isLessThanLengthOf(array) && leftLTL.isLessThanLengthOf(array)) {
-                        arrays.add(array);
+                List<String> sequences = new ArrayList<>();
+                for (String sequence : leftLTL.getSequences()) {
+                    if (rightLTL.isLessThanLengthOf(sequence)
+                            && leftLTL.isLessThanLengthOf(sequence)) {
+                        sequences.add(sequence);
                     }
                 }
-                if (!arrays.isEmpty()) {
-                    return UBQualifier.createUBQualifier(arrays, Collections.<String>emptyList());
+                if (!sequences.isEmpty()) {
+                    return UBQualifier.createUBQualifier(
+                            sequences, Collections.<String>emptyList());
                 }
             }
 

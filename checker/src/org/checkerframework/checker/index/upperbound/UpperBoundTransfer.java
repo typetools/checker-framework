@@ -403,11 +403,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     private UBQualifier removeSequenceLengths(LessThanLengthOf i, LessThanLengthOf j) {
         List<String> lessThan = new ArrayList<>();
         List<String> lessThanOrEqaul = new ArrayList<>();
-        for (String array : i.getArrays()) {
-            if (i.isLessThanLengthOf(array)) {
-                lessThan.add(array);
-            } else if (i.hasSequenceWithOffsetNeg1(array)) {
-                lessThanOrEqaul.add(array);
+        for (String sequence : i.getSequences()) {
+            if (i.isLessThanLengthOf(sequence)) {
+                lessThan.add(sequence);
+            } else if (i.hasSequenceWithOffsetNeg1(sequence)) {
+                lessThanOrEqaul.add(sequence);
             }
         }
         // Creates a qualifier that is the same a j with the array.length offsets removed. If
@@ -423,10 +423,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * If some Node a is known to be less than the length of some array x, then the type of a - b
+     * If some Node a is known to be less than the length of some sequence x, then the type of a - b
      * is @LTLengthOf(value="x", offset="b"). If b is known to be less than the length of some other
-     * array, this doesn't add any information about the type of a - b. But, if b is non-negative or
-     * positive, then a - b should keep the types of a.
+     * sequence, this doesn't add any information about the type of a - b. But, if b is non-negative
+     * or positive, then a - b should keep the types of a.
      */
     @Override
     public TransferResult<CFValue, CFStore> visitNumericalSubtraction(
@@ -453,22 +453,22 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             Node n, TransferInput<CFValue, CFStore> in, Receiver sequenceRec, Tree sequenceTree) {
         // Look up the SameLen type of the sequence.
         AnnotationMirror sameLenAnno = atypeFactory.sameLenAnnotationFromTree(sequenceTree);
-        List<String> sameLenArrays =
+        List<String> sameLenSequences =
                 sameLenAnno == null
                         ? new ArrayList<String>()
                         : IndexUtil.getValueOfAnnotationWithStringArgument(sameLenAnno);
 
-        if (!sameLenArrays.contains(sequenceRec.toString())) {
-            sameLenArrays.add(sequenceRec.toString());
+        if (!sameLenSequences.contains(sequenceRec.toString())) {
+            sameLenSequences.add(sequenceRec.toString());
         }
 
-        ArrayList<String> offsets = new ArrayList<>(sameLenArrays.size());
-        for (String s : sameLenArrays) {
+        ArrayList<String> offsets = new ArrayList<>(sameLenSequences.size());
+        for (String s : sameLenSequences) {
             offsets.add("-1");
         }
 
         if (CFAbstractStore.canInsertReceiver(sequenceRec)) {
-            UBQualifier qualifier = UBQualifier.createUBQualifier(sameLenArrays, offsets);
+            UBQualifier qualifier = UBQualifier.createUBQualifier(sameLenSequences, offsets);
             UBQualifier previous = getUBQualifier(n, in);
             return createTransferResult(n, in, qualifier.glb(previous));
         }
