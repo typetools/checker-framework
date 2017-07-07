@@ -154,6 +154,13 @@ public class NullnessAnnotatedTypeFactory
                 org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType.class,
                 MONOTONIC_NONNULL);
 
+        // Alias deprecated annotation
+        addAliasedDeclAnnotation(
+                org.checkerframework.checker.nullness.qual.Covariant.class,
+                org.checkerframework.framework.qual.Covariant.class,
+                AnnotationUtils.fromClass(
+                        elements, org.checkerframework.framework.qual.Covariant.class));
+
         // TODO: These heuristics are just here temporarily. They all either
         // need to be replaced, or carefully checked for correctness.
         generalFactory = new GeneralAnnotatedTypeFactory(checker);
