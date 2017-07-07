@@ -87,6 +87,8 @@ import org.checkerframework.checker.guieffect.qual.*;
     @UIEffect void actionPerformed(ActionEvent e);
 }
 
+@UIPackage package java.awt.dnd;
+
 @UIPackage
 package javax.swing;
 
@@ -116,3 +118,6 @@ package java.lang;
 @PolyUIType interface Runnable {
     @PolyUIEffect void run(@PolyUI Runnable this);
 }
+
+@UIPackage
+package javax.swing.event;
