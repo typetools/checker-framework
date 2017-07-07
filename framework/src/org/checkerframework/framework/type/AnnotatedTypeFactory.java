@@ -603,8 +603,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (!supportedTypeQualifiers.contains(superQualifier)) {
                     continue;
                 }
-                AnnotationMirror superAnno = null;
-                superAnno = AnnotationUtils.fromClass(elements, superQualifier);
+                AnnotationMirror superAnno = AnnotationUtils.fromClass(elements, superQualifier);
                 factory.addSubtype(typeQualifierAnno, superAnno);
             }
         }
@@ -3511,7 +3510,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (argType.getKind() == TypeKind.WILDCARD) {
                     AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) argType;
 
-                    final TypeMirror wilcardUbType =
+                    final TypeMirror wildcardUbType =
                             wildcardType.getExtendsBound().getUnderlyingType();
                     final TypeMirror typeParamUbType =
                             bounds.get(i).getUpperBound().getUnderlyingType();
@@ -3520,7 +3519,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                 InternalUtils.greatestLowerBound(
                                         this.checker.getProcessingEnvironment(),
                                         typeParamUbType,
-                                        wilcardUbType);
+                                        wildcardUbType);
 
                         // checkTypeArgs now enforces that wildcard annotation bounds MUST be within
                         // the bounds of the type parameter.  Therefore, the wildcard's upper bound
@@ -3528,7 +3527,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         // That said, the Java type does NOT have to be.
                         // Add the annotations from the wildcard to the lub type.
                         final AnnotatedTypeMirror newArg;
-                        if (types.isSameType(wilcardUbType, glbType)) {
+                        if (types.isSameType(wildcardUbType, glbType)) {
                             newArg = wildcardType.getExtendsBound().deepCopy();
 
                         } else {
