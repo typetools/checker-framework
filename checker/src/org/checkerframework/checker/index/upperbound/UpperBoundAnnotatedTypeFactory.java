@@ -76,7 +76,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public final AnnotationMirror UNKNOWN, BOTTOM, POLY;
 
-    private final IndexMethodIdentifier imf;
+    protected final IndexMethodIdentifier imf;
 
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -532,6 +532,17 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             type.addAnnotation(qualHierarchy.greatestLowerBound(leftResultType, rightResultType));
         }
 
+        /** Gets a sequence tree for a length access tree, or null if it is not a length access. */
+        private ExpressionTree getLengthSequenceTree(ExpressionTree lengthTree) {
+            if (TreeUtils.isArrayLengthAccess(lengthTree)) {
+                return ((MemberSelectTree) lengthTree).getExpression();
+            } else if (imf.isStringLength(lengthTree, processingEnv)) {
+                return TreeUtils.getReceiverTree(lengthTree);
+            }
+
+            return null;
+        }
+
         private void addAnnotationForDivide(
                 ExpressionTree numeratorTree,
                 ExpressionTree divisorTree,
@@ -551,10 +562,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             result = result.glb(plusTreeDivideByVal(divisor.intValue(), numeratorTree));
 
+            ExpressionTree numeratorSequenceTree = getLengthSequenceTree(numeratorTree);
             // If the numerator is an array length access of an array with non-zero length, and the divisor is
             // greater than one, glb the result with an LTL of the array.
-            if (TreeUtils.isArrayLengthAccess(numeratorTree) && divisor > 1) {
-                String arrayName = ((MemberSelectTree) numeratorTree).getExpression().toString();
+            if (numeratorSequenceTree != null && divisor > 1) {
+                String arrayName = numeratorSequenceTree.toString();
                 int minlen =
                         getValueAnnotatedTypeFactory()
                                 .getMinLenFromString(
@@ -601,23 +613,23 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private boolean checkForMathRandomSpecialCase(
-                ExpressionTree randTree, ExpressionTree arrLenTree, AnnotatedTypeMirror type) {
-            if (randTree.getKind() == Tree.Kind.METHOD_INVOCATION
-                    && TreeUtils.isArrayLengthAccess(arrLenTree)) {
-                MemberSelectTree mstree = (MemberSelectTree) arrLenTree;
+                ExpressionTree randTree, ExpressionTree seqLenTree, AnnotatedTypeMirror type) {
+
+            ExpressionTree seqTree = getLengthSequenceTree(seqLenTree);
+
+            if (randTree.getKind() == Tree.Kind.METHOD_INVOCATION && seqTree != null) {
+
                 MethodInvocationTree mitree = (MethodInvocationTree) randTree;
 
                 if (imf.isMathRandom(mitree, processingEnv)) {
                     // Okay, so this is Math.random() * array.length, which must be NonNegative
-                    type.addAnnotation(
-                            createLTLengthOfAnnotation(mstree.getExpression().toString()));
+                    type.addAnnotation(createLTLengthOfAnnotation(seqTree.toString()));
                     return true;
                 }
 
                 if (imf.isRandomNextDouble(mitree, processingEnv)) {
                     // Okay, so this is Random.nextDouble() * array.length, which must be NonNegative
-                    type.addAnnotation(
-                            createLTLengthOfAnnotation(mstree.getExpression().toString()));
+                    type.addAnnotation(createLTLengthOfAnnotation(seqTree.toString()));
                     return true;
                 }
             }

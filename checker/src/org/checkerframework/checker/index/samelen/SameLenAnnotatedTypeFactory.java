@@ -15,6 +15,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.PolyLength;
 import org.checkerframework.checker.index.qual.PolySameLen;
@@ -41,15 +42,17 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * The SameLen Checker is used to determine whether there are multiple arrays in a program that
- * share the same length. It is part of the Index Checker, and is used as a subchecker by the Index
- * Checker's components.
+ * The SameLen Checker is used to determine whether there are multiple fixed-length sequences (such
+ * as arrays or strings) in a program that share the same length. It is part of the Index Checker,
+ * and is used as a subchecker by the Index Checker's components.
  */
 public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public final AnnotationMirror UNKNOWN;
     private final AnnotationMirror BOTTOM;
     private final AnnotationMirror POLY;
+
+    protected final IndexMethodIdentifier imf;
 
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -58,6 +61,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         POLY = AnnotationUtils.fromClass(elements, PolySameLen.class);
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyLength.class, POLY);
+
+        imf = new IndexMethodIdentifier(processingEnv);
 
         this.postInit();
     }
@@ -189,7 +194,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public static boolean isReceiverToStringParsable(Receiver receiver) {
-        return !receiver.containsUnknown() && !(receiver instanceof FlowExpressions.ArrayCreation);
+        return !receiver.containsUnknown()
+                && !(receiver instanceof FlowExpressions.ArrayCreation)
+                && !(receiver instanceof FlowExpressions.ClassName);
     }
 
     /**

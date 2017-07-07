@@ -192,12 +192,12 @@ public abstract class UBQualifier {
     }
 
     /**
-     * Returns whether or not this qualifier has array with offset of -1.
+     * Returns whether or not this qualifier has sequence with offset of -1.
      *
-     * @param array array expression
-     * @return whether or not this qualifier has array with offset of -1.
+     * @param sequence sequence expression
+     * @return whether or not this qualifier has sequence with offset of -1.
      */
-    public boolean hasArrayWithOffsetNeg1(String array) {
+    public boolean hasSequenceWithOffsetNeg1(String sequence) {
         return false;
     }
 
@@ -221,8 +221,8 @@ public abstract class UBQualifier {
         }
 
         @Override
-        public boolean hasArrayWithOffsetNeg1(String array) {
-            Set<OffsetEquation> offsets = map.get(array);
+        public boolean hasSequenceWithOffsetNeg1(String sequence) {
+            Set<OffsetEquation> offsets = map.get(sequence);
             if (offsets == null) {
                 return false;
             }
@@ -230,14 +230,14 @@ public abstract class UBQualifier {
         }
 
         /**
-         * Is a value with this type less than or equal to the length of array?
+         * Is a value with this type less than or equal to the length of sequence?
          *
-         * @param array String array
-         * @return Is a value with this type less than or equal to the length of array?
+         * @param sequence String array
+         * @return Is a value with this type less than or equal to the length of sequence?
          */
         @Override
-        public boolean isLessThanOrEqualTo(String array) {
-            return isLessThanLengthOf(array) || hasArrayWithOffsetNeg1(array);
+        public boolean isLessThanOrEqualTo(String sequence) {
+            return isLessThanLengthOf(sequence) || hasSequenceWithOffsetNeg1(sequence);
         }
 
         /**
@@ -684,44 +684,45 @@ public abstract class UBQualifier {
         }
 
         /**
-         * Returns a copy of this qualifier with array-offset pairs where in the original the offset
-         * contains an access of an array length in arrays. The array length access has been removed
-         * from the offset. If the original qualifier has no array length offsets, then UNKNOWN is
-         * returned.
+         * Returns a copy of this qualifier with sequence-offset pairs where in the original the
+         * offset contains an access of an sequence length in {@code sequences}. The sequence length
+         * access has been removed from the offset. If the original qualifier has no sequence length
+         * offsets, then UNKNOWN is returned.
          *
-         * @param arrays access of the length of these arrays are removed
+         * @param sequences access of the length of these sequences are removed
          * @return Returns a copy of this qualifier with some offsets removed
          */
-        public UBQualifier removeArrayLengthAccess(final List<String> arrays) {
-            if (arrays.isEmpty()) {
+        public UBQualifier removeSequenceLengthAccess(final List<String> sequences) {
+            if (sequences.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
-            OffsetEquationFunction removeArrayLengthsFunc =
+            OffsetEquationFunction removeSequenceLengthsFunc =
                     new OffsetEquationFunction() {
                         @Override
                         public OffsetEquation compute(OffsetEquation eq) {
-                            return eq.removeArrayLengths(arrays);
+                            return eq.removeSequenceLengths(sequences);
                         }
                     };
-            return computeNewOffsets(removeArrayLengthsFunc);
+            return computeNewOffsets(removeSequenceLengthsFunc);
         }
         /**
-         * Returns a copy of this qualifier with array-offset pairs where in the original the offset
-         * contains an access of an array length in arrays. The array length access has been removed
-         * from the offset. If the offset also has -1 then -1 is also removed.
+         * Returns a copy of this qualifier with sequence-offset pairs where in the original the
+         * offset contains an access of an sequence length in {@code sequences}. The sequence length
+         * access has been removed from the offset. If the offset also has -1 then -1 is also
+         * removed.
          *
-         * @param arrays access of the length of these arrays are removed
+         * @param sequences access of the length of these sequences are removed
          * @return Returns a copy of this qualifier with some offsets removed
          */
-        public UBQualifier removeArrayLengthAccessAndNeg1(final List<String> arrays) {
-            if (arrays.isEmpty()) {
+        public UBQualifier removeSequenceLengthAccessAndNeg1(final List<String> sequences) {
+            if (sequences.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
-            OffsetEquationFunction removeArrayLenFunc =
+            OffsetEquationFunction removeSequenceLenFunc =
                     new OffsetEquationFunction() {
                         @Override
                         public OffsetEquation compute(OffsetEquation eq) {
-                            OffsetEquation newEq = eq.removeArrayLengths(arrays);
+                            OffsetEquation newEq = eq.removeSequenceLengths(sequences);
                             if (newEq == null) {
                                 return null;
                             }
@@ -731,7 +732,7 @@ public abstract class UBQualifier {
                             return newEq;
                         }
                     };
-            return computeNewOffsets(removeArrayLenFunc);
+            return computeNewOffsets(removeSequenceLenFunc);
         }
 
         private UBQualifier addOffset(final OffsetEquation newOffset) {

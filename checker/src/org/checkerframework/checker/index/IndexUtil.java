@@ -4,12 +4,18 @@ import com.sun.source.tree.Tree;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.util.Range;
+import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /** A collection of utility functions used by several Index Checker subcheckers. */
 public class IndexUtil {
@@ -102,5 +108,22 @@ public class IndexUtil {
             Tree tree, ValueAnnotatedTypeFactory valueAnnotatedTypeFactory) {
         AnnotatedTypeMirror minLenType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
         return valueAnnotatedTypeFactory.getMinLenValue(minLenType);
+    }
+
+    /** Determines whether the type is a sequence supported by this checker. */
+    public static boolean isSequenceType(TypeMirror type) {
+        return type.getKind() == TypeKind.ARRAY || TypesUtils.isString(type);
+    }
+
+    /** Determines whether the dataflow node is an invocation of String.length() */
+    public static boolean isStringLengthInvocation(Node node, IndexMethodIdentifier imf) {
+        if (node instanceof MethodInvocationNode) {
+            MethodInvocationNode methodInvocationNode = (MethodInvocationNode) node;
+            MethodAccessNode methodAccessNode = methodInvocationNode.getTarget();
+            if (imf.isStringLength(methodAccessNode.getMethod())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -15,6 +15,7 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -29,7 +30,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * <ol>
  *   <li>"b = new T[a.length]" implies that b is the same length as a.
  *   <li>after "if (a.length == b.length)", a and b have the same length.
- *   <li>after "if (a == b)", a and b have the same length, if they are arrays.
+ *   <li>after "if (a == b)", a and b have the same length, if they are arrays or strings.
  * </ol>
  */
 public class SameLenTransfer extends CFTransfer {
@@ -49,6 +50,24 @@ public class SameLenTransfer extends CFTransfer {
         UNKNOWN = aTypeFactory.UNKNOWN;
     }
 
+    /**
+     * Gets the receiver (sequence) of a length access node, or null if lengthNode is not a length
+     * access
+     */
+    private Node getLengthNodeReceiver(Node lengthNode) {
+        if (isArrayLengthAccess(lengthNode)) {
+            // lengthNode is a.length
+            FieldAccessNode lengthFieldAccessNode = (FieldAccessNode) lengthNode;
+            return lengthFieldAccessNode.getReceiver();
+        } else if (IndexUtil.isStringLengthInvocation(lengthNode, aTypeFactory.imf)) {
+            // lengthNode is s.length()
+            MethodInvocationNode lengthMethodInvocationNode = (MethodInvocationNode) lengthNode;
+            return lengthMethodInvocationNode.getTarget().getReceiver();
+        }
+
+        return null;
+    }
+
     @Override
     public TransferResult<CFValue, CFStore> visitAssignment(
             AssignmentNode node, TransferInput<CFValue, CFStore> in) {
@@ -56,30 +75,35 @@ public class SameLenTransfer extends CFTransfer {
         // Handle b = new T[a.length]
         if (node.getExpression() instanceof ArrayCreationNode) {
             ArrayCreationNode acNode = (ArrayCreationNode) node.getExpression();
-            if (acNode.getDimensions().size() == 1 && isArrayLengthAccess(acNode.getDimension(0))) {
-                // "new T[a.length]" is the right hand side of the assignment.
-                FieldAccessNode arrayLengthNode = (FieldAccessNode) acNode.getDimension(0);
-                Node arrayLengthNodeReceiver = arrayLengthNode.getReceiver();
-                // arrayLengthNode is known to be "new T[arrayLengthNodeReceiver.length]"
+            if (acNode.getDimensions().size() == 1) {
 
-                // targetRec is the receiver for the left hand side of the assignment.
-                Receiver targetRec =
-                        FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getTarget());
-                Receiver otherRec =
-                        FlowExpressions.internalReprOf(
-                                analysis.getTypeFactory(), arrayLengthNodeReceiver);
+                Node lengthNode = acNode.getDimension(0);
+                Node lengthNodeReceiver = getLengthNodeReceiver(lengthNode);
 
-                AnnotationMirror arrayLengthNodeAnnotation =
-                        aTypeFactory
-                                .getAnnotatedType(arrayLengthNodeReceiver.getTree())
-                                .getAnnotationInHierarchy(UNKNOWN);
+                if (lengthNodeReceiver != null) {
+                    // "new T[a.length]" or "new T[s.length()]" is the right hand side of the assignment.
+                    // lengthNode is known to be "lengthNodeReceiver.length" or "lengthNodeReceiver.length()"
 
-                AnnotationMirror combinedSameLen =
-                        aTypeFactory.createCombinedSameLen(
-                                targetRec, otherRec, UNKNOWN, arrayLengthNodeAnnotation);
+                    // targetRec is the receiver for the left hand side of the assignment.
+                    Receiver targetRec =
+                            FlowExpressions.internalReprOf(
+                                    analysis.getTypeFactory(), node.getTarget());
+                    Receiver otherRec =
+                            FlowExpressions.internalReprOf(
+                                    analysis.getTypeFactory(), lengthNodeReceiver);
 
-                propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
-                return result;
+                    AnnotationMirror lengthNodeAnnotation =
+                            aTypeFactory
+                                    .getAnnotatedType(lengthNodeReceiver.getTree())
+                                    .getAnnotationInHierarchy(UNKNOWN);
+
+                    AnnotationMirror combinedSameLen =
+                            aTypeFactory.createCombinedSameLen(
+                                    targetRec, otherRec, UNKNOWN, lengthNodeAnnotation);
+
+                    propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
+                    return result;
+                }
             }
         }
 
@@ -88,7 +112,7 @@ public class SameLenTransfer extends CFTransfer {
                         .getAnnotatedType(node.getExpression().getTree())
                         .getAnnotationInHierarchy(UNKNOWN);
 
-        // If the left side of the assignment is an array, then have both the right and left side be SameLen
+        // If the left side of the assignment is an array or a string, then have both the right and left side be SameLen
         // of each other.
 
         Receiver targetRec =
@@ -97,7 +121,7 @@ public class SameLenTransfer extends CFTransfer {
         Receiver exprRec =
                 FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getExpression());
 
-        if (node.getTarget().getType().getKind() == TypeKind.ARRAY
+        if (IndexUtil.isSequenceType(node.getTarget().getType())
                 || (rightAnno != null
                         && AnnotationUtils.areSameByClass(rightAnno, SameLen.class))) {
 
@@ -146,6 +170,7 @@ public class SameLenTransfer extends CFTransfer {
                 && ((FieldAccessNode) node).getFieldName().equals("length")
                 && ((FieldAccessNode) node).getReceiver().getType().getKind() == TypeKind.ARRAY);
     }
+
     /**
      * Handles refinement of equality comparisons. After "a.length == b.length" evaluates to true, a
      * and b have SameLen of each other in the store.
@@ -206,14 +231,15 @@ public class SameLenTransfer extends CFTransfer {
             CFValue secondValue,
             boolean notEqualTo) {
         CFStore equalStore = notEqualTo ? result.getElseStore() : result.getThenStore();
-        if (isArrayLengthAccess(firstNode) && isArrayLengthAccess(secondNode)) {
-            // Refinement in the else store if this is a.length == b.length.
-            refineEq(
-                    ((FieldAccessNode) firstNode).getReceiver(),
-                    ((FieldAccessNode) secondNode).getReceiver(),
-                    equalStore);
-        } else if (firstNode.getType().getKind() == TypeKind.ARRAY
-                || secondNode.getType().getKind() == TypeKind.ARRAY) {
+
+        Node firstLengthReceiver = getLengthNodeReceiver(firstNode);
+        Node secondLengthReceiver = getLengthNodeReceiver(secondNode);
+
+        if (firstLengthReceiver != null && secondLengthReceiver != null) {
+            // Refinement in the else store if this is a.length == b.length (or length() in case of strings).
+            refineEq(firstLengthReceiver, secondLengthReceiver, equalStore);
+        } else if (IndexUtil.isSequenceType(firstNode.getType())
+                || IndexUtil.isSequenceType(secondNode.getType())) {
             refineEq(firstNode, secondNode, equalStore);
         }
 

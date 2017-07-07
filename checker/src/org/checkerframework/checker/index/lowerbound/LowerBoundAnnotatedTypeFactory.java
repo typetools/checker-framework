@@ -309,21 +309,39 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
+         * Looks up the minlen of a member select tree. The tree must be an access to a sequence
+         * length.
+         */
+        private Integer getMinLenFromTree(Tree tree) {
+            AnnotatedTypeMirror minLenType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
+            Long min = getValueAnnotatedTypeFactory().getMinimumIntegralValue(minLenType);
+            if (min == null) {
+                return null;
+            }
+            if (min < 0 || min > Integer.MAX_VALUE) {
+                min = 0L;
+            }
+            return min.intValue();
+        }
+
+        /**
          * Looks up the minlen of a member select tree. Returns null if the tree doesn't represent
          * an array's length field.
          */
         private Integer getMinLenFromMemberSelectTree(MemberSelectTree tree) {
             if (TreeUtils.isArrayLengthAccess(tree)) {
-                AnnotatedTypeMirror minLenType =
-                        getValueAnnotatedTypeFactory().getAnnotatedType(tree);
-                Long min = getValueAnnotatedTypeFactory().getMinimumIntegralValue(minLenType);
-                if (min == null) {
-                    return null;
-                }
-                if (min < 0 || min > Integer.MAX_VALUE) {
-                    min = 0L;
-                }
-                return min.intValue();
+                return getMinLenFromTree(tree);
+            }
+            return null;
+        }
+
+        /**
+         * Looks up the minlen of a mehtod invocation tree. Returns null if the tree doesn't
+         * represent an string length method.
+         */
+        private Integer getMinLenFromMethodInvocationTree(MethodInvocationTree tree) {
+            if (imf.isStringLength(tree, processingEnv)) {
+                return getMinLenFromTree(tree);
             }
             return null;
         }
@@ -507,15 +525,21 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // Instead of a separate method for subtraction, add the negative of a constant.
                 addAnnotationForLiteralPlus(-1 * valRight.intValue(), leftType, type);
 
-                // Check if the left side is a field access of an array's length. If so,
+                Integer minLen = null;
+                // Check if the left side is a field access of an array's length,
+                // or invocation of String.length. If so,
                 // try to look up the MinLen of the array, and potentially keep
                 // this either NN or POS instead of GTEN1 or LBU.
                 if (leftExpr.getKind() == Kind.MEMBER_SELECT) {
                     MemberSelectTree mstree = (MemberSelectTree) leftExpr;
-                    Integer minLen = getMinLenFromMemberSelectTree(mstree);
-                    if (minLen != null) {
-                        type.replaceAnnotation(anmFromVal(minLen - valRight));
-                    }
+                    minLen = getMinLenFromMemberSelectTree(mstree);
+                } else if (leftExpr.getKind() == Kind.METHOD_INVOCATION) {
+                    MethodInvocationTree mitree = (MethodInvocationTree) leftExpr;
+                    minLen = getMinLenFromMethodInvocationTree(mitree);
+                }
+
+                if (minLen != null) {
+                    type.replaceAnnotation(anmFromVal(minLen - valRight));
                 }
 
                 return;
