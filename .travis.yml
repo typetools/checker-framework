@@ -78,7 +78,7 @@ script:
 
 jobs:
   include:
-    - stage: trigger downstream
+    - stage: trigger-downstream
       script: |
           echo "TRAVIS_BRANCH=$TRAVIS_BRANCH TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST"
           if [[ ($TRAVIS_BRANCH == master) &&
