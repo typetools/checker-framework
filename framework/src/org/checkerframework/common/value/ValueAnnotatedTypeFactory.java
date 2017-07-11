@@ -853,6 +853,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
+        // Don't call super.createTreeAnnotator because it includes the PropagationTreeAnnotator.
         // Only use the PropagationTreeAnnotator for typing new arrays.  The Value Checker
         // computes types differently for all other trees normally typed by the
         // PropagationTreeAnnotator.

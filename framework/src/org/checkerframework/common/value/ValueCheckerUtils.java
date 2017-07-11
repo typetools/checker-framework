@@ -134,10 +134,43 @@ public class ValueCheckerUtils {
     }
 
     /**
+     * Converts a long value to a boxed numeric type.
+     *
+     * @param value a long value
+     * @param expectedType the boxed numeric type of the result
+     * @return {@code value} converted to {@code expectedType} using standard conversion rules
+     */
+    private static <T> T convertLongToType(long value, Class<T> expectedType) {
+        Object convertedValue;
+        if (expectedType == Integer.class) {
+            convertedValue = (int) value;
+        } else if (expectedType == Short.class) {
+            convertedValue = (short) value;
+        } else if (expectedType == Byte.class) {
+            convertedValue = (byte) value;
+        } else if (expectedType == Long.class) {
+            convertedValue = value;
+        } else if (expectedType == Double.class) {
+            convertedValue = (double) value;
+        } else if (expectedType == Float.class) {
+            convertedValue = (float) value;
+        } else if (expectedType == Character.class) {
+            convertedValue = (char) value;
+        } else {
+            throw new UnsupportedOperationException(
+                    "ValueCheckerUtils: unexpected class: " + expectedType);
+        }
+        return expectedType.cast(convertedValue);
+    }
+
+    /**
      * Get all possible values from the given type and cast them into a boxed primitive type.
      *
+     * <p>{@code expectedType} must be a boxed type, not a primitive type, because primitive types
+     * cannot be stored in a list.
+     *
      * @param range the given range
-     * @param expectedType the expected type (must be a boxed type, not a primitive type)
+     * @param expectedType the expected type
      * @return a list of all the values in the range
      */
     public static <T> List<T> getValuesFromRange(Range range, Class<T> expectedType) {
@@ -149,34 +182,17 @@ public class ValueCheckerUtils {
             return values;
         }
 
-        // Does not overflow, because the width has already been checked.
-        long length = range.to - range.from;
+        // The subtraction does not overflow, because the width has already been checked, so the
+        // bound difference is less than ValueAnnotatedTypeFactory.MAX_VALUES.
+        long boundDifference = range.to - range.from;
 
         // Each value is computed as a sum of the first value and an offset within the range,
-        // to avoid comparing to range.to, which may be Long.MAX_VALUE
-        for (long offset = 0; offset <= length; offset++) {
+        // to avoid having range.to as an upper bound of the loop. range.to can be Long.MAX_VALUE,
+        // in which case a comparison value <= range.to would be always true.
+        // boundDifference is always much smaller than Long.MAX_VALUE
+        for (long offset = 0; offset <= boundDifference; offset++) {
             long value = range.from + offset;
-
-            Object convertedValue;
-            if (expectedType == Integer.class) {
-                convertedValue = (int) value;
-            } else if (expectedType == Short.class) {
-                convertedValue = (short) value;
-            } else if (expectedType == Byte.class) {
-                convertedValue = (byte) value;
-            } else if (expectedType == Long.class) {
-                convertedValue = value;
-            } else if (expectedType == Double.class) {
-                convertedValue = (double) value;
-            } else if (expectedType == Float.class) {
-                convertedValue = (float) value;
-            } else if (expectedType == Character.class) {
-                convertedValue = (char) value;
-            } else {
-                throw new UnsupportedOperationException(
-                        "ValueCheckerUtils: unexpected class: " + expectedType);
-            }
-            values.add(expectedType.cast(convertedValue));
+            values.add(convertLongToType(value, expectedType));
         }
         return values;
     }
