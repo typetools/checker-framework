@@ -527,6 +527,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else {
                     return UNKNOWNVAL;
                 }
+            } else if (AnnotationUtils.areSameByClass(lub, ArrayLenRange.class)) {
+                return UNKNOWNVAL;
             }
             return lub;
         }
