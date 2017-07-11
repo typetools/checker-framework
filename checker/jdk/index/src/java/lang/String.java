@@ -658,7 +658,7 @@ public final class String
      * @return  the length of the sequence of characters represented by this
      *          object.
      */
-    public @NonNegative /*!IndexOrHigh("this")*/ int length() {
+    public @NonNegative @IndexOrHigh("this") int length() {
         return count;
     }
 
@@ -692,7 +692,7 @@ public final class String
      *             argument is negative or not less than the length of this
      *             string.
      */
-    public char charAt(/*!IndexFor("this")*/ int index) {
+    public char charAt(@IndexFor("this") int index) {
         if ((index < 0) || (index >= count)) {
             throw new StringIndexOutOfBoundsException(index);
         }
@@ -721,7 +721,7 @@ public final class String
      *             string.
      * @since      1.5
      */
-    public int codePointAt(/*!IndexFor("this")*/ int index) {
+    public int codePointAt(@IndexFor("this") int index) {
         if ((index < 0) || (index >= count)) {
             throw new StringIndexOutOfBoundsException(index);
         }
@@ -750,7 +750,7 @@ public final class String
      *            of this string.
      * @since     1.5
      */
-    public int codePointBefore(/*!IndexFor("this")*/ int index) {
+    public int codePointBefore(@IndexFor("this") int index) {
         int i = index - 1;
         if ((i < 0) || (i >= count)) {
             throw new StringIndexOutOfBoundsException(index);
@@ -779,7 +779,7 @@ public final class String
      * <code>beginIndex</code> is larger than <code>endIndex</code>.
      * @since  1.5
      */
-    public int codePointCount(/*!IndexFor("this")*/ int beginIndex, /*!IndexOrHigh("this")*/ int endIndex) {
+    public int codePointCount(@IndexFor("this") int beginIndex, @IndexOrHigh("this") int endIndex) {
         if (beginIndex < 0 || endIndex > count || beginIndex > endIndex) {
             throw new IndexOutOfBoundsException();
         }
@@ -806,7 +806,7 @@ public final class String
      *   of <code>codePointOffset</code> code points.
      * @since 1.5
      */
-    public /*!IndexFor("this")*/ int offsetByCodePoints(/*!IndexFor("this")*/ int index, int codePointOffset) {
+    public @IndexFor("this") int offsetByCodePoints(@IndexFor("this") int index, int codePointOffset) {
         if (index < 0 || index > count) {
             throw new IndexOutOfBoundsException();
         }
@@ -852,7 +852,7 @@ public final class String
      *            <li><code>dstBegin+(srcEnd-srcBegin)</code> is larger than
      *                <code>dst.length</code></ul>
      */
-    public void getChars(/*!IndexFor("this")*/ int srcBegin, /*!IndexOrHigh("this")*/ int srcEnd, char dst[], @IndexFor("#3") int dstBegin) {
+    public void getChars(@IndexFor("this") int srcBegin, @IndexOrHigh("this") int srcEnd, char dst[], @IndexFor("#3") int dstBegin) {
         if (srcBegin < 0) {
             throw new StringIndexOutOfBoundsException(srcBegin);
         }
@@ -910,7 +910,7 @@ public final class String
      *          </ul>
      */
     @Deprecated
-    public void getBytes(/*!IndexFor("this")*/ int srcBegin, /*!IndexOrHigh("#1")*/ int srcEnd, byte dst[], @IndexFor("#3") int dstBegin) {
+    public void getBytes(@IndexFor("this") int srcBegin, @IndexOrHigh("#1") int srcEnd, byte dst[], @IndexFor("#3") int dstBegin) {
         if (srcBegin < 0) {
             throw new StringIndexOutOfBoundsException(srcBegin);
         }
@@ -1304,9 +1304,8 @@ public final class String
      *          exactly matches the specified subregion of the string argument;
      *          <code>false</code> otherwise.
      */
-    public boolean regionMatches(/*!IndexFor("this")*/ int toffset, String other, @IndexFor("#2") int ooffset,
-                                 /*!IndexOrHigh({"this","#2"})*/
-				 @IndexOrHigh("#2") int len) {
+    public boolean regionMatches(@IndexFor("this") int toffset, String other, @IndexFor("#2") int ooffset,
+				 @IndexOrHigh({"this","#2"}) int len) {
         char ta[] = value;
         int to = offset + toffset;
         char pa[] = other.value;
@@ -1374,10 +1373,9 @@ public final class String
      *          or case insensitive depends on the <code>ignoreCase</code>
      *          argument.
      */
-    public boolean regionMatches(boolean ignoreCase, /*!IndexFor("this")*/ int toffset,
+    public boolean regionMatches(boolean ignoreCase, @IndexFor("this") int toffset,
                            String other, @IndexFor("#2") int ooffset,
-				 /*!IndexOrHigh({"this","#2"})*/
-				 @IndexOrHigh("#2") int len) {
+				 @IndexOrHigh({"this","#2"}) int len) {
         char ta[] = value;
         int to = offset + toffset;
         char pa[] = other.value;
@@ -1578,7 +1576,7 @@ public final class String
      *          than or equal to <code>fromIndex</code>, or <code>-1</code>
      *          if the character does not occur.
      */
-    public @GTENegativeOne int indexOf(int ch, /*!IndexFor("this")*/ int fromIndex) {
+    public @GTENegativeOne int indexOf(int ch, @IndexFor("this") int fromIndex) {
         if (fromIndex < 0) {
             fromIndex = 0;
         } else if (fromIndex >= count) {
@@ -1683,7 +1681,7 @@ public final class String
      *          than or equal to <code>fromIndex</code>, or <code>-1</code>
      *          if the character does not occur before that point.
      */
-    public @GTENegativeOne int lastIndexOf(int ch, /*!IndexFor("this")*/ int fromIndex) {
+    public @GTENegativeOne int lastIndexOf(int ch, @IndexFor("this") int fromIndex) {
         if (ch < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
             // handle most cases here (ch is a BMP code point or a
             // negative value (invalid code point))
@@ -1754,7 +1752,7 @@ public final class String
      *          starting at the specified index,
      *          or {@code -1} if there is no such occurrence.
      */
-    public @GTENegativeOne int indexOf(String str, /*!IndexFor("this")*/ int fromIndex) {
+    public @GTENegativeOne int indexOf(String str, @IndexFor("this") int fromIndex) {
         return indexOf(value, offset, count,
                        str.value, str.offset, str.count, fromIndex);
     }
@@ -1845,7 +1843,7 @@ public final class String
      *          searching backward from the specified index,
      *          or {@code -1} if there is no such occurrence.
      */
-    public @GTENegativeOne int lastIndexOf(String str, /*!IndexFor("this")*/ int fromIndex) {
+    public @GTENegativeOne int lastIndexOf(String str, @IndexFor("this") int fromIndex) {
         return lastIndexOf(value, offset, count,
                            str.value, str.offset, str.count, fromIndex);
     }
@@ -1926,7 +1924,7 @@ public final class String
      *             <code>beginIndex</code> is negative or larger than the
      *             length of this <code>String</code> object.
      */
-    public String substring(/*!IndexFor("this")*/ int beginIndex) {
+    public String substring(@IndexFor("this") int beginIndex) {
         return substring(beginIndex, count);
     }
 
@@ -1952,7 +1950,7 @@ public final class String
      *             <code>beginIndex</code> is larger than
      *             <code>endIndex</code>.
      */
-    public String substring(/*!IndexFor("this")*/ int beginIndex, /*!IndexOrHigh("this")*/ int endIndex) {
+    public String substring(@IndexFor("this") int beginIndex, @IndexOrHigh("this") int endIndex) {
         if (beginIndex < 0) {
             throw new StringIndexOutOfBoundsException(beginIndex);
         }
@@ -1994,7 +1992,7 @@ public final class String
      * @since 1.4
      * @spec JSR-51
      */
-    public CharSequence subSequence(/*!IndexFor("this")*/ int beginIndex, /*!IndexOrHigh("this")*/ int endIndex) {
+    public CharSequence subSequence(@IndexFor("this") int beginIndex, @IndexOrHigh("this") int endIndex) {
         return this.substring(beginIndex, endIndex);
     }
 

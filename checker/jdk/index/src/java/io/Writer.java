@@ -178,7 +178,7 @@ public abstract class Writer implements Appendable, Closeable, Flushable {
      * @throws  IOException
      *          If an I/O error occurs
      */
-    public void write(String str, /*!IndexFor("#1")*/ int off, /*!IndexOrHigh("#1")*/ int len) throws IOException {
+    public void write(String str, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         synchronized (lock) {
             char cbuf[];
             if (len <= writeBufferSize) {
