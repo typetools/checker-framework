@@ -1709,7 +1709,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return createArrayLenRangeAnnotation(Collections.min(lengths), Collections.max(lengths));
     }
 
-    /** Converts an {@code @StringVal} annotation to an {@code @ArrayLen} annotation. */
+    /**
+     * Converts an {@code @StringVal} annotation to an {@code @ArrayLen} annotation. If the
+     * {@code @StringVal} annotation contains string values of more than MAX_VALUES distinct
+     * lengths, {@code @ArrayLenRange} annotation is returned instead.
+     */
     private AnnotationMirror convertStringValToArrayLen(AnnotationMirror stringValAnno) {
         List<String> values = getStringValues(stringValAnno);
         return createArrayLenAnnotation(ValueCheckerUtils.getLengthsForStringValues(values));
