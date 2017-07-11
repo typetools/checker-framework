@@ -25,7 +25,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory;
 import org.checkerframework.checker.initialization.qual.FBCBottom;
 import org.checkerframework.checker.initialization.qual.Initialized;
@@ -44,7 +43,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
@@ -55,7 +53,6 @@ import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.DependentTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -301,25 +298,6 @@ public class NullnessAnnotatedTypeFactory
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
                 super.methodFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
-
-        // Change the type any uninferred type arguments to @NonNull @Initialized.
-        SimpleAnnotatedTypeScanner<Void, Void> scan =
-                new SimpleAnnotatedTypeScanner<Void, Void>() {
-                    @Override
-                    protected Void defaultAction(AnnotatedTypeMirror type, Void aVoid) {
-                        if (type == null) {
-                            return null;
-                        }
-                        if (type.getKind() == TypeKind.WILDCARD
-                                && ((AnnotatedWildcardType) type).isUninferredTypeArgument()
-                                && ignoreUninferredTypeArguments) {
-                            type.replaceAnnotations(qualHierarchy.getBottomAnnotations());
-                        }
-                        return null;
-                    }
-                };
-        scan.visit(method.getReturnType());
-
         systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
         return mfuPair;

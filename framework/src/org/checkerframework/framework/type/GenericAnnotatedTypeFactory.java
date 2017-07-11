@@ -80,6 +80,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.Unqualified;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
@@ -1374,6 +1375,14 @@ public abstract class GenericAnnotatedTypeFactory<
             dependentTypesHelper.viewpointAdaptMethod(tree, method);
         }
         poly.annotate(tree, method);
+        if (ignoreUninferredTypeArguments
+                && mfuPair.first.getReturnType().getKind() == TypeKind.WILDCARD
+                && ((AnnotatedWildcardType) mfuPair.first.getReturnType())
+                        .isUninferredTypeArgument()) {
+            mfuPair.first
+                    .getReturnType()
+                    .replaceAnnotations(defaults.getDefaultQualifiersForCheckedCode());
+        }
         return mfuPair;
     }
 

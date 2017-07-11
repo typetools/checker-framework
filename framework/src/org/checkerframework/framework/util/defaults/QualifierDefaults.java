@@ -202,6 +202,17 @@ public class QualifierDefaults {
         return false;
     }
 
+    /** @return the default qualifiers for this hierarchy */
+    public Set<AnnotationMirror> getDefaultQualifiersForCheckedCode() {
+        Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+        for (Default def : checkedCodeDefaults) {
+            if (def.location == TypeUseLocation.OTHERWISE || def.location == TypeUseLocation.ALL) {
+                set.add(def.anno);
+            }
+        }
+        return set;
+    }
+
     /**
      * Add standard unchecked defaults that do not conflict with previously added defaults.
      *
