@@ -747,12 +747,11 @@ Java generics, if you can do so:
 \end{Verbatim}
 
 \label{qualifier-polymorphism-return-type}
-It is not permitted to write just one polymorphic qualifier, on a return type.
-You may write a polymorphic qualifier on a return type only if
-that polymorphic qualifier also appears elsewhere in the signature, on some
-formal parameter.
-
-%% It would be nice to give an example that isn't too contrived.
+It is unusual, but permitted, to write just one polymorphic qualifier, on a return type.
+This is just like it is unusual, but permitted, to write just one
+occurrence of a generic type parameter, on a return type.  An example of
+such a method is
+\sunjavadoc{java/util/Collections.html\#emptyList--}{Collections.emptyList()}.
 
 
 \subsection{Using a single polymorphic qualifier in a method signature\label{qualifier-polymorphism-single-qualifier}}

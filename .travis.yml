@@ -2,16 +2,6 @@ sudo: false
 
 language: generic
 
-# These are packages for use by the Travis process.  Currently, that is just
-# node.  An alternative is to use "language: java", which has node installed.
-#
-# To install a package for use by the Checker Framework tests, which run in a
-# Docker container, edit a Dockerfile in `checker/bin-devel/`, then build a new
-# Docker container and upload it.
-before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq nodejs
-
 services:
   - docker
 
@@ -78,18 +68,37 @@ script:
 
 jobs:
   include:
-    - stage: trigger downstream
+    - stage: trigger-downstream
       script: |
           echo "TRAVIS_BRANCH=$TRAVIS_BRANCH TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST"
           if [[ ($TRAVIS_BRANCH == master) &&
                 ($TRAVIS_PULL_REQUEST == false) ]] ; then
-            curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
             SLUGOWNER=${TRAVIS_REPO_SLUG%/*}
-            sh trigger-travis.sh ${SLUGOWNER} checker-framework.demos $TRAVISTOKEN
-            sh trigger-travis.sh ${SLUGOWNER} checker-framework-inference $TRAVISTOKEN
-            sh trigger-travis.sh typetests daikon-typecheck $TRAVISTOKEN
-            sh trigger-travis.sh typetests plume-lib-typecheck $TRAVISTOKEN
-            sh trigger-travis.sh ${SLUGOWNER} sparta $TRAVISTOKEN
+            if [[ "$SLUGOWNER" == "" ]]; then
+              SLUGOWNER=typetools
+            fi
+
+            curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
+
+            git ls-remote https://github.com/${SLUGOWNER}/checker-framework.demos.git &>-
+            if [ "$?" -eq 0 ]; then
+              sh trigger-travis.sh ${SLUGOWNER} checker-framework.demos $TRAVISTOKEN
+            fi
+
+            git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-
+            if [ "$?" -eq 0 ]; then
+              sh trigger-travis.sh ${SLUGOWNER} checker-framework-inference $TRAVISTOKEN
+            fi
+
+            git ls-remote https://github.com/${SLUGOWNER}/sparta.git &>-
+            if [ "$?" -eq 0 ]; then
+              sh trigger-travis.sh ${SLUGOWNER} sparta $TRAVISTOKEN
+            fi
+
+            if [[ "${SLUGOWNER}" == "typetools" ]]; then
+              sh trigger-travis.sh typetests daikon-typecheck $TRAVISTOKEN
+              sh trigger-travis.sh typetests plume-lib-typecheck $TRAVISTOKEN
+            fi
           fi
 
 git:

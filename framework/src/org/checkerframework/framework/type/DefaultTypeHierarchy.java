@@ -920,6 +920,19 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     @Override
     public Boolean visitWildcard_Declared(
             AnnotatedWildcardType subtype, AnnotatedDeclaredType supertype, VisitHistory visited) {
+        if (subtype.isUninferredTypeArgument() && supertype.getTypeArguments().isEmpty()) {
+            // visitWildcardSubtype doesn't check uninferred type arguments, because the
+            // underlying Java types may not be in the correct relationship.  But, if the
+            // declared type does not have type arguments, then checking primary annotations is
+            // sufficient.
+            // For example, if the wildcard is ? extends @Nullable Object and the supertype is
+            // @Nullable String, then it is safe to return true. However if the supertype is
+            // @NullableList<@NonNull String> then it's not possible to decide if it is a subtype of
+            // the wildcard.
+            AnnotationMirror subtypeAnno = subtype.getEffectiveAnnotationInHierarchy(currentTop);
+            AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
+            return isAnnoSubtype(subtypeAnno, supertypeAnno, false);
+        }
         return visitWildcardSubtype(subtype, supertype, visited);
     }
 
@@ -934,6 +947,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     @Override
     public Boolean visitWildcard_Primitive(
             AnnotatedWildcardType subtype, AnnotatedPrimitiveType supertype, VisitHistory visited) {
+        if (subtype.isUninferredTypeArgument()) {
+            AnnotationMirror subtypeAnno = subtype.getEffectiveAnnotationInHierarchy(currentTop);
+            AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
+            return isAnnoSubtype(subtypeAnno, supertypeAnno, false);
+        }
         return visitWildcardSubtype(subtype, supertype, visited);
     }
 
@@ -1003,6 +1021,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
     protected boolean visitWildcardSubtype(
             AnnotatedWildcardType subtype, AnnotatedTypeMirror supertype, VisitHistory visited) {
+        if (subtype.isUninferredTypeArgument()) {
+            return ignoreUninferredTypeArguments;
+        }
         TypeMirror superTypeMirror = supertype.getUnderlyingType();
         if (supertype.getKind() == TypeKind.TYPEVAR) {
             TypeVariable atv = (TypeVariable) supertype.getUnderlyingType();

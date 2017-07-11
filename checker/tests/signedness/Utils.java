@@ -145,4 +145,25 @@ public class Utils {
 
         res = SignednessUtil.toUnsignedString(ubyte, 10);
     }
+
+    public void floatingPointConversionTests(
+            @Unsigned long ulong,
+            @Unsigned int uint,
+            @Unsigned short ushort,
+            @Unsigned byte ubyte) {
+
+        float resFloat;
+
+        resFloat = SignednessUtil.toFloat(ubyte);
+        resFloat = SignednessUtil.toFloat(ushort);
+        resFloat = SignednessUtil.toFloat(uint);
+        resFloat = SignednessUtil.toFloat(ulong);
+
+        double resDouble;
+
+        resDouble = SignednessUtil.toDouble(ubyte);
+        resDouble = SignednessUtil.toDouble(ushort);
+        resDouble = SignednessUtil.toDouble(uint);
+        resDouble = SignednessUtil.toDouble(ulong);
+    }
 }

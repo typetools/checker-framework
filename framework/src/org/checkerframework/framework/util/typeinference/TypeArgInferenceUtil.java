@@ -45,48 +45,47 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** Miscellaneous utilities to help in type argument inference. */
 public class TypeArgInferenceUtil {
 
     /**
-     * Takes an expression tree that must be either a MethodInovcationTree or a NewClassTree
-     * (constructor invocation) and returns the arguments to its formal parameters. An
-     * IllegalArgumentException will be thrown if it is neither
+     * Returns a list of boxed annotated types corresponding to the arguments in {@code
+     * methodInvocation}.
      *
-     * @param expression a MethodInvocationTree or a NewClassTree
-     * @return the list of arguments to Expression
+     * @param methodInvocation {@link MethodInvocationTree} or {@link NewClassTree}
+     * @param typeFactory type factory
+     * @return a list of boxed annotated types corresponding to the arguments in {@code
+     *     methodInvocation}.
      */
-    public static List<? extends ExpressionTree> expressionToArgTrees(
-            final ExpressionTree expression) {
+    public static List<AnnotatedTypeMirror> getArgumentTypes(
+            final ExpressionTree methodInvocation, final AnnotatedTypeFactory typeFactory) {
         final List<? extends ExpressionTree> argTrees;
-        if (expression.getKind() == Kind.METHOD_INVOCATION) {
-            argTrees = ((MethodInvocationTree) expression).getArguments();
 
-        } else if (expression.getKind() == Kind.NEW_CLASS) {
-            argTrees = ((NewClassTree) expression).getArguments();
+        if (methodInvocation.getKind() == Kind.METHOD_INVOCATION) {
+            argTrees = ((MethodInvocationTree) methodInvocation).getArguments();
+
+        } else if (methodInvocation.getKind() == Kind.NEW_CLASS) {
+            argTrees = ((NewClassTree) methodInvocation).getArguments();
 
         } else {
-            argTrees = null;
-        }
-
-        if (argTrees == null) {
-            throw new IllegalArgumentException(
+            ErrorReporter.errorAbort(
                     "TypeArgumentInference.relationsFromMethodArguments:\n"
                             + "couldn't determine arguments from tree: "
-                            + expression);
+                            + methodInvocation);
+            throw new Error(); // dead code
         }
 
-        return argTrees;
-    }
-
-    /** Calls get annotated types on a List of trees using the given type factory. */
-    public static List<AnnotatedTypeMirror> treesToTypes(
-            final List<? extends ExpressionTree> argTrees, final AnnotatedTypeFactory typeFactory) {
         final List<AnnotatedTypeMirror> argTypes = new ArrayList<>(argTrees.size());
         for (Tree arg : argTrees) {
-            argTypes.add(typeFactory.getAnnotatedType(arg));
+            AnnotatedTypeMirror argType = typeFactory.getAnnotatedType(arg);
+            if (TypesUtils.isPrimitive(argType.getUnderlyingType())) {
+                argTypes.add(typeFactory.getBoxedType((AnnotatedPrimitiveType) argType));
+            } else {
+                argTypes.add(argType);
+            }
         }
 
         return argTypes;
@@ -99,7 +98,8 @@ public class TypeArgInferenceUtil {
     public static boolean isATarget(
             final AnnotatedTypeMirror type, final Set<TypeVariable> targetTypeVars) {
         return type.getKind() == TypeKind.TYPEVAR
-                && targetTypeVars.contains(type.getUnderlyingType());
+                && targetTypeVars.contains(
+                        TypeAnnotationUtils.unannotatedType(type.getUnderlyingType()));
     }
 
     /**
@@ -111,7 +111,8 @@ public class TypeArgInferenceUtil {
         final Set<TypeVariable> targets = new LinkedHashSet<>(annotatedTypeVars.size());
 
         for (final AnnotatedTypeVariable atv : annotatedTypeVars) {
-            targets.add(atv.getUnderlyingType());
+            targets.add(
+                    (TypeVariable) TypeAnnotationUtils.unannotatedType(atv.getUnderlyingType()));
         }
 
         return targets;
@@ -321,7 +322,10 @@ public class TypeArgInferenceUtil {
         final List<TypeVariable> typeVars = new ArrayList<>(annotatedTypeVars.size());
 
         for (AnnotatedTypeVariable annotatedTypeVar : annotatedTypeVars) {
-            typeVars.add(annotatedTypeVar.getUnderlyingType());
+            typeVars.add(
+                    (TypeVariable)
+                            TypeAnnotationUtils.unannotatedType(
+                                    annotatedTypeVar.getUnderlyingType()));
         }
 
         // note NULL values creep in because the underlying visitor uses them in various places
@@ -380,7 +384,7 @@ public class TypeArgInferenceUtil {
 
         @Override
         public Boolean visitTypeVariable(AnnotatedTypeVariable type, List<TypeVariable> typeVars) {
-            if (typeVars.contains(type.getUnderlyingType())) {
+            if (typeVars.contains(TypeAnnotationUtils.unannotatedType(type.getUnderlyingType()))) {
                 return true;
             } else {
                 return super.visitTypeVariable(type, typeVars);
@@ -423,7 +427,9 @@ public class TypeArgInferenceUtil {
     public static AnnotatedTypeMirror substitute(
             Map<TypeVariable, AnnotatedTypeMirror> substitutions,
             final AnnotatedTypeMirror toModify) {
-        final AnnotatedTypeMirror substitution = substitutions.get(toModify.getUnderlyingType());
+        final AnnotatedTypeMirror substitution =
+                substitutions.get(
+                        TypeAnnotationUtils.unannotatedType(toModify.getUnderlyingType()));
         if (substitution != null) {
             return substitution.deepCopy();
         }

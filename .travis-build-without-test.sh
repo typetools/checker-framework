@@ -34,11 +34,13 @@ else
     echo "Running: git ls-remote https://github.com/${SLUGOWNER}/annotation-tools.git &>-"
     git ls-remote https://github.com/${SLUGOWNER}/annotation-tools.git &>-
     if [ "$?" -ne 0 ]; then
-        SLUGOWNER=typetools
+        ATSLUGOWNER=typetools
+    else
+        ATSLUGOWNER=${SLUGOWNER}
     fi
     set -e
-    echo "Running:  (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/annotation-tools.git)"
-    (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/annotation-tools.git)
+    echo "Running:  (cd .. && git clone --depth 1 https://github.com/${ATSLUGOWNER}/annotation-tools.git)"
+    (cd .. && git clone --depth 1 https://github.com/${ATSLUGOWNER}/annotation-tools.git)
     echo "... done: (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/annotation-tools.git)"
 fi
 

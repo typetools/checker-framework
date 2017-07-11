@@ -20,6 +20,18 @@ public class Range {
     /** The upper bound of the interval, inclusive. */
     public final long to;
 
+    /**
+     * Should ranges take overflow into account or ignore it?
+     *
+     * <p>Any checker that uses this library should be sure to set this field. By default, this
+     * field is set to false (meaning overflow is taken into account), but a previous checker might
+     * have set it to true.
+     *
+     * <p>A static field is used because passing an instance field throughout the class (and at all
+     * of its use cases) results in the code being unacceptably bloated.
+     */
+    public static boolean IGNORE_OVERFLOW = false;
+
     /** A range containing all possible 64-bit values. */
     public static final Range EVERYTHING = new Range(Long.MIN_VALUE, Long.MAX_VALUE);
 
@@ -94,8 +106,23 @@ public class Range {
     }
 
     /** Return true if this range contains every {@code long} value. */
-    public boolean isEverything() {
+    public boolean isLongEverything() {
         return from == Long.MIN_VALUE && to == Long.MAX_VALUE;
+    }
+
+    /** Return true if this range contains every {@code int} value. */
+    public boolean isIntEverything() {
+        return from == Integer.MIN_VALUE && to == Integer.MAX_VALUE;
+    }
+
+    /** Return true if this range contains every {@code short} value. */
+    public boolean isShortEverything() {
+        return from == Short.MIN_VALUE && to == Short.MAX_VALUE;
+    }
+
+    /** Return true if this range contains every {@code byte} value. */
+    public boolean isByteEverything() {
+        return from == Byte.MIN_VALUE && to == Byte.MAX_VALUE;
     }
 
     /** Return true if this range contains no values. */
@@ -109,28 +136,32 @@ public class Range {
     /**
      * Converts a this range to a 32-bit integral range.
      *
-     * <p>If this range is too wide, i.e., wider than the full range of the Integer class, return
-     * INT_EVERYTHING.
+     * <p>If {@link #IGNORE_OVERFLOW} is true and one of the bounds is outside the Integer range,
+     * then that bound is set to the bound of the Integer range.
      *
-     * <p>If the bounds of this range are not representable as 32-bit integers, convert the bounds
-     * to Integer type in accordance with Java overflow rules, e.g., Integer.MAX_VALUE + 1 is
-     * converted to Integer.MIN_VALUE.
+     * <p>If {@link #IGNORE_OVERFLOW} is false and this range is too wide, i.e., wider than the full
+     * range of the Integer class, return INT_EVERYTHING.
+     *
+     * <p>If {@link #IGNORE_OVERFLOW} is false and the bounds of this range are not representable as
+     * 32-bit integers, convert the bounds to Integer type in accordance with Java overflow rules,
+     * e.g., Integer.MAX_VALUE + 1 is converted to Integer.MIN_VALUE.
      */
     public Range intRange() {
         if (this.isNothing()) {
             return this;
         }
+        if (IGNORE_OVERFLOW) {
+            return new Range(Math.max(from, Integer.MIN_VALUE), Math.min(to, Integer.MAX_VALUE));
+        }
         if (this.isWiderThan(integerWidth)) {
             return INT_EVERYTHING;
-        } else {
-            int intFrom = (int) this.from;
-            int intTo = (int) this.to;
-            if (intFrom <= intTo) {
-                return new Range(intFrom, intTo);
-            } else {
-                return INT_EVERYTHING;
-            }
         }
+        int intFrom = (int) this.from;
+        int intTo = (int) this.to;
+        if (intFrom <= intTo) {
+            return new Range(intFrom, intTo);
+        }
+        return INT_EVERYTHING;
     }
 
     /** The number of values representable in 16 bits: 2^16 or 1&lt;&lt;16. */
@@ -139,29 +170,33 @@ public class Range {
     /**
      * Converts a this range to a 16-bit short range.
      *
-     * <p>If this range is too wide, i.e., wider than the full range of the Short class, return
-     * SHORT_EVERYTHING.
+     * <p>If {@link #IGNORE_OVERFLOW} is true and one of the bounds is outside the Short range, then
+     * that bound is set to the bound of the Short range.
      *
-     * <p>If the bounds of this range are not representable as 16-bit integers, convert the bounds
-     * to Integer type in accordance with Java overflow rules, e.g., Short.MAX_VALUE + 1 is
-     * converted to Short.MIN_VALUE.
+     * <p>If {@link #IGNORE_OVERFLOW} is false and this range is too wide, i.e., wider than the full
+     * range of the Short class, return SHORT_EVERYTHING.
+     *
+     * <p>If {@link #IGNORE_OVERFLOW} is false and the bounds of this range are not representable as
+     * 16-bit integers, convert the bounds to Integer type in accordance with Java overflow rules,
+     * e.g., Short.MAX_VALUE + 1 is converted to Short.MIN_VALUE.
      */
     public Range shortRange() {
         if (this.isNothing()) {
             return this;
         }
+        if (IGNORE_OVERFLOW) {
+            return new Range(Math.max(from, Short.MIN_VALUE), Math.min(to, Short.MAX_VALUE));
+        }
         if (this.isWiderThan(shortWidth)) {
             // short is be promoted to int before the operation so no need for explicit casting
             return SHORT_EVERYTHING;
-        } else {
-            short shortFrom = (short) this.from;
-            short shortTo = (short) this.to;
-            if (shortFrom <= shortTo) {
-                return new Range(shortFrom, shortTo);
-            } else {
-                return SHORT_EVERYTHING;
-            }
         }
+        short shortFrom = (short) this.from;
+        short shortTo = (short) this.to;
+        if (shortFrom <= shortTo) {
+            return new Range(shortFrom, shortTo);
+        }
+        return SHORT_EVERYTHING;
     }
 
     /** The number of values representable in 8 bits: 2^8 or 1&lt;&lt;8. */
@@ -170,29 +205,33 @@ public class Range {
     /**
      * Converts a this range to a 8-bit byte range.
      *
-     * <p>If this range is too wide, i.e., wider than the full range of the Byte class, return
-     * BYTE_EVERYTHING.
+     * <p>If {@link #IGNORE_OVERFLOW} is true and one of the bounds is outside the Byte range, then
+     * that bound is set to the bound of the Byte range.
      *
-     * <p>If the bounds of this range are not representable as 8-bit integers, convert the bounds to
-     * Integer type in accordance with Java overflow rules, e.g., Byte.MAX_VALUE + 1 is converted to
-     * Byte.MIN_VALUE.
+     * <p>If {@link #IGNORE_OVERFLOW} is false and this range is too wide, i.e., wider than the full
+     * range of the Byte class, return BYTE_EVERYTHING.
+     *
+     * <p>If {@link #IGNORE_OVERFLOW} is false and the bounds of this range are not representable as
+     * 8-bit integers, convert the bounds to Integer type in accordance with Java overflow rules,
+     * e.g., Byte.MAX_VALUE + 1 is converted to Byte.MIN_VALUE.
      */
     public Range byteRange() {
         if (this.isNothing()) {
             return this;
         }
+        if (IGNORE_OVERFLOW) {
+            return new Range(Math.max(from, Byte.MIN_VALUE), Math.min(to, Byte.MAX_VALUE));
+        }
         if (this.isWiderThan(byteWidth)) {
             // byte is be promoted to int before the operation so no need for explicit casting
             return BYTE_EVERYTHING;
-        } else {
-            byte byteFrom = (byte) this.from;
-            byte byteTo = (byte) this.to;
-            if (byteFrom <= byteTo) {
-                return new Range(byteFrom, byteTo);
-            } else {
-                return BYTE_EVERYTHING;
-            }
         }
+        byte byteFrom = (byte) this.from;
+        byte byteTo = (byte) this.to;
+        if (byteFrom <= byteTo) {
+            return new Range(byteFrom, byteTo);
+        }
+        return BYTE_EVERYTHING;
     }
 
     /** Returns true if the element is contained in this range. */
@@ -862,26 +901,39 @@ public class Range {
      * <p>If the BigInteger range is too wide, i.e., wider than the full range of the Long class,
      * return EVERYTHING.
      *
-     * <p>If the BigInteger bounds are out of the Long type scope, convert the bounds to Long type
-     * in accordance with Java overflow rules, e.g., Long.MAX_VALUE + 1 is converted to
-     * Long.MIN_VALUE.
+     * <p>If one of the BigInteger bounds is out of Long's range and {@link #IGNORE_OVERFLOW} is
+     * false, convert the bounds to Long type in accordance with Java overflow rules, e.g.,
+     * Long.MAX_VALUE + 1 is converted to Long.MIN_VALUE.
+     *
+     * <p>If one of the BigInteger bounds is out of Long's range and {@link #IGNORE_OVERFLOW} is
+     * true, convert the bound that is outside Long's range to max/min value of a Long.
      *
      * @param bigFrom the lower bound of the BigInteger range
      * @param bigTo the upper bound of the BigInteger range
      * @return a range with Long type bounds converted from the BigInteger range
      */
-    private static Range bigRangeToLongRange(BigInteger bigFrom, BigInteger bigTo) {
+    private Range bigRangeToLongRange(BigInteger bigFrom, BigInteger bigTo) {
         BigInteger numValues = bigTo.subtract(bigFrom).add(BigInteger.ONE);
-        if (numValues.compareTo(longWidth) == 1) {
-            return EVERYTHING;
+        long resultFrom;
+        long resultTo;
+        if (IGNORE_OVERFLOW) {
+            BigInteger longMin = BigInteger.valueOf(Long.MIN_VALUE);
+            resultFrom = bigFrom.max(longMin).longValue();
+            BigInteger longMax = BigInteger.valueOf(Long.MAX_VALUE);
+            resultTo = bigTo.min(longMax).longValue();
         } else {
-            long resultFrom = bigFrom.longValue();
-            long resultTo = bigTo.longValue();
-            if (resultFrom <= resultTo) {
-                return new Range(resultFrom, resultTo);
-            } else {
+            if (numValues.compareTo(longWidth) > 0) {
                 return EVERYTHING;
+            } else {
+                resultFrom = bigFrom.longValue();
+                resultTo = bigTo.longValue();
             }
+        }
+
+        if (resultFrom <= resultTo) {
+            return new Range(resultFrom, resultTo);
+        } else {
+            return EVERYTHING;
         }
     }
 }
