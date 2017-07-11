@@ -114,13 +114,13 @@ public abstract class QualifierHierarchy {
     public abstract AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2);
 
     /**
-     * Returns the number of iterations dataflow should preform before {@link
+     * Returns the number of iterations dataflow should perform before {@link
      * #widenedUpperBound(AnnotationMirror, AnnotationMirror)} is called or -1 if it should never be
      * called.
      *
-     * <p>Subclasses overriding this method should return some positive number.
+     * <p>Subclasses overriding this method should return some positive number or -1.
      *
-     * @return the number of iterations dataflow should preform before {@link
+     * @return the number of iterations dataflow should perform before {@link
      *     #widenedUpperBound(AnnotationMirror, AnnotationMirror)} is called or -1 if it should
      *     never be called.
      */
@@ -141,8 +141,8 @@ public abstract class QualifierHierarchy {
      * <p>If the type hierarchy has no infinite ascending chain, returns the least upper bound of
      * the two annotations.
      *
-     * @param newQualifier newest qualifier dataflow computed for some expression
-     * @param previousQualifier the qualifier dataflow computed on the last iteration.
+     * @param newQualifier new qualifier dataflow computed for some expression
+     * @param previousQualifier the previous qualifier dataflow computed on the last iteration
      * @return an upper bound that is wider than the least upper bound of newQualifier and
      *     previousQualifier (or the lub if the type hierarchy does not require this)
      */

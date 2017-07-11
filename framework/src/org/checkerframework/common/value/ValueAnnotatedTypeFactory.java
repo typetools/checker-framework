@@ -437,14 +437,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationMirror lub = leastUpperBound(newQualifier, previousQualifier);
             if (AnnotationUtils.areSameByClass(lub, IntRange.class)) {
                 Range lubRange = getRange(lub);
-                Range newRange = getRangeOrConvertIntVal(newQualifier);
-                Range oldRange = getRangeOrConvertIntVal(previousQualifier);
+                Range newRange = getRange(newQualifier);
+                Range oldRange = getRange(previousQualifier);
                 Range wubRange = widenRange(newRange, oldRange, lubRange);
                 return createIntRangeAnnotation(wubRange);
             } else if (AnnotationUtils.areSameByClass(lub, ArrayLenRange.class)) {
                 Range lubRange = getRange(lub);
-                Range newRange = getRangeOrConvertArrayLen(newQualifier);
-                Range oldRange = getRangeOrConvertArrayLen(previousQualifier);
+                Range newRange = getRange(newQualifier);
+                Range oldRange = getRange(previousQualifier);
                 return createArrayLenRangeAnnotation(widenRange(newRange, oldRange, lubRange));
             } else {
                 return lub;
@@ -455,8 +455,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (newRange == null || oldRange == null) {
                 return lubRange;
             }
-            // If the newRange closer to max than the oldRange, then move the from to the
-            // old range.
+            // If both bounds of the new range are bigger than the old range, then returned range
+            // should use the lower bound of the new range and a MAX_VALUE.
             if ((newRange.from >= oldRange.from && newRange.to >= oldRange.to)) {
                 if (lubRange.to < Byte.MAX_VALUE) {
                     return new Range(newRange.from, Byte.MAX_VALUE);
@@ -469,6 +469,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
 
+            // If both bounds of the old range are bigger than the new range, then returned range
+            // should use a MIN_VALUE and the upper bound of the new range.
             if ((newRange.from <= oldRange.from && newRange.to <= oldRange.to)) {
                 if (lubRange.from > Byte.MIN_VALUE) {
                     return new Range(Byte.MIN_VALUE, newRange.to);
@@ -1614,34 +1616,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     AnnotationUtils.getElementValue(rangeAnno, "to", Integer.class, true));
         }
 
-        return null;
-    }
-
-    /**
-     * Returns a {@code Range} bounded by the values specified in the given {@code @IntRange} or
-     * {@code @IntVal} annotation. Returns null if the given annotations is not {@code IntRange} or
-     * {@code IntVal}.
-     */
-    public static Range getRangeOrConvertIntVal(AnnotationMirror anno) {
-        if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
-            return ValueCheckerUtils.getRangeFromValues(getIntValues(anno));
-        } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
-            return getRange(anno);
-        }
-        return null;
-    }
-
-    /**
-     * Returns a {@code Range} bounded by the values specified in the given {@code @ArrayLenRange}
-     * or {@code @ArrayLen} annotation. Returns null if the given annotations is not {@code
-     * ArrayLenRange} or {@code ArrayLen}.
-     */
-    public static Range getRangeOrConvertArrayLen(AnnotationMirror anno) {
-        if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
-            return ValueCheckerUtils.getRangeFromValues(getArrayLength(anno));
-        } else if (AnnotationUtils.areSameByClass(anno, ArrayLenRange.class)) {
-            return getRange(anno);
-        }
         return null;
     }
 
