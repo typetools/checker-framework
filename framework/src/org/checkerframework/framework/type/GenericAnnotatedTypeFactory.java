@@ -1255,14 +1255,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         assert !args.isEmpty() : "Arguments are empty";
         Node varargsArray = args.get(args.size() - 1);
-        Value value = getInferredValueFor(varargsArray);
-        if (value == null) {
-            return null;
-        }
-        AnnotatedTypeMirror varargsArrayType =
-                AnnotatedTypeMirror.createType(value.getUnderlyingType(), this, false);
-        varargsArrayType.replaceAnnotations(value.getAnnotations());
-        return varargsArrayType;
+        return getAnnotatedType(varargsArray.getTree());
     }
 
     @Override
