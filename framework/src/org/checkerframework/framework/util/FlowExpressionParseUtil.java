@@ -94,12 +94,8 @@ public class FlowExpressionParseUtil {
     protected static final Pattern superPattern = anchored("super");
     /** Matches an identifier */
     protected static final Pattern identifierPattern = anchored(identifierRegex);
-    /** Matches a method call. Capturing groups 1 and 2 are the method and arguments. */
-    protected static final Pattern methodPattern = anchored("(" + identifierRegex + ")\\((.*)\\)");
     /** Matches an array access. Capturing groups 1 and 2 are the array and index. */
     protected static final Pattern arrayPattern = anchored("(.*)\\[(.*)\\]");
-    /** Matches a field access. Capturing groups 1 and 2 are the object and field. */
-    protected static final Pattern memberselect = anchored("([^.]+)\\.(.+)");
     /** Matches integer literals */
     protected static final Pattern intPattern = anchored("[-+]?[0-9]+");
     /** Matches long literals */
@@ -174,17 +170,92 @@ public class FlowExpressionParseUtil {
     }
 
     private static boolean isMemberSelect(String s, FlowExpressionContext context) {
-        Matcher dotMatcher = memberselect.matcher(s);
-        return dotMatcher.matches();
+        return parseMemberSelect(s) != null;
+    }
+
+    /**
+     * Parse a method call. First of returned pair is a pair of method name and arguments. Second of
+     * returnd pair is a remaining string.
+     *
+     * @param s expression string
+     * @return pair of pair of method name and arguments and ramaining.
+     */
+    private static Pair<Pair<String, String>, String> parseMethod(String s) {
+        // Parse Identifier
+        Pattern identParser = Pattern.compile("^(" + identifierRegex + ").*$");
+        Matcher m = identParser.matcher(s);
+        if (!m.matches()) {
+            return null;
+        }
+        String ident = m.group(1);
+        int i = ident.length();
+
+        // acecpt LPAREN
+        if (i >= s.length() || s.charAt(i) != '(') {
+            return null;
+        }
+        int lparenPos = ++i;
+
+        int depth = 1;
+        OUTER:
+        while (i < s.length()) {
+            switch (s.charAt(i++)) {
+                case '"':
+                    while (i < s.length()) {
+                        if (s.charAt(i++) == '"') {
+                            break;
+                        }
+                    }
+                    break;
+                case '(':
+                    depth++;
+                    break;
+                case ')':
+                    depth--;
+                    if (depth < 0) {
+                        break OUTER;
+                    } else if (depth == 0) {
+                        String arguments = s.substring(lparenPos, i - 1);
+                        return Pair.of(Pair.of(ident, arguments), s.substring(i));
+                    }
+                    break;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Matches a field access. First of returned pair is object and second is field.
+     *
+     * @param s expression string
+     * @return pair of object and field
+     */
+    private static Pair<String, String> parseMemberSelect(String s) {
+        Pair<Pair<String, String>, String> method = parseMethod(s);
+        if (method != null && method.second.startsWith(".")) {
+            return Pair.of(
+                    method.first.first + "(" + method.first.second + ")",
+                    method.second.substring(1));
+        }
+
+        int i = s.indexOf(".");
+        if (i == -1) {
+            return null;
+        }
+
+        String reciever = s.substring(0, i);
+        String remaining = s.substring(i + 1);
+
+        return Pair.of(reciever, remaining);
     }
 
     private static Receiver parseMemberSelect(
             String s, ProcessingEnvironment env, FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
-        Matcher dotMatcher = memberselect.matcher(s);
-        if (!dotMatcher.matches()) {
-            assert false : "isMemberSelect must be called first";
-        }
+        Pair<String, String> select = parseMemberSelect(s);
+        assert select != null : "isMemberSelect must be called first";
+
         Receiver receiver;
         String memberSelected;
 
@@ -201,8 +272,8 @@ public class FlowExpressionParseUtil {
                         s, "a class cannot terminate a flow expression string");
             }
         } else {
-            String receiverString = dotMatcher.group(1);
-            memberSelected = dotMatcher.group(2);
+            String receiverString = select.first;
+            memberSelected = select.second;
             receiver = parseHelper(receiverString, context, path);
         }
 
@@ -442,22 +513,22 @@ public class FlowExpressionParseUtil {
     }
 
     private static boolean isMethod(String s, FlowExpressionContext contex) {
-        Matcher methodMatcher = methodPattern.matcher(s);
-        return methodMatcher.matches();
+        Pair<Pair<String, String>, String> result = parseMethod(s);
+        return result != null && result.second.isEmpty();
     }
 
     private static Receiver parseMethod(
             String s, FlowExpressionContext context, TreePath path, ProcessingEnvironment env)
             throws FlowExpressionParseException {
-        Matcher methodMatcher = methodPattern.matcher(s);
-
-        if (!methodMatcher.matches()) {
+        Pair<Pair<String, String>, String> method = parseMethod(s);
+        if (method == null) {
             return null;
         }
-        String methodName = methodMatcher.group(1);
+
+        String methodName = method.first.first;
 
         // parse parameter list
-        String parameterList = methodMatcher.group(2);
+        String parameterList = method.first.second;
         List<Receiver> parameters =
                 ParameterListParser.parseParameterList(
                         parameterList, true, context.copyAndUseOuterReceiver(), path);
@@ -615,12 +686,12 @@ public class FlowExpressionParseUtil {
         PackageSymbol packageSymbol = packageSymbolAndRemainingString.first;
         String packageRemainingString = packageSymbolAndRemainingString.second;
 
-        Matcher dotMatcher = memberselect.matcher(packageRemainingString);
+        Pair<String, String> select = parseMemberSelect(packageRemainingString);
         String classNameString;
         String remainingString;
-        if (dotMatcher.matches()) {
-            classNameString = dotMatcher.group(1);
-            remainingString = dotMatcher.group(2);
+        if (select != null) {
+            classNameString = select.first;
+            remainingString = select.second;
         } else {
             classNameString = packageRemainingString;
             remainingString = null;
@@ -668,17 +739,16 @@ public class FlowExpressionParseUtil {
     private static Pair<PackageSymbol, String> matchPackageNameWithinExpression(
             String expression, Resolver resolver, TreePath path)
             throws FlowExpressionParseException {
-        Matcher dotMatcher = memberselect.matcher(expression);
+        Pair<String, String> select = parseMemberSelect(expression);
 
         // To proceed past this point, at the minimum the expression must be composed of packageName.className .
         // Do not remove the call to matches(), otherwise the dotMatcher groups will not be filled in.
-        if (!dotMatcher.matches()) {
+        if (select == null) {
             return null;
         }
 
-        String packageName = dotMatcher.group(1);
-        String remainingString = dotMatcher.group(2),
-                remainingStringIfPackageMatched = remainingString;
+        String packageName = select.first;
+        String remainingString = select.second, remainingStringIfPackageMatched = remainingString;
 
         PackageSymbol result = null; // the result of this method call
 
@@ -702,10 +772,10 @@ public class FlowExpressionParseUtil {
             }
             result = longerResult;
             remainingString = remainingStringIfPackageMatched;
-            dotMatcher = memberselect.matcher(remainingString);
-            if (dotMatcher.matches()) {
-                packageName += "." + dotMatcher.group(1);
-                remainingStringIfPackageMatched = dotMatcher.group(2);
+            select = parseMemberSelect(remainingString);
+            if (select != null) {
+                packageName += "." + select.first;
+                remainingStringIfPackageMatched = select.second;
             } else {
                 // There are no dots in remainingString, so we are done.
                 // Fail if the whole string represents a package, otherwise return.
