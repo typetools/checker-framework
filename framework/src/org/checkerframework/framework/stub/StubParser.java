@@ -150,7 +150,7 @@ public class StubParser {
             parsedStubUnit = JavaParser.parseStubUnit(inputStream);
         } catch (Exception e) {
             ErrorReporter.errorAbort(
-                    "StubParser: exception from JavaParser.parse for file " + filename, e);
+                    "StubParser: exception from StubParser.parse for file " + filename, e);
             parsedStubUnit = null; // dead code, but needed for def. assignment checks
         }
         this.stubUnit = parsedStubUnit;
