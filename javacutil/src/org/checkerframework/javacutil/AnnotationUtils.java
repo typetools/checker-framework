@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +63,12 @@ public class AnnotationUtils {
             Collections.synchronizedMap(new HashMap<CharSequence, AnnotationMirror>());
 
     private static final int ANNOTATION_CACHE_SIZE = 500;
+
+    /** Cache element names of AnnotationMirrors for faster access. */
+    private static final Map<AnnotationMirror, Set<Name>> annotationMirrorElementNames =
+            Collections.synchronizedMap(
+                    CollectionUtils.<AnnotationMirror, Set<Name>>createLRUCache(
+                            ANNOTATION_CACHE_SIZE));
 
     /**
      * Cache names of AnnotationMirrors for faster access. Values in the map are interned Strings,
@@ -193,6 +200,25 @@ public class AnnotationUtils {
         /*@Interned*/ String name = elm.getSimpleName().toString().intern();
         annotationMirrorSimpleNames.put(annotation, name);
         return name;
+    }
+
+    public static boolean containsAllElementsByNames(AnnotationMirror a1, AnnotationMirror a2) {
+        Set<Name> elementNames = annotationMirrorElementNames.get(a1);
+        if (elementNames == null) {
+            elementNames = new HashSet<>();
+            TypeElement annotationElt = (TypeElement) a1.getAnnotationType().asElement();
+            for (ExecutableElement elt :
+                    ElementFilter.methodsIn(annotationElt.getEnclosedElements())) {
+                elementNames.add(elt.getSimpleName());
+            }
+            annotationMirrorElementNames.put(a1, elementNames);
+        }
+        for (ExecutableElement elt : a2.getElementValues().keySet()) {
+            if (!elementNames.contains(elt.getSimpleName())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

@@ -97,6 +97,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
@@ -2363,7 +2364,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns the canonical annotation for the passed annotation if it is an alias of a canonical
      * one in the framework. If it is not an alias, the method returns null.
      *
-     * <p>Returns an aliased type of the current one
+     * <p>Returns an aliased type of the current one. The attributes contained by the passed
+     * annotation are also copied over, however, if any one of them is not contained by the
+     * canonical annotation, an error would be raised. Override this function in the specific
+     * checker for such cases.
      *
      * @param a the qualifier to check for an alias
      * @return the alias or null if none exists
@@ -2371,7 +2375,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public /*@Nullable*/ AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
         TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
         String qualName = elem.getQualifiedName().toString();
-        return aliases.get(qualName);
+        AnnotationMirror canonicalAnno = aliases.get(qualName);
+        if (canonicalAnno != null && a.getElementValues().size() > 0) {
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, canonicalAnno);
+            if (AnnotationUtils.containsAllElementsByNames(canonicalAnno, a)) {
+                builder.copyElementValuesFromAnnotation(a);
+            } else {
+                ErrorReporter.errorAbort(
+                        "Tried to copy attributes from the aliased annotation "
+                                + a
+                                + " to the canonical annotation "
+                                + canonicalAnno
+                                + ", however, the alias contains attribute(s) that does not exist in the canonical. You should try to override the aliasedAnnotation in the specific checker for special cases.");
+            }
+            AnnotationMirror newAnno = builder.build();
+            return newAnno;
+        } else {
+            return canonicalAnno;
+        }
     }
 
     /**

@@ -14,6 +14,7 @@ import javax.lang.model.element.AnnotationValueVisitor;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -145,6 +146,33 @@ public class AnnotationBuilder {
                 // return "@" + annotationType + "(" + elementValues + ")";
             }
         };
+    }
+
+    /**
+     * Copies every element value from the given annotation. If an element in the given annotation
+     * doesn't exist in the annotation to be built, an error would be raised.
+     *
+     * @param valueHolder the annotation that holds the values to be copied
+     */
+    public AnnotationBuilder copyElementValuesFromAnnotation(AnnotationMirror valueHolder) {
+        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> eltValToCopy :
+                valueHolder.getElementValues().entrySet()) {
+            Name eltNameToCopy = eltValToCopy.getKey().getSimpleName();
+            boolean hasElement = false;
+            for (ExecutableElement elt :
+                    ElementFilter.methodsIn(annotationElt.getEnclosedElements())) {
+                if (elt.getSimpleName().contentEquals(eltNameToCopy)) {
+                    elementValues.put(elt, eltValToCopy.getValue());
+                    hasElement = true;
+                    break;
+                }
+            }
+            if (!hasElement) {
+                ErrorReporter.errorAbort(
+                        "Couldn't find " + eltNameToCopy + " element in " + annotationElt);
+            }
+        }
+        return this;
     }
 
     public AnnotationBuilder setValue(CharSequence elementName, AnnotationMirror value) {
