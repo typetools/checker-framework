@@ -312,14 +312,13 @@ public class StubUtil {
             }
         }
 
-        // TODO Pull to the parent
-        /*@Override
+        @Override
         public void visit(ReferenceType n, Void arg) {
-            n.getType().accept(this, arg);
-            for (int i = 0; i < n.getArrayCount(); ++i) {
+            n.getElementType().accept(this, arg);
+            for (int i = 0; i < n.getArrayLevel(); ++i) {
                 sb.append("[]");
             }
-        }*/
+        }
 
         @Override
         public void visit(VoidType n, Void arg) {
