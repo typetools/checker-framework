@@ -4,6 +4,10 @@ import org.checkerframework.checker.guieffect.qual.*;
     @SafeEffect Class<? extends Object> getClass(@PolyUI Object this) ;
 }
 
+@PolyUIType interface Runnable {
+    @PolyUIEffect void run(@PolyUI Runnable this);
+}
+
 // These types are polymorphic, but they're basically unusable unless I fix the subtyping among
 // differently permissioned interfaces...
 //package java.util;
@@ -110,13 +114,6 @@ import org.checkerframework.checker.guieffect.qual.*;
 @UIPackage package javax.swing.text;
 public abstract class JTextComponent extends JComponent implements Scrollable, Accessible {
     @SafeEffect public void setText(String t);
-}
-
-
-package java.lang;
-
-@PolyUIType interface Runnable {
-    @PolyUIEffect void run(@PolyUI Runnable this);
 }
 
 @UIPackage
