@@ -153,6 +153,11 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    @Override
+    public AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
+        return aliasedAnnotation(a, false);
+    }
+
     /** Returns the Value Checker's annotated type factory. */
     public ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(ValueChecker.class);
