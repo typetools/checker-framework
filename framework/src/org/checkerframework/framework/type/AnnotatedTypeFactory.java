@@ -2850,7 +2850,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             String stubfilename,
             Map<Element, AnnotatedTypeMirror> typesFromStubFiles,
             Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles) {
-        InputStream in = checkerClass.getResourceAsStream("jdk.astub");
+        InputStream in = checkerClass.getResourceAsStream(stubfilename);
         if (in == null) {
             return;
         }
