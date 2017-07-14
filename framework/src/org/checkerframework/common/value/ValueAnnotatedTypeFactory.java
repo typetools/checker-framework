@@ -1286,7 +1286,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Determines whether a method is the {@code String.length()} method. */
     boolean isStringLengthMethod(ExecutableElement method) {
-        return method == lengthMethod;
+        return method.equals(lengthMethod);
     }
 
     /**
