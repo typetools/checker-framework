@@ -1294,22 +1294,20 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * value annotation
      */
     AnnotationMirror createArrayLengthResultAnnotation(AnnotatedTypeMirror receiverType) {
-        AnnotationMirror arrayAnno = receiverType.getAnnotation(ArrayLen.class);
-        if (arrayAnno != null) {
+        AnnotationMirror arrayAnno = receiverType.getAnnotationInHierarchy(UNKNOWNVAL);
+        if (AnnotationUtils.areSameByClass(arrayAnno, ArrayLen.class)) {
             // array.length, where array : @ArrayLen(x)
             List<Integer> lengths = ValueAnnotatedTypeFactory.getArrayLength(arrayAnno);
             return createNumberAnnotationMirror(new ArrayList<Number>(lengths));
         }
         // Check for an ArrayLenRange annotation.
-        arrayAnno = receiverType.getAnnotation(ArrayLenRange.class);
-        if (arrayAnno != null) {
+        if (AnnotationUtils.areSameByClass(arrayAnno, ArrayLenRange.class)) {
             // array.length, where array : @ArrayLenRange(x)
             Range range = getRange(arrayAnno);
             return createIntRangeAnnotation(range);
         }
 
-        arrayAnno = receiverType.getAnnotation(StringVal.class);
-        if (arrayAnno != null) {
+        if (AnnotationUtils.areSameByClass(arrayAnno, StringVal.class)) {
             List<String> strings = ValueAnnotatedTypeFactory.getStringValues(arrayAnno);
             List<Integer> lengths = ValueCheckerUtils.getLengthsForStringValues(strings);
             return createNumberAnnotationMirror(new ArrayList<Number>(lengths));
