@@ -17,6 +17,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
@@ -56,6 +57,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -1224,6 +1226,21 @@ public abstract class GenericAnnotatedTypeFactory<
         useFlow = oldUseFlow;
         shouldCache = oldShouldCache;
         return res;
+    }
+
+    /**
+     * Returns the type of a right-hand side of an compound assignment for unary operation.
+     *
+     * @param tree unary operation tree for compound assignment
+     * @return AnnotatedTypeMirror of a right-hand side of an compound assignment for unary
+     *     operation
+     */
+    public AnnotatedTypeMirror getAnnotatedTypeRhsCompoundAssign(UnaryTree tree) {
+        if (!useFlow) {
+            return null;
+        }
+        AssignmentNode n = flowResult.getCompoundAssignForTree(tree);
+        return getAnnotatedType(n.getExpression().getTree());
     }
 
     @Override

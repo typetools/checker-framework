@@ -5,14 +5,15 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import javax.lang.model.element.Element;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.RegularBlock;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 
 /**
@@ -31,6 +32,9 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     /** Map from AST {@link Tree}s to {@link Node}s. */
     protected final IdentityHashMap<Tree, Node> treeLookup;
 
+    /** Map from AST {@link UnaryTree}s to compound {@link AssignmentNode}s. */
+    protected final IdentityHashMap<UnaryTree, AssignmentNode> compoundAssignTreeLookupMap;
+
     /** Map from (effectively final) local variable elements to their abstract value. */
     protected final HashMap<Element, A> finalLocalValues;
 
@@ -42,9 +46,11 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
             Map<Node, A> nodeValues,
             IdentityHashMap<Block, TransferInput<A, S>> stores,
             IdentityHashMap<Tree, Node> treeLookup,
+            IdentityHashMap<UnaryTree, AssignmentNode> compoundAssignTreeLookupMap,
             HashMap<Element, A> finalLocalValues) {
         this.nodeValues = new IdentityHashMap<>(nodeValues);
         this.treeLookup = new IdentityHashMap<>(treeLookup);
+        this.compoundAssignTreeLookupMap = new IdentityHashMap<>(compoundAssignTreeLookupMap);
         this.stores = stores;
         this.finalLocalValues = finalLocalValues;
     }
@@ -53,24 +59,18 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     public AnalysisResult() {
         nodeValues = new IdentityHashMap<>();
         treeLookup = new IdentityHashMap<>();
+        compoundAssignTreeLookupMap = new IdentityHashMap<>();
         stores = new IdentityHashMap<>();
         finalLocalValues = new HashMap<>();
     }
 
     /** Combine with another analysis result. */
     public void combine(AnalysisResult<A, S> other) {
-        for (Entry<Node, A> e : other.nodeValues.entrySet()) {
-            nodeValues.put(e.getKey(), e.getValue());
-        }
-        for (Entry<Tree, Node> e : other.treeLookup.entrySet()) {
-            treeLookup.put(e.getKey(), e.getValue());
-        }
-        for (Entry<Block, TransferInput<A, S>> e : other.stores.entrySet()) {
-            stores.put(e.getKey(), e.getValue());
-        }
-        for (Entry<Element, A> e : other.finalLocalValues.entrySet()) {
-            finalLocalValues.put(e.getKey(), e.getValue());
-        }
+        nodeValues.putAll(other.nodeValues);
+        treeLookup.putAll(other.treeLookup);
+        compoundAssignTreeLookupMap.putAll(other.compoundAssignTreeLookupMap);
+        stores.putAll(other.stores);
+        finalLocalValues.putAll(other.finalLocalValues);
     }
 
     /** @return the value of effectively final local variables */
@@ -98,6 +98,11 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     /** @return the {@link Node} for a given {@link Tree}. */
     public /*@Nullable*/ Node getNodeForTree(Tree tree) {
         return treeLookup.get(tree);
+    }
+
+    /** @return the compound {@link AssignmentNode} for a given {@link UnaryTree}. */
+    public /*@Nullable*/ AssignmentNode getCompoundAssignForTree(UnaryTree tree) {
+        return compoundAssignTreeLookupMap.get(tree);
     }
 
     /** @return the store immediately before a given {@link Tree}. */

@@ -1359,22 +1359,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 || (node.getKind() == Tree.Kind.POSTFIX_DECREMENT)
                 || (node.getKind() == Tree.Kind.POSTFIX_INCREMENT)) {
             AnnotatedTypeMirror varType = atypeFactory.getAnnotatedTypeLhs(node.getExpression());
-            AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(node);
-
-            // When the operation is postfix, valueType is a type of a value before the
-            // assignment. We override valueType with a type from a store, if it's provided.
-            if (node.getKind() == Tree.Kind.POSTFIX_DECREMENT
-                    || node.getKind() == Tree.Kind.POSTFIX_INCREMENT) {
-                CFAbstractStore<?, ?> store = atypeFactory.getStoreAfter(node);
-                if (store != null) {
-                    CFAbstractValue<?> value =
-                            store.getValue(
-                                    FlowExpressions.internalReprOf(
-                                            atypeFactory, node.getExpression()));
-                    if (value != null) {
-                        valueType.replaceAnnotations(value.getAnnotations());
-                    }
-                }
+            AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedTypeRhsCompoundAssign(node);
+            if (valueType == null) {
+                valueType = atypeFactory.getAnnotatedType(node);
             }
             commonAssignmentCheck(
                     varType, valueType, node, "compound.assignment.type.incompatible");

@@ -8,6 +8,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -746,7 +747,10 @@ public class Analysis<
     public AnalysisResult<A, S> getResult() {
         assert !isRunning;
         IdentityHashMap<Tree, Node> treeLookup = cfg.getTreeLookup();
-        return new AnalysisResult<>(nodeValues, inputs, treeLookup, finalLocalValues);
+        IdentityHashMap<UnaryTree, AssignmentNode> compoundAssignTreeLookup =
+                cfg.getCompoundAssignTreeLookup();
+        return new AnalysisResult<>(
+                nodeValues, inputs, treeLookup, compoundAssignTreeLookup, finalLocalValues);
     }
 
     /**
