@@ -134,7 +134,7 @@
     </exec>
   </target>
 
-  <target name="-update-run-google-java-format"
+  <target name="update-run-google-java-format"
           description="Update the run-google-java-format project"
           depends="-get-run-google-java-format">
     <exec executable="git"
@@ -144,7 +144,7 @@
     </exec>
   </target>
 
-  <target name="reformat" depends="-update-run-google-java-format"
+  <target name="reformat" depends="update-run-google-java-format"
           description="Reformat Java code">
     <apply executable="python" parallel="true" maxparallel="${maxparallel}" failonerror="true">
       <arg value="${checker.loc}/bin-devel/.run-google-java-format/run-google-java-format.py"/>
@@ -153,7 +153,7 @@
     </apply>
   </target>
 
-  <target name="check-format" depends="-update-run-google-java-format"
+  <target name="check-format" depends="update-run-google-java-format"
           description="Check Java code formatting">
     <apply executable="python" parallel="true" maxparallel="${maxparallel}"
        failonerror="false" resultproperty="check.format.result"

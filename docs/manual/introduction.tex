@@ -208,7 +208,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.1.12.zip}
+  \url{https://checkerframework.org/checker-framework-2.1.13.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -585,14 +585,14 @@ Unsound checking: ignore some errors
 \begin{itemize}
 \item \<-AsuppressWarnings>
   Suppress all warnings matching the given key; see
-  Section~\ref{suppresswarnings-command-line}
+  Section~\ref{suppresswarnings-command-line}.
 \item \<-AskipUses>, \<-AonlyUses>
   Suppress all errors and warnings at all uses of a given class --- or at all
-  uses except those of a given class.  See Section~\ref{askipuses}
+  uses except those of a given class.  See Section~\ref{askipuses}.
 \item \<-AskipDefs>, \<-AonlyDefs>
   Suppress all errors and warnings within the definition of a given class
   --- or everywhere except within the definition of a given class.  See
-  Section~\ref{askipdefs}
+  Section~\ref{askipdefs}.
 \item \<-AignoreRawTypeArguments>
   Ignore subtype tests for type arguments that were inferred for a raw
   type.  If possible, it is better to write the type arguments.  See
@@ -606,9 +606,9 @@ Unsound checking: ignore some errors
   Ignore the possibility of overflow for range annotations such as
   \<@IntRange>; see Section~\ref{value-checker-overflow}.
 \item \<-Awarns>
-  Treat checker errors as warnings.  If you use this, you
-  may wish to also supply \code{-Xmaxwarns 10000}, because by default
-  \<javac> prints at most 100 warnings.  Don't supply \code{-Werror},
+  Treat checker errors as warnings.  If you use this, you may wish to also
+  supply \code{-Xmaxwarns 10000}, because by default \<javac> prints at
+  most 100 warnings.  If you use this, don't supply \code{-Werror},
   which is a javac argument to halt compilation if a warning is issued.
 \end{itemize}
 

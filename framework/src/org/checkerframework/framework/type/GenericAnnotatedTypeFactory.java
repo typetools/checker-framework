@@ -94,6 +94,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -273,14 +274,20 @@ public abstract class GenericAnnotatedTypeFactory<
      * Returns a {@link TreeAnnotator} that adds annotations to a type based on the contents of a
      * tree.
      *
-     * <p>Subclasses may override this method to specify a more appropriate {@link TreeAnnotator}.
-     * The default tree annotator is a {@link ListTreeAnnotator} of the following:
+     * <p>The default tree annotator is a {@link ListTreeAnnotator} of the following:
      *
      * <ol>
-     *   <li>{@link PropagationTreeAnnotator}: Propagates annotations from subtrees.
+     *   <li>{@link PropagationTreeAnnotator}: Propagates annotations from subtrees
      *   <li>{@link ImplicitsTreeAnnotator}: Adds annotations based on {@link ImplicitFor}
      *       meta-annotations
+     *   <li>{@link DependentTypesTreeAnnotator}: Adapts dependent annotations based on context
      * </ol>
+     *
+     * <p>Subclasses may override this method to specify additional tree annotators, for example:
+     *
+     * <pre>
+     * new ListTreeAnnotator(super.createTreeAnnotator(), new KeyLookupTreeAnnotator(this));
+     * </pre>
      *
      * @return a tree annotator
      */
