@@ -794,7 +794,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             AnnotatedPrimitiveType subtype,
             AnnotatedWildcardType supertype,
             VisitHistory visitHistory) {
-        if (ignoreUninferredTypeArguments && supertype.isUninferredTypeArgument()) {
+        if (supertype.atypeFactory.ignoreUninferredTypeArguments
+                && supertype.isUninferredTypeArgument()) {
             return true;
         }
         // this can occur when passing a primitive to a method on a raw type (see test checker/tests/nullness/RawAndPrimitive.java)
