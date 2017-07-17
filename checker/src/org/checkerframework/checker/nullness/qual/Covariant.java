@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Deprecated! See {@see org.checkerframework.framework.qual.Covariant} instead.
+ * Deprecated! See {@link org.checkerframework.framework.qual.Covariant} instead.
  *
  * @checker_framework.manual #covariant-type-parameters Covariant type parameters
  */
