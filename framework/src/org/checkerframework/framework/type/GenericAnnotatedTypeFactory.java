@@ -1371,6 +1371,24 @@ public abstract class GenericAnnotatedTypeFactory<
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
                 super.methodFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
+
+        if (method.getReturnType().getKind() == TypeKind.WILDCARD
+                && ((AnnotatedWildcardType) method.getReturnType()).isUninferredTypeArgument()) {
+            // Get the correct Java type from the tree and use it as the upper bound of the
+            // wildcard.
+            TypeMirror tm = InternalUtils.typeOf(tree);
+            AnnotatedTypeMirror t = toAnnotatedType(tm, false);
+            defaults.annotate(tree, t);
+
+            AnnotatedWildcardType wildcard = (AnnotatedWildcardType) method.getReturnType();
+            if (ignoreUninferredTypeArguments) {
+                t.replaceAnnotations(defaults.getDefaultQualifiersForCheckedCode());
+            } else {
+                t.replaceAnnotations(wildcard.getExtendsBound().getAnnotations());
+            }
+            wildcard.setExtendsBound(t);
+        }
+
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptMethod(tree, method);
         }
