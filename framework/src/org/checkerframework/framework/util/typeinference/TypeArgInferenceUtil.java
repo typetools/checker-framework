@@ -34,6 +34,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeVariableSubstitutor;
@@ -346,6 +347,21 @@ public class TypeArgInferenceUtil {
         }
 
         return result;
+    }
+
+    /**
+     * Checks that the type is not an uninferred type argument. If it is, errorAbort will be called.
+     * The error will be caught in {@link DefaultTypeArgumentInference#infer} and inference will be
+     * aborted, but type-checking will continue.
+     */
+    public static void checkForUninferredTypes(AnnotatedTypeMirror type) {
+        if (type.getKind() != TypeKind.WILDCARD) {
+            return;
+        }
+        if (((AnnotatedWildcardType) type).isUninferredTypeArgument()) {
+            ErrorReporter.errorAbort(
+                    "Can't make a constraint that includes an uninferred type argument.");
+        }
     }
 
     /**

@@ -17,8 +17,7 @@ import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.PluginUtil;
-import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -208,7 +207,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
 
                 if (subTypeArg.getKind() == TypeKind.WILDCARD) {
                     final AnnotatedWildcardType subWc = (AnnotatedWildcardType) subTypeArg;
-                    checkForUninferredTypes(subWc);
+                    TypeArgInferenceUtil.checkForUninferredTypes(subWc);
                     addConstraint(subWc.getExtendsBound(), superWc.getExtendsBound(), constraints);
                     addInverseConstraint(
                             superWc.getSuperBound(), subWc.getSuperBound(), constraints);
@@ -375,7 +374,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedNullType subtype,
             AnnotatedWildcardType supertype,
             Set<AFConstraint> constraints) {
-        checkForUninferredTypes(supertype);
+        TypeArgInferenceUtil.checkForUninferredTypes(supertype);
         // we don't use visitSupertype because Null types won't have interesting components
         constraints.add(new A2F(subtype, supertype.getSuperBound()));
         return null;
@@ -521,7 +520,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedWildcardType subtype,
             AnnotatedArrayType supertype,
             Set<AFConstraint> constraints) {
-        checkForUninferredTypes(subtype);
+        TypeArgInferenceUtil.checkForUninferredTypes(subtype);
         addConstraint(subtype.getExtendsBound(), supertype, constraints);
         return null;
     }
@@ -531,7 +530,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedWildcardType subtype,
             AnnotatedDeclaredType supertype,
             Set<AFConstraint> constraints) {
-        checkForUninferredTypes(subtype);
+        TypeArgInferenceUtil.checkForUninferredTypes(subtype);
         addConstraint(subtype.getExtendsBound(), supertype, constraints);
         return null;
     }
@@ -541,7 +540,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedWildcardType subtype,
             AnnotatedIntersectionType supertype,
             Set<AFConstraint> constraints) {
-        checkForUninferredTypes(subtype);
+        TypeArgInferenceUtil.checkForUninferredTypes(subtype);
         addConstraint(subtype.getExtendsBound(), supertype, constraints);
         return null;
     }
@@ -559,7 +558,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedWildcardType subtype,
             AnnotatedTypeVariable supertype,
             Set<AFConstraint> constraints) {
-        checkForUninferredTypes(subtype);
+        TypeArgInferenceUtil.checkForUninferredTypes(subtype);
         addConstraint(subtype.getExtendsBound(), supertype, constraints);
         return null;
     }
@@ -569,7 +568,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedWildcardType subtype,
             AnnotatedWildcardType supertype,
             Set<AFConstraint> constraints) {
-        checkForUninferredTypes(subtype);
+        TypeArgInferenceUtil.checkForUninferredTypes(subtype);
         // since wildcards are handled in visitDeclared_Declared this could only occur if two wildcards
         // were passed to type subtype inference at the top level.  This can only occur because we do not implement
         // capture conversion
@@ -582,7 +581,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedTypeMirror subtype,
             AnnotatedWildcardType supertype,
             Set<AFConstraint> constraints) {
-        checkForUninferredTypes(supertype);
+        TypeArgInferenceUtil.checkForUninferredTypes(supertype);
         // this case occur only when supertype should actually be capture converted (which we don't do)
         // because all other wildcard cases would be handled via Declared_Declared
         addConstraint(subtype, supertype.getSuperBound(), constraints);
@@ -594,17 +593,5 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
         // if @I is an annotation we are trying to infer then we still want to infer that @I <: @A
         // in fact
         addInverseConstraint(subtype, supertype.getExtendsBound(), constraints);
-    }
-
-    /**
-     * Checks that the wildcard is not an uninferred type argument. If it is, errorAbort will be
-     * called. The error will be caught in {@link DefaultTypeArgumentInference#infer} and inference
-     * will be aborted, but type-checking will continue.
-     */
-    private void checkForUninferredTypes(AnnotatedWildcardType wildcardType) {
-        if (wildcardType.isUninferredTypeArgument()) {
-            ErrorReporter.errorAbort(
-                    "Can't make a constraint that includes an uninferred type argument.");
-        }
     }
 }
