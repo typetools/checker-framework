@@ -190,7 +190,7 @@ public class FlowExpressionParseUtil {
         String ident = m.group(1);
         int i = ident.length();
 
-        // accept LPAREN
+        // expect LPAREN
         if (i >= s.length() || s.charAt(i) != '(') {
             return null;
         }
