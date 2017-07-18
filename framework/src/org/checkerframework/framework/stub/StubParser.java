@@ -581,6 +581,9 @@ public class StubParser {
             annotateDecl(declAnnos, paramElt, param.getAnnotations());
             annotateDecl(declAnnos, paramElt, param.getType().getAnnotations());
 
+            // TODO Temporary solution
+            param.getType().setAnnotations(param.getAnnotations());
+
             if (param.isVarArgs()) {
                 // workaround
                 assert paramType.getKind() == TypeKind.ARRAY;
