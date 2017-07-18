@@ -326,6 +326,8 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
+        // Don't call super.createTreeAnnotator because the default tree annotators are incorrect
+        // for the Nullness Checker.
         ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
         implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_CLASS, NONNULL);
         implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_ARRAY, NONNULL);

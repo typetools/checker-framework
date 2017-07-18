@@ -13,7 +13,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * <p>This is the default type qualifier for the Leaked hierarchy.
  *
- * <p>Once the stub parser gets updated to read non-type-qualifer annotations on stub files (Issue
+ * <p>Once the stub parser gets updated to read non-type-qualifier annotations on stub files (Issue
  * 383), this annotation can be removed, and {@link NonLeaked} and {@link LeakedToResult} can be
  * made to be type annotations but not type qualifiers and not in a type hierarchy.
  *

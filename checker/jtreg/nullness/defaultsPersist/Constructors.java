@@ -6,7 +6,11 @@
  * @run main Driver Constructors
  */
 
-import static com.sun.tools.classfile.TypeAnnotation.TargetType.*;
+import static com.sun.tools.classfile.TypeAnnotation.TargetType.METHOD_FORMAL_PARAMETER;
+import static com.sun.tools.classfile.TypeAnnotation.TargetType.METHOD_RECEIVER;
+import static com.sun.tools.classfile.TypeAnnotation.TargetType.METHOD_TYPE_PARAMETER;
+import static com.sun.tools.classfile.TypeAnnotation.TargetType.METHOD_TYPE_PARAMETER_BOUND;
+import static com.sun.tools.classfile.TypeAnnotation.TargetType.THROWS;
 
 public class Constructors {
 
