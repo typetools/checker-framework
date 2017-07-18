@@ -175,10 +175,10 @@ public class FlowExpressionParseUtil {
 
     /**
      * Parse a method call. First of returned pair is a pair of method name and arguments. Second of
-     * returnd pair is a remaining string.
+     * returned pair is a remaining string.
      *
      * @param s expression string
-     * @return pair of pair of method name and arguments and ramaining.
+     * @return pair of pair of method name and arguments and remaining.
      */
     private static Pair<Pair<String, String>, String> parseMethod(String s) {
         // Parse Identifier
@@ -190,7 +190,7 @@ public class FlowExpressionParseUtil {
         String ident = m.group(1);
         int i = ident.length();
 
-        // acecpt LPAREN
+        // accept LPAREN
         if (i >= s.length() || s.charAt(i) != '(') {
             return null;
         }
