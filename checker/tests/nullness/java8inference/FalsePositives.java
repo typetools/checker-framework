@@ -46,4 +46,16 @@ public class FalsePositives {
             return u.foo(bs, u.bar(this::ugh));
         }
     }
+
+    abstract class Test2 {
+        abstract <T> Box<Box<T>> foo(Box<? extends Box<? extends T>> p);
+
+        abstract <T> Box<Box<T>> bar(Function<Number, T> f);
+
+        abstract String baz(Number p);
+
+        Box<Box<String>> demo() {
+            return foo(bar(this::baz));
+        }
+    }
 }

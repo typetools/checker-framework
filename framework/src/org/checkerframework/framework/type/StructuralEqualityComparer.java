@@ -53,6 +53,18 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     protected Boolean defaultAction(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, VisitHistory visitHistory) {
+        if (type1.atypeFactory.ignoreUninferredTypeArguments) {
+            if (type1.getKind() == TypeKind.WILDCARD
+                    && ((AnnotatedWildcardType) type1).isUninferredTypeArgument()) {
+                return true;
+            }
+
+            if (type2.getKind() == TypeKind.WILDCARD
+                    && ((AnnotatedWildcardType) type2).isUninferredTypeArgument()) {
+                return true;
+            }
+        }
+
         //TODO: REMOVE THIS OVERRIDE WHEN inferTypeArgs NO LONGER GENERATES INCOMPARABLE TYPES
         //TODO: THe rawness comparer is close to the old implementation of TypeHierarchy
         if (fallback != null) {
