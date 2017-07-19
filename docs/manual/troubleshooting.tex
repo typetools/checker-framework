@@ -764,7 +764,7 @@ report the problems to the Checker Framework developers.
 \subsection{Install prerequisites\label{building-prerequisites}}
 
 You need to install several packages in order to build the Checker
-Framework.  The following command installs them for Ubuntu:
+Framework. The following command installs them for Ubuntu:
 
 \begin{Verbatim}
 sudo apt-get update
@@ -774,7 +774,7 @@ sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial 
 
 % Building Checker Framework from source on Mac OS
 
-The installation of prerequisites is a bit different on Mac OS, but still easy most of the time with \ahref{https://brew.sh}{Homebrew} through the following commands:
+If you are building on Mac OS, then the following commands install the aforementioned packages:
 
 \begin{Verbatim}
 brew update
@@ -783,6 +783,8 @@ brew install git ant hevea mercurial librsvg unzip make
 brew cask install java
 brew cask install mactex
 \end{Verbatim}
+
+Mac OS users also need to copy \<hevea.sty> into \<\$HOME/Library/texmf/tex/latex> (you probably need to make that directory first).
 
 If you are building on Windows 10, then run \<bash> to obtain a version of
 Ubuntu (provided by the Windows Subsystem for Linux) and follow the Ubuntu
