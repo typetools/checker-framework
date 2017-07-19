@@ -1752,7 +1752,7 @@ public final class String
      *          starting at the specified index,
      *          or {@code -1} if there is no such occurrence.
      */
-    public @GTENegativeOne @LTEqLengthOf("this") int indexOf(String str, @IndexFor("this") int fromIndex) {
+    public @GTENegativeOne @LTEqLengthOf("this") int indexOf(String str, int fromIndex) {
         return indexOf(value, offset, count,
                        str.value, str.offset, str.count, fromIndex);
     }
@@ -1843,7 +1843,7 @@ public final class String
      *          searching backward from the specified index,
      *          or {@code -1} if there is no such occurrence.
      */
-    public @GTENegativeOne @LTEqLengthOf("this") int lastIndexOf(String str, @IndexFor("this") int fromIndex) {
+    public @GTENegativeOne @LTEqLengthOf("this") int lastIndexOf(String str, int fromIndex) {
         return lastIndexOf(value, offset, count,
                            str.value, str.offset, str.count, fromIndex);
     }
