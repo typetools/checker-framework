@@ -779,7 +779,7 @@ public final class String
      * <code>beginIndex</code> is larger than <code>endIndex</code>.
      * @since  1.5
      */
-    public int codePointCount(@IndexFor("this") int beginIndex, @IndexOrHigh("this") int endIndex) {
+    public int codePointCount(@IndexOrHigh("this") int beginIndex, @IndexOrHigh("this") int endIndex) {
         if (beginIndex < 0 || endIndex > count || beginIndex > endIndex) {
             throw new IndexOutOfBoundsException();
         }
@@ -806,7 +806,7 @@ public final class String
      *   of <code>codePointOffset</code> code points.
      * @since 1.5
      */
-    public @IndexOrHigh("this") int offsetByCodePoints(@IndexFor("this") int index, int codePointOffset) {
+    public @IndexOrHigh("this") int offsetByCodePoints(@IndexOrHigh("this") int index, int codePointOffset) {
         if (index < 0 || index > count) {
             throw new IndexOutOfBoundsException();
         }
@@ -852,7 +852,7 @@ public final class String
      *            <li><code>dstBegin+(srcEnd-srcBegin)</code> is larger than
      *                <code>dst.length</code></ul>
      */
-    public void getChars(@IndexFor("this") int srcBegin, @IndexOrHigh("this") int srcEnd, char dst[], @IndexFor("#3") int dstBegin) {
+    public void getChars(@IndexOrHigh("this") int srcBegin, @IndexOrHigh("this") int srcEnd, char dst[], @IndexFor("#3") int dstBegin) {
         if (srcBegin < 0) {
             throw new StringIndexOutOfBoundsException(srcBegin);
         }
@@ -910,7 +910,7 @@ public final class String
      *          </ul>
      */
     @Deprecated
-    public void getBytes(@IndexFor("this") int srcBegin, @IndexOrHigh("this") int srcEnd, byte dst[], @IndexFor("#3") int dstBegin) {
+    public void getBytes(@IndexOrHigh("this") int srcBegin, @IndexOrHigh("this") int srcEnd, byte dst[], @IndexFor("#3") int dstBegin) {
         if (srcBegin < 0) {
             throw new StringIndexOutOfBoundsException(srcBegin);
         }
@@ -1924,7 +1924,7 @@ public final class String
      *             <code>beginIndex</code> is negative or larger than the
      *             length of this <code>String</code> object.
      */
-    public String substring(@IndexFor("this") int beginIndex) {
+    public String substring(@IndexOrHigh("this") int beginIndex) {
         return substring(beginIndex, count);
     }
 
@@ -1950,7 +1950,7 @@ public final class String
      *             <code>beginIndex</code> is larger than
      *             <code>endIndex</code>.
      */
-    public String substring(@IndexFor("this") int beginIndex, @IndexOrHigh("this") int endIndex) {
+    public String substring(@IndexOrHigh("this") int beginIndex, @IndexOrHigh("this") int endIndex) {
         if (beginIndex < 0) {
             throw new StringIndexOutOfBoundsException(beginIndex);
         }
@@ -1992,7 +1992,7 @@ public final class String
      * @since 1.4
      * @spec JSR-51
      */
-    public CharSequence subSequence(@IndexFor("this") int beginIndex, @IndexOrHigh("this") int endIndex) {
+    public CharSequence subSequence(@IndexOrHigh("this") int beginIndex, @IndexOrHigh("this") int endIndex) {
         return this.substring(beginIndex, endIndex);
     }
 
