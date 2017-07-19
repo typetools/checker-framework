@@ -1304,7 +1304,7 @@ public final class String
      *          exactly matches the specified subregion of the string argument;
      *          <code>false</code> otherwise.
      */
-    public boolean regionMatches(@IndexFor("this") int toffset, String other, @IndexFor("#2") int ooffset,
+    public boolean regionMatches(@IndexOrHigh("this") int toffset, String other, @IndexOrHigh("#2") int ooffset,
 				 @IndexOrHigh({"this","#2"}) int len) {
         char ta[] = value;
         int to = offset + toffset;
@@ -1373,8 +1373,8 @@ public final class String
      *          or case insensitive depends on the <code>ignoreCase</code>
      *          argument.
      */
-    public boolean regionMatches(boolean ignoreCase, @IndexFor("this") int toffset,
-                           String other, @IndexFor("#3") int ooffset,
+    public boolean regionMatches(boolean ignoreCase, @IndexOrHigh("this") int toffset,
+                           String other, @IndexOrHigh("#3") int ooffset,
 				 @IndexOrHigh({"this","#3"}) int len) {
         char ta[] = value;
         int to = offset + toffset;
