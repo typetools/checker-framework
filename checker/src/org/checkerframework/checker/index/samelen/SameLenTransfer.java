@@ -170,7 +170,6 @@ public class SameLenTransfer extends CFTransfer {
                 && ((FieldAccessNode) node).getFieldName().equals("length")
                 && ((FieldAccessNode) node).getReceiver().getType().getKind() == TypeKind.ARRAY);
     }
-
     /**
      * Handles refinement of equality comparisons. After "a.length == b.length" evaluates to true, a
      * and b have SameLen of each other in the store.
