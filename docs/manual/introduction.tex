@@ -879,10 +879,10 @@ There are some limitations to the guarantee.
     external library supplied as a \code{.class} file.
   \item
     Code compiled with the \code{-AskipUses}, \code{-AonlyUses}, \code{-AskipDefs} or \code{-AonlyDefs}
-    properties (see Section~\ref{suppressing-warnings}).
+    properties (see Chapter~\ref{suppressing-warnings}).
   \item
     Suppression of warnings, such as via the \code{@SuppressWarnings}
-    annotation (see Section~\ref{suppressing-warnings}).
+    annotation (see Chapter~\ref{suppressing-warnings}).
   \item
     Native methods (because the implementation is not Java code, it cannot
     be checked).
@@ -1062,7 +1062,7 @@ Do not write unnecessary annotations.
   to infer the correct annotation.
 
   % or if
-  % you need to suppress a warning (see Section~\ref{suppressing-warnings}).
+  % you need to suppress a warning (see Chapter~\ref{suppressing-warnings}).
 
 \item
   Do not write annotations that are redundant with defaults.  For example,
@@ -1284,7 +1284,8 @@ errors.  Don't panic!  There are three general causes for the warnings:
   suffers the error at run time --- but the checker cannot prove this fact.
   If possible, rewrite your code to be simpler for the checker to analyze;
   this is likely to make it easier for people to understand, too.
-  If that is not possible, suppress the warning; be sure to include a code
+  If that is not possible, suppress the warning (see
+  Chapter~\ref{suppressing-warnings}); be sure to include a code
   comment explaining how you know the code is correct even though the
   type-checker cannot deduce that fact.
 \end{enumerate}

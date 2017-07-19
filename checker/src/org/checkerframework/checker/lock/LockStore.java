@@ -193,6 +193,10 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
                 CFValue newValue = changeLockAnnoToTop(var, localVariableValues.get(var));
                 localVariableValues.put(var, newValue);
             }
+
+            if (thisValue != null) {
+                thisValue = changeLockAnnoToTop(null, thisValue);
+            }
         }
     }
 
