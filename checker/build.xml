@@ -1480,8 +1480,8 @@ So, use our own archived version.
         <get src="https://checkerframework.org/dev-jdk/jdk7.jar" dest="jdk/jdk7.jar"/>
         <get src="https://checkerframework.org/dev-jdk/jdk8.jar" dest="jdk/jdk8.jar"/>
 -->
-        <get src="https://github.com/smillst/checker-framework-jdk/releases/download/wmdietlGC%2Fcovarian/jdk7.jar" dest="jdk/jdk7.jar"/>
-        <get src="https://github.com/smillst/checker-framework-jdk/releases/download/wmdietlGC%2Fcovarian/jdk8.jar" dest="jdk/jdk8.jar"/>
+        <get src="https://github.com/smillst/checker-framework-jdk/releases/download/wmdietlGC%2Fcovariant/jdk7.jar" dest="jdk/jdk7.jar"/>
+        <get src="https://github.com/smillst/checker-framework-jdk/releases/download/wmdietlGC%2Fcovariant/jdk8.jar" dest="jdk/jdk8.jar"/>
 
         <!-- Copy jars to dist. If dist doesn't exist then the copy task creates it.-->
         <copy file="jdk/jdk7.jar" tofile="dist/jdk7.jar"/>
