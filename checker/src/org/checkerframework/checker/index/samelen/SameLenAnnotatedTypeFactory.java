@@ -2,7 +2,7 @@ package org.checkerframework.checker.index.samelen;
 
 import static org.checkerframework.checker.index.IndexUtil.getValueOfAnnotationWithStringArgument;
 
-import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -39,7 +39,6 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * The SameLen Checker is used to determine whether there are multiple fixed-length sequences (such
@@ -314,32 +313,33 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
-            if (node.getDimensions().size() == 1
-                    && TreeUtils.isArrayLengthAccess(node.getDimensions().get(0))) {
-                MemberSelectTree arrayLength = (MemberSelectTree) (node.getDimensions().get(0));
-                AnnotationMirror arrayAnno =
-                        getAnnotatedType(arrayLength.getExpression())
-                                .getAnnotationInHierarchy(UNKNOWN);
+            if (node.getDimensions().size() == 1) {
+                Tree dimensionTree = node.getDimensions().get(0);
+                ExpressionTree sequenceTree =
+                        IndexUtil.getLengthSequenceTree(dimensionTree, imf, processingEnv);
+                if (sequenceTree != null) {
+                    AnnotationMirror arrayAnno =
+                            getAnnotatedType(sequenceTree).getAnnotationInHierarchy(UNKNOWN);
 
-                Receiver rec =
-                        FlowExpressions.internalReprOf(
-                                this.atypeFactory, arrayLength.getExpression());
-                if (isReceiverToStringParsable(rec)) {
-                    if (AnnotationUtils.areSameByClass(arrayAnno, SameLenUnknown.class)) {
-                        arrayAnno = createSameLen(rec.toString());
-                    } else if (AnnotationUtils.areSameByClass(arrayAnno, SameLen.class)) {
-                        // Ensure that the array whose length is actually being used is part of the
-                        // annotation. If not, add it.
-                        List<String> arrayAnnoArrays =
-                                getValueOfAnnotationWithStringArgument(arrayAnno);
-                        if (!arrayAnnoArrays.contains(rec.toString())) {
-                            arrayAnnoArrays.add(rec.toString());
-                            String[] newArrayAnnoArrays = arrayAnnoArrays.toArray(new String[0]);
-                            arrayAnno = createSameLen(newArrayAnnoArrays);
+                    Receiver rec = FlowExpressions.internalReprOf(this.atypeFactory, sequenceTree);
+                    if (isReceiverToStringParsable(rec)) {
+                        if (AnnotationUtils.areSameByClass(arrayAnno, SameLenUnknown.class)) {
+                            arrayAnno = createSameLen(rec.toString());
+                        } else if (AnnotationUtils.areSameByClass(arrayAnno, SameLen.class)) {
+                            // Ensure that the array whose length is actually being used is part of the
+                            // annotation. If not, add it.
+                            List<String> arrayAnnoArrays =
+                                    getValueOfAnnotationWithStringArgument(arrayAnno);
+                            if (!arrayAnnoArrays.contains(rec.toString())) {
+                                arrayAnnoArrays.add(rec.toString());
+                                String[] newArrayAnnoArrays =
+                                        arrayAnnoArrays.toArray(new String[0]);
+                                arrayAnno = createSameLen(newArrayAnnoArrays);
+                            }
                         }
                     }
+                    type.addAnnotation(arrayAnno);
                 }
-                type.addAnnotation(arrayAnno);
             }
             return null;
         }

@@ -534,13 +534,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /** Gets a sequence tree for a length access tree, or null if it is not a length access. */
         private ExpressionTree getLengthSequenceTree(ExpressionTree lengthTree) {
-            if (TreeUtils.isArrayLengthAccess(lengthTree)) {
-                return ((MemberSelectTree) lengthTree).getExpression();
-            } else if (imf.isStringLength(lengthTree, processingEnv)) {
-                return TreeUtils.getReceiverTree(lengthTree);
-            }
-
-            return null;
+            return IndexUtil.getLengthSequenceTree(lengthTree, imf, processingEnv);
         }
 
         private void addAnnotationForDivide(
