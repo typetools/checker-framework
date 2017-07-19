@@ -11,7 +11,6 @@ public class Issue1397 {
 
         abstract <T> T unbox(Box<T> p);
 
-        @SuppressWarnings("") //false positives
         void foo(Box<Boolean> bb) {
             boolean res = false;
             res |= chk(unbox(bb));
