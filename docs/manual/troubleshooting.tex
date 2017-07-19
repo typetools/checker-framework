@@ -854,10 +854,16 @@ not because \<java> might be the version in the JDK or in the JRE):
 %END LATEX
 
 \item
-{\bf [Mac OSX 10.5 or later]} It is recommended to set the \code{\$JAVA\_HOME} variable to \</usr/libexec/java\_home>, just export \code{\$JAVA\_HOME} in file \code{.bash\_profile} or \code{.profile}.
+{\bf [Mac OSX 10.5 or later]} Similarly to Ubuntu, add one of the following commands in your \code{.bash\_profile} or \code{.profile} file.
 \begin{smaller}
 \begin{Verbatim}
-  export JAVA_HOME=$(/usr/libexec/java_home)
+  export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+\end{Verbatim}
+\end{smaller}
+or
+\begin{smaller}
+\begin{Verbatim}
+  export JAVA_HOME=$(/usr/libexec/java_home -v 1.7)
 \end{Verbatim}
 \end{smaller}
 
