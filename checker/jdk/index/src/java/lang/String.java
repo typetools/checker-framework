@@ -1533,7 +1533,7 @@ public final class String
      *          character sequence represented by this object, or
      *          <code>-1</code> if the character does not occur.
      */
-    public @GTENegativeOne @LTLengthOf("this") int indexOf(int ch) {
+    public @IndexOrLow("this") int indexOf(int ch) {
         return indexOf(ch, 0);
     }
 
@@ -1576,7 +1576,7 @@ public final class String
      *          than or equal to <code>fromIndex</code>, or <code>-1</code>
      *          if the character does not occur.
      */
-    public @GTENegativeOne @LTLengthOf("this") int indexOf(int ch, int fromIndex) {
+    public @IndexOrLow("this") int indexOf(int ch, int fromIndex) {
         if (fromIndex < 0) {
             fromIndex = 0;
         } else if (fromIndex >= count) {
@@ -1643,7 +1643,7 @@ public final class String
      *          character sequence represented by this object, or
      *          <code>-1</code> if the character does not occur.
      */
-    public @GTENegativeOne @LTLengthOf("this") int lastIndexOf(int ch) {
+    public @IndexOrLow("this") int lastIndexOf(int ch) {
         return lastIndexOf(ch, count - 1);
     }
 
@@ -1681,7 +1681,7 @@ public final class String
      *          than or equal to <code>fromIndex</code>, or <code>-1</code>
      *          if the character does not occur before that point.
      */
-    public @GTENegativeOne @LTLengthOf("this") int lastIndexOf(int ch, int fromIndex) {
+    public @IndexOrLow("this") int lastIndexOf(int ch, int fromIndex) {
         if (ch < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
             // handle most cases here (ch is a BMP code point or a
             // negative value (invalid code point))
