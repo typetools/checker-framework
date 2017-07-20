@@ -743,7 +743,9 @@ public class Analysis<
     public AnalysisResult<A, S> getResult() {
         assert !isRunning;
         IdentityHashMap<Tree, Node> treeLookup = cfg.getTreeLookup();
-        return new AnalysisResult<>(nodeValues, inputs, treeLookup, finalLocalValues);
+        IdentityHashMap<Tree, List<Tree>> generatedTreesLookup = cfg.getGeneratedTreesLookup();
+        return new AnalysisResult<>(
+                nodeValues, inputs, treeLookup, finalLocalValues, generatedTreesLookup);
     }
 
     /**

@@ -61,6 +61,7 @@ import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
@@ -100,7 +101,9 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.BlockImpl;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlockImpl;
+import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlockImpl;
+import org.checkerframework.dataflow.cfg.block.RegularBlock;
 import org.checkerframework.dataflow.cfg.block.RegularBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock.SpecialBlockType;
@@ -876,7 +879,54 @@ public class CFGBuilder {
                 }
             }
 
+            // remove generated trees when corresponding nodes are unreachable
+            final Set<Tree> allTrees = new HashSet<>();
+            for (Block b : cfg.getAllBlocks()) {
+                if (b instanceof RegularBlock) {
+                    for (Node n : ((RegularBlock) b).getContents()) {
+                        allTrees.add(n.getTree());
+                    }
+                } else if (b instanceof ExceptionBlock) {
+                    allTrees.add(((ExceptionBlock) b).getNode().getTree());
+                }
+            }
+
+            IdentityHashMap<Tree, List<Tree>> generatedTreesLookupMap = new IdentityHashMap<>();
+            for (Entry<Tree, List<Tree>> e : cfg.generatedTreesLookupMap.entrySet()) {
+                Tree t = e.getKey();
+                List<Tree> generatedTrees = new ArrayList<>();
+                generatedTreesLookupMap.put(t, generatedTrees);
+                for (Tree root : e.getValue()) {
+                    ContainsAnyScanner s = new ContainsAnyScanner(allTrees);
+                    s.scan(root, null);
+                    if (s.contains) {
+                        generatedTrees.add(root);
+                    }
+                }
+            }
+            cfg.generatedTreesLookupMap = generatedTreesLookupMap;
+
             return cfg;
+        }
+
+        private static class ContainsAnyScanner extends TreeScanner<Void, Void> {
+            private boolean contains = false;
+            private final Set<Tree> trees;
+
+            ContainsAnyScanner(Set<Tree> trees) {
+                this.trees = trees;
+            }
+
+            @Override
+            public Void scan(Tree node, Void aVoid) {
+                if (trees.contains(node)) {
+                    contains = true;
+                }
+                if (!contains) {
+                    super.scan(node, aVoid);
+                }
+                return null;
+            }
         }
 
         /**
@@ -1266,7 +1316,8 @@ public class CFGBuilder {
                     in.underlyingAST,
                     in.treeLookupMap,
                     in.convertedTreeLookupMap,
-                    in.returnNodes);
+                    in.returnNodes,
+                    in.generatedTreesLookupMap);
         }
     }
 
@@ -1287,6 +1338,7 @@ public class CFGBuilder {
         private final ArrayList<ExtendedNode> nodeList;
         private final Set<Integer> leaders;
         private final List<ReturnNode> returnNodes;
+        private final IdentityHashMap<Tree, List<Tree>> generatedTreesLookupMap;
 
         public PhaseOneResult(
                 UnderlyingAST underlyingAST,
@@ -1295,7 +1347,8 @@ public class CFGBuilder {
                 ArrayList<ExtendedNode> nodeList,
                 Map<Label, Integer> bindings,
                 Set<Integer> leaders,
-                List<ReturnNode> returnNodes) {
+                List<ReturnNode> returnNodes,
+                IdentityHashMap<Tree, List<Tree>> generatedTreesLookupMap) {
             this.underlyingAST = underlyingAST;
             this.treeLookupMap = treeLookupMap;
             this.convertedTreeLookupMap = convertedTreeLookupMap;
@@ -1303,6 +1356,7 @@ public class CFGBuilder {
             this.bindings = bindings;
             this.leaders = leaders;
             this.returnNodes = returnNodes;
+            this.generatedTreesLookupMap = generatedTreesLookupMap;
         }
 
         @Override
@@ -1423,6 +1477,8 @@ public class CFGBuilder {
          */
         private List<ReturnNode> returnNodes;
 
+        protected IdentityHashMap<Tree, List<Tree>> generatedTreesLookupMap;
+
         /** Nested scopes of try-catch blocks in force at the current program point. */
         private TryStack tryStack;
 
@@ -1460,6 +1516,7 @@ public class CFGBuilder {
             breakLabels = new HashMap<>();
             continueLabels = new HashMap<>();
             returnNodes = new ArrayList<>();
+            generatedTreesLookupMap = new IdentityHashMap<>();
 
             // traverse AST of the method body
             scan(bodyPath, null);
@@ -1479,7 +1536,8 @@ public class CFGBuilder {
                     nodeList,
                     bindings,
                     leaders,
-                    returnNodes);
+                    returnNodes,
+                    generatedTreesLookupMap);
         }
 
         public PhaseOneResult process(
@@ -1557,6 +1615,21 @@ public class CFGBuilder {
             assert tree != null;
             assert treeLookupMap.containsKey(tree);
             convertedTreeLookupMap.put(tree, node);
+        }
+
+        /**
+         * Add a tree in the generated-trees lookup map.
+         *
+         * @param tree the tree used as a key in the map
+         * @param generatedTree the tree to add to the lookup map
+         */
+        protected void addToGeneratedTreesLookupMap(Tree tree, Tree generatedTree) {
+            assert tree != null;
+            assert generatedTree != null;
+            if (!generatedTreesLookupMap.containsKey(tree)) {
+                generatedTreesLookupMap.put(tree, new ArrayList<Tree>());
+            }
+            generatedTreesLookupMap.get(tree).add(generatedTree);
         }
 
         /**
@@ -4070,9 +4143,11 @@ public class CFGBuilder {
             }
 
             Label finallyLabel = null;
+            Label exceptionalFinallyLabel = null;
             if (finallyBlock != null) {
                 finallyLabel = new Label();
-                tryStack.pushFrame(new TryFinallyFrame(finallyLabel));
+                exceptionalFinallyLabel = new Label();
+                tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
             }
 
             Label doneLabel = new Label();
@@ -4095,18 +4170,56 @@ public class CFGBuilder {
 
             if (finallyLabel != null) {
                 tryStack.popFrame();
-                addLabelForNextNode(finallyLabel);
-                scan(finallyBlock, p);
 
-                TypeMirror throwableType = elements.getTypeElement("java.lang.Throwable").asType();
-                extendWithNodeWithException(
-                        new MarkerNode(tree, "end of finally block", env.getTypeUtils()),
-                        throwableType);
+                boolean hasExceptionalPath = hasExceptionalPath(exceptionalFinallyLabel);
+
+                if (hasExceptionalPath) {
+                    addLabelForNextNode(exceptionalFinallyLabel);
+                    scan(finallyBlock, p);
+
+                    TypeMirror throwableType =
+                            elements.getTypeElement("java.lang.Throwable").asType();
+                    NodeWithExceptionsHolder throwing =
+                            extendWithNodeWithException(
+                                    new MarkerNode(
+                                            tree, "end of finally block", env.getTypeUtils()),
+                                    throwableType);
+                    throwing.setTerminatesExecution(true);
+
+                    addLabelForNextNode(finallyLabel);
+                    BlockTree successfulFinallyBlock = treeBuilder.copy(finallyBlock);
+                    addToGeneratedTreesLookupMap(finallyBlock, successfulFinallyBlock);
+                    scan(successfulFinallyBlock, p);
+                    extendWithNode(
+                            new MarkerNode(tree, "end of finally block", env.getTypeUtils()));
+                    extendWithExtendedNode(new UnconditionalJump(doneLabel));
+                } else {
+                    addLabelForNextNode(finallyLabel);
+                    scan(finallyBlock, p);
+
+                    extendWithNode(
+                            new MarkerNode(tree, "end of finally block", env.getTypeUtils()));
+                    extendWithExtendedNode(new UnconditionalJump(doneLabel));
+                }
             }
 
             addLabelForNextNode(doneLabel);
 
             return null;
+        }
+
+        private boolean hasExceptionalPath(Label target) {
+            for (ExtendedNode node : nodeList) {
+                if (node instanceof NodeWithExceptionsHolder) {
+                    NodeWithExceptionsHolder exceptionalNode = (NodeWithExceptionsHolder) node;
+                    for (Set<Label> labels : exceptionalNode.getExceptions().values()) {
+                        if (labels.contains(target)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         @Override

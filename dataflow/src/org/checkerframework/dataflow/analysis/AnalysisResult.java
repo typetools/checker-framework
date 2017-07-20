@@ -5,8 +5,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
 import com.sun.source.tree.Tree;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.lang.model.element.Element;
@@ -37,16 +39,21 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     /** The stores before every method call. */
     protected final IdentityHashMap<Block, TransferInput<A, S>> stores;
 
+    /** Map from AST {@link Tree}s to generated {@link Tree}s. */
+    protected final IdentityHashMap<Tree, List<Tree>> generatedTreesLookup;
+
     /** Initialize with a given node-value mapping. */
     public AnalysisResult(
             Map<Node, A> nodeValues,
             IdentityHashMap<Block, TransferInput<A, S>> stores,
             IdentityHashMap<Tree, Node> treeLookup,
-            HashMap<Element, A> finalLocalValues) {
+            HashMap<Element, A> finalLocalValues,
+            IdentityHashMap<Tree, List<Tree>> generatedTreesLookup) {
         this.nodeValues = new IdentityHashMap<>(nodeValues);
         this.treeLookup = new IdentityHashMap<>(treeLookup);
         this.stores = stores;
         this.finalLocalValues = finalLocalValues;
+        this.generatedTreesLookup = new IdentityHashMap<>(generatedTreesLookup);
     }
 
     /** Initialize empty result. */
@@ -55,6 +62,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         treeLookup = new IdentityHashMap<>();
         stores = new IdentityHashMap<>();
         finalLocalValues = new HashMap<>();
+        generatedTreesLookup = new IdentityHashMap<>();
     }
 
     /** Combine with another analysis result. */
@@ -71,6 +79,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         for (Entry<Element, A> e : other.finalLocalValues.entrySet()) {
             finalLocalValues.put(e.getKey(), e.getValue());
         }
+        generatedTreesLookup.putAll(other.generatedTreesLookup);
     }
 
     /** @return the value of effectively final local variables */
@@ -98,6 +107,14 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     /** @return the {@link Node} for a given {@link Tree}. */
     public /*@Nullable*/ Node getNodeForTree(Tree tree) {
         return treeLookup.get(tree);
+    }
+
+    /** @return the generated {@link Tree}s for a given {@link Tree}. */
+    public List<Tree> getGeneratedTrees(Tree tree) {
+        if (generatedTreesLookup.containsKey(tree)) {
+            return generatedTreesLookup.get(tree);
+        }
+        return Collections.emptyList();
     }
 
     /** @return the store immediately before a given {@link Tree}. */

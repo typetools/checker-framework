@@ -63,6 +63,18 @@ public class TreeBuilder {
     }
 
     /**
+     * Copy an AST Tree.
+     *
+     * @param target a tree to be copied
+     * @return a copied tree
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends Tree> T copy(T target) {
+        T tree = (T) new FullyTreeCopier(maker).<JCTree>copy((JCTree) target);
+        return tree;
+    }
+
+    /**
      * Builds an AST Tree to access the iterator() method of some iterable expression.
      *
      * @param iterableExpr an expression whose type is a subtype of Iterable
