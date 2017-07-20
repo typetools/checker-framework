@@ -536,6 +536,11 @@ public class StubParser {
             ExecutableElement elt,
             Map<Element, AnnotatedTypeMirror> atypes,
             Map<String, Set<AnnotationMirror>> declAnnos) {
+        // TODO Temporary solution
+        NodeList<AnnotationExpr> list = decl.getType().getAnnotations();
+        decl.getType().setAnnotations(decl.getAnnotations());
+        decl.setAnnotations(list);
+
         annotateDecl(declAnnos, elt, decl.getAnnotations());
         // StubParser parses all annotations in type annotation position as type annotations
         annotateDecl(declAnnos, elt, decl.getType().getAnnotations());
