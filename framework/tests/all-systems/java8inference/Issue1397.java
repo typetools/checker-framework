@@ -11,6 +11,7 @@ public class Issue1397 {
 
         abstract <T> T unbox(Box<T> p);
 
+        @SuppressWarnings("units")
         void foo(Box<Boolean> bb) {
             boolean res = false;
             res |= chk(unbox(bb));
