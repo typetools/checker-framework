@@ -322,13 +322,13 @@ public class BasicHTML {
      public static final @Interned String documentBaseKey = "html.base";
 }
 package javax.swing.plaf.basic;
-public class BasicRootPaneUI {
+public class BasicRootPaneUI$Actions {
          public static final @Interned String PRESS = "press";
          public static final @Interned String RELEASE = "release";
          public static final @Interned String POST_POPUP = "postPopup";
 }
 package javax.swing.plaf.basic;
-public class BasicSliderUI {
+public class BasicSliderUI$Actions {
          public static final @Interned String MIN_SCROLL_INCREMENT = "minScroll";
          public static final @Interned String MAX_SCROLL_INCREMENT = "maxScroll";
 }
@@ -710,6 +710,10 @@ package java.awt.im;
 public @UsesObjectEquals class InputContext {}
 public @UsesObjectEquals class InputMethodHighlight {}
 
+package java.awt;
+
+public abstract @UsesObjectEquals class Image {}
+
 package java.awt.image;
 
 public @UsesObjectEquals class AffineTransformOp implements BufferedImageOp, RasterOp {}
@@ -719,7 +723,6 @@ public @UsesObjectEquals class ColorConvertOp implements BufferedImageOp, Raster
 public @UsesObjectEquals class ConvolveOp implements BufferedImageOp, RasterOp {}
 public abstract @UsesObjectEquals class DataBuffer {}
 public @UsesObjectEquals class FilteredImageSource implements ImageProducer {}
-public abstract @UsesObjectEquals class Image {}
 public @UsesObjectEquals class ImageFilter implements ImageConsumer, Cloneable {}
 public @UsesObjectEquals class Kernel implements Cloneable {}
 public @UsesObjectEquals class LookupOp implements BufferedImageOp, RasterOp {}
@@ -755,7 +758,6 @@ public @UsesObjectEquals class Introspector {}
 public abstract @UsesObjectEquals class PersistenceDelegate {}
 public @UsesObjectEquals class PropertyChangeSupport implements Serializable {}
 public @UsesObjectEquals class PropertyEditorSupport implements PropertyEditor {}
-@UsesObjectEquals class ReflectionUtils {}
 public @UsesObjectEquals class SimpleBeanInfo implements BeanInfo {}
 public @UsesObjectEquals class Statement {}
 public @UsesObjectEquals class VetoableChangeSupport implements Serializable {}
@@ -920,7 +922,7 @@ public final @UsesObjectEquals class FileSystems {}
 public final @UsesObjectEquals class Files {}
 public final @UsesObjectEquals class Paths {}
 public @UsesObjectEquals class SimpleFileVisitor<T> implements FileVisitor<T> {}
-public final @UsesObjectEquals class StandardWatchEventKind {}
+public final @UsesObjectEquals class StandardWatchEventKinds {}
 @UsesObjectEquals class TempFileHelper {}
 
 package java.nio.file.attribute;
@@ -1043,10 +1045,7 @@ package java.util;
 @UsesObjectEquals class ComparableTimSort {}
 public final @UsesObjectEquals class Currency implements Serializable {}
 final @UsesObjectEquals class DualPivotQuicksort {}
-// TODO: EventListenerProxy got a new type parameter in Java 7.
-// This unfortunately causes the StubParser to trip on a Java 6 environment.
-// We should investigate how to support both platforms at the same time.
-public abstract @UsesObjectEquals class EventListenerProxy // <T extends EventListener>
+public abstract @UsesObjectEquals class EventListenerProxy<T extends EventListener>
         implements EventListener {}
 public @UsesObjectEquals class EventObject implements java.io.Serializable {}
 public @UsesObjectEquals class FormattableFlags {}

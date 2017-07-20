@@ -81,6 +81,10 @@ public class StubParser {
 
     private final boolean debugStubParser;
 
+    // TODO: filename is the simple "jdk.astub" and "flow.astub" for those pre-defined files,
+    // without complete path, but the full path in other situations.
+    // All invocations should provide the short path or the full path.
+    // For testing it is easier if only the file name is used.
     /** The file being parsed (makes error messages more informative). */
     private final String filename;
 
@@ -143,7 +147,7 @@ public class StubParser {
         this.debugStubParser = options.containsKey("stubDebug");
 
         if (debugStubParser) {
-            stubDebug(String.format("parsing stub file %s%n", filename));
+            stubDebug(String.format("parsing stub file %s", filename));
         }
         StubUnit parsedStubUnit;
         try {
@@ -446,66 +450,39 @@ public class StubParser {
         //     throw new Error(String.format("parseType (%s, %s): inconsistent nullness for args and params%n  args = %s%n  params = %s%n", decl, elt, typeArguments, typeParameters));
         // }
 
-        if ((typeParameters == null) && (typeArguments.size() != 0)) {
-            // TODO: Class EventListenerProxy in Java 6 does not have type parameters, but in Java 7 does.
-            // To handle both with one specification, we currently ignore the problem.
-            // Investigate what a cleaner solution is, e.g. having a separate Java 7 specification that overrides
-            // the Java 6 specification.
-            // System.out.printf("Dying.  theCompilationUnit=%s%n", theCompilationUnit);
-            if (debugStubParser) {
+        if (debugStubParser) {
+            if (((typeParameters == null) && (typeArguments.size() != 0))
+                    || (typeParameters != null)
+                            && (typeParameters.size() != typeArguments.size())) {
+                // TODO: Class EventListenerProxy in Java 6 does not have type parameters, but in Java 7 does.
+                // To handle both with one stub file, we currently ignore the problem.
+                // Investigate what a cleaner solution is, e.g. having a separate Java 7 specification that overrides
+                // the Java 6 specification.
+                // System.out.printf("Dying.  theCompilationUnit=%s%n", theCompilationUnit);
                 stubDebug(
                         String.format(
-                                "parseType:  mismatched sizes for params and args%n  decl=%s%n  typeParameters=%s%n  elt=%s (%s)%n  type=%s (%s)%n  typeArguments (size %d)=%s%n  theCompilationUnit=%s%nEnd of message for parseType:  mismatched sizes for params and args%n",
-                                decl,
+                                "parseType:  mismatched sizes for typeParameters=%s (size %d) and typeArguments=%s (size %d); decl=%s; elt=%s (%s); type=%s (%s); theCompilationUnit=%s",
                                 typeParameters,
-                                elt,
+                                (typeParameters == null ? 0 : typeParameters.size()),
+                                typeArguments,
+                                (typeArguments == null ? 0 : typeArguments.size()),
+                                decl.toString().replace(LINE_SEPARATOR, " "),
+                                elt.toString().replace(LINE_SEPARATOR, " "),
                                 elt.getClass(),
                                 type,
                                 type.getClass(),
-                                typeArguments.size(),
-                                typeArguments,
                                 theCompilationUnit));
             }
-            /*
-               throw new Error(String.format("parseType:  mismatched sizes for params and args%n  decl=%s%n  typeParameters=%s%n  elt=%s (%s)%n  type=%s (%s)%n  typeArguments (size %d)=%s%n",
-                                         decl, typeParameters,
-                                         elt, elt.getClass(), type, type.getClass(), typeArguments.size(), typeArguments));
-            */
         }
 
-        if ((typeParameters != null) && (typeParameters.size() != typeArguments.size())) {
-            // TODO: decide how severe this problem really is; see comment above.
-            // System.out.printf("Dying.  theCompilationUnit=%s%n", theCompilationUnit);
-            if (debugStubParser) {
-                stubDebug(
-                        String.format(
-                                "parseType:  mismatched sizes for params and args%n  decl=%s%n  typeParameters (size %d)=%s%n  elt=%s (%s)%n  type=%s (%s)%n  typeArguments (size %d)=%s%n  theCompilationUnit=%s%nEnd of message for parseType:  mismatched sizes for params and args%n",
-                                decl,
-                                typeParameters.size(),
-                                typeParameters,
-                                elt,
-                                elt.getClass(),
-                                type,
-                                type.getClass(),
-                                typeArguments.size(),
-                                typeArguments,
-                                theCompilationUnit));
-            }
-            /*
-               throw new Error(String.format("parseType:  mismatched sizes for params and args%n  decl=%s%n  typeParameters (size %d)=%s%n  elt=%s (%s)%n  type=%s (%s)%n  typeArguments (size %d)=%s%n",
-                                         decl, typeParameters.size(), typeParameters,
-                                         elt, elt.getClass(), type, type.getClass(), typeArguments.size(), typeArguments));
-            */
-        }
-
-        annotateTypeParameters(atypes, typeArguments, typeParameters);
+        annotateTypeParameters(decl, elt, atypes, typeArguments, typeParameters);
         annotateSupertypes(decl, type);
         putNew(atypes, elt, type);
         List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
         for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
             if (typeV.getKind() != TypeKind.TYPEVAR) {
                 stubAlwaysWarn(
-                        "Expected an AnnotatedTypeVariable but found type kind"
+                        "Expected an AnnotatedTypeVariable but found type kind "
                                 + typeV.getKind()
                                 + ": "
                                 + typeV);
@@ -565,7 +542,8 @@ public class StubParser {
         addDeclAnnotations(declAnnos, elt);
 
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
-        annotateTypeParameters(atypes, methodType.getTypeVariables(), decl.getTypeParameters());
+        annotateTypeParameters(
+                decl, elt, atypes, methodType.getTypeVariables(), decl.getTypeParameters());
         typeParameters.addAll(methodType.getTypeVariables());
         annotate(methodType.getReturnType(), decl.getType());
 
@@ -603,9 +581,7 @@ public class StubParser {
                 && false) {
             stubAlwaysWarn(
                     String.format(
-                            "parseMethod: static methods cannot have receiver annotations\n"
-                                    + "Method: %s\n"
-                                    + "Receiver annotations: %s",
+                            "parseMethod: static method %s cannot have receiver annotation %s",
                             methodType, decl.getAnnotations()));
         } else {
             annotate(methodType.getReceiverType(), decl.getAnnotations());
@@ -616,33 +592,34 @@ public class StubParser {
     }
 
     /**
-     * Handle existing annotations on the type. Stub files should override the existing annotations
-     * on a type. Using {@code replaceAnnotation} is usually good enough to achieve this; however,
-     * for annotations on type variables, the stub file sometimes needs to be able to remove an
-     * existing annotation, leaving no annotation on the type variable. This method achieves this by
-     * calling {@code clearAnnotations}.
+     * Handle existing annotations on the type, by removing them.
+     *
+     * <p>Stub files should override the existing annotations on a type. Using {@code
+     * replaceAnnotation} is usually good enough to achieve this; however, for annotations on type
+     * variables, the stub file sometimes needs to be able to remove an existing annotation, leaving
+     * no annotation on the type variable. This method achieves this by calling {@code
+     * clearAnnotations}.
      *
      * @param atype the type to modify
      * @param typeDef the type from the stub file, for warnings
      */
     private void handleExistingAnnotations(AnnotatedTypeMirror atype, Type typeDef) {
         Set<AnnotationMirror> annos = atype.getAnnotations();
+        // TODO: instead of comparison against flow.astub, this should
+        // check whether the stub file is @AnnotatedFor the current type system.
+        // flow.astub isn't annotated for any particular type system, so let's
+        // not warn for now, as @AnnotatedFor isn't integrated in stub files yet.
         if (annos != null && !annos.isEmpty() && !"flow.astub".equals(filename)) {
-            // TODO: instead of comparison against flow.astub, this should
-            // check whether the stub file is @AnnotatedFor the current type system.
-            // flow.astub isn't annotated for any particular type system, so let's
-            // not warn for now, as @AnnotatedFor isn't integrated in stub files yet.
-            stubWarnIfOverwritesBytecode(
-                    String.format(
-                            "in file %s at line %s ignored existing annotations on type: %s%n",
-                            filename.substring(filename.lastIndexOf('/') + 1),
-                            typeDef.getBegin().get().line,
-                            atype.toString(true)));
-            // TODO: filename is the simple "jdk.astub" and "flow.astub" for those pre-defined files,
-            // without complete path, but the full path in other situations.
-            // All invocations should provide the short path or the full path.
-            // For testing it is easier if only the file name is used.
-
+            // TODO: only produce output if the removed annotation is interesting.
+            // Probably that means it isn't the top and default annotation in the type hierarchy.
+            if (false) { // disable for now, because the output is boring and verbose
+                stubWarnIfOverwritesBytecode(
+                        String.format(
+                                "in file %s at line %s removed existing annotations on type: %s",
+                                filename.substring(filename.lastIndexOf('/') + 1),
+                                typeDef.getBegin().get().line,
+                                atype.toString(true)));
+            }
             // Clear existing annotations, which only makes a difference for
             // type variables, but doesn't hurt in other cases.
             atype.clearAnnotations();
@@ -809,9 +786,7 @@ public class StubParser {
                 && false) {
             stubAlwaysWarn(
                     String.format(
-                            "parseConstructor: constructor of a top-level class cannot have receiver annotations\n"
-                                    + "Constructor: %s\n"
-                                    + "Receiver annotations: %s",
+                            "parseConstructor: constructor %s of a top-level class cannot have receiver annotation %s",
                             methodType, decl.getAnnotations()));
         } else {
             annotate(methodType.getReceiverType(), decl.getAnnotations());
@@ -865,6 +840,8 @@ public class StubParser {
     }
 
     private void annotateTypeParameters(
+            BodyDeclaration<?> decl, // for debugging
+            Object elt, // for debugging; TypeElement or ExecutableElement
             Map<Element, AnnotatedTypeMirror> atypes,
             List<? extends AnnotatedTypeMirror> typeArguments,
             List<TypeParameter> typeParameters) {
@@ -875,11 +852,14 @@ public class StubParser {
         if (typeParameters.size() != typeArguments.size()) {
             stubAlwaysWarn(
                     String.format(
-                            "annotateTypeParameters: mismatched sizes%n  typeParameters (size %d)=%s%n  typeArguments (size %d)=%s%n  For more details, run with -AstubDebug%n",
+                            "annotateTypeParameters: mismatched sizes:  typeParameters (size %d)=%s;  typeArguments (size %d)=%s;  decl=%s;  elt=%s (%s).  For more details, run with -AstubDebug",
                             typeParameters.size(),
                             typeParameters,
                             typeArguments.size(),
-                            typeArguments));
+                            typeArguments,
+                            decl.toString().replace(LINE_SEPARATOR, " "),
+                            elt.toString().replace(LINE_SEPARATOR, " "),
+                            elt.getClass()));
         }
         for (int i = 0; i < typeParameters.size(); ++i) {
             TypeParameter param = typeParameters.get(i);
@@ -940,18 +920,14 @@ public class StubParser {
                 if (nestedClassWarnings.add(nestedClass)) { // avoid duplicate warnings
                     stubAlwaysWarn(
                             String.format(
-                                            "Warning: ignoring nested class in %s at line %d:%n    class %s { class %s { ... } }%n",
-                                            filename,
-                                            // TODO Make sure object exists
-                                            ciDecl.getBegin().get().line,
-                                            typeDecl.getName(),
-                                            ciDecl.getName())
-                                    + "\n"
-                                    + String.format(
-                                            "  Instead, write the nested class as a top-level class:%n    class %s { ... }%n    class %s$%s { ... }%n",
-                                            typeDecl.getName(),
-                                            typeDecl.getName(),
-                                            ciDecl.getName()));
+                                    "Warning: ignoring nested class in %s at line %d; "
+                                            + "write the nested class as a top-level class:"
+                                            + "   class %s { ... }   class %s$%s { ... }",
+                                    filename,
+                                    ciDecl.getBegin().get().line,
+                                    typeDecl.getName(),
+                                    typeDecl.getName(),
+                                    ciDecl.getName()));
                 }
             } else {
                 stubWarnIfNotFound(
@@ -979,7 +955,7 @@ public class StubParser {
         stubWarnIfNotFound("Type " + typeString + " not found");
         if (debugStubParser) {
             for (AnnotatedDeclaredType superType : types) {
-                stubDebug(String.format("  %s%n", superType));
+                stubDebug(String.format("  %s", superType));
             }
         }
         return null;
@@ -1003,7 +979,8 @@ public class StubParser {
         if (debugStubParser) {
             for (ExecutableElement method :
                     ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
-                stubDebug(String.format("  %s%n", method));
+                stubDebug(String.format("  Here are the methods of %s:", typeElt));
+                stubDebug(String.format("  %s", method));
             }
         }
         return null;
@@ -1026,7 +1003,7 @@ public class StubParser {
         if (debugStubParser) {
             for (ExecutableElement method :
                     ElementFilter.constructorsIn(typeElt.getEnclosedElements())) {
-                stubDebug(String.format("  %s%n", method));
+                stubDebug(String.format("  %s", method));
             }
         }
         return null;
@@ -1048,7 +1025,7 @@ public class StubParser {
         stubWarnIfNotFound("Field " + fieldName + " not found in type " + typeElt);
         if (debugStubParser) {
             for (VariableElement field : ElementFilter.fieldsIn(typeElt.getEnclosedElements())) {
-                stubDebug(String.format("  %s%n", field));
+                stubDebug(String.format("  %s", field));
             }
         }
         return null;
@@ -1147,6 +1124,7 @@ public class StubParser {
      * Issues the given warning about missing elements, only if it has not been previously issued.
      */
     private void stubWarnIfNotFound(String warning) {
+        ensureSingleLine(warning, "stubWarnIfNotFound");
         if (warnings.add(warning) && (warnIfNotFound || debugStubParser)) {
             processingEnv
                     .getMessager()
@@ -1159,6 +1137,7 @@ public class StubParser {
      * issued.
      */
     private void stubWarnIfOverwritesBytecode(String warning) {
+        ensureSingleLine(warning, "stubWarnIfOverwritesBytecode");
         if (warnings.add(warning) && (warnIfStubOverwritesBytecode || debugStubParser)) {
             processingEnv
                     .getMessager()
@@ -1171,6 +1150,7 @@ public class StubParser {
      * passed.
      */
     private void stubAlwaysWarn(String warning) {
+        ensureSingleLine(warning, "stubAlwaysWarn");
         if (warnings.add(warning)) {
             processingEnv
                     .getMessager()
@@ -1179,10 +1159,22 @@ public class StubParser {
     }
 
     private void stubDebug(String warning) {
+        ensureSingleLine(warning, "stubDebug");
         if (warnings.add(warning) && debugStubParser) {
             processingEnv
                     .getMessager()
                     .printMessage(javax.tools.Diagnostic.Kind.NOTE, "StubParser: " + warning);
+        }
+    }
+
+    /** Issue a warning if the message contains line separator characters. */
+    private void ensureSingleLine(String message, String methodName) {
+        if (message.contains(LINE_SEPARATOR)) {
+            throw new Error(
+                    "Don't pass multi-line strings to "
+                            + methodName
+                            + ": "
+                            + message.replace(LINE_SEPARATOR, "%n"));
         }
     }
 

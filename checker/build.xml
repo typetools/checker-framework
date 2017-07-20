@@ -367,23 +367,23 @@
 
         <mkdir dir="dist" />
 
+        <!-- Only unjar the afu and stubparser - everything else is recompiled. -->
+
         <!-- jar up compilation results to protect against being
              overwritten by unjarring annotation-file-utilities.lib.
              See https://github.com/typetools/checker-framework/issues/894 -->
-        <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/,reports/"/>
-
-        <!-- Only unjar the stubparser and afu - everything else is recompiled. -->
+        <jar destfile="${checker.lib.tmp}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/,reports/"/>
         <unjar src="${annotation-file-utilities.lib}" dest="${build}" />
         <!-- Also delete anything in the org/checkerframework package in case it has be removed
         from the framework-->
         <delete includeemptydirs="true">
             <fileset dir="${build}/org/checkerframework"/>
          </delete>
+        <!-- Work-around for Issue 894, see above. -->
+        <unjar src="${checker.lib.tmp}" dest="${build}" />
 
         <unjar src="${javaparser.core.lib}" dest="${build}" />
         <unjar src="${stubparser.lib}" dest="${build}" />
-        <!-- Work-around for Issue 894, see above. -->
-        <unjar src="${checker.lib}" dest="${build}" />
 
         <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/,reports/">
             <manifest>
