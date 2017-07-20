@@ -1256,6 +1256,11 @@ public abstract class GenericAnnotatedTypeFactory<
         return returnType;
     }
 
+    @Override
+    public void addDefaultAnnotations(AnnotatedTypeMirror type) {
+        defaults.annotate((Element) null, type);
+    }
+
     /**
      * This method is final; override {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror,
      * boolean)} instead.
@@ -1378,7 +1383,6 @@ public abstract class GenericAnnotatedTypeFactory<
             // wildcard.
             TypeMirror tm = InternalUtils.typeOf(tree);
             AnnotatedTypeMirror t = toAnnotatedType(tm, false);
-            defaults.annotate(tree, t);
 
             AnnotatedWildcardType wildcard = (AnnotatedWildcardType) method.getReturnType();
             if (ignoreUninferredTypeArguments) {
@@ -1387,20 +1391,13 @@ public abstract class GenericAnnotatedTypeFactory<
                 t.replaceAnnotations(wildcard.getExtendsBound().getAnnotations());
             }
             wildcard.setExtendsBound(t);
+            addDefaultAnnotations(wildcard);
         }
 
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptMethod(tree, method);
         }
         poly.annotate(tree, method);
-        if (ignoreUninferredTypeArguments
-                && mfuPair.first.getReturnType().getKind() == TypeKind.WILDCARD
-                && ((AnnotatedWildcardType) mfuPair.first.getReturnType())
-                        .isUninferredTypeArgument()) {
-            mfuPair.first
-                    .getReturnType()
-                    .replaceAnnotations(defaults.getDefaultQualifiersForCheckedCode());
-        }
         return mfuPair;
     }
 

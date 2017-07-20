@@ -1262,6 +1262,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * Adds default annotations to {@code type}.
+     *
+     * @param type
+     */
+    public void addDefaultAnnotations(AnnotatedTypeMirror type) {
+        // Pass.
+    }
+
+    /**
      * A callback method for the AnnotatedTypeFactory subtypes to customize directSuperTypes().
      * Overriding methods should merely change the annotations on the supertypes, without adding or
      * removing new types.
@@ -3188,11 +3197,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (!intersectionType) {
             wctype.setExtendsBound(typeVar.getUpperBound().deepCopy());
         } else {
-            //TODO: This probably doesn't work if the type has a type argument
             wctype.getExtendsBound().addAnnotations(typeVar.getUpperBound().getAnnotations());
         }
         wctype.setSuperBound(typeVar.getLowerBound().deepCopy());
         wctype.addAnnotations(typeVar.getAnnotations());
+        addDefaultAnnotations(wctype);
         wctype.setUninferredTypeArgument();
         return wctype;
     }
