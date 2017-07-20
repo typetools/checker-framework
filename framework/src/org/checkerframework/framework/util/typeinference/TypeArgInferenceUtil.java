@@ -17,6 +17,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -329,8 +330,14 @@ public class TypeArgInferenceUtil {
                                     annotatedTypeVar.getUnderlyingType()));
         }
 
+        return containsTypeParameter(type, typeVars);
+    }
+
+    /** @return true if the type contains a use of a type variable in typeVariables. */
+    public static boolean containsTypeParameter(
+            AnnotatedTypeMirror type, Collection<TypeVariable> typeVariables) {
         // note NULL values creep in because the underlying visitor uses them in various places
-        final Boolean result = type.accept(new TypeVariableFinder(), typeVars);
+        final Boolean result = type.accept(new TypeVariableFinder(), typeVariables);
         return result != null && result;
     }
 
@@ -369,11 +376,11 @@ public class TypeArgInferenceUtil {
      * parameter
      */
     private static class TypeVariableFinder
-            extends AnnotatedTypeScanner<Boolean, List<TypeVariable>> {
+            extends AnnotatedTypeScanner<Boolean, Collection<TypeVariable>> {
 
         @Override
         protected Boolean scan(
-                Iterable<? extends AnnotatedTypeMirror> types, List<TypeVariable> typeVars) {
+                Iterable<? extends AnnotatedTypeMirror> types, Collection<TypeVariable> typeVars) {
             if (types == null) {
                 return false;
             }
@@ -399,7 +406,8 @@ public class TypeArgInferenceUtil {
         }
 
         @Override
-        public Boolean visitTypeVariable(AnnotatedTypeVariable type, List<TypeVariable> typeVars) {
+        public Boolean visitTypeVariable(
+                AnnotatedTypeVariable type, Collection<TypeVariable> typeVars) {
             if (typeVars.contains(TypeAnnotationUtils.unannotatedType(type.getUnderlyingType()))) {
                 return true;
             } else {
