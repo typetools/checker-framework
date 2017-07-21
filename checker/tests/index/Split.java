@@ -1,9 +1,9 @@
+// @skip-test TODO: reinstate before merge
 
 public class Split {
-    // TODO Return this tests.
-    //    Pattern p = Pattern.compile(".*");
-    //
-    //    void test() {
-    //        @MinLen(1) String [] s = p.split("sdf");
-    //    }
+    Pattern p = Pattern.compile(".*");
+
+    void test() {
+        @MinLen(1) String[] s = p.split("sdf");
+    }
 }
