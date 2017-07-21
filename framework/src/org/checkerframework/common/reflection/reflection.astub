@@ -36,7 +36,7 @@ class Method {
     Object invoke(Object obj, Object... args);
 }
 
-class Constructor {
+class Constructor<T> {
     @NewInstance
     T newInstance(Object... args);
 }
