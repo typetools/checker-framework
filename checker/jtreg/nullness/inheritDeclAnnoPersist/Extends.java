@@ -6,8 +6,6 @@
  * @run main Driver Extends
  */
 
-import static com.sun.tools.classfile.TypeAnnotation.TargetType.*;
-
 public class Extends {
 
     @ADescriptions({

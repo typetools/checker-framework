@@ -5,7 +5,6 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import java.util.Collections;
@@ -39,24 +38,6 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
     public ValueVisitor(BaseTypeChecker checker) {
         super(checker);
-    }
-
-    /**
-     * @param exp an integral literal tree
-     * @return {@code exp}'s literal value
-     */
-    private long getIntLiteralValue(LiteralTree exp) {
-        Object orgValue = exp.getValue();
-        switch (exp.getKind()) {
-            case INT_LITERAL:
-            case LONG_LITERAL:
-                return ((Number) orgValue).longValue();
-            case CHAR_LITERAL:
-                return (long) ((Character) orgValue);
-            default:
-                throw new IllegalArgumentException(
-                        "exp is not an intergral literal (INT_LITERAL, LONG_LITERAL, CHAR_LITERAL)");
-        }
     }
 
     /**
