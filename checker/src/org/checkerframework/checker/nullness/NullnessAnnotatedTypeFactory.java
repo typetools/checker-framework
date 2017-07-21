@@ -298,6 +298,7 @@ public class NullnessAnnotatedTypeFactory
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
                 super.methodFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
+
         systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
         return mfuPair;
