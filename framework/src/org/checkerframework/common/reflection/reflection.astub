@@ -2,7 +2,7 @@ import org.checkerframework.common.reflection.qual.*;
 
 package java.lang;
 
-class Class {
+class Class<T> {
     @ForName
     static Class<?> forName(String name);
 
