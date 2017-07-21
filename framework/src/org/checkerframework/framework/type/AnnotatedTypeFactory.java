@@ -30,8 +30,6 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.util.Context;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,6 +54,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
@@ -3309,18 +3308,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(Tree tree) {
 
-        Context ctx = ((JavacProcessingEnvironment) getProcessingEnv()).getContext();
-        com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-
         // ========= Overridden Type =========
-        AnnotatedDeclaredType functionalInterfaceType =
-                getFunctionalInterfaceType(tree, javacTypes);
-        makeGroundTargetType(functionalInterfaceType);
+        AnnotatedDeclaredType functionalInterfaceType = getFunctionalInterfaceType(tree);
+        makeGroundTargetType(functionalInterfaceType, (DeclaredType) InternalUtils.typeOf(tree));
 
         // ========= Overridden Executable =========
-        Element fnElement =
-                javacTypes.findDescriptorSymbol(
-                        ((Type) functionalInterfaceType.getUnderlyingType()).asElement());
+        Element fnElement = InternalUtils.findFunction(tree, processingEnv);
 
         // The method viewed from the declared type
         AnnotatedExecutableType methodExe =
@@ -3340,18 +3333,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param lambdaTree the tree of the lambda or method reference
      * @return the functional interface type
      */
-    private AnnotatedDeclaredType getFunctionalInterfaceType(
-            Tree lambdaTree, com.sun.tools.javac.code.Types javacTypes) {
+    private AnnotatedDeclaredType getFunctionalInterfaceType(Tree lambdaTree) {
 
         Tree parentTree = TreePath.getPath(this.root, lambdaTree).getParentPath().getLeaf();
         switch (parentTree.getKind()) {
             case PARENTHESIZED:
-                return getFunctionalInterfaceType(parentTree, javacTypes);
+                return getFunctionalInterfaceType(parentTree);
 
             case TYPE_CAST:
                 TypeCastTree cast = (TypeCastTree) parentTree;
                 assertFunctionalInterface(
-                        javacTypes,
                         (Type) trees.getTypeMirror(getPath(cast.getType())),
                         parentTree,
                         lambdaTree);
@@ -3359,7 +3350,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (castATM.getKind() == TypeKind.INTERSECTION) {
                     AnnotatedIntersectionType itype = (AnnotatedIntersectionType) castATM;
                     for (AnnotatedTypeMirror t : itype.directSuperTypes()) {
-                        if (javacTypes.isFunctionalInterface((Type) t.getUnderlyingType())) {
+                        if (InternalUtils.isFunctionalInterface(
+                                t.getUnderlyingType(), getProcessingEnv())) {
                             return (AnnotatedDeclaredType) t;
                         }
                     }
@@ -3381,10 +3373,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotatedTypeMirror constructorParam =
                         AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(con.first, indexOfLambda);
                 assertFunctionalInterface(
-                        javacTypes,
-                        (Type) constructorParam.getUnderlyingType(),
-                        parentTree,
-                        lambdaTree);
+                        (Type) constructorParam.getUnderlyingType(), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) constructorParam;
 
             case METHOD_INVOCATION:
@@ -3394,23 +3383,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         this.methodFromUse(method);
                 AnnotatedTypeMirror param =
                         AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(exe.first, index);
-                assertFunctionalInterface(
-                        javacTypes, (Type) param.getUnderlyingType(), parentTree, lambdaTree);
+                assertFunctionalInterface((Type) param.getUnderlyingType(), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) param;
 
             case VARIABLE:
                 VariableTree varTree = (VariableTree) parentTree;
                 assertFunctionalInterface(
-                        javacTypes, (Type) InternalUtils.typeOf(varTree), parentTree, lambdaTree);
+                        (Type) InternalUtils.typeOf(varTree), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) getAnnotatedType(varTree.getType());
 
             case ASSIGNMENT:
                 AssignmentTree assignmentTree = (AssignmentTree) parentTree;
                 assertFunctionalInterface(
-                        javacTypes,
-                        (Type) InternalUtils.typeOf(assignmentTree),
-                        parentTree,
-                        lambdaTree);
+                        (Type) InternalUtils.typeOf(assignmentTree), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) getAnnotatedType(assignmentTree.getVariable());
 
             case RETURN:
@@ -3462,10 +3447,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotatedTypeMirror conditionalType =
                         AnnotatedTypes.leastUpperBound(this, trueType, falseType);
                 assertFunctionalInterface(
-                        javacTypes,
-                        (Type) conditionalType.getUnderlyingType(),
-                        parentTree,
-                        lambdaTree);
+                        (Type) conditionalType.getUnderlyingType(), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) conditionalType;
 
             default:
@@ -3479,17 +3461,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
     }
 
-    private void assertFunctionalInterface(
-            com.sun.tools.javac.code.Types javacTypes,
-            Type type,
-            Tree contextTree,
-            Tree lambdaTree) {
+    private void assertFunctionalInterface(Type type, Tree contextTree, Tree lambdaTree) {
 
-        if (!javacTypes.isFunctionalInterface(type)) {
+        if (!InternalUtils.isFunctionalInterface(type, processingEnv)) {
             if (type.getKind() == TypeKind.INTERSECTION) {
                 IntersectionType itype = (IntersectionType) type;
                 for (TypeMirror t : itype.getBounds()) {
-                    if (javacTypes.isFunctionalInterface((Type) t)) {
+                    if (InternalUtils.isFunctionalInterface(t, processingEnv)) {
                         // As long as any of the bounds is a functional interface
                         // we should be fine.
                         return;
@@ -3511,57 +3489,49 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * for extends bounds.
      *
      * @see "JLS 9.9"
-     * @param overriddenType the functional interface type
+     * @param functionalType the functional interface type
+     * @param groundTargetJavaType the Java type as found by javac
      */
-    private void makeGroundTargetType(AnnotatedDeclaredType overriddenType) {
-        if (overriddenType.getTypeArguments().size() > 0) {
-            List<AnnotatedTypeParameterBounds> bounds =
-                    this.typeVariablesFromUse(
-                            overriddenType,
-                            (TypeElement) overriddenType.getUnderlyingType().asElement());
-            List<AnnotatedTypeMirror> newTypeArguments =
-                    new ArrayList<>(overriddenType.getTypeArguments());
-            for (int i = 0; i < overriddenType.getTypeArguments().size(); i++) {
-                AnnotatedTypeMirror argType = overriddenType.getTypeArguments().get(i);
-                if (argType.getKind() == TypeKind.WILDCARD) {
-                    AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) argType;
+    private void makeGroundTargetType(
+            AnnotatedDeclaredType functionalType, DeclaredType groundTargetJavaType) {
+        if (functionalType.getTypeArguments().isEmpty()) {
+            return;
+        }
 
-                    final TypeMirror wildcardUbType =
-                            wildcardType.getExtendsBound().getUnderlyingType();
-                    final TypeMirror typeParamUbType =
-                            bounds.get(i).getUpperBound().getUnderlyingType();
-                    if (wildcardType.isUninferredTypeArgument()) {
-                        newTypeArguments.set(i, wildcardType);
-                    } else if (isExtendsWildcard(wildcardType)) {
-                        TypeMirror glbType =
-                                InternalUtils.greatestLowerBound(
-                                        this.checker.getProcessingEnvironment(),
-                                        typeParamUbType,
-                                        wildcardUbType);
+        List<AnnotatedTypeMirror> newTypeArguments =
+                new ArrayList<>(functionalType.getTypeArguments());
 
-                        // checkTypeArgs now enforces that wildcard annotation bounds MUST be within
-                        // the bounds of the type parameter.  Therefore, the wildcard's upper bound
-                        // should ALWAYS be more specific than the upper bound of the type parameter
-                        // That said, the Java type does NOT have to be.
-                        // Add the annotations from the wildcard to the lub type.
-                        final AnnotatedTypeMirror newArg;
-                        if (types.isSameType(wildcardUbType, glbType)) {
-                            newArg = wildcardType.getExtendsBound().deepCopy();
+        for (int i = 0; i < functionalType.getTypeArguments().size(); i++) {
+            AnnotatedTypeMirror argType = functionalType.getTypeArguments().get(i);
+            if (argType.getKind() == TypeKind.WILDCARD) {
+                AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) argType;
 
-                        } else {
-                            newArg = this.toAnnotatedType(glbType, false);
-                            newArg.replaceAnnotations(
-                                    wildcardType.getExtendsBound().getAnnotations());
-                        }
-                        newTypeArguments.set(i, newArg);
-
+                TypeMirror wildcardUbType = wildcardType.getExtendsBound().getUnderlyingType();
+                TypeMirror correctArgType = groundTargetJavaType.getTypeArguments().get(i);
+                if (wildcardType.isUninferredTypeArgument()) {
+                    // Keep the uninferred type so that it is ignored by later subtying and
+                    // containment checks.
+                    newTypeArguments.set(i, wildcardType);
+                } else if (isExtendsWildcard(wildcardType)) {
+                    final AnnotatedTypeMirror newArg;
+                    if (types.isSameType(wildcardUbType, correctArgType)) {
+                        newArg = wildcardType.getExtendsBound().deepCopy();
                     } else {
-                        newTypeArguments.set(i, wildcardType.getSuperBound());
+                        newArg = this.toAnnotatedType(correctArgType, false);
+                        newArg.replaceAnnotations(wildcardType.getExtendsBound().getAnnotations());
                     }
+                    newTypeArguments.set(i, newArg);
+                } else {
+                    newTypeArguments.set(i, wildcardType.getSuperBound());
                 }
             }
-            overriddenType.setTypeArguments(newTypeArguments);
         }
+        functionalType.setTypeArguments(newTypeArguments);
+
+        // When the groundTargetJavaType is different from the underlying type of functionalType,
+        // only the main annotations are copied.  Add default annotations in places withouth
+        // annotations.
+        addDefaultAnnotations(functionalType);
     }
 
     /**

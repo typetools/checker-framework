@@ -452,4 +452,28 @@ public class InternalUtils {
 
         return Integer.compare(pos1.getStartPosition(), pos2.getStartPosition());
     }
+
+    /**
+     * @return whether or not {@code type} is a functional interface type (as defined in JLS 9.8).
+     */
+    public static boolean isFunctionalInterface(TypeMirror type, ProcessingEnvironment env) {
+        Context ctx = ((JavacProcessingEnvironment) env).getContext();
+        com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
+        return javacTypes.isFunctionalInterface((Type) type);
+    }
+
+    /**
+     * The type of the lambda or method reference tree is a functional interface type. This method
+     * returns the single abstract method declared by that functional interface. (The type of this
+     * method is referred to as the function type.)
+     *
+     * @param tree lambda or member reference tree
+     * @param env ProcessingEnvironment
+     * @return the single abstract method declared by the type of the tree
+     */
+    public static Symbol findFunction(Tree tree, ProcessingEnvironment env) {
+        Context ctx = ((JavacProcessingEnvironment) env).getContext();
+        com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
+        return javacTypes.findDescriptorSymbol(((Type) typeOf(tree)).asElement());
+    }
 }
