@@ -10,9 +10,9 @@ package java.lang;
 
 public final class  String {
      public @NonNull String intern();
-     public @Nullable String substring(@NonNull int beginIndex) @NonNull;
+     public @Nullable String substring(@NonNull String this, @NonNull int beginIndex);
      String(@Nullable String arg0);
-     void getChars(@Nullable int arg0, @NonNull int arg1, @NonNull char @NonNull [] arg2, @NonNull int arg3) @NonNull;
+     void getChars(@NonNul String this, @Nullable int arg0, @NonNull int arg1, @NonNull char @NonNull [] arg2, @NonNull int arg3);
 //Used to test stub file warnings
      void thisMethodIsNotReal(String s);
 }
