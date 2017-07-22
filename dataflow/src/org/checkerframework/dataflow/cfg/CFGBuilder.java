@@ -2658,6 +2658,10 @@ public class CFGBuilder {
                         } else if (kind == Tree.Kind.DIVIDE_ASSIGNMENT) {
                             if (TypesUtils.isIntegral(exprType)) {
                                 operNode = new IntegerDivisionNode(operTree, targetRHS, value);
+
+                                TypeElement throwableElement =
+                                        elements.getTypeElement("java.lang.ArithmeticException");
+                                extendWithNodeWithException(operNode, throwableElement.asType());
                             } else {
                                 operNode = new FloatingDivisionNode(operTree, targetRHS, value);
                             }
@@ -2665,6 +2669,10 @@ public class CFGBuilder {
                             assert kind == Kind.REMAINDER_ASSIGNMENT;
                             if (TypesUtils.isIntegral(exprType)) {
                                 operNode = new IntegerRemainderNode(operTree, targetRHS, value);
+
+                                TypeElement throwableElement =
+                                        elements.getTypeElement("java.lang.ArithmeticException");
+                                extendWithNodeWithException(operNode, throwableElement.asType());
                             } else {
                                 operNode = new FloatingRemainderNode(operTree, targetRHS, value);
                             }
@@ -2868,6 +2876,10 @@ public class CFGBuilder {
                         } else if (kind == Tree.Kind.DIVIDE) {
                             if (TypesUtils.isIntegral(exprType)) {
                                 r = new IntegerDivisionNode(tree, left, right);
+
+                                TypeElement throwableElement =
+                                        elements.getTypeElement("java.lang.ArithmeticException");
+                                extendWithNodeWithException(r, throwableElement.asType());
                             } else {
                                 r = new FloatingDivisionNode(tree, left, right);
                             }
@@ -2875,6 +2887,10 @@ public class CFGBuilder {
                             assert kind == Kind.REMAINDER;
                             if (TypesUtils.isIntegral(exprType)) {
                                 r = new IntegerRemainderNode(tree, left, right);
+
+                                TypeElement throwableElement =
+                                        elements.getTypeElement("java.lang.ArithmeticException");
+                                extendWithNodeWithException(r, throwableElement.asType());
                             } else {
                                 r = new FloatingRemainderNode(tree, left, right);
                             }
