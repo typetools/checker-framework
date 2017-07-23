@@ -3569,6 +3569,8 @@ public class CFGBuilder {
                 arrayAccessNode.setInSource(false);
                 extendWithNode(arrayAccessNode);
                 translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
+                Element npeElement = elements.getTypeElement("java.lang.NullPointerException");
+                extendWithNodeWithException(arrayAccessNode, npeElement.asType());
 
                 if (statement != null) {
                     scan(statement, p);
@@ -3786,7 +3788,13 @@ public class CFGBuilder {
         public Node visitArrayAccess(ArrayAccessTree tree, Void p) {
             Node array = scan(tree.getExpression(), p);
             Node index = unaryNumericPromotion(scan(tree.getIndex(), p));
-            return extendWithNode(new ArrayAccessNode(tree, array, index));
+            Node arrayAccess = extendWithNode(new ArrayAccessNode(tree, array, index));
+            Element aioobeElement =
+                    elements.getTypeElement("java.lang.ArrayIndexOutOfBoundsException");
+            extendWithNodeWithException(arrayAccess, aioobeElement.asType());
+            Element npeElement = elements.getTypeElement("java.lang.NullPointerException");
+            extendWithNodeWithException(arrayAccess, npeElement.asType());
+            return arrayAccess;
         }
 
         @Override
