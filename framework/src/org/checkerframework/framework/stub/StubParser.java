@@ -576,20 +576,17 @@ public class StubParser {
             }
         }
 
-        if (methodType.getReceiverType() == null) {
-            // DO nothing
-            // TODO remove this block after resolving TODO below
-        } else if (methodType.getReceiverType() == null
-                // TODO Fix - here should be receiver annotations. Remove && false
-                && decl.getAnnotations() != null
-                && !decl.getAnnotations().isEmpty()
-                && false) {
+        if (methodType.getReceiverType() == null
+                && decl.getReceiverAnnotations() != null
+                && !decl.getReceiverAnnotations().isEmpty()) {
             stubAlwaysWarn(
                     String.format(
-                            "parseMethod: static method %s cannot have receiver annotation %s",
-                            methodType, decl.getAnnotations()));
+                            "parseMethod: static methods cannot have receiver annotations%n"
+                                    + "Method: %s%n"
+                                    + "Receiver annotations: %s",
+                            methodType, decl.getReceiverAnnotations()));
         } else {
-            annotate(methodType.getReceiverType(), decl.getAnnotations());
+            annotate(methodType.getReceiverType(), decl.getReceiverAnnotations());
         }
 
         putNew(atypes, elt, methodType);
