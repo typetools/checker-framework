@@ -250,6 +250,12 @@ public class StubUtil {
             if (n.getParameters() != null) {
                 for (Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext(); ) {
                     Parameter p = i.next();
+                    // This is required because first parameter in annotated declaration could be added to annotate
+                    // the receiver which is not a parameter in the regular method declaration.
+                    if (p.getNameAsString().equals("this")) {
+                        // skip
+                        continue;
+                    }
                     p.accept(this, arg);
 
                     if (i.hasNext()) {

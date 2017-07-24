@@ -968,9 +968,8 @@ public class StubParser {
 
     private ExecutableElement findElement(TypeElement typeElt, MethodDeclaration methodDecl) {
         final String wantedMethodName = methodDecl.getNameAsString();
-        final int wantedMethodParams =
-                (methodDecl.getParameters() == null) ? 0 : methodDecl.getParameters().size();
-        // TODO Make sure assignment was changed right
+        final int wantedMethodParams = getWantedMethodParamsAmount(methodDecl);
+
         final String wantedMethodString = StubUtil.toString(methodDecl);
         for (ExecutableElement method : ElementUtils.getAllMethodsIn(elements, typeElt)) {
             // do heuristics first
@@ -989,6 +988,20 @@ public class StubParser {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns an amount of parameters in a method excluding receiver parameter which could be
+     * present to annotate receiver
+     */
+    private static int getWantedMethodParamsAmount(MethodDeclaration methodDecl) {
+        int result = (methodDecl.getParameters() == null) ? 0 : methodDecl.getParameters().size();
+        // This is required because first parameter in annotated declaration could be added to annotate
+        // the receiver which is not a parameter in the regular method declaration.
+        if (result > 0 && methodDecl.getParameter(0).getNameAsString().equals("this")) {
+            result--;
+        }
+        return result;
     }
 
     private ExecutableElement findElement(TypeElement typeElt, ConstructorDeclaration methodDecl) {
