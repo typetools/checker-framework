@@ -17,11 +17,9 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.KeyForPropagator.PropagationDirection;
-import org.checkerframework.checker.nullness.qual.Covariant;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
@@ -53,6 +51,8 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private final KeyForPropagator keyForPropagator;
 
+    private final TypeMirror erasedMapType;
+
     public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
 
@@ -66,6 +66,9 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 org.checkerframework.checker.nullness.compatqual.KeyForDecl.class, KEYFOR);
         addAliasedAnnotation(
                 org.checkerframework.checker.nullness.compatqual.KeyForType.class, KEYFOR);
+
+        TypeMirror mapType = TypesUtils.typeFromClass(types, elements, Map.class);
+        erasedMapType = types.erasure(mapType);
 
         this.postInit();
     }
@@ -126,6 +129,7 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 new KeyForPropagationTreeAnnotator(this, keyForPropagator));
     }
 
+    // TODO: work on removing this class
     protected static class KeyForTypeHierarchy extends DefaultTypeHierarchy {
 
         public KeyForTypeHierarchy(
@@ -153,71 +157,8 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (subtype.hasAnnotation(KeyForBottom.class)) {
                 return true;
             }
+
             return super.isSubtype(subtype, supertype, visited);
-        }
-
-        protected boolean isCovariant(final int typeArgIndex, final int[] covariantArgIndexes) {
-            if (covariantArgIndexes != null) {
-                for (int covariantIndex : covariantArgIndexes) {
-                    if (typeArgIndex == covariantIndex) {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        @Override
-        public Boolean visitTypeArgs(
-                AnnotatedDeclaredType subtype,
-                AnnotatedDeclaredType supertype,
-                VisitHistory visited,
-                boolean subtypeIsRaw,
-                boolean supertypeIsRaw) {
-            final boolean ignoreTypeArgs = ignoreRawTypes && (subtypeIsRaw || supertypeIsRaw);
-
-            if (!ignoreTypeArgs) {
-
-                //TODO: Make an option for honoring this annotation in DefaultTypeHierarchy?
-                final TypeElement supertypeElem =
-                        (TypeElement) supertype.getUnderlyingType().asElement();
-                int[] covariantArgIndexes = null;
-                if (supertypeElem.getAnnotation(Covariant.class) != null) {
-                    covariantArgIndexes = supertypeElem.getAnnotation(Covariant.class).value();
-                }
-
-                final List<? extends AnnotatedTypeMirror> subtypeTypeArgs =
-                        subtype.getTypeArguments();
-                final List<? extends AnnotatedTypeMirror> supertypeTypeArgs =
-                        supertype.getTypeArguments();
-
-                if (subtypeTypeArgs.isEmpty() || supertypeTypeArgs.isEmpty()) {
-                    return true;
-                }
-
-                if (supertypeTypeArgs.size() > 0) {
-                    for (int i = 0; i < supertypeTypeArgs.size(); i++) {
-                        final AnnotatedTypeMirror superTypeArg = supertypeTypeArgs.get(i);
-                        final AnnotatedTypeMirror subTypeArg = subtypeTypeArgs.get(i);
-
-                        if (subtypeIsRaw || supertypeIsRaw) {
-                            rawnessComparer.isValidInHierarchy(
-                                    subtype, supertype, currentTop, visited);
-                        } else {
-                            if (!isContainedBy(
-                                    subTypeArg,
-                                    superTypeArg,
-                                    visited,
-                                    isCovariant(i, covariantArgIndexes))) {
-                                return false;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return true;
         }
     }
 
@@ -273,33 +214,25 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(factory, KEYFORBOTTOM);
         }
 
+        private List<String> extractValues(AnnotationMirror anno) {
+            Map<? extends ExecutableElement, ? extends AnnotationValue> valMap =
+                    anno.getElementValues();
+
+            List<String> res;
+            if (valMap.isEmpty()) {
+                res = new ArrayList<String>();
+            } else {
+                res = AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+            }
+            return res;
+        }
+
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
             if (AnnotationUtils.areSameIgnoringValues(superAnno, KEYFOR)
                     && AnnotationUtils.areSameIgnoringValues(subAnno, KEYFOR)) {
-                List<String> lhsValues = null;
-                List<String> rhsValues = null;
-
-                Map<? extends ExecutableElement, ? extends AnnotationValue> valMap =
-                        superAnno.getElementValues();
-
-                if (valMap.isEmpty()) {
-                    lhsValues = new ArrayList<String>();
-                } else {
-                    lhsValues =
-                            AnnotationUtils.getElementValueArray(
-                                    superAnno, "value", String.class, true);
-                }
-
-                valMap = subAnno.getElementValues();
-
-                if (valMap.isEmpty()) {
-                    rhsValues = new ArrayList<String>();
-                } else {
-                    rhsValues =
-                            AnnotationUtils.getElementValueArray(
-                                    subAnno, "value", String.class, true);
-                }
+                List<String> lhsValues = extractValues(superAnno);
+                List<String> rhsValues = extractValues(subAnno);
 
                 return rhsValues.containsAll(lhsValues);
             }
@@ -314,19 +247,12 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    private TypeMirror erasedMapType = null;
-
     protected boolean isInvocationOfMapMethod(MethodInvocationNode n, String methodName) {
         String invokedMethod = getMethodName(n);
         // First verify if the method name is correct. This is an inexpensive check.
         if (invokedMethod.equals(methodName)) {
             // Now verify that the receiver of the method invocation is of a type
             // that extends that java.util.Map interface. This is a more expensive check.
-            if (erasedMapType == null) {
-                TypeMirror mapType = TypesUtils.typeFromClass(types, elements, Map.class);
-                erasedMapType = types.erasure(mapType);
-            }
-
             TypeMirror receiverType = types.erasure(n.getTarget().getReceiver().getType());
 
             if (types.isSubtype(receiverType, erasedMapType)) {
