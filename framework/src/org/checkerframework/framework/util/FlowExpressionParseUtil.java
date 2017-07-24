@@ -74,6 +74,10 @@ public class FlowExpressionParseUtil {
     /** Regular expression for a formal parameter use. */
     protected static final String parameterRegex = "#([1-9][0-9]*)";
 
+    /** Regular expression for a string literal. */
+    // Regex can be found at, for example, http://stackoverflow.com/a/481587/173852
+    protected static final String stringRegex = "\"(?:[^\"\\\\]|\\\\.)*\"";
+
     /** Unanchored; can be used to find all formal parameter uses. */
     protected static final Pattern unanchoredParameterPattern = Pattern.compile(parameterRegex);
 
@@ -94,15 +98,12 @@ public class FlowExpressionParseUtil {
     protected static final Pattern superPattern = anchored("super");
     /** Matches an identifier */
     protected static final Pattern identifierPattern = anchored(identifierRegex);
-    /** Matches an array access. Capturing groups 1 and 2 are the array and index. */
-    protected static final Pattern arrayPattern = anchored("(.*)\\[(.*)\\]");
     /** Matches integer literals */
     protected static final Pattern intPattern = anchored("[-+]?[0-9]+");
     /** Matches long literals */
     protected static final Pattern longPattern = anchored("[-+]?[0-9]+[Ll]");
     /** Matches string literals */
-    // Regex can be found at, for example, http://stackoverflow.com/a/481587/173852
-    protected static final Pattern stringPattern = anchored("\"(?:[^\"\\\\]|\\\\.)*\"");
+    protected static final Pattern stringPattern = anchored(stringRegex);
     /** Matches the null literal */
     protected static final Pattern nullPattern = anchored("null");
     /** Matches an expression contained in matching start and end parentheses */
@@ -174,58 +175,6 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * Parse a method call. First of returned pair is a pair of method name and arguments. Second of
-     * returned pair is a remaining string.
-     *
-     * @param s expression string
-     * @return pair of pair of method name and arguments and remaining.
-     */
-    private static Pair<Pair<String, String>, String> parseMethod(String s) {
-        // Parse Identifier
-        Pattern identParser = Pattern.compile("^(" + identifierRegex + ").*$");
-        Matcher m = identParser.matcher(s);
-        if (!m.matches()) {
-            return null;
-        }
-        String ident = m.group(1);
-        int i = ident.length();
-
-        // expect LPAREN
-        if (i >= s.length() || s.charAt(i) != '(') {
-            return null;
-        }
-        int lparenPos = ++i;
-
-        int depth = 1;
-        OUTER:
-        while (i < s.length()) {
-            switch (s.charAt(i++)) {
-                case '"':
-                    while (i < s.length()) {
-                        if (s.charAt(i++) == '"') {
-                            break;
-                        }
-                    }
-                    break;
-                case '(':
-                    depth++;
-                    break;
-                case ')':
-                    depth--;
-                    if (depth < 0) {
-                        break OUTER;
-                    } else if (depth == 0) {
-                        String arguments = s.substring(lparenPos, i - 1);
-                        return Pair.of(Pair.of(ident, arguments), s.substring(i));
-                    }
-                    break;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Matches a field access. First of returned pair is object and second is field.
      *
      * @param s expression string
@@ -237,6 +186,29 @@ public class FlowExpressionParseUtil {
             return Pair.of(
                     method.first.first + "(" + method.first.second + ")",
                     method.second.substring(1));
+        }
+
+        Pair<Pair<String, String>, String> array = parseArray(s);
+        if (array != null && array.second.startsWith(".")) {
+            return Pair.of(
+                    array.first.first + "[" + array.first.second + "]", array.second.substring(1));
+        }
+
+        Pattern memberSelectOfStringPattern = anchored("(" + stringRegex + ")" + "\\.(.*)");
+        Matcher m = memberSelectOfStringPattern.matcher(s);
+        if (m.matches()) {
+            return Pair.of(m.group(1), m.group(2));
+        }
+
+        int nextRParenPos = nextClosedParen(s, 0, '(', ')');
+        if (nextRParenPos != -1) {
+            if (nextRParenPos + 1 < s.length() && s.charAt(nextRParenPos + 1) == '.') {
+                String reciever = s.substring(0, nextRParenPos + 1);
+                String remaining = s.substring(nextRParenPos + 2);
+                return Pair.of(reciever, remaining);
+            } else {
+                return null;
+            }
         }
 
         int i = s.indexOf(".");
@@ -512,6 +484,33 @@ public class FlowExpressionParseUtil {
         return context.arguments.get(idx - 1);
     }
 
+    /**
+     * Parse a method call. First of returned pair is a pair of method name and arguments. Second of
+     * returned pair is a remaining string.
+     *
+     * @param s expression string
+     * @return pair of pair of method name and arguments and remaining.
+     */
+    private static Pair<Pair<String, String>, String> parseMethod(String s) {
+        // Parse Identifier
+        Pattern identParser = Pattern.compile("^(" + identifierRegex + ").*$");
+        Matcher m = identParser.matcher(s);
+        if (!m.matches()) {
+            return null;
+        }
+        String ident = m.group(1);
+        int i = ident.length();
+
+        int rparenPos = nextClosedParen(s, i, '(', ')');
+        if (rparenPos == -1) {
+            return null;
+        }
+
+        String arguments = s.substring(i + 1, rparenPos);
+        String remaining = s.substring(rparenPos + 1);
+        return Pair.of(Pair.of(ident, arguments), remaining);
+    }
+
     private static boolean isMethod(String s, FlowExpressionContext contex) {
         Pair<Pair<String, String>, String> result = parseMethod(s);
         return result != null && result.second.isEmpty();
@@ -615,20 +614,85 @@ public class FlowExpressionParseUtil {
         }
     }
 
+    /**
+     * Parse a array access. First of returned pair is a pair of an array to be accessed and an
+     * index. Second of returned pair is a remaining string.
+     *
+     * @param s expression string
+     * @return pair of pair of an array to be accessed and an index. and remaining.
+     */
+    private static Pair<Pair<String, String>, String> parseArray(String s) {
+        int i = 0;
+        while (i < s.length() && s.charAt(i) != '[') i++;
+
+        if (i >= s.length()) {
+            return null;
+        }
+
+        while (true) {
+            int nextRBracketPos = nextClosedParen(s, i, '[', ']');
+            if (nextRBracketPos == -1) {
+                return null;
+            }
+
+            int nextLBracketPos = nextRBracketPos + 1;
+            if (nextLBracketPos < s.length() && s.charAt(nextLBracketPos) == '[') {
+                i = nextLBracketPos;
+                continue;
+            }
+
+            return Pair.of(
+                    Pair.of(s.substring(0, i), s.substring(i + 1, nextRBracketPos)),
+                    s.substring(nextLBracketPos));
+        }
+    }
+
+    private static int nextClosedParen(String s, int openPos, char open, char close) {
+        // expect `open` at `openPos` in `s`
+        if (s.length() <= openPos || s.charAt(openPos) != open) {
+            return -1;
+        }
+
+        int i = openPos + 1;
+        int depth = 1;
+        while (i < s.length()) {
+            char ch = s.charAt(i++);
+            if (ch == '"') {
+                i--;
+                Pattern stringPattern = anchored("(" + stringRegex + ").*");
+                Matcher m = stringPattern.matcher(s.substring(i));
+                if (!m.matches()) {
+                    break;
+                }
+                i += m.group(1).length();
+            } else if (ch == open) {
+                depth++;
+            } else if (ch == close) {
+                depth--;
+                if (depth < 0) {
+                    break;
+                } else if (depth == 0) {
+                    return i - 1;
+                }
+            }
+        }
+        return -1;
+    }
+
     private static boolean isArray(String s, FlowExpressionContext context) {
-        Matcher arraymatcher = arrayPattern.matcher(s);
-        return arraymatcher.matches();
+        Pair<Pair<String, String>, String> result = parseArray(s);
+        return result != null && result.second.isEmpty();
     }
 
     private static Receiver parseArray(String s, FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
-        Matcher arraymatcher = arrayPattern.matcher(s);
-        if (!arraymatcher.matches()) {
+        Pair<Pair<String, String>, String> array = parseArray(s);
+        if (array == null) {
             return null;
         }
 
-        String receiverStr = arraymatcher.group(1);
-        String indexStr = arraymatcher.group(2);
+        String receiverStr = array.first.first;
+        String indexStr = array.first.second;
         Receiver receiver = parseHelper(receiverStr, context, path);
         FlowExpressionContext contextForIndex = context.copyAndUseOuterReceiver();
         Receiver index = parseHelper(indexStr, contextForIndex, path);
@@ -907,6 +971,9 @@ public class FlowExpressionParseUtil {
                                 callLevel--;
                             }
                         }
+                        break;
+                    case '\\':
+                        idx++;
                         break;
                     default:
                         // stay in same state and consume the character
