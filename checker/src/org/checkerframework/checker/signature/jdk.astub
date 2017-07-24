@@ -56,7 +56,7 @@ class StackTraceElement {
 }
 
 class String {
-    public @PolySignature String intern() @PolySignature;
+    public @PolySignature String intern(@PolySignature String this);
 }
 
 class TypeNotPresentException extends RuntimeException {
