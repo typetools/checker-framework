@@ -51,7 +51,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror BOTTOM;
     private final AnnotationMirror POLY;
 
-    protected final IndexMethodIdentifier imf;
+    final IndexMethodIdentifier imf;
 
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);

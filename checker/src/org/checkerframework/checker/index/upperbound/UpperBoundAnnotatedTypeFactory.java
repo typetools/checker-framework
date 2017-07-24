@@ -76,7 +76,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public final AnnotationMirror UNKNOWN, BOTTOM, POLY;
 
-    protected final IndexMethodIdentifier imf;
+    final IndexMethodIdentifier imf;
 
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
