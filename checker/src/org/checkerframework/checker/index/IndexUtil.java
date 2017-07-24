@@ -14,9 +14,6 @@ import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.util.Range;
-import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -120,18 +117,6 @@ public class IndexUtil {
         return type.getKind() == TypeKind.ARRAY || TypesUtils.isString(type);
     }
 
-    /** Determines whether the dataflow node is an invocation of String.length() */
-    public static boolean isStringLengthInvocation(Node node, IndexMethodIdentifier imf) {
-        if (node instanceof MethodInvocationNode) {
-            MethodInvocationNode methodInvocationNode = (MethodInvocationNode) node;
-            MethodAccessNode methodAccessNode = methodInvocationNode.getTarget();
-            if (imf.isStringLength(methodAccessNode.getMethod())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     /** Gets a sequence tree for a length access tree, or null if it is not a length access. */
     public static ExpressionTree getLengthSequenceTree(
             Tree lengthTree, IndexMethodIdentifier imf, ProcessingEnvironment processingEnv) {
@@ -142,5 +127,20 @@ public class IndexUtil {
         }
 
         return null;
+    }
+
+    /**
+     * Looks up the minlen of a member select tree. The tree must be an access to a sequence length.
+     */
+    public static Integer getMinLenFromTree(Tree tree, ValueAnnotatedTypeFactory valueATF) {
+        AnnotatedTypeMirror minLenType = valueATF.getAnnotatedType(tree);
+        Long min = valueATF.getMinimumIntegralValue(minLenType);
+        if (min == null) {
+            return null;
+        }
+        if (min < 0 || min > Integer.MAX_VALUE) {
+            min = 0L;
+        }
+        return min.intValue();
     }
 }

@@ -4,6 +4,9 @@ import com.sun.source.tree.Tree;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -66,7 +69,15 @@ public class IndexMethodIdentifier {
         return TreeUtils.isMethodInvocation(tree, stringLength, processingEnv);
     }
 
-    public boolean isStringLength(ExecutableElement element) {
-        return stringLength.equals(element);
+    /** Determines whether the dataflow node is an invocation of String.length() */
+    public boolean isStringLengthInvocation(Node node) {
+        if (node instanceof MethodInvocationNode) {
+            MethodInvocationNode methodInvocationNode = (MethodInvocationNode) node;
+            MethodAccessNode methodAccessNode = methodInvocationNode.getTarget();
+            if (stringLength.equals(methodAccessNode.getMethod())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

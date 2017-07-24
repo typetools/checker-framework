@@ -17,6 +17,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
@@ -309,39 +310,23 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Looks up the minlen of a member select tree. The tree must be an access to a sequence
-         * length.
-         */
-        private Integer getMinLenFromTree(Tree tree) {
-            AnnotatedTypeMirror minLenType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
-            Long min = getValueAnnotatedTypeFactory().getMinimumIntegralValue(minLenType);
-            if (min == null) {
-                return null;
-            }
-            if (min < 0 || min > Integer.MAX_VALUE) {
-                min = 0L;
-            }
-            return min.intValue();
-        }
-
-        /**
          * Looks up the minlen of a member select tree. Returns null if the tree doesn't represent
          * an array's length field.
          */
         private Integer getMinLenFromMemberSelectTree(MemberSelectTree tree) {
             if (TreeUtils.isArrayLengthAccess(tree)) {
-                return getMinLenFromTree(tree);
+                return IndexUtil.getMinLenFromTree(tree, getValueAnnotatedTypeFactory());
             }
             return null;
         }
 
         /**
-         * Looks up the minlen of a mehtod invocation tree. Returns null if the tree doesn't
+         * Looks up the minlen of a method invocation tree. Returns null if the tree doesn't
          * represent an string length method.
          */
         private Integer getMinLenFromMethodInvocationTree(MethodInvocationTree tree) {
             if (imf.isStringLength(tree, processingEnv)) {
-                return getMinLenFromTree(tree);
+                return IndexUtil.getMinLenFromTree(tree, getValueAnnotatedTypeFactory());
             }
             return null;
         }
