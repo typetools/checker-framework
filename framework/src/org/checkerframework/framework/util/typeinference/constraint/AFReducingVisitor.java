@@ -18,6 +18,7 @@ import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -182,6 +183,9 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedDeclaredType supertype,
             Set<AFConstraint> constraints) {
         if (subtype.wasRaw() || supertype.wasRaw()) {
+            // The error will be caught in {@link DefaultTypeArgumentInference#infer} and
+            // inference will be aborted, but type-checking will continue.
+            ErrorReporter.errorAbort("Can't infer type arguments when raw types are involved.");
             return null;
         }
 
