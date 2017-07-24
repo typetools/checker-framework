@@ -319,6 +319,7 @@
                 <pathelement path="${junit.lib}"/>
                 <pathelement path="${hamcrest.lib}"/>
                 <pathelement path="${annotation-file-utilities.lib}"/>
+                <pathelement path="${javaparser.core.lib}"/>
             </classpath>
 
             <formatter type="xml"/>
