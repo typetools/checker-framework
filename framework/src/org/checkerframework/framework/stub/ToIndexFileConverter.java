@@ -306,9 +306,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         Type type = decl.getType();
         List<Parameter> params = decl.getParameters();
         List<TypeParameter> typeParams = decl.getTypeParameters();
-        List<AnnotationExpr> rcvrAnnos = decl.getAnnotations();
-        // TODO Make sure object is present
-        BlockStmt body = decl.getBody().get();
+        List<AnnotationExpr> rcvrAnnos = decl.getReceiverAnnotations();
+        BlockStmt body = decl.getBody().isPresent() ? decl.getBody().get() : null;
         StringBuilder sb = new StringBuilder(decl.getNameAsString()).append('(');
         AClass clazz = (AClass) elem;
         AMethod method;
