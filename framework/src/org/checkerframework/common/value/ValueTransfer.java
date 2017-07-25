@@ -1,10 +1,12 @@
 package org.checkerframework.common.value;
 
+import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.value.qual.ArrayLen;
@@ -1324,6 +1326,51 @@ public class ValueTransfer extends CFTransfer {
         }
         return super.strengthenAnnotationOfEqualTo(
                 transferResult, firstNode, secondNode, firstValue, secondValue, notEqualTo);
+    }
+
+    @Override
+    protected void processConditionalPostconditions(
+            MethodInvocationNode n,
+            ExecutableElement methodElement,
+            Tree tree,
+            CFStore thenStore,
+            CFStore elseStore) {
+        // For String.startsWith(String) and String.endsWith(String), refine the minimum length
+        // of the receiver to the minimum length of the argument
+        if (atypefactory.isStartsEndsWithMethod(methodElement)) {
+            Receiver argument = FlowExpressions.internalReprOf(atypefactory, n.getArgument(0));
+            Receiver receiver =
+                    FlowExpressions.internalReprOf(atypefactory, n.getTarget().getReceiver());
+
+            Integer minLength = null;
+
+            if (argument instanceof FlowExpressions.ValueLiteral) {
+                // starts/ends with literal
+                FlowExpressions.ValueLiteral argumentLiteral =
+                        (FlowExpressions.ValueLiteral) argument;
+                Object argumentValue = argumentLiteral.getValue();
+                if (argumentValue instanceof String) {
+                    minLength = ((String) argumentValue).length();
+                }
+            } else if (CFStore.canInsertReceiver(argument)) {
+                // use annotation stored for the argument
+                CFValue argumentCFValue = thenStore.getValue(argument);
+                if (argumentCFValue != null) {
+                    AnnotationMirror argumentAnno = getValueAnnotation(argumentCFValue);
+                    if (argumentAnno != null) {
+                        minLength = atypefactory.getMinLenValue(argumentAnno);
+                    }
+                }
+            }
+            // Update the annotation of the receiver
+            if (minLength != null && minLength != 0) {
+                AnnotationMirror minLenAnno =
+                        atypefactory.createArrayLenRangeAnnotation(minLength, Integer.MAX_VALUE);
+                thenStore.insertValue(receiver, minLenAnno);
+            }
+        }
+
+        super.processConditionalPostconditions(n, methodElement, tree, thenStore, elseStore);
     }
 
     enum ConditionalOperators {

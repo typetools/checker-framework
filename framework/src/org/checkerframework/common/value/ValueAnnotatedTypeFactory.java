@@ -106,6 +106,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** String.length() method */
     private final ExecutableElement lengthMethod;
 
+    private final ExecutableElement startsWithMethod;
+    private final ExecutableElement endsWithMethod;
+
     static {
         Set<String> backingSet = new HashSet<String>(18);
         backingSet.add("int");
@@ -152,6 +155,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 "org.checkerframework.checker.index.qual.Positive", createIntRangeFromPositive());
 
         lengthMethod = TreeUtils.getMethod("java.lang.String", "length", 0, processingEnv);
+        startsWithMethod = TreeUtils.getMethod("java.lang.String", "startsWith", 1, processingEnv);
+        endsWithMethod = TreeUtils.getMethod("java.lang.String", "endsWith", 1, processingEnv);
 
         // PolyLength is syntactic sugar for both @PolySameLen and @PolyValue
         addAliasedAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
@@ -1287,6 +1292,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Determines whether a method is the {@code String.length()} method. */
     boolean isStringLengthMethod(ExecutableElement method) {
         return method.equals(lengthMethod);
+    }
+
+    /**
+     * Determines whether a method is the {@code String.startsWith(String)} or {@code
+     * String.endsWith(String)} method.
+     */
+    public boolean isStartsEndsWithMethod(ExecutableElement method) {
+        return method.equals(startsWithMethod) || method.equals(endsWithMethod);
     }
 
     /**
