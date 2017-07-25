@@ -171,6 +171,7 @@ class SupertypeFinder {
 
                 mapping.put(ele, typArg);
             }
+            subTypeVarsInWildcards(mapping);
 
             ClassTree classTree = atypeFactory.trees.getTree(typeElement);
             // Testing against enum and annotation. Ideally we can simply use element!
@@ -194,6 +195,18 @@ class SupertypeFinder {
             }
 
             return supertypes;
+        }
+
+        private void subTypeVarsInWildcards(
+                Map<TypeParameterElement, AnnotatedTypeMirror> mapping) {
+            for (AnnotatedTypeMirror atm : mapping.values()) {
+                if (atm.getKind() == TypeKind.WILDCARD) {
+                    // Because the upper bound of the wildcard is copied from the upper bound of
+                    // the type parameter in #fixWildcardBound, it might contain references to
+                    // other type variables.  This replaces thos references.
+                    typeParamReplacer.visit(atm, mapping);
+                }
+            }
         }
 
         /**
