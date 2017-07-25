@@ -6,10 +6,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.Covariant;
 
 // The type annotation on an instantiation of Class is meaningless.
 // Class<@NonNull String> and Class<@Nullable String> have the same
 // meaning, but unfortunately are not interchangeable.
+@Covariant(0)
 public final class Class<T extends @Nullable Object> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
   private static final long serialVersionUID = 0;
   protected Class() {}
