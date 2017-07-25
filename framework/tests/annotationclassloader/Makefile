@@ -23,7 +23,7 @@ JAVACJAR ?= $(PROJECTDIR)/../../../../jsr308-langtools/dist/lib/javac.jar
 # build directories
 DATAFLOWBUILD := $(PROJECTDIR)/../../../dataflow/build/
 JAVACUTILBUILD := $(PROJECTDIR)/../../../javacutil/build/
-STUBPARSERBUILD := $(PROJECTDIR)/../../../checker/lib/
+STUBPARSERBUILD := $(PROJECTDIR)/../../../checker/lib/javaparser-core.jar
 FRAMEWORKBUILD := $(PROJECTDIR)/../../build/
 
 all: load-from-dir-test load-from-jar-test
