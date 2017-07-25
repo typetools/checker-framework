@@ -246,6 +246,7 @@
     <target name="jar" depends="build"
             description="Create framework.jar file">
 
+        <unjar src="${javaparser.core.lib}" dest="${build}" />
         <unjar src="${stubparser.lib}" dest="${build}" />
         <unjar src="${javacutil.lib}" dest="${build}" />
         <unjar src="${dataflow.lib}" dest="${build}" />
