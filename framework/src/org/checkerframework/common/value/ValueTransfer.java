@@ -402,7 +402,7 @@ public class ValueTransfer extends CFTransfer {
             MethodInvocationNode stringLengthNode, CFStore store) {
         MethodAccessNode methodAccessNode = stringLengthNode.getTarget();
 
-        if (atypefactory.isStringLengthMethod(methodAccessNode.getMethod())) {
+        if (atypefactory.methods.isStringLengthMethod(methodAccessNode.getMethod())) {
             refineAtLengthAccess(stringLengthNode, methodAccessNode.getReceiver(), store);
         }
     }
@@ -1337,7 +1337,7 @@ public class ValueTransfer extends CFTransfer {
             CFStore elseStore) {
         // For String.startsWith(String) and String.endsWith(String), refine the minimum length
         // of the receiver to the minimum length of the argument
-        if (atypefactory.isStartsEndsWithMethod(methodElement)) {
+        if (atypefactory.methods.isStartsOrEndsWithMethod(methodElement)) {
             Receiver argument = FlowExpressions.internalReprOf(atypefactory, n.getArgument(0));
             Receiver receiver =
                     FlowExpressions.internalReprOf(atypefactory, n.getTarget().getReceiver());

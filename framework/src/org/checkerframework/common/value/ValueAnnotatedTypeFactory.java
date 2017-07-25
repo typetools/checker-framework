@@ -103,11 +103,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Helper class that evaluates statically executable methods, constructors, and fields. */
     private final ReflectiveEvaluator evaluator;
 
-    /** String.length() method */
-    private final ExecutableElement lengthMethod;
-
-    private final ExecutableElement startsWithMethod;
-    private final ExecutableElement endsWithMethod;
+    /** Helper class that holds references to special methods. */
+    final ValueMethodIdentifier methods;
 
     static {
         Set<String> backingSet = new HashSet<String>(18);
@@ -154,9 +151,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(
                 "org.checkerframework.checker.index.qual.Positive", createIntRangeFromPositive());
 
-        lengthMethod = TreeUtils.getMethod("java.lang.String", "length", 0, processingEnv);
-        startsWithMethod = TreeUtils.getMethod("java.lang.String", "startsWith", 1, processingEnv);
-        endsWithMethod = TreeUtils.getMethod("java.lang.String", "endsWith", 1, processingEnv);
+        methods = new ValueMethodIdentifier(processingEnv);
 
         // PolyLength is syntactic sugar for both @PolySameLen and @PolyValue
         addAliasedAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
@@ -1169,7 +1164,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     argValues = null;
                 }
 
-                if (TreeUtils.isMethodInvocation(tree, lengthMethod, processingEnv)) {
+                if (methods.isStringLengthInvocation(tree, processingEnv)) {
                     AnnotatedTypeMirror receiverType = getReceiverType(tree);
                     AnnotationMirror resultAnno = createArrayLengthResultAnnotation(receiverType);
                     if (resultAnno != null) {
@@ -1287,19 +1282,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private boolean handledByValueChecker(AnnotatedTypeMirror type) {
             return coveredClassStrings.contains(type.getUnderlyingType().toString());
         }
-    }
-
-    /** Determines whether a method is the {@code String.length()} method. */
-    boolean isStringLengthMethod(ExecutableElement method) {
-        return method.equals(lengthMethod);
-    }
-
-    /**
-     * Determines whether a method is the {@code String.startsWith(String)} or {@code
-     * String.endsWith(String)} method.
-     */
-    public boolean isStartsEndsWithMethod(ExecutableElement method) {
-        return method.equals(startsWithMethod) || method.equals(endsWithMethod);
     }
 
     /**
