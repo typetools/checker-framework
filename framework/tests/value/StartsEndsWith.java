@@ -29,7 +29,7 @@ class StartsEndsWith {
     }
 
     void refineStartsEndsWith(String str) {
-        if (str.startsWith("longprefix") || str.endsWith("prefix")) {
+        if (str.startsWith("longprefix") && str.endsWith("prefix")) {
             @MinLen(10) String s10 = str;
             //:: error: (assignment.type.incompatible)
             @MinLen(11) String s11 = str;
