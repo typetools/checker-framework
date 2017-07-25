@@ -1,5 +1,7 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+package testpackage;
+
 public class First {
   public static <T extends @Nullable Object> void method(Supplier<T> supplier, Callable<@Nullable ? super T> callable) {}
 }

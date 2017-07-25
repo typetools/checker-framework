@@ -1,4 +1,6 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+package testpackage;
+
 class NonN<T extends @NonNull Object> {
 }
