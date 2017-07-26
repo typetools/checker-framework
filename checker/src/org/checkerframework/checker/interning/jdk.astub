@@ -78,6 +78,26 @@ public class Arrays{
   public static String deepToString(@PolyInterned Object [] a1);
 }
 
+@UsesObjectEquals class ComparableTimSort {}
+public final @UsesObjectEquals class Currency implements Serializable {}
+final @UsesObjectEquals class DualPivotQuicksort {}
+public abstract @UsesObjectEquals class EventListenerProxy<T extends EventListener>
+        implements EventListener {}
+public @UsesObjectEquals class EventObject implements java.io.Serializable {}
+public @UsesObjectEquals class FormattableFlags {}
+@UsesObjectEquals class LocaleISOData {}
+public final @UsesObjectEquals class Objects {}
+public @UsesObjectEquals class Observable {}
+public @UsesObjectEquals class Random implements java.io.Serializable {}
+public final @UsesObjectEquals class Scanner implements Iterator<String>, Closeable {}
+public final @UsesObjectEquals class ServiceLoader<S>
+    implements Iterable<S> {}
+public @UsesObjectEquals class StringTokenizer implements Enumeration<Object> {}
+@UsesObjectEquals class TimSort<T> {}
+public @UsesObjectEquals class Timer {}
+public abstract @UsesObjectEquals class TimerTask implements Runnable {}
+@UsesObjectEquals class XMLUtils {}
+
 /*
 TODO: Attributes does not declare a toString method.
 This declaration then pollutes java.lang.Object.toString, making
@@ -1039,28 +1059,6 @@ final @UsesObjectEquals class MergeCollation {}
 public final @UsesObjectEquals class Normalizer {}
 final @UsesObjectEquals class RBCollationTables {}
 final @UsesObjectEquals class RBTableBuilder {}
-
-package java.util;
-
-@UsesObjectEquals class ComparableTimSort {}
-public final @UsesObjectEquals class Currency implements Serializable {}
-final @UsesObjectEquals class DualPivotQuicksort {}
-public abstract @UsesObjectEquals class EventListenerProxy<T extends EventListener>
-        implements EventListener {}
-public @UsesObjectEquals class EventObject implements java.io.Serializable {}
-public @UsesObjectEquals class FormattableFlags {}
-@UsesObjectEquals class LocaleISOData {}
-public final @UsesObjectEquals class Objects {}
-public @UsesObjectEquals class Observable {}
-public @UsesObjectEquals class Random implements java.io.Serializable {}
-public final @UsesObjectEquals class Scanner implements Iterator<String>, Closeable {}
-public final @UsesObjectEquals class ServiceLoader<S>
-    implements Iterable<S> {}
-public @UsesObjectEquals class StringTokenizer implements Enumeration<Object> {}
-@UsesObjectEquals class TimSort<T> {}
-public @UsesObjectEquals class Timer {}
-public abstract @UsesObjectEquals class TimerTask implements Runnable {}
-@UsesObjectEquals class XMLUtils {}
 
 package java.util.concurrent;
 
