@@ -305,7 +305,7 @@ import org.checkerframework.checker.index.qual.*;
      * @throws IndexOutOfBoundsException {@inheritDoc}
      * @since      1.5
      */
-    public synchronized StringBuffer append(CharSequence s, /*!IndexFor("#1")*/ int start, /*!IndexOrHigh("#1")*/ int end)
+    public synchronized StringBuffer append(CharSequence s, @IndexOrHigh("#1") int start, @IndexOrHigh("#1") int end)
     {
         super.append(s, start, end);
         return this;
@@ -469,7 +469,7 @@ import org.checkerframework.checker.index.qual.*;
      * @since      1.5
      */
     public synchronized StringBuffer insert(/*!IndexFor("this")*/ int dstOffset, CharSequence s,
-                                            /*!IndexFor("#2")*/ int start, /*!IndexOrHigh("#2")*/int end)
+                                            @IndexOrHigh("#2") int start, @IndexOrHigh("#2") int end)
     {
         super.insert(dstOffset, s, start, end);
         return this;
