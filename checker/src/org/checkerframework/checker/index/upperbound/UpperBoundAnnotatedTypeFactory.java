@@ -76,7 +76,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public final AnnotationMirror UNKNOWN, BOTTOM, POLY;
 
-    final IndexMethodIdentifier imf;
+    private final IndexMethodIdentifier imf;
 
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -96,6 +96,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         imf = new IndexMethodIdentifier(processingEnv);
 
         this.postInit();
+    }
+
+    /** Gets a helper object that holds references to methods with special handling. */
+    IndexMethodIdentifier getMethodIdentifier() {
+        return imf;
     }
 
     @Override

@@ -59,7 +59,7 @@ public class SameLenTransfer extends CFTransfer {
             // lengthNode is a.length
             FieldAccessNode lengthFieldAccessNode = (FieldAccessNode) lengthNode;
             return lengthFieldAccessNode.getReceiver();
-        } else if (aTypeFactory.imf.isStringLengthInvocation(lengthNode)) {
+        } else if (aTypeFactory.getMethodIdentifier().isStringLengthInvocation(lengthNode)) {
             // lengthNode is s.length()
             MethodInvocationNode lengthMethodInvocationNode = (MethodInvocationNode) lengthNode;
             return lengthMethodInvocationNode.getTarget().getReceiver();

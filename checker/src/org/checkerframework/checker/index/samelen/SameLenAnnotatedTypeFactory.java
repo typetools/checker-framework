@@ -51,7 +51,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror BOTTOM;
     private final AnnotationMirror POLY;
 
-    final IndexMethodIdentifier imf;
+    private final IndexMethodIdentifier imf;
 
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -64,6 +64,11 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         imf = new IndexMethodIdentifier(processingEnv);
 
         this.postInit();
+    }
+
+    /** Gets a helper object that holds references to methods with special handling. */
+    IndexMethodIdentifier getMethodIdentifier() {
+        return imf;
     }
 
     @Override
