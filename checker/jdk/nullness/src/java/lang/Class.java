@@ -39,7 +39,7 @@ public final class Class<T> extends Object implements java.io.Serializable, java
   public java.lang.reflect.Method[] getMethods() throws SecurityException { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Constructor<?>[] getConstructors() throws SecurityException { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Field getField(String a1) throws NoSuchFieldException, SecurityException { throw new RuntimeException("skeleton method"); }
-  public java.lang.reflect.Method getMethod(String a1, Class<?> ... a2) throws NoSuchMethodException, SecurityException { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect.Method getMethod(String a1, Class<?> @Nullable ... a2) throws NoSuchMethodException, SecurityException { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Constructor<T> getConstructor(Class<?>... a1) throws NoSuchMethodException, SecurityException { throw new RuntimeException("skeleton method"); }
   public Class<?>[] getDeclaredClasses() throws SecurityException { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Field[] getDeclaredFields() throws SecurityException { throw new RuntimeException("skeleton method"); }
