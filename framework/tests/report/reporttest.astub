@@ -2,7 +2,7 @@ import org.checkerframework.common.util.report.qual.*;
 
 package java.lang;
 
-class Class {
+class Class<T> {
       @ReportCall
      Class<?> forName(String s);
 }
