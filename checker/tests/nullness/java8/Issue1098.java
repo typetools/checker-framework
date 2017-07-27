@@ -12,6 +12,9 @@ class Issue1098 {
 
     void use() {
         opt(Optional.empty(), null);
+        // TODO: false positive, because type agrument inference does not account for @Covariant.
+        // See https://github.com/typetools/checker-framework/issues/979.
+        //:: error: (argument.type.incompatible)
         cls(this.getClass(), null);
     }
 }
