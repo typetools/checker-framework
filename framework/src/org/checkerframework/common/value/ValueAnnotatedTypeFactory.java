@@ -151,10 +151,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(
                 "org.checkerframework.checker.index.qual.Positive", createIntRangeFromPositive());
 
-        lengthMethod = TreeUtils.getMethod("java.lang.String", "length", 0, processingEnv);
-
         // PolyLength is syntactic sugar for both @PolySameLen and @PolyValue
         addAliasedAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
+
+        lengthMethod = TreeUtils.getMethod("java.lang.String", "length", 0, processingEnv);
 
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
             this.postInit();
@@ -818,7 +818,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return true;
             } else if (AnnotationUtils.areSameByClass(superAnno, ArrayLenRange.class)
                     && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
-                // StringVal is a subtype of ArrayLenRange, if all the strings have a length from the range
+                // StringVal is a subtype of ArrayLenRange, if all the strings have a length in the range.
                 List<String> subValues =
                         AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
                 Range superRange = getRange(superAnno);
