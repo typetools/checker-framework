@@ -1337,7 +1337,10 @@ public class ValueTransfer extends CFTransfer {
             CFStore elseStore) {
         // For String.startsWith(String) and String.endsWith(String), refine the minimum length
         // of the receiver to the minimum length of the argument
-        if (atypefactory.getMethodIdentifier().isStartsOrEndsWithMethod(methodElement)) {
+
+        ValueMethodIdentifier methodIdentifier = atypefactory.getMethodIdentifier();
+        if (methodIdentifier.isStartsWithMethod(methodElement)
+                || methodIdentifier.isEndsWithMethod(methodElement)) {
             Receiver argument = FlowExpressions.internalReprOf(atypefactory, n.getArgument(0));
             Receiver receiver =
                     FlowExpressions.internalReprOf(atypefactory, n.getTarget().getReceiver());

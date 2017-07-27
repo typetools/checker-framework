@@ -31,11 +31,12 @@ class ValueMethodIdentifier {
         return method.equals(lengthMethod);
     }
 
-    /**
-     * Determines whether a method is the {@code String.startsWith(String)} or {@code
-     * String.endsWith(String)} method.
-     */
-    public boolean isStartsOrEndsWithMethod(ExecutableElement method) {
-        return method.equals(startsWithMethod) || method.equals(endsWithMethod);
+    /** Determines whether a method is the {@code String.startsWith(String)} method. */
+    public boolean isStartsWithMethod(ExecutableElement method) {
+        return method.equals(startsWithMethod);
+    }
+    /** Determines whether a method is the {@code String.endsWith(String)} method. */
+    public boolean isEndsWithMethod(ExecutableElement method) {
+        return method.equals(endsWithMethod);
     }
 }
