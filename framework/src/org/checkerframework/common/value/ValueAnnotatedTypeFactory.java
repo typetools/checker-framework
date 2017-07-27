@@ -439,19 +439,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 Range lubRange = getRange(lub);
                 Range newRange = getRange(newQualifier);
                 Range oldRange = getRange(previousQualifier);
-                Range wubRange = widenRange(newRange, oldRange, lubRange);
+                Range wubRange = widenedRange(newRange, oldRange, lubRange);
                 return createIntRangeAnnotation(wubRange);
             } else if (AnnotationUtils.areSameByClass(lub, ArrayLenRange.class)) {
                 Range lubRange = getRange(lub);
                 Range newRange = getRange(newQualifier);
                 Range oldRange = getRange(previousQualifier);
-                return createArrayLenRangeAnnotation(widenRange(newRange, oldRange, lubRange));
+                return createArrayLenRangeAnnotation(widenedRange(newRange, oldRange, lubRange));
             } else {
                 return lub;
             }
         }
 
-        private Range widenRange(Range newRange, Range oldRange, Range lubRange) {
+        private Range widenedRange(Range newRange, Range oldRange, Range lubRange) {
             if (newRange == null || oldRange == null) {
                 return lubRange;
             }

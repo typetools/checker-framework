@@ -18,8 +18,7 @@ public class OscillatingLoops {
                 d++;
             }
         } while (i < Integer.MAX_VALUE);
-        //        @IntRange(from = 0, to = 4567) int after = d;
-        @IntRange(from = -32768, to = 32767) int after = d;
+        @IntRange(from = 0, to = 4567) int after = d;
         @IntVal(Integer.MAX_VALUE) int afterI = i;
     }
 
@@ -34,8 +33,7 @@ public class OscillatingLoops {
                 d++;
             }
         }
-        //        @IntRange(from = 0, to = 4567) int after = d;
-        @IntRange(from = 0, to = 32767) int after = d;
+        @IntRange(from = 0, to = 4567) int after = d;
         @IntVal(Integer.MAX_VALUE) int afterI = i;
     }
 

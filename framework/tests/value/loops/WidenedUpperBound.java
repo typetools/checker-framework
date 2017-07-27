@@ -4,6 +4,7 @@ import org.checkerframework.common.value.qual.IntRange;
 // Because the analysis of loops isn't precise enough, the Value Checker issues
 // warnings on this test case. So, suppress those warnings, but run the tests
 // to make sure that dataflow reaches a fixed point.
+// The expected errors in comments are the errors that should be issued if dataflow were precise enough.
 @SuppressWarnings("value")
 public class WidenedUpperBound {
 

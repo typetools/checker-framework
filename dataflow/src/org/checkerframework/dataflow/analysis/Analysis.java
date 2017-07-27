@@ -567,7 +567,7 @@ public class Analysis<
         if (previousStore == null) {
             return newStore;
         } else if (shouldWiden) {
-            return newStore.widenUpperBound(previousStore);
+            return newStore.widenedUpperBound(previousStore);
         } else {
             return newStore.leastUpperBound(previousStore);
         }

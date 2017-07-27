@@ -792,7 +792,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     @Override
-    public S widenUpperBound(S previous) {
+    public S widenedUpperBound(S previous) {
         return upperBound(previous, true);
     }
 

@@ -74,7 +74,7 @@ public interface Store<S extends Store<S>> {
      *
      * @param previous must be the previous store
      */
-    S widenUpperBound(S previous);
+    S widenedUpperBound(S previous);
 
     /**
      * Can the objects {@code a} and {@code b} be aliases? Returns a conservative answer (i.e.,

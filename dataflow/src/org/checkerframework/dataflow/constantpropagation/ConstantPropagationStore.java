@@ -84,7 +84,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
     }
 
     @Override
-    public ConstantPropagationStore widenUpperBound(ConstantPropagationStore previous) {
+    public ConstantPropagationStore widenedUpperBound(ConstantPropagationStore previous) {
         return leastUpperBound(previous);
     }
 
