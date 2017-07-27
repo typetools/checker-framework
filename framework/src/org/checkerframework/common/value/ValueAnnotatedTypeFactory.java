@@ -104,7 +104,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final ReflectiveEvaluator evaluator;
 
     /** Helper class that holds references to special methods. */
-    final ValueMethodIdentifier methods;
+    private final ValueMethodIdentifier methods;
 
     static {
         Set<String> backingSet = new HashSet<String>(18);
@@ -159,6 +159,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
             this.postInit();
         }
+    }
+
+    /** Gets a helper object that holds references to methods with special handling. */
+    ValueMethodIdentifier getMethodIdentifier() {
+        return methods;
     }
 
     @Override
@@ -1164,7 +1169,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     argValues = null;
                 }
 
-                if (methods.isStringLengthInvocation(tree, processingEnv)) {
+                if (getMethodIdentifier().isStringLengthInvocation(tree, processingEnv)) {
                     AnnotatedTypeMirror receiverType = getReceiverType(tree);
                     AnnotationMirror resultAnno = createArrayLengthResultAnnotation(receiverType);
                     if (resultAnno != null) {
