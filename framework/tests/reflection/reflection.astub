@@ -8,6 +8,6 @@ class Method {
 
 }
 
-class Constructor {
+class Constructor<T> {
   @Top Object newInstance(@ReflectBottom Object obj, @ReflectBottom Object @ReflectBottom [] args) @Top;
 }

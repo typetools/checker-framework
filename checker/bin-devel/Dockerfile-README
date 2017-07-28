@@ -2,6 +2,10 @@ This directory contains Dockerfiles to create new Docker images for
 running Checker Framework tests reproducibly.
 To build new Docker images:
 
+  # Finish docker setup if necessary.
+  sudo usermod -aG docker $(whoami)
+  # Then log out and back in.
+
   # Obtain Docker credentials.
   # (This is only necessary once per machine; credentials are cached.)
   docker login

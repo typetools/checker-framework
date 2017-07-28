@@ -34,6 +34,7 @@ import java.util.function.Supplier;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.framework.qual.Covariant;
 
 // Note: Methods with references to java 8 classes have been commented out
 // because it breaks the annotated jdk build when running java 7.
@@ -58,7 +59,9 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
  */
 // The type argument to Optional is meaningless.
 // Optional<@NonNull String> and Optional<@Nullable String> have the same
-// meaning, but unfortunately are not interchangeable.
+// meaning, but are unrelated by the Java type hierarchy.
+// @Covariant makes Optional<@NonNull String> a subtype of Optional<@Nullable String>.
+@Covariant(0)
 public final @NonNull class Optional<T extends @Nullable Object> {
     /**
      * Common instance for {@code empty()}.

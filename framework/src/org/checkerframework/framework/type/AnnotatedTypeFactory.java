@@ -603,8 +603,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (!supportedTypeQualifiers.contains(superQualifier)) {
                     continue;
                 }
-                AnnotationMirror superAnno = null;
-                superAnno = AnnotationUtils.fromClass(elements, superQualifier);
+                AnnotationMirror superAnno = AnnotationUtils.fromClass(elements, superQualifier);
                 factory.addSubtype(typeQualifierAnno, superAnno);
             }
         }
@@ -1959,7 +1958,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Java special-cases the return type of {@link java.lang.Class.getClass() getClass()}. Though
+     * Java special-cases the return type of {@link java.lang.Class#getClass() getClass()}. Though
      * the method has a return type of {@code Class<?>}, the compiler special cases this return-type
      * and changes the bound of the type argument to the erasure of the receiver type. For example:
      *
@@ -1969,7 +1968,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * </ul>
      *
      * @param getClassType this must be a type representing a call to Object.getClass otherwise a
-     *     runtime exception will be thrown
+     *     runtime exception will be thrown. It is modified by side effect.
      * @param receiverType the receiver type of the method invocation (not the declared receiver
      *     type)
      */
@@ -3511,7 +3510,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (argType.getKind() == TypeKind.WILDCARD) {
                     AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) argType;
 
-                    final TypeMirror wilcardUbType =
+                    final TypeMirror wildcardUbType =
                             wildcardType.getExtendsBound().getUnderlyingType();
                     final TypeMirror typeParamUbType =
                             bounds.get(i).getUpperBound().getUnderlyingType();
@@ -3520,7 +3519,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                 InternalUtils.greatestLowerBound(
                                         this.checker.getProcessingEnvironment(),
                                         typeParamUbType,
-                                        wilcardUbType);
+                                        wildcardUbType);
 
                         // checkTypeArgs now enforces that wildcard annotation bounds MUST be within
                         // the bounds of the type parameter.  Therefore, the wildcard's upper bound
@@ -3528,7 +3527,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         // That said, the Java type does NOT have to be.
                         // Add the annotations from the wildcard to the lub type.
                         final AnnotatedTypeMirror newArg;
-                        if (types.isSameType(wilcardUbType, glbType)) {
+                        if (types.isSameType(wildcardUbType, glbType)) {
                             newArg = wildcardType.getExtendsBound().deepCopy();
 
                         } else {

@@ -398,7 +398,7 @@ example is already
 done for you in the annotated JDK that comes with the Checker Framework):
 
 \begin{Verbatim}
-  class Class {
+  class Class<T> {
     @EnsuresNonNullIf(expression="getComponentType()", result=true)
     public native boolean isArray();
 
@@ -564,7 +564,7 @@ Nullness Checker from reporting this particular warning to you.
 \begin{sloppypar}
 The Checker Framework supplies several ways to suppress warnings, most
 notably the \<@SuppressWarnings("nullness")> annotation (see
-Section~\ref{suppressing-warnings}).  An example use is
+Chapter~\ref{suppressing-warnings}).  An example use is
 \end{sloppypar}
 
 %BEGIN LATEX

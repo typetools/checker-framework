@@ -2,7 +2,7 @@ import org.checkerframework.common.reflection.qual.*;
 
 package java.lang;
 
-class Class {
+class Class<T> {
     @ForName
     static Class<?> forName(String name);
 
@@ -36,7 +36,7 @@ class Method {
     Object invoke(Object obj, Object... args);
 }
 
-class Constructor {
+class Constructor<T> {
     @NewInstance
     T newInstance(Object... args);
 }
