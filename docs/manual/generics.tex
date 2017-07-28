@@ -379,15 +379,15 @@ Java types are \emph{invariant} in their type parameter.  This means that
 \code{A<X>} is a subtype of \code{B<Y>} only if \<X> is identical to \<Y>.  For
 example, \code{ArrayList<Number>} is a subtype of \code{List<Number>}, but
 neither \code{ArrayList<Integer>} nor \code{List<Integer>} is a subtype of
-\code{List<Number>}.  (If they were, there would be a type hole in the Java
+\code{List<Number>}.  (If they were, there would be a loophole in the Java
 type system.)  For the same reason, type parameter annotations are treated
 invariantly.  For example, \code{List<@Nullable String>} is not a subtype
 of \code{List<String>}.
 
 When a type parameter is used in a read-only way --- that is, when values
 of that type are read but are never assigned --- then it is safe for the
-type to be \emph{covariant} in the type parameter.  Use the \refqualclass{framework/qual}{Covariant} annotation to indicate
-this.
+type to be \emph{covariant} in the type parameter.  Use the
+\refqualclass{framework/qual}{Covariant} annotation to indicate this.
 When a type parameter is covariant, two instantiations of the class with
 different type arguments have the same subtyping relationship as the type
 arguments do.
@@ -395,7 +395,8 @@ arguments do.
 For example, consider \<Iterator>.  Its elements can be read but not
 written, so \code{Iterator<@Nullable String>} can be a subtype of
 \code{Iterator<String>} without introducing a hole in the type system.
-Therefore, its type parameter is annotated with \<@Covariant>.
+Therefore, its type parameter is annotated with
+\refqualclass{framework/qual}{Covariant}.
 The first type parameter of \<Map.Entry> is also covariant.
 Another example would be the type parameter of a hypothetical class
 \<ImmutableList>.
