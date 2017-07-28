@@ -3498,8 +3498,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return;
         }
 
+        List<AnnotatedTypeParameterBounds> bounds =
+                this.typeVariablesFromUse(
+                        functionalType,
+                        (TypeElement) functionalType.getUnderlyingType().asElement());
+
         List<AnnotatedTypeMirror> newTypeArguments =
                 new ArrayList<>(functionalType.getTypeArguments());
+        boolean sizesDiffer =
+                functionalType.getTypeArguments().size()
+                        != groundTargetJavaType.getTypeArguments().size();
 
         for (int i = 0; i < functionalType.getTypeArguments().size(); i++) {
             AnnotatedTypeMirror argType = functionalType.getTypeArguments().get(i);
@@ -3507,12 +3515,26 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) argType;
 
                 TypeMirror wildcardUbType = wildcardType.getExtendsBound().getUnderlyingType();
-                TypeMirror correctArgType = groundTargetJavaType.getTypeArguments().get(i);
+
                 if (wildcardType.isUninferredTypeArgument()) {
-                    // Keep the uninferred type so that it is ignored by later subtying and
+                    // Keep the uninferred type so that it is ignored by later subtyping and
                     // containment checks.
                     newTypeArguments.set(i, wildcardType);
                 } else if (isExtendsWildcard(wildcardType)) {
+                    TypeMirror correctArgType;
+                    if (sizesDiffer) {
+                        // The java type is raw.
+                        TypeMirror typeParamUbType =
+                                bounds.get(i).getUpperBound().getUnderlyingType();
+                        correctArgType =
+                                InternalUtils.greatestLowerBound(
+                                        this.checker.getProcessingEnvironment(),
+                                        typeParamUbType,
+                                        wildcardUbType);
+                    } else {
+                        correctArgType = groundTargetJavaType.getTypeArguments().get(i);
+                    }
+
                     final AnnotatedTypeMirror newArg;
                     if (types.isSameType(wildcardUbType, correctArgType)) {
                         newArg = wildcardType.getExtendsBound().deepCopy();
