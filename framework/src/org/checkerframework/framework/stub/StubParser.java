@@ -536,7 +536,7 @@ public class StubParser {
             ExecutableElement elt,
             Map<Element, AnnotatedTypeMirror> atypes,
             Map<String, Set<AnnotationMirror>> declAnnos) {
-        // TODO Temporary solution
+        // Switched annotations between method declaration and type
         NodeList<AnnotationExpr> list = decl.getType().getAnnotations();
         decl.getType().setAnnotations(decl.getAnnotations());
         decl.setAnnotations(list);
@@ -564,7 +564,7 @@ public class StubParser {
             annotateDecl(declAnnos, paramElt, param.getAnnotations());
             annotateDecl(declAnnos, paramElt, param.getType().getAnnotations());
 
-            // TODO Temporary solution
+            // Duplicated parameter annotations to the type
             param.getType().setAnnotations(param.getAnnotations());
 
             if (param.isVarArgs()) {
@@ -732,17 +732,11 @@ public class StubParser {
         } else if (atype.getKind() == TypeKind.WILDCARD) {
             AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atype;
             WildcardType wildcardDef = (WildcardType) typeDef;
-            if (wildcardDef.getExtendedType() != null) {
-                // TODO Simplify the logic
-                if (wildcardDef.getExtendedType().isPresent()) {
-                    annotate(wildcardType.getExtendsBound(), wildcardDef.getExtendedType().get());
-                }
+            if (wildcardDef.getExtendedType().isPresent()) {
+                annotate(wildcardType.getExtendsBound(), wildcardDef.getExtendedType().get());
                 annotate(wildcardType.getSuperBound(), typeDef.getAnnotations());
-            } else if (wildcardDef.getSuperType() != null) {
-                // TODO Simplify the logic
-                if (wildcardDef.getSuperType().isPresent()) {
-                    annotate(wildcardType.getSuperBound(), wildcardDef.getSuperType().get());
-                }
+            } else if (wildcardDef.getSuperType().isPresent()) {
+                annotate(wildcardType.getSuperBound(), wildcardDef.getSuperType().get());
                 annotate(wildcardType.getExtendsBound(), typeDef.getAnnotations());
             } else {
                 annotate(atype, typeDef.getAnnotations());

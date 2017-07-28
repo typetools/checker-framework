@@ -50,8 +50,10 @@ public abstract class Plugin implements BundleActivator {
     @PolyUIEffect void stop(@PolyUI Plugin this, BundleContext context);
     @SafeEffect public final Preferences getPluginPreferences();
 }
-public static interface Preferences$IPropertyChangeListener extends EventListener {
-    @PolyUIEffect public void propertyChange(@PolyUI Preferences$IPropertyChangeListener this, Preferences.PropertyChangeEvent event);
+public class Preferences extends Object {
+    public static interface IPropertyChangeListener extends EventListener {
+        @PolyUIEffect public void propertyChange(@PolyUI Preferences$IPropertyChangeListener this, Preferences.PropertyChangeEvent event);
+    }
 }
 package org.eclipse.core.runtime.jobs;
 @PolyUIType

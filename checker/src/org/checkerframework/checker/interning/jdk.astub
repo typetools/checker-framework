@@ -41,8 +41,9 @@ class Byte {
   public static @Interned Byte valueOf(String s, int radix);
 }
 
-// All instances are interned
-@Interned class Character$UnicodeBlock { }
+class Character {
+    @Interned class UnicodeBlock { }
+}
 
 @UsesObjectEquals class Thread implements Runnable {}
 
@@ -342,15 +343,19 @@ public class BasicHTML {
      public static final @Interned String documentBaseKey = "html.base";
 }
 package javax.swing.plaf.basic;
-public class BasicRootPaneUI$Actions {
-         public static final @Interned String PRESS = "press";
-         public static final @Interned String RELEASE = "release";
-         public static final @Interned String POST_POPUP = "postPopup";
+class BasicRootPaneUI extends RootPaneUI implements PropertyChangeListener {
+    public class Actions {
+             public static final @Interned String PRESS = "press";
+             public static final @Interned String RELEASE = "release";
+             public static final @Interned String POST_POPUP = "postPopup";
+    }
 }
 package javax.swing.plaf.basic;
-public class BasicSliderUI$Actions {
-         public static final @Interned String MIN_SCROLL_INCREMENT = "minScroll";
-         public static final @Interned String MAX_SCROLL_INCREMENT = "maxScroll";
+class BasicSliderUI extends SliderUI {
+    public class Actions {
+             public static final @Interned String MIN_SCROLL_INCREMENT = "minScroll";
+             public static final @Interned String MAX_SCROLL_INCREMENT = "maxScroll";
+    }
 }
 package javax.swing.plaf.metal;
 public class MetalScrollBarUI {
