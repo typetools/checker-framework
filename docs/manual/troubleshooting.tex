@@ -774,7 +774,7 @@ sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial 
 
 % Building Checker Framework from source on Mac OS
 
-If you are building on Mac OS, then the following commands install the aforementioned packages:
+If you are building on Mac OS and employ \ahref{https://brew.sh}{homebrew} to install packages, then the following commands install the aforementioned prerequisites:
 
 \begin{Verbatim}
 brew update
@@ -784,7 +784,12 @@ brew cask install java
 brew cask install mactex
 \end{Verbatim}
 
-Mac OS users also need to copy \<hevea.sty> into \<\$HOME/Library/texmf/tex/latex> (you probably need to make that directory first).
+Mac OS users also need to copy \<hevea.sty> into \<\$HOME/Library/texmf/tex/latex>, which is simply done by:
+
+\begin{Verbatim}
+mkdir -p $HOME/Library/texmf/tex/latex
+cp -p /usr/local/Cellar/hevea/2.28/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/.
+\end{Verbatim}
 
 If you are building on Windows 10, then run \<bash> to obtain a version of
 Ubuntu (provided by the Windows Subsystem for Linux) and follow the Ubuntu
@@ -854,7 +859,7 @@ not because \<java> might be the version in the JDK or in the JRE):
 %END LATEX
 
 \item
-{\bf [Mac OSX 10.5 or later]} Similarly to Ubuntu, add one of the following commands in your \code{.bash\_profile} or \code{.profile} file.
+{\bf [Mac OSX 10.5 or later]} Add one of the following commands in your \code{.bash\_profile} or \code{.profile} file.
 \begin{smaller}
 \begin{Verbatim}
   export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
