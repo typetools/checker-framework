@@ -1972,7 +1972,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param receiverType the receiver type of the method invocation (not the declared receiver
      *     type)
      */
-    protected static void adaptGetClassReturnTypeToReceiver(
+    protected void adaptGetClassReturnTypeToReceiver(
             final AnnotatedExecutableType getClassType, final AnnotatedTypeMirror receiverType) {
         // TODO: should the receiver type ever be a declaration??
         // Work on removing the asUse() call.
