@@ -78,7 +78,7 @@ package java.beans;
                              int index,
                              boolean oldValue,
                              boolean newValue);
-    @PolyUIEffect public boolean hasListeners(String propertyName);
+    @PolyUIEffect public boolean hasListeners(@PolyUI PropertyChangeSupport this, String propertyName);
 }
 
 
