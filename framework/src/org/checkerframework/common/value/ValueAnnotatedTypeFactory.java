@@ -324,8 +324,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             if (anno != null && anno.getElementValues().size() > 0) {
                 if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
-                    List<Long> values =
-                            AnnotationUtils.getElementValueArray(anno, "value", Long.class, true);
+                    List<Long> values = getIntValues(anno);
                     if (values.size() > MAX_VALUES) {
                         long annoMinVal = Collections.min(values);
                         long annoMaxVal = Collections.max(values);
@@ -333,9 +332,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                 createIntRangeAnnotation(new Range(annoMinVal, annoMaxVal)));
                     }
                 } else if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
-                    List<Integer> values =
-                            AnnotationUtils.getElementValueArray(
-                                    anno, "value", Integer.class, true);
+                    List<Integer> values = getArrayLength(anno);
                     if (values.isEmpty()) {
                         atm.replaceAnnotation(BOTTOMVAL);
                     } else if (Collections.min(values) < 0) {
@@ -400,9 +397,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else if (AnnotationUtils.areSameByClass(anno, StringVal.class)) {
                     // The annotation is StringVal. If there are too many elements,
                     // ArrayLen or ArrayLenRange is used.
-                    List<String> values =
-                            AnnotationUtils.getElementValueArray(
-                                    anno, "value", String.class, false);
+                    List<String> values = getStringValues(anno);
 
                     if (values.size() > MAX_VALUES) {
                         List<Integer> lengths = ValueCheckerUtils.getLengthsForStringValues(values);
@@ -441,23 +436,17 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         private AnnotationMirror glbOfStringVal(
                 AnnotationMirror stringValAnno, AnnotationMirror otherAnno) {
-            List<String> values =
-                    AnnotationUtils.getElementValueArray(
-                            stringValAnno, "value", String.class, true);
+            List<String> values = getStringValues(stringValAnno);
 
             if (AnnotationUtils.areSameByClass(otherAnno, StringVal.class)) {
                 // Intersection of value lists
-                List<String> otherValues =
-                        AnnotationUtils.getElementValueArray(
-                                otherAnno, "value", String.class, true);
+                List<String> otherValues = getStringValues(otherAnno);
 
                 values.retainAll(otherValues);
             } else if (AnnotationUtils.areSameByClass(otherAnno, ArrayLen.class)) {
                 // Retain strings of correct lengths
 
-                List<Integer> otherLengths =
-                        AnnotationUtils.getElementValueArray(
-                                otherAnno, "value", Integer.class, true);
+                List<Integer> otherLengths = getArrayLength(otherAnno);
 
                 ArrayList<String> result = new ArrayList<String>();
                 for (String s : values) {
@@ -572,28 +561,22 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     Range range2 = getRange(a2);
                     return createArrayLenRangeAnnotation(range1.union(range2));
                 } else if (AnnotationUtils.areSameByClass(a1, IntVal.class)) {
-                    List<Long> a1Values =
-                            AnnotationUtils.getElementValueArray(a1, "value", Long.class, true);
-                    List<Long> a2Values =
-                            AnnotationUtils.getElementValueArray(a2, "value", Long.class, true);
+                    List<Long> a1Values = getIntValues(a1);
+                    List<Long> a2Values = getIntValues(a2);
                     List<Long> newValues = new ArrayList<>();
                     newValues.addAll(a1Values);
                     newValues.addAll(a2Values);
                     return createIntValAnnotation(newValues);
                 } else if (AnnotationUtils.areSameByClass(a1, ArrayLen.class)) {
-                    List<Integer> a1Values =
-                            AnnotationUtils.getElementValueArray(a1, "value", Integer.class, true);
-                    List<Integer> a2Values =
-                            AnnotationUtils.getElementValueArray(a2, "value", Integer.class, true);
+                    List<Integer> a1Values = getArrayLength(a1);
+                    List<Integer> a2Values = getArrayLength(a2);
                     List<Integer> newValues = new ArrayList<>();
                     newValues.addAll(a1Values);
                     newValues.addAll(a2Values);
                     return createArrayLenAnnotation(newValues);
                 } else if (AnnotationUtils.areSameByClass(a1, StringVal.class)) {
-                    List<String> a1Values =
-                            AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
-                    List<String> a2Values =
-                            AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+                    List<String> a1Values = getStringValues(a1);
+                    List<String> a2Values = getStringValues(a2);
                     List<String> newValues = new ArrayList<>();
                     newValues.addAll(a1Values);
                     newValues.addAll(a2Values);
@@ -753,13 +736,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             } else if (AnnotationUtils.areSameByClass(superAnno, DoubleVal.class)
                     && AnnotationUtils.areSameByClass(subAnno, IntVal.class)) {
-                List<Double> subValues =
-                        convertLongListToDoubleList(
-                                AnnotationUtils.getElementValueArray(
-                                        subAnno, "value", Long.class, true));
-                List<Double> superValues =
-                        AnnotationUtils.getElementValueArray(
-                                superAnno, "value", Double.class, true);
+                List<Double> subValues = convertLongListToDoubleList(getIntValues(subAnno));
+                List<Double> superValues = getDoubleValues(superAnno);
                 return superValues.containsAll(subValues);
             } else if ((AnnotationUtils.areSameByClass(superAnno, IntRange.class)
                             && AnnotationUtils.areSameByClass(subAnno, IntVal.class))
@@ -776,9 +754,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (subRange.isWiderThan(MAX_VALUES)) {
                     return false;
                 }
-                List<Double> superValues =
-                        AnnotationUtils.getElementValueArray(
-                                superAnno, "value", Double.class, true);
+                List<Double> superValues = getDoubleValues(superAnno);
                 List<Double> subValues =
                         ValueCheckerUtils.getValuesFromRange(subRange, Double.class);
                 return superValues.containsAll(subValues);
@@ -798,18 +774,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             || AnnotationUtils.areSameByClass(subAnno, ArrayLenRange.class))) {
 
                 // Allow @ArrayLen(0) to be converted to @StringVal("")
-                List<String> superValues =
-                        AnnotationUtils.getElementValueArray(
-                                superAnno, "value", String.class, true);
+                List<String> superValues = getStringValues(superAnno);
                 return superValues.contains("") && getMaxLenValue(subAnno) == 0;
             } else if (AnnotationUtils.areSameByClass(superAnno, ArrayLen.class)
                     && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
                 // StringVal is a subtype of ArrayLen, if all the strings have one of the correct lengths
-                List<String> subValues =
-                        AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
-                List<Integer> superValues =
-                        AnnotationUtils.getElementValueArray(
-                                superAnno, "value", Integer.class, true);
+                List<String> subValues = getStringValues(subAnno);
+                List<Integer> superValues = getArrayLength(superAnno);
+
                 for (String value : subValues) {
                     if (!superValues.contains(value.length())) {
                         return false;
@@ -819,8 +791,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (AnnotationUtils.areSameByClass(superAnno, ArrayLenRange.class)
                     && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
                 // StringVal is a subtype of ArrayLenRange, if all the strings have a length in the range.
-                List<String> subValues =
-                        AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
+                List<String> subValues = getStringValues(subAnno);
                 Range superRange = getRange(superAnno);
                 for (String value : subValues) {
                     if (!superRange.contains(value.length())) {
@@ -841,14 +812,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private List<Long> getArrayLenOrIntValue(AnnotationMirror anno) {
         List<Long> result;
         if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
-            List<Integer> intValues =
-                    AnnotationUtils.getElementValueArray(anno, "value", Integer.class, true);
+            List<Integer> intValues = getArrayLength(anno);
             result = new ArrayList<Long>(intValues.size());
             for (Integer i : intValues) {
                 result.add(i.longValue());
             }
         } else {
-            result = AnnotationUtils.getElementValueArray(anno, "value", Long.class, true);
+            result = getIntValues(anno);
         }
         return result;
     }

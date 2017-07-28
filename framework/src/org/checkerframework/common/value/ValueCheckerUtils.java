@@ -219,8 +219,7 @@ public class ValueCheckerUtils {
     }
 
     private static List<?> convertStringVal(AnnotationMirror anno, Class<?> newClass) {
-        List<String> strings =
-                AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+        List<String> strings = ValueAnnotatedTypeFactory.getStringValues(anno);
         if (newClass == char[].class) {
             List<char[]> chars = new ArrayList<>();
             for (String s : strings) {
