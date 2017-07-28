@@ -398,7 +398,7 @@ example is already
 done for you in the annotated JDK that comes with the Checker Framework):
 
 \begin{Verbatim}
-  class Class {
+  class Class<T> {
     @EnsuresNonNullIf(expression="getComponentType()", result=true)
     public native boolean isArray();
 
