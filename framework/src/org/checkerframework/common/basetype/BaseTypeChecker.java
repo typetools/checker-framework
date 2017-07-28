@@ -25,7 +25,6 @@ import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
-import javax.tools.Diagnostic.Kind;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -139,7 +138,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      *
      * <p>Though each checker is run on a whole compilation unit before the next checker is run,
      * error and warning messages are collected and sorted based on the location in the source file
-     * before being printed. (See {@link #printMessage(Kind, String, Tree, CompilationUnitTree)}.)
+     * before being printed. (See {@link #printMessage(Diagnostic.Kind, String, Tree,
+     * CompilationUnitTree)}.)
      *
      * <p>WARNING: Circular dependencies are not supported nor do checkers verify that their
      * dependencies are not circular. Make sure no circular dependencies are created when overriding

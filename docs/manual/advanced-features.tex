@@ -521,7 +521,7 @@ These choices are conservative.  They are likely to cause many
 false-positive type-checking errors, which will help you to know which
 library methods need annotations.  You can then write those library
 annotations (see Chapter~\ref{annotating-libraries}) or alternately
-suppress the warnings (see Section~\ref{suppressing-warnings}).
+suppress the warnings (see Chapter~\ref{suppressing-warnings}).
 
 For example, an unannotated method
 
@@ -1156,7 +1156,7 @@ The set of permitted expressions is a subset of all Java expressions:
   referenced by \<o>.
 
 \item
-  a formal parameter.  Write \<\#> followed by the \textbf{one-based} parameter
+  a formal parameter, represented as \<\#> followed by the \textbf{one-based} parameter
   index.  For example: \<\#1>, \<\#3>.  It is not permitted to write \<\#0> to
   refer to the receiver object; use \<this> instead.  (A side note:
   The formal parameter syntax \<\#1> is less natural in source code

@@ -827,7 +827,7 @@ A type system's rules define which operations on values of a
 particular type are forbidden.
 These rules must be defined procedurally, not declaratively.
 Put them in a file \<\emph{MyChecker}Visitor.java> that extends
-\refclass{common/basetype}.
+\refclass{common/basetype}{BaseTypeVisitor}.
 
 BaseTypeVisitor performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse

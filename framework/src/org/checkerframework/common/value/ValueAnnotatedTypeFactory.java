@@ -427,27 +427,76 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean implementsWidening() {
-            return true;
+        public int numberOfIterationsBeforeWidening() {
+            return MAX_VALUES + 1;
         }
 
         @Override
-        public AnnotationMirror widenUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            AnnotationMirror lub = leastUpperBound(a1, a2);
+        public AnnotationMirror widenedUpperBound(
+                AnnotationMirror newQualifier, AnnotationMirror previousQualifier) {
+            AnnotationMirror lub = leastUpperBound(newQualifier, previousQualifier);
             if (AnnotationUtils.areSameByClass(lub, IntRange.class)) {
-                Range range = getRange(lub);
-                if (range.isWithin(Byte.MIN_VALUE, Byte.MAX_VALUE)) {
-                    return createIntRangeAnnotation(Range.BYTE_EVERYTHING);
-                } else if (range.isWithin(Short.MIN_VALUE, Short.MAX_VALUE)) {
-                    return createIntRangeAnnotation(Range.SHORT_EVERYTHING);
-                } else if (range.isWithin(Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-                    return createIntRangeAnnotation(Range.INT_EVERYTHING);
+                Range lubRange = getRange(lub);
+                Range newRange = getRange(newQualifier);
+                Range oldRange = getRange(previousQualifier);
+                Range wubRange = widenedRange(newRange, oldRange, lubRange);
+                return createIntRangeAnnotation(wubRange);
+            } else if (AnnotationUtils.areSameByClass(lub, ArrayLenRange.class)) {
+                Range lubRange = getRange(lub);
+                Range newRange = getRange(newQualifier);
+                Range oldRange = getRange(previousQualifier);
+                return createArrayLenRangeAnnotation(widenedRange(newRange, oldRange, lubRange));
+            } else {
+                return lub;
+            }
+        }
+
+        private Range widenedRange(Range newRange, Range oldRange, Range lubRange) {
+            if (newRange == null || oldRange == null) {
+                return lubRange;
+            }
+            // If both bounds of the new range are bigger than the old range, then returned range
+            // should use the lower bound of the new range and a MAX_VALUE.
+            if ((newRange.from >= oldRange.from && newRange.to >= oldRange.to)) {
+                if (lubRange.to < Byte.MAX_VALUE) {
+                    return new Range(newRange.from, Byte.MAX_VALUE);
+                } else if (lubRange.to < Short.MAX_VALUE) {
+                    return new Range(newRange.from, Short.MAX_VALUE);
+                } else if (lubRange.to < Integer.MAX_VALUE) {
+                    return new Range(newRange.from, Integer.MAX_VALUE);
                 } else {
-                    return UNKNOWNVAL;
+                    return new Range(newRange.from, Long.MAX_VALUE);
                 }
             }
-            return lub;
+
+            // If both bounds of the old range are bigger than the new range, then returned range
+            // should use a MIN_VALUE and the upper bound of the new range.
+            if ((newRange.from <= oldRange.from && newRange.to <= oldRange.to)) {
+                if (lubRange.from > Byte.MIN_VALUE) {
+                    return new Range(Byte.MIN_VALUE, newRange.to);
+                } else if (lubRange.from > Short.MIN_VALUE) {
+                    return new Range(Short.MIN_VALUE, newRange.to);
+                } else if (lubRange.from > Integer.MIN_VALUE) {
+                    return new Range(Integer.MIN_VALUE, newRange.to);
+                } else {
+                    return new Range(Long.MIN_VALUE, newRange.to);
+                }
+            }
+
+            if (lubRange.isWithin(Byte.MIN_VALUE + 1, Byte.MAX_VALUE)
+                    || lubRange.isWithin(Byte.MIN_VALUE, Byte.MAX_VALUE - 1)) {
+                return Range.BYTE_EVERYTHING;
+            } else if (lubRange.isWithin(Short.MIN_VALUE + 1, Short.MAX_VALUE)
+                    || lubRange.isWithin(Short.MIN_VALUE, Short.MAX_VALUE - 1)) {
+                return Range.SHORT_EVERYTHING;
+            } else if (lubRange.isWithin(Long.MIN_VALUE + 1, Long.MAX_VALUE)
+                    || lubRange.isWithin(Long.MIN_VALUE, Long.MAX_VALUE - 1)) {
+                return Range.INT_EVERYTHING;
+            } else {
+                return Range.EVERYTHING;
+            }
         }
+
         /**
          * Determines the least upper bound of a1 and a2, which contains the union of their sets of
          * possible values.
@@ -714,6 +763,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
+        // Don't call super.createTreeAnnotator because it includes the PropagationTreeAnnotator.
         // Only use the PropagationTreeAnnotator for typing new arrays.  The Value Checker
         // computes types differently for all other trees normally typed by the
         // PropagationTreeAnnotator.
