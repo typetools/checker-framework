@@ -31,9 +31,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 */
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.checker.optional.qual.Present;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 
@@ -58,7 +55,7 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
  *
  * @since 1.8
  */
-public final @NonNull class Optional<T extends @NonNull Object> {
+public final class Optional<T extends Object> {
     /**
      * Common instance for {@code empty()}.
      */
@@ -67,7 +64,7 @@ public final @NonNull class Optional<T extends @NonNull Object> {
     /**
      * If non-null, the value; if null, indicates no value is present
      */
-    private final @Nullable T value;
+    private final T value;
 
     /**
      * Constructs an empty instance.
@@ -91,7 +88,7 @@ public final @NonNull class Optional<T extends @NonNull Object> {
      * @param <T> Type of the non-existent value
      * @return an empty {@code Optional}
      */
-    public static <T extends @NonNull Object> Optional<T> empty() {
+    public static <T extends Object> Optional<T> empty() {
         @SuppressWarnings("unchecked")
         Optional<T> t = (Optional<T>) EMPTY;
         return t;
@@ -115,7 +112,7 @@ public final @NonNull class Optional<T extends @NonNull Object> {
      * @return an {@code Optional} with the value present
      * @throws NullPointerException if value is null
      */
-    public static <T extends @NonNull Object> @Present Optional<T> of(T value) {
+    public static <T extends Object> @Present Optional<T> of(T value) {
         return new Optional<>(value);
     }
 
@@ -128,7 +125,7 @@ public final @NonNull class Optional<T extends @NonNull Object> {
      * @return an {@code Optional} with a present value if the specified value
      * is non-null, otherwise an empty {@code Optional}
      */
-    public static <T extends @NonNull Object> Optional<T> ofNullable(@Nullable T value) {
+    public static <T extends Object> Optional<T> ofNullable(T value) {
         return value == null ? empty() : of(value);
     }
 
@@ -269,7 +266,7 @@ public final @NonNull class Optional<T extends @NonNull Object> {
      * be null
      * @return the value, if present, otherwise {@code other}
      */
-    public @PolyNull T orElse(@PolyNull T other) {
+    public T orElse(T other) {
         return value != null ? value : other;
     }
 
