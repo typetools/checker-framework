@@ -111,8 +111,8 @@ public final class Character {
        @Pure public static final UnicodeBlock forName(String blockName);
     }
     public static enum UnicodeScript {
-       @Pure public static UnicodeScript of(int codePoint);
-       @Pure public static final UnicodeScript forName(String scriptName);
+       @Pure static UnicodeScript of(int codePoint);
+       @Pure static final UnicodeScript forName(String scriptName);
     }
 }
 
