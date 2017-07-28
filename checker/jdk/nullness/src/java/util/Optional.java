@@ -34,6 +34,7 @@ import java.util.function.Supplier;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.framework.qual.Covariant;
 
 // Note: Methods with references to java 8 classes have been commented out
 // because it breaks the annotated jdk build when running java 7.
@@ -56,7 +57,12 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
  *
  * @since 1.8
  */
-public final @NonNull class Optional<T extends @NonNull Object> {
+// The type argument to Optional is meaningless.
+// Optional<@NonNull String> and Optional<@Nullable String> have the same
+// meaning, but are unrelated by the Java type hierarchy.
+// @Covariant makes Optional<@NonNull String> a subtype of Optional<@Nullable String>.
+@Covariant(0)
+public final @NonNull class Optional<T extends @Nullable Object> {
     /**
      * Common instance for {@code empty()}.
      */
@@ -89,7 +95,7 @@ public final @NonNull class Optional<T extends @NonNull Object> {
      * @param <T> Type of the non-existent value
      * @return an empty {@code Optional}
      */
-    public static <T extends @NonNull Object> Optional<T> empty() {
+    public static <T extends @Nullable Object> Optional<T> empty() {
         @SuppressWarnings("unchecked")
         Optional<T> t = (Optional<T>) EMPTY;
         return t;
@@ -101,7 +107,7 @@ public final @NonNull class Optional<T extends @NonNull Object> {
      * @param value the non-null value to be present
      * @throws NullPointerException if value is null
      */
-    private Optional(T value) {
+    private Optional(@NonNull T value) {
         this.value = Objects.requireNonNull(value);
     }
 
@@ -113,7 +119,7 @@ public final @NonNull class Optional<T extends @NonNull Object> {
      * @return an {@code Optional} with the value present
      * @throws NullPointerException if value is null
      */
-    public static <T extends @NonNull Object> Optional<T> of(T value) {
+    public static <T extends @Nullable Object> Optional<T> of(@NonNull T value) {
         return new Optional<>(value);
     }
 
@@ -126,7 +132,7 @@ public final @NonNull class Optional<T extends @NonNull Object> {
      * @return an {@code Optional} with a present value if the specified value
      * is non-null, otherwise an empty {@code Optional}
      */
-    public static <T extends @NonNull Object> Optional<T> ofNullable(@Nullable T value) {
+    public static <T extends @Nullable Object> Optional<T> ofNullable(@Nullable T value) {
         return value == null ? empty() : of(value);
     }
 
@@ -139,7 +145,7 @@ public final @NonNull class Optional<T extends @NonNull Object> {
      *
      * @see Optional#isPresent()
      */
-    public T get() {
+    public @NonNull T get() {
         if (value == null) {
             throw new NoSuchElementException("No value present");
         }
