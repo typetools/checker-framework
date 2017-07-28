@@ -538,8 +538,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else {
                     return new Range(newRange.from, Long.MAX_VALUE);
                 }
-            } else if (AnnotationUtils.areSameByClass(lub, ArrayLenRange.class)) {
-                return UNKNOWNVAL;
             }
 
             // If both bounds of the old range are bigger than the new range, then returned range
