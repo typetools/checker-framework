@@ -56,7 +56,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
  *
  * @since 1.8
  */
-// The type annotation on an instantiation of Optional is meaningless.
+// The type argument to Optional is meaningless.
 // Optional<@NonNull String> and Optional<@Nullable String> have the same
 // meaning, but unfortunately are not interchangeable.
 public final @NonNull class Optional<T extends @Nullable Object> {

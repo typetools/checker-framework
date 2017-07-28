@@ -7,7 +7,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
-// The type annotation on an instantiation of Class is meaningless.
+// The type argument to Class is meaningless.
 // Class<@NonNull String> and Class<@Nullable String> have the same
 // meaning, but unfortunately are not interchangeable.
 public final class Class<T extends @Nullable Object> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
