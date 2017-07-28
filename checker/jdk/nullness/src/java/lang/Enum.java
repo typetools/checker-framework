@@ -54,6 +54,8 @@ import org.checkerframework.checker.nullness.qual.Raw;
  * @author  Josh Bloch
  * @author  Neal Gafter
  * @see     Class#getEnumConstants()
+ * @see     java.util.EnumSet
+ * @see     java.util.EnumMap
  * @since   1.5
  */
 @SuppressWarnings("serial")
