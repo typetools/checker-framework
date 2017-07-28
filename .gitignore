@@ -75,6 +75,7 @@ docs/manual/figures/signature-types-with-canonicalname.dia
 docs/manual/*.png
 docs/manual/*.svg
 docs/examples/**/*.class
+docs/manual/manual.html-e
 
 # dataflow manual
 dataflow/manual/dataflow.aux

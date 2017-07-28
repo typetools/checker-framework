@@ -141,7 +141,7 @@ public class ValueTransfer extends CFTransfer {
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), ArrayLen.class);
 
         if (arrayLenAnno != null) {
-            return AnnotationUtils.getElementValueArray(arrayLenAnno, "value", Integer.class, true);
+            return ValueAnnotatedTypeFactory.getArrayLength(arrayLenAnno);
         }
 
         // @BottomVal
@@ -184,7 +184,7 @@ public class ValueTransfer extends CFTransfer {
         AnnotationMirror stringAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), StringVal.class);
         if (stringAnno != null) {
-            return AnnotationUtils.getElementValueArray(stringAnno, "value", String.class, true);
+            return ValueAnnotatedTypeFactory.getStringValues(stringAnno);
         }
         AnnotationMirror topAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), UnknownVal.class);
@@ -286,9 +286,9 @@ public class ValueTransfer extends CFTransfer {
         }
         List<? extends Number> values;
         if (AnnotationUtils.areSameByClass(valueAnno, IntVal.class)) {
-            values = AnnotationUtils.getElementValueArray(valueAnno, "value", Long.class, true);
+            values = ValueAnnotatedTypeFactory.getIntValues(valueAnno);
         } else if (AnnotationUtils.areSameByClass(valueAnno, DoubleVal.class)) {
-            values = AnnotationUtils.getElementValueArray(valueAnno, "value", Double.class, true);
+            values = ValueAnnotatedTypeFactory.getDoubleValues(valueAnno);
         } else {
             return null;
         }
@@ -308,12 +308,10 @@ public class ValueTransfer extends CFTransfer {
         } else if (atypefactory.isIntRange(val)) {
             range = ValueAnnotatedTypeFactory.getRange(val);
         } else if (AnnotationUtils.areSameByClass(val, IntVal.class)) {
-            List<Long> values =
-                    AnnotationUtils.getElementValueArray(val, "value", Long.class, true);
+            List<Long> values = ValueAnnotatedTypeFactory.getIntValues(val);
             range = ValueCheckerUtils.getRangeFromValues(values);
         } else if (AnnotationUtils.areSameByClass(val, DoubleVal.class)) {
-            List<Double> values =
-                    AnnotationUtils.getElementValueArray(val, "value", Double.class, true);
+            List<Double> values = ValueAnnotatedTypeFactory.getDoubleValues(val);
             range = ValueCheckerUtils.getRangeFromValues(values);
         } else if (AnnotationUtils.areSameByClass(val, BottomVal.class)) {
             return Range.NOTHING;
