@@ -773,14 +773,16 @@ public class StubParser {
         }
 
         if (methodType.getReceiverType() == null
-                && decl.getAnnotations() != null
-                && !decl.getAnnotations().isEmpty()) {
+                && decl.getReceiverAnnotations() != null
+                && !decl.getReceiverAnnotations().isEmpty()) {
             stubAlwaysWarn(
                     String.format(
-                            "parseConstructor: constructor %s of a top-level class cannot have receiver annotation %s",
-                            methodType, decl.getAnnotations()));
+                            "parseConstructor: constructor of a top-level class cannot have receiver annotations%n"
+                                    + "Constructor: %s%n"
+                                    + "Receiver annotations: %s",
+                            methodType, decl.getReceiverAnnotations()));
         } else {
-            annotate(methodType.getReceiverType(), decl.getAnnotations());
+            annotate(methodType.getReceiverType(), decl.getReceiverAnnotations());
         }
 
         putNew(atypes, elt, methodType);
