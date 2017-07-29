@@ -772,14 +772,9 @@ public class StubParser {
             annotate(paramType, param.getType());
         }
 
-        if (methodType.getReceiverType() == null) {
-            // DO nothing
-            // TODO remove this block after resolving TODO below
-        } else if (methodType.getReceiverType() == null
-                // TODO Fix - here should be receiver annotations. Remove && false
+        if (methodType.getReceiverType() == null
                 && decl.getAnnotations() != null
-                && !decl.getAnnotations().isEmpty()
-                && false) {
+                && !decl.getAnnotations().isEmpty()) {
             stubAlwaysWarn(
                     String.format(
                             "parseConstructor: constructor %s of a top-level class cannot have receiver annotation %s",
