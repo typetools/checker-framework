@@ -1591,7 +1591,7 @@ So, use our own archived version.
               overwrite="true" failonerror="true" />
 
         <jar destfile="dist/javac.jar">
-            <zipgroupfileset dir="${jsr308.langtools.dist}/lib/" includes="*.jar" />
+            <zipgroupfileset dir="${jsr308.langtools.dist}" includes="*.jar" />
         </jar>
 
         <copy file="jdk/jdk7.jar" tofile="dist/jdk7.jar" overwrite="true" failonerror="false" />
