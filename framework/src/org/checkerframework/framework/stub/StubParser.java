@@ -876,8 +876,6 @@ public class StubParser {
         }
     }
 
-    private static final Set<String> nestedClassWarnings = new HashSet<String>();
-
     private Map<Element, BodyDeclaration<?>> getMembers(
             TypeElement typeElt, TypeDeclaration<?> typeDecl) {
         assert (typeElt.getSimpleName().contentEquals(typeDecl.getNameAsString())
@@ -886,54 +884,43 @@ public class StubParser {
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
 
         Map<Element, BodyDeclaration<?>> result = new HashMap<>();
-
-        // TODO Fix the problem with raw type
-        NodeList<BodyDeclaration<?>> members = typeDecl.getMembers();
-        for (int i = 0; i < members.size(); i++) {
-            BodyDeclaration<?> member = members.get(i);
-            if (member instanceof MethodDeclaration) {
-                Element elt = findElement(typeElt, (MethodDeclaration) member);
-                if (elt != null) {
-                    putNew(result, elt, member);
-                }
-            } else if (member instanceof ConstructorDeclaration) {
-                Element elt = findElement(typeElt, (ConstructorDeclaration) member);
-                if (elt != null) {
-                    putNew(result, elt, member);
-                }
-            } else if (member instanceof FieldDeclaration) {
-                FieldDeclaration fieldDecl = (FieldDeclaration) member;
-                for (VariableDeclarator var : fieldDecl.getVariables()) {
-                    Element varelt = findElement(typeElt, var);
-                    if (varelt != null) {
-                        putNew(result, varelt, fieldDecl);
-                    }
-                }
-            } else if (member instanceof ClassOrInterfaceDeclaration) {
-                // TODO: handle nested classes
-                ClassOrInterfaceDeclaration ciDecl = (ClassOrInterfaceDeclaration) member;
-                String nestedClass = typeDecl.getName() + "." + ciDecl.getName();
-                if (nestedClassWarnings.add(nestedClass)) { // avoid duplicate warnings
-                    stubAlwaysWarn(
-                            String.format(
-                                    "Warning: ignoring nested class in %s at line %d; "
-                                            + "write the nested class as a top-level class:"
-                                            + "   class %s { ... }   class %s$%s { ... }",
-                                    filename,
-                                    ciDecl.getBegin().get().line,
-                                    typeDecl.getName(),
-                                    typeDecl.getName(),
-                                    ciDecl.getName()));
-                }
-            } else {
-                stubWarnIfNotFound(
-                        String.format(
-                                "Ignoring element of type %s in getMembers", member.getClass()));
-            }
+        for (BodyDeclaration<?> member : typeDecl.getMembers()) {
+            putNewElement(typeElt, result, member);
         }
-        // // remove null keys, which can result from findElement returning null
-        // result.remove(null);
         return result;
+    }
+
+    private void putNewElement(
+            TypeElement typeElt,
+            Map<Element, BodyDeclaration<?>> result,
+            BodyDeclaration<?> member) {
+        if (member instanceof MethodDeclaration) {
+            Element elt = findElement(typeElt, (MethodDeclaration) member);
+            if (elt != null) {
+                putNew(result, elt, member);
+            }
+        } else if (member instanceof ConstructorDeclaration) {
+            Element elt = findElement(typeElt, (ConstructorDeclaration) member);
+            if (elt != null) {
+                putNew(result, elt, member);
+            }
+        } else if (member instanceof FieldDeclaration) {
+            FieldDeclaration fieldDecl = (FieldDeclaration) member;
+            for (VariableDeclarator var : fieldDecl.getVariables()) {
+                Element varelt = findElement(typeElt, var);
+                if (varelt != null) {
+                    putNew(result, varelt, fieldDecl);
+                }
+            }
+        } else if (member instanceof ClassOrInterfaceDeclaration) {
+            ClassOrInterfaceDeclaration ciDecl = (ClassOrInterfaceDeclaration) member;
+            for (BodyDeclaration<?> bodyDeclaration : ciDecl.getMembers()) {
+                putNewElement(typeElt, result, bodyDeclaration);
+            }
+        } else {
+            stubWarnIfNotFound(
+                    String.format("Ignoring element of type %s in getMembers", member.getClass()));
+        }
     }
 
     private AnnotatedDeclaredType findType(
@@ -961,7 +948,6 @@ public class StubParser {
         final String wantedMethodName = methodDecl.getNameAsString();
         final int wantedMethodParams =
                 (methodDecl.getParameters() == null) ? 0 : methodDecl.getParameters().size();
-        // TODO Make sure assignment was changed right
         final String wantedMethodString = StubUtil.toString(methodDecl);
         for (ExecutableElement method : ElementUtils.getAllMethodsIn(elements, typeElt)) {
             // do heuristics first
