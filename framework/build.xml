@@ -160,7 +160,7 @@
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-framework.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${javacutil.lib}:${dataflow.lib}:${javaparser.core.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
+              classpath="${javac.lib}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${javaparser.core.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -276,7 +276,7 @@
 
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${build}:${javacutil.lib}:${dataflow.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}:${javaparser.core.lib}"
+              classpath="${javac.lib}:${build}:${javacutil.lib}:${dataflow.lib}:${javaparser.core.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -316,10 +316,10 @@
                 <pathelement path="${javac.lib}"/>
                 <pathelement path="${framework.lib}"/>
                 <pathelement path="${tests.build}"/>
+                <pathelement path="${javaparser.core.lib}"/>
                 <pathelement path="${junit.lib}"/>
                 <pathelement path="${hamcrest.lib}"/>
                 <pathelement path="${annotation-file-utilities.lib}"/>
-                <pathelement path="${javaparser.core.lib}"/>
             </classpath>
 
             <formatter type="xml"/>
