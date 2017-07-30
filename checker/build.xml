@@ -245,8 +245,7 @@
             <arg value="@${tmpdir}/srcfiles-checker.txt"/>
             <arg value="-version"/>
             <arg value="-Xlint"/>
-            <!-- TODO remove and resolve errors
-            <arg value="-Werror"/>-->
+            <arg value="-Werror"/>
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
 
