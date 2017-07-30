@@ -163,7 +163,6 @@ public @UsesObjectEquals class BorderLayout {
      public static final @Interned String BEFORE_LINE_BEGINS = "Before";
      public static final @Interned String AFTER_LINE_ENDS = "After";
 }
-package java.awt;
 public class Font {
      public static final @Interned String DIALOG = "Dialog";
      public static final @Interned String DIALOG_INPUT = "DialogInput";
@@ -171,6 +170,63 @@ public class Font {
      public static final @Interned String SERIF = "Serif";
      public static final @Interned String MONOSPACED = "Monospaced";
 }
+public @UsesObjectEquals class GradientPaint implements Paint {}
+public @UsesObjectEquals class AWTEventMulticaster implements
+    ComponentListener, ContainerListener, FocusListener, KeyListener,
+    MouseListener, MouseMotionListener, WindowListener, WindowFocusListener,
+    WindowStateListener, ActionListener, ItemListener, AdjustmentListener,
+    TextListener, InputMethodListener, HierarchyListener,
+    HierarchyBoundsListener, MouseWheelListener {}
+abstract @UsesObjectEquals class AttributeValue {}
+public @UsesObjectEquals class BufferCapabilities implements Cloneable {}
+public @UsesObjectEquals class CardLayout implements LayoutManager2,
+                                   Serializable {}
+public @UsesObjectEquals class CheckboxGroup implements java.io.Serializable {}
+@UsesObjectEquals class ColorPaintContext implements PaintContext {}
+public abstract @UsesObjectEquals class Component implements ImageObserver, MenuContainer,
+                                           Serializable {}
+public final @UsesObjectEquals class ComponentOrientation implements java.io.Serializable {}
+public @UsesObjectEquals class Cursor implements java.io.Serializable {}
+public @UsesObjectEquals class Desktop {}
+public @UsesObjectEquals class Event implements java.io.Serializable {}
+public @UsesObjectEquals class EventQueue {}
+public abstract @UsesObjectEquals class FocusTraversalPolicy {}
+public abstract @UsesObjectEquals class FontMetrics implements java.io.Serializable {}
+@UsesObjectEquals class GradientPaintContext implements PaintContext {}
+public abstract @UsesObjectEquals class Graphics {}
+public abstract @UsesObjectEquals class GraphicsConfigTemplate implements Serializable {}
+public abstract @UsesObjectEquals class GraphicsConfiguration {}
+public abstract @UsesObjectEquals class GraphicsDevice {}
+public abstract @UsesObjectEquals class GraphicsEnvironment {}
+public @UsesObjectEquals class GridBagConstraints implements Cloneable, java.io.Serializable {}
+public @UsesObjectEquals class GridBagLayout implements LayoutManager2,
+java.io.Serializable {}
+public @UsesObjectEquals class GridBagLayoutInfo implements java.io.Serializable {}
+public @UsesObjectEquals class GridLayout implements LayoutManager, java.io.Serializable {}
+public abstract @UsesObjectEquals class Image {}
+public @UsesObjectEquals class ImageCapabilities implements Cloneable {}
+public abstract @UsesObjectEquals class KeyboardFocusManager
+    implements KeyEventDispatcher, KeyEventPostProcessor {}
+public @UsesObjectEquals class MediaTracker implements java.io.Serializable {}
+public abstract @UsesObjectEquals class MenuComponent implements java.io.Serializable {}
+abstract @UsesObjectEquals class ModalEventFilter implements EventFilter {}
+public @UsesObjectEquals class MouseInfo {}
+public abstract @UsesObjectEquals class MultipleGradientPaint implements Paint {}
+abstract @UsesObjectEquals class MultipleGradientPaintContext implements PaintContext {}
+public @UsesObjectEquals class PointerInfo {}
+public @UsesObjectEquals class Polygon implements Shape, java.io.Serializable {}
+public abstract @UsesObjectEquals class PrintJob {}
+public @UsesObjectEquals class Robot {}
+public @UsesObjectEquals class ScrollPaneAdjustable implements Adjustable, Serializable {}
+public final @UsesObjectEquals class SplashScreen {}
+public @UsesObjectEquals class SystemTray {}
+public @UsesObjectEquals class TexturePaint implements Paint {}
+abstract @UsesObjectEquals class TexturePaintContext implements PaintContext {}
+public @UsesObjectEquals class TrayIcon {}
+public abstract @UsesObjectEquals class Toolkit {}
+@UsesObjectEquals class WaitDispatchSupport implements SecondaryLoop {}
+public abstract @UsesObjectEquals class Image {}
+
 package java.io;
 public class File {
      public static final @Interned String separator = "" + separatorChar;
@@ -603,67 +659,6 @@ public class ExcC14NParameterSpec {
 ///////////////////////////////////////////////////////////////////////////
 /// End of: public static final @Interned String (initialized to constant)
 ///
-package java.awt;
-
-public @UsesObjectEquals class GradientPaint implements Paint {}
-public @UsesObjectEquals class AWTEventMulticaster implements
-    ComponentListener, ContainerListener, FocusListener, KeyListener,
-    MouseListener, MouseMotionListener, WindowListener, WindowFocusListener,
-    WindowStateListener, ActionListener, ItemListener, AdjustmentListener,
-    TextListener, InputMethodListener, HierarchyListener,
-    HierarchyBoundsListener, MouseWheelListener {}
-abstract @UsesObjectEquals class AttributeValue {}
-// BorderLayout is defined above
-// public @UsesObjectEquals class BorderLayout implements LayoutManager2,
-//                                      java.io.Serializable {}
-public @UsesObjectEquals class BufferCapabilities implements Cloneable {}
-
-public @UsesObjectEquals class CardLayout implements LayoutManager2,
-                                   Serializable {}
-public @UsesObjectEquals class CheckboxGroup implements java.io.Serializable {}
-@UsesObjectEquals class ColorPaintContext implements PaintContext {}
-public abstract @UsesObjectEquals class Component implements ImageObserver, MenuContainer,
-                                           Serializable {}
-public final @UsesObjectEquals class ComponentOrientation implements java.io.Serializable {}
-public @UsesObjectEquals class Cursor implements java.io.Serializable {}
-public @UsesObjectEquals class Desktop {}
-public @UsesObjectEquals class Event implements java.io.Serializable {}
-public @UsesObjectEquals class EventQueue {}
-public abstract @UsesObjectEquals class FocusTraversalPolicy {}
-public abstract @UsesObjectEquals class FontMetrics implements java.io.Serializable {}
-@UsesObjectEquals class GradientPaintContext implements PaintContext {}
-public abstract @UsesObjectEquals class Graphics {}
-public abstract @UsesObjectEquals class GraphicsConfigTemplate implements Serializable {}
-public abstract @UsesObjectEquals class GraphicsConfiguration {}
-public abstract @UsesObjectEquals class GraphicsDevice {}
-public abstract @UsesObjectEquals class GraphicsEnvironment {}
-public @UsesObjectEquals class GridBagConstraints implements Cloneable, java.io.Serializable {}
-public @UsesObjectEquals class GridBagLayout implements LayoutManager2,
-java.io.Serializable {}
-public @UsesObjectEquals class GridBagLayoutInfo implements java.io.Serializable {}
-public @UsesObjectEquals class GridLayout implements LayoutManager, java.io.Serializable {}
-public abstract @UsesObjectEquals class Image {}
-public @UsesObjectEquals class ImageCapabilities implements Cloneable {}
-public abstract @UsesObjectEquals class KeyboardFocusManager
-    implements KeyEventDispatcher, KeyEventPostProcessor {}
-public @UsesObjectEquals class MediaTracker implements java.io.Serializable {}
-public abstract @UsesObjectEquals class MenuComponent implements java.io.Serializable {}
-abstract @UsesObjectEquals class ModalEventFilter implements EventFilter {}
-public @UsesObjectEquals class MouseInfo {}
-public abstract @UsesObjectEquals class MultipleGradientPaint implements Paint {}
-abstract @UsesObjectEquals class MultipleGradientPaintContext implements PaintContext {}
-public @UsesObjectEquals class PointerInfo {}
-public @UsesObjectEquals class Polygon implements Shape, java.io.Serializable {}
-public abstract @UsesObjectEquals class PrintJob {}
-public @UsesObjectEquals class Robot {}
-public @UsesObjectEquals class ScrollPaneAdjustable implements Adjustable, Serializable {}
-public final @UsesObjectEquals class SplashScreen {}
-public @UsesObjectEquals class SystemTray {}
-public @UsesObjectEquals class TexturePaint implements Paint {}
-abstract @UsesObjectEquals class TexturePaintContext implements PaintContext {}
-public @UsesObjectEquals class TrayIcon {}
-public abstract @UsesObjectEquals class Toolkit {}
-@UsesObjectEquals class WaitDispatchSupport implements SecondaryLoop {}
 
 package java.awt.color;
 
@@ -734,10 +729,6 @@ package java.awt.im;
 
 public @UsesObjectEquals class InputContext {}
 public @UsesObjectEquals class InputMethodHighlight {}
-
-package java.awt;
-
-public abstract @UsesObjectEquals class Image {}
 
 package java.awt.image;
 
