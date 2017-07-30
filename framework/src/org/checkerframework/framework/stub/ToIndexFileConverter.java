@@ -178,21 +178,18 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     private static void extractScene(StubUnit iu, AScene scene) {
         for (CompilationUnit cu : iu.getCompilationUnits()) {
             NodeList<TypeDeclaration<?>> typeDecls = cu.getTypes();
-            if (typeDecls != null) {
+            if (typeDecls != null && cu.getPackageDeclaration().isPresent()) {
                 List<ImportDeclaration> impDecls = cu.getImports();
-                // TODO Refactor. Replace with simplier check
-                if (cu.getPackageDeclaration().isPresent()) {
-                    PackageDeclaration pkgDecl = cu.getPackageDeclaration().get();
-                    for (TypeDeclaration<?> typeDecl : typeDecls) {
-                        ToIndexFileConverter converter =
-                                new ToIndexFileConverter(pkgDecl, impDecls, scene);
-                        String pkgName = converter.pkgName;
-                        String name = typeDecl.getNameAsString();
-                        if (!pkgName.isEmpty()) {
-                            name = pkgName + "." + name;
-                        }
-                        typeDecl.accept(converter, scene.classes.vivify(name));
+                PackageDeclaration pkgDecl = cu.getPackageDeclaration().get();
+                for (TypeDeclaration<?> typeDecl : typeDecls) {
+                    ToIndexFileConverter converter =
+                            new ToIndexFileConverter(pkgDecl, impDecls, scene);
+                    String pkgName = converter.pkgName;
+                    String name = typeDecl.getNameAsString();
+                    if (!pkgName.isEmpty()) {
+                        name = pkgName + "." + name;
                     }
+                    typeDecl.accept(converter, scene.classes.vivify(name));
                 }
             }
         }
@@ -307,7 +304,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         List<Parameter> params = decl.getParameters();
         List<TypeParameter> typeParams = decl.getTypeParameters();
         List<AnnotationExpr> rcvrAnnos = decl.getReceiverAnnotations();
-        BlockStmt body = decl.getBody().isPresent() ? decl.getBody().get() : null;
+        BlockStmt body = decl.getBody().orElse(null);
         StringBuilder sb = new StringBuilder(decl.getNameAsString()).append('(');
         AClass clazz = (AClass) elem;
         AMethod method;
@@ -354,14 +351,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     public Void visit(ObjectCreationExpr expr, AElement elem) {
         ClassOrInterfaceType type = expr.getType();
         AClass clazz = scene.classes.vivify(type.getNameAsString());
-        // TODO Make sure object is present
-        Expression scope = expr.getScope().get();
-        // TODO Make sure object is present
-        List<Type> typeArgs = expr.getTypeArguments().get();
-        // TODO Make sure object is present
+        Expression scope = expr.getScope().orElse(null);
+        List<Type> typeArgs = expr.getTypeArguments().orElse(null);
         List<Expression> args = expr.getArguments();
-        // TODO Make sure object is present
-        NodeList<BodyDeclaration<?>> decls = expr.getAnonymousClassBody().get();
+        NodeList<BodyDeclaration<?>> bodyDecls = expr.getAnonymousClassBody().orElse(null);
         if (scope != null) {
             scope.accept(this, elem);
         }
@@ -376,8 +369,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             }
         }
         type.accept(this, clazz);
-        if (decls != null) {
-            for (BodyDeclaration<?> decl : decls) {
+        if (bodyDecls != null) {
+            for (BodyDeclaration<?> decl : bodyDecls) {
                 decl.accept(this, clazz);
             }
         }
@@ -469,10 +462,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
                     @Override
                     public Void visit(WildcardType type, InnerTypeLocation loc) {
-                        // TODO Make sure object exists
-                        ReferenceType lower = type.getExtendedType().get();
-                        // TODO Make sure object exists
-                        ReferenceType upper = type.getSuperType().get();
+                        ReferenceType lower = type.getExtendedType().orElse(null);
+                        ReferenceType upper = type.getSuperType().orElse(null);
                         if (lower != null) {
                             InnerTypeLocation ext = extendedTypePath(loc, 2, 0);
                             visitInnerType(lower, ext);
@@ -499,7 +490,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                     /**
                      * Extends type path by one element.
                      *
-                     * <p>//* @see TypePathEntry.fromBinary
+                     * @see TypePathEntry#fromBinary(int, int)
                      */
                     private InnerTypeLocation extendedTypePath(
                             InnerTypeLocation loc, int tag, int arg) {
@@ -576,10 +567,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                         return "V";
                     }
 
-                    // TODO Check the correction. Previously it was call the type.getSuperType().accept
                     @Override
                     public String visit(WildcardType type, Void v) {
-                        return type.accept(this, null);
+                        return type.getSuperType().get().accept(this, null);
                     }
                 },
                 null);
@@ -628,9 +618,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
     /**
      * Combines an import with a name, yielding a fully-qualified name.
-     *
-     * <p>TODO Fix the problem with Java docs //* @param prefix name of imported package //* @param
-     * base name of class, possibly qualified
      *
      * @return fully qualified class name if resolution succeeds, null otherwise
      */

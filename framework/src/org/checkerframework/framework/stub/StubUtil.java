@@ -2,7 +2,6 @@ package org.checkerframework.framework.stub;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.StubUnit;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.type.*;
@@ -72,8 +71,7 @@ public class StubUtil {
             return null;
         }
 
-        NodeList<BodyDeclaration<?>> members = type.getMembers();
-        for (BodyDeclaration<?> member : members) {
+        for (BodyDeclaration<?> member : type.getMembers()) {
             if (!(member instanceof FieldDeclaration)) {
                 continue;
             }
@@ -97,8 +95,7 @@ public class StubUtil {
 
         String methodRep = toString(method);
 
-        NodeList<BodyDeclaration<?>> members = type.getMembers();
-        for (BodyDeclaration<?> member : members) {
+        for (BodyDeclaration<?> member : type.getMembers()) {
             if (member instanceof MethodDeclaration) {
                 if (toString((MethodDeclaration) member).equals(methodRep)) {
                     return member;
