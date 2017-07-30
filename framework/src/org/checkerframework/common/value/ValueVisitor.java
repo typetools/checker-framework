@@ -134,8 +134,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                         node);
                 return null;
             } else if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
-                List<Integer> arrayLens =
-                        AnnotationUtils.getElementValueArray(anno, "value", Integer.class, true);
+                List<Integer> arrayLens = ValueAnnotatedTypeFactory.getArrayLength(anno);
                 if (Collections.min(arrayLens) < 0) {
                     checker.report(
                             Result.warning("negative.arraylen", Collections.min(arrayLens)), node);
