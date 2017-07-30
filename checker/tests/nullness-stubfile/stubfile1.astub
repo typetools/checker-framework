@@ -9,10 +9,8 @@ package java.lang;
 
 public final class String {
      public @NonNull String intern();
-     // Removed @NonNull annotation from receiver
      public @Nullable String substring(@NonNull int beginIndex);
      String(@Nullable String arg0);
-     // Removed @NonNull annotation from receiver
      void getChars(@Nullable int arg0, @NonNull int arg1, @NonNull char @NonNull [] arg2, @NonNull int arg3);
 //Used to test stub file warnings
      void thisMethodIsNotReal(String s);
