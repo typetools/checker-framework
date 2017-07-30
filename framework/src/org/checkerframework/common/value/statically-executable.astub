@@ -26,19 +26,9 @@ class Byte{
     @StaticallyExecutable @PolyValue long longValue(@PolyValue Byte this);
     @StaticallyExecutable static byte parseByte(String s);
     @StaticallyExecutable static byte parseByte(String s, int radix);
-<<<<<<< HEAD
     @StaticallyExecutable @PolyValue short shortValue(@PolyValue Byte this);
-    @StaticallyExecutable String toString();
-    @StaticallyExecutable static String toString(byte b);
-||||||| merged common ancestors
-    @StaticallyExecutable @PolyValue short shortValue() @PolyValue;
-    @StaticallyExecutable String toString();
-    @StaticallyExecutable static String toString(byte b);
-=======
-    @StaticallyExecutable @PolyValue short shortValue() @PolyValue;
     @StaticallyExecutable @ArrayLen({1,2,3,4}) String toString();
     @StaticallyExecutable static @ArrayLen({1,2,3,4}) String toString(byte b);
->>>>>>> 3ea93b7b726ac0b06dfdc770352ede4b9b11e5ab
     @StaticallyExecutable static @PolyValue Byte valueOf(@PolyValue byte b);
     @StaticallyExecutable static Byte valueOf(String s);
     @StaticallyExecutable static Byte valueOf(String s, int radix);
