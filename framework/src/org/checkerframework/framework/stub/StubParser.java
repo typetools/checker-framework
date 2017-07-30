@@ -364,8 +364,6 @@ public class StubParser {
         // TODO: Handle atypes???
     }
 
-    // typeDecl's name may be a binary name such as "A$B".
-    // That is a hack because the StubParser does not handle nested classes.
     private void parse(
             TypeDeclaration<?> typeDecl,
             String packageName,
@@ -377,14 +375,11 @@ public class StubParser {
                 (packageName == null ? "" : packageName + ".")
                         + typeDecl.getNameAsString().replace('$', '.');
         TypeElement typeElt = elements.getTypeElement(typeName);
-        // couldn't find type.  not in class path
         if (typeElt == null) {
             boolean warn = true;
             if (typeDecl.getAnnotations() != null) {
-                // TODO Change from raw time to generic
                 NodeList<AnnotationExpr> annotations = typeDecl.getAnnotations();
-                for (int i = 0; i < annotations.size(); i++) {
-                    AnnotationExpr anno = annotations.get(i);
+                for (AnnotationExpr anno : annotations) {
                     if (anno.getNameAsString().contentEquals("NoStubParserWarning")) {
                         warn = false;
                     }
@@ -417,16 +412,35 @@ public class StubParser {
         for (Map.Entry<Element, BodyDeclaration<?>> entry : elementsToDecl.entrySet()) {
             final Element elt = entry.getKey();
             final BodyDeclaration<?> decl = entry.getValue();
-            if (elt.getKind().isField()) {
-                parseField((FieldDeclaration) decl, (VariableElement) elt, atypes, declAnnos);
-            } else if (elt.getKind() == ElementKind.CONSTRUCTOR) {
-                parseConstructor(
-                        (ConstructorDeclaration) decl, (ExecutableElement) elt, atypes, declAnnos);
-            } else if (elt.getKind() == ElementKind.METHOD) {
-                parseMethod((MethodDeclaration) decl, (ExecutableElement) elt, atypes, declAnnos);
-            } else {
-                /* do nothing */
-                stubWarnIfNotFound("StubParser ignoring: " + elt);
+            switch (elt.getKind()) {
+                case FIELD:
+                case ENUM_CONSTANT:
+                    parseField((FieldDeclaration) decl, (VariableElement) elt, atypes, declAnnos);
+                    break;
+                case CONSTRUCTOR:
+                    parseConstructor(
+                            (ConstructorDeclaration) decl,
+                            (ExecutableElement) elt,
+                            atypes,
+                            declAnnos);
+                    break;
+                case METHOD:
+                    parseMethod(
+                            (MethodDeclaration) decl, (ExecutableElement) elt, atypes, declAnnos);
+                    break;
+                case CLASS:
+                case INTERFACE:
+                case ENUM:
+                    parse(
+                            (ClassOrInterfaceDeclaration) decl,
+                            typeName,
+                            packageAnnos,
+                            atypes,
+                            declAnnos);
+                    break;
+                default:
+                    /* do nothing */
+                    stubWarnIfNotFound("StubParser ignoring: " + elt);
             }
         }
         typeParameters.clear();
@@ -910,9 +924,9 @@ public class StubParser {
                 }
             }
         } else if (member instanceof ClassOrInterfaceDeclaration) {
-            ClassOrInterfaceDeclaration ciDecl = (ClassOrInterfaceDeclaration) member;
-            for (BodyDeclaration<?> bodyDeclaration : ciDecl.getMembers()) {
-                putNewElement(typeElt, result, bodyDeclaration);
+            Element elt = findElement(typeElt, (ClassOrInterfaceDeclaration) member);
+            if (elt != null) {
+                putNew(result, elt, member);
             }
         } else {
             stubWarnIfNotFound(
@@ -936,6 +950,26 @@ public class StubParser {
         if (debugStubParser) {
             for (AnnotatedDeclaredType superType : types) {
                 stubDebug(String.format("  %s", superType));
+            }
+        }
+        return null;
+    }
+
+    private Element findElement(TypeElement typeElt, ClassOrInterfaceDeclaration ciDecl) {
+        final String wantedClassOrInterfaceName = ciDecl.getNameAsString();
+        for (TypeElement typeElement : ElementUtils.getAllTypeElementsIn(typeElt)) {
+            if (wantedClassOrInterfaceName.equals(typeElement.getSimpleName().toString())) {
+                return typeElement;
+            }
+        }
+
+        stubWarnIfNotFound(
+                "Class/interface " + wantedClassOrInterfaceName + " not found in type " + typeElt);
+        if (debugStubParser) {
+            for (ExecutableElement method :
+                    ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
+                stubDebug(String.format("  Here are the type declarations of %s:", typeElt));
+                stubDebug(String.format("  %s", method));
             }
         }
         return null;
