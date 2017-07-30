@@ -468,11 +468,6 @@ public class StubParser {
             if (((typeParameters == null) && (typeArguments.size() != 0))
                     || (typeParameters != null)
                             && (typeParameters.size() != typeArguments.size())) {
-                // TODO: Class EventListenerProxy in Java 6 does not have type parameters, but in Java 7 does.
-                // To handle both with one stub file, we currently ignore the problem.
-                // Investigate what a cleaner solution is, e.g. having a separate Java 7 specification that overrides
-                // the Java 6 specification.
-                // System.out.printf("Dying.  theCompilationUnit=%s%n", theCompilationUnit);
                 stubDebug(
                         String.format(
                                 "parseType:  mismatched sizes for typeParameters=%s (size %d) and typeArguments=%s (size %d); decl=%s; elt=%s (%s); type=%s (%s); theCompilationUnit=%s",
