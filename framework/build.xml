@@ -181,8 +181,7 @@
             <arg value="-version"/>
             <arg value="-XDTA:noannotationsincomments"/>
             <arg value="-Xlint"/>
-            <!-- TODO remove and resolve errors
-            <arg value="-Werror"/>-->
+            <arg value="-Werror"/>
         </java>
         <delete file="${tmpdir}/srcfiles-framework.txt"/>
 
