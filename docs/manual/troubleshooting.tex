@@ -764,24 +764,50 @@ report the problems to the Checker Framework developers.
 \subsection{Install prerequisites\label{building-prerequisites}}
 
 You need to install several packages in order to build the Checker
-Framework.  The following command installs them for Ubuntu:
+Framework.
+Follow the instructions for your operating system.
+
+\begin{description}
+\item[Ubuntu]
+  Run the following commands:
 
 \begin{Verbatim}
 sudo apt-get update
-sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial openjdk-8-jdk \
- texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended unzip
+sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make \
+ mercurial openjdk-8-jdk texlive-latex-base texlive-latex-recommended \
+ texlive-latex-extra texlive-fonts-recommended unzip
 \end{Verbatim}
 
-If you are building on Windows 10, then run \<bash> to obtain a version of
-Ubuntu (provided by the Windows Subsystem for Linux) and follow the Ubuntu
-instructions.
+% Building Checker Framework from source on Mac OS
 
-If you are building on other versions of Windows,
+\item[Mac OS]
+  If you employ \ahref{https://brew.sh}{homebrew} to install packages, run
+  the following commands:
+
+\begin{Verbatim}
+brew update
+brew install caskroom/cask/brew-cask
+brew install git ant hevea mercurial librsvg unzip make
+brew cask install java
+brew cask install mactex
+mkdir -p $HOME/Library/texmf/tex/latex
+cp -p /usr/local/Cellar/hevea/2.28/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
+\end{Verbatim}
+
+\item[Windows]
+  To building on Windows 10,
+  run \<bash> to obtain a version of
+  Ubuntu (provided by the Windows Subsystem for Linux) and follow the Ubuntu
+  instructions.
+
+To building on other versions of Windows,
 here is an \emph{incomplete} list of needed prerequisites:
 \begin{itemize}
 \item
   Install MSYS to obtain the \<cp> and \<make> commands.
 \end{itemize}
+
+\end{description}
 
 
 \subsection{Obtain the source\label{building-obtain-source}}
@@ -823,9 +849,12 @@ This needs to be an Oracle JDK.
 (The \<JAVA\_HOME> environment
 variable might already be set, because it is needed for Ant to work.)
 
-In the bash shell, putting the following command in your \code{.bashrc} file
-\emph{sometimes} works (it might
-not because \<java> might be the version in the JDK or in the JRE):
+\begin{description}
+\item[Ubuntu]
+If you use the bash shell, put the following command in your
+\code{.bashrc} file.  (This might not work if \<java> refers to an executable
+in the JRE rather than in the JDK, but you need the JDK installed to build
+the Checker Framework anyway.)
 % Can someone give a simpler command?
 %BEGIN LATEX
 \begin{smaller}
@@ -836,6 +865,16 @@ not because \<java> might be the version in the JDK or in the JRE):
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
+
+\item[Mac OSX 10.5 or later]
+  Add one of the following two commands in your \code{.bash\_profile} or
+  \code{.profile} file according to the version of your JDK.
+\begin{Verbatim}
+  export JAVA_HOME=$(/usr/libexec/java_home -v 1.7)
+  export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+\end{Verbatim}
+
+\end{description}
 
 \item
 Compile the Type Annotations tools:
@@ -1257,6 +1296,7 @@ Philip Lai,
 Renato Athaydes,
 Ren\'e Just,
 Ryan Oblak,
+Shinya Yoshida,
 Stefan Heule,
 Steph Dietzel,
 Stuart Pernsteiner,

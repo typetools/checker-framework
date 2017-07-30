@@ -1,12 +1,18 @@
 package java.lang.reflect;
 
+import org.checkerframework.framework.qual.Covariant;
 import java.lang.annotation.Annotation;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-public final class Constructor<T> extends AccessibleObject implements GenericDeclaration, Member {
+// The type argument to Constructor is meaningless.
+// Constructor<@NonNull String> and Constructor<@Nullable String> have the same
+// meaning, but are unrelated by the Java type hierarchy.
+// @Covariant makes Constructor<@NonNull String> a subtype of Constructor<@Nullable String>.
+@Covariant(0)
+public final class Constructor<T extends @Nullable Object> extends AccessibleObject implements GenericDeclaration, Member {
     public Class<T> getDeclaringClass() { throw new RuntimeException("skeleton method"); }
     public String getName() { throw new RuntimeException("skeleton method"); }
     public int getModifiers() { throw new RuntimeException("skeleton method"); }
