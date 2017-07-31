@@ -203,7 +203,7 @@ class SupertypeFinder {
                 if (atm.getKind() == TypeKind.WILDCARD) {
                     // Because the upper bound of the wildcard is copied from the upper bound of
                     // the type parameter in #fixWildcardBound, it might contain references to
-                    // other type variables.  This replaces thos references.
+                    // other type variables.  This replaces those references.
                     typeParamReplacer.visit(atm, mapping);
                 }
             }
