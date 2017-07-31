@@ -19,7 +19,7 @@ class Usage {
         c.id(new @Odd Object());
 
         // Oddness is wrong! Would also fail with ClassCastException.
-        // TODO: false postive
+        // TODO: false negative
         ////:: error: (argument.type.incompatible)
         //:: warning: [unchecked] unchecked call to id(T) as a member of the raw type C
         c.id(new @Even Object());

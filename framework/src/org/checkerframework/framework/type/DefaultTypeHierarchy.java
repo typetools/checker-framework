@@ -386,7 +386,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             final AnnotatedTypeMirror outside,
             VisitHistory visited,
             boolean canBeCovariant) {
-        if (ignoreUninferred(inside) || ignoreUninferred(outside)) {
+        if (ignoreUninferredTypeArgument(inside) || ignoreUninferredTypeArgument(outside)) {
             return true;
         }
 
@@ -418,10 +418,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         }
     }
 
-    private boolean ignoreUninferred(AnnotatedTypeMirror inside) {
-        if (inside.atypeFactory.ignoreUninferredTypeArguments
-                && inside.getKind() == TypeKind.WILDCARD) {
-            final AnnotatedWildcardType insideWc = (AnnotatedWildcardType) inside;
+    private boolean ignoreUninferredTypeArgument(AnnotatedTypeMirror type) {
+        if (type.atypeFactory.ignoreUninferredTypeArguments
+                && type.getKind() == TypeKind.WILDCARD) {
+            final AnnotatedWildcardType insideWc = (AnnotatedWildcardType) type;
             if (insideWc.isUninferredTypeArgument()) {
                 return true;
             }
@@ -1039,6 +1039,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     protected boolean visitWildcardSupertype(
             AnnotatedTypeMirror subtype, AnnotatedWildcardType supertype, VisitHistory visited) {
         if (supertype.isUninferredTypeArgument()) { //TODO: REMOVE WHEN WE FIX TYPE ARG INFERENCE
+            // Can't call isSubtype because underlying Java types won't be subtypes.
             return supertype.atypeFactory.ignoreUninferredTypeArguments;
         }
         return isSubtype(subtype, supertype.getSuperBound(), visited);

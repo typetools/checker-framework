@@ -1932,6 +1932,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 && reflectionResolver.isReflectiveMethodInvocation(tree)) {
             mfuPair = reflectionResolver.resolveReflectiveCall(this, tree, mfuPair);
         }
+
+        AnnotatedExecutableType method = mfuPair.first;
+        if (method.getReturnType().getKind() == TypeKind.WILDCARD
+                && ((AnnotatedWildcardType) method.getReturnType()).isUninferredTypeArgument()) {
+            // Get the correct Java type from the tree and use it as the upper bound of the
+            // wildcard.
+            TypeMirror tm = InternalUtils.typeOf(tree);
+            AnnotatedTypeMirror t = toAnnotatedType(tm, false);
+
+            AnnotatedWildcardType wildcard = (AnnotatedWildcardType) method.getReturnType();
+            if (ignoreUninferredTypeArguments) {
+                // remove the annotations so that default annotations are used instead.
+                // (See call to addDefaultAnnotations below.)
+                t.clearAnnotations();
+            } else {
+                t.replaceAnnotations(wildcard.getExtendsBound().getAnnotations());
+            }
+            wildcard.setExtendsBound(t);
+            addDefaultAnnotations(wildcard);
+        }
+
         return mfuPair;
     }
 
@@ -3343,9 +3364,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             case TYPE_CAST:
                 TypeCastTree cast = (TypeCastTree) parentTree;
                 assertFunctionalInterface(
-                        (Type) trees.getTypeMirror(getPath(cast.getType())),
-                        parentTree,
-                        lambdaTree);
+                        trees.getTypeMirror(getPath(cast.getType())), parentTree, lambdaTree);
                 AnnotatedTypeMirror castATM = getAnnotatedType(cast.getType());
                 if (castATM.getKind() == TypeKind.INTERSECTION) {
                     AnnotatedIntersectionType itype = (AnnotatedIntersectionType) castATM;
@@ -3373,7 +3392,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotatedTypeMirror constructorParam =
                         AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(con.first, indexOfLambda);
                 assertFunctionalInterface(
-                        (Type) constructorParam.getUnderlyingType(), parentTree, lambdaTree);
+                        constructorParam.getUnderlyingType(), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) constructorParam;
 
             case METHOD_INVOCATION:
@@ -3383,19 +3402,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         this.methodFromUse(method);
                 AnnotatedTypeMirror param =
                         AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(exe.first, index);
-                assertFunctionalInterface((Type) param.getUnderlyingType(), parentTree, lambdaTree);
+                assertFunctionalInterface(param.getUnderlyingType(), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) param;
 
             case VARIABLE:
                 VariableTree varTree = (VariableTree) parentTree;
-                assertFunctionalInterface(
-                        (Type) InternalUtils.typeOf(varTree), parentTree, lambdaTree);
+                assertFunctionalInterface(InternalUtils.typeOf(varTree), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) getAnnotatedType(varTree.getType());
 
             case ASSIGNMENT:
                 AssignmentTree assignmentTree = (AssignmentTree) parentTree;
                 assertFunctionalInterface(
-                        (Type) InternalUtils.typeOf(assignmentTree), parentTree, lambdaTree);
+                        InternalUtils.typeOf(assignmentTree), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) getAnnotatedType(assignmentTree.getVariable());
 
             case RETURN:
@@ -3447,7 +3465,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotatedTypeMirror conditionalType =
                         AnnotatedTypes.leastUpperBound(this, trueType, falseType);
                 assertFunctionalInterface(
-                        (Type) conditionalType.getUnderlyingType(), parentTree, lambdaTree);
+                        conditionalType.getUnderlyingType(), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) conditionalType;
 
             default:
@@ -3461,8 +3479,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
     }
 
-    private void assertFunctionalInterface(Type type, Tree contextTree, Tree lambdaTree) {
-
+    private void assertFunctionalInterface(
+            TypeMirror typeMirror, Tree contextTree, Tree lambdaTree) {
+        Type type = (Type) typeMirror;
         if (!InternalUtils.isFunctionalInterface(type, processingEnv)) {
             if (type.getKind() == TypeKind.INTERSECTION) {
                 IntersectionType itype = (IntersectionType) type;
