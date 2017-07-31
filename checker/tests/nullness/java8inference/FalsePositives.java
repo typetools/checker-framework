@@ -1,4 +1,5 @@
-
+// Some of these code was submitted in #1384.
+// https://github.com/typetools/checker-framework/issues/1384
 import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
