@@ -349,16 +349,17 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public AnnotationMirror widenUpperBound(AnnotationMirror a, AnnotationMirror b) {
-            UBQualifier a1Obj = UBQualifier.createUBQualifier(a);
-            UBQualifier a2Obj = UBQualifier.createUBQualifier(b);
+        public AnnotationMirror widenedUpperBound(
+                AnnotationMirror newQualifier, AnnotationMirror previousQualifier) {
+            UBQualifier a1Obj = UBQualifier.createUBQualifier(newQualifier);
+            UBQualifier a2Obj = UBQualifier.createUBQualifier(previousQualifier);
             UBQualifier lub = a1Obj.widenUpperBound(a2Obj);
             return convertUBQualifierToAnnotation(lub);
         }
 
         @Override
-        public boolean implementsWidening() {
-            return true;
+        public int numberOfIterationsBeforeWidening() {
+            return 10;
         }
 
         /**

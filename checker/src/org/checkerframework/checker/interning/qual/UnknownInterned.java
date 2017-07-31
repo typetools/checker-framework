@@ -10,7 +10,8 @@ import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The top qualifier for the Interning Checker.
+ * The top qualifier for the Interning Checker. It indicates lack of knowledge about whether values
+ * are interned or not. It is not written by programmers, but is used internally by the type system.
  *
  * <p>This annotation is associated with the {@link
  * org.checkerframework.checker.interning.InterningChecker}.

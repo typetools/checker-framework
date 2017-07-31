@@ -219,8 +219,7 @@ public class ValueCheckerUtils {
     }
 
     private static List<?> convertStringVal(AnnotationMirror anno, Class<?> newClass) {
-        List<String> strings =
-                AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+        List<String> strings = ValueAnnotatedTypeFactory.getStringValues(anno);
         if (newClass == char[].class) {
             List<char[]> chars = new ArrayList<>();
             for (String s : strings) {
@@ -274,5 +273,19 @@ public class ValueCheckerUtils {
     public static <T extends Comparable<T>> List<T> removeDuplicates(List<T> values) {
         Set<T> set = new TreeSet<>(values);
         return new ArrayList<T>(set);
+    }
+
+    /**
+     * Gets a list of lengths for a list of string values.
+     *
+     * @param values list of string values
+     * @return list of unique lengths of strings in {@code values}
+     */
+    public static List<Integer> getLengthsForStringValues(List<String> values) {
+        List<Integer> lengths = new ArrayList<Integer>();
+        for (String str : values) {
+            lengths.add(str.length());
+        }
+        return ValueCheckerUtils.removeDuplicates(lengths);
     }
 }

@@ -114,31 +114,41 @@ public abstract class QualifierHierarchy {
     public abstract AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2);
 
     /**
-     * Returns whether or not this hierarchy implements {@link #widenUpperBound(AnnotationMirror,
-     * AnnotationMirror)}
+     * Returns the number of iterations dataflow should perform before {@link
+     * #widenedUpperBound(AnnotationMirror, AnnotationMirror)} is called or -1 if it should never be
+     * called.
      *
-     * @return whether or not this hierarchy implements {@link #widenUpperBound(AnnotationMirror,
-     *     AnnotationMirror)}
+     * <p>Subclasses overriding this method should return some positive number or -1.
+     *
+     * @return the number of iterations dataflow should perform before {@link
+     *     #widenedUpperBound(AnnotationMirror, AnnotationMirror)} is called or -1 if it should
+     *     never be called.
      */
-    public boolean implementsWidening() {
-        return false;
+    public int numberOfIterationsBeforeWidening() {
+        return -1;
     }
 
     /**
      * If the type hierarchy has an infinite ascending chain, then the dataflow analysis might never
      * reach a fixed point. To prevent this, implement this method such that it returns an upper
-     * bound for the two qualifiers that is wider than the least upper bound. If this method is
-     * implemented, also override {@link #implementsWidening()} and return true.
+     * bound for the two qualifiers that is a super type and not equal to the least upper bound. If
+     * this method is implemented, also override {@link #numberOfIterationsBeforeWidening()} and
+     * change its return to a positive number.
      *
-     * <p>Otherwise, returns the least upper bound of the two annotations.
+     * <p>{@code newQualifier} is newest qualifier dataflow computed for some expression and {@code
+     * previousQualifier} is the qualifier dataflow computed on the last iteration.
      *
-     * @param a1 annotation
-     * @param a2 annotation
-     * @return an upper bound that is wider than the least upper bound of a1 and a2 (or the lub if
-     *     the type hierarchy does not require this)
+     * <p>If the type hierarchy has no infinite ascending chain, returns the least upper bound of
+     * the two annotations.
+     *
+     * @param newQualifier new qualifier dataflow computed for some expression
+     * @param previousQualifier the previous qualifier dataflow computed on the last iteration
+     * @return an upper bound that is wider than the least upper bound of newQualifier and
+     *     previousQualifier (or the lub if the type hierarchy does not require this)
      */
-    public AnnotationMirror widenUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-        return leastUpperBound(a1, a2);
+    public AnnotationMirror widenedUpperBound(
+            AnnotationMirror newQualifier, AnnotationMirror previousQualifier) {
+        return leastUpperBound(newQualifier, previousQualifier);
     }
 
     /**
