@@ -333,7 +333,13 @@ public class TypeArgInferenceUtil {
         return containsTypeParameter(type, typeVars);
     }
 
-    /** @return true if the type contains a use of a type variable in typeVariables. */
+    /**
+     * Returns true if {@code type} contains a use of a type variable in {@code typeVariables}.
+     *
+     * @param type type to search
+     * @param typeVariables collection of type varibles
+     * @return true if {@code type} contains a use of a type variable in {@code typeVariables}
+     */
     public static boolean containsTypeParameter(
             AnnotatedTypeMirror type, Collection<TypeVariable> typeVariables) {
         // note NULL values creep in because the underlying visitor uses them in various places

@@ -454,7 +454,11 @@ public class InternalUtils {
     }
 
     /**
-     * @return whether or not {@code type} is a functional interface type (as defined in JLS 9.8).
+     * Returns whether or not {@code type} is a functional interface type (as defined in JLS 9.8).
+     *
+     * @param type possible functional interface type
+     * @param env ProcessingEnvironment
+     * @return whether or not {@code type} is a functional interface type (as defined in JLS 9.8)
      */
     public static boolean isFunctionalInterface(TypeMirror type, ProcessingEnvironment env) {
         Context ctx = ((JavacProcessingEnvironment) env).getContext();
