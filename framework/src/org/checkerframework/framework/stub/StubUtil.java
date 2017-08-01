@@ -259,12 +259,6 @@ public class StubUtil {
 
         @Override
         public void visit(Parameter n, Void arg) {
-            // TODO Implement this check
-            /*if (n.getId().getArrayCount() > 0) {
-                ErrorReporter.errorAbort(
-                        "StubUtil: put array brackets on the type, not the variable: " + n);
-            }*/
-
             n.getType().accept(this, arg);
             if (n.isVarArgs()) {
                 sb.append("[]");
