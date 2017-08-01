@@ -8,14 +8,14 @@ import org.checkerframework.common.reflection.qual.MethodVal;
  *
  * @author smillst
  */
-public class NullnessReflectionTest {
+public class NullnessReflectionResolutionTest {
     @NonNull Object returnNonNull() {
         return new Object();
     }
 
     void testReturnNonNull(
             @MethodVal(
-                        className = "NullnessReflectionTest",
+                        className = "NullnessReflectionResolutionTest",
                         methodName = "returnNonNull",
                         params = 0
                     )
@@ -28,7 +28,7 @@ public class NullnessReflectionTest {
 
     void testParamNullable(
             @MethodVal(
-                        className = "NullnessReflectionTest",
+                        className = "NullnessReflectionResolutionTest",
                         methodName = "paramNullable",
                         params = 2
                     )
@@ -44,7 +44,7 @@ public class NullnessReflectionTest {
 
     void testParamAndReturnNonNullStatic(
             @MethodVal(
-                        className = "NullnessReflectionTest",
+                        className = "NullnessReflectionResolutionTest",
                         methodName = "paramAndReturnNonNullStatic",
                         params = 2
                     )

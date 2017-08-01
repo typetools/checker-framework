@@ -138,10 +138,12 @@ when getting started, but you should always examine their results.
 \subsection{Tips for annotating a library\label{annotating-tips}}
 
 When you annotate a library, you should only add annotations and, when
-necessary, documentation of those annotations.
+necessary, documentation of those annotations in a Java comment (\<//>
+or \</*...*/>).
 
-Do not change the library's code or documentation, or make changes to
-formatting or whitespace.  Doing so will increase the size of the diffs
+Do not change the library's code, including formatting and whitespace.
+Do not change publicly-visible documentation, such as Javadoc comments.
+Changes like these will increase the size of the diffs
 between upstream and your version.  Unnecessary diffs make it harder for
 others to understand what you have done, and they make it harder to pull
 changes from upstream into the annotated library.
