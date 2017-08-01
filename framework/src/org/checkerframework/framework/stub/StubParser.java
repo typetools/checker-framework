@@ -686,8 +686,8 @@ public class StubParser {
          * However, why was this needed for the RequiredPermissions declaration annotation?
          * It looks like the StubParser ignored the target for annotations.
          */
-        for (int i = 0; i < typeDef.getArrayLevel(); ++i) {
-            List<AnnotationExpr> annotations = typeDef.getAnnotations();
+        for (int i = 0; i < typeDef.getArrayCount(); ++i) {
+            List<AnnotationExpr> annotations = typeDef.getAnnotationsAtLevel(i);
             handleExistingAnnotations(arrayTypes.get(i), typeDef);
 
             if (annotations != null) {
