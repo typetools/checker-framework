@@ -1257,6 +1257,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     @Override
     public void addDefaultAnnotations(AnnotatedTypeMirror type) {
+        typeAnnotator.visit(type, null);
         defaults.annotate((Element) null, type);
     }
 
