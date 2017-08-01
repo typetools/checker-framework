@@ -13,7 +13,6 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.Types;
@@ -39,6 +38,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -369,28 +369,21 @@ public class InternalUtils {
         return types.glb(t1, t2);
     }
 
-    /**
-     * Returns the return type of a method, where the "raw" return type of that method is given
-     * (i.e., the return type might still contain unsubstituted type variables), given the receiver
-     * of the method call.
-     */
+    /** Returns the return type of a method, given the receiver of the method call. */
     public static TypeMirror substituteMethodReturnType(
-            TypeMirror methodType, TypeMirror substitutedReceiverType) {
-        if (methodType.getKind() != TypeKind.TYPEVAR) {
-            return methodType;
+            javax.lang.model.util.Types typeUtils,
+            Element methodElement,
+            TypeMirror substitutedReceiverType) {
+
+        if (!(substitutedReceiverType instanceof DeclaredType)) {
+            // For example arrays
+            return ElementUtils.getType(methodElement);
         }
-        // TODO: find a nicer way to substitute type variables
-        String t = TypeAnnotationUtils.unannotatedType(methodType).toString();
-        Type finalReceiverType = (Type) substitutedReceiverType;
-        int i = 0;
-        for (TypeSymbol typeParam : finalReceiverType.tsym.getTypeParameters()) {
-            if (t.equals(typeParam.toString())) {
-                return finalReceiverType.getTypeArguments().get(i);
-            }
-            i++;
-        }
-        assert false;
-        return null;
+
+        DeclaredType declaredReceiverType = (DeclaredType) substitutedReceiverType;
+        Type substitutedMethodType =
+                (Type) typeUtils.asMemberOf(declaredReceiverType, methodElement);
+        return substitutedMethodType.getReturnType();
     }
 
     /**
