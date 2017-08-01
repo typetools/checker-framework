@@ -537,7 +537,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private Range widenedRange(Range newRange, Range oldRange, Range lubRange) {
-            if (newRange == null || oldRange == null) {
+            if (newRange == null || oldRange == null || lubRange.equals(oldRange)) {
                 return lubRange;
             }
             // If both bounds of the new range are bigger than the old range, then returned range
