@@ -14,6 +14,8 @@ class Issue366 {
     }
 
     static Optional<@Nullable String> getPossiblyEmptyString2() {
+        // TODO Find out why it was removed and remove before merge
+        //:: error: (return.type.incompatible)
         return Optional.ofNullable(null);
     }
 }
