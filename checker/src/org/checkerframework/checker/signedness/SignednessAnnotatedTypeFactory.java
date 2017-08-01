@@ -135,9 +135,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * This TreeAnnotator ensures that booleans expressions are not given Unsigned or Signed
-     * annotations by {@link PropagationTreeAnnotator} and that shift results take on the type of
-     * their left operand.
+     * annotations by {@link PropagationTreeAnnotator}, that shift results take on the type of their
+     * left operand, and that the types of identifiers are refined based on the results of the Value
+     * Checker.
      */
+    // TODO: Refine the type of expressions using the Value Checker as well.
     private class SignednessTreeAnnotator extends TreeAnnotator {
 
         public SignednessTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
