@@ -38,7 +38,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -371,18 +370,13 @@ public class InternalUtils {
 
     /** Returns the return type of a method, given the receiver of the method call. */
     public static TypeMirror substituteMethodReturnType(
-            javax.lang.model.util.Types typeUtils,
-            Element methodElement,
-            TypeMirror substitutedReceiverType) {
+            ProcessingEnvironment env, Element methodElement, TypeMirror substitutedReceiverType) {
 
-        if (!(substitutedReceiverType instanceof DeclaredType)) {
-            // For example arrays
-            return ElementUtils.getType(methodElement);
-        }
+        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
+        Types typeUtils = Types.instance(javacEnv.getContext());
 
-        DeclaredType declaredReceiverType = (DeclaredType) substitutedReceiverType;
         Type substitutedMethodType =
-                (Type) typeUtils.asMemberOf(declaredReceiverType, methodElement);
+                typeUtils.memberType((Type) substitutedReceiverType, (Symbol) methodElement);
         return substitutedMethodType.getReturnType();
     }
 
