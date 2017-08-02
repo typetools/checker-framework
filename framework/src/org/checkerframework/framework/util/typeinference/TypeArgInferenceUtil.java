@@ -364,8 +364,8 @@ public class TypeArgInferenceUtil {
 
     /**
      * Checks that the type is not an uninferred type argument. If it is, errorAbort will be called.
-     * The error will be caught in {@link DefaultTypeArgumentInference#infer} and inference will be
-     * aborted, but type-checking will continue.
+     * The error will be caught in DefaultTypeArgumentInference#infer and inference will be aborted,
+     * but type-checking will continue.
      */
     public static void checkForUninferredTypes(AnnotatedTypeMirror type) {
         if (type.getKind() != TypeKind.WILDCARD) {
