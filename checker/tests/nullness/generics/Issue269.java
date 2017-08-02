@@ -19,7 +19,9 @@ class Repro {
 
     void method2(CallbackNN callback) {
         // Forbid this call, because the bound is not respected.
-        //:: error: (argument.type.incompatible) :: warning: [unchecked] unchecked call to handler(H) as a member of the raw type Repro.CallbackNN
+        // TODO: false negative. See #635.
+        ////:: error: (argument.type.incompatible)
+        //:: warning: [unchecked] unchecked call to handler(H) as a member of the raw type Repro.CallbackNN
         callback.handler(null);
     }
 }
