@@ -3,7 +3,7 @@
 
 import org.checkerframework.common.value.qual.IntRange;
 
-public class RangeRefinement {
+public class Issue1423 {
     void loop(int i) {
         int a = 0;
         while (i >= 2) {
