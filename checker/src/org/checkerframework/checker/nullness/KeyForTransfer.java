@@ -4,7 +4,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.KeyFor;
-import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -20,26 +19,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore, KeyForTransfer> {
 
-    protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR;
-
     public KeyForTransfer(KeyForAnalysis analysis) {
         super(analysis);
-        UNKNOWNKEYFOR =
-                AnnotationUtils.fromClass(
-                        analysis.getTypeFactory().getElementUtils(), UnknownKeyFor.class);
-        KEYFOR =
-                AnnotationUtils.fromClass(
-                        analysis.getTypeFactory().getElementUtils(), KeyFor.class);
-    }
-
-    public KeyForTransfer(KeyForAnalysis analysis, boolean forceConcurrentSemantics) {
-        super(analysis, forceConcurrentSemantics);
-        UNKNOWNKEYFOR =
-                AnnotationUtils.fromClass(
-                        analysis.getTypeFactory().getElementUtils(), UnknownKeyFor.class);
-        KEYFOR =
-                AnnotationUtils.fromClass(
-                        analysis.getTypeFactory().getElementUtils(), KeyFor.class);
     }
 
     /*
