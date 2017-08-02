@@ -198,54 +198,49 @@ public class LockExpressionIsFinal {
         @GuardedBy("c1.getFieldPure(b ? c1 : o1, c1)")
         Object guarded5;
 
-        // TODO: Fix the flow expression parser so it can handle
-        // @GuardedBy("c1.field.field.field.getFieldPure(c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field") Object guarded6;
-        // Currently it fails because the memberselect incorrectly splits the "getFieldPure(...).field" field access into:
-        // "getFieldPure(c1"
-        // and
-        // "field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field"
-        // However, as soon as one fixes the flow expression parser to parse a longer expression, one must consider
-        // whether the CFAbstractStore can (or should) store data for the resulting flow expression.
+        @GuardedBy(
+                "c1.field.field.field.getFieldPure(c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field")
+        Object guarded6;
 
         @GuardedBy("c1.field.field.field.getFieldPure2().getFieldDeterministic().field")
-        Object guarded6;
+        Object guarded7;
 
         // The following negative test cases are the same as the one above but with one modification in each.
 
         //:: error: (lock.expression.not.final)
         @GuardedBy("c1.field.field2.field.getFieldPure2().getFieldDeterministic().field")
-        Object guarded7;
+        Object guarded8;
         //:: error: (lock.expression.not.final)
         @GuardedBy("c1.field.field.field.getField().getFieldDeterministic().field")
-        Object guarded8;
+        Object guarded9;
 
         // Additional test cases to test that method parameters (in this case the parameters to getFieldPure) are parsed.
         @GuardedBy("c1.field.field.field.getFieldPure(c1, c1).getFieldDeterministic().field")
-        Object guarded9;
-        @GuardedBy("c1.field.field.field.getFieldPure(c1, o1).getFieldDeterministic().field")
         Object guarded10;
+        @GuardedBy("c1.field.field.field.getFieldPure(c1, o1).getFieldDeterministic().field")
+        Object guarded11;
         //:: error: (lock.expression.not.final)
         @GuardedBy("c1.field.field.field.getFieldPure(c1, o2).getFieldDeterministic().field")
-        Object guarded11;
+        Object guarded12;
 
         // Test that @GuardedBy annotations on various tree kinds inside a method are visited
 
-        Object guarded12 = (@GuardedBy("o1") Object) guarded2;
+        Object guarded13 = (@GuardedBy("o1") Object) guarded2;
         //:: error: (lock.expression.not.final)
-        Object guarded13 = (@GuardedBy("o2") Object) guarded3;
+        Object guarded14 = (@GuardedBy("o2") Object) guarded3;
 
-        Object guarded14[] = new @GuardedBy("o1") MyClass[3];
+        Object guarded15[] = new @GuardedBy("o1") MyClass[3];
         //:: error: (lock.expression.not.final)
-        Object guarded15[] = new @GuardedBy("o2") MyClass[3];
+        Object guarded16[] = new @GuardedBy("o2") MyClass[3];
 
         // Tests that the location of the @GB annotation inside a VariableTree does not matter (i.e. it does not need to be the leftmost subtree).
-        Object guarded16 @GuardedBy("o1") [];
+        Object guarded17 @GuardedBy("o1") [];
         //:: error: (lock.expression.not.final)
-        Object guarded17 @GuardedBy("o2") [];
+        Object guarded18 @GuardedBy("o2") [];
 
-        @GuardedBy("o1") Object guarded18[];
+        @GuardedBy("o1") Object guarded19[];
         //:: error: (lock.expression.not.final)
-        @GuardedBy("o2") Object guarded19[];
+        @GuardedBy("o2") Object guarded20[];
 
         MyParameterizedClass1<@GuardedBy("o1") Object> m1;
         //:: error: (lock.expression.not.final)

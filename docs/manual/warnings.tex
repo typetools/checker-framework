@@ -229,9 +229,6 @@ best style:
 \end{Verbatim}
 
 
-
-
-
 \subsubsection{Justify why the warning is a false positive\label{suppresswarnings-best-practices-justification}}
 
 A \<@SuppressWarnings> annotation asserts that the code is actually
@@ -243,6 +240,17 @@ write, typically on the same line, a code comment
 explaining why the code is actually correct.  In some cases you might also
 justify why the code cannot be rewritten in a simpler way that would be
 amenable to type-checking.
+
+Here are some examples from \href{https://mernst.github.io/plume-lib/}{plume-lib}:
+
+\begin{Verbatim}
+@SuppressWarnings("purity") // side effect to local state of type BitSet
+@SuppressWarnings("cast") // cast is redundant (except in JSR 308)
+@SuppressWarnings("interning") // FbType.FREE is interned but is not annotated
+@SuppressWarnings("interning") // equality testing optimization
+@SuppressWarnings("nullness") // used portion of array is non-null
+@SuppressWarnings("nullness") // oi.factory is a static method, so null first argument is OK
+\end{Verbatim}
 
 This documentation will help you and others to understand the reason for
 the \<@SuppressWarnings> annotation.  It will also help if you decide to
@@ -639,7 +647,7 @@ there are several ways to eliminate the compiler warnings.
 \item Annotate only the signature of \code{unannotated\_method}, and
   suppress warnings in its body.  Two ways to suppress the warnings are via a
   \code{@SuppressWarnings} annotation or by not running the checker on that
-  file (see Section~\ref{suppressing-warnings}).
+  file (see Chapter~\ref{suppressing-warnings}).
 \item Suppress all warnings related to uses of \code{unannotated\_method}
   via the \code{skipUses} processor option
   (see Section~\ref{askipuses}).
@@ -654,7 +662,7 @@ there are several ways to eliminate the compiler warnings.
 
 Chapter~\ref{annotating-libraries} discusses adding annotations to
 signatures when you do not have source code available.
-Section~\ref{suppressing-warnings} discusses suppressing warnings.
+Chapter~\ref{suppressing-warnings} discusses suppressing warnings.
 
 
 \section{Backward compatibility with earlier versions of Java\label{backward-compatibility}}
@@ -806,16 +814,20 @@ Suppose that your codebase currently uses annotations in comments, but you
 wish to remove the comment characters around your annotations, because in
 the future you will use only compilers that support type annotations and
 your code will only run on Java 8 or later JVMs.
-This Unix command removes
+To remove
 the comment characters, for all Java files in the current
-working directory or any subdirectory.
+working directory or any subdirectory, run the following two Unix commands.
 
 \begin{Verbatim}
    find . -type f -name '*.java' -print \
      | xargs grep -l -P '/\*\s*@([^ */]+)\s*\*/' \
      | xargs perl -pi.bak -e 's|/\*\s*@([^ */]+)\s*\*/|@\1|g'
+   find . -type f -name '*.java' -print \
+     | xargs grep -l -P '/\*>>>' \
+     | xargs perl -pi.bak -00 -e 's|/\*>>>([^*]+)\*/|\1|g'
 \end{Verbatim}
 
+The first command handles ordinary annotations in comments.
 You can customize this command:
 \begin{itemize}
 \item
@@ -826,6 +838,15 @@ To ignore comments with leading or trailing spaces, remove the four
 instances of ``\verb|\s*|''.
 \item
   To not make backups, remove ``\verb|.bak|''.
+\item
+  To remove all commented annotations, remove ``\verb|@\1|''.
+\end{itemize}
+
+The second command handles \code{/*>>>} comments.
+You can customize this command:
+\begin{itemize}
+\item
+  To remove all \code{/*>>>} comments, remove ``\verb|\1|''.
 \end{itemize}
 
 % TODO: adapt it to do so.
