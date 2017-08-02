@@ -115,12 +115,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     // passing annotations to qualifierHierarchy.
     protected AnnotationMirror currentTop;
 
-    /**
-     * Whether to ignore uninferred type arguments. This is a temporary flag to work around Issue
-     * 979.
-     */
-    protected final boolean ignoreUninferredTypeArguments;
-
     public DefaultTypeHierarchy(
             final BaseTypeChecker checker,
             final QualifierHierarchy qualifierHierarchy,
@@ -133,8 +127,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
         this.ignoreRawTypes = ignoreRawTypes;
         this.invariantArrayComponents = invariantArrayComponents;
-
-        ignoreUninferredTypeArguments = !checker.hasOption("conservativeUninferredTypeArguments");
     }
 
     public DefaultRawnessComparer createRawnessComparer() {
@@ -394,15 +386,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             final AnnotatedTypeMirror outside,
             VisitHistory visited,
             boolean canBeCovariant) {
-        if (canBeCovariant && isSubtype(inside, outside, visited)) {
+        if (ignoreUninferredTypeArgument(inside) || ignoreUninferredTypeArgument(outside)) {
             return true;
         }
 
-        if (ignoreUninferredTypeArguments && inside.getKind() == TypeKind.WILDCARD) {
-            final AnnotatedWildcardType insideWc = (AnnotatedWildcardType) inside;
-            if (insideWc.isUninferredTypeArgument()) {
-                return true;
-            }
+        if (canBeCovariant && isSubtype(inside, outside, visited)) {
+            return true;
         }
 
         if (outside.getKind() == TypeKind.WILDCARD) {
@@ -427,6 +416,17 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         } else { //TODO: IF WE NEED TO COMPARE A WILDCARD TO A CAPTURE OF A WILDCARD WE FAIL IN ARE_EQUAL -> DO CAPTURE CONVERSION
             return areEqualInHierarchy(inside, outside, currentTop);
         }
+    }
+
+    private boolean ignoreUninferredTypeArgument(AnnotatedTypeMirror type) {
+        if (type.atypeFactory.ignoreUninferredTypeArguments
+                && type.getKind() == TypeKind.WILDCARD) {
+            final AnnotatedWildcardType insideWc = (AnnotatedWildcardType) type;
+            if (insideWc.isUninferredTypeArgument()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     //------------------------------------------------------------------------
@@ -810,6 +810,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             AnnotatedPrimitiveType subtype,
             AnnotatedWildcardType supertype,
             VisitHistory visitHistory) {
+        if (supertype.atypeFactory.ignoreUninferredTypeArguments
+                && supertype.isUninferredTypeArgument()) {
+            return true;
+        }
         // this can occur when passing a primitive to a method on a raw type (see test checker/tests/nullness/RawAndPrimitive.java)
         // this can also occur because we don't box primitives when we should and don't capture convert
         return isPrimarySubtype(subtype, supertype.getSuperBound());
@@ -936,18 +940,23 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     @Override
     public Boolean visitWildcard_Declared(
             AnnotatedWildcardType subtype, AnnotatedDeclaredType supertype, VisitHistory visited) {
-        if (subtype.isUninferredTypeArgument() && supertype.getTypeArguments().isEmpty()) {
-            // visitWildcardSubtype doesn't check uninferred type arguments, because the
-            // underlying Java types may not be in the correct relationship.  But, if the
-            // declared type does not have type arguments, then checking primary annotations is
-            // sufficient.
-            // For example, if the wildcard is ? extends @Nullable Object and the supertype is
-            // @Nullable String, then it is safe to return true. However if the supertype is
-            // @NullableList<@NonNull String> then it's not possible to decide if it is a subtype of
-            // the wildcard.
-            AnnotationMirror subtypeAnno = subtype.getEffectiveAnnotationInHierarchy(currentTop);
-            AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
-            return isAnnoSubtype(subtypeAnno, supertypeAnno, false);
+        if (subtype.isUninferredTypeArgument()) {
+            if (subtype.atypeFactory.ignoreUninferredTypeArguments) {
+                return true;
+            } else if (supertype.getTypeArguments().isEmpty()) {
+                // visitWildcardSubtype doesn't check uninferred type arguments, because the
+                // underlying Java types may not be in the correct relationship.  But, if the
+                // declared type does not have type arguments, then checking primary annotations is
+                // sufficient.
+                // For example, if the wildcard is ? extends @Nullable Object and the supertype is
+                // @Nullable String, then it is safe to return true. However if the supertype is
+                // @NullableList<@NonNull String> then it's not possible to decide if it is a subtype of
+                // the wildcard.
+                AnnotationMirror subtypeAnno =
+                        subtype.getEffectiveAnnotationInHierarchy(currentTop);
+                AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
+                return isAnnoSubtype(subtypeAnno, supertypeAnno, false);
+            }
         }
         return visitWildcardSubtype(subtype, supertype, visited);
     }
@@ -1030,7 +1039,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     protected boolean visitWildcardSupertype(
             AnnotatedTypeMirror subtype, AnnotatedWildcardType supertype, VisitHistory visited) {
         if (supertype.isUninferredTypeArgument()) { //TODO: REMOVE WHEN WE FIX TYPE ARG INFERENCE
-            return isSubtype(subtype, supertype.getExtendsBound());
+            // Can't call isSubtype because underlying Java types won't be subtypes.
+            return supertype.atypeFactory.ignoreUninferredTypeArguments;
         }
         return isSubtype(subtype, supertype.getSuperBound(), visited);
     }
@@ -1038,7 +1048,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     protected boolean visitWildcardSubtype(
             AnnotatedWildcardType subtype, AnnotatedTypeMirror supertype, VisitHistory visited) {
         if (subtype.isUninferredTypeArgument()) {
-            return ignoreUninferredTypeArguments;
+            return subtype.atypeFactory.ignoreUninferredTypeArguments;
         }
         TypeMirror superTypeMirror = supertype.getUnderlyingType();
         if (supertype.getKind() == TypeKind.TYPEVAR) {
