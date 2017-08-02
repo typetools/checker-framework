@@ -202,8 +202,8 @@ public class KeyForAnnotatedTypeFactory
             maps = AnnotationUtils.getElementValueArray(keyForAnno, "value", String.class, false);
         } else {
             KeyForValue value = getInferredValueFor(tree);
-            if (value != null && value.keyForMaps != null) {
-                maps = value.keyForMaps;
+            if (value != null) {
+                maps = value.getKeyForMaps();
             }
         }
 

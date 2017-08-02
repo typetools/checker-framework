@@ -14,7 +14,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * KeyForValue holds additional information about which maps this value is a key for. This extra
- * information is required when adding the @KeyFor qualifier to the type is not a refinement of
+ * information is required when adding the @KeyFor qualifier to the type is not a refinement of the
  * type. For example,
  *
  * <pre>
@@ -34,10 +34,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class KeyForValue extends CFAbstractValue<KeyForValue> {
     /**
-     * If the underlying type is a type variable or a wildcard, then this is list of maps this for
-     * which this value is a key. Otherwise, it's null.
+     * If the underlying type is a type variable or a wildcard, then this is a set of maps for which
+     * this value is a key. Otherwise, it's null.
      */
-    Set<String> keyForMaps = null;
+    private Set<String> keyForMaps = null;
 
     public KeyForValue(
             CFAbstractAnalysis<KeyForValue, ?, ?> analysis,
@@ -55,13 +55,21 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
         }
     }
 
+    /**
+     * If the underlying type is a type variable or a wildcard, then this is a set of maps for which
+     * this value is a key. Otherwise, it's null.
+     */
+    public Set<String> getKeyForMaps() {
+        return keyForMaps;
+    }
+
     @Override
     public KeyForValue leastUpperBound(KeyForValue other) {
         KeyForValue lub = super.leastUpperBound(other);
         if (other == null || other.keyForMaps == null || this.keyForMaps == null) {
             return lub;
         }
-        // Lub the keyFoMaps by intersecting the sets.
+        // Lub the keyForMaps by intersecting the sets.
         lub.keyForMaps = new LinkedHashSet<>();
         lub.keyForMaps.addAll(this.keyForMaps);
         lub.keyForMaps.retainAll(other.keyForMaps);
@@ -75,12 +83,13 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
     public KeyForValue mostSpecific(KeyForValue other, KeyForValue backup) {
         KeyForValue mostSpecific = super.mostSpecific(other, backup);
         if (mostSpecific == null) {
-            // mostSpecific is null if the two types are not comparable.  This is normally
-            // because one of this or other is a type variable and annotations is empty, but the
-            // other annotations are not empty.  In this case copy the keyForMaps and
             if (other == null) {
                 return this;
             }
+            // mostSpecific is null if the two types are not comparable.  This is normally
+            // because one of this or other is a type variable and annotations is empty, but the
+            // other annotations are not empty.  In this case, copy the keyForMaps and to the
+            // value with the no annotations and return it as most specific.
             if (other.getAnnotations().isEmpty()) {
                 other.addKeyFor(this.keyForMaps);
                 return other;
@@ -99,15 +108,12 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
     }
 
     private void addKeyFor(Set<String> newKeyForMaps) {
-        if (newKeyForMaps == null) {
+        if (newKeyForMaps == null || newKeyForMaps.isEmpty()) {
             return;
         }
         if (keyForMaps == null) {
             keyForMaps = new LinkedHashSet<>();
         }
         keyForMaps.addAll(newKeyForMaps);
-        if (keyForMaps.isEmpty()) {
-            keyForMaps = null;
-        }
     }
 }
