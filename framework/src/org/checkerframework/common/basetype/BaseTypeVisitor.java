@@ -1968,7 +1968,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeParameterBounds bounds = boundsIter.next();
             AnnotatedTypeMirror typeArg = argIter.next();
 
-            if (isUninferredWildcard(bounds.getUpperBound()) || isUninferredWildcard(typeArg)) {
+            if (isIgnoredUninferredWildcard(bounds.getUpperBound())
+                    || isIgnoredUninferredWildcard(typeArg)) {
                 continue;
             }
 
@@ -2013,7 +2014,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    private boolean isUninferredWildcard(AnnotatedTypeMirror type) {
+    private boolean isIgnoredUninferredWildcard(AnnotatedTypeMirror type) {
         return atypeFactory.ignoreUninferredTypeArguments
                 && type.getKind() == TypeKind.WILDCARD
                 && ((AnnotatedWildcardType) type).isUninferredTypeArgument();

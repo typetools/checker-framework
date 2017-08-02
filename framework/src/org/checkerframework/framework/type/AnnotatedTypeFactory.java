@@ -135,9 +135,10 @@ import org.checkerframework.javacutil.trees.DetachedVarSymbol;
  *
  * <p>Type system checker writers may need to subclass this class, to add implicit and default
  * qualifiers according to the type system semantics. Subclasses should especially override {@link
- * AnnotatedTypeFactory#addComputedTypeAnnotations(Element, AnnotatedTypeMirror)}, {@link
- * #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}, and {@link
- * #addDefaultAnnotations(AnnotatedTypeMirror)}.
+ * AnnotatedTypeFactory#addComputedTypeAnnotations(Element, AnnotatedTypeMirror)} and {@link
+ * #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}. (Also, {@link
+ * #addDefaultAnnotations(AnnotatedTypeMirror)} adds annotations, but that method is a work around
+ * for Issue 979.)
  *
  * @checker_framework.manual #creating-a-checker How to write a checker plug-in
  */
@@ -3573,7 +3574,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         functionalType.setTypeArguments(newTypeArguments);
 
         // When the groundTargetJavaType is different from the underlying type of functionalType,
-        // only the main annotations are copied.  Add default annotations in places withouth
+        // only the main annotations are copied.  Add default annotations in places without
         // annotations.
         addDefaultAnnotations(functionalType);
     }
