@@ -14,7 +14,8 @@ public class Issue961 {
     }
 
     abstract class MapContains<K, V> {
-        @SuppressWarnings("initialization:method.invocation.invalid")
+        // this isn't initialized, but just ignore the error.
+        @SuppressWarnings("method.invocation.invalid")
         V def = setDef();
 
         Map<K, V> map = new HashMap<K, V>();
