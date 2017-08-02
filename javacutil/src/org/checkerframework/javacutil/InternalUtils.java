@@ -372,11 +372,10 @@ public class InternalUtils {
     public static TypeMirror substituteMethodReturnType(
             ProcessingEnvironment env, Element methodElement, TypeMirror substitutedReceiverType) {
 
-        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
-        Types typeUtils = Types.instance(javacEnv.getContext());
+        Types types = Types.instance(getJavacContext(env));
 
         Type substitutedMethodType =
-                typeUtils.memberType((Type) substitutedReceiverType, (Symbol) methodElement);
+                types.memberType((Type) substitutedReceiverType, (Symbol) methodElement);
         return substitutedMethodType.getReturnType();
     }
 
