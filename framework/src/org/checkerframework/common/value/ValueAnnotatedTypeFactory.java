@@ -45,6 +45,7 @@ import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
 import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -1996,27 +1997,32 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Returns the minimum length of an array expression or 0 if the min length is unknown.
      *
-     * @param arrayExpression flow expression
+     * @param sequenceExpression flow expression
      * @param tree expression tree or variable declaration
      * @param currentPath path to local scope
-     * @return min length of arrayExpression or 0
+     * @return min length of sequenceExpression or 0
      */
-    public int getMinLenFromString(String arrayExpression, Tree tree, TreePath currentPath) {
+    public int getMinLenFromString(String sequenceExpression, Tree tree, TreePath currentPath) {
         AnnotationMirror lengthAnno = null;
         try {
-            lengthAnno =
-                    getAnnotationFromJavaExpressionString(
-                            arrayExpression, tree, currentPath, ArrayLenRange.class);
+            FlowExpressions.Receiver expressionObj =
+                    getReceiverFromJavaExpressionString(sequenceExpression, currentPath);
 
+            if (expressionObj instanceof FlowExpressions.ValueLiteral) {
+                FlowExpressions.ValueLiteral sequenceLiteral =
+                        (FlowExpressions.ValueLiteral) expressionObj;
+                Object sequenceLiteralValue = sequenceLiteral.getValue();
+                if (sequenceLiteralValue instanceof String) {
+                    return ((String) sequenceLiteralValue).length();
+                }
+            }
+
+            lengthAnno = getAnnotationFromReceiver(expressionObj, tree, ArrayLenRange.class);
             if (lengthAnno == null) {
-                lengthAnno =
-                        getAnnotationFromJavaExpressionString(
-                                arrayExpression, tree, currentPath, ArrayLen.class);
+                lengthAnno = getAnnotationFromReceiver(expressionObj, tree, ArrayLen.class);
             }
             if (lengthAnno == null) {
-                lengthAnno =
-                        getAnnotationFromJavaExpressionString(
-                                arrayExpression, tree, currentPath, StringVal.class);
+                lengthAnno = getAnnotationFromReceiver(expressionObj, tree, StringVal.class);
             }
         } catch (FlowExpressionParseException e) {
             // ignore parse errors
