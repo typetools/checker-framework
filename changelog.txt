@@ -2,6 +2,11 @@
 
 Version 2.1.14, 3 August 2017
 
+Nullness Checker change to annotated JDK:  The type argument to the Class,
+Constructor, and Optional classes may now be annotated as @Nullable or
+@NonNull.  The nullness of the type argument doesn't matter, but this
+enables easier integration with generic clients.
+
 Many crashes and false positives associated with uninferred method type
 arguments have been correct. By default, uninferred method type arguments,
 which can happen with Java 8 style target type contexts, are silently ignored.
