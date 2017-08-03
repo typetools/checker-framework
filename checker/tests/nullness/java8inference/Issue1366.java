@@ -1,7 +1,6 @@
 // Test case for Issue 1366.
 // https://github.com/typetools/checker-framework/issues/1366
 // @below-java8-jdk-skip-test
-@SuppressWarnings("") // check for crashes
 abstract class Issue1366<T> {
     abstract <S> Issue1366<S> m1(Issue1366<S> p1, Issue1366<?> p2);
 

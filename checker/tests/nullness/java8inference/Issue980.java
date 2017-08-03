@@ -20,8 +20,6 @@ public class Issue980 {
 
         List<String> collectedStrings = s.collect(Collectors.toList());
 
-        // False positive.
-        //:: error: (dereference.of.nullable)
         collectedStrings.forEach(System.out::println);
     }
 }

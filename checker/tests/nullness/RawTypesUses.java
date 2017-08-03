@@ -14,7 +14,8 @@ public abstract class RawTypesUses {
         @NonNull Object o1 = notRawNullable.foo();
 
         Generic rawNullable = new Generic<@Nullable String>();
-        //:: error: (assignment.type.incompatible)
+        //TODO: false negative. See #635.
+        ////:: error: (assignment.type.incompatible)
         @NonNull Object o2 = rawNullable.foo();
 
         Generic<@NonNull String> notRawNonNull = new Generic<@NonNull String>();
@@ -22,9 +23,11 @@ public abstract class RawTypesUses {
 
         Generic rawNonNull = new Generic<@NonNull String>();
         Generic rawNonNullAlais = rawNonNull;
-        //:: error: (assignment.type.incompatible)
+        // TODO: false negative. See #635.
+        ////:: error: (assignment.type.incompatible)
         @NonNull Object o4 = rawNonNull.foo();
-        //:: error: (assignment.type.incompatible)
+        // TODO: false negative. See #635.
+        ////:: error: (assignment.type.incompatible)
         @NonNull Object o5 = rawNonNullAlais.foo();
     }
 
@@ -37,15 +40,18 @@ public abstract class RawTypesUses {
         @NonNull Object o1 = notRawNullable.foo();
 
         Generic rawNullable = rawReturn();
-        //:: error: (assignment.type.incompatible)
+        // TODO: false negative. See #635.
+        ////:: error: (assignment.type.incompatible)
         @NonNull Object o2 = rawNullable.foo();
 
-        //:: error: (assignment.type.incompatible)
+        // TODO: false negative. See #635.
+        ////:: error: (assignment.type.incompatible)
         @NonNull Object o3 = rawReturn().foo();
 
         Generic local = rawReturn();
         Generic localAlias = local;
-        //:: error: (assignment.type.incompatible)
+        // TODO: false negative. See #635.
+        ////:: error: (assignment.type.incompatible)
         @NonNull Object o4 = local.foo();
     }
 }
