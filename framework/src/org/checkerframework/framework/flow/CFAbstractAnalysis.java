@@ -82,9 +82,7 @@ public abstract class CFAbstractAnalysis<
                 checker,
                 factory,
                 fieldValues,
-                // 10 is just a nice low default value. Type systems may wish to use or compute a
-                // different value.
-                factory.getQualifierHierarchy().implementsWidening() ? 10 : -1);
+                factory.getQualifierHierarchy().numberOfIterationsBeforeWidening());
     }
 
     public List<Pair<VariableElement, V>> getFieldValues() {

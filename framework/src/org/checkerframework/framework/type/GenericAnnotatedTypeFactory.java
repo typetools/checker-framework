@@ -1255,6 +1255,12 @@ public abstract class GenericAnnotatedTypeFactory<
         return returnType;
     }
 
+    @Override
+    public void addDefaultAnnotations(AnnotatedTypeMirror type) {
+        typeAnnotator.visit(type, null);
+        defaults.annotate((Element) null, type);
+    }
+
     /**
      * This method is final; override {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror,
      * boolean)} instead.

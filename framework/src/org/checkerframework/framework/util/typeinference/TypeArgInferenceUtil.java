@@ -17,6 +17,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,6 +35,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeVariableSubstitutor;
@@ -328,8 +330,20 @@ public class TypeArgInferenceUtil {
                                     annotatedTypeVar.getUnderlyingType()));
         }
 
+        return containsTypeParameter(type, typeVars);
+    }
+
+    /**
+     * Returns true if {@code type} contains a use of a type variable in {@code typeVariables}.
+     *
+     * @param type type to search
+     * @param typeVariables collection of type varibles
+     * @return true if {@code type} contains a use of a type variable in {@code typeVariables}
+     */
+    public static boolean containsTypeParameter(
+            AnnotatedTypeMirror type, Collection<TypeVariable> typeVariables) {
         // note NULL values creep in because the underlying visitor uses them in various places
-        final Boolean result = type.accept(new TypeVariableFinder(), typeVars);
+        final Boolean result = type.accept(new TypeVariableFinder(), typeVariables);
         return result != null && result;
     }
 
@@ -349,15 +363,30 @@ public class TypeArgInferenceUtil {
     }
 
     /**
+     * Checks that the type is not an uninferred type argument. If it is, errorAbort will be called.
+     * The error will be caught in DefaultTypeArgumentInference#infer and inference will be aborted,
+     * but type-checking will continue.
+     */
+    public static void checkForUninferredTypes(AnnotatedTypeMirror type) {
+        if (type.getKind() != TypeKind.WILDCARD) {
+            return;
+        }
+        if (((AnnotatedWildcardType) type).isUninferredTypeArgument()) {
+            ErrorReporter.errorAbort(
+                    "Can't make a constraint that includes an uninferred type argument.");
+        }
+    }
+
+    /**
      * Used to detect if the visited type contains one of the type variables in the typeVars
      * parameter
      */
     private static class TypeVariableFinder
-            extends AnnotatedTypeScanner<Boolean, List<TypeVariable>> {
+            extends AnnotatedTypeScanner<Boolean, Collection<TypeVariable>> {
 
         @Override
         protected Boolean scan(
-                Iterable<? extends AnnotatedTypeMirror> types, List<TypeVariable> typeVars) {
+                Iterable<? extends AnnotatedTypeMirror> types, Collection<TypeVariable> typeVars) {
             if (types == null) {
                 return false;
             }
@@ -383,7 +412,8 @@ public class TypeArgInferenceUtil {
         }
 
         @Override
-        public Boolean visitTypeVariable(AnnotatedTypeVariable type, List<TypeVariable> typeVars) {
+        public Boolean visitTypeVariable(
+                AnnotatedTypeVariable type, Collection<TypeVariable> typeVars) {
             if (typeVars.contains(TypeAnnotationUtils.unannotatedType(type.getUnderlyingType()))) {
                 return true;
             } else {
