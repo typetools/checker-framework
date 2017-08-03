@@ -47,8 +47,8 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
      * </code>
      * </pre>
      *
-     * @param valueToCompareTo This value must be 0 (for greater than or less than) or -1 (for
-     *     greater than or equal or less than or equal).
+     * @param valueToCompareTo this value must be 0 (for greater than or less than) or -1 (for
+     *     greater than or equal or less than or equal)
      */
     private void refineSearchIndexToNegativeIndexFor(
             Node left, Node right, CFStore store, int valueToCompareTo) {

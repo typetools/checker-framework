@@ -281,9 +281,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * This handles the lowerbound part of that type, so the result is converted to
          * {@code @NonNegative}.
          *
-         * @param searchIndexType The type of an expression in a bitwise complement. For instance,
+         * @param searchIndexType the type of an expression in a bitwise complement. For instance,
          *     in {@code ~x}, this is the type of {@code x}.
-         * @param typeDst The type of the entire bitwise complement expression. It is modified by
+         * @param typeDst the type of the entire bitwise complement expression. It is modified by
          *     this method.
          */
         private void handleBitWiseComplement(

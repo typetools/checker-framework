@@ -531,7 +531,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * by line and column number and then by checker. (See checkerMessageComparator for more precise
      * order.)
      *
-     * @param unit Current compilation unit
+     * @param unit current compilation unit
      */
     private void printCollectedMessages(CompilationUnitTree unit) {
         if (messageStore != null) {

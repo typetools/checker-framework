@@ -234,7 +234,7 @@ class SupertypeFinder {
          * upper bound may not be within the type parameter. This method fixes that.
          *
          * @param element type parameter to which {@code wildcard} is an argument
-         * @param wildcard wildcard type whose upper bound may be modified.
+         * @param wildcard wildcard type whose upper bound may be modified
          */
         // TODO: BoundsInitializer#initializeExtendsBound(AnnotatedWildcardType) and
         // SupertypeFinder#fixWildcardBound have similar logic for handling unbounded wildcards.
