@@ -1,9 +1,9 @@
-// Test case for Issue 165, where the argument is a string literal:
-// https://github.com/kelloggm/checker-framework/issues/165
+// Test case for Issue 166:
+// https://github.com/kelloggm/checker-framework/issues/166
 
 import org.checkerframework.checker.index.qual.IndexFor;
 
-public class Index165StringLiteral {
+public class Index166 {
 
     public void testMethodInvocation() {
         requiresIndex("012345", 5);
