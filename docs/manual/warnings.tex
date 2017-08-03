@@ -820,10 +820,10 @@ working directory or any subdirectory, run the following two Unix commands.
 
 \begin{Verbatim}
    find . -type f -name '*.java' -print \
-     | xargs grep -l -P '/\*\s*@([^ */]+)\s*\*/' \
-     | xargs perl -pi.bak -e 's|/\*\s*@([^ */]+)\s*\*/|@\1|g'
+     | xargs grep -l -E '/\*\s*@([^*/]+)\s*\*/' \
+     | xargs perl -pi.bak -e 's|/\*\s*@([^*/]+)\s*\*/|@\1|g'
    find . -type f -name '*.java' -print \
-     | xargs grep -l -P '/\*>>>' \
+     | xargs grep -l -E '/\*>>>' \
      | xargs perl -pi.bak -00 -e 's|/\*>>>([^*]+)\*/|\1|g'
 \end{Verbatim}
 
@@ -842,16 +842,14 @@ instances of ``\verb|\s*|''.
   To remove all commented annotations, remove ``\verb|@\1|''.
 \end{itemize}
 
-The second command handles \code{/*>>>} comments.
+The second command handles \code{/*>>>...*/} comments (.
 You can customize this command:
 \begin{itemize}
 \item
-  To remove all \code{/*>>>} comments, remove ``\verb|\1|''.
+  To not make backups, remove ``\verb|.bak|''.
+\item
+  To remove all \code{/*>>>...*/} comments, remove ``\verb|\1|''.
 \end{itemize}
-
-% TODO: adapt it to do so.
-The command does not handle the \code{>>>} comments; you will need to
-adapt the above command to do so, or remove them in another way.
 
 
 \subsection{No modular type-checking when targeting Java 5/6/7\label{no-modular-type-checking-java7-jvm}}
