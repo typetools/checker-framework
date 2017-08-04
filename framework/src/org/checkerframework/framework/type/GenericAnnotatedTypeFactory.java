@@ -848,9 +848,6 @@ public abstract class GenericAnnotatedTypeFactory<
     /** @return the store immediately after a given {@link Tree}. */
     public Store getStoreAfter(Tree tree) {
         if (analyses.isEmpty()) {
-            if (flowResult == null) {
-                return null;
-            }
             return flowResult.getStoreAfter(tree);
         }
         FlowAnalysis analysis = analyses.getFirst();
