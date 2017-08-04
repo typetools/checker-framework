@@ -57,8 +57,8 @@ public class ControlFlowGraph {
     /** Map from AST {@link Tree}s to post-conversion {@link Node}s. */
     protected IdentityHashMap<Tree, Node> convertedTreeLookup;
 
-    /** Map from AST {@link UnaryTree}s to compound {@link AssignmentNode}s. */
-    protected IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignTreeLookupMap;
+    /** Map from AST {@link UnaryTree}s to corresponding {@link AssignmentNode}s. */
+    protected IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap;
 
     /**
      * All return nodes (if any) encountered. Only includes return statements that actually return
@@ -73,13 +73,13 @@ public class ControlFlowGraph {
             UnderlyingAST underlyingAST,
             IdentityHashMap<Tree, Node> treeLookup,
             IdentityHashMap<Tree, Node> convertedTreeLookup,
-            IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignTreeLookupMap,
+            IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap,
             List<ReturnNode> returnNodes) {
         super();
         this.entryBlock = entryBlock;
         this.underlyingAST = underlyingAST;
         this.treeLookup = treeLookup;
-        this.unaryAssignTreeLookupMap = unaryAssignTreeLookupMap;
+        this.unaryAssignNodeLookupMap = unaryAssignNodeLookupMap;
         this.convertedTreeLookup = convertedTreeLookup;
         this.regularExitBlock = regularExitBlock;
         this.exceptionalExitBlock = exceptionalExitBlock;
@@ -223,9 +223,9 @@ public class ControlFlowGraph {
         return new IdentityHashMap<>(treeLookup);
     }
 
-    /** @return lookup map of the assign tree for unary operation */
-    public IdentityHashMap<UnaryTree, AssignmentNode> getUnaryAssignTreeLookupMap() {
-        return new IdentityHashMap<>(unaryAssignTreeLookupMap);
+    /** @return lookup map of the assign node for unary operation */
+    public IdentityHashMap<UnaryTree, AssignmentNode> getUnaryAssignNodeLookupMap() {
+        return new IdentityHashMap<>(unaryAssignNodeLookupMap);
     }
 
     /**

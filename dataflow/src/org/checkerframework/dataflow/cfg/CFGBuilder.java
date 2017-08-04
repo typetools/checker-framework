@@ -1266,7 +1266,7 @@ public class CFGBuilder {
                     in.underlyingAST,
                     in.treeLookupMap,
                     in.convertedTreeLookupMap,
-                    in.unaryAssignTreeLookupMap,
+                    in.unaryAssignNodeLookupMap,
                     in.returnNodes);
         }
     }
@@ -1283,7 +1283,7 @@ public class CFGBuilder {
 
         private final IdentityHashMap<Tree, Node> treeLookupMap;
         private final IdentityHashMap<Tree, Node> convertedTreeLookupMap;
-        private final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignTreeLookupMap;
+        private final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap;
         private final UnderlyingAST underlyingAST;
         private final Map<Label, Integer> bindings;
         private final ArrayList<ExtendedNode> nodeList;
@@ -1294,7 +1294,7 @@ public class CFGBuilder {
                 UnderlyingAST underlyingAST,
                 IdentityHashMap<Tree, Node> treeLookupMap,
                 IdentityHashMap<Tree, Node> convertedTreeLookupMap,
-                IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignTreeLookupMap,
+                IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap,
                 ArrayList<ExtendedNode> nodeList,
                 Map<Label, Integer> bindings,
                 Set<Integer> leaders,
@@ -1302,7 +1302,7 @@ public class CFGBuilder {
             this.underlyingAST = underlyingAST;
             this.treeLookupMap = treeLookupMap;
             this.convertedTreeLookupMap = convertedTreeLookupMap;
-            this.unaryAssignTreeLookupMap = unaryAssignTreeLookupMap;
+            this.unaryAssignNodeLookupMap = unaryAssignNodeLookupMap;
             this.nodeList = nodeList;
             this.bindings = bindings;
             this.leaders = leaders;
@@ -1413,7 +1413,7 @@ public class CFGBuilder {
         protected IdentityHashMap<Tree, Node> convertedTreeLookupMap;
 
         /** Map from AST {@link UnaryTree}s to compound {@link AssignmentNode}s. */
-        protected IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignTreeLookupMap;
+        protected IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap;
 
         /** The list of extended nodes. */
         protected ArrayList<ExtendedNode> nodeList;
@@ -1461,7 +1461,7 @@ public class CFGBuilder {
             // initialize lists and maps
             treeLookupMap = new IdentityHashMap<>();
             convertedTreeLookupMap = new IdentityHashMap<>();
-            unaryAssignTreeLookupMap = new IdentityHashMap<>();
+            unaryAssignNodeLookupMap = new IdentityHashMap<>();
             nodeList = new ArrayList<>();
             bindings = new HashMap<>();
             leaders = new HashSet<>();
@@ -1484,7 +1484,7 @@ public class CFGBuilder {
                     underlyingAST,
                     treeLookupMap,
                     convertedTreeLookupMap,
-                    unaryAssignTreeLookupMap,
+                    unaryAssignNodeLookupMap,
                     nodeList,
                     bindings,
                     leaders,
@@ -1576,7 +1576,7 @@ public class CFGBuilder {
          * @param unaryAssignNode the node to add to the lookup map
          */
         protected void addToUnaryAssignLookupMap(UnaryTree tree, AssignmentNode unaryAssignNode) {
-            unaryAssignTreeLookupMap.put(tree, unaryAssignNode);
+            unaryAssignNodeLookupMap.put(tree, unaryAssignNode);
         }
 
         /**

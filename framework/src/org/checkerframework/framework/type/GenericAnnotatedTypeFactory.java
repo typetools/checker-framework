@@ -1236,7 +1236,7 @@ public abstract class GenericAnnotatedTypeFactory<
         if (!useFlow) {
             return getAnnotatedType(tree);
         }
-        AssignmentNode n = flowResult.getUnaryAssignForTree(tree);
+        AssignmentNode n = flowResult.getAssignForUnaryTree(tree);
         return getAnnotatedType(n.getExpression().getTree());
     }
 

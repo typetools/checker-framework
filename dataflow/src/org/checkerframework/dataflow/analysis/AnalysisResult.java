@@ -32,8 +32,8 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     /** Map from AST {@link Tree}s to {@link Node}s. */
     protected final IdentityHashMap<Tree, Node> treeLookup;
 
-    /** Map from AST {@link UnaryTree}s to compound {@link AssignmentNode}s. */
-    protected final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignTreeLookupMap;
+    /** Map from AST {@link UnaryTree}s to corresponding {@link AssignmentNode}s. */
+    protected final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap;
 
     /** Map from (effectively final) local variable elements to their abstract value. */
     protected final HashMap<Element, A> finalLocalValues;
@@ -46,11 +46,11 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
             Map<Node, A> nodeValues,
             IdentityHashMap<Block, TransferInput<A, S>> stores,
             IdentityHashMap<Tree, Node> treeLookup,
-            IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignTreeLookupMap,
+            IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap,
             HashMap<Element, A> finalLocalValues) {
         this.nodeValues = new IdentityHashMap<>(nodeValues);
         this.treeLookup = new IdentityHashMap<>(treeLookup);
-        this.unaryAssignTreeLookupMap = new IdentityHashMap<>(unaryAssignTreeLookupMap);
+        this.unaryAssignNodeLookupMap = new IdentityHashMap<>(unaryAssignNodeLookupMap);
         this.stores = stores;
         this.finalLocalValues = finalLocalValues;
     }
@@ -59,7 +59,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     public AnalysisResult() {
         nodeValues = new IdentityHashMap<>();
         treeLookup = new IdentityHashMap<>();
-        unaryAssignTreeLookupMap = new IdentityHashMap<>();
+        unaryAssignNodeLookupMap = new IdentityHashMap<>();
         stores = new IdentityHashMap<>();
         finalLocalValues = new HashMap<>();
     }
@@ -68,7 +68,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     public void combine(AnalysisResult<A, S> other) {
         nodeValues.putAll(other.nodeValues);
         treeLookup.putAll(other.treeLookup);
-        unaryAssignTreeLookupMap.putAll(other.unaryAssignTreeLookupMap);
+        unaryAssignNodeLookupMap.putAll(other.unaryAssignNodeLookupMap);
         stores.putAll(other.stores);
         finalLocalValues.putAll(other.finalLocalValues);
     }
@@ -100,9 +100,9 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         return treeLookup.get(tree);
     }
 
-    /** @return the compound {@link AssignmentNode} for a given {@link UnaryTree}. */
-    public /*@Nullable*/ AssignmentNode getUnaryAssignForTree(UnaryTree tree) {
-        return unaryAssignTreeLookupMap.get(tree);
+    /** @return the corresponding {@link AssignmentNode} for a given {@link UnaryTree}. */
+    public /*@Nullable*/ AssignmentNode getAssignForUnaryTree(UnaryTree tree) {
+        return unaryAssignNodeLookupMap.get(tree);
     }
 
     /** @return the store immediately before a given {@link Tree}. */
