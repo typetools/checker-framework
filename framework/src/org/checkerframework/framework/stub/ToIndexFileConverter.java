@@ -433,25 +433,24 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                 new GenericVisitorAdapter<Void, InnerTypeLocation>() {
                     @Override
                     public Void visit(ClassOrInterfaceType type, InnerTypeLocation loc) {
-                        // TODO Make sure object is present
-                        List<Type> typeArgs = type.getTypeArguments().get();
-                        for (int i = 0; i < typeArgs.size(); i++) {
-                            Type inner = typeArgs.get(i);
-                            InnerTypeLocation ext = extendedTypePath(loc, 3, i);
-                            visitInnerType(inner, ext);
+                        if (type.getTypeArguments().isPresent()) {
+                            List<Type> typeArgs = type.getTypeArguments().get();
+                            for (int i = 0; i < typeArgs.size(); i++) {
+                                Type inner = typeArgs.get(i);
+                                InnerTypeLocation ext = extendedTypePath(loc, 3, i);
+                                visitInnerType(inner, ext);
+                            }
                         }
                         return null;
                     }
 
-                    // TODO It was a overriden method.
-                    // @Override
+                    @Override
                     public Void visit(ReferenceType type, InnerTypeLocation loc) {
                         InnerTypeLocation ext = loc;
-                        int n = type.getArrayLevel();
+                        int n = type.getArrayCount();
                         for (int i = 0; i < n; i++) {
                             ext = extendedTypePath(ext, 1, 0);
-                            // TODO There was a getting annotations at level i, but it was changed for getting Annotation not depend on level
-                            for (AnnotationExpr expr : type.getAnnotations()) {
+                            for (AnnotationExpr expr : type.getAnnotationsAtLevel(i)) {
                                 ATypeElement typeElem = elem.innerTypes.vivify(ext);
                                 Annotation anno = extractAnnotation(expr);
                                 typeElem.tlAnnotationsHere.add(anno);
