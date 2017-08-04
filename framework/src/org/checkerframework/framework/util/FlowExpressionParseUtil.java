@@ -489,7 +489,7 @@ public class FlowExpressionParseUtil {
      * returned pair is a remaining string.
      *
      * @param s expression string
-     * @return pair of pair of method name and arguments and remaining.
+     * @return pair of pair of method name and arguments and remaining
      */
     private static Pair<Pair<String, String>, String> parseMethod(String s) {
         // Parse Identifier
