@@ -14,8 +14,7 @@ public class Second {
         First.method(supplier, callable);
     }
 
-    public static void two(
-            First.Supplier<Integer> supplier, First.Callable<@Nullable Object> callable) {
+    public static void two(First.Supplier<Integer> supplier, First.Callable<Object> callable) {
         First.method(supplier, callable);
     }
 }
