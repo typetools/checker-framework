@@ -155,7 +155,7 @@ public class StubParser {
         } catch (Exception e) {
             ErrorReporter.errorAbort(
                     "StubParser: exception from StubParser.parse for file " + filename, e);
-            parsedStubUnit = null; // dead code, but needed for def. assignment checks
+            parsedStubUnit = null; // dead code, but needed for definite assignment checks
         }
         this.stubUnit = parsedStubUnit;
 
@@ -378,8 +378,7 @@ public class StubParser {
         if (typeElt == null) {
             boolean warn = true;
             if (typeDecl.getAnnotations() != null) {
-                NodeList<AnnotationExpr> annotations = typeDecl.getAnnotations();
-                for (AnnotationExpr anno : annotations) {
+                for (AnnotationExpr anno : typeDecl.getAnnotations()) {
                     if (anno.getNameAsString().contentEquals("NoStubParserWarning")) {
                         warn = false;
                     }
@@ -441,6 +440,7 @@ public class StubParser {
                 default:
                     /* do nothing */
                     stubWarnIfNotFound("StubParser ignoring: " + elt);
+                    break;
             }
         }
         typeParameters.clear();
@@ -465,9 +465,9 @@ public class StubParser {
         // }
 
         if (debugStubParser) {
-            if (((typeParameters == null) && (typeArguments.size() != 0))
-                    || (typeParameters != null)
-                            && (typeParameters.size() != typeArguments.size())) {
+            int numParams = (typeParameters == null ? 0 : typeParameters.size());
+            int numArgs = (typeArguments == null ? 0 : typeArguments.size());
+            if (numParams != numArgs) {
                 stubDebug(
                         String.format(
                                 "parseType:  mismatched sizes for typeParameters=%s (size %d) and typeArguments=%s (size %d); decl=%s; elt=%s (%s); type=%s (%s); theCompilationUnit=%s",
@@ -545,7 +545,7 @@ public class StubParser {
             ExecutableElement elt,
             Map<Element, AnnotatedTypeMirror> atypes,
             Map<String, Set<AnnotationMirror>> declAnnos) {
-        // Switched annotations between method declaration and type
+        // Switch annotations between method declaration and type.
         NodeList<AnnotationExpr> list = decl.getType().getAnnotations();
         decl.getType().setAnnotations(decl.getAnnotations());
         decl.setAnnotations(list);
@@ -573,7 +573,7 @@ public class StubParser {
             annotateDecl(declAnnos, paramElt, param.getAnnotations());
             annotateDecl(declAnnos, paramElt, param.getType().getAnnotations());
 
-            // Duplicated parameter annotations to the type
+            // Duplicate parameter annotations to the type.
             param.getType().setAnnotations(param.getAnnotations());
 
             if (param.isVarArgs()) {
@@ -1133,7 +1133,8 @@ public class StubParser {
     private static Set<String> warnings = new HashSet<String>();
 
     /**
-     * Issues the given warning about missing elements, only if it has not been previously issued.
+     * Issues the given warning about missing elements, only if it has not been previously issued
+     * and the -AstubWarnIfNotFound command-line argument was passed.
      */
     private void stubWarnIfNotFound(String warning) {
         ensureSingleLine(warning, "stubWarnIfNotFound");
@@ -1146,7 +1147,7 @@ public class StubParser {
 
     /**
      * Issues the given warning about overwriting bytecode, only if it has not been previously
-     * issued.
+     * issued and the -AstubWarnIfOverwritesBytecode command-line argument was passed.
      */
     private void stubWarnIfOverwritesBytecode(String warning) {
         ensureSingleLine(warning, "stubWarnIfOverwritesBytecode");
@@ -1179,7 +1180,7 @@ public class StubParser {
         }
     }
 
-    /** Issue a warning if the message contains line separator characters. */
+    /** Throw an error if the message contains line separator characters. */
     private void ensureSingleLine(String message, String methodName) {
         if (message.contains(LINE_SEPARATOR)) {
             throw new Error(
