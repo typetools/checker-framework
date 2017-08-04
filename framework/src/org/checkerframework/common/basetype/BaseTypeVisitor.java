@@ -1359,10 +1359,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 || (node.getKind() == Tree.Kind.POSTFIX_DECREMENT)
                 || (node.getKind() == Tree.Kind.POSTFIX_INCREMENT)) {
             AnnotatedTypeMirror varType = atypeFactory.getAnnotatedTypeLhs(node.getExpression());
-            AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedTypeRhsCompoundAssign(node);
-            if (valueType == null) {
-                valueType = atypeFactory.getAnnotatedType(node);
-            }
+            AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedTypeRhsUnaryAssign(node);
             commonAssignmentCheck(
                     varType, valueType, node, "compound.assignment.type.incompatible");
         }

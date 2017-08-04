@@ -1229,17 +1229,17 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Returns the type of a right-hand side of an compound assignment for unary operation.
+     * Returns the type of a right-hand side of an assignment for unary operation like prefix or
+     * postfix increment or decrement.
      *
      * @param tree unary operation tree for compound assignment
-     * @return AnnotatedTypeMirror of a right-hand side of an compound assignment for unary
-     *     operation
+     * @return AnnotatedTypeMirror of a right-hand side of an assignment for unary operation
      */
-    public AnnotatedTypeMirror getAnnotatedTypeRhsCompoundAssign(UnaryTree tree) {
+    public AnnotatedTypeMirror getAnnotatedTypeRhsUnaryAssign(UnaryTree tree) {
         if (!useFlow) {
-            return null;
+            return getAnnotatedType(tree);
         }
-        AssignmentNode n = flowResult.getCompoundAssignForTree(tree);
+        AssignmentNode n = flowResult.getUnaryAssignForTree(tree);
         return getAnnotatedType(n.getExpression().getTree());
     }
 

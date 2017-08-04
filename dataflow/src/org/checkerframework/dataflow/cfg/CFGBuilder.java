@@ -1266,7 +1266,7 @@ public class CFGBuilder {
                     in.underlyingAST,
                     in.treeLookupMap,
                     in.convertedTreeLookupMap,
-                    in.compoundAssignTreeLookupMap,
+                    in.unaryAssignTreeLookupMap,
                     in.returnNodes);
         }
     }
@@ -1283,7 +1283,7 @@ public class CFGBuilder {
 
         private final IdentityHashMap<Tree, Node> treeLookupMap;
         private final IdentityHashMap<Tree, Node> convertedTreeLookupMap;
-        private final IdentityHashMap<UnaryTree, AssignmentNode> compoundAssignTreeLookupMap;
+        private final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignTreeLookupMap;
         private final UnderlyingAST underlyingAST;
         private final Map<Label, Integer> bindings;
         private final ArrayList<ExtendedNode> nodeList;
@@ -1294,7 +1294,7 @@ public class CFGBuilder {
                 UnderlyingAST underlyingAST,
                 IdentityHashMap<Tree, Node> treeLookupMap,
                 IdentityHashMap<Tree, Node> convertedTreeLookupMap,
-                IdentityHashMap<UnaryTree, AssignmentNode> compoundAssignTreeLookupMap,
+                IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignTreeLookupMap,
                 ArrayList<ExtendedNode> nodeList,
                 Map<Label, Integer> bindings,
                 Set<Integer> leaders,
@@ -1302,7 +1302,7 @@ public class CFGBuilder {
             this.underlyingAST = underlyingAST;
             this.treeLookupMap = treeLookupMap;
             this.convertedTreeLookupMap = convertedTreeLookupMap;
-            this.compoundAssignTreeLookupMap = compoundAssignTreeLookupMap;
+            this.unaryAssignTreeLookupMap = unaryAssignTreeLookupMap;
             this.nodeList = nodeList;
             this.bindings = bindings;
             this.leaders = leaders;
@@ -1413,7 +1413,7 @@ public class CFGBuilder {
         protected IdentityHashMap<Tree, Node> convertedTreeLookupMap;
 
         /** Map from AST {@link UnaryTree}s to compound {@link AssignmentNode}s. */
-        protected IdentityHashMap<UnaryTree, AssignmentNode> compoundAssignTreeLookupMap;
+        protected IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignTreeLookupMap;
 
         /** The list of extended nodes. */
         protected ArrayList<ExtendedNode> nodeList;
@@ -1461,7 +1461,7 @@ public class CFGBuilder {
             // initialize lists and maps
             treeLookupMap = new IdentityHashMap<>();
             convertedTreeLookupMap = new IdentityHashMap<>();
-            compoundAssignTreeLookupMap = new IdentityHashMap<>();
+            unaryAssignTreeLookupMap = new IdentityHashMap<>();
             nodeList = new ArrayList<>();
             bindings = new HashMap<>();
             leaders = new HashSet<>();
@@ -1484,7 +1484,7 @@ public class CFGBuilder {
                     underlyingAST,
                     treeLookupMap,
                     convertedTreeLookupMap,
-                    compoundAssignTreeLookupMap,
+                    unaryAssignTreeLookupMap,
                     nodeList,
                     bindings,
                     leaders,
@@ -1573,11 +1573,10 @@ public class CFGBuilder {
          * UnaryTree-AssignmentNode mapping with compound assign nodes.
          *
          * @param tree the tree used as a key in the map
-         * @param compoundAssignNode the node to add to the lookup map
+         * @param unaryAssignNode the node to add to the lookup map
          */
-        protected void addToCompoundAssignLookupMap(
-                UnaryTree tree, AssignmentNode compoundAssignNode) {
-            compoundAssignTreeLookupMap.put(tree, compoundAssignNode);
+        protected void addToUnaryAssignLookupMap(UnaryTree tree, AssignmentNode unaryAssignNode) {
+            unaryAssignTreeLookupMap.put(tree, unaryAssignNode);
         }
 
         /**
@@ -4224,10 +4223,10 @@ public class CFGBuilder {
                         boolean isPostfix =
                                 kind == Tree.Kind.POSTFIX_INCREMENT
                                         || kind == Kind.POSTFIX_DECREMENT;
-                        AssignmentNode compoundAssign =
+                        AssignmentNode unaryAssign =
                                 createIncrementOrDecrementAssign(
                                         isPostfix ? null : tree, expr, isIncrement);
-                        addToCompoundAssignLookupMap(tree, compoundAssign);
+                        addToUnaryAssignLookupMap(tree, unaryAssign);
 
                         if (isPostfix) {
                             TypeMirror exprType = InternalUtils.typeOf(exprTree);
@@ -4260,7 +4259,7 @@ public class CFGBuilder {
                             result.setInSource(false);
                             extendWithNode(result);
                         } else {
-                            result = compoundAssign;
+                            result = unaryAssign;
                         }
                         break;
                     }
@@ -4335,7 +4334,7 @@ public class CFGBuilder {
         }
 
         /**
-         * Find nearest owner element(Method or Class) which holds current tree
+         * Find nearest owner element (Method or Class) which holds current tree
          *
          * @return Nearest owner element of current tree
          */

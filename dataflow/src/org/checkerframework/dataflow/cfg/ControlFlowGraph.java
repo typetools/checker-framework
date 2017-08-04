@@ -58,7 +58,7 @@ public class ControlFlowGraph {
     protected IdentityHashMap<Tree, Node> convertedTreeLookup;
 
     /** Map from AST {@link UnaryTree}s to compound {@link AssignmentNode}s. */
-    protected IdentityHashMap<UnaryTree, AssignmentNode> compoundAssignTreeLookup;
+    protected IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignTreeLookupMap;
 
     /**
      * All return nodes (if any) encountered. Only includes return statements that actually return
@@ -73,13 +73,13 @@ public class ControlFlowGraph {
             UnderlyingAST underlyingAST,
             IdentityHashMap<Tree, Node> treeLookup,
             IdentityHashMap<Tree, Node> convertedTreeLookup,
-            IdentityHashMap<UnaryTree, AssignmentNode> compoundAssignTreeLookup,
+            IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignTreeLookupMap,
             List<ReturnNode> returnNodes) {
         super();
         this.entryBlock = entryBlock;
         this.underlyingAST = underlyingAST;
         this.treeLookup = treeLookup;
-        this.compoundAssignTreeLookup = compoundAssignTreeLookup;
+        this.unaryAssignTreeLookupMap = unaryAssignTreeLookupMap;
         this.convertedTreeLookup = convertedTreeLookup;
         this.regularExitBlock = regularExitBlock;
         this.exceptionalExitBlock = exceptionalExitBlock;
@@ -223,9 +223,9 @@ public class ControlFlowGraph {
         return new IdentityHashMap<>(treeLookup);
     }
 
-    /** @return the compound assign tree-lookup map */
-    public IdentityHashMap<UnaryTree, AssignmentNode> getCompoundAssignTreeLookup() {
-        return new IdentityHashMap<>(compoundAssignTreeLookup);
+    /** @return lookup map of the assign tree for unary operation */
+    public IdentityHashMap<UnaryTree, AssignmentNode> getUnaryAssignTreeLookupMap() {
+        return new IdentityHashMap<>(unaryAssignTreeLookupMap);
     }
 
     /**
