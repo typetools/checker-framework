@@ -548,8 +548,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                         }
                     }
 
-                    // TODO It was a overriden method.
-                    // @Override
+                    @Override
                     public String visit(ReferenceType type, Void v) {
                         String typeName = type.getElementType().accept(this, null);
                         StringBuilder sb = new StringBuilder();
@@ -618,6 +617,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     /**
      * Combines an import with a name, yielding a fully-qualified name.
      *
+     * @param importName represents package name and in case the class inner it should contain the
+     *     outer class.
+     * @param className the class name.
      * @return fully qualified class name if resolution succeeds, null otherwise
      */
     private static String mergeImport(String importName, String className) {
