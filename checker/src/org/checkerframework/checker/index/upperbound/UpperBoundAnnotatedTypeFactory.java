@@ -349,16 +349,17 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public AnnotationMirror widenUpperBound(AnnotationMirror a, AnnotationMirror b) {
-            UBQualifier a1Obj = UBQualifier.createUBQualifier(a);
-            UBQualifier a2Obj = UBQualifier.createUBQualifier(b);
+        public AnnotationMirror widenedUpperBound(
+                AnnotationMirror newQualifier, AnnotationMirror previousQualifier) {
+            UBQualifier a1Obj = UBQualifier.createUBQualifier(newQualifier);
+            UBQualifier a2Obj = UBQualifier.createUBQualifier(previousQualifier);
             UBQualifier lub = a1Obj.widenUpperBound(a2Obj);
             return convertUBQualifierToAnnotation(lub);
         }
 
         @Override
-        public boolean implementsWidening() {
-            return true;
+        public int numberOfIterationsBeforeWidening() {
+            return 10;
         }
 
         /**
@@ -452,9 +453,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * }
          * }</pre>
          *
-         * @param searchIndexType The type of an expression in a bitwise complement. For instance,
+         * @param searchIndexType the type of an expression in a bitwise complement. For instance,
          *     in {@code ~x}, this is the type of {@code x}.
-         * @param typeDst The type of the entire bitwise complement expression. It is modified by
+         * @param typeDst the type of the entire bitwise complement expression. It is modified by
          *     this method.
          */
         private void addAnnotationForBitwiseComplement(

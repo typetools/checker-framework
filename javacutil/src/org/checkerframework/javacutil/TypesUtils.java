@@ -441,7 +441,7 @@ public final class TypesUtils {
     /**
      * Returns true if the erased type of subtype is a subtype of the erased type of supertype.
      *
-     * @param types Types
+     * @param types types
      * @param subtype possible subtype
      * @param supertype possible supertype
      * @return true if the erased type of subtype is a subtype of the erased type of supertype

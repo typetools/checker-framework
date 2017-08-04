@@ -86,8 +86,6 @@ public class NonNullMapValue {
 
     public static <T> void testAssertFlow(Map<T, List<T>> preds, T node) {
         assert preds.containsKey(node);
-        // TODO, see Issue 961
-        //:: error: (iterating.over.nullable)
         for (T pred : preds.get(node)) {}
     }
 
@@ -96,8 +94,6 @@ public class NonNullMapValue {
         // Both of the next two lines should type-check.  The second one won't
         // unless the checker knows that pred is a key in the map.
         List<T> dom_of_pred1 = dom.get(pred);
-        // TODO, see Issue 961
-        //:: error: (assignment.type.incompatible)
         @NonNull List<T> dom_of_pred2 = dom.get(pred);
     }
 
@@ -108,8 +104,6 @@ public class NonNullMapValue {
         // Both of the next two lines should type-check.  The second one won't
         // unless the checker knows that pred is a key in the map.
         List<T> dom_of_pred1 = dom.get(pred);
-        // TODO, see Issue 961
-        //:: error: (assignment.type.incompatible)
         @NonNull List<T> dom_of_pred2 = dom.get(pred);
     }
 
