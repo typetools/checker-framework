@@ -38,8 +38,9 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     protected final IdentityHashMap<Block, TransferInput<A, S>> stores;
 
     /** The results for each node. */
-    protected IdentityHashMap<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>>
-            cache;
+    protected final IdentityHashMap<
+                    TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>>
+            cacheLookupMap;
 
     /** Initialize with a given node-value mapping. */
     public AnalysisResult(
@@ -51,7 +52,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         this.treeLookup = new IdentityHashMap<>(treeLookup);
         this.stores = stores;
         this.finalLocalValues = finalLocalValues;
-        this.cache = new IdentityHashMap<>();
+        this.cacheLookupMap = new IdentityHashMap<>();
     }
 
     /** Initialize empty result. */
@@ -60,7 +61,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         treeLookup = new IdentityHashMap<>();
         stores = new IdentityHashMap<>();
         finalLocalValues = new HashMap<>();
-        this.cache = new IdentityHashMap<>();
+        this.cacheLookupMap = new IdentityHashMap<>();
     }
 
     /** Combine with another analysis result. */
@@ -148,9 +149,10 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         if (transferInput == null) {
             return null;
         }
-        IdentityHashMap<Node, TransferResult<A, S>> cache = this.cache.get(transferInput);
+        IdentityHashMap<Node, TransferResult<A, S>> cache = cacheLookupMap.get(transferInput);
         if (cache == null) {
-            this.cache.put(transferInput, cache = new IdentityHashMap<>());
+            cache = new IdentityHashMap<>();
+            cacheLookupMap.put(transferInput, cache);
         }
         return runAnalysisFor(node, before, transferInput, cache);
     }
