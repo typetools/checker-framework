@@ -698,10 +698,10 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Returns the primary annotation on expression if it were evaluated at path.
      *
-     * @param expression Java expression
+     * @param expression a Java expression
      * @param tree current tree
      * @param path location at which expression is evaluated
-     * @param clazz Class of the annotation
+     * @param clazz class of the annotation
      * @return the annotation on expression or null if one does not exist
      * @throws FlowExpressionParseException thrown if the expression cannot be parsed
      */
@@ -738,7 +738,7 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Produces the receiver associated with expression on currentPath.
      *
-     * @param expression Java expression
+     * @param expression a Java expression
      * @param currentPath location at which expression is evaluated
      * @throws FlowExpressionParseException thrown if the expression cannot be parsed
      */

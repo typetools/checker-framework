@@ -179,8 +179,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      * length of the arrays in {@code typeOfAddition} plus 1.
      *
      * @param typeOfAddition type of {@code operand + other}
-     * @param operand Node to refine
-     * @param other Node added to {@code operand}
+     * @param operand the Node to refine
+     * @param other the Node added to {@code operand}
      * @param in TransferInput
      * @param store location to store the refined types
      */
