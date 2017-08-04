@@ -195,7 +195,7 @@ public class OffsetEquation {
     /**
      * Returns true if this equation is a single int value.
      *
-     * @return true if this equation is a single int value.
+     * @return true if this equation is a single int value
      */
     public boolean isInt() {
         return addedTerms.isEmpty() && subtractedTerms.isEmpty();
@@ -311,7 +311,7 @@ public class OffsetEquation {
     /**
      * Returns the offset equation that is an int value or null if there isn't one.
      *
-     * @param equationSet Set of offset equations
+     * @param equationSet a set of offset equations
      * @return the offset equation that is an int value or null if there isn't one
      */
     public static OffsetEquation getIntOffsetEquation(Set<OffsetEquation> equationSet) {
@@ -340,7 +340,7 @@ public class OffsetEquation {
      * with + or -. If the expressionEquation is the empty string, then the offset equation returned
      * is zero.
      *
-     * @param expressionEquation Java expressions add or subtracted from one another
+     * @param expressionEquation a Java expression made up of sums and differences
      * @return an offset equation created form expressionEquation
      */
     public static OffsetEquation createOffsetFromJavaExpression(String expressionEquation) {
@@ -414,7 +414,7 @@ public class OffsetEquation {
      *
      * <p>Otherwise, null is returned.
      *
-     * @param node Node from which to create offset equation
+     * @param node the Node from which to create an offset equation
      * @param factory AnnotationTypeFactory
      * @param op '+' or '-'
      * @return an offset equation from value of known or null if the value isn't known
@@ -448,7 +448,7 @@ public class OffsetEquation {
      * FlowExpressions.Receiver} and then added as a term to the returned equation. If op is '-'
      * then it is a subtracted term.
      *
-     * @param node Node from which to create offset equation
+     * @param node the Node from which to create an offset equation
      * @param factory AnnotationTypeFactory
      * @param op '+' or '-'
      * @return an offset equation from the Node
