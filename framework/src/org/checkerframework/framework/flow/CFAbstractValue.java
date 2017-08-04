@@ -253,7 +253,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
         private AnnotationMirror getBackUpAnnoIn(AnnotationMirror top) {
             if (backupSet == null) {
-                // If there is no back up value, but on is required then the resulting set will
+                // If there is no back up value, but one is required then the resulting set will
                 // not be the most specific.  Indicate this with the error.
                 error = true;
                 return null;
@@ -370,7 +370,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         private AnnotationMirror computeUpperBound(AnnotationMirror a, AnnotationMirror b) {
             QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
             if (widen) {
-                return hierarchy.widenUpperBound(a, b);
+                return hierarchy.widenedUpperBound(a, b);
             } else {
                 return hierarchy.leastUpperBound(a, b);
             }

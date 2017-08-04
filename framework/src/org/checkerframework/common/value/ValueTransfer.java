@@ -41,6 +41,8 @@ import org.checkerframework.dataflow.cfg.node.IntegerRemainderNode;
 import org.checkerframework.dataflow.cfg.node.LeftShiftNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
+import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
 import org.checkerframework.dataflow.cfg.node.NumericalMinusNode;
@@ -69,6 +71,106 @@ public class ValueTransfer extends CFTransfer {
         atypefactory = (ValueAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 
+    /** Returns a range of possible lengths for an integer from a range, as casted to a String. */
+    private Range getIntRangeStringLengthRange(Node subNode, TransferInput<CFValue, CFStore> p) {
+        Range valueRange = getIntRange(subNode, p);
+
+        // Get lengths of the bounds
+        int fromLength = Long.toString(valueRange.from).length();
+        int toLength = Long.toString(valueRange.to).length();
+
+        int lowerLength = Math.min(fromLength, toLength);
+        // In case the range contains 0, the minimum length is 1 even if both bounds are longer
+        if (valueRange.contains(0)) {
+            lowerLength = 1;
+        }
+
+        int upperLength = Math.max(fromLength, toLength);
+
+        return new Range(lowerLength, upperLength);
+    }
+
+    /** Returns a range of possible lengths for {@code subNode}, as casted to a String. */
+    private Range getStringLengthRange(Node subNode, TransferInput<CFValue, CFStore> p) {
+
+        CFValue value = p.getValueOfSubNode(subNode);
+
+        AnnotationMirror arrayLenRangeAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), ArrayLenRange.class);
+
+        if (arrayLenRangeAnno != null) {
+            return ValueAnnotatedTypeFactory.getRange(arrayLenRangeAnno);
+        }
+
+        // @BottomVal
+        if (AnnotationUtils.containsSameByClass(value.getAnnotations(), BottomVal.class)) {
+            return Range.NOTHING;
+        }
+
+        TypeKind subNodeTypeKind = subNode.getType().getKind();
+
+        // handle values converted to string (ints, longs, longs with @IntRange)
+        if (subNode instanceof StringConversionNode) {
+            return getStringLengthRange(((StringConversionNode) subNode).getOperand(), p);
+        } else if (isIntRange(subNode, p)) {
+            return getIntRangeStringLengthRange(subNode, p);
+        } else if (subNodeTypeKind == TypeKind.INT) {
+            // ints are between 1 and 11 characters long
+            return new Range(1, 11);
+        } else if (subNodeTypeKind == TypeKind.LONG) {
+            // longs are between 1 and 20 characters long
+            return new Range(1, 20);
+        }
+
+        return new Range(0, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Returns a list of possible lengths for {@code subNode}, as casted to a String. Returns null
+     * if {@code subNode}'s type is top/unknown. Returns an empty list if {@code subNode}'s type is
+     * bottom.
+     */
+    private List<Integer> getStringLengths(Node subNode, TransferInput<CFValue, CFStore> p) {
+
+        CFValue value = p.getValueOfSubNode(subNode);
+
+        // @ArrayLen
+        AnnotationMirror arrayLenAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), ArrayLen.class);
+
+        if (arrayLenAnno != null) {
+            return ValueAnnotatedTypeFactory.getArrayLength(arrayLenAnno);
+        }
+
+        // @BottomVal
+        if (AnnotationUtils.containsSameByClass(value.getAnnotations(), BottomVal.class)) {
+            return new ArrayList<Integer>();
+        }
+
+        TypeKind subNodeTypeKind = subNode.getType().getKind();
+
+        // handle values converted to string (characters, bytes, shorts, ints with @IntRange)
+        if (subNode instanceof StringConversionNode) {
+            return getStringLengths(((StringConversionNode) subNode).getOperand(), p);
+        } else if (subNodeTypeKind == TypeKind.CHAR) {
+            // characters always have length 1
+            return Collections.singletonList(1);
+        } else if (isIntRange(subNode, p)) {
+            // Try to get a list of lengths from a range of integer values converted to string
+            // @IntVal is not checked for, because if it is present, we would already have the actual string values
+            Range lengthRange = getIntRangeStringLengthRange(subNode, p);
+            return ValueCheckerUtils.getValuesFromRange(lengthRange, Integer.class);
+        } else if (subNodeTypeKind == TypeKind.BYTE) {
+            // bytes are between 1 and 4 characters long
+            return ValueCheckerUtils.getValuesFromRange(new Range(1, 4), Integer.class);
+        } else if (subNodeTypeKind == TypeKind.SHORT) {
+            // shorts are between 1 and 6 characters long
+            return ValueCheckerUtils.getValuesFromRange(new Range(1, 6), Integer.class);
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Returns a list of possible values for {@code subNode}, as casted to a String. Returns null if
      * {@code subNode}'s type is top/unknown. Returns an empty list if {@code subNode}'s type is
@@ -80,7 +182,7 @@ public class ValueTransfer extends CFTransfer {
         AnnotationMirror stringAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), StringVal.class);
         if (stringAnno != null) {
-            return AnnotationUtils.getElementValueArray(stringAnno, "value", String.class, true);
+            return ValueAnnotatedTypeFactory.getStringValues(stringAnno);
         }
         AnnotationMirror topAnno =
                 AnnotationUtils.getAnnotationByClass(value.getAnnotations(), UnknownVal.class);
@@ -182,9 +284,9 @@ public class ValueTransfer extends CFTransfer {
         }
         List<? extends Number> values;
         if (AnnotationUtils.areSameByClass(valueAnno, IntVal.class)) {
-            values = AnnotationUtils.getElementValueArray(valueAnno, "value", Long.class, true);
+            values = ValueAnnotatedTypeFactory.getIntValues(valueAnno);
         } else if (AnnotationUtils.areSameByClass(valueAnno, DoubleVal.class)) {
-            values = AnnotationUtils.getElementValueArray(valueAnno, "value", Double.class, true);
+            values = ValueAnnotatedTypeFactory.getDoubleValues(valueAnno);
         } else {
             return null;
         }
@@ -204,12 +306,10 @@ public class ValueTransfer extends CFTransfer {
         } else if (atypefactory.isIntRange(val)) {
             range = ValueAnnotatedTypeFactory.getRange(val);
         } else if (AnnotationUtils.areSameByClass(val, IntVal.class)) {
-            List<Long> values =
-                    AnnotationUtils.getElementValueArray(val, "value", Long.class, true);
+            List<Long> values = ValueAnnotatedTypeFactory.getIntValues(val);
             range = ValueCheckerUtils.getRangeFromValues(values);
         } else if (AnnotationUtils.areSameByClass(val, DoubleVal.class)) {
-            List<Double> values =
-                    AnnotationUtils.getElementValueArray(val, "value", Double.class, true);
+            List<Double> values = ValueAnnotatedTypeFactory.getDoubleValues(val);
             range = ValueCheckerUtils.getRangeFromValues(values);
         } else if (AnnotationUtils.areSameByClass(val, BottomVal.class)) {
             return Range.NOTHING;
@@ -270,6 +370,14 @@ public class ValueTransfer extends CFTransfer {
         return result;
     }
 
+    @Override
+    public TransferResult<CFValue, CFStore> visitMethodInvocation(
+            MethodInvocationNode n, TransferInput<CFValue, CFStore> p) {
+        TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, p);
+        refineStringAtLengthInvocation(n, result.getRegularStore());
+        return result;
+    }
+
     /**
      * If array.length is encountered, transform its @IntVal annotation into an @ArrayLen annotation
      * for array.
@@ -278,9 +386,53 @@ public class ValueTransfer extends CFTransfer {
         if (!NodeUtils.isArrayLengthFieldAccess(arrayLengthNode)) {
             return;
         }
-        Receiver arrayLenRec =
-                FlowExpressions.internalReprOf(analysis.getTypeFactory(), arrayLengthNode);
-        CFValue value = store.getValue(arrayLenRec);
+
+        refineAtLengthAccess(arrayLengthNode, arrayLengthNode.getReceiver(), store);
+    }
+
+    /**
+     * If string.length() is encountered, transform its @IntVal annotation into an @ArrayLen
+     * annotation for string.
+     */
+    private void refineStringAtLengthInvocation(
+            MethodInvocationNode stringLengthNode, CFStore store) {
+        MethodAccessNode methodAccessNode = stringLengthNode.getTarget();
+
+        if (atypefactory.isStringLengthMethod(methodAccessNode.getMethod())) {
+            refineAtLengthAccess(stringLengthNode, methodAccessNode.getReceiver(), store);
+        }
+    }
+
+    /** Gets a value checker annotation relevant for an array or a string. */
+    private AnnotationMirror getArrayOrStringAnnotation(Node arrayOrStringNode) {
+        AnnotationMirror arrayOrStringAnno =
+                atypefactory.getAnnotationMirror(arrayOrStringNode.getTree(), StringVal.class);
+        if (arrayOrStringAnno == null) {
+            arrayOrStringAnno =
+                    atypefactory.getAnnotationMirror(arrayOrStringNode.getTree(), ArrayLen.class);
+        }
+        if (arrayOrStringAnno == null) {
+            arrayOrStringAnno =
+                    atypefactory.getAnnotationMirror(
+                            arrayOrStringNode.getTree(), ArrayLenRange.class);
+        }
+
+        return arrayOrStringAnno;
+    }
+
+    /**
+     * Transform @IntVal or @IntRange annotations of a array or string length into an @ArrayLen
+     * or @ArrayLenRange annotation for the array or string.
+     */
+    private void refineAtLengthAccess(Node lengthNode, Node receiverNode, CFStore store) {
+        Receiver lengthRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), lengthNode);
+
+        // If the expression is not representable (for example if String.length() for some reason is not marked @Pure, then do not refine.
+        if (lengthRec instanceof FlowExpressions.Unknown) {
+            return;
+        }
+
+        CFValue value = store.getValue(lengthRec);
         if (value == null) {
             return;
         }
@@ -290,11 +442,10 @@ public class ValueTransfer extends CFTransfer {
             return;
         }
         if (AnnotationUtils.areSameByClass(lengthAnno, BottomVal.class)) {
-            // If the array's length is bottom, then this is dead code, so the array's type
+            // If the length is bottom, then this is dead code, so the receiver type
             // should also be bottom.
-            Receiver arrayRec =
-                    FlowExpressions.internalReprOf(atypefactory, arrayLengthNode.getReceiver());
-            store.insertValue(arrayRec, lengthAnno);
+            Receiver receiver = FlowExpressions.internalReprOf(atypefactory, receiverNode);
+            store.insertValue(receiver, lengthAnno);
             return;
         }
 
@@ -307,33 +458,21 @@ public class ValueTransfer extends CFTransfer {
         } else {
             return;
         }
-        AnnotationMirror newArrayAnno = rolv.createAnnotation(atypefactory);
-        AnnotationMirror oldArrayAnno =
-                atypefactory.getAnnotationMirror(
-                        arrayLengthNode.getReceiver().getTree(), ArrayLen.class);
+        AnnotationMirror newRecAnno = rolv.createAnnotation(atypefactory);
+        AnnotationMirror oldRecAnno = getArrayOrStringAnnotation(receiverNode);
 
-        if (oldArrayAnno == null) {
-            oldArrayAnno =
-                    atypefactory.getAnnotationMirror(
-                            arrayLengthNode.getReceiver().getTree(), ArrayLenRange.class);
-        }
-
-        AnnotationMirror combinedAnno;
-        // If the array doesn't have an @ArrayLen annotation, use the new annotation.
-        // If it does have an annotation, combine the facts known about the array
+        AnnotationMirror combinedRecAnno;
+        // If the receiver doesn't have an @ArrayLen annotation, use the new annotation.
+        // If it does have an annotation, combine the facts known about the receiver
         // with the facts known about its length using GLB.
-        if (oldArrayAnno == null) {
-            combinedAnno = newArrayAnno;
+        if (oldRecAnno == null) {
+            combinedRecAnno = newRecAnno;
         } else {
-            combinedAnno =
-                    atypefactory
-                            .getQualifierHierarchy()
-                            .greatestLowerBound(oldArrayAnno, newArrayAnno);
+            combinedRecAnno =
+                    atypefactory.getQualifierHierarchy().greatestLowerBound(oldRecAnno, newRecAnno);
         }
-        Receiver arrayRec =
-                FlowExpressions.internalReprOf(
-                        analysis.getTypeFactory(), arrayLengthNode.getReceiver());
-        store.insertValue(arrayRec, combinedAnno);
+        Receiver receiver = FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiverNode);
+        store.insertValue(receiver, combinedRecAnno);
     }
 
     @Override
@@ -350,33 +489,107 @@ public class ValueTransfer extends CFTransfer {
         return stringConcatenation(n.getLeftOperand(), n.getRightOperand(), p, result);
     }
 
+    /**
+     * Calculates possible lengths of a result of string concatenation of strings with known
+     * lengths.
+     */
+    private List<Integer> calculateLengthAddition(
+            List<Integer> leftLengths, List<Integer> rightLengths) {
+        ArrayList<Integer> result = new ArrayList<Integer>();
+
+        for (int left : leftLengths) {
+            for (int right : rightLengths) {
+                long resultLength = left + right;
+                // Lengths not fitting into int are not allowed
+                if (resultLength <= Integer.MAX_VALUE) {
+                    result.add((int) resultLength);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Calculates a range of possible lengths of a result of string concatenation of strings with
+     * known ranges of lengths.
+     */
+    private Range calculateLengthRangeAddition(Range leftLengths, Range rightLengths) {
+        return leftLengths.plus(rightLengths).intersect(Range.INT_EVERYTHING);
+    }
+
+    /** Creates an annotation for a result of string concatenation. */
+    private AnnotationMirror createAnnotationForStringConcatenation(
+            Node leftOperand, Node rightOperand, TransferInput<CFValue, CFStore> p) {
+
+        // Try using sets of string values
+        List<String> leftValues = getStringValues(leftOperand, p);
+        List<String> rightValues = getStringValues(rightOperand, p);
+
+        if (leftValues != null && rightValues != null) {
+            // Both operands have known string values, compute set of results
+            List<String> concatValues = new ArrayList<>();
+            if (leftValues.isEmpty()) {
+                leftValues = Collections.singletonList("null");
+            }
+            if (rightValues.isEmpty()) {
+                rightValues = Collections.singletonList("null");
+            }
+            for (String left : leftValues) {
+                for (String right : rightValues) {
+                    concatValues.add(left + right);
+                }
+            }
+            return atypefactory.createStringAnnotation(concatValues);
+        }
+
+        // Try using sets of lengths
+        List<Integer> leftLengths =
+                leftValues != null
+                        ? ValueCheckerUtils.getLengthsForStringValues(leftValues)
+                        : getStringLengths(leftOperand, p);
+        List<Integer> rightLengths =
+                rightValues != null
+                        ? ValueCheckerUtils.getLengthsForStringValues(rightValues)
+                        : getStringLengths(rightOperand, p);
+
+        if (leftLengths != null && rightLengths != null) {
+            // Both operands have known lengths, compute set of result lengths
+            List<Integer> concatLengths = calculateLengthAddition(leftLengths, rightLengths);
+            return atypefactory.createArrayLenAnnotation(concatLengths);
+        }
+
+        // Try using ranges of lengths
+        Range leftLengthRange =
+                leftLengths != null
+                        ? ValueCheckerUtils.getRangeFromValues(leftLengths)
+                        : getStringLengthRange(leftOperand, p);
+        Range rightLengthRange =
+                rightLengths != null
+                        ? ValueCheckerUtils.getRangeFromValues(rightLengths)
+                        : getStringLengthRange(rightOperand, p);
+
+        if (leftLengthRange != null && rightLengthRange != null) {
+            // Both operands have a length from a known range, compute a range of result lengths
+            Range concatLengthRange =
+                    calculateLengthRangeAddition(leftLengthRange, rightLengthRange);
+            return atypefactory.createArrayLenRangeAnnotation(concatLengthRange);
+        }
+
+        return atypefactory.UNKNOWNVAL;
+    }
+
     public TransferResult<CFValue, CFStore> stringConcatenation(
             Node leftOperand,
             Node rightOperand,
             TransferInput<CFValue, CFStore> p,
             TransferResult<CFValue, CFStore> result) {
-        List<String> lefts = getStringValues(leftOperand, p);
-        List<String> rights = getStringValues(rightOperand, p);
-        List<String> concat;
-        if (lefts == null || rights == null) {
-            concat = null;
-        } else {
-            concat = new ArrayList<>();
-            if (lefts.isEmpty()) {
-                lefts = Collections.singletonList("null");
-            }
-            if (rights.isEmpty()) {
-                rights = Collections.singletonList("null");
-            }
-            for (String left : lefts) {
-                for (String right : rights) {
-                    concat.add(left + right);
-                }
-            }
-        }
-        AnnotationMirror stringVal = atypefactory.createStringAnnotation(concat);
+
+        AnnotationMirror resultAnno =
+                createAnnotationForStringConcatenation(leftOperand, rightOperand, p);
+
         TypeMirror underlyingType = result.getResultValue().getUnderlyingType();
-        CFValue newResultValue = analysis.createSingleAnnotationValue(stringVal, underlyingType);
+        CFValue newResultValue = analysis.createSingleAnnotationValue(resultAnno, underlyingType);
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
     }
 
@@ -993,6 +1206,8 @@ public class ValueTransfer extends CFTransfer {
 
             if (node instanceof FieldAccessNode) {
                 refineArrayAtLengthAccess((FieldAccessNode) internal, store);
+            } else if (node instanceof MethodInvocationNode) {
+                refineStringAtLengthInvocation((MethodInvocationNode) internal, store);
             }
         }
     }
