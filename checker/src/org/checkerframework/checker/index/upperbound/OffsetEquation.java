@@ -121,7 +121,7 @@ public class OffsetEquation {
      * the listed sequences. If any terms were removed, then the copy is returned. Otherwise, null
      * is returned.
      *
-     * @param sequences List of sequences (arrays or strings)
+     * @param sequences list of sequences (arrays or strings)
      * @return a copy of this equation with array.length and string.length() removed or null if no
      *     array.lengths or string.length() could be removed
      */

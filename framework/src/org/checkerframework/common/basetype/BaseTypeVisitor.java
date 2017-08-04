@@ -913,7 +913,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedExecutableType invokedMethod = mfuPair.first;
         List<AnnotatedTypeMirror> typeargs = mfuPair.second;
 
-        if (checker.hasOption("conservativeUninferredTypeArguments")) {
+        if (!atypeFactory.ignoreUninferredTypeArguments) {
             for (AnnotatedTypeMirror typearg : typeargs) {
                 if (typearg.getKind() == TypeKind.WILDCARD
                         && ((AnnotatedWildcardType) typearg).isUninferredTypeArgument()) {
@@ -1968,6 +1968,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeParameterBounds bounds = boundsIter.next();
             AnnotatedTypeMirror typeArg = argIter.next();
 
+            if (isIgnoredUninferredWildcard(bounds.getUpperBound())
+                    || isIgnoredUninferredWildcard(typeArg)) {
+                continue;
+            }
+
             if (shouldBeCaptureConverted(typeArg, bounds)) {
                 continue;
             }
@@ -2007,6 +2012,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
             }
         }
+    }
+
+    private boolean isIgnoredUninferredWildcard(AnnotatedTypeMirror type) {
+        return atypeFactory.ignoreUninferredTypeArguments
+                && type.getKind() == TypeKind.WILDCARD
+                && ((AnnotatedWildcardType) type).isUninferredTypeArgument();
     }
 
     //TODO: REMOVE WHEN CAPTURE CONVERSION IS IMPLEMENTED

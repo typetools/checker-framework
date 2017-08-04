@@ -141,10 +141,10 @@ public class SameLenTransfer extends CFTransfer {
      * Insert combinedSameLen into the store as the SameLen type of each array listed in
      * combinedSameLen.
      *
-     * @param combinedSameLen A Samelen annotation. Not just an annotation in the SameLen hierarchy;
+     * @param combinedSameLen a Samelen annotation. Not just an annotation in the SameLen hierarchy;
      *     this annotation MUST be @SameLen().
-     * @param node The node in the tree where the combination is happening. Used for context.
-     * @param store The store to modify
+     * @param node the node in the tree where the combination is happening. Used for context.
+     * @param store the store to modify
      */
     private void propagateCombinedSameLen(
             AnnotationMirror combinedSameLen, Node node, CFStore store) {

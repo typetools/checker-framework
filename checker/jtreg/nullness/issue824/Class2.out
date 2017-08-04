@@ -1,10 +1,9 @@
 Class2.java:14:39: compiler.err.proc.messager: (type.argument.type.incompatible)
 Class2.java:15:22: compiler.err.proc.messager: (type.argument.type.incompatible)
 Class2.java:15:47: compiler.err.proc.messager: (type.argument.type.incompatible)
-Class2.java:16:31: compiler.err.proc.messager: (type.argument.type.incompatible)
 Class2.java:19:31: compiler.err.proc.messager: (type.argument.type.incompatible)
 Class2.java:20:29: compiler.err.proc.messager: (type.argument.type.incompatible)
 Class2.java:20:30: compiler.err.proc.messager: (argument.type.incompatible)
 Class2.java:24:16: compiler.err.proc.messager: (override.return.invalid)
 Class2.java:25:37: compiler.err.proc.messager: (type.argument.type.incompatible)
-9 errors
+8 errors
