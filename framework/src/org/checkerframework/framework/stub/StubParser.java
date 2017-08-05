@@ -9,6 +9,7 @@ import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
@@ -922,6 +923,11 @@ public class StubParser {
             if (elt != null) {
                 putNew(result, elt, member);
             }
+        } else if (member instanceof EnumDeclaration) {
+            Element elt = findElement(typeElt, (EnumDeclaration) member);
+            if (elt != null) {
+                putNew(result, elt, member);
+            }
         } else {
             stubWarnIfNotFound(
                     String.format("Ignoring element of type %s in getMembers", member.getClass()));
@@ -959,6 +965,25 @@ public class StubParser {
 
         stubWarnIfNotFound(
                 "Class/interface " + wantedClassOrInterfaceName + " not found in type " + typeElt);
+        if (debugStubParser) {
+            for (ExecutableElement method :
+                    ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
+                stubDebug(String.format("  Here are the type declarations of %s:", typeElt));
+                stubDebug(String.format("  %s", method));
+            }
+        }
+        return null;
+    }
+
+    private Element findElement(TypeElement typeElt, EnumDeclaration enumDecl) {
+        final String wantedEnumName = enumDecl.getNameAsString();
+        for (TypeElement typeElement : ElementUtils.getAllTypeElementsIn(typeElt)) {
+            if (wantedEnumName.equals(typeElement.getSimpleName().toString())) {
+                return typeElement;
+            }
+        }
+
+        stubWarnIfNotFound("Enum " + wantedEnumName + " not found in type " + typeElt);
         if (debugStubParser) {
             for (ExecutableElement method :
                     ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
