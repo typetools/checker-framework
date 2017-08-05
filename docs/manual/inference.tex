@@ -273,6 +273,11 @@ annotation is inconsistent with the new call.
 You can correct the inferred results manually, or you can
 add tests that pass \<null> to \<m1> then re-run inference.
 
+As another example, it is common for whole-program inference to infer
+\<@Interned> and \<@Regex> annotations on String variables for which the
+analyzed code only uses a constant string.  You can remove these inferred
+annotations, or add test cases that do not use a constant string.
+
 On the other hand, if the inferred type is the bottom type, such as
 \<@GuardedByBottom>, then perhaps your program only passes the \<null>
 argument.  You should also correct this manually or expand your test suite
