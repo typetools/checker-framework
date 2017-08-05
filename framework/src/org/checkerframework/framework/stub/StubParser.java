@@ -429,6 +429,13 @@ public class StubParser {
                     break;
                 case CLASS:
                 case INTERFACE:
+                    parse(
+                            (ClassOrInterfaceDeclaration) decl,
+                            typeName,
+                            packageAnnos,
+                            atypes,
+                            declAnnos);
+                    break;
                 case ENUM:
                     parse((EnumDeclaration) decl, typeName, packageAnnos, atypes, declAnnos);
                     break;
