@@ -110,11 +110,12 @@ public final class Character {
        @Pure public static UnicodeBlock of(int codePoint);
        @Pure public static final UnicodeBlock forName(String blockName);
     }
-    // Javaparser is still not able to handle methods in enums
-    // public static enum UnicodeScript {
-    //    @Pure public static UnicodeScript of(int codePoint);
-    //    @Pure public static final UnicodeScript forName(String scriptName);
-    // }
+    public static enum UnicodeScript {
+    // At least one enum constant should be declared in a stub file.
+       COMMON;
+       @Pure public static UnicodeScript of(int codePoint);
+       @Pure public static final UnicodeScript forName(String scriptName);
+    }
 }
 
 public class Object {
