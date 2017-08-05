@@ -149,6 +149,18 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         if (transferInput == null) {
             return null;
         }
+        return runAnalysisForWithCacheLookupMap(node, before, transferInput, cacheLookupMap);
+    }
+
+    public static <A extends AbstractValue<A>, S extends Store<S>>
+            S runAnalysisForWithCacheLookupMap(
+                    Node node,
+                    boolean before,
+                    TransferInput<A, S> transferInput,
+                    IdentityHashMap<
+                                    TransferInput<A, S>,
+                                    IdentityHashMap<Node, TransferResult<A, S>>>
+                            cacheLookupMap) {
         IdentityHashMap<Node, TransferResult<A, S>> cache = cacheLookupMap.get(transferInput);
         if (cache == null) {
             cache = new IdentityHashMap<>();

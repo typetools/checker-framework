@@ -165,6 +165,11 @@ public abstract class GenericAnnotatedTypeFactory<
     /** An empty store. */
     private Store emptyStore;
 
+    protected final IdentityHashMap<
+                    TransferInput<Value, Store>,
+                    IdentityHashMap<Node, TransferResult<Value, Store>>>
+            cacheLookupMap = new IdentityHashMap<>();
+
     /**
      * Creates a type factory for checking the given compilation unit with respect to the given
      * annotation.
@@ -854,7 +859,9 @@ public abstract class GenericAnnotatedTypeFactory<
         if (prevStore == null) {
             return null;
         }
-        Store store = AnalysisResult.runAnalysisFor(node, true, prevStore);
+        Store store =
+                AnalysisResult.runAnalysisForWithCacheLookupMap(
+                        node, true, prevStore, cacheLookupMap);
         return store;
     }
 
@@ -866,7 +873,8 @@ public abstract class GenericAnnotatedTypeFactory<
         FlowAnalysis analysis = analyses.getFirst();
         Node node = analysis.getNodeForTree(tree);
         Store store =
-                AnalysisResult.runAnalysisFor(node, false, analysis.getInput(node.getBlock()));
+                AnalysisResult.runAnalysisForWithCacheLookupMap(
+                        node, false, analysis.getInput(node.getBlock()), cacheLookupMap);
         return store;
     }
 
@@ -1099,6 +1107,7 @@ public abstract class GenericAnnotatedTypeFactory<
         if (emptyStore == null) {
             emptyStore = newAnalysis.createEmptyStore(transfer.usesSequentialSemantics());
         }
+        cacheLookupMap.clear();
         analyses.addFirst(newAnalysis);
         if (lambdaStore != null) {
             transfer.setFixedInitialStore(lambdaStore);
