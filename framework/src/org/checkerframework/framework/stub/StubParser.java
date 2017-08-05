@@ -1162,23 +1162,8 @@ public class StubParser {
             return;
         }
         if (m.containsKey(key) && !m.get(key).equals(value)) {
-            // TODO Check does it affect anything
-            // Super methods should not be written to the map if
-            // child methods (overriden) is already in the map
-            //            ErrorReporter.errorAbort(
-            //                    "StubParser: key is already in map: "
-            //                            + LINE_SEPARATOR
-            //                            + "  "
-            //                            + key
-            //                            + " => "
-            //                            + m.get(key)
-            //                            + LINE_SEPARATOR
-            //                            + "while adding: "
-            //                            + LINE_SEPARATOR
-            //                            + "  "
-            //                            + key
-            //                            + " => "
-            //                            + value);
+            // Super method should not be written to the map
+            // if child class contains overrided method that is already in the map.
             return;
         }
         m.put(key, value);
