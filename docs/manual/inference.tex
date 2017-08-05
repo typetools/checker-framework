@@ -134,12 +134,10 @@ least upper bound of the types of all the expressions that are assigned
 into the field.
 
 \begin{sloppypar}
-To use whole-program inference,
-set the \<\$CHECKERFRAMEWORK> variable to the Checker Framework's
-directory (if you haven't already), and make sure that
+To use whole-program inference, make sure that
 \<insert-annotations-to-source>, from the Annotation File Utilities project,
 is on your path (for example in the \<\$PATH> environment variable).
-Then, run the script \<\$CHECKERFRAMEWORK/checker/bin/infer-and-annotate.sh>.
+Then, run the script \<checker-framework/checker/bin/infer-and-annotate.sh>.
 Its command-line arguments are:
 \end{sloppypar}
 
@@ -265,7 +263,7 @@ accommodate future program changes.
 
 Suppose that your program currently calls
 method \<m1> with non-null
-arguments.  This tool will infer that \<m1>'s parameter has
+arguments.  The tool will infer that \<m1>'s parameter has
 \<@NonNull> type.  If you had intended the method to be able to
 take \<null> as an argument and you later add such a call, the type-checker
 will issue a warning because the automatically-inserted \<@NonNull>
