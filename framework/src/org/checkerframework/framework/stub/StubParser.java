@@ -372,8 +372,7 @@ public class StubParser {
             Map<String, Set<AnnotationMirror>> declAnnos) {
         // Fully-qualified name of the type being parsed
         String typeName =
-                (packageName == null ? "" : packageName + ".")
-                        + typeDecl.getNameAsString().replace('$', '.');
+                (packageName == null ? "" : packageName + ".") + typeDecl.getNameAsString();
         TypeElement typeElt = elements.getTypeElement(typeName);
         if (typeElt == null) {
             boolean warn = true;
