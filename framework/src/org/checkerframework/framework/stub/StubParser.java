@@ -904,7 +904,7 @@ public class StubParser {
 
         Map<Element, BodyDeclaration<?>> result = new HashMap<>();
         for (BodyDeclaration<?> member : typeDecl.getMembers()) {
-            putNewElement(typeElt, result, member);
+            putNewElement(typeElt, result, member, typeDecl.getNameAsString());
         }
         return result;
     }
@@ -912,7 +912,8 @@ public class StubParser {
     private void putNewElement(
             TypeElement typeElt,
             Map<Element, BodyDeclaration<?>> result,
-            BodyDeclaration<?> member) {
+            BodyDeclaration<?> member,
+            String typeDeclName) {
         if (member instanceof MethodDeclaration) {
             Element elt = findElement(typeElt, (MethodDeclaration) member);
             if (elt != null) {
@@ -943,7 +944,8 @@ public class StubParser {
             }
         } else {
             stubWarnIfNotFound(
-                    String.format("Ignoring element of type %s in getMembers", member.getClass()));
+                    String.format(
+                            "Ignoring element of type %s in %s", member.getClass(), typeDeclName));
         }
     }
 
@@ -968,6 +970,17 @@ public class StubParser {
         return null;
     }
 
+    /**
+     * Looks for the nested type element in the typeElt and returns it if the element has the same
+     * name as provided class or interface declaration. In case nested element is not found it
+     * returns null.
+     *
+     * @param typeElt an element where nested type element should be looked for.
+     * @param ciDecl class or interface declaration which name should be found among nested elements
+     *     of the typeElt.
+     * @return nested in typeElt element with the name of the class or interface or null if nested
+     *     element is not found.
+     */
     private Element findElement(TypeElement typeElt, ClassOrInterfaceDeclaration ciDecl) {
         final String wantedClassOrInterfaceName = ciDecl.getNameAsString();
         for (TypeElement typeElement : ElementUtils.getAllTypeElementsIn(typeElt)) {
@@ -988,6 +1001,16 @@ public class StubParser {
         return null;
     }
 
+    /**
+     * Looks for the nested enum element in the typeElt and returns it if the element has the same
+     * name as provided enum declaration. In case nested element is not found it returns null.
+     *
+     * @param typeElt an element where nested enum element should be looked for.
+     * @param enumDecl enum declaration which name should be found among nested elements of the
+     *     typeElt.
+     * @return nested in typeElt enum element with the name of the provided enum or null if nested
+     *     element is not found.
+     */
     private Element findElement(TypeElement typeElt, EnumDeclaration enumDecl) {
         final String wantedEnumName = enumDecl.getNameAsString();
         for (TypeElement typeElement : ElementUtils.getAllTypeElementsIn(typeElt)) {
@@ -1007,6 +1030,16 @@ public class StubParser {
         return null;
     }
 
+    /**
+     * Looks for method element in the typeElt and returns it if the element has the same signature
+     * as provided method declaration. In case method element is not found it returns null.
+     *
+     * @param typeElt type element where method element should be looked for.
+     * @param methodDecl method declaration with signature that should be found among methods in the
+     *     typeElt.
+     * @return method element in typeElt with the same signature as the provided method declaration
+     *     or null if method element is not found.
+     */
     private ExecutableElement findElement(TypeElement typeElt, MethodDeclaration methodDecl) {
         final String wantedMethodName = methodDecl.getNameAsString();
         final int wantedMethodParams =
@@ -1031,10 +1064,24 @@ public class StubParser {
         return null;
     }
 
-    private ExecutableElement findElement(TypeElement typeElt, ConstructorDeclaration methodDecl) {
+    /**
+     * Looks for a constructor element in the typeElt and returns it if the element has the same
+     * signature as provided constructor declaration. In case constructor element is not found it
+     * returns null.
+     *
+     * @param typeElt type element where constructor element should be looked for.
+     * @param constructorDecl constructor declaration with signature that should be found among
+     *     constructors in the typeElt.
+     * @return constructor element in typeElt with the same signature as the provided constructor
+     *     declaration or null if constructor element is not found.
+     */
+    private ExecutableElement findElement(
+            TypeElement typeElt, ConstructorDeclaration constructorDecl) {
         final int wantedMethodParams =
-                (methodDecl.getParameters() == null) ? 0 : methodDecl.getParameters().size();
-        final String wantedMethodString = StubUtil.toString(methodDecl);
+                (constructorDecl.getParameters() == null)
+                        ? 0
+                        : constructorDecl.getParameters().size();
+        final String wantedMethodString = StubUtil.toString(constructorDecl);
         for (ExecutableElement method :
                 ElementFilter.constructorsIn(typeElt.getEnclosedElements())) {
             // do heuristics first
@@ -1059,6 +1106,15 @@ public class StubParser {
         return findFieldElement(typeElt, fieldName);
     }
 
+    /**
+     * Looks for a field element in the typeElt and returns it if the element has the same name as
+     * provided. In case field element is not found it returns null.
+     *
+     * @param typeElt type element where field element should be looked for.
+     * @param fieldName field name that should be found.
+     * @return field element in typeElt with the provided name or null if field element is not
+     *     found.
+     */
     private VariableElement findFieldElement(TypeElement typeElt, String fieldName) {
         for (VariableElement field : ElementUtils.getAllFieldsIn(elements, typeElt)) {
             // field.getSimpleName() is a CharSequence, not a String
