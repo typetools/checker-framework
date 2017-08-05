@@ -1141,6 +1141,12 @@ For example, the code in \autoref{lst:CFGSwitch} produces the control flow
 graph in \autoref{fig:CFGSwitch}. The fake variable named \code{switch#num0}
 is created and each of case nodes creates the branches.
 
+\subsubsection{Break and continue in try block}
+Break and continue statements for while-loop or labeled statements in try
+block will cause executing finally blocks until the target of the jump.
+Dataflow framework will emulate this sort of execution by duplicating
+finally blocks until the target of jump at break and continue statements.
+
 \flow{Switch}{Example of a switch statement with case, default and fall through.}
 
 \subsection{AST to CFG Translation}
