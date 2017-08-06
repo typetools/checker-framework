@@ -8,11 +8,15 @@ public class MultidimentionalArrayAnnotationTest {
     int numb = 1;
 
     void method() {
+        //:: error: (type.argument.type.incompatible)
         String @MinLen(2) [] @MinLen(2) [] @MinLen(2) [] obj0 = method0();
+        //:: error: (type.argument.type.incompatible)
         String @Nullable [] @MinLen(2) [] @MinLen(2) [] obj1 = method0();
         String @MinLen(2) [] @Nullable [] @MinLen(2) [] obj2 = method0();
+        //:: error: (type.argument.type.incompatible)
         String @MinLen(2) [] @MinLen(2) [] @Nullable [] obj3 = method0();
         String @Nullable [] @Nullable [] @MinLen(2) [] obj4 = method0();
+        //:: error: (type.argument.type.incompatible)
         String @Nullable [] @MinLen(2) [] @Nullable [] obj5 = method0();
         String @MinLen(2) [] @Nullable [] @Nullable [] obj6 = method0();
         String @Nullable [] @Nullable [] @Nullable [] obj7 = method0();
