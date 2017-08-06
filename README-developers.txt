@@ -13,7 +13,7 @@ This repository contains several related projects:
 Each of these directories contains Eclipse project configuration files.
 
 This repository also contains the following directories:
- tutorial      a tutorial for the Checker Framework
+ docs	       a tutorial and manual for the Checker Framework
  release       buildfiles for making a release
  eclipse       the Checker Framework Eclipse plug-in
  maven-artifacts  artifacts to be uploaded to Maven Central
