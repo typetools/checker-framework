@@ -505,14 +505,40 @@ public class StubParser {
         return typeVariables;
     }
 
-    /** @return list of AnnotatedTypeVariable of the enums's type parameter declarations */
+    /**
+     * Gathers and returns a list of AnnotatedTypeVariable of the enum's type parameter
+     * declarations.
+     *
+     * @param decl actual enum declaration.
+     * @param elt element representing enum.
+     * @param atypes map of annotated types.
+     * @param declAnnos map of declarations annotations.
+     * @return list of AnnotatedTypeVariable of the enum's type parameter declarations.
+     */
     private List<AnnotatedTypeVariable> parseEnum(
             EnumDeclaration decl,
             TypeElement elt,
             Map<Element, AnnotatedTypeMirror> atypes,
             Map<String, Set<AnnotationMirror>> declAnnos) {
-        // TODO Implement parsing enum
-        return new ArrayList<>();
+
+        annotateDecl(declAnnos, elt, decl.getAnnotations());
+        AnnotatedDeclaredType type = atypeFactory.fromElement(elt);
+        annotate(type, decl.getAnnotations());
+
+        putNew(atypes, elt, type);
+        List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
+        for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
+            if (typeV.getKind() != TypeKind.TYPEVAR) {
+                stubAlwaysWarn(
+                        "Expected an AnnotatedTypeVariable but found type kind "
+                                + typeV.getKind()
+                                + ": "
+                                + typeV);
+            } else {
+                typeVariables.add((AnnotatedTypeVariable) typeV);
+            }
+        }
+        return typeVariables;
     }
 
     private void annotateSupertypes(
