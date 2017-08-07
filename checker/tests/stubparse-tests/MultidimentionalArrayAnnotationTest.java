@@ -29,10 +29,4 @@ public class MultidimentionalArrayAnnotationTest {
     String @Nullable [][][] method1() {
         return new String[numb][numb][numb];
     };
-    //    String[]@Nullable[][] method2(){};
-    //    String[][]@Nullable[] method3(){};
-    //    String @Nullable[]@Nullable[][] method4(){};
-    //    String @Nullable[][]@Nullable[] method5(){};
-    //    String []@Nullable[]@Nullable[] method6(){};
-    //    String @Nullable[]@Nullable[]@Nullable[] method7(){};
 }
