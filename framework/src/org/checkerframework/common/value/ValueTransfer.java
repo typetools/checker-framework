@@ -1335,10 +1335,6 @@ public class ValueTransfer extends CFTransfer {
             CFStore elseStore) {
         // For String.startsWith(String) and String.endsWith(String), refine the minimum length
         // of the receiver to the minimum length of the argument.
-        // Basically, MinLen annotations are transferred from the argument to the receiver.
-        // However, a polymorphic qualifier cannot be used to express this, because
-        // MinLen is in the value hierarchy, and using PolyValue would mean that the receiver
-        // string value must be the same as the argument.
 
         ValueMethodIdentifier methodIdentifier = atypefactory.getMethodIdentifier();
         if (methodIdentifier.isStartsWithMethod(methodElement)
