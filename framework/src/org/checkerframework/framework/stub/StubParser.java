@@ -5,6 +5,7 @@ import org.checkerframework.checker.nullness.qual.*;
 */
 
 import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -153,6 +154,14 @@ public class StubParser {
         StubUnit parsedStubUnit;
         try {
             parsedStubUnit = JavaParser.parseStubUnit(inputStream);
+        } catch (ParseProblemException e) {
+            ErrorReporter.errorAbort(
+                    "StubParser: exception from StubParser.parse for file "
+                            + filename
+                            + "\n"
+                            + "Problem message with problems encountered: "
+                            + e.getMessage());
+            parsedStubUnit = null; // dead code, but needed for definite assignment checks
         } catch (Exception e) {
             ErrorReporter.errorAbort(
                     "StubParser: exception from StubParser.parse for file " + filename, e);

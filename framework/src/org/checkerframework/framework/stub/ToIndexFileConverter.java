@@ -18,6 +18,7 @@ import annotations.io.IndexFileParser;
 import annotations.io.IndexFileWriter;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseException;
+import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
@@ -161,7 +162,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
      */
     private static void convert(AScene scene, InputStream in, OutputStream out)
             throws IOException, DefException, ParseException {
-        StubUnit iu = JavaParser.parseStubUnit(in);
+        StubUnit iu = null;
+        try {
+            iu = JavaParser.parseStubUnit(in);
+        } catch (ParseProblemException e) {
+            System.err.println(
+                    "StubParser: exception from StubParser.parse for InputStream.\n"
+                            + "Problem message with problems encountered: "
+                            + e.getMessage());
+        }
         extractScene(iu, scene);
         try (Writer w = new BufferedWriter(new OutputStreamWriter(out))) {
             IndexFileWriter.write(scene, w);
