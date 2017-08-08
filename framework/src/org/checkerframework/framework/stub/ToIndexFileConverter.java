@@ -169,7 +169,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         } catch (ParseProblemException e) {
             iu = null;
             ErrorReporter.errorAbort(
-                    "StubParser: exception from StubParser.parse for InputStream.\n"
+                    "ToIndexFileConverter: exception from JavaParser.parseStubUnit for InputStream.\n"
                             + "Problem message with problems encountered: "
                             + e.getMessage());
         }
