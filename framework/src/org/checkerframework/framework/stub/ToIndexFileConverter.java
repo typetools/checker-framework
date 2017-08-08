@@ -162,10 +162,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
      */
     private static void convert(AScene scene, InputStream in, OutputStream out)
             throws IOException, DefException, ParseException {
-        StubUnit iu = null;
+        StubUnit iu;
         try {
             iu = JavaParser.parseStubUnit(in);
         } catch (ParseProblemException e) {
+            iu = null;
             System.err.println(
                     "StubParser: exception from StubParser.parse for InputStream.\n"
                             + "Problem message with problems encountered: "
