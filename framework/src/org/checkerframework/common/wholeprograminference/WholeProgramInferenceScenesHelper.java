@@ -368,7 +368,8 @@ public class WholeProgramInferenceScenesHelper {
             }
         }
 
-        // Checks if am is an implicit annotation
+        // Checks if am is an implicit annotation.
+        // This case checks if it is meta-annotated with @ImplicitFor.
         // TODO: Handles cases of implicit annotations added via an
         // org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator
         ImplicitFor implicitFor = elt.getAnnotation(ImplicitFor.class);
