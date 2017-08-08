@@ -104,8 +104,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Helper class that evaluates statically executable methods, constructors, and fields. */
     private final ReflectiveEvaluator evaluator;
 
-    /** String.length() method */
-    private final ExecutableElement lengthMethod;
+    /** Helper class that holds references to special methods. */
+    private final ValueMethodIdentifier methods;
 
     static {
         Set<String> backingSet = new HashSet<String>(18);
@@ -155,11 +155,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // PolyLength is syntactic sugar for both @PolySameLen and @PolyValue
         addAliasedAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
 
-        lengthMethod = TreeUtils.getMethod("java.lang.String", "length", 0, processingEnv);
+        methods = new ValueMethodIdentifier(processingEnv);
 
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
             this.postInit();
         }
+    }
+
+    /** Gets a helper object that holds references to methods with special handling. */
+    ValueMethodIdentifier getMethodIdentifier() {
+        return methods;
     }
 
     @Override
@@ -1196,7 +1201,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     argValues = null;
                 }
 
-                if (TreeUtils.isMethodInvocation(tree, lengthMethod, processingEnv)) {
+                if (getMethodIdentifier().isStringLengthInvocation(tree, processingEnv)) {
                     AnnotatedTypeMirror receiverType = getReceiverType(tree);
                     AnnotationMirror resultAnno = createArrayLengthResultAnnotation(receiverType);
                     if (resultAnno != null) {
@@ -1314,11 +1319,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private boolean handledByValueChecker(AnnotatedTypeMirror type) {
             return coveredClassStrings.contains(type.getUnderlyingType().toString());
         }
-    }
-
-    /** Determines whether a method is the {@code String.length()} method. */
-    boolean isStringLengthMethod(ExecutableElement method) {
-        return method.equals(lengthMethod);
     }
 
     /**
