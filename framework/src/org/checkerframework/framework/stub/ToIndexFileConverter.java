@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.framework.util.PluginUtil;
+import org.checkerframework.javacutil.ErrorReporter;
 
 /**
  * Convert a JAIF file plus a stub file into index files (JAIFs). Note that the resulting index
@@ -167,7 +168,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             iu = JavaParser.parseStubUnit(in);
         } catch (ParseProblemException e) {
             iu = null;
-            System.err.println(
+            ErrorReporter.errorAbort(
                     "StubParser: exception from StubParser.parse for InputStream.\n"
                             + "Problem message with problems encountered: "
                             + e.getMessage());
