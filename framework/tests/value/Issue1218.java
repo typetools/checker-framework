@@ -45,6 +45,7 @@ class Issue1218 {
         //:: error: (argument.type.incompatible)
         strs("");
         strs("", "");
+        // type of arg should be @UnknownVal String @BottomVal []
         strs((String[]) null);
 
         String[] args0 = {""};
@@ -62,6 +63,7 @@ class Issue1218 {
         ints(0, 0, 0);
         //:: error: (argument.type.incompatible)
         ints(3);
+        // type of arg should be @IntVal(1) int @BottomVal []
         ints((@IntVal(1) int[]) null);
     }
 
@@ -91,6 +93,7 @@ class Issue1218 {
         //:: error: (argument.type.incompatible)
         new ForString("");
         new ForString("", "");
+        // type of arg should be @UnknownVal String @BottomVal []
         new ForString((String[]) null);
 
         String[] args0 = {""};
@@ -108,6 +111,7 @@ class Issue1218 {
         new ForInt(0, 0, 0);
         //:: error: (argument.type.incompatible)
         new ForInt(3);
+        // type of arg should be @IntVal(1) int @BottomVal []
         ints((@IntVal(1) int[]) null);
     }
 

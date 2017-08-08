@@ -959,11 +959,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * A helper method to check that the array type of actual varargs is a subtype of the
-     * corresponding required varargs, and issues "argument.invalid" error for it's not a subtype of
+     * corresponding required varargs, and issues "argument.invalid" error if it's not a subtype of
      * the required one.
      *
-     * <p>Note this method requires that type checking for the each elements of varargs is executed
-     * by caller.
+     * <p>Note it's required that type checking for the each elements of varargs is executed by
+     * caller before or after calling this method.
      *
      * @see #checkArguments(List, List)
      * @param invokedMethod the method type to be invoked
@@ -980,6 +980,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedArrayType lastParamAnnotatedType = (AnnotatedArrayType) formals.get(lastArgIndex);
         AnnotatedTypeMirror wrappedVarargsType = atypeFactory.getAnnotatedTypeVarargsArray(tree);
 
+        // When dataflow analysis is not enabled, it will be null and we can suppose to there is no
+        // annotation to be checked for generated varargs array.
         if (wrappedVarargsType == null) {
             return;
         }
@@ -991,7 +993,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypeMirror objectType =
                 atypeFactory.getAnnotatedType(elements.getTypeElement("java.lang.Object"));
         lastParamAnnotatedType.setComponentType(objectType);
-        if (wrappedVarargsType instanceof AnnotatedArrayType) {
+        if (wrappedVarargsType.getKind() == TypeKind.ARRAY) {
             ((AnnotatedArrayType) wrappedVarargsType).setComponentType(objectType);
         }
 

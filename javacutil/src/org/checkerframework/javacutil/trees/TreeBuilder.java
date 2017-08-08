@@ -659,7 +659,7 @@ public class TreeBuilder {
     /**
      * Builds an AST Tree to create a new array with initializers.
      *
-     * @param componentType a type for component of a new array
+     * @param componentType component type of the new array
      * @param elems expression trees of initializers
      * @return a NewArrayTree to create a new array with initializers
      */

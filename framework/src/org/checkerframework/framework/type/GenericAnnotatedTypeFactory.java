@@ -1357,29 +1357,6 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Returns the inferred value (by the org.checkerframework.dataflow analysis) for a given node.
-     */
-    private Value getInferredValueFor(Node node) {
-        if (node == null) {
-            ErrorReporter.errorAbort(
-                    "GenericAnnotatedTypeFactory.getInferredValueFor called with null node. Don't!");
-            return null; // dead code
-        }
-        Value as = null;
-        if (!analyses.isEmpty()) {
-            as = analyses.getFirst().getValue(node);
-        }
-        if (as == null
-                &&
-                // TODO: this comparison shouldn't be needed, but
-                // Daikon check-nullness started failing without it.
-                flowResult != null) {
-            as = flowResult.getValue(node);
-        }
-        return as;
-    }
-
-    /**
      * Returns the inferred value (by the org.checkerframework.dataflow analysis) for a given tree.
      */
     public Value getInferredValueFor(Tree tree) {
