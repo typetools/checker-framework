@@ -471,7 +471,14 @@ following ways:
 \item{\textbf{Import statements:}}
   Imports may appear at the beginning of the file or after any package declaration.
   The only required import statements are the ones to import type
-  annotations.  Import statements for types are optional.
+  annotations. Import statements for types are optional.
+
+\item{\textbf{Enum declarations:}}
+  Enum declarations should contain at least one enum constant.
+
+\item{\textbf{Nested/inner classes/interfaces/enums declarations:}}
+  Nested/inner types declarations are allowed to be declared as in a regular
+  java file inside an outer class/interface/enum declaration.
 
   Enum constants in annotations need to be either fully-qualified
   or imported.
