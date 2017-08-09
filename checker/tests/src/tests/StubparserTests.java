@@ -5,9 +5,9 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized;
 
-public class StubparseTests extends CheckerFrameworkPerDirectoryTest {
+public class StubparserTests extends CheckerFrameworkPerDirectoryTest {
 
-    public StubparseTests(List<File> testFiles) {
+    public StubparserTests(List<File> testFiles) {
         super(
                 testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
@@ -19,6 +19,6 @@ public class StubparseTests extends CheckerFrameworkPerDirectoryTest {
 
     @Parameterized.Parameters
     public static String[] getTestDirs() {
-        return new String[] {"stubparse-tests"};
+        return new String[] {"stubparser-tests"};
     }
 }
