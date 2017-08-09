@@ -6,8 +6,6 @@
  * @run main Driver Implements
  */
 
-import static com.sun.tools.classfile.TypeAnnotation.TargetType.*;
-
 public class Implements {
 
     @ADescriptions({

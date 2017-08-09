@@ -41,7 +41,7 @@ else
     set -e
     echo "Running:  (cd .. && git clone --depth 1 https://github.com/${ATSLUGOWNER}/annotation-tools.git)"
     (cd .. && git clone --depth 1 https://github.com/${ATSLUGOWNER}/annotation-tools.git)
-    echo "... done: (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/annotation-tools.git)"
+    echo "... done: (cd .. && git clone --depth 1 https://github.com/${ATSLUGOWNER}/annotation-tools.git)"
 fi
 
 # This also builds jsr308-langtools

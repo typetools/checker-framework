@@ -44,6 +44,7 @@ public abstract class AFConstraint {
         this.argument = argument;
         this.formalParameter = formalParameter;
         this.hashcodeBase = hashcodeBase;
+        TypeArgInferenceUtil.checkForUninferredTypes(argument);
     }
 
     /**

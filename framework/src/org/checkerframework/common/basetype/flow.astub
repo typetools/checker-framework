@@ -7,6 +7,8 @@ package java.lang;
 
 public final class Class<T> {
     @Pure public String getName();
+    @Pure public java.lang.reflect.Method getMethod(String a1, Class<?> ... a2);
+    @Pure public java.lang.reflect.Constructor<T> getConstructor(Class<?>... a1);
 }
 
 public final class Character {
@@ -125,6 +127,7 @@ public class Object {
 public final class String {
     @Pure public String intern();
     @Pure public int lastIndexOf(int ch);
+    @Pure int length();
     @Pure public String substring(int beginIndex);
 }
 

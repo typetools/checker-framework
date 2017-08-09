@@ -322,9 +322,9 @@ public class WholeProgramInferenceScenesHelper {
     }
 
     /**
-     * Returns true if am should not be inserted in source code, for example {@link
-     * org.checkerframework.common.value.qual.BottomVal}. This happens when am cannot be inserted in
-     * source code or is the default for the location passed as argument.
+     * Returns true if {@code am} should not be inserted in source code, for example {@link
+     * org.checkerframework.common.value.qual.BottomVal}. This happens when {@code am} cannot be
+     * inserted in source code or is the default for the location passed as argument.
      *
      * <p>Invisible qualifiers, which are annotations that contain the {@link
      * org.checkerframework.framework.qual.InvisibleQualifier} meta-annotation, also return true.
@@ -367,9 +367,10 @@ public class WholeProgramInferenceScenesHelper {
             }
         }
 
-        // Checks if am is an implicit annotation
-        // TODO: Handles cases of implicit annotations added via an
-        // org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator
+        // Checks if am is an implicit annotation.
+        // This case checks if it is meta-annotated with @ImplicitFor.
+        // TODO: Handle cases of implicit annotations added via an
+        // org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator.
         ImplicitFor implicitFor = elt.getAnnotation(ImplicitFor.class);
         if (implicitFor != null) {
             TypeKind[] types = implicitFor.types();

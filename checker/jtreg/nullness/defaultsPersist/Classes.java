@@ -6,7 +6,8 @@
  * @run main Driver Classes
  */
 
-import static com.sun.tools.classfile.TypeAnnotation.TargetType.*;
+import static com.sun.tools.classfile.TypeAnnotation.TargetType.CLASS_TYPE_PARAMETER;
+import static com.sun.tools.classfile.TypeAnnotation.TargetType.CLASS_TYPE_PARAMETER_BOUND;
 
 public class Classes {
 

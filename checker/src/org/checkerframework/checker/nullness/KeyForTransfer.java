@@ -4,35 +4,23 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.KeyFor;
-import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.framework.flow.CFAnalysis;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFTransfer;
-import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /*
  * KeyForTransfer ensures that java.util.Map.put and containsKey
  * cause the appropriate @KeyFor annotation to be added to the key.
  */
-public class KeyForTransfer extends CFTransfer {
+public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore, KeyForTransfer> {
 
-    protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR;
-
-    public KeyForTransfer(CFAnalysis analysis) {
+    public KeyForTransfer(KeyForAnalysis analysis) {
         super(analysis);
-        UNKNOWNKEYFOR =
-                AnnotationUtils.fromClass(
-                        analysis.getTypeFactory().getElementUtils(), UnknownKeyFor.class);
-        KEYFOR =
-                AnnotationUtils.fromClass(
-                        analysis.getTypeFactory().getElementUtils(), KeyFor.class);
     }
 
     /*
@@ -43,10 +31,10 @@ public class KeyForTransfer extends CFTransfer {
      * </ul>
      */
     @Override
-    public TransferResult<CFValue, CFStore> visitMethodInvocation(
-            MethodInvocationNode node, TransferInput<CFValue, CFStore> in) {
+    public TransferResult<KeyForValue, KeyForStore> visitMethodInvocation(
+            MethodInvocationNode node, TransferInput<KeyForValue, KeyForStore> in) {
 
-        TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, in);
+        TransferResult<KeyForValue, KeyForStore> result = super.visitMethodInvocation(node, in);
         KeyForAnnotatedTypeFactory factory = (KeyForAnnotatedTypeFactory) analysis.getTypeFactory();
         if (factory.isInvocationOfMapMethod(node, "containsKey")
                 || factory.isInvocationOfMapMethod(node, "put")) {
@@ -59,7 +47,7 @@ public class KeyForTransfer extends CFTransfer {
             LinkedHashSet<String> keyForMaps = new LinkedHashSet<>();
             keyForMaps.add(mapName);
 
-            final CFValue previousKeyValue = in.getValueOfSubNode(node.getArgument(0));
+            final KeyForValue previousKeyValue = in.getValueOfSubNode(node.getArgument(0));
             if (previousKeyValue != null) {
                 for (AnnotationMirror prevAm : previousKeyValue.getAnnotations()) {
                     if (prevAm != null && AnnotationUtils.areSameByClass(prevAm, KeyFor.class)) {
