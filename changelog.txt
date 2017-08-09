@@ -1,5 +1,24 @@
 ---------------------------------------------------------------------------
 
+Version 2.1.14, 3 August 2017
+
+Nullness Checker change to annotated JDK:  The type argument to the Class,
+Constructor, and Optional classes may now be annotated as @Nullable or
+@NonNull.  The nullness of the type argument doesn't matter, but this
+enables easier integration with generic clients.
+
+Many crashes and false positives associated with uninferred method type
+arguments have been correct. By default, uninferred method type arguments,
+which can happen with Java 8 style target type contexts, are silently ignored.
+Use the option -AconservativeUninferredTypeArguments to see warnings about
+method calls where the Checker Framework fails to infer type arguments.
+
+Closed issues:
+753, 804, 961, 1032, 1062, 1066, 1098, 1209, 1280, 1316, 1329, 1355, 1365,
+1366, 1367, 1377, 1379, 1382, 1384, 1397, 1398, 1399, 1402, 1404, 1406, 1407.
+
+---------------------------------------------------------------------------
+
 Version 2.1.13, 3 July 2017
 
 Verified that the Checker Framework builds from source on Windows Subsystem

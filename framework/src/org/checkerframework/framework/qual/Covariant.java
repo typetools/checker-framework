@@ -19,6 +19,12 @@ import java.lang.annotation.Target;
  * read-only way: values of that type are read from but never modified. This property is not
  * checked; the {@code @Covariant} is simply trusted.
  *
+ * <p>Here is an example use:
+ *
+ * <pre>{@code @Covariant(0)
+ * public interface Iterator<E extends @Nullable Object> { ... }
+ * }</pre>
+ *
  * @checker_framework.manual #covariant-type-parameters Covariant type parameters
  */
 @Documented

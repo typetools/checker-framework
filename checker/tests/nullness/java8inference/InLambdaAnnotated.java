@@ -1,4 +1,3 @@
-// @skip-test until fixed
 // @below-java8-jdk-skip-test
 
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -27,14 +26,14 @@ class InLambdaAnnotated {
     class Infer {
         // The nested Mine.some() needs to infer the right type.
         Box<Mine<@Nullable Integer>> g =
+                // TODO: This is a false positive.
+                //:: error: (assignment.type.incompatible)
                 Boxes.transform(
                         el -> {
                             return Mine.some();
                         });
 
-        Function<String, Mine<@Nullable Integer>> fun;
-
-        void bar() {
+        void bar(Function<String, Mine<@Nullable Integer>> fun) {
             Box<Mine<@Nullable Integer>> h = Boxes.transform(fun);
         }
     }
