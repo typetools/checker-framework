@@ -20,10 +20,10 @@ env:
 #  - BUILDJDK=buildjdk JDKVER=jdk8 GROUP=junit
 #  - BUILDJDK=buildjdk JDKVER=jdk8 GROUP=nonjunit
 #  - BUILDJDK=buildjdk JDKVER=jdk8 GROUP=demos
+#  - BUILDJDK=buildjdk JDKVER=jdk8 GROUP=downstream
 #  - BUILDJDK=buildjdk JDKVER=jdk9 GROUP=junit
 #  - BUILDJDK=buildjdk JDKVER=jdk9 GROUP=nonjunit
 #  - BUILDJDK=buildjdk JDKVER=jdk9 GROUP=demos
-#  - BUILDJDK=buildjdk JDKVER=jdk8 GROUP=downstream
 #  - BUILDJDK=buildjdk JDKVER=jdk9 GROUP=downstream
 #  - BUILDJDK=buildjdk JDKVER=jdkany GROUP=misc
 
