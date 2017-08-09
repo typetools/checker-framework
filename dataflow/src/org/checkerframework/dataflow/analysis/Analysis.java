@@ -744,10 +744,10 @@ public class Analysis<
     public AnalysisResult<A, S> getResult() {
         assert !isRunning;
         IdentityHashMap<Tree, Node> treeLookup = cfg.getTreeLookup();
-        IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap =
-                cfg.getUnaryAssignNodeLookupMap();
+        IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup =
+                cfg.getUnaryAssignNodeLookup();
         return new AnalysisResult<>(
-                nodeValues, inputs, treeLookup, unaryAssignNodeLookupMap, finalLocalValues);
+                nodeValues, inputs, treeLookup, unaryAssignNodeLookup, finalLocalValues);
     }
 
     /**

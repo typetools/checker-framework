@@ -58,7 +58,7 @@ public class ControlFlowGraph {
     protected IdentityHashMap<Tree, Node> convertedTreeLookup;
 
     /** Map from AST {@link UnaryTree}s to corresponding {@link AssignmentNode}s. */
-    protected IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap;
+    protected IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup;
 
     /**
      * All return nodes (if any) encountered. Only includes return statements that actually return
@@ -73,13 +73,13 @@ public class ControlFlowGraph {
             UnderlyingAST underlyingAST,
             IdentityHashMap<Tree, Node> treeLookup,
             IdentityHashMap<Tree, Node> convertedTreeLookup,
-            IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap,
+            IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup,
             List<ReturnNode> returnNodes) {
         super();
         this.entryBlock = entryBlock;
         this.underlyingAST = underlyingAST;
         this.treeLookup = treeLookup;
-        this.unaryAssignNodeLookupMap = unaryAssignNodeLookupMap;
+        this.unaryAssignNodeLookup = unaryAssignNodeLookup;
         this.convertedTreeLookup = convertedTreeLookup;
         this.regularExitBlock = regularExitBlock;
         this.exceptionalExitBlock = exceptionalExitBlock;
@@ -224,8 +224,8 @@ public class ControlFlowGraph {
     }
 
     /** @return lookup map of the assign node for unary operation */
-    public IdentityHashMap<UnaryTree, AssignmentNode> getUnaryAssignNodeLookupMap() {
-        return new IdentityHashMap<>(unaryAssignNodeLookupMap);
+    public IdentityHashMap<UnaryTree, AssignmentNode> getUnaryAssignNodeLookup() {
+        return new IdentityHashMap<>(unaryAssignNodeLookup);
     }
 
     /**
