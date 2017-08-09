@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------
 
-Version 3.0.0, ?? 2017
+Version 2.2.0, ?? 2017
 
 A Java 8 JVM is required to run the Checker Framework.
 You can still typecheck and compile Java 7 code.
