@@ -736,6 +736,8 @@ public abstract class CFAbstractTransfer<
                         } else {
                             thenStore.insertValue(secondInternal, firstValue);
                         }
+                        // To handle `(a = b = c) == x`, repeat for all insertable receivers of
+                        // splitted assignments instead of returning.
                         res =
                                 new ConditionalTransferResult<>(
                                         res.getResultValue(), thenStore, elseStore);

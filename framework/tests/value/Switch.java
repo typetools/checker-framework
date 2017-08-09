@@ -108,7 +108,7 @@ class Switch {
         }
     }
 
-    void testInts(@IntRange(from = 0, to = 100) int x) {
+    void testInts1(@IntRange(from = 0, to = 100) int x) {
         switch (x) {
             case 0:
             case 1:
@@ -118,7 +118,25 @@ class Switch {
             default:
         }
 
-        @IntRange(from = 1, to = 100) int z = x;
+        @IntRange(from = 3, to = 100) int z = x;
+    }
+
+    void testInts2(@IntRange(from = 0, to = 100) int x) {
+
+        // harder version, fall through
+        switch (x) {
+            case 0:
+                @IntVal(0) int a = x;
+                break;
+            case 1:
+                @IntVal(1) int b = x;
+                break;
+            case 2:
+                @IntVal(2) int c = x;
+            default:
+                @IntRange(from = 2, to = 100) int d = x;
+                break;
+        }
     }
 
     void testChars(char x) {
