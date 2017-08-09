@@ -4,7 +4,6 @@
 	<classpathentry kind="src" path="tests/src"/>
 	<classpathentry kind="src" path="tests/test-lubglb"/>
 	<classpathentry kind="src" path="tests/test-polyall"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/stubparser"/>
 	<classpathentry exported="true" kind="lib" path="tests/junit-4.12.jar"/>
 	<classpathentry exported="true" kind="lib" path="tests/hamcrest-core-1.3.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/jsr308-langtools"/>
