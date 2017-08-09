@@ -474,34 +474,8 @@ following ways:
   annotations.  Import statements for types are optional.
 
 \item{\textbf{Enum declarations:}}
+  % This is a limitation of upstream JavaParser.  See the bug report at [[XXX TODO]].
   Enum declarations should contain at least one enum constant.
-
-  Enum constants in annotations need to be either fully-qualified
-  or imported.
-  For example, one has to either write the enum constant \<ANY> in
-  fully-qualified form:
-
-\begin{Verbatim}
-@Source(sparta.checkers.quals.FlowPermission.ANY)
-\end{Verbatim}
-
-\noindent
-or correctly import the enum class:
-
-\begin{Verbatim}
-import sparta.checkers.quals.FlowPermission;
-...
-@Source(FlowPermission.ANY)
-\end{Verbatim}
-
-\noindent
-or statically import the enum constants:
-
-\begin{Verbatim}
-import static sparta.checkers.quals.FlowPermission.*;
-...
-@Source(ANY)
-\end{Verbatim}
 
   Importing all packages from a class (\<import my.package.*;>) only
   considers annotations from that package; enum types need to be
