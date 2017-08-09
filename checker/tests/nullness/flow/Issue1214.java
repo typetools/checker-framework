@@ -13,10 +13,10 @@ public class Issue1214 {
         return s;
     }
 
-    static String ng2() {
+    static String ng2(int x) {
         String s = "not null";
         try {
-            short data = (short) (50 / 0);
+            short data = (short) (50 / x);
         } catch (Exception e) {
             try {
                 s = null;
@@ -114,7 +114,7 @@ public class Issue1214 {
         return s;
     }
 
-    static String ok4(double data) {
+    static String ok4(float data) {
         String s = "not null";
         try {
             data %= 0;
