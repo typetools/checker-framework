@@ -118,20 +118,25 @@ public class OffsetEquation {
 
     /**
      * Makes a copy of this offset and removes any added terms that are accesses to the length of
-     * the listed arrays. If any terms were removed, then the copy is returned. Otherwise, null is
-     * returned.
+     * the listed sequences. If any terms were removed, then the copy is returned. Otherwise, null
+     * is returned.
      *
-     * @param arrays list of arrays
-     * @return a copy of this equation with array.length removed or null if no array.lengths could
-     *     be removed
+     * @param sequences list of sequences (arrays or strings)
+     * @return a copy of this equation with array.length and string.length() removed or null if no
+     *     array.lengths or string.length() could be removed
      */
-    public OffsetEquation removeArrayLengths(List<String> arrays) {
+    public OffsetEquation removeSequenceLengths(List<String> sequences) {
         OffsetEquation copy = new OffsetEquation(this);
         boolean simplified = false;
-        for (String array : arrays) {
-            String arrayLen = array + ".length";
+        for (String sequence : sequences) {
+            String arrayLen = sequence + ".length";
             if (addedTerms.contains(arrayLen)) {
                 copy.addedTerms.remove(arrayLen);
+                simplified = true;
+            }
+            String stringLen = sequence + ".length()";
+            if (addedTerms.contains(stringLen)) {
+                copy.addedTerms.remove(stringLen);
                 simplified = true;
             }
         }

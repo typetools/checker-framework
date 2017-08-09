@@ -124,7 +124,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Adds @Interned to enum types and any use of a class that is declared to be @Interned */
+    /** Adds @Interned to enum types and any use of a class that is declared to be @Interned. */
     private class InterningTypeAnnotator extends TypeAnnotator {
 
         InterningTypeAnnotator(InterningAnnotatedTypeFactory atypeFactory) {
