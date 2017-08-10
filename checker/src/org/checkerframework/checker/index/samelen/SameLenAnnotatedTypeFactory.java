@@ -2,7 +2,7 @@ package org.checkerframework.checker.index.samelen;
 
 import static org.checkerframework.checker.index.IndexUtil.getValueOfAnnotationWithStringArgument;
 
-import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -15,6 +15,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.PolyLength;
 import org.checkerframework.checker.index.qual.PolySameLen;
@@ -38,18 +39,19 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * The SameLen Checker is used to determine whether there are multiple arrays in a program that
- * share the same length. It is part of the Index Checker, and is used as a subchecker by the Index
- * Checker's components.
+ * The SameLen Checker is used to determine whether there are multiple fixed-length sequences (such
+ * as arrays or strings) in a program that share the same length. It is part of the Index Checker,
+ * and is used as a subchecker by the Index Checker's components.
  */
 public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public final AnnotationMirror UNKNOWN;
     private final AnnotationMirror BOTTOM;
     private final AnnotationMirror POLY;
+
+    private final IndexMethodIdentifier imf;
 
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -59,7 +61,14 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyLength.class, POLY);
 
+        imf = new IndexMethodIdentifier(processingEnv);
+
         this.postInit();
+    }
+
+    /** Gets a helper object that holds references to methods with special handling. */
+    IndexMethodIdentifier getMethodIdentifier() {
+        return imf;
     }
 
     @Override
@@ -189,7 +198,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public static boolean isReceiverToStringParsable(Receiver receiver) {
-        return !receiver.containsUnknown() && !(receiver instanceof FlowExpressions.ArrayCreation);
+        return !receiver.containsUnknown()
+                && !(receiver instanceof FlowExpressions.ArrayCreation)
+                && !(receiver instanceof FlowExpressions.ClassName);
     }
 
     /**
@@ -307,32 +318,33 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
-            if (node.getDimensions().size() == 1
-                    && TreeUtils.isArrayLengthAccess(node.getDimensions().get(0))) {
-                MemberSelectTree arrayLength = (MemberSelectTree) (node.getDimensions().get(0));
-                AnnotationMirror arrayAnno =
-                        getAnnotatedType(arrayLength.getExpression())
-                                .getAnnotationInHierarchy(UNKNOWN);
+            if (node.getDimensions().size() == 1) {
+                Tree dimensionTree = node.getDimensions().get(0);
+                ExpressionTree sequenceTree =
+                        IndexUtil.getLengthSequenceTree(dimensionTree, imf, processingEnv);
+                if (sequenceTree != null) {
+                    AnnotationMirror sequenceAnno =
+                            getAnnotatedType(sequenceTree).getAnnotationInHierarchy(UNKNOWN);
 
-                Receiver rec =
-                        FlowExpressions.internalReprOf(
-                                this.atypeFactory, arrayLength.getExpression());
-                if (isReceiverToStringParsable(rec)) {
-                    if (AnnotationUtils.areSameByClass(arrayAnno, SameLenUnknown.class)) {
-                        arrayAnno = createSameLen(rec.toString());
-                    } else if (AnnotationUtils.areSameByClass(arrayAnno, SameLen.class)) {
-                        // Ensure that the array whose length is actually being used is part of the
-                        // annotation. If not, add it.
-                        List<String> arrayAnnoArrays =
-                                getValueOfAnnotationWithStringArgument(arrayAnno);
-                        if (!arrayAnnoArrays.contains(rec.toString())) {
-                            arrayAnnoArrays.add(rec.toString());
-                            String[] newArrayAnnoArrays = arrayAnnoArrays.toArray(new String[0]);
-                            arrayAnno = createSameLen(newArrayAnnoArrays);
+                    Receiver rec = FlowExpressions.internalReprOf(this.atypeFactory, sequenceTree);
+                    if (isReceiverToStringParsable(rec)) {
+                        if (AnnotationUtils.areSameByClass(sequenceAnno, SameLenUnknown.class)) {
+                            sequenceAnno = createSameLen(rec.toString());
+                        } else if (AnnotationUtils.areSameByClass(sequenceAnno, SameLen.class)) {
+                            // Ensure that the sequence whose length is actually being used is part of the
+                            // annotation. If not, add it.
+                            List<String> sequenceAnnoSequences =
+                                    getValueOfAnnotationWithStringArgument(sequenceAnno);
+                            if (!sequenceAnnoSequences.contains(rec.toString())) {
+                                sequenceAnnoSequences.add(rec.toString());
+                                String[] newSequenceAnnoSequences =
+                                        sequenceAnnoSequences.toArray(new String[0]);
+                                sequenceAnno = createSameLen(newSequenceAnnoSequences);
+                            }
                         }
                     }
+                    type.addAnnotation(sequenceAnno);
                 }
-                type.addAnnotation(arrayAnno);
             }
             return null;
         }
@@ -347,16 +359,16 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Find all the arrays that are members of the SameLen annotation associated with the array
-     * named in arrayExpression along the current path.
+     * Find all the sequences that are members of the SameLen annotation associated with the
+     * sequence named in sequenceExpression along the current path.
      */
     public List<String> getSameLensFromString(
-            String arrayExpression, Tree tree, TreePath currentPath) {
+            String sequenceExpression, Tree tree, TreePath currentPath) {
         AnnotationMirror sameLenAnno = null;
         try {
             sameLenAnno =
                     getAnnotationFromJavaExpressionString(
-                            arrayExpression, tree, currentPath, SameLen.class);
+                            sequenceExpression, tree, currentPath, SameLen.class);
         } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
             // ignore parse errors
         }

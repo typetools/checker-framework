@@ -188,7 +188,7 @@ public final class StringBuilder
     /**
      * @throws     IndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder append(CharSequence s, /*!IndexFor("#1")*/ int start, /*!IndexOrHigh("#1")*/ int end) {
+    public StringBuilder append(CharSequence s, @IndexOrHigh("#1") int start, @IndexOrHigh("#1") int end) {
         super.append(s, start, end);
         return this;
     }
