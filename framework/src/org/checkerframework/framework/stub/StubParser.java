@@ -826,6 +826,9 @@ public class StubParser {
         for (int i = 0; i < methodType.getParameterTypes().size(); ++i) {
             AnnotatedTypeMirror paramType = methodType.getParameterTypes().get(i);
             Parameter param = decl.getParameters().get(i);
+            if (param.getAnnotations() != null) {
+                param.getType().setAnnotations(param.getAnnotations());
+            }
             annotate(paramType, param.getType());
         }
 
