@@ -875,11 +875,6 @@ forward reference to the section with the discussion.
 \end{workinprogress}
 
 \begin{workinprogress}
-There is a \code{CaseNode}. How is the default case of a switch
-handled?
-\end{workinprogress}
-
-\begin{workinprogress}
 There is a \code{StringConcatenateAssignmentNode}.
 What about other compound assignments? Are they desugared?
 \end{workinprogress}
@@ -1083,6 +1078,23 @@ the \code{throw}? Why are they not in the same basic block, as there
 is no alternate control flow?
 \end{workinprogress}
 
+\subsubsection{Default case and fall through for switch statement}
+Switch statement is handled as a chain of \code{CaseNode} and nodes for
+the case. \code{CaseNode} makes a branch by comparing the equality of
+the expression of the switch statement and the expression of the case.
+Note that the expression of switch statement must be executed just only
+once at first of switch statement. To refer the value of the expression,
+a fake variable is created and the expression is assigned to a fake
+variable. \code{THEN_TO_BOTH} edge goes to nodes for the case and \code{ELSE_TO_BOTH}
+edge goes to next \code{CaseNode}. When a next is default case, it goes
+to nodes for default case. If a break statement in nodes for a case create
+an edge to next node of the switch statement. When it doesn't exist, it means
+that it's fall-through and the next node of nodes of the case is nodes of
+the next case. For example, the code in \autoref{lst:CFGSwitch} produces
+the control flow graph in \autoref{fig:CFGSwitch}. The face variable named
+\code{switch#num0} is created and each of case nodes create the branches.
+
+\flow{Switch}{Example of a switch statement with case, default and fall through}
 
 \subsection{AST to CFG Translation}
 \label{sec:ast_to_cfg_translation}
