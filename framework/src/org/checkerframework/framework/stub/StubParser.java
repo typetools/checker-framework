@@ -484,9 +484,9 @@ public class StubParser {
                         String.format(
                                 "parseType:  mismatched sizes for typeParameters=%s (size %d) and typeArguments=%s (size %d); decl=%s; elt=%s (%s); type=%s (%s); theCompilationUnit=%s",
                                 typeParameters,
-                                (typeParameters == null ? 0 : typeParameters.size()),
+                                numParams,
                                 typeArguments,
-                                (typeArguments == null ? 0 : typeArguments.size()),
+                                numArgs,
                                 decl.toString().replace(LINE_SEPARATOR, " "),
                                 elt.toString().replace(LINE_SEPARATOR, " "),
                                 elt.getClass(),
@@ -518,11 +518,11 @@ public class StubParser {
      * Gathers and returns a list of AnnotatedTypeVariable of the enum's type parameter
      * declarations.
      *
-     * @param decl actual enum declaration.
-     * @param elt element representing enum.
-     * @param atypes map of annotated types.
-     * @param declAnnos map of declarations annotations.
-     * @return list of AnnotatedTypeVariable of the enum's type parameter declarations.
+     * @param decl actual enum declaration
+     * @param elt element representing enum
+     * @param atypes map of annotated types
+     * @param declAnnos map of declarations annotations
+     * @return list of AnnotatedTypeVariable of the enum's type parameter declarations
      */
     private List<AnnotatedTypeVariable> parseEnum(
             EnumDeclaration decl,
@@ -1010,11 +1010,11 @@ public class StubParser {
      * name as provided class or interface declaration. In case nested element is not found it
      * returns null.
      *
-     * @param typeElt an element where nested type element should be looked for.
+     * @param typeElt an element where nested type element should be looked for
      * @param ciDecl class or interface declaration which name should be found among nested elements
-     *     of the typeElt.
+     *     of the typeElt
      * @return nested in typeElt element with the name of the class or interface or null if nested
-     *     element is not found.
+     *     element is not found
      */
     private Element findElement(TypeElement typeElt, ClassOrInterfaceDeclaration ciDecl) {
         final String wantedClassOrInterfaceName = ciDecl.getNameAsString();
@@ -1040,11 +1040,11 @@ public class StubParser {
      * Looks for the nested enum element in the typeElt and returns it if the element has the same
      * name as provided enum declaration. In case nested element is not found it returns null.
      *
-     * @param typeElt an element where nested enum element should be looked for.
+     * @param typeElt an element where nested enum element should be looked for
      * @param enumDecl enum declaration which name should be found among nested elements of the
-     *     typeElt.
+     *     typeElt
      * @return nested in typeElt enum element with the name of the provided enum or null if nested
-     *     element is not found.
+     *     element is not found
      */
     private Element findElement(TypeElement typeElt, EnumDeclaration enumDecl) {
         final String wantedEnumName = enumDecl.getNameAsString();
@@ -1069,11 +1069,11 @@ public class StubParser {
      * Looks for method element in the typeElt and returns it if the element has the same signature
      * as provided method declaration. In case method element is not found it returns null.
      *
-     * @param typeElt type element where method element should be looked for.
+     * @param typeElt type element where method element should be looked for
      * @param methodDecl method declaration with signature that should be found among methods in the
-     *     typeElt.
+     *     typeElt
      * @return method element in typeElt with the same signature as the provided method declaration
-     *     or null if method element is not found.
+     *     or null if method element is not found
      */
     private ExecutableElement findElement(TypeElement typeElt, MethodDeclaration methodDecl) {
         final String wantedMethodName = methodDecl.getNameAsString();
@@ -1104,11 +1104,11 @@ public class StubParser {
      * signature as provided constructor declaration. In case constructor element is not found it
      * returns null.
      *
-     * @param typeElt type element where constructor element should be looked for.
+     * @param typeElt type element where constructor element should be looked for
      * @param constructorDecl constructor declaration with signature that should be found among
-     *     constructors in the typeElt.
+     *     constructors in the typeElt
      * @return constructor element in typeElt with the same signature as the provided constructor
-     *     declaration or null if constructor element is not found.
+     *     declaration or null if constructor element is not found
      */
     private ExecutableElement findElement(
             TypeElement typeElt, ConstructorDeclaration constructorDecl) {
@@ -1145,10 +1145,9 @@ public class StubParser {
      * Looks for a field element in the typeElt and returns it if the element has the same name as
      * provided. In case field element is not found it returns null.
      *
-     * @param typeElt type element where field element should be looked for.
-     * @param fieldName field name that should be found.
-     * @return field element in typeElt with the provided name or null if field element is not
-     *     found.
+     * @param typeElt type element where field element should be looked for
+     * @param fieldName field name that should be found
+     * @return field element in typeElt with the provided name or null if field element is not found
      */
     private VariableElement findFieldElement(TypeElement typeElt, String fieldName) {
         for (VariableElement field : ElementUtils.getAllFieldsIn(elements, typeElt)) {
@@ -1198,7 +1197,7 @@ public class StubParser {
         }
         if (m.containsKey(key) && !m.get(key).equals(value)) {
             // Super method should not be written to the map
-            // if child class contains overrided method that is already in the map.
+            // if child class contains overriden method that is already in the map.
             return;
         }
         m.put(key, value);
@@ -1293,7 +1292,10 @@ public class StubParser {
         }
     }
 
-    /** Throw an error if the message contains line separator characters. */
+    /**
+     * Throw an error if the message contains line separator characters. (Any characters after a
+     * line separator are silently discarded and not shown to the user.)
+     */
     private void ensureSingleLine(String message, String methodName) {
         if (message.contains(LINE_SEPARATOR)) {
             throw new Error(
