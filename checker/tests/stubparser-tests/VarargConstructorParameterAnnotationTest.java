@@ -5,20 +5,20 @@ import org.checkerframework.checker.nullness.qual.*;
  */
 class ProcessBuilding2 {
 
-    public void strArraysNonNull(@NonNull String[] untrustedArr) {
+    public void strArraysNonNull(@NonNull String[] parameter) {
         new ProcessBuilder(untrustedArr);
     }
 
-    public void strArraysNullable(@Nullable String[] untrustedArr) {
+    public void strArraysNullable(@Nullable String[] parameter) {
         //:: error: (argument.type.incompatible)
         new ProcessBuilder(untrustedArr);
     }
 
-    public void strVarargNonNull(@NonNull String... untrustedArr) {
+    public void strVarargNonNull(@NonNull String... parameter) {
         new ProcessBuilder(untrustedArr);
     }
 
-    public void strVarargNullable(@Nullable String... untrustedArr) {
+    public void strVarargNullable(@Nullable String... parameter) {
         //:: error: (argument.type.incompatible)
         new ProcessBuilder(untrustedArr);
     }
