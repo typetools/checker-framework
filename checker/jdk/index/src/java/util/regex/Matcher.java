@@ -338,7 +338,7 @@ public final class Matcher implements MatchResult {
      *          If no match has yet been attempted,
      *          or if the previous match operation failed
      */
-    public int start() {
+    public @NonNegative int start() {
         if (first < 0)
             throw new IllegalStateException("No match available");
         return first;
@@ -385,7 +385,7 @@ public final class Matcher implements MatchResult {
      *          If no match has yet been attempted,
      *          or if the previous match operation failed
      */
-    public @GTENegativeOne int end() {
+    public @NonNegative int end() {
         if (first < 0)
             throw new IllegalStateException("No match available");
         return last;
@@ -1005,7 +1005,7 @@ public final class Matcher implements MatchResult {
      * @return  The starting point of this matcher's region
      * @since 1.5
      */
-    public @GTENegativeOne int regionStart() {
+    public @NonNegative int regionStart() {
         return from;
     }
 
@@ -1018,7 +1018,7 @@ public final class Matcher implements MatchResult {
      * @return  the ending point of this matcher's region
      * @since 1.5
      */
-    public @GTENegativeOne int regionEnd() {
+    public @NonNegative int regionEnd() {
         return to;
     }
 
