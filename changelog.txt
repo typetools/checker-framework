@@ -1,5 +1,18 @@
 ---------------------------------------------------------------------------
 
+Version 2.2.0, ?? 2017
+
+A Java 8 JVM is required to run the Checker Framework.
+You can still typecheck and compile Java 7 (or earlier) code.
+
+The stub file format has changed to be more similar to regular Java syntax.
+Most notably, receiver annotations are written using standard Java 8 syntax
+(a special first formal paramter named "this") and inner classes are written
+using standard Java syntax (rather than at the top level using a name that
+contains "$". You need to update your stub files to conform to the new syntax.
+
+---------------------------------------------------------------------------
+
 Version 2.1.14, 3 August 2017
 
 Nullness Checker change to annotated JDK:  The type argument to the Class,

@@ -7,7 +7,7 @@ public interface List<@Nullable T> {}  // overrules annotated jdk
 
 package java.lang;
 
-public final class  String {
+public final class String {
      public @NonNull String intern();
      public @Nullable String substring(@NonNull int beginIndex);
      String(@Nullable String arg0);

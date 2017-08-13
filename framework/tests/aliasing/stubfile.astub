@@ -6,7 +6,7 @@ class String {
 
 class StringBuffer {
     @Unique StringBuffer();
-    StringBuffer append(@NonLeaked String s) @LeakedToResult;
+    StringBuffer append(@LeakedToResult StringBuffer this, @NonLeaked String s);
 }
 
 class Exception {
