@@ -392,7 +392,10 @@ def main(argv):
 
     print_step("Build Step 3: Determine release versions.") # SEMIAUTO
 
-    print("If any new checkers have been added, then increment the minor version rather than just the patch level.\n")
+    print("Increment the minor version rather than just the patch level if:\n")
+    print(" * any new checkers have been added,\n")
+    print(" * the patch level is 9 (keep the patch level as a single digit), or\n")
+    print(" * backward-incompatible changes have been made to APIs or elsewhere.\n")
 
     old_jsr308_version = current_distribution(CHECKER_FRAMEWORK)
     (old_jsr308_version, jsr308_version) = get_new_version("JSR308/Checker Framework", old_jsr308_version, auto)
