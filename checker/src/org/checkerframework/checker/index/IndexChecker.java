@@ -3,10 +3,11 @@ package org.checkerframework.checker.index;
 import org.checkerframework.checker.index.upperbound.UpperBoundChecker;
 
 /**
- * A type checker for preventing out-of-bounds accesses on arrays. Contains five subcheckers that do
- * all of the actual work, which are described here. First, the order the checkers are run in is
- * described, and then what each checker requests from the checkers that run before it is described.
- * The Index Checker itself is just an alias for the Upper Bound Checker, which runs last.
+ * A type checker for preventing out-of-bounds accesses on fixed-length sequences, such as arrays
+ * and strings. Contains five subcheckers that do all of the actual work, which are described here.
+ * First, the order the checkers are run in is described, and then what each checker requests from
+ * the checkers that run before it is described. The Index Checker itself is just an alias for the
+ * Upper Bound Checker, which runs last.
  *
  * <p>The checkers run in this order:
  *
