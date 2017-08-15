@@ -241,7 +241,8 @@ public class WholeProgramInferenceScenesHelper {
      */
     private void removeIgnoredAnnosFromATypeElement(ATypeElement typeEl, TypeUseLocation loc) {
         Set<Annotation> annosToRemove = new HashSet<>();
-        Set<String> annosToIgnoreForLocation = annosToIgnore.get(Pair.of(typeEl.toString(), loc));
+        String firstKey = typeEl.description.toString() + typeEl.tlAnnotationsHere.toString();
+        Set<String> annosToIgnoreForLocation = annosToIgnore.get(Pair.of(firstKey, loc));
         if (annosToIgnoreForLocation == null) {
             // No annotations to ignore for that position.
             return;
@@ -535,7 +536,12 @@ public class WholeProgramInferenceScenesHelper {
         if (anno != null) {
             typeToUpdate.tlAnnotationsHere.add(anno);
             if (shouldIgnore(am, defLoc, atf, newATM)) {
-                Pair<String, TypeUseLocation> key = Pair.of(typeToUpdate.toString(), defLoc);
+                // firstKey works as a unique identifier for each annotation
+                // that should not be inserted in source code
+                String firstKey =
+                        typeToUpdate.description.toString()
+                                + typeToUpdate.tlAnnotationsHere.toString();
+                Pair<String, TypeUseLocation> key = Pair.of(firstKey, defLoc);
                 Set<String> annosIgnored = annosToIgnore.get(key);
                 if (annosIgnored == null) {
                     annosIgnored = new HashSet<>();
