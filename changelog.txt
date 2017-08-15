@@ -4,6 +4,7 @@ Version 2.2.0, ?? 2017
 
 A Java 8 JVM is required to run the Checker Framework.
 You can still typecheck and compile Java 7 (or earlier) code.
+With the "-target 7" flag, the resulting .class files still run with JDK 7.
 
 The stub file format has changed to be more similar to regular Java syntax.
 Most notably, receiver annotations are written using standard Java 8 syntax
