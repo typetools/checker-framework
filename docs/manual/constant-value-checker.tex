@@ -41,7 +41,7 @@ The main type annotations are
 \refqualclass{common/value/qual}{IntRange},
 \refqualclass{common/value/qual}{DoubleVal}, and
 \refqualclass{common/value/qual}{StringVal}.
-Additional type annotations for arrays are
+Additional type annotations for arrays and strings are
 \refqualclass{common/value/qual}{ArrayLen},
 \refqualclass{common/value/qual}{ArrayLenRange},
 and \refqualclass{common/value/qual}{MinLen}.
@@ -57,10 +57,17 @@ The set is limited to 10 entries; if a variable
 could be more than 10 different values, the Constant Value
 Checker gives up and its type becomes
 \refqualclass{common/value/qual}{IntRange} for integral types,
-\refqualclass{common/value/qual}{ArrayLenRange} for array types, and
+\refqualclass{common/value/qual}{ArrayLenRange} for array types,
+\refqualclass{common/value/qual}{ArrayLen} or \refqualclass{common/value/qual}{ArrayLenRange} for \<String>, and
 \refqualclass{common/value/qual}{UnknownVal} for all other types.
 The \<@ArrayLen> annotation means that at run time, the expression
-evaluates to an array whose length is one of the annotation's arguments.
+evaluates to an array or a string whose length is one of the annotation's arguments.
+
+In the case of too many strings in \<@StringVal>, the values are forgotten
+and just the lengths are used in \<@ArrayLen>.
+If this would result in too many lengths,
+only the minimum and maximum lengths are used in \<@ArrayLenRange>,
+giving a range of possible lengths of the string.
 
 The \<@StringVal> annotation may be applied to a char array.  Although byte
 arrays are often converted to/from strings, the \<@StringVal> annotation may
@@ -96,7 +103,7 @@ Because \<int> can be casted to \<double>, an \<@IntVal> annotation is a
 subtype of a \<@DoubleVal> annotation with the same values.
 
 \begin{figure}
-\includeimage{value-subtyping}{7cm}
+\includeimage{value-subtyping}{7.9cm}
 \caption{At the top, the type qualifier hierarchy of the Constant Value Checker
 annotations. Qualifiers in gray are used
 internally by the type system but should never be written by a
@@ -267,11 +274,52 @@ warning message:
 
   The Constant Value Checker only tracks up to 10 possible values for an
   expression.  If you write an annotation with more values than will be
-  tracked, the annotation is replaced with \<@IntRange>, \<@ArrayLenRange>, or \<@UnknownVal>.
+  tracked, the annotation is replaced with \<@IntRange>, \<@ArrayLen>, \<@ArrayLenRange>, or \<@UnknownVal>.
 
 \end{itemize}
 \end{sloppypar}
+
+
+\section{Unsoundly ignoring overflow\label{value-checker-overflow}}
+
+The Constant Value Checker takes Java's overflow rules into account when
+computing the possible values of expressions.
+%
+The \code{-AignoreRangeOverflow} command-line option makes it ignore the
+possibility of overflow for range annotations
+\refqualclass{common/value/qual}{IntRange} and
+\refqualclass{common/value/qual}{ArrayLenRange}.
+%
+Figure~\ref{fig-value-ignore-overflow} gives an example of behavior with
+and without the \code{-AignoreRangeOverflow} command-line option.
+
+\begin{figure}
+\begin{Verbatim}
+  ...
+  if (i > 5) {
+    // i now has type:  @IntRange(from=5, to=Integer.MAX_VALUE)
+    i = i + 1;
+    // If i started out as Integer.MAX_VALUE, then i is now Integer.MIN_VALUE.
+    // i's type is now @IntRange(from=Integer.MIN_VALUE, to=Integer.MAX_VALUE).
+    // When ignoring overflow, i's type is now @IntRange(from=6, to=Integer.MAX_VALUE).
+  }
+\end{Verbatim}
+\caption{With the \code{-AignoreRangeOverflow} command-line option,
+the Constant Value Checker ignores overflow
+for range types, which gives smaller ranges to range types.}
+\label{fig-value-ignore-overflow}
+\end{figure}
+
+As with any unsound behavior in the Checker Framework, this option reduces
+the number of warnings and errors produced, and may reduce the number of
+\<@IntRange> qualifiers that you need to write in the source code.
+However, it is possible that at run time, an expression might evaluate to a
+value that is not in its \<@IntRange> qualifier.  You should either accept
+that possibility, or verify the lack of overflow using some other tool or
+manual analysis.
+
+
 %%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange
 %  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
-%%  LocalWords:  classpath AreportEvalWarns ArrayLen ArrayLenRange MinLen
-%%  LocalWords:  PolyValue
+%%  LocalWords:  classpath AreportEvalWarns ArrayLen ArrayLenRange casted
+%  LocalWords:  qual AignoreRangeOverflow MinLen PolyValue

@@ -19,9 +19,7 @@ import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -88,10 +86,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected ListTreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
-                new AliasingTreeAnnotator(this),
-                new PropagationTreeAnnotator(this),
-                new ImplicitsTreeAnnotator(this));
+        return new ListTreeAnnotator(new AliasingTreeAnnotator(this), super.createTreeAnnotator());
     }
 
     @Override

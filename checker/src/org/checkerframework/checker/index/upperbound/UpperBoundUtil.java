@@ -134,7 +134,7 @@ public class UpperBoundUtil {
                 (UBQualifier.LessThanLengthOf) UBQualifier.createUBQualifier(anno);
 
         List<String> dependencies = new ArrayList<>();
-        for (String s : qual.getArrays()) {
+        for (String s : qual.getSequences()) {
             dependencies.add(s);
         }
         dependencies.addAll(qual.getOffsetsAsStrings());

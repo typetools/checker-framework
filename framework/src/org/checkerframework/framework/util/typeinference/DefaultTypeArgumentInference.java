@@ -54,6 +54,7 @@ import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -737,9 +738,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         for (AnnotatedTypeVariable atv : methodType.getTypeVariables()) {
             final TypeVariable typeVar = atv.getUnderlyingType();
-            if (targets.contains(typeVar)) {
+            if (targets.contains(TypeAnnotationUtils.unannotatedType(typeVar))) {
                 final AnnotatedTypeMirror inferredType = inferredArgs.get(typeVar);
-                if (inferredType == null) {
+                if (inferredType == null
+                        || TypeArgInferenceUtil.containsTypeParameter(inferredType, targets)) {
                     AnnotatedTypeMirror dummy = typeFactory.getUninferredWildcardType(atv);
                     inferredArgs.put(atv.getUnderlyingType(), dummy);
                 }

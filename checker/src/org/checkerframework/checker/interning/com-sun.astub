@@ -62,7 +62,7 @@ public class DriverResource {
          public static final @Interned String DETECTED_ZIP_COMMENT="DETECTED_ZIP_COMMENT";
          public static final @Interned String SKIP_FOR_REPACKED ="SKIP_FOR_REPACKED";
          public static final @Interned String WRITE_PACK_FILE ="WRITE_PACK_FILE";
-         public static final @Interned String WIRTE_PACKGZ_FILE="WIRTE_PACKGZ_FILE";
+         public static final @Interned String WRITE_PACKGZ_FILE="WRITE_PACKGZ_FILE";
          public static final @Interned String SKIP_FOR_MOVE_FAILED="SKIP_FOR_MOVE_FAILED";
          public static final @Interned String PACK_HELP="PACK_HELP";
          public static final @Interned String UNPACK_HELP ="UNPACK_HELP";

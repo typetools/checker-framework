@@ -1101,7 +1101,7 @@ import org.checkerframework.checker.index.qual.*;
      *
      * @since  1.5
      */
-    public PrintStream append(CharSequence csq, int start, int end) {
+    public PrintStream append(CharSequence csq, @IndexOrHigh("#1") int start, @IndexOrHigh("#1") int end) {
         CharSequence cs = (csq == null ? "null" : csq);
         write(cs.subSequence(start, end).toString());
         return this;

@@ -95,6 +95,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -274,14 +275,20 @@ public abstract class GenericAnnotatedTypeFactory<
      * Returns a {@link TreeAnnotator} that adds annotations to a type based on the contents of a
      * tree.
      *
-     * <p>Subclasses may override this method to specify a more appropriate {@link TreeAnnotator}.
-     * The default tree annotator is a {@link ListTreeAnnotator} of the following:
+     * <p>The default tree annotator is a {@link ListTreeAnnotator} of the following:
      *
      * <ol>
-     *   <li>{@link PropagationTreeAnnotator}: Propagates annotations from subtrees.
+     *   <li>{@link PropagationTreeAnnotator}: Propagates annotations from subtrees
      *   <li>{@link ImplicitsTreeAnnotator}: Adds annotations based on {@link ImplicitFor}
      *       meta-annotations
+     *   <li>{@link DependentTypesTreeAnnotator}: Adapts dependent annotations based on context
      * </ol>
+     *
+     * <p>Subclasses may override this method to specify additional tree annotators, for example:
+     *
+     * <pre>
+     * new ListTreeAnnotator(super.createTreeAnnotator(), new KeyLookupTreeAnnotator(this));
+     * </pre>
      *
      * @return a tree annotator
      */
@@ -691,10 +698,10 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Returns the primary annotation on expression if it were evaluated at path.
      *
-     * @param expression Java expression
+     * @param expression a Java expression
      * @param tree current tree
      * @param path location at which expression is evaluated
-     * @param clazz Class of the annotation
+     * @param clazz class of the annotation
      * @return the annotation on expression or null if one does not exist
      * @throws FlowExpressionParseException thrown if the expression cannot be parsed
      */
@@ -704,12 +711,26 @@ public abstract class GenericAnnotatedTypeFactory<
 
         FlowExpressions.Receiver expressionObj =
                 getReceiverFromJavaExpressionString(expression, path);
+        return getAnnotationFromReceiver(expressionObj, tree, clazz);
+    }
+    /**
+     * Returns the primary annotation on a receiver.
+     *
+     * @param receiver the receiver for which the annotation is returned
+     * @param tree current tree
+     * @param clazz the Class of the annotation
+     * @return the annotation on expression or null if one does not exist
+     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     */
+    public AnnotationMirror getAnnotationFromReceiver(
+            FlowExpressions.Receiver receiver, Tree tree, Class<? extends Annotation> clazz)
+            throws FlowExpressionParseException {
 
         AnnotationMirror annotationMirror = null;
-        if (CFAbstractStore.canInsertReceiver(expressionObj)) {
+        if (CFAbstractStore.canInsertReceiver(receiver)) {
             Store store = getStoreBefore(tree);
             if (store != null) {
-                Value value = store.getValue(expressionObj);
+                Value value = store.getValue(receiver);
                 if (value != null) {
                     annotationMirror =
                             AnnotationUtils.getAnnotationByClass(value.getAnnotations(), clazz);
@@ -717,11 +738,11 @@ public abstract class GenericAnnotatedTypeFactory<
             }
         }
         if (annotationMirror == null) {
-            if (expressionObj instanceof LocalVariable) {
-                Element ele = ((LocalVariable) expressionObj).getElement();
+            if (receiver instanceof LocalVariable) {
+                Element ele = ((LocalVariable) receiver).getElement();
                 annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
-            } else if (expressionObj instanceof FieldAccess) {
-                Element ele = ((FieldAccess) expressionObj).getField();
+            } else if (receiver instanceof FieldAccess) {
+                Element ele = ((FieldAccess) receiver).getField();
                 annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
             }
         }
@@ -731,7 +752,7 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Produces the receiver associated with expression on currentPath.
      *
-     * @param expression Java expression
+     * @param expression a Java expression
      * @param currentPath location at which expression is evaluated
      * @throws FlowExpressionParseException thrown if the expression cannot be parsed
      */
@@ -1246,6 +1267,12 @@ public abstract class GenericAnnotatedTypeFactory<
             dependentTypesHelper.standardizeReturnType(m, returnType);
         }
         return returnType;
+    }
+
+    @Override
+    public void addDefaultAnnotations(AnnotatedTypeMirror type) {
+        typeAnnotator.visit(type, null);
+        defaults.annotate((Element) null, type);
     }
 
     /**

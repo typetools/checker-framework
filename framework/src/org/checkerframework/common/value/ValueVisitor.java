@@ -2,9 +2,9 @@ package org.checkerframework.common.value;
 /*>>>
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 */
+
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import java.util.Collections;
@@ -36,24 +36,6 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
     public ValueVisitor(BaseTypeChecker checker) {
         super(checker);
-    }
-
-    /**
-     * @param exp an integral literal tree
-     * @return {@code exp}'s literal value
-     */
-    private long getIntLiteralValue(LiteralTree exp) {
-        Object orgValue = exp.getValue();
-        switch (exp.getKind()) {
-            case INT_LITERAL:
-            case LONG_LITERAL:
-                return ((Number) orgValue).longValue();
-            case CHAR_LITERAL:
-                return (long) ((Character) orgValue);
-            default:
-                throw new IllegalArgumentException(
-                        "exp is not an intergral literal (INT_LITERAL, LONG_LITERAL, CHAR_LITERAL)");
-        }
     }
 
     /**
@@ -145,8 +127,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                         node);
                 return null;
             } else if (AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
-                List<Integer> arrayLens =
-                        AnnotationUtils.getElementValueArray(anno, "value", Integer.class, true);
+                List<Integer> arrayLens = ValueAnnotatedTypeFactory.getArrayLength(anno);
                 if (Collections.min(arrayLens) < 0) {
                     checker.report(
                             Result.warning("negative.arraylen", Collections.min(arrayLens)), node);
@@ -202,8 +183,28 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             if (castType.getKind() == TypeKind.LONG && castRange.isLongEverything()) {
                 return p;
             }
+            if (Range.IGNORE_OVERFLOW) {
+                // Range.IGNORE_OVERFLOW is only set if this checker is ignoring overflow.
+                // In that case, do not warn if the range of the expression encompasses
+                // the whole type being casted to (i.e. the warning is actually about overflow).
+                Range exprRange = ValueAnnotatedTypeFactory.getRange(exprAnno);
+                switch (castType.getKind()) {
+                    case BYTE:
+                        exprRange = exprRange.byteRange();
+                        break;
+                    case SHORT:
+                        exprRange = exprRange.shortRange();
+                        break;
+                    case INT:
+                        exprRange = exprRange.intRange();
+                        break;
+                    default:
+                }
+                if (castRange.equals(exprRange)) {
+                    return p;
+                }
+            }
         }
-
         return super.visitTypeCast(node, p);
     }
 }

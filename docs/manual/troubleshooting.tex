@@ -764,18 +764,50 @@ report the problems to the Checker Framework developers.
 \subsection{Install prerequisites\label{building-prerequisites}}
 
 You need to install several packages in order to build the Checker
-Framework.  The following command installs them for Ubuntu:
+Framework.
+Follow the instructions for your operating system.
+
+\begin{description}
+\item[Ubuntu]
+  Run the following commands:
 
 \begin{Verbatim}
-sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial openjdk-8-jdk texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended unzip
+sudo apt-get update
+sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make \
+ mercurial openjdk-8-jdk texlive-latex-base texlive-latex-recommended \
+ texlive-latex-extra texlive-fonts-recommended unzip
 \end{Verbatim}
 
-If you are building on Windows, here is an \emph{incomplete} list of needed
-prerequisites:
+% Building Checker Framework from source on Mac OS
+
+\item[Mac OS]
+  If you employ \ahref{https://brew.sh}{homebrew} to install packages, run
+  the following commands:
+
+\begin{Verbatim}
+brew update
+brew install caskroom/cask/brew-cask
+brew install git ant hevea mercurial librsvg unzip make
+brew cask install java
+brew cask install mactex
+mkdir -p $HOME/Library/texmf/tex/latex
+cp -p /usr/local/Cellar/hevea/2.28/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
+\end{Verbatim}
+
+\item[Windows]
+  To building on Windows 10,
+  run \<bash> to obtain a version of
+  Ubuntu (provided by the Windows Subsystem for Linux) and follow the Ubuntu
+  instructions.
+
+To building on other versions of Windows,
+here is an \emph{incomplete} list of needed prerequisites:
 \begin{itemize}
 \item
   Install MSYS to obtain the \<cp> and \<make> commands.
 \end{itemize}
+
+\end{description}
 
 
 \subsection{Obtain the source\label{building-obtain-source}}
@@ -817,9 +849,12 @@ This needs to be an Oracle JDK.
 (The \<JAVA\_HOME> environment
 variable might already be set, because it is needed for Ant to work.)
 
-In the bash shell, putting the following command in your \code{.bashrc} file
-\emph{sometimes} works (it might
-not because \<java> might be the version in the JDK or in the JRE):
+\begin{description}
+\item[Ubuntu]
+If you use the bash shell, put the following command in your
+\code{.bashrc} file.  (This might not work if \<java> refers to an executable
+in the JRE rather than in the JDK, but you need the JDK installed to build
+the Checker Framework anyway.)
 % Can someone give a simpler command?
 %BEGIN LATEX
 \begin{smaller}
@@ -830,6 +865,16 @@ not because \<java> might be the version in the JDK or in the JRE):
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
+
+\item[Mac OSX 10.5 or later]
+  Add one of the following two commands in your \code{.bash\_profile} or
+  \code{.profile} file according to the version of your JDK.
+\begin{Verbatim}
+  export JAVA_HOME=$(/usr/libexec/java_home -v 1.7)
+  export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+\end{Verbatim}
+
+\end{description}
 
 \item
 Compile the Type Annotations tools:
@@ -920,7 +965,7 @@ ensure that the Checker Framework's version is used.
 If you are developing a checker within the Checker Framework, there is
 a developer version of \<javac> in the \<bin-devel> directory. This
 version will use compiled classes from \<dataflow/build>,
-\<javacutil/build>, \<stubparser/build>, \<framework/build>,
+\<javacutil/build>, \<framework/build>,
 and \<checker/build> in the \<checker-framework> directory instead of
 the compiled jar files, and by default will print stack traces for all
 errors.
@@ -993,7 +1038,7 @@ the JDK (some jobs might time out).
 \item
   Undo your edits to file \<.travis.yml>.
 \item Verify that all tests pass.
-\item A Checker Framework developer will merge your branch.
+\item A Checker Framework developer will review your code and merge your branch.
 \end{enumerate}
 
 
@@ -1100,6 +1145,15 @@ See the ICSE 2011 paper about the Checker Framework, described above.
 ``Loci: Simple thread-locality for Java''~\cite{WrigstadPMZV2009} (ECOOP 2009,
 \myurl{http://janvitek.org/pubs/ecoop09.pdf})
 
+\item[Security (Section~\ref{sparta-checker})]
+``Static analysis of implicit control flow: Resolving Java reflection and
+  Android intents''~\cite{BarrosJMVDdAE2015} (ASE 2015,
+  \myurl{http://homes.cs.washington.edu/~mernst/pubs/implicit-control-flow-ase2015-abstract.html})
+  describes the SPARTA toolset and information flow type-checker.
+
+``Boolean formulas for the static identification of injection attacks in
+  Java''~\cite{ErnstLMSS2015} (LPAR 2015, \myurl{http://homes.cs.washington.edu/~mernst/pubs/detect-injections-lpar2015-abstract.html})
+
 \item[\href{https://ece.uwaterloo.ca/~wdietl/ownership/}{Generic Universe
     Types} (Section~\ref{gut-checker})]
 ``Tunable static inference for Generic Universe Types'' (ECOOP 2011, \myurl{http://homes.cs.washington.edu/~mernst/pubs/tunable-typeinf-ecoop2011-abstract.html})
@@ -1175,7 +1229,7 @@ differs from a bug detector in several ways:
 
   Both types of tools may issue false alarms,
   also known as false positive warnings;
-  see Section~\ref{suppressing-warnings}.
+  see Chapter~\ref{suppressing-warnings}.
 
 \item
   A type-checker requires you to annotate your code with type qualifiers,
@@ -1222,6 +1276,7 @@ Developers who have contributed code to the Checker Framework include
 Abraham Lin,
 Anatoly Kupriyanov,
 Asumu Takikawa,
+Bohdan Sharipov,
 Charlie Garrett,
 Chris Mackie,
 Colin Gordon,
@@ -1250,6 +1305,7 @@ Philip Lai,
 Renato Athaydes,
 Ren\'e Just,
 Ryan Oblak,
+Shinya Yoshida,
 Stefan Heule,
 Steph Dietzel,
 Stuart Pernsteiner,

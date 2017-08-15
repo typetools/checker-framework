@@ -21,10 +21,10 @@ esac
 binaryDir="${mydir}"/../dist
 
 # langtools bin dir for Jenkins
-if [ -z "$LT_BIN" ] || [ "$LT_BIN" = "" ]; then
+if [ -z "${LT_BIN}" ] || [ "${LT_BIN}" = "" ]; then
    ltBinDir="${mydir}"/../../../jsr308-langtools/build/classes
 else
-   ltBinDir="$LT_BIN"
+   ltBinDir="${LT_BIN}"
 fi
 
 jdkPaths="${mydir}"/../jdk/annotated
@@ -35,7 +35,7 @@ annoToolsDir="${cfDir}"/../annotation-tools
 # Put afu jar files last, as they might contain out-of-date CF files.
 # Put "checker" after the other sub-projects, as "ant bindist" puts
 # other projects into the checker/build directory.
-buildDirs="${cfDir}"/dataflow/build:"${cfDir}"/javacutil/build:"${cfDir}"/stubparser/build:"${cfDir}"/framework/build:"${cfDir}"/checker/build:"${annoToolsDir}"/scene-lib/bin:"${annoToolsDir}"/annotation-file-utilities/annotation-file-utilities.jar
+buildDirs="${cfDir}"/dataflow/build:"${cfDir}"/javacutil/build:"${cfDir}"/framework/build:"${cfDir}"/checker/build:"${cfDir}"/checker/lib/javaparser-core.jar:"${annoToolsDir}"/scene-lib/bin:"${annoToolsDir}"/annotation-file-utilities/annotation-file-utilities.jar
 
 ## Preserve quoting and spaces in arguments, which would otherwise be lost
 ## due to being passed through the shell twice.

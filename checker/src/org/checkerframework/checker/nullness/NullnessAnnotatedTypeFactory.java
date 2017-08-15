@@ -42,7 +42,9 @@ import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
@@ -305,6 +307,21 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
+    public void adaptGetClassReturnTypeToReceiver(
+            final AnnotatedExecutableType getClassType, final AnnotatedTypeMirror receiverType) {
+
+        super.adaptGetClassReturnTypeToReceiver(getClassType, receiverType);
+
+        // Make the wildcard always @NonNull, regardless of the declared type.
+
+        final AnnotatedDeclaredType returnAdt =
+                (AnnotatedDeclaredType) getClassType.getReturnType();
+        final List<AnnotatedTypeMirror> typeArgs = returnAdt.getTypeArguments();
+        final AnnotatedWildcardType classWildcardArg = (AnnotatedWildcardType) typeArgs.get(0);
+        classWildcardArg.getExtendsBoundField().replaceAnnotation(NONNULL);
+    }
+
+    @Override
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
         AnnotatedTypeMirror result = super.getMethodReturnType(m, r);
         replacePolyQualifier(result, r);
@@ -326,6 +343,8 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
+        // Don't call super.createTreeAnnotator because the default tree annotators are incorrect
+        // for the Nullness Checker.
         ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
         implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_CLASS, NONNULL);
         implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_ARRAY, NONNULL);
@@ -515,13 +534,12 @@ public class NullnessAnnotatedTypeFactory
      *
      * <p>In other words, is the lower bound @NonNull?
      *
-     * @param field field that might have invariant annotation
-     * @return whether or not field has the invariant annotation
+     * @param type of field that might have invariant annotation
+     * @return whether or not type has the invariant annotation
      */
     @Override
-    protected boolean hasFieldInvariantAnnotation(VariableTree field) {
+    protected boolean hasFieldInvariantAnnotation(AnnotatedTypeMirror type) {
         AnnotationMirror invariant = getFieldInvariantAnnotation();
-        AnnotatedTypeMirror type = getAnnotatedType(field);
         Set<AnnotationMirror> lowerBounds =
                 AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type);
         return AnnotationUtils.containsSame(lowerBounds, invariant);

@@ -7,6 +7,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
     public <F extends @NonNull Object> void wildcardExtends(Gen<? extends F> class1);
     public <F extends @NonNull Object> void wildcardSuper(Gen<@NonNull ? super F> class1);
-}
 
-class Class1$Gen<F extends @NonNull Object> {}
+    class Gen<F extends @NonNull Object> {}
+}

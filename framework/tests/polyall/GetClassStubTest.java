@@ -4,7 +4,7 @@ import polyall.quals.*;
 
 class GetClassStubTest {
 
-    // See AnntoatedTypeFactory.adaptGetClassReturnTypeToReceiver
+    // See AnnotatedTypeFactory.adaptGetClassReturnTypeToReceiver
     void context() {
         Integer i = 4;
         Class<?> a = i.getClass();

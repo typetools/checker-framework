@@ -343,7 +343,7 @@ public final class TypesUtils {
             Type.WildcardType w = (Type.WildcardType) TypeAnnotationUtils.unannotatedType(t);
             return w.isExtendsBound() ? syms.botType : wildLowerBound(env, w.type);
         } else {
-            return t.unannotatedType();
+            return TypeAnnotationUtils.unannotatedType(t);
         }
     }
     /** Returns the {@link TypeMirror} for a given {@link Class}. */
@@ -441,7 +441,7 @@ public final class TypesUtils {
     /**
      * Returns true if the erased type of subtype is a subtype of the erased type of supertype.
      *
-     * @param types Types
+     * @param types a Types object
      * @param subtype possible subtype
      * @param supertype possible supertype
      * @return true if the erased type of subtype is a subtype of the erased type of supertype

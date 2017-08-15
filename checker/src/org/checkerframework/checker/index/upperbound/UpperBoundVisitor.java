@@ -91,7 +91,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             UBQualifier qual = UBQualifier.createUBQualifier(anm);
             if (qual.isLessThanLengthQualifier()) {
                 LessThanLengthOf ltl = (LessThanLengthOf) qual;
-                for (String array : ltl.getArrays()) {
+                for (String array : ltl.getSequences()) {
                     checkIfPermittedInDependentTypeAnno(array, node);
                 }
             }
@@ -454,25 +454,25 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         ValueAnnotatedTypeFactory valueAnnotatedTypeFactory =
                 atypeFactory.getValueAnnotatedTypeFactory();
         checkloop:
-        for (String arrayName : varLtlQual.getArrays()) {
+        for (String sequenceName : varLtlQual.getSequences()) {
 
-            List<String> sameLenArrays =
-                    sameLenFactory.getSameLensFromString(arrayName, valueExp, getCurrentPath());
-            if (testSameLen(expQual, varLtlQual, sameLenArrays, arrayName)) {
+            List<String> sameLenSequences =
+                    sameLenFactory.getSameLensFromString(sequenceName, valueExp, getCurrentPath());
+            if (testSameLen(expQual, varLtlQual, sameLenSequences, sequenceName)) {
                 continue;
             }
 
             int minlen =
                     valueAnnotatedTypeFactory.getMinLenFromString(
-                            arrayName, valueExp, getCurrentPath());
-            if (testMinLen(value, minlen, arrayName, varLtlQual)) {
+                            sequenceName, valueExp, getCurrentPath());
+            if (testMinLen(value, minlen, sequenceName, varLtlQual)) {
                 continue;
             }
-            for (String array : sameLenArrays) {
+            for (String sequence : sameLenSequences) {
                 int minlenSL =
                         valueAnnotatedTypeFactory.getMinLenFromString(
-                                array, valueExp, getCurrentPath());
-                if (testMinLen(value, minlenSL, arrayName, varLtlQual)) {
+                                sequence, valueExp, getCurrentPath());
+                if (testMinLen(value, minlenSL, sequenceName, varLtlQual)) {
                     continue checkloop;
                 }
             }
