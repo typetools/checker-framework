@@ -19,9 +19,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class UpperBoundUtil {
 
     /**
-     * This enum is used by {@link UpperBoundStore#isSideEffected(Receiver, Receiver,
-     * SideEffectKind, AnnotationMirror)} to determine which properties of an annotation to check
-     * based on what kind of side-effect has occurred.
+     * This enum is used by {@link #isSideEffected(Receiver, Receiver, SideEffectKind)} to determine
+     * which properties of an annotation to check based on what kind of side-effect has occurred.
      */
     public enum SideEffectKind {
         LOCAL_VAR_REASSIGNMENT,
@@ -50,7 +49,6 @@ public class UpperBoundUtil {
      * @param receiver expression to check if the side effect effects it
      * @param reassignedVariable field that is reassigned as the side effect, possible null
      * @param sideEffectKind {@link SideEffectKind}
-     * @param anno just for errors
      * @return non-null result
      */
     public static SideEffectError isSideEffected(
