@@ -36,9 +36,10 @@ import org.checkerframework.javacutil.ErrorReporter;
  *
  * <p>This class takes care of three of the attributes of {@link
  * org.checkerframework.framework.qual.ImplicitFor}; the others are handled in {@link
- * org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}. TODO: we currently
- * don't check that any attribute is set, that is, a qualifier could be annotated as @ImplicitFor(),
- * which might be misleading.
+ * org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}.
+ *
+ * <p>TODO: we currently don't check that any attribute is set, that is, a qualifier could be
+ * annotated as @ImplicitFor(), which might be misleading.
  *
  * @see org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator
  * @see TreeAnnotator

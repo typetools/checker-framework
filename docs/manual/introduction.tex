@@ -208,7 +208,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-2.1.13.zip}
+  \url{https://checkerframework.org/checker-framework-2.1.14.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -1264,7 +1264,7 @@ guaranteed to succeed.
 When you run a type-checker on your code, it is likely to issue warnings or
 errors.  Don't panic!  There are three general causes for the warnings:
 
-\begin{enumerate}
+\begin{itemize}
 \item
   There is a bug in your code, such as a possible null dereference.  Fix
   your code to prevent that crash.
@@ -1288,38 +1288,68 @@ errors.  Don't panic!  There are three general causes for the warnings:
   Chapter~\ref{suppressing-warnings}); be sure to include a code
   comment explaining how you know the code is correct even though the
   type-checker cannot deduce that fact.
-\end{enumerate}
+\end{itemize}
 
 For each warning issued by the checker, you need to determine which of the
-above categories it falls into.  Here is an effective way to do so:
+above categories it falls into.  Here is an effective methodology to do so.
+It relies mostly on manual code examination, but you may also find it
+useful to write test cases for your code or do other kinds of analysis, to
+verify your reasoning.
+
 \begin{enumerate}
 \item
-  Write an informal argument explaining why your code is correct and it
-  never suffers the error at run time.  In other words, this is an argument
-  for why the type-checker's warning is incorrect.
+  Write an explanation of why your code is correct and it
+  never suffers the error at run time.  In other words, this is a proof
+  that the type-checker's warning is incorrect.
 
-  Don't skip any steps in your argument.  Don't let your reasoning rely on
+  Don't skip any steps in your proof.
+  (For example, don't write an unsubstantiated claim such as ``\<x> is
+  non-null here''; instead, give a justification.)
+  Don't let your reasoning rely on
   facts that you do not write down explicitly.  For example, remember that
-  calling a method might change the values of object fields; your argument
+  calling a method might change the values of object fields; your proof
   might need to state that certain methods have no side effects.
 
-  You might find that you cannot make this argument, because there is a bug
-  in your code.  In that case, fix the bug.
+  If you cannot write a proof, then there is a bug
+  in your code (you should fix the bug) or your code is too complex for you
+  to understand (you should improve its documentation and/or design).
 
 \item
-  Try to translate the argument into annotations.
+  Translate the proof into annotations.  Here are some examples.
 
-  For example, if your argument includes ``variable \<x> is never \<null>
-  at run time'', then ensure that the variable's type is annotated with
-  \refqualclass{checker/nullness/qual}{NonNull}.  Or if your argument
-  includes, ``method \<foo> always returns a legal regular expression'',
-  then ensure that \<foo>'s return type is annotated with
-  \refqualclass{checker/regex/qual}{Regex}.  If method \<foo> is in a
+  \begin{itemize}
+  \item
+    If your proof includes ``variable \<x> is never \<null>
+    at run time'', then annotate <x>'s type with
+    \refqualclass{checker/nullness/qual}{NonNull}.
+  \item
+    If your proof
+    includes ``method \<foo> always returns a legal regular expression'',
+    then annotate \<foo>'s return type with
+    \refqualclass{checker/regex/qual}{Regex}.
+  \item
+    If your proof includes ``if method \<join>'s first argument is
+    non-null, then \<join> returns a non-null result'', then annotate
+    \<join>'s first parameter and return type with
+    \refqualclass{checker/nullness/qual}{PolyNull}.
+  \item
+    If your proof includes ``method \<processOptions> has already been called and it
+    set field \<tz1>'', then annotate \<processOptions>'s declaration with
+    \refqualclasswithparams{checker/nullness/qual}{EnsuresNonNull}{"tz1"}.
+  \item
+    If your proof includes ``method \<isEmpty> returned false, so its
+    argument must have been non-null'', then annotate \<isEmpty>'s
+    declaration with
+    \refqualclasswithparams{checker/nullness/qual}{EnsuresNonNullIf}{expression="\#1",result=false}.
+  \end{itemize}
+  All of these are examples of correcting weaknesses in the annotations you wrote.
+  The Checker Framework provides many other powerful annotations; you may
+  be surprised how many proofs you can express in annotations.
+  If you need to annotate a method that is defined in a
   library that your code uses, see \chapterpageref{annotating-libraries},
   Annotating Libraries.
-  These are examples of correcting weaknesses in the annotations you wrote.
 
-  If there are complex facts in your argument that cannot be expressed as
+  If there are complex facts in your proof that cannot be expressed as
   annotations, then that is a weakness in the type-checker.  For example,
   the Nullness Checker cannot express ``in list \<lst>, elements stored at
   even indices are always non-\<null>, but elements stored at odd elements
@@ -1331,16 +1361,16 @@ above categories it falls into.  Here is an effective way to do so:
   submit a feature request (Section~\ref{reporting-bugs}) asking for
   annotations that handle your use case.
   %
-  Second, you can rewrite the code to make the argument simpler;
+  Second, you can rewrite the code to make the proof simpler;
   in the above example, it might be better to use a list of pairs
   rather than a heterogeneous list.
 
 \item
-  At this point, all the steps in your argument have been formalized as
+  At this point, all the steps in your proof have been formalized as
   annotations.  Re-run the checker and repeat the process for any new or
   remaining warnings.
 
-  If every step of your argument can be expressed in annotations, but the
+  If every step of your proof can be expressed in annotations, but the
   checker cannot make one of the deductions (it cannot follow one of the
   steps), then that is a weakness in the type-checker.  First, double-check
   your reasoning.  Then, suppress the warning, along with a comment
@@ -1349,10 +1379,6 @@ above categories it falls into.  Here is an effective way to do so:
   in the future (Section~\ref{reporting-bugs}).
 
 \end{enumerate}
-
-Although you will mostly rely on manual code examination, you may also
-find it useful to write test cases for your code or do other kinds of
-analysis.
 
 If you have trouble understanding a Checker Framework warning message, you
 can search for its text in this manual.  Also see

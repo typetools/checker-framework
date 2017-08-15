@@ -1,6 +1,5 @@
 // Test case for issue #1032:
 // https://github.com/typetools/checker-framework/issues/1032
-// @skip-test until the issue is fixed.
 
 // @below-java8-jdk-skip-test
 
@@ -28,6 +27,8 @@ class Issue1032 {
     }
 
     <T> Stream<@NonNull T> mapTCast(Stream<@Nullable T> arg) {
+        //TODO: false postive
+        //:: error: (return.type.incompatible)
         return arg.map(Issue1032::<T>castTToNonNull);
     }
 }

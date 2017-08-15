@@ -130,10 +130,9 @@ public class TypecheckResult {
                 }
             }
 
-            summaryBuilder.append(
-                    "While type-checking "
-                            + TestUtilities.summarizeSourceFiles(
-                                    configuration.getTestSourceFiles()));
+            summaryBuilder
+                    .append("While type-checking ")
+                    .append(TestUtilities.summarizeSourceFiles(configuration.getTestSourceFiles()));
             return summaryBuilder.toString();
         }
 

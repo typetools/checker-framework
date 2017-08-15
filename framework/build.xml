@@ -16,6 +16,7 @@
     <property name="run.tests.should.fork" value="true"/>
     <property name="halt.on.test.failure" value="true"/>
     <property name="javadoc.private" value="false"/>
+    <property name="lib" value="../checker/lib"/>
 
 
     <!-- Dependendencies on other projects (such as dataflow)
@@ -29,10 +30,6 @@
         <mkdir dir="${tests.build}/testclasses"/>
         <mkdir dir="${api.doc}" />
 
-        <available property="stubparser.project"
-                   file="${stubparser.loc}/build.xml"/>
-        <antcall target="-prep-stubparser-compile"/>
-
         <available property="javacutil.project"
                    file="${javacutil.loc}/build.xml"/>
         <antcall target="-prep-javacutil-compile"/>
@@ -40,13 +37,6 @@
         <available property="dataflow.project"
                    file="${dataflow.loc}/build.xml"/>
         <antcall target="-prep-dataflow-compile"/>
-    </target>
-
-    <target name="-prep-stubparser-compile" if="stubparser.project"
-            description="Compile stubparser project">
-        <ant dir="${stubparser.loc}">
-            <target name="dist"/>
-        </ant>
     </target>
 
     <target name="-prep-javacutil-compile" if="javacutil.project"
@@ -70,10 +60,6 @@
         </ant>
 
         <ant dir="${dataflow.loc}">
-            <target name="clean"/>
-        </ant>
-
-        <ant dir="${stubparser.loc}">
             <target name="clean"/>
         </ant>
 
@@ -116,7 +102,6 @@
           <srcfiles refid="src.astub.files"/>
         </uptodate>
 
-        <uptodate property="stubparser.lib.uptodate" targetfile="${build}" srcfile="${stubparser.lib}"/>
         <uptodate property="javacutil.lib.uptodate" targetfile="${build}" srcfile="${javacutil.lib}"/>
         <uptodate property="dataflow.lib.uptodate" targetfile="${build}" srcfile="${dataflow.lib}"/>
 
@@ -124,7 +109,6 @@
           <and>
             <isset property="src.files.uptodate"/>
             <isset property="src.astub.files.uptodate"/>
-            <isset property="stubparser.lib.uptodate"/>
             <isset property="javacutil.lib.uptodate"/>
             <isset property="dataflow.lib.uptodate"/>
           </and>
@@ -133,7 +117,6 @@
         <!--
         <echo message="src.files.uptodate: ${src.files.uptodate}"/>
         <echo message="src.astub.files.uptodate: ${src.astub.files.uptodate}"/>
-        <echo message="stubparser.lib.uptodate: ${stubparser.lib.uptodate}"/>
         <echo message="javacutil.lib.uptodate: ${javacutil.lib.uptodate}"/>
         <echo message="dataflow.lib.uptodate: ${dataflow.lib.uptodate}"/>
         <echo message="build.uptodate: ${build.uptodate}"/>
@@ -159,7 +142,7 @@
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-framework.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
+              classpath="${javac.lib}:${javacutil.lib}:${dataflow.lib}:${javaparser.core.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -211,19 +194,18 @@
         <!-- With Ant 1.9.4 or later, add
             failonwarning="true"
             but Travis is stuck on Ant 1.8.2 as of 6/2016 -->
-        <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${stubparser}/${src}:${dataflow.loc}/${src}:${annotation-file-utilities.loc}/${src}"
+        <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${annotation-file-utilities.loc}/${src}"
                  destdir="${api.doc}"
                  private="${javadoc.private}"
                  encoding="UTF-8"
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${javac.lib}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
+                 classpath="${build}:${javac.lib}:${javacutil.lib}:${dataflow.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
                  excludepackagenames="org.checkerframework.framework.stub"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
             <package name="org.checkerframework.javacutil.*"/>
             <package name="org.checkerframework.dataflow.*"/>
-            <package name="org.checkerframework.stubparser.*"/>
             <package name="org.checkerframework.framework.*"/>
             <package name="org.checkerframework.common.*"/>
             <package name="org.checkerframework.checker.*"/>
@@ -244,7 +226,7 @@
     <target name="jar" depends="build"
             description="Create framework.jar file">
 
-        <unjar src="${stubparser.lib}" dest="${build}" />
+        <unjar src="${javaparser.core.lib}" dest="${build}" />
         <unjar src="${javacutil.lib}" dest="${build}" />
         <unjar src="${dataflow.lib}" dest="${build}" />
 
@@ -274,7 +256,7 @@
 
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${build}:${javacutil.lib}:${dataflow.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
+              classpath="${javac.lib}:${build}:${javacutil.lib}:${dataflow.lib}:${javaparser.core.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -314,6 +296,7 @@
                 <pathelement path="${javac.lib}"/>
                 <pathelement path="${framework.lib}"/>
                 <pathelement path="${tests.build}"/>
+                <pathelement path="${javaparser.core.lib}"/>
                 <pathelement path="${junit.lib}"/>
                 <pathelement path="${hamcrest.lib}"/>
                 <pathelement path="${annotation-file-utilities.lib}"/>

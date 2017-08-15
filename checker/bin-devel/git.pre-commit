@@ -12,7 +12,7 @@ set -e
 # Need to keep checked files in sync with formatted.java.files in
 # build.xml. Otherwise `ant reformat` might not reformat a file that this
 # hook complains about.
-CHANGED_JAVA_FILES=`git diff --staged --name-only --diff-filter=ACM | grep '\.java$' | grep -v '/jdk/' | grep -v '/stubparser/' | grep -v '/eclipse/' ` || true
+CHANGED_JAVA_FILES=`git diff --staged --name-only --diff-filter=ACM | grep '\.java$' | grep -v '/jdk/' | grep -v '/eclipse/' ` || true
 # echo CHANGED_JAVA_FILES "'"${CHANGED_JAVA_FILES}"'"
 if [ ! -z "$CHANGED_JAVA_FILES" ]; then
     ant -silent update-run-google-java-format
@@ -24,7 +24,7 @@ fi
 # This is to handle non-.java files, since the above already handled .java files.
 # May need to remove files that are allowed to have trailing whitespace or are
 # not text files.
-CHANGED_FILES=`git diff --staged --name-only --diff-filter=ACM | grep -v '.class$' | grep -v '.gz$' | grep -v '.jar$' | grep -v '.png$' | grep -v '.xcf$'` || true
+CHANGED_FILES=`git diff --staged --name-only --diff-filter=ACM | grep -v '\.class$' | grep -v '\.gz$' | grep -v '\.jar$' | grep -v '\.pdf$' | grep -v '\.png$' | grep -v '\.xcf$'` || true
 if [ ! -z "$CHANGED_FILES" ]; then
     # echo "CHANGED_FILES: ${CHANGED_FILES}"
     FILES_WITH_TRAILING_SPACES=`grep -l -s '[[:blank:]]$' ${CHANGED_FILES} 2>&1` || true

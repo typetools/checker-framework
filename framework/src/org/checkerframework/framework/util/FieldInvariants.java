@@ -56,7 +56,7 @@ public class FieldInvariants {
      * Returns a list of qualifiers for {@code field}. If field has no qualifiers, then the empty
      * list is returned.
      *
-     * @param field Simple field name
+     * @param field simple field name
      * @return a list of qualifiers for {@code field}
      */
     public List<AnnotationMirror> getQualifiersFor(CharSequence field) {

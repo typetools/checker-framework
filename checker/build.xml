@@ -207,11 +207,6 @@
                 <!-- Exclude ManualTaglet to not depend on javadoc. -->
                     <exclude name="**/javacutil/dist/**"/>
                 </fileset>
-                <!-- Do not re-compile the stubparser, as it is not lint clean.
-                <fileset dir="${stubparser.loc}/${src}">
-                    <include name="**/*.java"/>
-                </fileset>
-                -->
                 <fileset dir="${dataflow.loc}/${src}">
                     <include name="**/*.java"/>
                 </fileset>
@@ -225,7 +220,7 @@
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
+              classpath="${javac.lib}:${framework.lib}:${javaparser.core.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -292,7 +287,7 @@
         <!-- With Ant 1.9.4 or later, add to each javadoc task:
             failonwarning="true"
             but Travis is stuck on Ant 1.8.2 as of 6/2016 -->
-        <javadoc sourcepath="${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}:${annotation-file-utilities.loc}/${src}"
+        <javadoc sourcepath="${javacutil.loc}/${src}:${dataflow.loc}/${src}:${framework.loc}/${src}:${annotation-file-utilities.loc}/${src}"
                  destdir="${api.doc}"
                  private="${javadoc.private}"
                  encoding="UTF-8"
@@ -305,7 +300,6 @@
 
             <package name="org.checkerframework.javacutil.*"/>
             <package name="org.checkerframework.dataflow.*"/>
-            <package name="org.checkerframework.stubparser.*"/>
             <package name="org.checkerframework.framework.*"/>
             <package name="org.checkerframework.common.*"/>
             <package name="org.checkerframework.checker.*"/>
@@ -354,7 +348,6 @@
             <fileset dir="${framework.loc}/${src}"/>
             <fileset dir="${dataflow.loc}/${src}"/>
             <fileset dir="${javacutil.loc}/${src}"/>
-            <fileset dir="${stubparser.loc}/${src}"/>
         </copy>
 
         <jar destfile="${checker.sources.lib}" basedir="${checker-sources-tmp}"/>
@@ -366,22 +359,22 @@
 
         <mkdir dir="dist" />
 
+        <!-- Only unjar the afu and stubparser - everything else is recompiled. -->
+
         <!-- jar up compilation results to protect against being
              overwritten by unjarring annotation-file-utilities.lib.
              See https://github.com/typetools/checker-framework/issues/894 -->
-        <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/,reports/"/>
-
-        <!-- Only unjar the stubparser and afu - everything else is recompiled. -->
+        <jar destfile="${checker.lib.tmp}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/,reports/"/>
         <unjar src="${annotation-file-utilities.lib}" dest="${build}" />
         <!-- Also delete anything in the org/checkerframework package in case it has be removed
         from the framework-->
         <delete includeemptydirs="true">
             <fileset dir="${build}/org/checkerframework"/>
          </delete>
-
-        <unjar src="${stubparser.lib}" dest="${build}" />
         <!-- Work-around for Issue 894, see above. -->
-        <unjar src="${checker.lib}" dest="${build}" />
+        <unjar src="${checker.lib.tmp}" dest="${build}" />
+
+        <unjar src="${javaparser.core.lib}" dest="${build}" />
 
         <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/,reports/">
             <manifest>
@@ -1274,13 +1267,6 @@ So, use our own archived version.
                     <exclude name="**/javacutil/dist/**"/>
                 </fileset>
 
-                <fileset dir="${stubparser.loc}/${src}">
-                    <include name="**/*.java"/>
-                    <!-- Ignore the huge, auto-generated parser.
-                         TODO: might be a nice benchmark for performance optimization? -->
-                    <exclude name="**/AST*.java"/>
-                    <exclude name="**/Token.java"/>
-                </fileset>
                 <!-- Do not check dataflow, it doesn't have all purity
                      annotations. TODO: should be easy to fix. Or solved
                      once we inherit those annotations.
@@ -1434,8 +1420,8 @@ So, use our own archived version.
         <javac failonerror="true"
                 includeantruntime="false"
                 debug="true"
-                classpath="${checker.lib}:${junit.lib}:${hamcrest.lib}"
-                srcdir="${framework.loc}/${src}:${dataflow.loc}/${src}:${javacutil.loc}/${src}:${stubparser.loc}/${src}:${src}"
+                classpath="${checker.lib}:${javaparser.core.lib}:${junit.lib}:${hamcrest.lib}"
+                srcdir="${framework.loc}/${src}:${dataflow.loc}/${src}:${javacutil.loc}/${src}:${src}"
                 includes="**/*.java"
                 excludes="**/javacutil/dist/**"
                 compiler="com.google.errorprone.ErrorProneAntCompilerAdapter"

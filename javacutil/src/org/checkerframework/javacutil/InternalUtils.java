@@ -13,7 +13,6 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.Types;
@@ -369,28 +368,15 @@ public class InternalUtils {
         return types.glb(t1, t2);
     }
 
-    /**
-     * Returns the return type of a method, where the "raw" return type of that method is given
-     * (i.e., the return type might still contain unsubstituted type variables), given the receiver
-     * of the method call.
-     */
+    /** Returns the return type of a method, given the receiver of the method call. */
     public static TypeMirror substituteMethodReturnType(
-            TypeMirror methodType, TypeMirror substitutedReceiverType) {
-        if (methodType.getKind() != TypeKind.TYPEVAR) {
-            return methodType;
-        }
-        // TODO: find a nicer way to substitute type variables
-        String t = TypeAnnotationUtils.unannotatedType(methodType).toString();
-        Type finalReceiverType = (Type) substitutedReceiverType;
-        int i = 0;
-        for (TypeSymbol typeParam : finalReceiverType.tsym.getTypeParameters()) {
-            if (t.equals(typeParam.toString())) {
-                return finalReceiverType.getTypeArguments().get(i);
-            }
-            i++;
-        }
-        assert false;
-        return null;
+            ProcessingEnvironment env, Element methodElement, TypeMirror substitutedReceiverType) {
+
+        Types types = Types.instance(getJavacContext(env));
+
+        Type substitutedMethodType =
+                types.memberType((Type) substitutedReceiverType, (Symbol) methodElement);
+        return substitutedMethodType.getReturnType();
     }
 
     /**
@@ -451,5 +437,33 @@ public class InternalUtils {
         }
 
         return Integer.compare(pos1.getStartPosition(), pos2.getStartPosition());
+    }
+
+    /**
+     * Returns whether or not {@code type} is a functional interface type (as defined in JLS 9.8).
+     *
+     * @param type possible functional interface type
+     * @param env ProcessingEnvironment
+     * @return whether or not {@code type} is a functional interface type (as defined in JLS 9.8)
+     */
+    public static boolean isFunctionalInterface(TypeMirror type, ProcessingEnvironment env) {
+        Context ctx = ((JavacProcessingEnvironment) env).getContext();
+        com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
+        return javacTypes.isFunctionalInterface((Type) type);
+    }
+
+    /**
+     * The type of the lambda or method reference tree is a functional interface type. This method
+     * returns the single abstract method declared by that functional interface. (The type of this
+     * method is referred to as the function type.)
+     *
+     * @param tree lambda or member reference tree
+     * @param env ProcessingEnvironment
+     * @return the single abstract method declared by the type of the tree
+     */
+    public static Symbol findFunction(Tree tree, ProcessingEnvironment env) {
+        Context ctx = ((JavacProcessingEnvironment) env).getContext();
+        com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
+        return javacTypes.findDescriptorSymbol(((Type) typeOf(tree)).asElement());
     }
 }
