@@ -493,7 +493,8 @@ public class WholeProgramInferenceScenesHelper {
         // Only update the ATypeElement if there are no explicit annotations
         if (curATM.getExplicitAnnotations().size() == 0) {
             for (AnnotationMirror am : newATM.getAnnotations()) {
-                addAnnotationsToATypeElement(newATM, atf, typeToUpdate, defLoc, am);
+                addAnnotationsToATypeElement(
+                        newATM, atf, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
             }
         } else if (curATM.getKind() == TypeKind.TYPEVAR) {
             // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly annotated.
@@ -505,7 +506,8 @@ public class WholeProgramInferenceScenesHelper {
                     // in the same hierarchy.
                     break;
                 }
-                addAnnotationsToATypeElement(newATM, atf, typeToUpdate, defLoc, am);
+                addAnnotationsToATypeElement(
+                        newATM, atf, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
             }
         }
 
@@ -531,11 +533,12 @@ public class WholeProgramInferenceScenesHelper {
             AnnotatedTypeFactory atf,
             ATypeElement typeToUpdate,
             TypeUseLocation defLoc,
-            AnnotationMirror am) {
+            AnnotationMirror am,
+            boolean isEffectiveAnnotation) {
         Annotation anno = AnnotationConverter.annotationMirrorToAnnotation(am);
         if (anno != null) {
             typeToUpdate.tlAnnotationsHere.add(anno);
-            if (shouldIgnore(am, defLoc, atf, newATM)) {
+            if (isEffectiveAnnotation || shouldIgnore(am, defLoc, atf, newATM)) {
                 // firstKey works as a unique identifier for each annotation
                 // that should not be inserted in source code
                 String firstKey =
