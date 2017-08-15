@@ -1,20 +1,24 @@
 package java.lang;
 import org.checkerframework.checker.guieffect.qual.*;
 @PolyUIType class Object {
-    @SafeEffect Class<? extends Object> getClass() @PolyUI;
+    @SafeEffect Class<? extends Object> getClass(@PolyUI Object this) ;
+}
+
+@PolyUIType interface Runnable {
+    @PolyUIEffect void run(@PolyUI Runnable this);
 }
 
 // These types are polymorphic, but they're basically unusable unless I fix the subtyping among
 // differently permissioned interfaces...
 //package java.util;
 //@PolyUIType interface Observer {
-//    @PolyUIEffect void update(@PolyUI Observable o, Object arg) @PolyUI;
+//    @PolyUIEffect void update(@PolyUI Observer this, @PolyUI Observable o, Object arg);
 //}
 //@PolyUIType class Observable {
-//    @SafeEffect void addObserver(@PolyUI Observer o) @PolyUI;
-//    @SafeEffect void deleteObserver(@PolyUI Observer o) @PolyUI;
-//    @PolyUIEffect void notifyObservers() @PolyUI;
-//    @PolyUIEffect void notifyObservers(Object arg) @PolyUI;
+//    @SafeEffect void addObserver(@PolyUI Observable this, @PolyUI Observer o);
+//    @SafeEffect void deleteObserver(@PolyUI Observable this, @PolyUI Observer o);
+//    @PolyUIEffect void notifyObservers(@PolyUI Observable this);
+//    @PolyUIEffect void notifyObservers(@PolyUI Observable this, Object arg);
 //}
 
 @UIPackage
@@ -48,33 +52,33 @@ class Desktop {
 
 package java.beans;
 @PolyUIType public interface PropertyChangeListener extends EventListener {
-    @PolyUIEffect void propertyChange(PropertyChangeEvent evt) @PolyUI;
+    @PolyUIEffect void propertyChange(@PolyUI PropertyChangeListener this, PropertyChangeEvent evt);
 }
 @PolyUIType public class PropertyChangeSupport implements Serializable {
     @SafeEffect public PropertyChangeSupport(@PolyUI Object sourceBean);
-    @PolyUIEffect public void addPropertyChangeListener(@PolyUI PropertyChangeListener listener) @PolyUI;
-    @PolyUIEffect public void removePropertyChangeListener(PropertyChangeListener listener) @PolyUI;
-    @PolyUIEffect public @PolyUI PropertyChangeListener[] getPropertyChangeListeners() @PolyUI;
-    @PolyUIEffect public void addPropertyChangeListener(String propertyName, @PolyUI PropertyChangeListener listener) @PolyUI;
-    @PolyUIEffect public void removePropertyChangeListener(String propertyName, @PolyUI PropertyChangeListener listener) @PolyUI;
-    @PolyUIEffect public @PolyUI PropertyChangeListener[] getPropertyChangeListeners(String propertyName) @PolyUI;
-    @PolyUIEffect public void firePropertyChange(String propertyName, Object oldValue, Object newValue) @PolyUI;
-    @PolyUIEffect public void firePropertyChange(String propertyName, int oldValue, int newValue) @PolyUI;
-    @PolyUIEffect public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) @PolyUI;
-    @PolyUIEffect public void firePropertyChange(PropertyChangeEvent event) @PolyUI;
-    @PolyUIEffect public void fireIndexedPropertyChange(String propertyName,
+    @PolyUIEffect public void addPropertyChangeListener(@PolyUI PropertyChangeSupport this, @PolyUI PropertyChangeListener listener);
+    @PolyUIEffect public void removePropertyChangeListener(@PolyUI PropertyChangeSupport this, PropertyChangeListener listener);
+    @PolyUIEffect public @PolyUI PropertyChangeListener[] getPropertyChangeListeners(@PolyUI PropertyChangeSupport this);
+    @PolyUIEffect public void addPropertyChangeListener(@PolyUI PropertyChangeSupport this, String propertyName, @PolyUI PropertyChangeListener listener);
+    @PolyUIEffect public void removePropertyChangeListener(@PolyUI PropertyChangeSupport this, String propertyName, @PolyUI PropertyChangeListener listener);
+    @PolyUIEffect public @PolyUI PropertyChangeListener[] getPropertyChangeListeners(@PolyUI PropertyChangeSupport this, String propertyName);
+    @PolyUIEffect public void firePropertyChange(@PolyUI PropertyChangeSupport this, String propertyName, Object oldValue, Object newValue);
+    @PolyUIEffect public void firePropertyChange(@PolyUI PropertyChangeSupport this, String propertyName, int oldValue, int newValue);
+    @PolyUIEffect public void firePropertyChange(@PolyUI PropertyChangeSupport this, String propertyName, boolean oldValue, boolean newValue);
+    @PolyUIEffect public void firePropertyChange(@PolyUI PropertyChangeSupport this, PropertyChangeEvent event);
+    @PolyUIEffect public void fireIndexedPropertyChange(@PolyUI PropertyChangeSupport this, String propertyName,
                              int index,
                              Object oldValue,
-                             Object newValue) @PolyUI;
-    @PolyUIEffect public void fireIndexedPropertyChange(String propertyName,
+                             Object newValue);
+    @PolyUIEffect public void fireIndexedPropertyChange(@PolyUI PropertyChangeSupport this, String propertyName,
                              int index,
                              int oldValue,
-                             int newValue) @PolyUI;
-    @PolyUIEffect public void fireIndexedPropertyChange(String propertyName,
+                             int newValue);
+    @PolyUIEffect public void fireIndexedPropertyChange(@PolyUI PropertyChangeSupport this, String propertyName,
                              int index,
                              boolean oldValue,
-                             boolean newValue) @PolyUI;
-    @PolyUIEffect public boolean hasListeners(String propertyName) @PolyUI;
+                             boolean newValue);
+    @PolyUIEffect public boolean hasListeners(@PolyUI PropertyChangeSupport this, String propertyName);
 }
 
 
@@ -110,13 +114,6 @@ import org.checkerframework.checker.guieffect.qual.*;
 @UIPackage package javax.swing.text;
 public abstract class JTextComponent extends JComponent implements Scrollable, Accessible {
     @SafeEffect public void setText(String t);
-}
-
-
-package java.lang;
-
-@PolyUIType interface Runnable {
-    @PolyUIEffect void run() @PolyUI;
 }
 
 @UIPackage

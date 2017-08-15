@@ -91,9 +91,9 @@ public abstract class UBQualifier {
      * may not be empty. If the offsets list is empty, then an offset of 0 is used for each
      * sequence. If the offsets list is not empty, then it must be the same size as sequence.
      *
-     * @param sequences Non-empty list of sequences
+     * @param sequences non-empty list of sequences
      * @param offsets list of offset, if empty, an offset of 0 is used
-     * @return an {@link UBQualifier} for the sequences with the given offsets.
+     * @return an {@link UBQualifier} for the sequences with the given offsets
      */
     public static UBQualifier createUBQualifier(List<String> sequences, List<String> offsets) {
         assert !sequences.isEmpty();
@@ -127,7 +127,7 @@ public abstract class UBQualifier {
      * BOTTOM, then UNKNOWN is returned. Otherwise, see {@link LessThanLengthOf#plusOffset(int)} for
      * an explanation of how node is added as an offset.
      *
-     * @param node Node
+     * @param node a Node
      * @param factory AnnotatedTypeFactory
      * @return a copy of this qualifier with node added as an offset
      */
@@ -176,7 +176,7 @@ public abstract class UBQualifier {
     /**
      * Is the value with this qualifier less than the length of sequence?
      *
-     * @param sequence String sequence
+     * @param sequence a String sequence
      * @return whether or not the value with this qualifier is less than the length of sequence
      */
     public boolean isLessThanLengthOf(String sequence) {
@@ -198,7 +198,7 @@ public abstract class UBQualifier {
      * Returns whether or not this qualifier has sequence with offset of -1.
      *
      * @param sequence sequence expression
-     * @return whether or not this qualifier has sequence with offset of -1.
+     * @return whether or not this qualifier has sequence with offset of -1
      */
     public boolean hasSequenceWithOffsetNeg1(String sequence) {
         return false;
@@ -207,9 +207,9 @@ public abstract class UBQualifier {
     /**
      * Is the value with this qualifier less than or equal to the length of sequence?
      *
-     * @param sequence String sequence
+     * @param sequence a String sequence
      * @return whether or not the value with this qualifier is less than or equal to the length of
-     *     sequence.
+     *     sequence
      */
     public boolean isLessThanOrEqualTo(String sequence) {
         return false;
@@ -235,8 +235,8 @@ public abstract class UBQualifier {
         /**
          * Is a value with this type less than or equal to the length of sequence?
          *
-         * @param sequence String sequence
-         * @return Is a value with this type less than or equal to the length of sequence?
+         * @param sequence a String sequence
+         * @return true if a value with this type is less than or equal to the length of sequence
          */
         @Override
         public boolean isLessThanOrEqualTo(String sequence) {
@@ -247,7 +247,7 @@ public abstract class UBQualifier {
          * Is a value with this type less than the length of any of the sequences?
          *
          * @param sequences list of sequences
-         * @return Is a value with this type less than the length of any of the sequences?
+         * @return true if a value with this type is less than the length of any of the sequences
          */
         @Override
         public boolean isLessThanLengthOfAny(List<String> sequences) {
@@ -261,8 +261,8 @@ public abstract class UBQualifier {
         /**
          * Is a value with this type less than the length of the sequence?
          *
-         * @param sequence String sequence
-         * @return Is a value with this type less than the length of the sequence?
+         * @param sequence a String sequence
+         * @return true if a value with this type is less than the length of the sequence
          */
         @Override
         public boolean isLessThanLengthOf(String sequence) {
@@ -605,7 +605,7 @@ public abstract class UBQualifier {
          * equation for node and then adding that equation to every offset equation in a copy of
          * this object.
          *
-         * @param node Node
+         * @param node a Node
          * @param factory AnnotatedTypeFactory
          * @return a copy of this qualifier with node add as an offset
          */
@@ -619,7 +619,7 @@ public abstract class UBQualifier {
          * negative offset equation for node and then adding that equation to every offset equation
          * in a copy of this object.
          *
-         * @param node Node
+         * @param node a Node
          * @param factory AnnotatedTypeFactory
          * @return a copy of this qualifier with node add as an offset
          */
@@ -693,7 +693,7 @@ public abstract class UBQualifier {
          * offsets, then UNKNOWN is returned.
          *
          * @param sequences access of the length of these sequences are removed
-         * @return Returns a copy of this qualifier with some offsets removed
+         * @return a copy of this qualifier with some offsets removed
          */
         public UBQualifier removeSequenceLengthAccess(final List<String> sequences) {
             if (sequences.isEmpty()) {
@@ -715,7 +715,7 @@ public abstract class UBQualifier {
          * removed.
          *
          * @param sequences access of the length of these sequences are removed
-         * @return Returns a copy of this qualifier with some offsets removed
+         * @return a copy of this qualifier with some offsets removed
          */
         public UBQualifier removeSequenceLengthAccessAndNeg1(final List<String> sequences) {
             if (sequences.isEmpty()) {
@@ -824,7 +824,7 @@ public abstract class UBQualifier {
              * Returns the result of the computation or null if the passed equation should be
              * removed.
              *
-             * @param eq Current offset equation
+             * @param eq current offset equation
              * @return the result of the computation or null if the passed equation should be
              *     removed
              */
@@ -842,7 +842,7 @@ public abstract class UBQualifier {
          *
          * @param f function to apply
          * @return a new qualifier that is a copy of this qualifier with the OffsetEquationFunction
-         *     applied to each offset.
+         *     applied to each offset
          */
         private UBQualifier computeNewOffsets(OffsetEquationFunction f) {
             Map<String, Set<OffsetEquation>> newMap = new HashMap<>(map.size());
