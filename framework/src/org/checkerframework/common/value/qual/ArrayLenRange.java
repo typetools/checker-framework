@@ -7,9 +7,9 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * An expression with this type evaluates to an array whose length is in the given range. The bounds
- * are inclusive; for example, {@code @ArrayLenRange(from=6, to=9)} represents an array with four
- * possible values for its length: 6, 7, 8, and 9.
+ * An expression with this type evaluates to an array or a string whose length is in the given
+ * range. The bounds are inclusive; for example, {@code @ArrayLenRange(from=6, to=9)} represents an
+ * array or a string with four possible values for its length: 6, 7, 8, and 9.
  *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
