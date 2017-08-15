@@ -295,6 +295,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public boolean shouldCache;
 
+    /** Keep track of current compilation unit across multiple type factories that share caches */
+    private static int currentCompilationUnitHash = -1;
+
     /** Size of LRU cache if one isn't specified using the atfCacheSize option. */
     private static final int DEFAULT_CACHE_SIZE = 300;
 
@@ -534,10 +537,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Set the CompilationUnitTree that should be used.
     // What's a better name? Maybe "reset" or "start"?
     public void setRoot(@Nullable CompilationUnitTree root) {
-        this.root = root;
-        treePathCache.clear();
-        pathHack.clear();
-
         if (shouldCache) {
             // Clear the caches with trees because once the compilation unit changes,
             // the trees may be modified and lose type arguments.
@@ -546,11 +545,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             fromMemberTreeCache.clear();
             fromTypeTreeCache.clear();
             classAndMethodTreeCache.clear();
-
             // There is no need to clear the following cache, it is limited by cache size and it
             // contents won't change between compilation units.
             // elementCache.clear();
         }
+        if (currentCompilationUnitHash != root.hashCode()) {
+            treePathCache.clear();
+            currentCompilationUnitHash = root.hashCode();
+        }
+
+        this.root = root;
+        pathHack.clear();
     }
 
     @SideEffectFree
