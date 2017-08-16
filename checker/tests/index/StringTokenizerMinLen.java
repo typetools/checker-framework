@@ -6,7 +6,8 @@ class StringTokenizerMinLen {
     void test(String str, String delim, boolean returnDelims) {
         StringTokenizer st = new StringTokenizer(str, delim, returnDelims);
         while (st.hasMoreTokens()) {
-            char c = st.nextToken().charAt(0);
+            String token = st.nextToken();
+            char c = token.charAt(0);
         }
     }
 }
