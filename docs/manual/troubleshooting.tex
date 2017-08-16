@@ -166,7 +166,9 @@ If you get an error such as
 
 \noindent
 then you are trying to run the compiler using a JDK 6 or earlier JVM\@.
-Install and use a Java 7 or 8 JDK, at least for running the Checker
+Install and use a Java 8
+% or later
+JDK, at least for running the Checker
 Framework.
 
 \noindent
@@ -234,7 +236,7 @@ You may be able to solve the problem by running
 \end{Verbatim}
 
 \noindent
-to re-generate files \code{checker/jdk/jdk\{7,8\}.jar} and \code{checker/bin/jdk\{7,8\}.jar}.
+to re-generate files \code{checker/jdk/jdk\{8,9\}.jar} and \code{checker/bin/jdk\{8,9\}.jar}.
 
 That usually works, but if not, then you should recompile the Checker
 Framework from source rather than using the pre-compiled distribution.
@@ -666,7 +668,7 @@ warning: [classfile] RuntimeVisibleTypeAnnotations attribute introduced in versi
 This warning results when you compile a library using the Checker Framework
 compiler, then use a normal Java compiler to compile client code that uses
 the library.
-The Checker Framework compiler puts Java 8 type annotations even in Java 7
+The Checker Framework compiler puts type annotations even in Java 7
 classfiles, for the benefit of modular type-checking.  The Checker Framework
 compiler reads these annotations in Java 7, and other compilers ignore them
 (but some compilers print a warning that they are ignoring them).
@@ -844,7 +846,7 @@ adds annotated JDKs and the Checker Framework jars to the classpath.
 %  * the location of tools.jar, below.
 %  * the default location of RTJAR, in checker/jdk/Makefile.
 Set the \<JAVA\_HOME> environment variable to the location of your JDK
-7 or 8 installation (not the JRE installation, and not JDK 6 or earlier).
+8 installation (not the JRE installation, and not JDK 7 or earlier).
 This needs to be an Oracle JDK.
 (The \<JAVA\_HOME> environment
 variable might already be set, because it is needed for Ant to work.)
@@ -870,8 +872,8 @@ the Checker Framework anyway.)
   Add one of the following two commands in your \code{.bash\_profile} or
   \code{.profile} file according to the version of your JDK.
 \begin{Verbatim}
-  export JAVA_HOME=$(/usr/libexec/java_home -v 1.7)
   export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+  export JAVA_HOME=$(/usr/libexec/java_home -v 1.9)
 \end{Verbatim}
 
 \end{description}
