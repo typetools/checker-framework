@@ -22,14 +22,6 @@
 
     <property environment="env"/>
 
-    <!-- Whether or not java8 sources should be compiled even though jdk7orlower is used.-->
-    <condition property="should-force-compile-java8">
-        <and>
-            <istrue value="${jdk7orlower}"/>
-            <isset property="env.JAVA_8_HOME"/>
-        </and>
-    </condition>
-
     <!--
          NOTE LT_BIN IN THE NEXT FEW TARGETS IS SOLELY FOR bin-devel/javac and Jenkins.
          The original path to the langtools dir does not work on Jenkins.
@@ -132,7 +124,6 @@
             description="Set properties: filesets and build.uptodate">
         <fileset id="src.files" dir="${src}">
             <include name="**/*.java"/>
-            <exclude name="${checker.jdk8orhigher.sources}"/>
             <exclude name="**/package-info.java"/>
         </fileset>
 
@@ -198,7 +189,6 @@
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
-                    <exclude name="${checker.jdk8orhigher.sources}"/>
                 </fileset>
                 <!-- Recompile dependent projects with annotations-in-comments
                      enabled, in order to get classes with qualified types. -->
@@ -207,11 +197,6 @@
                 <!-- Exclude ManualTaglet to not depend on javadoc. -->
                     <exclude name="**/javacutil/dist/**"/>
                 </fileset>
-                <!-- Do not re-compile the stubparser, as it is not lint clean.
-                <fileset dir="${stubparser.loc}/${src}">
-                    <include name="**/*.java"/>
-                </fileset>
-                -->
                 <fileset dir="${dataflow.loc}/${src}">
                     <include name="**/*.java"/>
                 </fileset>
@@ -225,15 +210,15 @@
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
+              classpath="${javac.lib}:${framework.lib}:${javaparser.core.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
-            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
+            <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->
             <arg value="-source"/>
-            <arg value="7"/>
+            <arg value="8"/>
             <arg value="-target"/>
-            <arg value="7"/>
+            <arg value="8"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
@@ -249,7 +234,6 @@
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
 
-        <antcall target="-compile-java8"/>
         <!--
         Touch doesn't work on a directory, so can't do:
            <touch file="${build}"/>
@@ -257,20 +241,6 @@
         -->
         <touch file="${build}/.timestamp"/>
         <delete file="${build}/.timestamp"/>
-    </target>
-
-    <target name="-compile-java8" depends="-force-compile-java8"
-            description="Compiles java 8 sources if JAVA_8_HOME is set or javac is already java8">
-        <antcall target="compile-java8-sources">
-            <param name="java8-output" value="${build}"/>
-        </antcall>
-    </target>
-    <target name="-force-compile-java8" if="should-force-compile-java8">
-        <exec executable="ant" failonerror="true">
-            <arg value="compile-java8-sources"/>
-            <arg value="-Djava8-output=${build}"/>
-            <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
-        </exec>
     </target>
 
     <!-- TODO: add a type-checking target that doesn't use
@@ -292,7 +262,7 @@
         <!-- With Ant 1.9.4 or later, add to each javadoc task:
             failonwarning="true"
             but Travis is stuck on Ant 1.8.2 as of 6/2016 -->
-        <javadoc sourcepath="${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}:${annotation-file-utilities.loc}/${src}"
+        <javadoc sourcepath="${javacutil.loc}/${src}:${dataflow.loc}/${src}:${framework.loc}/${src}:${annotation-file-utilities.loc}/${src}"
                  destdir="${api.doc}"
                  private="${javadoc.private}"
                  encoding="UTF-8"
@@ -305,14 +275,12 @@
 
             <package name="org.checkerframework.javacutil.*"/>
             <package name="org.checkerframework.dataflow.*"/>
-            <package name="org.checkerframework.stubparser.*"/>
             <package name="org.checkerframework.framework.*"/>
             <package name="org.checkerframework.common.*"/>
             <package name="org.checkerframework.checker.*"/>
 
             <fileset dir="${checker.loc}/${src}">
                 <include name="**/*.java"/>
-                <exclude name="${checker.jdk8orhigher.sources}" if="${jdk7orlower}"/>
             </fileset>
 
             <link href="http://docs.oracle.com/javase/8/docs/api/"/>
@@ -328,19 +296,8 @@
         </exec>
     </target>
 
-    <target name="javadoc-java8" depends="-javadoc-force-java8, -javadoc-java8"
-            description="Build the Javadoc using JAVA_8_HOME."/>
 
-    <target name="-javadoc-force-java8" if="${should-force-compile-java8}">
-        <exec executable="ant" failonerror="true">
-            <arg value="javadoc"/>
-            <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
-        </exec>
-    </target>
-    <target name="-javadoc-java8" if="${jdk8orhigher}" depends="javadoc"/>
-
-
-    <target name="javadoc.jar" depends="javadoc-java8" description="Create jar of all javadoc documentation">
+    <target name="javadoc.jar" depends="javadoc" description="Create jar of all javadoc documentation">
         <jar destfile="${checker.javadoc.lib}" basedir="${api.doc}"></jar>
     </target>
 
@@ -354,7 +311,6 @@
             <fileset dir="${framework.loc}/${src}"/>
             <fileset dir="${dataflow.loc}/${src}"/>
             <fileset dir="${javacutil.loc}/${src}"/>
-            <fileset dir="${stubparser.loc}/${src}"/>
         </copy>
 
         <jar destfile="${checker.sources.lib}" basedir="${checker-sources-tmp}"/>
@@ -366,22 +322,22 @@
 
         <mkdir dir="dist" />
 
+        <!-- Only unjar the afu and stubparser - everything else is recompiled. -->
+
         <!-- jar up compilation results to protect against being
              overwritten by unjarring annotation-file-utilities.lib.
              See https://github.com/typetools/checker-framework/issues/894 -->
-        <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/,reports/"/>
-
-        <!-- Only unjar the stubparser and afu - everything else is recompiled. -->
+        <jar destfile="${checker.lib.tmp}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/,reports/"/>
         <unjar src="${annotation-file-utilities.lib}" dest="${build}" />
         <!-- Also delete anything in the org/checkerframework package in case it has be removed
         from the framework-->
         <delete includeemptydirs="true">
             <fileset dir="${build}/org/checkerframework"/>
          </delete>
-
-        <unjar src="${stubparser.lib}" dest="${build}" />
         <!-- Work-around for Issue 894, see above. -->
-        <unjar src="${checker.lib}" dest="${build}" />
+        <unjar src="${checker.lib.tmp}" dest="${build}" />
+
+        <unjar src="${javaparser.core.lib}" dest="${build}" />
 
         <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/,reports/">
             <manifest>
@@ -455,6 +411,48 @@
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
 
         <!-- Compile and copy Java 8 sources -->
+        <property name="checker-qual-sources8-tmp" value="${tmpdir}/checker-qual-sources8"/>
+        <mkdir dir="${checker-qual-sources8-tmp}"/>
+        <copy todir="${checker-qual-sources8-tmp}">
+            <!-- Copying like this removes the $CHECKERFRAMEWORK/checker/src portion of the file
+            names so that the top level directory is org.-->
+            <fileset dir="${checker.loc}/${src}">
+                <include name="${checker.jdk8orhigher.sources}"/>
+            </fileset>
+        </copy>
+
+        <pathconvert pathsep=" " property="qual.src8.files.spaceseparated">
+            <path>
+                <fileset dir="${checker-qual-sources8-tmp}">
+                    <include name="**/*.java"/>
+                </fileset>
+            </path>
+        </pathconvert>
+        <delete file="${tmpdir}/srcfiles-checker.txt"/>
+        <echo message="${qual.src8.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
+
+        <java fork="true"
+              failonerror="true"
+              classname="com.sun.tools.javac.Main"
+              classpath="${checker-qual-classes-tmp}">
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+            <arg value="-g"/>
+            <arg value="-source"/>
+            <arg value="8"/>
+            <arg value="-target"/>
+            <arg value="8"/>
+            <arg value="-encoding"/>
+            <arg value="utf-8"/>
+            <!-- To not get a warning about bootstrap classpath -->
+            <arg value="-Xlint:-options"/>
+            <arg value="-d"/>
+            <arg value="${checker-qual-classes-tmp}"/>
+            <arg value="@${tmpdir}/srcfiles-checker.txt"/>
+            <arg value="-Xlint"/>
+            <arg value="-Werror"/>
+        </java>
+        <delete file="${tmpdir}/srcfiles-checker.txt"/>
+
         <copy todir="${checker-qual-sources-tmp}">
             <!-- Copying like this removes the $CHECKERFRAMEWORK/checker/src portion of the file
             names so that the top level directory is org.-->
@@ -462,7 +460,6 @@
                 <include name="${checker.jdk8orhigher.sources}"/>
             </fileset>
         </copy>
-        <antcall target="-checker-qual-java8"/>
 
         <!--Jar classes and source files-->
         <jar destfile="${checker.qual.lib}" basedir="${checker-qual-classes-tmp}">
@@ -479,44 +476,8 @@
             </manifest>
         </jar>
         <delete dir="${checker-qual-sources-tmp}" failonerror="false"/>
+        <delete dir="${checker-qual-sources8-tmp}" failonerror="false"/>
         <delete dir="${checker-qual-classes-tmp}" failonerror="false"/>
-    </target>
-
-    <target name="-checker-qual-java8" depends="-force-checker-qual-java8">
-        <antcall target="compile-java8-sources">
-            <param name="java8-output" value="${checker-qual-classes-tmp}"/>
-        </antcall>
-    </target>
-    <target name="-force-checker-qual-java8" if="${should-force-compile-java8}">
-        <exec executable="ant" failonerror="true">
-            <arg value="compile-java8-sources"/>
-            <arg value="-Djava8-output=${checker-qual-classes-tmp}"/>
-            <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
-        </exec>
-    </target>
-
-    <target name="compile-java8-sources" if="jdk8orhigher"
-            description="Compile Java 8 classes if JAVA_8_HOME exists">
-        <java fork="true"
-              failonerror="true"
-              classname="com.sun.tools.javac.Main"
-              classpath="${java8-output}">
-            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
-            <arg value="-g"/>
-            <arg value="-source"/>
-            <arg value="8"/>
-            <arg value="-target"/>
-            <arg value="8"/>
-            <arg value="-encoding"/>
-            <arg value="utf-8"/>
-            <!-- To not get a warning about bootstrap classpath -->
-            <arg value="-Xlint:-options"/>
-            <arg value="-d"/>
-            <arg value="${java8-output}"/>
-            <arg value="${checker.loc}/${src}/${checker.jdk8orhigher.sources}"/>
-            <arg value="-Xlint"/>
-            <arg value="-Werror"/>
-        </java>
     </target>
 
     <!-- This creates checker-compat-qual.jar and checker-compat-qual-source.jar-->
@@ -604,11 +565,10 @@
               classname="com.sun.tools.javac.Main">
             <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
-            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
-            <arg value="7"/>
+            <arg value="8"/>
             <arg value="-target"/>
-            <arg value="7"/>
+            <arg value="8"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
@@ -1274,13 +1234,6 @@ So, use our own archived version.
                     <exclude name="**/javacutil/dist/**"/>
                 </fileset>
 
-                <fileset dir="${stubparser.loc}/${src}">
-                    <include name="**/*.java"/>
-                    <!-- Ignore the huge, auto-generated parser.
-                         TODO: might be a nice benchmark for performance optimization? -->
-                    <exclude name="**/AST*.java"/>
-                    <exclude name="**/Token.java"/>
-                </fileset>
                 <!-- Do not check dataflow, it doesn't have all purity
                      annotations. TODO: should be easy to fix. Or solved
                      once we inherit those annotations.
@@ -1434,8 +1387,8 @@ So, use our own archived version.
         <javac failonerror="true"
                 includeantruntime="false"
                 debug="true"
-                classpath="${checker.lib}:${junit.lib}:${hamcrest.lib}"
-                srcdir="${framework.loc}/${src}:${dataflow.loc}/${src}:${javacutil.loc}/${src}:${stubparser.loc}/${src}:${src}"
+                classpath="${checker.lib}:${javaparser.core.lib}:${junit.lib}:${hamcrest.lib}"
+                srcdir="${framework.loc}/${src}:${dataflow.loc}/${src}:${javacutil.loc}/${src}:${src}"
                 includes="**/*.java"
                 excludes="**/javacutil/dist/**"
                 compiler="com.google.errorprone.ErrorProneAntCompilerAdapter"
@@ -1475,24 +1428,15 @@ So, use our own archived version.
         <fail unless="javac.exist" message="Could not find javac.jar: ${javac.lib}" />
     </target>
 
-    <target name="download-jdk" description="Downloads jdk7.jar and jdk8.jar from checkerframework.org/dev-jdk to checker/jdk and checker/dist">
-        <get src="https://checkerframework.org/dev-jdk/jdk7.jar" dest="jdk/jdk7.jar"/>
+    <target name="download-jdk" description="Downloads jdk8.jar from checkerframework.org/dev-jdk to checker/jdk and checker/dist">
         <get src="https://checkerframework.org/dev-jdk/jdk8.jar" dest="jdk/jdk8.jar"/>
 
         <!-- Copy jars to dist. If dist doesn't exist then the copy task creates it.-->
-        <copy file="jdk/jdk7.jar" tofile="dist/jdk7.jar"/>
         <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar"/>
 
 
         <!--The implementation version listed in the Manifest is the hash of the commit of-->
         <!--the Checker Framework that created the jdk.jar.  Show it here to help debugging.-->
-        <loadfile property="message">
-            <zipentry zipfile="jdk/jdk7.jar" name="META-INF/MANIFEST.MF"/>
-        </loadfile>
-        <echo>"Manifest file from jdk7.jar:"</echo>
-        <echo>"${message}"</echo>
-
-
         <loadfile property="message">
             <zipentry zipfile="jdk/jdk8.jar" name="META-INF/MANIFEST.MF"/>
         </loadfile>
@@ -1578,7 +1522,6 @@ So, use our own archived version.
         <copy tofile="dist/javac.jar" file="${javac.lib}"
               overwrite="true" failonerror="true" />
 
-        <copy file="jdk/jdk7.jar" tofile="dist/jdk7.jar" overwrite="true" failonerror="false" />
         <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar" overwrite="true" failonerror="false" />
         <copy file="jdk/jdk9.jar" tofile="dist/jdk9.jar" overwrite="true" failonerror="false" />
     </target>
@@ -1587,13 +1530,12 @@ So, use our own archived version.
             description="Check whether an annotated JDK exists.">
         <condition property="an.annotated.jdk.exists">
             <or>
-                <available file="jdk/jdk7.jar"/>
                 <available file="jdk/jdk8.jar"/>
                 <available file="jdk/jdk9.jar"/>
             </or>
         </condition>
 
-        <fail message="No jdk jars were found in the jdk directory.  At least one annotated JDK (jdk/jdk7.jar or jdk/jdk8.jar) must be built!"
+        <fail message="No jdk jars were found in the jdk directory.  At least one annotated JDK (jdk/jdk8.jar) must be built!"
               unless="an.annotated.jdk.exists"/>
     </target>
 

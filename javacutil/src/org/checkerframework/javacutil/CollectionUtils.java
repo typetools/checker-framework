@@ -13,7 +13,7 @@ public class CollectionUtils {
      * @return a new cache with the provided size
      */
     public static <K, V> Map<K, V> createLRUCache(final int size) {
-        return new LinkedHashMap<K, V>() {
+        return new LinkedHashMap<K, V>(size, .75F, true) {
 
             private static final long serialVersionUID = 5261489276168775084L;
 

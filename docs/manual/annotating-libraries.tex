@@ -163,9 +163,9 @@ section describes the latter approach.
 
 \begin{enumerate}
 \item
-Get Java 7 source code (must be version 7)
+Get Java 8 source code (must be version 8)
 \begin{enumerate}
-\item Download JDK7 from oracle
+\item Download JDK8 from Oracle
 \item Open the downloaded tar (\<tar -xvzf>)
 \item Unzip the contained \<src.zip> (resulting in folders: \<com/>, \<java/>, \<javax/>, \<launcher/>, \<org/>)
 \end{enumerate}
@@ -469,40 +469,9 @@ following ways:
   This simplifies the creation of stub files.
 
 \item{\textbf{Import statements:}}
-  All imports must be at the beginning of the file.
+  Imports may appear at the beginning of the file or after any package declaration.
   The only required import statements are the ones to import type
   annotations.  Import statements for types are optional.
-
-  Enum constants in annotations need to be either fully-qualified
-  or imported.
-  For example, one has to either write the enum constant \<ANY> in
-  fully-qualified form:
-
-\begin{Verbatim}
-@Source(sparta.checkers.quals.FlowPermission.ANY)
-\end{Verbatim}
-
-\noindent
-or correctly import the enum class:
-
-\begin{Verbatim}
-import sparta.checkers.quals.FlowPermission;
-...
-@Source(FlowPermission.ANY)
-\end{Verbatim}
-
-\noindent
-or statically import the enum constants:
-
-\begin{Verbatim}
-import static sparta.checkers.quals.FlowPermission.*;
-...
-@Source(ANY)
-\end{Verbatim}
-
-  Importing all packages from a class (\<import my.package.*;>) only
-  considers annotations from that package; enum types need to be
-  explicitly imported.
 
 \item{\textbf{Multiple classes and packages:}}
   The stub file format permits having multiple classes and packages.
@@ -641,81 +610,6 @@ in the version of the library you are using:
 StubParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
       not found in type android.nfc.NfcAdapter
 \end{Verbatim}
-
-
-\subsection{Limitations\label{stub-limitations}}
-
-The stub file reader has several limitations that are violations of Java 8 syntax.  We will fix these in a
-future release.
-
-\begin{itemize}
-
-\item
-  The receiver is written after the method parameter list, instead of as an
-  explicit first parameter.  That is, instead of
-
-\begin{Verbatim}
-     returntype methodname(@Annotations C this, params);
-\end{Verbatim}
-
-\noindent
-in a stub file one has to write
-
-\begin{Verbatim}
-     returntype methodname(params) @Annotations;
-\end{Verbatim}
-
-\item
-  The stub file reader
-  does not handle nested class declarations.  To work around this, it permits a
-  top-level class to be written with a \<\$> in its name, and applies the
-  annotations to the appropriate nested class.
-
-\begin{Verbatim}
-    class Lib$Inner {
-       // methods
-    }
-\end{Verbatim}
-
-\item
-  Annotations must be written before the package name on a fully-qualified
-  types rather than directly on the type it qualifies.  However, it is usually not
-  necessary to write the fully-qualified name.
-
-  \begin{Verbatim}
-          void init(@Nullable java.security.SecureRandom random);
-   \end{Verbatim}
-\item
-   Annotations on types that are inner classes must be written before the
-   package if the type is written as a
-   fully-qualified type, or before the inner class name if the type is
-   written as a simple type. For example,
-
-\begin{Verbatim}
-        ProcessBuilder redirectError(@NonNull java.lang.ProcessBuilder.Redirect destination);
-\end{Verbatim}
- or
-\begin{Verbatim}
-        ProcessBuilder redirectError(@NonNull Redirect destination);
-\end{Verbatim}
-   The code below will cause an error.
-\begin{Verbatim}
-        // error
-        ProcessBuilder redirectError(@NonNull ProcessBuilder.Redirect destination);
-\end{Verbatim}
- or
-\begin{Verbatim}
-        // error
-        ProcessBuilder redirectError(ProcessBuilder.@NonNull Redirect destination);
-\end{Verbatim}
-
-\item
-  Annotations can only use string, boolean, or integer literals; other
-  literals are not yet supported.
-\end{itemize}
-
-If these limitations are a problem, then you should insert annotations
-in the library's \<.class> files instead.
 
 
 \section{Library annotations should reflect the specification, not the implementation\label{libraries-specification}}

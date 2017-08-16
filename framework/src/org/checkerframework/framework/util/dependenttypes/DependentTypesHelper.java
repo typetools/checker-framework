@@ -97,7 +97,7 @@ public class DependentTypesHelper {
      * Returns a list of the names of elements in the annotation class that should be interpreted as
      * Java expressions.
      *
-     * @param clazz Annotation class
+     * @param clazz annotation class
      * @return a list of the names of elements in the annotation class that should be interpreted as
      *     Java expressions
      */
@@ -784,8 +784,8 @@ public class DependentTypesHelper {
      * if there aren't any.
      *
      * @param am AnnotationMirror
-     * @return Returns the list of elements of the annotation that are Java expressions, or the
-     *     empty list if there aren't any.
+     * @return the list of elements of the annotation that are Java expressions, or the empty list
+     *     if there aren't any
      */
     private List<String> getListOfExpressionElements(AnnotationMirror am) {
         for (Class<? extends Annotation> clazz : annoToElements.keySet()) {

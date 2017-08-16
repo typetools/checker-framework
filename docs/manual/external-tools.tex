@@ -83,8 +83,8 @@ use the last one.
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
-    If you are using a Java 7 JVM, then add command-line arguments to so
-    indicate:
+    If you wish to compile files that can be run on a Java 7 JVM, then add
+    command-line arguments to so indicate:
 
 \begin{Verbatim}
   export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.14
@@ -122,7 +122,8 @@ use the last one.
 \end{Verbatim}
 
    \noindent
-   and add \<-source 7 -target 7> if you use a Java 7 JVM.
+   and add \<-source 7 -target 7> if you wish to produce .class files that
+   can be run on a Java 7 JVM.
 
    (Explanation for advanced users:  More generally, anywhere that you would use \<javac.jar>, you can substitute
    \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>;
@@ -361,13 +362,12 @@ checker as an annotation processor directly.
       <artifactId>checker</artifactId>
       <version>\ReleaseVersion{}</version>
     </dependency>
-    <!-- The Type Annotations compiler. Uncomment if using Java 7 or annotations in comments. -->
+    <!-- The Type Annotations compiler. Uncomment if using annotations in comments. -->
     <!-- <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>compiler</artifactId>
       <version>\ReleaseVersion{}</version>
     </dependency> -->
-    <!-- The annotated JDK to use (change to jdk7 if using Java 7). -->
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
@@ -375,6 +375,9 @@ checker as an annotation processor directly.
     </dependency>
   </dependencies>
 \end{alltt}
+
+Be sure to update to the most recent version periodically, to obtain the
+latest bug fixes and new features.
 
 \item
   To use a local version of the Checker Framework (for example,
@@ -399,7 +402,7 @@ checker as an annotation processor directly.
       <scope>system</scope>
       <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/checker.jar</systemPath>
     </dependency>
-    <!-- The Type Annotations compiler. Uncomment if using Java 7 or annotations in comments. -->
+    <!-- The Type Annotations compiler. Uncomment if using Java annotations in comments. -->
     <!-- <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>compiler</artifactId>
@@ -407,7 +410,6 @@ checker as an annotation processor directly.
       <scope>system</scope>
       <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/compiler.jar</systemPath>
     </dependency> -->
-    <!-- The annotated JDK to use (change to jdk7 if using Java 7). -->
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
@@ -429,7 +431,6 @@ First, create the properties in the \code{properties} section of the POM:
 \begin{alltt}
 <properties>
   <!-- These properties will be set by the Maven Dependency plugin -->
-  <!-- Change to jdk7 if using Java 7 -->
   <annotatedJdk>$\{org.checkerframework:jdk8:jar\}</annotatedJdk>
   <!-- Uncomment to use the type annotations compiler. -->
   <!-- <typeAnnotationsJavac>$\{org.checkerframework:compiler:jar\}</typeAnnotationsJavac> -->
@@ -467,7 +468,7 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
     <artifactId>maven-compiler-plugin</artifactId>
     <version>3.6.1</version>
     <configuration>
-      <!-- Change source and target to 1.7 if using Java 7 -->
+      <!-- Change source and target to 1.7 to create .class files that can be run on a Java 7 JVM -->
       <source>1.8</source>
       <target>1.8</target>
       <fork>true</fork>
@@ -507,10 +508,6 @@ profile, so that the checkers run only if the profile was enabled.
 If you use \href{https://gradle.org/}{Gradle},
 then you can run a checker by following the instructions below.
 
-These instructions can be used with Java 7 or Java 8.  If using Java 7, then
-type annotations should be placed in comments as explained in
-Section~\ref{annotations-in-comments}.
-
 See the directory \code{docs/examples/GradleExamples/} for examples of Gradle
 build files that run a checker.  You can use these examples to verify that
 Gradle is correctly downloading the Checker Framework from
@@ -525,7 +522,7 @@ Gradle is correctly downloading the Checker Framework from
 
 \begin{mysmall}
 \begin{Verbatim}
-ext.targetJavaVersion = JavaVersion.current().isJava7() ? JavaVersion.VERSION_1_7 : JavaVersion.VERSION_1_8
+ext.targetJavaVersion = JavaVersion.current().isJava8() ? JavaVersion.VERSION_1_8 : JavaVersion.VERSION_1_9
 \end{Verbatim}
 \end{mysmall}
 
@@ -544,11 +541,6 @@ repositories {
 \begin{Verbatim}
 configurations {
     ... existing configurations ...
-    if (targetJavaVersion.isJava7()) {
-        checkerFrameworkJavac {
-            description = 'a customization of the OpenJDK javac compiler with additional support for type annotations'
-        }
-    }
     checkerFrameworkAnnotatedJDK {
        description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
     }
@@ -565,12 +557,9 @@ configurations {
 dependencies {
     ... existing dependencies...
     ext.checkerFrameworkVersion = '2.1.14'
-    ext.jdkVersion = JavaVersion.current().isJava7() ? 'jdk7' : 'jdk8'
+    ext.jdkVersion = JavaVersion.current().isJava8() ? 'jdk8' : 'jdk9'
     checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
 
-    if (targetJavaVersion.isJava7()) {
-        checkerFrameworkJavac "org.checkerframework:compiler:${checkerFrameworkVersion}"
-    }
     checkerFramework "org.checkerframework:checker:${checkerFrameworkVersion}"
     compile "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
 }
@@ -581,11 +570,8 @@ Alternatively, you can declare the dependencies to a local version of the Checke
 \begin{Verbatim}
 dependencies {
   ext.checkerframeworkdist = "$System.env.CHECKERFRAMEWORK/checker/dist"
-  ext.jdkVersion = JavaVersion.current().isJava7() ? 'jdk7' : 'jdk8'
+  ext.jdkVersion = JavaVersion.current().isJava8() ? 'jdk8' : 'jdk9'
   checkerFrameworkAnnotatedJDK fileTree(dir: "${checkerframeworkdist}", include: "${jdkVersion}.jar")
-  if (targetJavaVersion.isJava7()) {
-    checkerFrameworkJavac fileTree(dir: "${checkerframeworkdist}", include: 'javac.jar')
-  }
   checkerFramework fileTree(dir: "${checkerframeworkdist}", include: 'checker.jar')
   compile fileTree(dir: "${checkerframeworkdist}", include: 'checker-qual.jar')
 }

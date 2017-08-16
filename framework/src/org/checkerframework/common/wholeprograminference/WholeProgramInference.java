@@ -31,8 +31,8 @@ public interface WholeProgramInference {
      * Updates the parameter types of the constructor {@code constructorElt} based on the arguments
      * in {@code objectCreationNode}.
      *
-     * @param objectCreationNode Node that invokes the constructor
-     * @param constructorElt Element of the constructor
+     * @param objectCreationNode the Node that invokes the constructor
+     * @param constructorElt the Element of the constructor
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used to update the constructor's parameters' types
      */

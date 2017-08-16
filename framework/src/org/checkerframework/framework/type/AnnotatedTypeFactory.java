@@ -1267,7 +1267,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * correct annotations cannot be compute because of uninferred type arguments. (See {@link
      * AnnotatedWildcardType#isUninferredTypeArgument()}.)
      *
-     * @param type annotated type to which default annotations are added.
+     * @param type annotated type to which default annotations are added
      */
     protected void addDefaultAnnotations(AnnotatedTypeMirror type) {
         // Pass.
@@ -1402,7 +1402,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * returned.
      *
      * @param annoTrees trees to look
-     * @return Returns the AnnotationTree which is a use of one of the field invariant annotations
+     * @return returns the AnnotationTree which is a use of one of the field invariant annotations
      *     or null if one isn't found
      */
     public AnnotationTree getFieldInvariantAnnotationTree(
