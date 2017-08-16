@@ -25,6 +25,7 @@
 
 package java.util;
 import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.common.value.qual.*;
 
 import java.lang.*;
 
