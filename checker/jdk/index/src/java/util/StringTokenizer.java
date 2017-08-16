@@ -332,7 +332,7 @@ class StringTokenizer implements Enumeration<Object> {
      * @exception  NoSuchElementException  if there are no more tokens in this
      *               tokenizer's string.
      */
-    public String nextToken() {
+    public @MinLen(1) String nextToken() {
         /*
          * If next position already computed in hasMoreElements() and
          * delimiters have changed between the computation and this invocation,
@@ -368,7 +368,7 @@ class StringTokenizer implements Enumeration<Object> {
      *               tokenizer's string.
      * @exception NullPointerException if delim is <CODE>null</CODE>
      */
-    public String nextToken(String delim) {
+    public @MinLen(1) String nextToken(String delim) {
         delimiters = delim;
 
         /* delimiter string specified, so set the appropriate flag. */
