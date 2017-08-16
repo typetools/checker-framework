@@ -10,8 +10,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
-
-/*>>>import org.checkerframework.checker.tainting.qual.Untainted;*/
+import org.checkerframework.checker.tainting.qual.Untainted;
 
 /**
  * Description of the Class
@@ -83,7 +82,7 @@ public final class ReadAction extends BlogGeneralAction {
      * @return the input if it is valid
      * @throws IllegalArgumentException if userInput is not valid
      */
-    /*@Untainted*/ String validate(String userInput) {
+    @Untainted String validate(String userInput) {
         for (int i = 0; i < userInput.length(); ++i) {
             char ch = userInput.charAt(i);
             if (!Character.isLetter(ch) && !Character.isDigit(ch) && !Character.isWhitespace(ch))
