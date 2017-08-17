@@ -1,14 +1,11 @@
 package org.checkerframework.checker.lock;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import java.util.ArrayList;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
@@ -136,7 +133,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
 
     /** {@inheritDoc} */
     @Override
-    public /*@Nullable*/ CFValue getValue(FlowExpressions.Receiver expr) {
+    public @Nullable CFValue getValue(FlowExpressions.Receiver expr) {
 
         if (inConstructorOrInitializer) {
             // 'this' is automatically considered as being held in a constructor or initializer.
@@ -209,7 +206,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     }
 
     @Override
-    public void insertValue(FlowExpressions.Receiver r, /*@Nullable*/ CFValue value) {
+    public void insertValue(FlowExpressions.Receiver r, @Nullable CFValue value) {
         if (value == null) {
             // No need to insert a null abstract value because it represents
             // top and top is also the default value.
