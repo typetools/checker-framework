@@ -1446,22 +1446,18 @@ So, use our own archived version.
 
     </target>
 
-    <target name="all.jdks.jar" description="Build jdkX.jar using JAVA_X_HOME (with X in 7, 8, and 9)">
-        <fail unless="env.JAVA_7_HOME" message="Environment variable &quot;JAVA_7_HOME&quot; needs to be set!"/>
-        <fail unless="env.JAVA_8_HOME" message="Environment variable &quot;JAVA_8_HOME&quot; needs to be set!"/>
+    <!--This target is used during the release.  Currently, only jdk8.jar is built, so this target
+     depends on the "jdk.jar" target.  When the Checker Framework can build jdk9.jar, the "depends"
+     should be removed. -->
+    <target name="all.jdks.jar" description="Build jdkX.jar using JAVA_X_HOME (with X in 8)"  depends="jdk.jar">
+       <!--<fail unless="env.JAVA_8_HOME" message="Environment variable &quot;JAVA_8_HOME&quot; needs to be set!"/>-->
         <!--<fail unless="env.JAVA_9_HOME" message="Environment variable  &quot;JAVA_9_HOME&quot; needs to be set!"/>-->
 
-        <exec executable="ant" failonerror="true">
-            <arg value="jdk.jar"/>
-            <env key="JAVA_HOME"  value="${env.JAVA_7_HOME}"/>
-            <env key="LT_BIN" value="${LT_BIN}"/>
-        </exec>
-
-        <exec executable="ant" failonerror="true">
+        <!--<exec executable="ant" failonerror="true">
             <arg value="jdk.jar"/>
             <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
             <env key="LT_BIN" value="${LT_BIN}"/>
-        </exec>
+        </exec>-->
 
         <!--<exec executable="ant" failonerror="true">
             <arg value="jdk.jar"/>
