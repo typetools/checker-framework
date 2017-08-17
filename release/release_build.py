@@ -216,7 +216,6 @@ def build_and_locally_deploy_maven(version):
     mvn_deploy(CHECKER_BINARY, CHECKER_BINARY_POM, MAVEN_DEV_REPO)
     mvn_deploy(CHECKER_QUAL, CHECKER_QUAL_POM, MAVEN_DEV_REPO)
     mvn_deploy(JAVAC_BINARY, JAVAC_BINARY_POM, MAVEN_DEV_REPO)
-    mvn_deploy(JDK7_BINARY, JDK7_BINARY_POM, MAVEN_DEV_REPO)
     mvn_deploy(JDK8_BINARY, JDK8_BINARY_POM, MAVEN_DEV_REPO)
 
     return

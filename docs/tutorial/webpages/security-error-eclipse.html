@@ -146,7 +146,7 @@ incompatible types in argument.
       <p>To correct this error, <b>add <code>@Untainted</code></b> to the
       type of the <code>category</code> parameter.</p>
       <pre>
-  public List&lt;?&gt; getPostsByCategory(<b>/*@Untainted*/</b> String category) throws ServiceException {
+  public List&lt;?&gt; getPostsByCategory(<b>@Untainted</b> String category) throws ServiceException {
 </pre>This forces clients to pass an <code>@Untainted</code> value, which
 was the intention of the designer of the <code>getPostsByCategory</code>
 method.
