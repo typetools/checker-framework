@@ -858,7 +858,7 @@ public class StubParser {
         // StubParser parses all annotations in type annotation position as type annotations
         annotateDecl(declAnnos, elt, decl.getElementType().getAnnotations());
         AnnotatedTypeMirror fieldType = atypeFactory.fromElement(elt);
-        annotate(fieldType, decl.getElementType());
+        annotate(fieldType, decl.getVariables().get(0).getType());
         putNew(atypes, elt, fieldType);
     }
 
