@@ -11,8 +11,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * The annotated expression evaluates to either -1 or a value compatible with a {@link LTLengthOf}
  * annotation with the same parameters-
  *
- * <p>This is the return type of {@link java.lang.String#indexOf(String) {@code String.indexOf}} in
- * the JDK.
+ * <p>This is the return type of {@link java.lang.String#indexOf(String) String.indexOf} and {@link
+ * java.lang.String#lastIndexOf(String) String.lastIndexOf} in the JDK.
  *
  * @checker_framework.manual #index-checker Index Checker
  */
@@ -30,7 +30,7 @@ public @interface IndexOfIndexFor {
      * same length as {@code value}.
      *
      * <p>The expressions in {@code offset} may be addition/subtraction of any number of Java
-     * expressions. For example, {@code @LessThanLengthOf(value = "a", offset = "x + y + 2"}}.
+     * expressions. For example, {@code @IndexOfIndexFor(value = "a", offset = "b.length() - 1")}.
      */
     @JavaExpression
     public String[] offset();

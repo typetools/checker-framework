@@ -19,6 +19,8 @@ import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
+import org.checkerframework.checker.index.indexof.IndexOfAnnotatedTypeFactory;
+import org.checkerframework.checker.index.indexof.IndexOfChecker;
 import org.checkerframework.checker.index.lowerbound.LowerBoundAnnotatedTypeFactory;
 import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
 import org.checkerframework.checker.index.qual.IndexFor;
@@ -39,8 +41,6 @@ import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.samelen.SameLenChecker;
-import org.checkerframework.checker.index.searchindex.IndexOfAnnotatedTypeFactory;
-import org.checkerframework.checker.index.searchindex.IndexOfChecker;
 import org.checkerframework.checker.index.searchindex.SearchIndexAnnotatedTypeFactory;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
@@ -130,7 +130,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Provides a way to query the IndexOf Checker, which helps the Index Checker type the results
-     * of calling the JDK's string indexOf and lastIndexOf methods correctly.
+     * of calling the JDK's {@code String.indexOf} and {@code String.lastIndexOf} methods correctly.
      */
     IndexOfAnnotatedTypeFactory getIndexOfAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(IndexOfChecker.class);

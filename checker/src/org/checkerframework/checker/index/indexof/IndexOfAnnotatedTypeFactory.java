@@ -1,4 +1,4 @@
-package org.checkerframework.checker.index.searchindex;
+package org.checkerframework.checker.index.indexof;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -92,8 +92,8 @@ public class IndexOfAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             UBQualifier a1Obj = UBQualifier.createUBQualifier(a1);
             UBQualifier a2Obj = UBQualifier.createUBQualifier(a2);
-            UBQualifier glb = a1Obj.lub(a2Obj);
-            return convertUBQualifierToAnnotation(glb);
+            UBQualifier lub = a1Obj.lub(a2Obj);
+            return convertUBQualifierToAnnotation(lub);
         }
 
         @Override
@@ -124,7 +124,7 @@ public class IndexOfAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return BOTTOM;
         }
 
-        UBQualifier.LessThanLengthOf ltlQualifier = (LessThanLengthOf) qualifier;
+        LessThanLengthOf ltlQualifier = (LessThanLengthOf) qualifier;
         return ltlQualifier.convertToIndexOfAnnotationMirror(processingEnv);
     }
 }
