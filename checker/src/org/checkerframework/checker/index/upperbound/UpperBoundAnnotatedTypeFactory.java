@@ -39,6 +39,7 @@ import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.samelen.SameLenChecker;
+import org.checkerframework.checker.index.searchindex.IndexOfAnnotatedTypeFactory;
 import org.checkerframework.checker.index.searchindex.IndexOfChecker;
 import org.checkerframework.checker.index.searchindex.SearchIndexAnnotatedTypeFactory;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
@@ -131,7 +132,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Provides a way to query the IndexOf Checker, which helps the Index Checker type the results
      * of calling the JDK's string indexOf and lastIndexOf methods correctly.
      */
-    SearchIndexAnnotatedTypeFactory getIndexOfAnnotatedTypeFactory() {
+    IndexOfAnnotatedTypeFactory getIndexOfAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(IndexOfChecker.class);
     }
 
