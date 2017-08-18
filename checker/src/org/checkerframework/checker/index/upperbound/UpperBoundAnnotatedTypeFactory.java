@@ -3,12 +3,10 @@ package org.checkerframework.checker.index.upperbound;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
-import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +18,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
+import org.checkerframework.checker.index.OffsetDependentTypesHelper;
 import org.checkerframework.checker.index.lowerbound.LowerBoundAnnotatedTypeFactory;
 import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
 import org.checkerframework.checker.index.qual.IndexFor;
@@ -40,6 +39,7 @@ import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.samelen.SameLenChecker;
+import org.checkerframework.checker.index.searchindex.IndexOfChecker;
 import org.checkerframework.checker.index.searchindex.SearchIndexAnnotatedTypeFactory;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
@@ -51,19 +51,14 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.qual.PolyAll;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
-import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -128,8 +123,16 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Provides a way to query the Search Index Checker, which helps the Index Checker type the
      * results of calling the JDK's binary search methods correctly.
      */
-    private SearchIndexAnnotatedTypeFactory getSearchIndexAnnotatedTypeFactory() {
+    SearchIndexAnnotatedTypeFactory getSearchIndexAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(SearchIndexChecker.class);
+    }
+
+    /**
+     * Provides a way to query the IndexOf Checker, which helps the Index Checker type the results
+     * of calling the JDK's string indexOf and lastIndexOf methods correctly.
+     */
+    SearchIndexAnnotatedTypeFactory getIndexOfAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(IndexOfChecker.class);
     }
 
     /**
@@ -145,7 +148,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * program is non-negative or not, and checks that no possibly negative integers are used to
      * access arrays.
      */
-    private LowerBoundAnnotatedTypeFactory getLowerBoundAnnotatedTypeFactory() {
+    LowerBoundAnnotatedTypeFactory getLowerBoundAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(LowerBoundChecker.class);
     }
 
@@ -184,62 +187,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected DependentTypesHelper createDependentTypesHelper() {
-        return new DependentTypesHelper(this) {
-            @Override
-            protected String standardizeString(
-                    final String expression,
-                    FlowExpressionContext context,
-                    TreePath localScope,
-                    boolean useLocalScope) {
-                if (DependentTypesError.isExpressionError(expression)) {
-                    return expression;
-                }
-                if (indexOf(expression, '-', '+', 0) == -1) {
-                    return super.standardizeString(expression, context, localScope, useLocalScope);
-                }
-
-                OffsetEquation equation = OffsetEquation.createOffsetFromJavaExpression(expression);
-                if (equation.hasError()) {
-                    return equation.getError();
-                }
-                try {
-                    equation.standardizeAndViewpointAdaptExpressions(
-                            context, localScope, useLocalScope);
-                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                    return new DependentTypesError(expression, e).toString();
-                }
-
-                return equation.toString();
-            }
-
-            private int indexOf(String expression, char a, char b, int index) {
-                int aIndex = expression.indexOf(a, index);
-                int bIndex = expression.indexOf(b, index);
-                if (aIndex == -1) {
-                    return bIndex;
-                } else if (bIndex == -1) {
-                    return aIndex;
-                } else {
-                    return Math.min(aIndex, bIndex);
-                }
-            }
-
-            @Override
-            public TreeAnnotator createDependentTypesTreeAnnotator(AnnotatedTypeFactory factory) {
-                return new DependentTypesTreeAnnotator(factory, this) {
-                    @Override
-                    public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
-                        // UpperBoundTreeAnnotator changes the type of array.length to @LTEL
-                        // ("array"). If the DependentTypesTreeAnnotator tries to viewpoint
-                        // adapt it based on the declaration of length; it will fail.
-                        if (TreeUtils.isArrayLengthAccess(tree)) {
-                            return null;
-                        }
-                        return super.visitMemberSelect(tree, type);
-                    }
-                };
-            }
-        };
+        return new OffsetDependentTypesHelper(this);
     }
 
     @Override

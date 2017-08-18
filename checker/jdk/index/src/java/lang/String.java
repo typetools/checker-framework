@@ -1732,7 +1732,7 @@ public final class String
      * @return  the index of the first occurrence of the specified substring,
      *          or {@code -1} if there is no such occurrence.
      */
-    public @GTENegativeOne @LTEqLengthOf("this") int indexOf(String str) {
+    public @GTENegativeOne @LTEqLengthOf("this") @IndexOfIndexFor(value="this",offset="#1.length()-1") int indexOf(String str) {
         return indexOf(str, 0);
     }
 
@@ -1752,7 +1752,7 @@ public final class String
      *          starting at the specified index,
      *          or {@code -1} if there is no such occurrence.
      */
-    public @GTENegativeOne @LTEqLengthOf("this") int indexOf(String str, int fromIndex) {
+    public @GTENegativeOne @LTEqLengthOf("this") @IndexOfIndexFor(value="this",offset="#1.length()-1")int indexOf(String str, int fromIndex) {
         return indexOf(value, offset, count,
                        str.value, str.offset, str.count, fromIndex);
     }
@@ -1823,7 +1823,7 @@ public final class String
      * @return  the index of the last occurrence of the specified substring,
      *          or {@code -1} if there is no such occurrence.
      */
-    public @GTENegativeOne @LTEqLengthOf("this") int lastIndexOf(String str) {
+    public @GTENegativeOne @LTEqLengthOf("this") @IndexOfIndexFor(value="this",offset="#1.length()-1") int lastIndexOf(String str) {
         return lastIndexOf(str, count);
     }
 
@@ -1843,7 +1843,7 @@ public final class String
      *          searching backward from the specified index,
      *          or {@code -1} if there is no such occurrence.
      */
-    public @GTENegativeOne @LTEqLengthOf("this") int lastIndexOf(String str, int fromIndex) {
+    public @GTENegativeOne @LTEqLengthOf("this") @IndexOfIndexFor(value="this",offset="#1.length()-1") int lastIndexOf(String str, int fromIndex) {
         return lastIndexOf(value, offset, count,
                            str.value, str.offset, str.count, fromIndex);
     }

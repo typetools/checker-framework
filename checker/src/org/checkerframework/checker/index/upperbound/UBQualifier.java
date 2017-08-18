@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.index.qual.IndexOfIndexFor;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
@@ -39,7 +40,8 @@ public abstract class UBQualifier {
             return UpperBoundUnknownQualifier.UNKNOWN;
         } else if (AnnotationUtils.areSameByClass(am, UpperBoundBottom.class)) {
             return UpperBoundBottomQualifier.BOTTOM;
-        } else if (AnnotationUtils.areSameByClass(am, LTLengthOf.class)) {
+        } else if (AnnotationUtils.areSameByClass(am, LTLengthOf.class)
+                || AnnotationUtils.areSameByClass(am, IndexOfIndexFor.class)) {
             return parseLTLengthOf(am);
         } else if (AnnotationUtils.areSameByClass(am, LTEqLengthOf.class)) {
             return parseLTEqLengthOf(am);
@@ -215,7 +217,7 @@ public abstract class UBQualifier {
         return false;
     }
 
-    static class LessThanLengthOf extends UBQualifier {
+    public static class LessThanLengthOf extends UBQualifier {
         private final Map<String, Set<OffsetEquation>> map;
 
         private LessThanLengthOf(Map<String, Set<OffsetEquation>> map) {
@@ -294,6 +296,15 @@ public abstract class UBQualifier {
          * @return the AnnotationMirror that represents this qualifier
          */
         public AnnotationMirror convertToAnnotationMirror(ProcessingEnvironment env) {
+            return convertToAnnotationMirror(env, false);
+        }
+
+        public AnnotationMirror convertToIndexOfAnnotationMirror(ProcessingEnvironment env) {
+            return convertToAnnotationMirror(env, true);
+        }
+
+        private AnnotationMirror convertToAnnotationMirror(
+                ProcessingEnvironment env, boolean buildIndexOfAnnotation) {
             List<String> sortedSequences = new ArrayList<>(map.keySet());
             Collections.sort(sortedSequences);
             List<String> sequences = new ArrayList<>();
@@ -314,7 +325,11 @@ public abstract class UBQualifier {
                 }
             }
             AnnotationBuilder builder;
-            if (isLTEq) {
+            if (buildIndexOfAnnotation) {
+                builder = new AnnotationBuilder(env, IndexOfIndexFor.class);
+                builder.setValue("value", sequences);
+                builder.setValue("offset", offsets);
+            } else if (isLTEq) {
                 builder = new AnnotationBuilder(env, LTEqLengthOf.class);
                 builder.setValue("value", sequences);
             } else if (isLTOM) {

@@ -8,6 +8,7 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
 import org.checkerframework.checker.index.IndexUtil;
+import org.checkerframework.checker.index.qual.IndexOfIndexFor;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
@@ -34,6 +35,7 @@ import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 
 public class UpperBoundTransfer extends IndexAbstractTransfer {
@@ -365,10 +367,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         // T = minusOffset(type(leftNode), rightNode) and
         // S = minusOffset(type(rightNode), leftNode)
 
-        UBQualifier left = getUBQualifier(n.getLeftOperand(), in);
+        UBQualifier left = getUBQualifierForAddition(n.getLeftOperand(), in);
         UBQualifier T = left.minusOffset(n.getRightOperand(), atypeFactory);
 
-        UBQualifier right = getUBQualifier(n.getRightOperand(), in);
+        UBQualifier right = getUBQualifierForAddition(n.getRightOperand(), in);
         UBQualifier S = right.minusOffset(n.getLeftOperand(), atypeFactory);
 
         UBQualifier glb = T.glb(S);
@@ -516,6 +518,37 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             }
         }
         return super.visitMethodInvocation(n, in);
+    }
+
+    /**
+     * Returns the UBQualifier for node, with additional refinement useful for integer addition. It
+     * does this by taking the greatest lower bound of the qualifier returned {@link
+     * getUBQualifier}, and a qualifier created from a IndexOfIndexFor annotation, if such
+     * annotation is present and the index is known to be non-negative.
+     *
+     * @param n node
+     * @param in transfer input
+     * @return the UBQualifier for node
+     */
+    private UBQualifier getUBQualifierForAddition(Node n, TransferInput<CFValue, CFStore> in) {
+        UBQualifier ubQualifier = getUBQualifier(n, in);
+        Tree nodeTree = n.getTree();
+        // Annotation from the IndexOf hierarchy
+        AnnotatedTypeMirror indexOfType =
+                atypeFactory.getIndexOfAnnotatedTypeFactory().getAnnotatedType(nodeTree);
+        AnnotationMirror indexOfAnno = indexOfType.getAnnotation(IndexOfIndexFor.class);
+        // Annotation from the Lower bound hierarchy
+        AnnotatedTypeMirror lowerBoundType =
+                atypeFactory.getLowerBoundAnnotatedTypeFactory().getAnnotatedType(nodeTree);
+        // If the index has an IndexOfIndexFor annotation and at the same time is non-negative,
+        // convert the IndexOfIndexFor annotation to a upper bound qualifier.
+        if (indexOfAnno != null
+                && (lowerBoundType.hasAnnotation(NonNegative.class)
+                        || lowerBoundType.hasAnnotation(Positive.class))) {
+            UBQualifier indexOfQualifier = UBQualifier.createUBQualifier(indexOfAnno);
+            ubQualifier = ubQualifier.glb(indexOfQualifier);
+        }
+        return ubQualifier;
     }
 
     /**
