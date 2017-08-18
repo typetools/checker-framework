@@ -299,10 +299,20 @@ public abstract class UBQualifier {
             return convertToAnnotationMirror(env, false);
         }
 
+        /**
+         * Returns the @{@link IndexOfIndexFor} AnnotationMirror that represents this qualifier in
+         * the IndexOf hierarchy.
+         *
+         * @param env ProcessingEnvironment
+         * @return the AnnotationMirror that represents this qualifier
+         */
         public AnnotationMirror convertToIndexOfAnnotationMirror(ProcessingEnvironment env) {
             return convertToAnnotationMirror(env, true);
         }
 
+        /**
+         * Common implementation of convertToAnnotationMirror and convertToIndexOfAnnotationMirror.
+         */
         private AnnotationMirror convertToAnnotationMirror(
                 ProcessingEnvironment env, boolean buildIndexOfAnnotation) {
             List<String> sortedSequences = new ArrayList<>(map.keySet());
