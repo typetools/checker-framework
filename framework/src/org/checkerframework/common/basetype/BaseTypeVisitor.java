@@ -5,6 +5,8 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+import static org.checkerframework.framework.util.AnnotatedTypes.getArrayDepth;
+
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
@@ -978,6 +980,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         int numFormals = formals.size();
         int lastArgIndex = numFormals - 1;
         AnnotatedArrayType lastParamAnnotatedType = (AnnotatedArrayType) formals.get(lastArgIndex);
+
+        // We will skip type checking so that we avoid duplicating error message
+        // if the last argument is same depth with the depth of formal varargs
+        // because type checking is already done in checkArguments.
+        List<? extends ExpressionTree> args;
+        switch (tree.getKind()) {
+            case METHOD_INVOCATION:
+                args = ((MethodInvocationTree) tree).getArguments();
+                break;
+            case NEW_CLASS:
+                args = ((NewClassTree) tree).getArguments();
+                break;
+            default:
+                throw new AssertionError("Unexpected kind of tree: " + tree);
+        }
+        if (numFormals == args.size()) {
+            AnnotatedTypeMirror lastArgType =
+                    atypeFactory.getAnnotatedType(args.get(args.size() - 1));
+            if (lastArgType.getKind() == TypeKind.ARRAY
+                    && getArrayDepth(lastParamAnnotatedType)
+                            == getArrayDepth((AnnotatedArrayType) lastArgType)) {
+                return;
+            }
+        }
+
         AnnotatedTypeMirror wrappedVarargsType = atypeFactory.getAnnotatedTypeVarargsArray(tree);
 
         // When dataflow analysis is not enabled, it will be null and we can suppose to there is no
@@ -988,17 +1015,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // If the component type is intersection or including type variable by type inference,
         // the comparison doesn't work well.
-        // We can consider that the both component type of actual and formal is Object,
+        // We can consider that the component type of actual is same with formal one,
         // because type checking for elements will be done in checkArguments.
-        AnnotatedTypeMirror objectType =
-                atypeFactory.getAnnotatedType(elements.getTypeElement("java.lang.Object"));
-        lastParamAnnotatedType.setComponentType(objectType);
         if (wrappedVarargsType.getKind() == TypeKind.ARRAY) {
-            ((AnnotatedArrayType) wrappedVarargsType).setComponentType(objectType);
+            ((AnnotatedArrayType) wrappedVarargsType)
+                    .setComponentType(lastParamAnnotatedType.getComponentType());
         }
 
         commonAssignmentCheck(
-                lastParamAnnotatedType, wrappedVarargsType, tree, "argument.type.incompatible");
+                lastParamAnnotatedType, wrappedVarargsType, tree, "varargs.type.incompatible");
     }
 
     /**
