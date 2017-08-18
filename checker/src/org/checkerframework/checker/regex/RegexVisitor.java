@@ -112,10 +112,12 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
 
     /** Case 2: Check String compound concatenation for valid Regex use. */
     // TODO: Remove this. This should be handled by flow.
-    /*@Override
+    /*
+    @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
         // Default behavior from superclass
-    }*/
+    }
+    */
 
     @Override
     public boolean isValidUse(
