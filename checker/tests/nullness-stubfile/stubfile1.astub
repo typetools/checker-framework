@@ -17,5 +17,12 @@ public final class String {
 }
 //The rest of these are used to test stub file warnings
 public class NotARealClass{}
+
 package not.real;
 public class NotARealClassInNotRealPackage{}
+
+package java.io;
+
+public class BufferedInputStream {
+    @NonNull byte[] buf;
+}
