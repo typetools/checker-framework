@@ -658,7 +658,7 @@ public final class String
      * @return  the length of the sequence of characters represented by this
      *          object.
      */
-    public @LengthOf("this") int length() {
+    public @LTEqLengthOf("this") int length() {
         return count;
     }
 
