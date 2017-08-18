@@ -13,6 +13,15 @@ Cyrille Artho.
 \newblock Master's thesis, Swiss Federal Institute of Technology, March~15,
   2001.
 
+\bibitem[BJM{\etalchar{+}}15]{BarrosJMVDdAE2015}
+Paulo Barros, Ren\'e Just, Suzanne Millstein, Paul Vines, Werner Dietl, Marcelo
+  d'Amorim, and Michael~D. Ernst.
+\newblock Static analysis of implicit control flow: Resolving {Java} reflection
+  and {Android} intents.
+\newblock In {\em ASE 2015: Proceedings of the 30th Annual International
+  Conference on Automated Software Engineering}, pages 669--679, Lincoln, NE,
+  USA, November 2015.
+
 \bibitem[CNA{\etalchar{+}}17]{CoblenzNAMS2017}
 Michael Coblenz, Whitney Nelson, Jonathan Aldrich, Brad Myers, and Joshua
   Sunshine.
@@ -59,6 +68,15 @@ Michael~D. Ernst, Ren{\'e} Just, Suzanne Millstein, Werner Dietl, Stuart
 \newblock In {\em CCS 2014: Proceedings of the 21st ACM Conference on Computer
   and Communications Security}, pages 1092--1104, Scottsdale, AZ, USA, November
   2014.
+
+\bibitem[ELM{\etalchar{+}}15]{ErnstLMSS2015}
+Michael~D. Ernst, Alberto Lovato, Damiano Macedonio, Ciprian Spiridon, and
+  Fausto Spoto.
+\newblock Boolean formulas for the static identification of injection attacks
+  in {Java}.
+\newblock In {\em LPAR 2015: Proceedings of the 20th International Conference
+  on Logic for Programming, Artificial Intelligence, and Reasoning}, pages
+  130--145, Suva, Fiji, November 2015.
 
 \bibitem[Ern08]{JSR308-2008-09-12}
 Michael~D. Ernst.

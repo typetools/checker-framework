@@ -241,7 +241,8 @@ public class WholeProgramInferenceScenesHelper {
      */
     private void removeIgnoredAnnosFromATypeElement(ATypeElement typeEl, TypeUseLocation loc) {
         Set<Annotation> annosToRemove = new HashSet<>();
-        Set<String> annosToIgnoreForLocation = annosToIgnore.get(Pair.of(typeEl.toString(), loc));
+        String firstKey = typeEl.description.toString() + typeEl.tlAnnotationsHere.toString();
+        Set<String> annosToIgnoreForLocation = annosToIgnore.get(Pair.of(firstKey, loc));
         if (annosToIgnoreForLocation == null) {
             // No annotations to ignore for that position.
             return;
@@ -322,9 +323,9 @@ public class WholeProgramInferenceScenesHelper {
     }
 
     /**
-     * Returns true if am should not be inserted in source code, for example {@link
-     * org.checkerframework.common.value.qual.BottomVal}. This happens when am cannot be inserted in
-     * source code or is the default for the location passed as argument.
+     * Returns true if {@code am} should not be inserted in source code, for example {@link
+     * org.checkerframework.common.value.qual.BottomVal}. This happens when {@code am} cannot be
+     * inserted in source code or is the default for the location passed as argument.
      *
      * <p>Invisible qualifiers, which are annotations that contain the {@link
      * org.checkerframework.framework.qual.InvisibleQualifier} meta-annotation, also return true.
@@ -367,9 +368,10 @@ public class WholeProgramInferenceScenesHelper {
             }
         }
 
-        // Checks if am is an implicit annotation
-        // TODO: Handles cases of implicit annotations added via an
-        // org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator
+        // Checks if am is an implicit annotation.
+        // This case checks if it is meta-annotated with @ImplicitFor.
+        // TODO: Handle cases of implicit annotations added via an
+        // org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator.
         ImplicitFor implicitFor = elt.getAnnotation(ImplicitFor.class);
         if (implicitFor != null) {
             TypeKind[] types = implicitFor.types();
@@ -491,7 +493,8 @@ public class WholeProgramInferenceScenesHelper {
         // Only update the ATypeElement if there are no explicit annotations
         if (curATM.getExplicitAnnotations().size() == 0) {
             for (AnnotationMirror am : newATM.getAnnotations()) {
-                addAnnotationsToATypeElement(newATM, atf, typeToUpdate, defLoc, am);
+                addAnnotationsToATypeElement(
+                        newATM, atf, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
             }
         } else if (curATM.getKind() == TypeKind.TYPEVAR) {
             // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly annotated.
@@ -503,7 +506,8 @@ public class WholeProgramInferenceScenesHelper {
                     // in the same hierarchy.
                     break;
                 }
-                addAnnotationsToATypeElement(newATM, atf, typeToUpdate, defLoc, am);
+                addAnnotationsToATypeElement(
+                        newATM, atf, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
             }
         }
 
@@ -529,12 +533,18 @@ public class WholeProgramInferenceScenesHelper {
             AnnotatedTypeFactory atf,
             ATypeElement typeToUpdate,
             TypeUseLocation defLoc,
-            AnnotationMirror am) {
+            AnnotationMirror am,
+            boolean isEffectiveAnnotation) {
         Annotation anno = AnnotationConverter.annotationMirrorToAnnotation(am);
         if (anno != null) {
             typeToUpdate.tlAnnotationsHere.add(anno);
-            if (shouldIgnore(am, defLoc, atf, newATM)) {
-                Pair<String, TypeUseLocation> key = Pair.of(typeToUpdate.toString(), defLoc);
+            if (isEffectiveAnnotation || shouldIgnore(am, defLoc, atf, newATM)) {
+                // firstKey works as a unique identifier for each annotation
+                // that should not be inserted in source code
+                String firstKey =
+                        typeToUpdate.description.toString()
+                                + typeToUpdate.tlAnnotationsHere.toString();
+                Pair<String, TypeUseLocation> key = Pair.of(firstKey, defLoc);
                 Set<String> annosIgnored = annosToIgnore.get(key);
                 if (annosIgnored == null) {
                     annosIgnored = new HashSet<>();

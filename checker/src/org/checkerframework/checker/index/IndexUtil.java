@@ -1,15 +1,23 @@
 package org.checkerframework.checker.index;
 
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /** A collection of utility functions used by several Index Checker subcheckers. */
 public class IndexUtil {
@@ -102,5 +110,37 @@ public class IndexUtil {
             Tree tree, ValueAnnotatedTypeFactory valueAnnotatedTypeFactory) {
         AnnotatedTypeMirror minLenType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
         return valueAnnotatedTypeFactory.getMinLenValue(minLenType);
+    }
+
+    /** Determines whether the type is a sequence supported by this checker. */
+    public static boolean isSequenceType(TypeMirror type) {
+        return type.getKind() == TypeKind.ARRAY || TypesUtils.isString(type);
+    }
+
+    /** Gets a sequence tree for a length access tree, or null if it is not a length access. */
+    public static ExpressionTree getLengthSequenceTree(
+            Tree lengthTree, IndexMethodIdentifier imf, ProcessingEnvironment processingEnv) {
+        if (TreeUtils.isArrayLengthAccess(lengthTree)) {
+            return ((MemberSelectTree) lengthTree).getExpression();
+        } else if (imf.isStringLength(lengthTree, processingEnv)) {
+            return TreeUtils.getReceiverTree((MethodInvocationTree) lengthTree);
+        }
+
+        return null;
+    }
+
+    /**
+     * Looks up the minlen of a member select tree. The tree must be an access to a sequence length.
+     */
+    public static Integer getMinLenFromTree(Tree tree, ValueAnnotatedTypeFactory valueATF) {
+        AnnotatedTypeMirror minLenType = valueATF.getAnnotatedType(tree);
+        Long min = valueATF.getMinimumIntegralValue(minLenType);
+        if (min == null) {
+            return null;
+        }
+        if (min < 0 || min > Integer.MAX_VALUE) {
+            min = 0L;
+        }
+        return min.intValue();
     }
 }
