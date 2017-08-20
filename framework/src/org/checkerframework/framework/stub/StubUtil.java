@@ -1,5 +1,11 @@
 package org.checkerframework.framework.stub;
 
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.StubUnit;
+import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.type.*;
+import com.github.javaparser.ast.visitor.SimpleVoidVisitor;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,34 +26,18 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.stubparser.ast.CompilationUnit;
-import org.checkerframework.stubparser.ast.IndexUnit;
-import org.checkerframework.stubparser.ast.Node;
-import org.checkerframework.stubparser.ast.body.BodyDeclaration;
-import org.checkerframework.stubparser.ast.body.ConstructorDeclaration;
-import org.checkerframework.stubparser.ast.body.FieldDeclaration;
-import org.checkerframework.stubparser.ast.body.MethodDeclaration;
-import org.checkerframework.stubparser.ast.body.Parameter;
-import org.checkerframework.stubparser.ast.body.TypeDeclaration;
-import org.checkerframework.stubparser.ast.body.VariableDeclarator;
-import org.checkerframework.stubparser.ast.type.ClassOrInterfaceType;
-import org.checkerframework.stubparser.ast.type.PrimitiveType;
-import org.checkerframework.stubparser.ast.type.ReferenceType;
-import org.checkerframework.stubparser.ast.type.VoidType;
-import org.checkerframework.stubparser.ast.type.WildcardType;
-import org.checkerframework.stubparser.ast.visitor.SimpleVoidVisitor;
 
 /** Utility class for stub files */
 public class StubUtil {
 
-    /*package-scope*/ static TypeDeclaration findDeclaration(
-            String className, IndexUnit indexFile) {
+    /*package-scope*/ static TypeDeclaration<?> findDeclaration(
+            String className, StubUnit indexFile) {
         int indexOfDot = className.lastIndexOf('.');
 
         if (indexOfDot == -1) {
             // classes not within a package needs to be the first in the index file
             assert !indexFile.getCompilationUnits().isEmpty();
-            assert indexFile.getCompilationUnits().get(0).getPackage() == null;
+            assert indexFile.getCompilationUnits().get(0).getPackageDeclaration() == null;
             return findDeclaration(className, indexFile.getCompilationUnits().get(0));
         }
 
@@ -55,9 +45,9 @@ public class StubUtil {
         final String simpleName = className.substring(indexOfDot + 1);
 
         for (CompilationUnit cu : indexFile.getCompilationUnits()) {
-            if (cu.getPackage() != null
-                    && cu.getPackage().getName().getName().equals(packageName)) {
-                TypeDeclaration type = findDeclaration(simpleName, cu);
+            if (cu.getPackageDeclaration().isPresent()
+                    && cu.getPackageDeclaration().get().getNameAsString().equals(packageName)) {
+                TypeDeclaration<?> type = findDeclaration(simpleName, cu);
                 if (type != null) {
                     return type;
                 }
@@ -68,20 +58,20 @@ public class StubUtil {
         return null;
     }
 
-    /*package-scope*/ static TypeDeclaration findDeclaration(
-            TypeElement type, IndexUnit indexFile) {
+    /*package-scope*/ static TypeDeclaration<?> findDeclaration(
+            TypeElement type, StubUnit indexFile) {
         return findDeclaration(type.getQualifiedName().toString(), indexFile);
     }
 
     /*package-scope*/ static FieldDeclaration findDeclaration(
-            VariableElement field, IndexUnit indexFile) {
-        TypeDeclaration type =
+            VariableElement field, StubUnit indexFile) {
+        TypeDeclaration<?> type =
                 findDeclaration((TypeElement) field.getEnclosingElement(), indexFile);
         if (type == null) {
             return null;
         }
 
-        for (BodyDeclaration member : type.getMembers()) {
+        for (BodyDeclaration<?> member : type.getMembers()) {
             if (!(member instanceof FieldDeclaration)) {
                 continue;
             }
@@ -95,9 +85,9 @@ public class StubUtil {
         return null;
     }
 
-    /*package-scope*/ static BodyDeclaration findDeclaration(
-            ExecutableElement method, IndexUnit indexFile) {
-        TypeDeclaration type =
+    /*package-scope*/ static BodyDeclaration<?> findDeclaration(
+            ExecutableElement method, StubUnit indexFile) {
+        TypeDeclaration<?> type =
                 findDeclaration((TypeElement) method.getEnclosingElement(), indexFile);
         if (type == null) {
             return null;
@@ -105,7 +95,7 @@ public class StubUtil {
 
         String methodRep = toString(method);
 
-        for (BodyDeclaration member : type.getMembers()) {
+        for (BodyDeclaration<?> member : type.getMembers()) {
             if (member instanceof MethodDeclaration) {
                 if (toString((MethodDeclaration) member).equals(methodRep)) {
                     return member;
@@ -119,10 +109,10 @@ public class StubUtil {
         return null;
     }
 
-    /*package-scope*/ static TypeDeclaration findDeclaration(
+    /*package-scope*/ static TypeDeclaration<?> findDeclaration(
             String simpleName, CompilationUnit cu) {
-        for (TypeDeclaration type : cu.getTypes()) {
-            if (simpleName.equals(type.getName())) {
+        for (TypeDeclaration<?> type : cu.getTypes()) {
+            if (simpleName.equals(type.getNameAsString())) {
                 return type;
             }
         }
@@ -139,7 +129,7 @@ public class StubUtil {
     }
 
     /*package-scope*/ static String toString(VariableDeclarator field) {
-        return field.getId().getName();
+        return field.getNameAsString();
     }
 
     /*package-scope*/ static String toString(FieldDeclaration field) {
@@ -269,11 +259,6 @@ public class StubUtil {
 
         @Override
         public void visit(Parameter n, Void arg) {
-            if (n.getId().getArrayCount() > 0) {
-                ErrorReporter.errorAbort(
-                        "StubUtil: put array brackets on the type, not the variable: " + n);
-            }
-
             n.getType().accept(this, arg);
             if (n.isVarArgs()) {
                 sb.append("[]");
@@ -289,28 +274,28 @@ public class StubUtil {
         @Override
         public void visit(PrimitiveType n, Void arg) {
             switch (n.getType()) {
-                case Boolean:
+                case BOOLEAN:
                     sb.append("boolean");
                     break;
-                case Byte:
+                case BYTE:
                     sb.append("byte");
                     break;
-                case Char:
+                case CHAR:
                     sb.append("char");
                     break;
-                case Double:
+                case DOUBLE:
                     sb.append("double");
                     break;
-                case Float:
+                case FLOAT:
                     sb.append("float");
                     break;
-                case Int:
+                case INT:
                     sb.append("int");
                     break;
-                case Long:
+                case LONG:
                     sb.append("long");
                     break;
-                case Short:
+                case SHORT:
                     sb.append("short");
                     break;
                 default:
@@ -320,8 +305,16 @@ public class StubUtil {
 
         @Override
         public void visit(ReferenceType n, Void arg) {
-            n.getType().accept(this, arg);
-            for (int i = 0; i < n.getArrayCount(); ++i) {
+            n.getElementType().accept(this, arg);
+            for (int i = 0; i < n.getArrayLevel(); ++i) {
+                sb.append("[]");
+            }
+        }
+
+        @Override
+        public void visit(com.github.javaparser.ast.type.ArrayType n, Void arg) {
+            n.getComponentType().accept(this, arg);
+            for (int i = 0; i < n.getArrayLevel(); ++i) {
                 sb.append("[]");
             }
         }

@@ -138,8 +138,8 @@ public class PersonalBlogService {
 
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.MONTH, -1);
-        /*@SuppressWarnings("tainting")*/
-        String startdate = (/*@Untainted*/ String) qf.format(cal.getTime());
+        @SuppressWarnings("tainting")
+        String startdate = (@Untainted String) qf.format(cal.getTime());
 
         posts =
                 executeQuery(
