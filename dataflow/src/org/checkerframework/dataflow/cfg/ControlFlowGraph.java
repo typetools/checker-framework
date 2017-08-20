@@ -218,12 +218,12 @@ public class ControlFlowGraph {
         return succs;
     }
 
-    /** @return the tree-lookup map */
+    /** @return the copied tree-lookup map */
     public IdentityHashMap<Tree, Node> getTreeLookup() {
         return new IdentityHashMap<>(treeLookup);
     }
 
-    /** @return lookup map of the assign node for unary operation */
+    /** @return the copied lookup-map of the assign node for unary operation */
     public IdentityHashMap<UnaryTree, AssignmentNode> getUnaryAssignNodeLookup() {
         return new IdentityHashMap<>(unaryAssignNodeLookup);
     }

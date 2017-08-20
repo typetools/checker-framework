@@ -101,7 +101,8 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /** @return the corresponding {@link AssignmentNode} for a given {@link UnaryTree}. */
-    public /*@Nullable*/ AssignmentNode getAssignForUnaryTree(UnaryTree tree) {
+    public AssignmentNode getAssignForUnaryTree(UnaryTree tree) {
+        assert unaryAssignNodeLookup.containsKey(tree) : tree + " is not in unaryAssignNodeLookup";
         return unaryAssignNodeLookup.get(tree);
     }
 
