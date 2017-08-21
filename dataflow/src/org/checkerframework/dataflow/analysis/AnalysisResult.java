@@ -38,9 +38,8 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     protected final IdentityHashMap<Block, TransferInput<A, S>> stores;
 
     /** The results for each node. */
-    protected final IdentityHashMap<
-                    TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>>
-            cacheLookupMap;
+    protected final Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>>
+            analysisCaches;
 
     /** Initialize with a given node-value mapping. */
     public AnalysisResult(
@@ -52,7 +51,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         this.treeLookup = new IdentityHashMap<>(treeLookup);
         this.stores = stores;
         this.finalLocalValues = finalLocalValues;
-        this.cacheLookupMap = new IdentityHashMap<>();
+        analysisCaches = new IdentityHashMap<>();
     }
 
     /** Initialize empty result. */
@@ -61,7 +60,17 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         treeLookup = new IdentityHashMap<>();
         stores = new IdentityHashMap<>();
         finalLocalValues = new HashMap<>();
-        this.cacheLookupMap = new IdentityHashMap<>();
+        analysisCaches = new IdentityHashMap<>();
+    }
+
+    /** Initialize empty result with specified cache. */
+    public AnalysisResult(
+            Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>> analysisCaches) {
+        nodeValues = new IdentityHashMap<>();
+        treeLookup = new IdentityHashMap<>();
+        stores = new IdentityHashMap<>();
+        finalLocalValues = new HashMap<>();
+        this.analysisCaches = analysisCaches;
     }
 
     /** Combine with another analysis result. */
@@ -149,29 +158,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         if (transferInput == null) {
             return null;
         }
-        return runAnalysisForWithCacheLookupMap(node, before, transferInput, cacheLookupMap);
-    }
-
-    public static <A extends AbstractValue<A>, S extends Store<S>>
-            S runAnalysisForWithCacheLookupMap(
-                    Node node,
-                    boolean before,
-                    TransferInput<A, S> transferInput,
-                    IdentityHashMap<
-                                    TransferInput<A, S>,
-                                    IdentityHashMap<Node, TransferResult<A, S>>>
-                            cacheLookupMap) {
-        IdentityHashMap<Node, TransferResult<A, S>> cache = cacheLookupMap.get(transferInput);
-        if (cache == null) {
-            cache = new IdentityHashMap<>();
-            cacheLookupMap.put(transferInput, cache);
-        }
-        return runAnalysisFor(node, before, transferInput, cache);
-    }
-
-    public static <A extends AbstractValue<A>, S extends Store<S>> S runAnalysisFor(
-            Node node, boolean before, TransferInput<A, S> transferInput) {
-        return runAnalysisFor(node, before, transferInput, null);
+        return runAnalysisFor(node, before, transferInput, analysisCaches);
     }
 
     /**
@@ -180,6 +167,30 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * {@link Node} {@code node} is returned. Otherwise, the store after {@code node} is returned.
      */
     public static <A extends AbstractValue<A>, S extends Store<S>> S runAnalysisFor(
+            Node node,
+            boolean before,
+            TransferInput<A, S> transferInput,
+            Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>> analysisCaches) {
+        IdentityHashMap<Node, TransferResult<A, S>> cache = analysisCaches.get(transferInput);
+        if (cache == null) {
+            cache = new IdentityHashMap<>();
+            analysisCaches.put(transferInput, cache);
+        }
+        return runAnalysisForWithCache(node, before, transferInput, cache);
+    }
+
+    /**
+     * Runs the analysis again within the block of {@code node} and returns the store at the
+     * location of {@code node}. If {@code before} is true, then the store immediately before the
+     * {@link Node} {@code node} is returned. Otherwise, the store after {@code node} is returned.
+     */
+    @Deprecated
+    public static <A extends AbstractValue<A>, S extends Store<S>> S runAnalysisFor(
+            Node node, boolean before, TransferInput<A, S> transferInput) {
+        return runAnalysisForWithCache(node, before, transferInput, null);
+    }
+
+    private static <A extends AbstractValue<A>, S extends Store<S>> S runAnalysisForWithCache(
             Node node,
             boolean before,
             TransferInput<A, S> transferInput,

@@ -98,6 +98,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
@@ -165,10 +166,10 @@ public abstract class GenericAnnotatedTypeFactory<
     /** An empty store. */
     private Store emptyStore;
 
-    protected final IdentityHashMap<
+    protected final Map<
                     TransferInput<Value, Store>,
                     IdentityHashMap<Node, TransferResult<Value, Store>>>
-            cacheLookupMap = new IdentityHashMap<>();
+            flowResultAnalysisCaches;
 
     /**
      * Creates a type factory for checking the given compilation unit with respect to the given
@@ -194,6 +195,13 @@ public abstract class GenericAnnotatedTypeFactory<
         this.initializationStaticStore = null;
 
         this.cfgVisualizer = createCFGVisualizer();
+
+        if (shouldCache) {
+            int cacheSize = getCacheSize();
+            flowResultAnalysisCaches = CollectionUtils.createLRUCache(cacheSize);
+        } else {
+            flowResultAnalysisCaches = null;
+        }
 
         // Add common aliases.
         // addAliasedDeclAnnotation(checkers.nullness.quals.Pure.class,
@@ -245,6 +253,7 @@ public abstract class GenericAnnotatedTypeFactory<
         super.setRoot(root);
         this.analyses.clear();
         this.scannedClasses.clear();
+        this.flowResultAnalysisCaches.clear();
         this.flowResult = null;
         this.regularExitStores = null;
         this.methodInvocationStores = null;
@@ -860,8 +869,7 @@ public abstract class GenericAnnotatedTypeFactory<
             return null;
         }
         Store store =
-                AnalysisResult.runAnalysisForWithCacheLookupMap(
-                        node, true, prevStore, cacheLookupMap);
+                AnalysisResult.runAnalysisFor(node, true, prevStore, flowResultAnalysisCaches);
         return store;
     }
 
@@ -873,8 +881,8 @@ public abstract class GenericAnnotatedTypeFactory<
         FlowAnalysis analysis = analyses.getFirst();
         Node node = analysis.getNodeForTree(tree);
         Store store =
-                AnalysisResult.runAnalysisForWithCacheLookupMap(
-                        node, false, analysis.getInput(node.getBlock()), cacheLookupMap);
+                AnalysisResult.runAnalysisFor(
+                        node, false, analysis.getInput(node.getBlock()), flowResultAnalysisCaches);
         return store;
     }
 
@@ -896,7 +904,7 @@ public abstract class GenericAnnotatedTypeFactory<
         if (flowResult == null) {
             regularExitStores = new IdentityHashMap<>();
             returnStatementStores = new IdentityHashMap<>();
-            flowResult = new AnalysisResult<>();
+            flowResult = new AnalysisResult<>(flowResultAnalysisCaches);
         }
 
         // no need to scan annotations
@@ -1107,7 +1115,6 @@ public abstract class GenericAnnotatedTypeFactory<
         if (emptyStore == null) {
             emptyStore = newAnalysis.createEmptyStore(transfer.usesSequentialSemantics());
         }
-        cacheLookupMap.clear();
         analyses.addFirst(newAnalysis);
         if (lambdaStore != null) {
             transfer.setFixedInitialStore(lambdaStore);
