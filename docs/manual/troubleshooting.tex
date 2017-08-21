@@ -1070,21 +1070,31 @@ Next steps should be made in order to upgrade the stubparser project:
 Fork \ahref{https://github.com/typetools/stubparser}{the stubparser project} to your github account.
 \item
 Clone the repository to your local environment.
-\code{git clone https://github.com/\{user.name\}/stubparser}
+\begin{Verbatim}
+git clone https://github.com/{user.name}/stubparser
+\end{Verbatim}
 \item
 Enter to the main directory of the local project.
-\code{cd \{place-where-repository-cloned\}/stubparser}
+\begin{Verbatim}
+cd {place-where-repository-cloned}/stubparser
+\end{Verbatim}
 \item
 Create and checkout to the branch (e.g updating).
-\code{git checkout -b updating}
+\begin{Verbatim}
+git checkout -b updating
+\end{Verbatim}
 \item
 Pull the upstream of \ahref{https://github.com/javaparser/javaparser}{the javaparser project}.
-\code{git pull https://github.com/javaparser/javaparser master}
+\begin{Verbatim}
+git pull https://github.com/javaparser/javaparser master
+\end{Verbatim}
 \item
 Resolve the conflicts if required and commit it.
 \item
 Run maven tests in the root stubparser directory.
-\code{mvn test}
+\begin{Verbatim}
+mvn test
+\end{Verbatim}
 If something failed in tests the stubparser project should be fixed before continuing.
 \item
 Build the stubparser-core.jar file from the javapaser-core module.
@@ -1092,10 +1102,14 @@ Build the stubparser-core.jar file from the javapaser-core module.
 Fork \ahref{https://github.com/typetools/checker-framework}{the stubparser project} to your github account.
 \item
 Clone the Checker Framework repository to your local environment.
-\code{git clone https://github.com/\{user.name\}/checker-framework}
+\begin{Verbatim}
+git clone https://github.com/{user.name}/checker-framework
+\end{Verbatim}
 \item
 Enter to the main directory of the local project.
-\code{cd \{place-where-repository-cloned\}/checker-framework}
+\begin{Verbatim}
+cd {place-where-repository-cloned}/checker-framework
+\end{Verbatim}
 \item
 Create and checkout to the branch (e.g updating).
 \code{git checkout -b updating}
@@ -1110,7 +1124,7 @@ Push commits to your forks of the stubparser and the Checker Framework.
 \item
 Check that Travis jobs succeed.
 \item
-Create pull requests to the typetools/stubparser and typetools/checker-framework.
+Create pull requests to the typetools/stubparser and typetools/checker-framework with names "Updating the stubparser".
 \end{enumerate}
 
 \section{Contributing fixes (creating a pull request)\label{pull-request}}
