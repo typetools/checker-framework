@@ -119,7 +119,6 @@ CHECKER_COMPAT_QUAL_SOURCE = os.path.join(CHECKER_BIN_DIR, 'checker-compat-qual-
 CHECKER_MANUAL = os.path.join(CHECKER_FRAMEWORK, "docs", "manual")
 
 JAVAC_BINARY = os.path.join(CHECKER_BIN_DIR, 'javac.jar')
-JDK7_BINARY = os.path.join(CHECKER_BIN_DIR, 'jdk7.jar')
 JDK8_BINARY = os.path.join(CHECKER_BIN_DIR, 'jdk8.jar')
 
 JAVACUTIL_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "javacutil", "dist")
@@ -160,7 +159,6 @@ CHECKER_QUAL_POM = os.path.join(MAVEN_POMS_DIR, 'checkerQualPom.xml')
 CHECKER_COMPAT_QUAL_POM = os.path.join(MAVEN_POMS_DIR, 'checkerCompatQualPom.xml')
 
 JAVAC_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'compilerPom.xml')
-JDK7_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'jdk7Pom.xml')
 JDK8_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'jdk8Pom.xml')
 
 MAVEN_RELEASE_DIR = os.path.join(MAVEN_ARTIFACTS_DIR, 'release')
@@ -169,7 +167,6 @@ CHECKER_QUAL_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerQualReleasePo
 CHECKER_COMPAT_QUAL_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerCompatQualReleasePom.xml')
 
 JAVAC_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'compilerReleasePom.xml')
-JDK7_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'jdk7ReleasePom.xml')
 JDK8_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'jdk8ReleasePom.xml')
 JAVACUTIL_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'javacutilReleasePom.xml')
 DATAFLOW_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'dataflowReleasePom.xml')
@@ -215,9 +212,10 @@ os.environ['BIBINPUTS'] = '.:' + PLUME_BIB
 os.environ['TEXINPUTS'] = '.:/scratch/secs-jenkins/tools/hevea-1.10/lib/hevea:/usr/share/texmf/tex/latex/hevea/:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:..:'
 os.environ['PERLLIB'] = getAndAppend('PERLLIB', ":")  + perl_libs
 os.environ['PERL5LIB'] = getAndAppend('PERL5LIB', ":") + perl_libs
+# Still needed for santiy checks
 os.environ['JAVA_7_HOME'] = '/scratch/secs-jenkins/java/jdk1.7.0'
 os.environ['JAVA_8_HOME'] = '/scratch/secs-jenkins/java/jdk1.8.0'
-os.environ['JAVA_HOME'] = os.environ['JAVA_7_HOME']
+os.environ['JAVA_HOME'] = os.environ['JAVA_8_HOME']
 
 EDITOR = os.getenv('EDITOR')
 if EDITOR is None:
