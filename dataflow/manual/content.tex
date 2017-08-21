@@ -837,29 +837,30 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \label{tab:nodes}
     \end{longtable}
 
-\autoref{tab:nodesWithException} shows all node types whish can possibly throw an exception and type to be thrown.
+\autoref{tab:nodesWithException} shows all node types which can possibly throw
+an exception and the exception type to be thrown.
 Java class name of nodes are simplified as with \autoref{tab:nodes}.
-All of specific Exceptions type in table are in package \code{java.lang}.
+All exception types in \autoref{tab:nodesWithException} are in package \code{java.lang}.
 
     \begin{longtable}{lp{0.6\linewidth}l}
         \midrule
-        \multicolumn{2}{c}{\autoref{tab:nodesWithException}: All node types could throw Exception and types to be thrown..} \\ \\
+        \multicolumn{2}{c}{\autoref{tab:nodesWithException}: All node types could throw Exception and types to be thrown.} \\ \\
         \textbf{Node type} & \textbf{Exception type} \\ \midrule \endfirsthead
 
         \textbf{Node type} & \textbf{Exception type} \\ \midrule \endhead
         \hline \multicolumn{2}{|c|}{{Continued on next page}} \\ \hline \endfoot
         \endlastfoot
 
-        \code{ArrayAccess} & NullPointerException, ArrayIndexOutOfBoundsException \\
-        \code{FieldAccess} & NullPointerException \\
-        \code{MethodAccess} & NullPointerException \\
-        \code{MethodInvocation} & Throwable, Types in throws clause of the signature \\
-        \code{IntegerDivision} & ArithmeticException \\
-        \code{IntegerRemainder} & ArithmeticException \\
-        \code{ObjectCreation} & Throwable, Types in throws clause of the signature \\
-        \code{TypeCast} & ClassCastException \\
+        \code{ArrayAccess} & \code{NullPointerException}, \code{ArrayIndexOutOfBoundsException} \\
+        \code{FieldAccess} & \code{NullPointerException} \\
+        \code{MethodAccess} & \code{NullPointerException} \\
+        \code{MethodInvocation} & \code{Throwable}, types in throws clause of the signature \\
+        \code{IntegerDivision} & \code{ArithmeticException} \\
+        \code{IntegerRemainder} & \code{ArithmeticException} \\
+        \code{ObjectCreation} & \code{Throwable}, types in throws clause of the signature \\
+        \code{TypeCast} & \code{ClassCastException} \\
         \code{Throw} & Type of \code{e} when \code{throw e} \\
-        \code{AssertionError} & AssertionError \\
+        \code{AssertionError} & \code{AssertionError} \\
         \midrule
 
         \caption{All node types could throw Exception and types to be thrown.}
