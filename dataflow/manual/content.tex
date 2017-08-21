@@ -842,6 +842,12 @@ an exception and the exception type to be thrown.
 Java class name of nodes are simplified as with \autoref{tab:nodes}.
 All exception types in \autoref{tab:nodesWithException} are in package \code{java.lang}.
 
+Considering \code{Error} such as \code{OutOfMemoryError} or \code{NoSuchFieldError},
+an exceptional edge of \code{Error} is not created except for method or
+constructor invocation, assertion statement or throw statement. Because
+it's not recommended to catch it due to a critical situation which is not
+to able to execute JVM and handle in an application.
+
     \begin{longtable}{lp{0.6\linewidth}l}
         \midrule
         \multicolumn{2}{c}{\autoref{tab:nodesWithException}: All node types could throw Exception and types to be thrown.} \\ \\
