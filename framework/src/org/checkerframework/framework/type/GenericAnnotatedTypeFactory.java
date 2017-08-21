@@ -723,7 +723,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @param receiver the receiver for which the annotation is returned
      * @param tree current tree
-     * @param clazz Class of the annotation
+     * @param clazz the Class of the annotation
      * @return the annotation on expression or null if one does not exist
      * @throws FlowExpressionParseException thrown if the expression cannot be parsed
      */

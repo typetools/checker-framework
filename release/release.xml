@@ -231,15 +231,6 @@
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <!-- jdk7 -->
-        <update file="${checker.binary.poms}/jdk7Pom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <update file="${checker.release.poms}/jdk7ReleasePom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
         <!-- jdk8 -->
         <update file="${checker.binary.poms}/jdk8Pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
@@ -401,9 +392,6 @@
 
         <jar destfile="${dest.dir}/compiler-source.jar"  basedir="${maven.release.dir}" includes="README-compiler"/>
         <jar destfile="${dest.dir}/compiler-javadoc.jar" basedir="${maven.release.dir}" includes="README-compiler"/>
-
-        <jar destfile="${dest.dir}/jdk7-source.jar"  basedir="${maven.release.dir}" includes="README-jdk"/>
-        <jar destfile="${dest.dir}/jdk7-javadoc.jar" basedir="${maven.release.dir}" includes="README-jdk"/>
 
         <jar destfile="${dest.dir}/jdk8-source.jar"  basedir="${maven.release.dir}" includes="README-jdk"/>
         <jar destfile="${dest.dir}/jdk8-javadoc.jar" basedir="${maven.release.dir}" includes="README-jdk"/>

@@ -1,6 +1,7 @@
 All tests for the whole-program-inference feature must be added to the
 "non-annotated" folder. These tests must have expected error comments
-(// :: error...) in places where the whole-program inference is needed for it to
+(// :: error...) in places where the type-checker issues an error.
+These are locations that an annotation is needed for it to
 type-check. Also, these tests must ONLY have expected error comments for those
 cases -- no other expected errors comments should be added.
 
