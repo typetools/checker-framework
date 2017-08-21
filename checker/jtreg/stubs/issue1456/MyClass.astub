@@ -1,0 +1,7 @@
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+package java.io;
+
+public class BufferedInputStream {
+    @NonNull byte[] buf;
+}
