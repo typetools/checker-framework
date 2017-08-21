@@ -1062,6 +1062,56 @@ If the pre-commit hook or \<ant reformat> fails with an
 in the top-level directory that sets the property \code{maxparallel} to 4000.  If the error is still issued, reduce the number and
 try again.
 
+\section{Upgrading the stubparser module\label{upgrading-stubparser}}
+
+Next steps should be made in order to upgrade the stubparser project:
+\begin{enumerate}
+\item
+Fork \ahref{https://github.com/typetools/stubparser}{the stubparser project} to your github account.
+\item
+Clone the repository to your local environment.
+\code{git clone https://github.com/\{user.name\}/stubparser}
+\item
+Enter to the main directory of the local project.
+\code{cd \{place-where-repository-cloned\}/stubparser}
+\item
+Create and checkout to the branch (e.g updating).
+\code{git checkout -b updating}
+\item
+Pull the upstream of \ahref{https://github.com/javaparser/javaparser}{the javaparser project}.
+\code{git pull https://github.com/javaparser/javaparser master}
+\item
+Resolve the conflicts if required and commit it.
+\item
+Run maven tests in the root stubparser directory.
+\code{mvn test}
+If something failed in tests the stubparser project should be fixed before continuing.
+\item
+Build the stubparser-core.jar file from the javapaser-core module.
+\item
+Fork \ahref{https://github.com/typetools/checker-framework}{the stubparser project} to your github account.
+\item
+Clone the Checker Framework repository to your local environment.
+\code{git clone https://github.com/\{user.name\}/checker-framework}
+\item
+Enter to the main directory of the local project.
+\code{cd \{place-where-repository-cloned\}/checker-framework}
+\item
+Create and checkout to the branch (e.g updating).
+\code{git checkout -b updating}
+\item
+Replace the jar file {checker-framework}/framework/lib/stubparser-core.jar with the new stubparser-core.jar.
+\item
+Commit the change to the Checker Framework.
+\item
+Enable Travis build for your forks of the stubparser and the Checker Framework.
+\item
+Push commits to your forks of the stubparser and the Checker Framework.
+\item
+Check that Travis jobs succeed.
+\item
+Create pull requests to the typetools/stubparser and typetools/checker-framework.
+\end{enumerate}
 
 \section{Contributing fixes (creating a pull request)\label{pull-request}}
 
