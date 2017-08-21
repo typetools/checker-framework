@@ -858,7 +858,12 @@ public class StubParser {
         // StubParser parses all annotations in type annotation position as type annotations
         annotateDecl(declAnnos, elt, decl.getElementType().getAnnotations());
         AnnotatedTypeMirror fieldType = atypeFactory.fromElement(elt);
-        annotate(fieldType, decl.getElementType());
+        // Getting type from the first variable in a line
+        // (all the variables have the same type as they written in one line of code).
+        // In the old version of the stubparser it took the field type which could be
+        // an array. In the new version this is the way to get and array type element.
+        // Change added to fix the issue #1345.
+        annotate(fieldType, decl.getVariables().get(0).getType());
         putNew(atypes, elt, fieldType);
     }
 
