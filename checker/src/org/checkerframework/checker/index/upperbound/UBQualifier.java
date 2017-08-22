@@ -786,6 +786,7 @@ public abstract class UBQualifier {
             }
             for (OffsetEquation offset : offsets) {
                 if (offset.isInt()) {
+                    // This expression must not overflow
                     return (long) minlen - offset.getInt() > value;
                 }
             }
