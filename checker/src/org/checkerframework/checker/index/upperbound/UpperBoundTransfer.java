@@ -23,6 +23,7 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
@@ -307,14 +308,29 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * If lengthAccess node is an sequence length field or method access and the other node is less
-     * than or equal to that sequence length, then refine the other nodes type to less than the
-     * sequence length.
+     * If lengthAccess node is an sequence length field or method access (optionally with a literal
+     * offset subtracted) and the other node is less than or equal to that sequence length (minus
+     * the offset), then refine the other nodes type to less than the sequence length (minus the
+     * offset).
      */
     private void refineNeqSequenceLength(
             Node lengthAccess, Node otherNode, AnnotationMirror otherNodeAnno, CFStore store) {
 
         Receiver receiver = null;
+        // If lengthAccess is "receiver.length - c" where c is an integer literal, stores c
+        // into lengthOffset
+        int lengthOffset = 0;
+        if (lengthAccess instanceof NumericalSubtractionNode) {
+            NumericalSubtractionNode subtraction = (NumericalSubtractionNode) lengthAccess;
+            Node offsetNode = subtraction.getRightOperand();
+            if (offsetNode instanceof IntegerLiteralNode) {
+                lengthOffset = ((IntegerLiteralNode) offsetNode).getValue();
+                lengthAccess = subtraction.getLeftOperand();
+            } else {
+                // Subtraction of other expressions is not supported
+                return;
+            }
+        }
 
         if (NodeUtils.isArrayLengthFieldAccess(lengthAccess)) {
             FieldAccess fa =
@@ -332,8 +348,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         if (receiver != null && !receiver.containsUnknown()) {
             UBQualifier otherQualifier = UBQualifier.createUBQualifier(otherNodeAnno);
             String sequence = receiver.toString();
-            if (otherQualifier.hasSequenceWithOffsetNeg1(sequence)) {
-                otherQualifier = otherQualifier.glb(UBQualifier.createUBQualifier(sequence, "0"));
+            // Check if otherNode + c - 1 < receiver.length
+            if (otherQualifier.hasSequenceWithOffset(sequence, lengthOffset - 1)) {
+                // Add otherNode + c < receiver.length
+                UBQualifier newQualifier =
+                        UBQualifier.createUBQualifier(sequence, Integer.toString(lengthOffset));
+                otherQualifier = otherQualifier.glb(newQualifier);
                 for (Node internal : splitAssignments(otherNode)) {
                     Receiver leftRec =
                             FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
@@ -406,7 +426,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         for (String sequence : i.getSequences()) {
             if (i.isLessThanLengthOf(sequence)) {
                 lessThan.add(sequence);
-            } else if (i.hasSequenceWithOffsetNeg1(sequence)) {
+            } else if (i.hasSequenceWithOffset(sequence, -1)) {
                 lessThanOrEqaul.add(sequence);
             }
         }
