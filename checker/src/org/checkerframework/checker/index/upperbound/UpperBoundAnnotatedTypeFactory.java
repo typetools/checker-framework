@@ -124,7 +124,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Provides a way to query the Search Index Checker, which helps the Index Checker type the
      * results of calling the JDK's binary search methods correctly.
      */
-    SearchIndexAnnotatedTypeFactory getSearchIndexAnnotatedTypeFactory() {
+    private SearchIndexAnnotatedTypeFactory getSearchIndexAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(SearchIndexChecker.class);
     }
 
