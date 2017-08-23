@@ -260,13 +260,16 @@ public abstract class GenericAnnotatedTypeFactory<
         super.setRoot(root);
         this.analyses.clear();
         this.scannedClasses.clear();
-        this.flowResultAnalysisCaches.clear();
         this.flowResult = null;
         this.regularExitStores = null;
         this.methodInvocationStores = null;
         this.returnStatementStores = null;
         this.initializationStore = null;
         this.initializationStaticStore = null;
+
+        if (shouldCache) {
+            this.flowResultAnalysisCaches.clear();
+        }
     }
 
     // **********************************************************************
