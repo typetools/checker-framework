@@ -6,6 +6,7 @@ import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.common.value.qual.IntVal;
 
 class RefineNeqLength {
     void refineNeqLength(int[] array, @IndexOrHigh("#1") int i) {
@@ -36,6 +37,22 @@ class RefineNeqLength {
         }
         // No refinement
         if (i != array.length - 1) {
+            //:: error: (argument.type.incompatible)
+            refineNeqLengthMThree(array, i);
+        }
+    }
+
+    void refineNeqLengthMTwoNonLiteral(
+            int[] array,
+            @NonNegative @LTOMLengthOf("#1") int i,
+            @IntVal(3) int c3,
+            @IntVal({2, 3}) int c23) {
+        // Refines i < array.length - 1 to i < array.length - 2
+        if (i != array.length - (5 - c3)) {
+            refineNeqLengthMThree(array, i);
+        }
+        // No refinement
+        if (i != array.length - c23) {
             //:: error: (argument.type.incompatible)
             refineNeqLengthMThree(array, i);
         }
