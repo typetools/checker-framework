@@ -804,14 +804,15 @@ public abstract class UBQualifier {
             return UpperBoundUnknownQualifier.UNKNOWN;
         }
 
-        public boolean isValuePlusOffsetLessThanMinLen(String sequence, int value, int minlen) {
+        public boolean isValuePlusOffsetLessThanMinLen(String sequence, long value, int minlen) {
             Set<OffsetEquation> offsets = map.get(sequence);
             if (offsets == null) {
                 return false;
             }
             for (OffsetEquation offset : offsets) {
                 if (offset.isInt()) {
-                    return minlen > value + offset.getInt();
+                    // This expression must not overflow
+                    return (long) minlen - offset.getInt() > value;
                 }
             }
             return false;

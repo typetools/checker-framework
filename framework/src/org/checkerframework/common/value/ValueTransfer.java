@@ -1339,32 +1339,15 @@ public class ValueTransfer extends CFTransfer {
         ValueMethodIdentifier methodIdentifier = atypefactory.getMethodIdentifier();
         if (methodIdentifier.isStartsWithMethod(methodElement)
                 || methodIdentifier.isEndsWithMethod(methodElement)) {
-            Receiver argument = FlowExpressions.internalReprOf(atypefactory, n.getArgument(0));
-            Receiver receiver =
-                    FlowExpressions.internalReprOf(atypefactory, n.getTarget().getReceiver());
 
-            Integer minLength = null;
-
-            if (argument instanceof FlowExpressions.ValueLiteral) {
-                // starts/ends with literal
-                FlowExpressions.ValueLiteral argumentLiteral =
-                        (FlowExpressions.ValueLiteral) argument;
-                Object argumentValue = argumentLiteral.getValue();
-                if (argumentValue instanceof String) {
-                    minLength = ((String) argumentValue).length();
-                }
-            } else if (CFStore.canInsertReceiver(argument)) {
-                // use annotation stored for the argument
-                CFValue argumentCFValue = thenStore.getValue(argument);
-                if (argumentCFValue != null) {
-                    AnnotationMirror argumentAnno = getValueAnnotation(argumentCFValue);
-                    if (argumentAnno != null) {
-                        minLength = atypefactory.getMinLenValue(argumentAnno);
-                    }
-                }
-            }
+            Node argumentNode = n.getArgument(0);
+            AnnotationMirror argumentAnno = getArrayOrStringAnnotation(argumentNode);
+            Integer minLength = atypefactory.getMinLenValue(argumentAnno);
             // Update the annotation of the receiver
             if (minLength != null && minLength != 0) {
+                Receiver receiver =
+                        FlowExpressions.internalReprOf(atypefactory, n.getTarget().getReceiver());
+
                 AnnotationMirror minLenAnno =
                         atypefactory.createArrayLenRangeAnnotation(minLength, Integer.MAX_VALUE);
                 thenStore.insertValue(receiver, minLenAnno);
