@@ -166,6 +166,13 @@ public abstract class GenericAnnotatedTypeFactory<
     /** An empty store. */
     private Store emptyStore;
 
+    /**
+     * Caches for {@code AnalysisResult#runAnalysisFor}. This cache is enabled if {@code
+     * AnnotatedTypeFactory.shouldCache} is true. The cache size is based on the configuration if
+     * it's provided or {@code AnnotatedTypeFactory.DEFAULT_CACHE_SIZE}
+     *
+     * @see AnalysisResult#runAnalysisFor(Node, boolean, TransferInput, Map)
+     */
     protected final Map<
                     TransferInput<Value, Store>,
                     IdentityHashMap<Node, TransferResult<Value, Store>>>

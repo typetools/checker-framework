@@ -37,7 +37,11 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     /** The stores before every method call. */
     protected final IdentityHashMap<Block, TransferInput<A, S>> stores;
 
-    /** The results for each node. */
+    /**
+     * Caches of the analysis results for each input for the block of the node and each node.
+     *
+     * @see #runAnalysisFor(Node, boolean, TransferInput, Map)
+     */
     protected final Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>>
             analysisCaches;
 
@@ -165,41 +169,50 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * Runs the analysis again within the block of {@code node} and returns the store at the
      * location of {@code node}. If {@code before} is true, then the store immediately before the
      * {@link Node} {@code node} is returned. Otherwise, the store after {@code node} is returned.
+     *
+     * @deprecated this method could be a cause of performance problem when you call this method
+     *     sometimes because this method runs analysis until {@code node} from the first node in the
+     *     block of {@code node} without cache.
+     * @see #runAnalysisFor(Node, boolean, TransferInput, Map)
      */
+    @Deprecated
     public static <A extends AbstractValue<A>, S extends Store<S>> S runAnalysisFor(
-            Node node,
-            boolean before,
-            TransferInput<A, S> transferInput,
-            Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>> analysisCaches) {
-        IdentityHashMap<Node, TransferResult<A, S>> cache = analysisCaches.get(transferInput);
-        if (cache == null) {
-            cache = new IdentityHashMap<>();
-            analysisCaches.put(transferInput, cache);
-        }
-        return runAnalysisForWithCache(node, before, transferInput, cache);
+            Node node, boolean before, TransferInput<A, S> transferInput) {
+        return runAnalysisFor(node, before, transferInput, null);
     }
 
     /**
      * Runs the analysis again within the block of {@code node} and returns the store at the
      * location of {@code node}. If {@code before} is true, then the store immediately before the
      * {@link Node} {@code node} is returned. Otherwise, the store after {@code node} is returned.
+     * If {@code analysisCaches} is not null, this method uses a cache. {@code analysisCaches} is a
+     * map to a cache for analysis result from an input of the block of the node. If the cache for
+     * {@code transferInput} is not in {@code analysisCaches}, this method create new cache and
+     * store it in {@code analysisCaches}. The cache is a map from a node to the analysis result of
+     * the node.
      */
-    @Deprecated
     public static <A extends AbstractValue<A>, S extends Store<S>> S runAnalysisFor(
-            Node node, boolean before, TransferInput<A, S> transferInput) {
-        return runAnalysisForWithCache(node, before, transferInput, null);
-    }
-
-    private static <A extends AbstractValue<A>, S extends Store<S>> S runAnalysisForWithCache(
             Node node,
             boolean before,
             TransferInput<A, S> transferInput,
-            IdentityHashMap<Node, TransferResult<A, S>> cache) {
+            Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>> analysisCaches) {
         assert node != null;
         Block block = node.getBlock();
         assert transferInput != null;
         Analysis<A, S, ?> analysis = transferInput.analysis;
         Node oldCurrentNode = analysis.currentNode;
+
+        // Prepare cache
+        IdentityHashMap<Node, TransferResult<A, S>> cache;
+        if (analysisCaches != null) {
+            cache = analysisCaches.get(transferInput);
+            if (cache == null) {
+                cache = new IdentityHashMap<>();
+                analysisCaches.put(transferInput, cache);
+            }
+        } else {
+            cache = null;
+        }
 
         if (analysis.isRunning) {
             return analysis.currentInput.getRegularStore();
@@ -211,9 +224,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
                     {
                         RegularBlock rb = (RegularBlock) block;
 
-                        // Apply transfer function to contents until we found the node
-                        // we
-                        // are looking for.
+                        // Apply transfer function to contents until we found the node we are looking for.
                         TransferInput<A, S> store = transferInput;
                         TransferResult<A, S> transferResult = null;
                         for (Node n : rb.getContents()) {
