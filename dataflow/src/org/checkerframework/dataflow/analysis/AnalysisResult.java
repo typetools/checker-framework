@@ -172,7 +172,8 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      *
      * @deprecated this method could be a cause of performance problem when you call this method
      *     sometimes because this method runs analysis until {@code node} from the first node in the
-     *     block of {@code node} without cache.
+     *     block of {@code node} without cache. You should use {@link #runAnalysisFor(Node, boolean,
+     *     TransferInput, Map)} with a cache instead of this method.
      * @see #runAnalysisFor(Node, boolean, TransferInput, Map)
      */
     @Deprecated
