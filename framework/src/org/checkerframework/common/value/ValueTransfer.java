@@ -1,10 +1,12 @@
 package org.checkerframework.common.value;
 
+import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.value.qual.ArrayLen;
@@ -398,7 +400,7 @@ public class ValueTransfer extends CFTransfer {
             MethodInvocationNode stringLengthNode, CFStore store) {
         MethodAccessNode methodAccessNode = stringLengthNode.getTarget();
 
-        if (atypefactory.isStringLengthMethod(methodAccessNode.getMethod())) {
+        if (atypefactory.getMethodIdentifier().isStringLengthMethod(methodAccessNode.getMethod())) {
             refineAtLengthAccess(stringLengthNode, methodAccessNode.getReceiver(), store);
         }
     }
@@ -1322,6 +1324,37 @@ public class ValueTransfer extends CFTransfer {
         }
         return super.strengthenAnnotationOfEqualTo(
                 transferResult, firstNode, secondNode, firstValue, secondValue, notEqualTo);
+    }
+
+    @Override
+    protected void processConditionalPostconditions(
+            MethodInvocationNode n,
+            ExecutableElement methodElement,
+            Tree tree,
+            CFStore thenStore,
+            CFStore elseStore) {
+        // For String.startsWith(String) and String.endsWith(String), refine the minimum length
+        // of the receiver to the minimum length of the argument.
+
+        ValueMethodIdentifier methodIdentifier = atypefactory.getMethodIdentifier();
+        if (methodIdentifier.isStartsWithMethod(methodElement)
+                || methodIdentifier.isEndsWithMethod(methodElement)) {
+
+            Node argumentNode = n.getArgument(0);
+            AnnotationMirror argumentAnno = getArrayOrStringAnnotation(argumentNode);
+            Integer minLength = atypefactory.getMinLenValue(argumentAnno);
+            // Update the annotation of the receiver
+            if (minLength != null && minLength != 0) {
+                Receiver receiver =
+                        FlowExpressions.internalReprOf(atypefactory, n.getTarget().getReceiver());
+
+                AnnotationMirror minLenAnno =
+                        atypefactory.createArrayLenRangeAnnotation(minLength, Integer.MAX_VALUE);
+                thenStore.insertValue(receiver, minLenAnno);
+            }
+        }
+
+        super.processConditionalPostconditions(n, methodElement, tree, thenStore, elseStore);
     }
 
     enum ConditionalOperators {

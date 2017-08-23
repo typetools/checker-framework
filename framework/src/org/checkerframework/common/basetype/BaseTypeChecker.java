@@ -310,7 +310,12 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
     @Override
     public GenericAnnotatedTypeFactory<?, ?, ?, ?> getTypeFactory() {
-        return getVisitor().getTypeFactory();
+        BaseTypeVisitor<?> visitor = getVisitor();
+        // Avoid NPE if this method is called during initialization.
+        if (visitor == null) {
+            return null;
+        }
+        return visitor.getTypeFactory();
     }
 
     @Override
@@ -531,7 +536,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * by line and column number and then by checker. (See checkerMessageComparator for more precise
      * order.)
      *
-     * @param unit Current compilation unit
+     * @param unit current compilation unit
      */
     private void printCollectedMessages(CompilationUnitTree unit) {
         if (messageStore != null) {
@@ -651,7 +656,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                 newList.add(processArg(o));
             }
             return newList;
-        } else if (arg instanceof AnnotationMirror) {
+        } else if (arg instanceof AnnotationMirror && getTypeFactory() != null) {
             return getTypeFactory()
                     .getAnnotationFormatter()
                     .formatAnnotationMirror((AnnotationMirror) arg);

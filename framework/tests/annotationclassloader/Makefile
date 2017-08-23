@@ -14,6 +14,8 @@ PROJECTDIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 FRAMEWORKJAR := $(PROJECTDIR)/../../dist/framework.jar
 
+STUBPARSERJAR := $(PROJECTDIR)/../../../framework/lib/stubparser-core.jar
+
 # When called by the ant tests, JAVACJAR is defined as ${jsr308.langtools.dist}/lib/javac.jar
 # When executed as a demo, we'll use javac.jar located in a directory structure
 # which assumes that the jsr308-langtools project is located in the same
@@ -23,7 +25,6 @@ JAVACJAR ?= $(PROJECTDIR)/../../../../jsr308-langtools/dist/lib/javac.jar
 # build directories
 DATAFLOWBUILD := $(PROJECTDIR)/../../../dataflow/build/
 JAVACUTILBUILD := $(PROJECTDIR)/../../../javacutil/build/
-STUBPARSERBUILD := $(PROJECTDIR)/../../../stubparser/build/
 FRAMEWORKBUILD := $(PROJECTDIR)/../../build/
 
 all: load-from-dir-test load-from-jar-test
@@ -34,7 +35,7 @@ all: load-from-dir-test load-from-jar-test
 demo1:
 	@echo "***** This command is expected to produce an error on line 7:"
 	$(JAVAC) \
-	  -J-Xbootclasspath/p:$(DATAFLOWBUILD):$(JAVACUTILBUILD):$(STUBPARSERBUILD):$(FRAMEWORKBUILD):$(JAVACJAR) \
+	  -J-Xbootclasspath/p:$(DATAFLOWBUILD):$(JAVACUTILBUILD):$(STUBPARSERJAR):$(FRAMEWORKBUILD):$(JAVACJAR) \
 	  -classpath $(PROJECTDIR) \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
@@ -46,7 +47,7 @@ demo1:
 demo2:
 	@echo "***** This command is expected to produce an error on line 7:"
 	$(JAVAC) \
-	  -J-Xbootclasspath/p:$(FRAMEWORKJAR):$(JAVACJAR) \
+	  -J-Xbootclasspath/p:$(FRAMEWORKJAR):$(STUBPARSERJAR):$(JAVACJAR) \
 	  -classpath :$(PROJECTDIR) \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
@@ -59,7 +60,7 @@ demo2:
 # loads from build directories
 load-from-dir-test:
 	$(JAVAC) \
-	  -J-Xbootclasspath/p:$(DATAFLOWBUILD):$(JAVACUTILBUILD):$(STUBPARSERBUILD):$(FRAMEWORKBUILD):$(JAVACJAR) \
+	  -J-Xbootclasspath/p:$(DATAFLOWBUILD):$(JAVACUTILBUILD):$(STUBPARSERJAR):$(FRAMEWORKBUILD):$(JAVACJAR) \
 	  -classpath $(PROJECTDIR) \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
@@ -72,7 +73,7 @@ load-from-dir-test:
 # loads from framework.jar
 load-from-jar-test:
 	$(JAVAC) \
-	  -J-Xbootclasspath/p:$(FRAMEWORKJAR):$(JAVACJAR) \
+	  -J-Xbootclasspath/p:$(FRAMEWORKJAR):$(STUBPARSERJAR):$(JAVACJAR) \
 	  -classpath $(PROJECTDIR) \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \

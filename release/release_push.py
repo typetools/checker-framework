@@ -128,11 +128,6 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "compiler-javadoc.jar"),
                             pgp_user, pgp_passphrase)
 
-    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JDK7_BINARY_RELEASE_POM, JDK7_BINARY,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk7-source.jar"),
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk7-javadoc.jar"),
-                            pgp_user, pgp_passphrase)
-
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JDK8_BINARY_RELEASE_POM, JDK8_BINARY,
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-source.jar"),
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-javadoc.jar"),
