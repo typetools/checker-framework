@@ -23,7 +23,6 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
-import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
@@ -308,7 +307,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * If lengthAccess node is an sequence length field or method access (optionally with a literal
+     * If lengthAccess node is an sequence length field or method access (optionally with a constant
      * offset subtracted) and the other node is less than or equal to that sequence length (minus
      * the offset), then refine the other nodes type to less than the sequence length (minus the
      * offset).
@@ -317,17 +316,22 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             Node lengthAccess, Node otherNode, AnnotationMirror otherNodeAnno, CFStore store) {
 
         Receiver receiver = null;
-        // If lengthAccess is "receiver.length - c" where c is an integer literal, stores c
+        // If lengthAccess is "receiver.length - c" where c is an integer constant, stores c
         // into lengthOffset
         int lengthOffset = 0;
         if (lengthAccess instanceof NumericalSubtractionNode) {
             NumericalSubtractionNode subtraction = (NumericalSubtractionNode) lengthAccess;
             Node offsetNode = subtraction.getRightOperand();
-            if (offsetNode instanceof IntegerLiteralNode) {
-                lengthOffset = ((IntegerLiteralNode) offsetNode).getValue();
+            Long offsetValue =
+                    IndexUtil.getExactValue(
+                            offsetNode.getTree(), atypeFactory.getValueAnnotatedTypeFactory());
+            if (offsetValue != null
+                    && offsetValue > Integer.MIN_VALUE
+                    && offsetValue <= Integer.MAX_VALUE) {
+                lengthOffset = offsetValue.intValue();
                 lengthAccess = subtraction.getLeftOperand();
             } else {
-                // Subtraction of other expressions is not supported
+                // Subtraction of non-constant expressions is not supported
                 return;
             }
         }
