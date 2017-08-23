@@ -167,9 +167,9 @@ public abstract class GenericAnnotatedTypeFactory<
     private Store emptyStore;
 
     /**
-     * Caches for {@code AnalysisResult#runAnalysisFor}. This cache is enabled if {@code
-     * AnnotatedTypeFactory.shouldCache} is true. The cache size is based on the configuration if
-     * it's provided or {@code AnnotatedTypeFactory.DEFAULT_CACHE_SIZE}
+     * Caches for {@link AnalysisResult#runAnalysisFor(Node, boolean, TransferInput, Map)}. This
+     * cache is enabled if {@link AnnotatedTypeFactory#shouldCache} is true. The cache size is based
+     * on the configuration if it's provided or {@link AnnotatedTypeFactory#DEFAULT_CACHE_SIZE}
      *
      * @see AnalysisResult#runAnalysisFor(Node, boolean, TransferInput, Map)
      */
