@@ -373,8 +373,6 @@ public class CheckerMain {
         final String java = PluginUtil.getJavaCommand(System.getProperty("java.home"), System.out);
         args.add(java);
 
-        // Prepend ("/p:") because our javac.jar doesn't have all classes
-        // required by the Java runtime to execute the compiler.
         args.add("-classpath");
         args.add(PluginUtil.join(File.pathSeparator, runtimeClasspath));
         args.add("-ea");
