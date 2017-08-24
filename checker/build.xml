@@ -269,8 +269,7 @@
                  failonerror="true"
                  executable="${javadoc.bin}"
                  classpath="${build}:${javac.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
-                 excludepackagenames="org.checkerframework.framework.stub"
-                 bootclasspath="${java.home}/lib/rt.jar">
+                 excludepackagenames="org.checkerframework.framework.stub">
 
             <package name="org.checkerframework.javacutil.*"/>
             <package name="org.checkerframework.dataflow.*"/>

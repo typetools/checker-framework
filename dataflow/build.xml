@@ -161,8 +161,7 @@
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${javacutil.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
-                 bootclasspath="${java.home}/lib/rt.jar">
+                 classpath="${build}:${javacutil.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar">
             <package name="org.checkerframework.dataflow.*"/>
             <package name="org.checkerframework.javacutil.*"/>
             <link href="http://docs.oracle.com/javase/8/docs/api/"/>
