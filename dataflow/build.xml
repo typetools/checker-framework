@@ -96,7 +96,6 @@
               failonerror="true"
               classpath="${javac.lib}:${javacutil.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
@@ -163,7 +162,7 @@
                  failonerror="true"
                  executable="${javadoc.bin}"
                  classpath="${build}:${javacutil.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
-                 bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
+                 bootclasspath="${java.home}/lib/rt.jar">
             <package name="org.checkerframework.dataflow.*"/>
             <package name="org.checkerframework.javacutil.*"/>
             <link href="http://docs.oracle.com/javase/8/docs/api/"/>
