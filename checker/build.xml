@@ -1403,6 +1403,7 @@ So, use our own archived version.
 	    <compilerarg value="-Xep:ReferenceEquality:OFF"/>
 	    <!-- These might be worth fixing. -->
 	    <compilerarg value="-Xep:DefaultCharset:OFF"/>
+	    <compilerarg value="-Werror"/>
         </javac>
     </target>
 
