@@ -67,6 +67,7 @@ public final class Effect {
         return annotClass.getSimpleName();
     }
 
+    @SuppressWarnings("NonOverridingEquals") // TODO: clean this up!
     public boolean equals(Effect e) {
         return annotClass.equals(e.annotClass);
     }
