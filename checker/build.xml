@@ -210,7 +210,7 @@
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${javaparser.core.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
+              classpath="${javac.lib}:${framework.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -337,7 +337,7 @@
         <!-- Work-around for Issue 894, see above. -->
         <unjar src="${checker.lib.tmp}" dest="${build}" />
 
-        <unjar src="${javaparser.core.lib}" dest="${build}" />
+        <unjar src="${stubparser.lib}" dest="${build}" />
 
         <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/,reports/">
             <manifest>
@@ -1387,7 +1387,7 @@ So, use our own archived version.
         <javac failonerror="true"
                 includeantruntime="false"
                 debug="true"
-                classpath="${checker.lib}:${javaparser.core.lib}:${junit.lib}:${hamcrest.lib}"
+                classpath="${checker.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}"
                 srcdir="${framework.loc}/${src}:${dataflow.loc}/${src}:${javacutil.loc}/${src}:${src}"
                 includes="**/*.java"
                 excludes="**/javacutil/dist/**"
