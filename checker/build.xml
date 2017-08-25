@@ -75,11 +75,9 @@
     </target>
 
     <target name="clean-jdk" description="Remove generated jdkX.jar files">
-        <delete file="dist/jdk7.jar"/>
         <delete file="dist/jdk8.jar"/>
         <delete file="dist/jdk9.jar"/>
 
-        <delete file="jdk/jdk7.jar"/>
         <delete file="jdk/jdk8.jar"/>
         <delete file="jdk/jdk9.jar"/>
     </target>
@@ -1226,7 +1224,6 @@ So, use our own archived version.
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
-                    <exclude name="${checker.jdk8orhigher.sources}"/>
                 </fileset>
                 <fileset dir="${javacutil.loc}/${src}">
                     <include name="**/*.java"/>
