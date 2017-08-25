@@ -14,6 +14,7 @@ RUN apt-get -qqy update && apt-get -qqy install \
   git \
   gradle \
   make \
+  maven \
   mercurial \
   unzip \
   wget \
