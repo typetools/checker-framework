@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * The annotated expression evaluates to either -1 or a value compatible with a {@link LTLengthOf}
- * annotation with the same parameters-
+ * annotation with the same parameters.
  *
  * <p>This is the return type of {@link java.lang.String#indexOf(String) String.indexOf} and {@link
  * java.lang.String#lastIndexOf(String) String.lastIndexOf} in the JDK.
