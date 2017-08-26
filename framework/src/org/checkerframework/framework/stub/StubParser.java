@@ -245,7 +245,7 @@ public class StubParser {
         }
 
         for (ImportDeclaration importDecl : cu.getImports()) {
-            String imported = importDecl.getName().toString();
+            String imported = importDecl.getNameAsString();
             try {
                 if (importDecl.isAsterisk()) {
                     // Static determines if we are importing members
@@ -364,7 +364,7 @@ public class StubParser {
             Map<Element, AnnotatedTypeMirror> atypes,
             Map<String, Set<AnnotationMirror>> declAnnos) {
         assert (packDecl != null);
-        String packageName = packDecl.getName().toString();
+        String packageName = packDecl.getNameAsString();
         Element elem = elements.getPackageElement(packageName);
         // If the element lookup fails, it's because we have an annotation for a
         // package that isn't on the classpath, which is fine.
@@ -1508,7 +1508,7 @@ public class StubParser {
             Pair<String, String> partitionedName = StubUtil.partitionQualifiedName(imp);
             String typeName = partitionedName.first;
             String fieldName = partitionedName.second;
-            if (fieldName.equals(nexpr.getName())) {
+            if (fieldName.equals(nexpr.getNameAsString())) {
                 TypeElement enclType =
                         findType(
                                 typeName,
