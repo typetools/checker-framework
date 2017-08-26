@@ -125,6 +125,6 @@ public class IndexOfAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         LessThanLengthOf ltlQualifier = (LessThanLengthOf) qualifier;
-        return ltlQualifier.convertToIndexOfAnnotationMirror(processingEnv);
+        return ltlQualifier.convertToIndexOfAnnotation(processingEnv);
     }
 }

@@ -609,6 +609,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         LessThanLengthOf ltlQualifier = (LessThanLengthOf) qualifier;
-        return ltlQualifier.convertToAnnotationMirror(processingEnv);
+        return ltlQualifier.convertToAnnotation(processingEnv);
     }
 }

@@ -295,8 +295,8 @@ public abstract class UBQualifier {
          * @param env ProcessingEnvironment
          * @return the AnnotationMirror that represents this qualifier
          */
-        public AnnotationMirror convertToAnnotationMirror(ProcessingEnvironment env) {
-            return convertToAnnotationMirror(env, false);
+        public AnnotationMirror convertToAnnotation(ProcessingEnvironment env) {
+            return convertToAnnotation(env, false);
         }
 
         /**
@@ -306,14 +306,12 @@ public abstract class UBQualifier {
          * @param env ProcessingEnvironment
          * @return the AnnotationMirror that represents this qualifier
          */
-        public AnnotationMirror convertToIndexOfAnnotationMirror(ProcessingEnvironment env) {
-            return convertToAnnotationMirror(env, true);
+        public AnnotationMirror convertToIndexOfAnnotation(ProcessingEnvironment env) {
+            return convertToAnnotation(env, true);
         }
 
-        /**
-         * Common implementation of convertToAnnotationMirror and convertToIndexOfAnnotationMirror.
-         */
-        private AnnotationMirror convertToAnnotationMirror(
+        /** Common implementation of convertToAnnotation and convertToIndexOfAnnotation. */
+        private AnnotationMirror convertToAnnotation(
                 ProcessingEnvironment env, boolean buildIndexOfAnnotation) {
             List<String> sortedSequences = new ArrayList<>(map.keySet());
             Collections.sort(sortedSequences);
