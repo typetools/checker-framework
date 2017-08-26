@@ -44,6 +44,17 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
         return equation.toString();
     }
 
+    /**
+     * Returns the index of the first occurrence of one of two characters in an expression, starting
+     * from a specified index. If there is no such occurrence, returns -1.
+     *
+     * @param expression the expression being searched
+     * @param a the first character searched for
+     * @param b the second character searched for
+     * @param index the starting index of the search
+     * @return the index of the first occurrence of {@code a} or {@code b} in {@code expression}
+     *     starting from {@code index}, or -1
+     */
     private int indexOf(String expression, char a, char b, int index) {
         int aIndex = expression.indexOf(a, index);
         int bIndex = expression.indexOf(b, index);
