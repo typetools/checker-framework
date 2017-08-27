@@ -75,6 +75,9 @@ section:
 \item
   whether an integer came from calling the JDK's binary search routine on
   an array (Section~\ref{index-searchindex})
+\item
+  whether an integer came from calling the JDK's \<String.indexOf> or
+  \<String.lastIndexOf> method (Section~\ref{index-indexof})
 \end{itemize}
 
 In addition to the indexing annotations described in those sections, there
@@ -454,6 +457,61 @@ The Search Index Checker's type hierarchy (Figure~/ref{fig-index-searchindex}) h
 \item[\refqualclass{checker/index/qual}{SearchIndexBottom}]
   This is the bottom type, and programmers should rarely need to write it.
 \item[\refqualclass{checker/index/qual}{SearchIndexUnknown}]
+  This is the top type, and programmers should rarely need to write it.
+\end{description}
+
+\section{IndexOf indices\label{index-indexof}}
+
+The sole purpose of the IndexOf Checker is to allow expressing the
+properties of the return value of the JDK's
+\sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf} and
+\sunjavadoc{java/lang/String.html\#lastIndexOf-java.lang.String-}{String.lastIndexOf} methods.
+These methods return an index of a substring, or -1 if the substring is not found.
+
+Because of the value -1, the return type of these methods cannot be
+annotated by a \<@LTLengthOf> with a positive offset.
+The \<@IndexOfIndexFor> annotation solves it by having the same
+meaning as \<@LTLengthOf> with the same parameters, except additionally
+allowing the -1 value. The Upper Bound Checker can then infer
+the corresponding \<@LTLengthOf> annotation for expressions that
+are known to be non-negative.
+
+The \<@IndexOfIndexFor(value="this", offset="\#1.length()-1")> on
+\<String.indexOf> allows writing code such this without warnings from the Upper Bound Checker.
+
+\begin{Verbatim}
+  public static String remove(String l, String s) {
+    int i = l.indexOf(s);
+    if (i != -1) {
+      return l.substring(i + s.length());
+    }
+    return l;
+  }
+\end{Verbatim}
+
+\begin{figure}
+\begin{center}
+  \hfill
+  \includeimage{indexof}{3.5cm}
+  \hfill
+\end{center}
+  \caption{The type hierarchy for the Index Checker's internal type system
+  that captures information about the results of calls to
+  \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf} and
+  \sunjavadoc{java/lang/String.html\#lastIndexOf-java.lang.String-}{String.lastIndexOf}.}
+  \label{fig-index-indexof}
+\end{figure}
+
+The IndexOf Checker's type hierarchy (Figure~\ref{fig-index-indexof}) has three type qualifiers:
+\begin{description}
+\item[\refqualclasswithparams{checker/index/qual}{IndexOfIndexFor}{String[] value, String[] offset}]
+  An expression with this type represents an integer that could have been produced by calling
+  \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}:
+  the annotated integer is either -1, or for each array \<a> and offset \<o>
+  specifed in the annotation, it is less than \<a.length-o>.
+\item[\refqualclass{checker/index/qual}{IndexOfBottom}]
+  This is the bottom type, and programmers should rarely need to write it.
+\item[\refqualclass{checker/index/qual}{IndexOfUnknown}]
   This is the top type, and programmers should rarely need to write it.
 \end{description}
 
