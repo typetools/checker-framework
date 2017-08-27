@@ -501,7 +501,7 @@ public class ValueTransfer extends CFTransfer {
 
         for (int left : leftLengths) {
             for (int right : rightLengths) {
-                long resultLength = left + right;
+                long resultLength = (long) left + right;
                 // Lengths not fitting into int are not allowed
                 if (resultLength <= Integer.MAX_VALUE) {
                     result.add((int) resultLength);

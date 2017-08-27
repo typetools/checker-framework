@@ -1399,6 +1399,13 @@ So, use our own archived version.
             </compilerclasspath>
             <compilerarg value="-Xmaxwarns"/>
             <compilerarg value="1000"/>
+	    <!-- Many compiler classes are interned. -->
+	    <compilerarg value="-Xep:ReferenceEquality:OFF"/>
+	    <!-- These might be worth fixing. -->
+	    <compilerarg value="-Xep:DefaultCharset:OFF"/>
+	    <!-- Disable until https://github.com/google/error-prone/issues/725 is fixed. -->
+	    <compilerarg value="-Xep:NamedParameters:OFF"/>
+	    <compilerarg value="-Werror"/>
         </javac>
     </target>
 
