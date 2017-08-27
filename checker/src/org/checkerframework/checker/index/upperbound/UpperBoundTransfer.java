@@ -521,16 +521,19 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     /**
-     * Returns the UBQualifier for node, with additional refinement useful for integer addition. It
-     * does this by taking the greatest lower bound of the qualifier returned {@link
-     * getUBQualifier}, and a qualifier created from a IndexOfIndexFor annotation, if such
-     * annotation is present and the index is known to be non-negative.
+     * Returns the UBQualifier for a node, with additional refinement useful specifically for
+     * integer addition, based on the information from other checkers under the Index Checker.
      *
-     * @param n node
-     * @param in transfer input
-     * @return the UBQualifier for node
+     * @param n the node
+     * @param in dataflow analysis transfer input
+     * @return the UBQualifier for {@code node}
      */
     private UBQualifier getUBQualifierForAddition(Node n, TransferInput<CFValue, CFStore> in) {
+
+        // The method takes the greatest lower bound of the qualifier returned by
+        // getUBQualifier and a qualifier created from a IndexOfIndexFor annotation, if such
+        // annotation is present and the index is known to be non-negative.
+
         UBQualifier ubQualifier = getUBQualifier(n, in);
         Tree nodeTree = n.getTree();
         // Annotation from the IndexOf hierarchy

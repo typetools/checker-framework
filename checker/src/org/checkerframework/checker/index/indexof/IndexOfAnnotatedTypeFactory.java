@@ -19,12 +19,18 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * The IndexOf Checker is used to help type the results of calls to the JDK's substring search
- * methods. It is part of the Index Checker.
+ * Builds types with annotations from the IndexOf checker hierarchy, which contains
+ * the @IndexOfIndexFor annotation. This annotation is used to annotate the return value of {@link
+ * java.lang.String.indexOf} and {@link java.lang.String.lastIndexOf} and allow the Upper Bound
+ * Checker to infer @LTLengthOf annotations with the same parameters for expressions that are known
+ * by the index checker to be non-negative.
  */
 public class IndexOfAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    public final AnnotationMirror UNKNOWN, BOTTOM;
+    /** The top qualifier of the IndexOf hierarchy */
+    public final AnnotationMirror UNKNOWN;
+    /** The bottom qualifier of the IndexOf hierarchy */
+    public final AnnotationMirror BOTTOM;
 
     public IndexOfAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -33,23 +39,39 @@ public class IndexOfAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
     }
 
+    /**
+     * Returns a mutable set of annotation classes that are supported by the IndexOf Checker.
+     *
+     * @return A mutable set containing annocation classes from the IndexOf qualifier hierarchy.
+     */
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return new LinkedHashSet<>(
                 Arrays.asList(IndexOfBottom.class, IndexOfUnknown.class, IndexOfIndexFor.class));
     }
 
+    /** Creates the IndexOf qualifier hierarchy. */
     @Override
     public QualifierHierarchy createQualifierHierarchy(
             MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
         return new IndexOfQualifierHierarchy(factory);
     }
 
+    /**
+     * Creates an {@link DependentTypesHelper} that allows use of addition and subtraction in the
+     * IndexOf Checker annotations.
+     */
     @Override
     protected DependentTypesHelper createDependentTypesHelper() {
         return new OffsetDependentTypesHelper(this);
     }
 
+    /**
+     * The IndexOf qualifier hierarchy. The hierarchy consists of a top element {@link UNKNOWN} of
+     * type {@link IndexOfUnknown}, bottom element {@link BOTTOM} of type {@link IndexOfBottom}, and
+     * elements of type {@link IndexOfIndexFor} that follow the subtyping relation of {@link
+     * UBQualifier}.
+     */
     private final class IndexOfQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
         public IndexOfQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
@@ -117,6 +139,12 @@ public class IndexOfAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /**
+     * Converts an instance of {@link UBQualifier} to an annotation from the IndexOf hierarchy.
+     *
+     * @param qualifier the {@link UBQualifier} to be converted
+     * @return a annotation from the IndexOf hierarchy, representing {@code qualifier}
+     */
     public AnnotationMirror convertUBQualifierToAnnotation(UBQualifier qualifier) {
         if (qualifier.isUnknown()) {
             return UNKNOWN;
