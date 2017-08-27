@@ -21,9 +21,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
 /**
  * Builds types with annotations from the IndexOf checker hierarchy, which contains the @{@link
  * IndexOfIndexFor} annotation. This annotation is used to annotate the return value of {@link
- * java.lang.String.indexOf} and {@link java.lang.String.lastIndexOf} and allow the Upper Bound
- * Checker to infer @{@link LTLengthOf} annotations with the same parameters for expressions that
- * are known by the index checker to be non-negative.
+ * java.lang.String#indexOf(String) String.indexOf} and {@link java.lang.String#lastIndexOf(String)
+ * String.lastIndexOf} and allow the Upper Bound Checker to infer @{@link LTLengthOf} annotations
+ * with the same parameters for expressions that are known by the index checker to be non-negative.
  */
 public class IndexOfAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
