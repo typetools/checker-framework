@@ -19,11 +19,11 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * Builds types with annotations from the IndexOf checker hierarchy, which contains
- * the @IndexOfIndexFor annotation. This annotation is used to annotate the return value of {@link
+ * Builds types with annotations from the IndexOf checker hierarchy, which contains the @{@link
+ * IndexOfIndexFor} annotation. This annotation is used to annotate the return value of {@link
  * java.lang.String.indexOf} and {@link java.lang.String.lastIndexOf} and allow the Upper Bound
- * Checker to infer @LTLengthOf annotations with the same parameters for expressions that are known
- * by the index checker to be non-negative.
+ * Checker to infer @{@link LTLengthOf} annotations with the same parameters for expressions that
+ * are known by the index checker to be non-negative.
  */
 public class IndexOfAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -42,7 +42,7 @@ public class IndexOfAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Returns a mutable set of annotation classes that are supported by the IndexOf Checker.
      *
-     * @return A mutable set containing annocation classes from the IndexOf qualifier hierarchy.
+     * @return mutable set containing annotation classes from the IndexOf qualifier hierarchy
      */
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
@@ -143,7 +143,7 @@ public class IndexOfAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Converts an instance of {@link UBQualifier} to an annotation from the IndexOf hierarchy.
      *
      * @param qualifier the {@link UBQualifier} to be converted
-     * @return a annotation from the IndexOf hierarchy, representing {@code qualifier}
+     * @return an annotation from the IndexOf hierarchy, representing {@code qualifier}
      */
     public AnnotationMirror convertUBQualifierToAnnotation(UBQualifier qualifier) {
         if (qualifier.isUnknown()) {

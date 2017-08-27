@@ -129,8 +129,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Provides a way to query the IndexOf Checker, which helps the Index Checker type the results
-     * of calling the JDK's {@code String.indexOf} and {@code String.lastIndexOf} methods correctly.
+     * Gets the annotated type factory of the IndexOf Checker running along with the Upper Bound
+     * checker, allowing it to refine the upper bounds of expressions annotated by IndexOf Checker
+     * annotations.
      */
     IndexOfAnnotatedTypeFactory getIndexOfAnnotatedTypeFactory() {
         return getTypeFactoryOfSubchecker(IndexOfChecker.class);
