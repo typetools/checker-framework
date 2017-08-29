@@ -1,7 +1,10 @@
 package org.checkerframework.checker.guieffect;
 
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import java.util.HashSet;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -28,12 +31,15 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** Annotated type factory for the GUI Effect Checker. */
 public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected final boolean debugSpew;
+
+    protected final Set<LambdaExpressionTree> uiLambdas = new HashSet<LambdaExpressionTree>();
 
     public GuiEffectTypeFactory(BaseTypeChecker checker, boolean spew) {
         // use true to enable flow inference, false to disable it
@@ -241,6 +247,25 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         return new Effect(SafeEffect.class);
     }
 
+    public Effect getInferedEffectForLambdaExpression(LambdaExpressionTree lambdaTree) {
+        ExecutableElement functionalInterfaceMethodElt =
+                TreeUtils.getFunctionalInterfaceMethod(lambdaTree);
+        if (debugSpew) {
+            System.err.println("functionalInterfaceMethodElt found for lambda");
+        }
+        Effect lambdaEffect = getDeclaredEffect(functionalInterfaceMethodElt);
+        if (lambdaEffect.isPoly()) {
+            if (uiLambdas.contains(lambdaTree)) {
+                // This lambda expression was inferred to be @UIEffect, based on usage.
+                lambdaEffect = new Effect(UIEffect.class);
+            } else {
+                // Infer safe
+                lambdaEffect = new Effect(SafeEffect.class);
+            }
+        }
+        return lambdaEffect;
+    }
+
     // Only the visitMethod call should pass true for warnings
     public Effect.EffectRange findInheritedEffectRange(
             TypeElement declaringType, ExecutableElement overridingMethod) {
@@ -438,6 +463,11 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(super.createTreeAnnotator(), new GuiEffectTreeAnnotator());
+    }
+
+    public void constrainLambdaToUI(LambdaExpressionTree lambdaExpressionTree) {
+        //System.err.println("Lambda is constrained to be @UI: " + lambdaExpressionTree);
+        this.uiLambdas.add(lambdaExpressionTree);
     }
 
     /** A class for adding annotations based on tree. */

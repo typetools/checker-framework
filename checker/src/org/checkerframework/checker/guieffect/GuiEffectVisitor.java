@@ -1,17 +1,23 @@
 package org.checkerframework.checker.guieffect;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.guieffect.qual.AlwaysSafe;
 import org.checkerframework.checker.guieffect.qual.PolyUI;
 import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
@@ -201,6 +207,71 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         return ret;
     }
 
+    // For assignments and local variable initialization:
+    // Check for @UI annotations on the lhs, use them to infer @UI types on lambda expressions in the rhs
+    private void inferLambdaTypeOnAssignment(Tree lhs, ExpressionTree rhs) {
+        if (rhs instanceof LambdaExpressionTree) {
+            LambdaExpressionTree lambdaTree = (LambdaExpressionTree) rhs;
+            AnnotatedTypeMirror lhsType = atypeFactory.getAnnotatedType(lhs);
+            if (lhsType.hasAnnotation(UI.class)) {
+                ExecutableElement argFIMethodElt =
+                        TreeUtils.getFunctionalInterfaceMethod(lambdaTree);
+                Effect lambdaEffect = atypeFactory.getDeclaredEffect(argFIMethodElt);
+                if (lambdaEffect.isPoly()) {
+                    if (debugSpew) {
+                        System.err.println(
+                                "Lambda inferred to be @UIEffect: " + lambdaTree.getBody());
+                    }
+                    atypeFactory.constrainLambdaToUI(lambdaTree);
+                }
+            }
+        }
+    }
+
+    @Override
+    public Void visitVariable(VariableTree node, Void p) {
+        if (node.getInitializer() != null) {
+            inferLambdaTypeOnAssignment(node, node.getInitializer());
+        }
+        return super.visitVariable(node, p);
+    }
+
+    @Override
+    public Void visitAssignment(AssignmentTree node, Void p) {
+        inferLambdaTypeOnAssignment(node.getVariable(), node.getExpression());
+        return super.visitAssignment(node, p);
+    }
+
+    // Returning a lambda expression also triggers inference based on the method's return type.
+    @Override
+    public Void visitReturn(ReturnTree node, Void p) {
+        if (node.getExpression() instanceof LambdaExpressionTree) {
+            LambdaExpressionTree lambdaTree = (LambdaExpressionTree) node.getExpression();
+            ExecutableElement retFIMethodElt = TreeUtils.getFunctionalInterfaceMethod(lambdaTree);
+            Effect lambdaEffect = atypeFactory.getDeclaredEffect(retFIMethodElt);
+            Tree callerTree = TreeUtils.enclosingMethodOrLambda(getCurrentPath());
+            AnnotatedTypeMirror retType = null;
+            if (callerTree.getKind() == Tree.Kind.METHOD) {
+                retType = atypeFactory.getMethodReturnType((MethodTree) callerTree, node);
+            } else if (callerTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+                // What to do about a lambda with @PolyUI return type returning another lambda? It is lambdas all the
+                // way down.
+                Pair<AnnotatedTypeMirror.AnnotatedDeclaredType, AnnotatedExecutableType> pair =
+                        atypeFactory.getFnInterfaceFromTree((LambdaExpressionTree) callerTree);
+                retType = pair.second.getReturnType();
+            }
+            assert retType != null;
+
+            if (lambdaEffect.isPoly() && retType.hasAnnotation(UI.class)) {
+                if (debugSpew) {
+                    System.err.println("Lambda inferred to be @UIEffect: " + lambdaTree.getBody());
+                }
+                atypeFactory.constrainLambdaToUI(lambdaTree);
+            }
+        }
+        return super.visitReturn(node, p);
+    }
+
     // Check that the invoked effect is <= permitted effect (effStack.peek())
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
@@ -214,7 +285,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             System.err.println("methodElt found");
         }
 
-        MethodTree callerTree = TreeUtils.enclosingMethod(getCurrentPath());
+        Tree callerTree = TreeUtils.enclosingMethodOrLambda(getCurrentPath());
         if (callerTree == null) {
             // Static initializer; let's assume this is safe to have the UI effect
             if (debugSpew) {
@@ -223,16 +294,12 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             return super.visitMethodInvocation(node, p);
         }
         if (debugSpew) {
-            System.err.println("callerTree found");
-        }
-
-        ExecutableElement callerElt = TreeUtils.elementFromDeclaration(callerTree);
-        if (debugSpew) {
-            System.err.println("callerElt found");
+            System.err.println("callerTree found: " + callerTree.getKind());
         }
 
         Effect targetEffect = atypeFactory.getDeclaredEffect(methodElt);
         // System.err.println("Dispatching method "+node+"on "+node.getMethodSelect());
+        boolean polyUIArgumentsAreUI = true;
         if (targetEffect.isPoly()) {
             AnnotatedTypeMirror srcType = null;
             assert (node.getMethodSelect().getKind() == Tree.Kind.IDENTIFIER
@@ -248,16 +315,75 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             // Instantiate type-polymorphic effects
             if (srcType.hasAnnotation(AlwaysSafe.class)) {
                 targetEffect = new Effect(SafeEffect.class);
+                polyUIArgumentsAreUI = false;
             } else if (srcType.hasAnnotation(UI.class)) {
                 targetEffect = new Effect(UIEffect.class);
             }
             // Poly substitution would be a noop.
         }
 
-        Effect callerEffect = atypeFactory.getDeclaredEffect(callerElt);
-        // Field initializers inside anonymous inner classes show up with a null current-method ---
-        // the traversal goes straight from the class to the initializer.
-        assert (currentMethods.peek() == null || callerEffect.equals(effStack.peek()));
+        // Look for lambda arguments and infer them to be @UIEffect for this call
+        List<? extends ExpressionTree> args = node.getArguments();
+        List<? extends VariableElement> parameters = methodElt.getParameters();
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
+                atypeFactory.methodFromUse(node);
+        AnnotatedExecutableType invokedMethod = mfuPair.first;
+        List<AnnotatedTypeMirror> typeargs =
+                AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());
+        for (int i = 0; i < args.size(); ++i) {
+            if (args.get(i) instanceof LambdaExpressionTree) {
+                //System.err.println(methodElt + " is from stub file? " + atypeFactory.isFromStubFile(methodElt));
+                LambdaExpressionTree lambdaTree = (LambdaExpressionTree) args.get(i);
+                VariableElement formalArgElement = parameters.get(i);
+                // For some reason, these two have different information, and neither is a subset of the other.
+                // argTypeFromMFU is needed for stubs, argTypeFromArgElement will actually find @PolyUI when in the
+                // source. Neither will find @PolyUI in stubs.
+                // ToDo: Figure out a better way to works in both cases
+                AnnotatedTypeMirror argTypeFromArgElement =
+                        atypeFactory.getAnnotatedType(formalArgElement);
+                AnnotatedTypeMirror argTypeFromMFU = typeargs.get(i);
+                ExecutableElement argFIMethodElt =
+                        TreeUtils.getFunctionalInterfaceMethod(lambdaTree);
+                Effect lambdaEffect = atypeFactory.getDeclaredEffect(argFIMethodElt);
+                // How are these not a at least one a super set of the other?
+                /*System.err.println(methodElt
+                + " UI_from_mfu=" + argTypeFromMFU.hasAnnotation(UI.class)
+                + " PolyUI_from_mfu=" + argTypeFromMFU.hasAnnotation(PolyUI.class)
+                + " UI_from_argElem=" + argTypeFromArgElement.hasAnnotation(UI.class)
+                + " PolyUI_from_argElem=" + argTypeFromArgElement.hasAnnotation(PolyUI.class));*/
+                boolean argIsUI =
+                        argTypeFromMFU.hasAnnotation(UI.class)
+                                || argTypeFromArgElement.hasAnnotation(UI.class);
+                boolean argIsPolyUI =
+                        argTypeFromMFU.hasAnnotation(PolyUI.class)
+                                || argTypeFromArgElement.hasAnnotation(PolyUI.class);
+                if (lambdaEffect.isPoly() && (argIsUI || (argIsPolyUI && polyUIArgumentsAreUI))) {
+                    if (debugSpew) {
+                        System.err.println(
+                                "Lambda inferred to be @UIEffect: " + lambdaTree.getBody());
+                    }
+                    atypeFactory.constrainLambdaToUI(lambdaTree);
+                }
+            }
+        }
+
+        Effect callerEffect = null;
+        if (callerTree.getKind() == Tree.Kind.METHOD) {
+            ExecutableElement callerElt = TreeUtils.elementFromDeclaration((MethodTree) callerTree);
+            if (debugSpew) {
+                System.err.println("callerElt found");
+            }
+
+            callerEffect = atypeFactory.getDeclaredEffect(callerElt);
+            // Field initializers inside anonymous inner classes show up with a null current-method ---
+            // the traversal goes straight from the class to the initializer.
+            assert (currentMethods.peek() == null || callerEffect.equals(effStack.peek()));
+        } else if (callerTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+            callerEffect =
+                    atypeFactory.getInferedEffectForLambdaExpression(
+                            (LambdaExpressionTree) callerTree);
+        }
+        assert callerEffect != null;
 
         if (!Effect.LE(targetEffect, callerEffect)) {
             checker.report(Result.failure("call.invalid.ui", targetEffect, callerEffect), node);

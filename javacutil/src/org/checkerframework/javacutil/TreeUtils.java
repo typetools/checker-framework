@@ -12,6 +12,7 @@ import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -50,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -72,6 +74,18 @@ import org.checkerframework.checker.nullness.qual.*;
 /** A utility class made for helping to analyze a given {@code Tree}. */
 // TODO: This class needs significant restructuring
 public final class TreeUtils {
+
+    static final Set<String> OBJECT_METHOD_NAMES =
+            new HashSet<String>(
+                    Arrays.asList(
+                            "equals",
+                            "hashCode",
+                            "toString",
+                            "finalize",
+                            "clone",
+                            "notify",
+                            "notifyAll",
+                            "wait"));
 
     // Class cannot be instantiated.
     private TreeUtils() {
@@ -312,6 +326,18 @@ public final class TreeUtils {
      */
     public static /*@Nullable*/ MethodTree enclosingMethod(final /*@Nullable*/ TreePath path) {
         return (MethodTree) enclosingOfKind(path, Tree.Kind.METHOD);
+    }
+
+    /**
+     * Gets the enclosing method or lambda expression of the tree node defined by the given {@link
+     * TreePath}. It returns a {@link Tree}, from which an {@code
+     * checkers.types.AnnotatedTypeMirror} or {@link Element} can be obtained.
+     *
+     * @param path the path defining the tree node
+     * @return the enclosing method or lambda as given by the path, or null if one does not exist
+     */
+    public static /*@Nullable*/ Tree enclosingMethodOrLambda(final /*@Nullable*/ TreePath path) {
+        return enclosingOfKind(path, EnumSet.of(Tree.Kind.METHOD, Kind.LAMBDA_EXPRESSION));
     }
 
     public static /*@Nullable*/ BlockTree enclosingTopLevelBlock(TreePath path) {
@@ -1266,5 +1292,42 @@ public final class TreeUtils {
         Context ctx = ((JavacProcessingEnvironment) env).getContext();
         Types javacTypes = Types.instance(ctx);
         return javacTypes.findDescriptorSymbol(((Type) typeOf(tree)).asElement());
+    }
+
+    /**
+     * finds the corresponding functional interface method for a lambda expression
+     *
+     * @param tree the lambda expression
+     * @return the functional interface method
+     */
+    public static Symbol.MethodSymbol getFunctionalInterfaceMethod(LambdaExpressionTree tree) {
+        Type funcInterfaceType = ((JCTree.JCLambda) tree).type;
+        // we want the method symbol for the single function inside the interface...hrm
+        List<Symbol> enclosedElements = funcInterfaceType.tsym.getEnclosedElements();
+
+        Symbol.MethodSymbol result = null;
+        for (Symbol s : enclosedElements) {
+            Symbol.MethodSymbol elem = (Symbol.MethodSymbol) s;
+            if (elem.isDefault() || elem.isStatic()) {
+                continue;
+            }
+            String name = elem.getSimpleName().toString();
+            // any methods overridding java.lang.Object methods don't count;
+            // see https://docs.oracle.com/javase/8/docs/api/java/lang/FunctionalInterface.html
+            // we should really be checking method signatures here; hack for now
+            if (OBJECT_METHOD_NAMES.contains(name)) {
+                continue;
+            }
+            if (result != null) {
+                throw new RuntimeException(
+                        "already found an answer! " + result + " " + elem + " " + enclosedElements);
+            }
+            result = elem;
+        }
+        if (result == null) {
+            throw new RuntimeException(
+                    "could not find functional interface method in " + enclosedElements);
+        }
+        return result;
     }
 }
