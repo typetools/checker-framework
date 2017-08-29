@@ -148,9 +148,9 @@
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
-            <arg value="7"/>
+            <arg value="8"/>
             <arg value="-target"/>
-            <arg value="7"/>
+            <arg value="8"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->

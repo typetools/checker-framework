@@ -49,4 +49,20 @@ class StartsEndsWith {
             @ArrayLen(10) String s10 = str;
         }
     }
+
+    void refineStartsStaticFinal(String str) {
+        if (str.startsWith(StartsEndsWithExternal.staticFinalField)) {
+            @MinLen(3) String s3 = str;
+        }
+    }
+
+    void refineStartsConditional(String str, String prefix) {
+        if (prefix.length() > 10 && str.startsWith(prefix)) {
+            @MinLen(11) String s11 = str;
+        }
+    }
+}
+
+class StartsEndsWithExternal {
+    public static final String staticFinalField = "str";
 }
