@@ -119,11 +119,6 @@ including arithmetic operations, logical operations, method calls,
 variable references, array accesses, etc.  \autoref{tab:nodes} lists
 the Node types.
 
-\begin{workinprogress}
-Need to double-check whether the code adds exceptions properly.  Also, does
-division possibly throw a DivideByZero exception?
-\end{workinprogress}
-
 \begin{verbatim}
 package org.checkerframework.dataflow.cfg.node;
 
@@ -842,6 +837,42 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \label{tab:nodes}
     \end{longtable}
 
+\autoref{tab:nodesWithException} shows all node types which can possibly throw
+an exception and the exception type to be thrown.
+Java class name of nodes are simplified as with \autoref{tab:nodes}.
+All exception types in \autoref{tab:nodesWithException} are in package \code{java.lang}.
+
+Considering \code{Error} such as \code{OutOfMemoryError} or \code{NoSuchFieldError},
+an exceptional edge of \code{Error} is not created except for method or
+constructor invocation, assertion statement or throw statement. Because
+it's not recommended to catch it due to a critical situation which is not
+to able to execute JVM and handle in an application.
+
+    \begin{longtable}{lp{0.6\linewidth}l}
+        \midrule
+        \multicolumn{2}{c}{\autoref{tab:nodesWithException}: All node types could throw Exception and types to be thrown.} \\ \\
+        \textbf{Node type} & \textbf{Exception type} \\ \midrule \endfirsthead
+
+        \textbf{Node type} & \textbf{Exception type} \\ \midrule \endhead
+        \hline \multicolumn{2}{|c|}{{Continued on next page}} \\ \hline \endfoot
+        \endlastfoot
+
+        \code{ArrayAccess} & \code{NullPointerException}, \code{ArrayIndexOutOfBoundsException} \\
+        \code{FieldAccess} & \code{NullPointerException} \\
+        \code{MethodAccess} & \code{NullPointerException} \\
+        \code{MethodInvocation} & \code{Throwable}, types in throws clause of the signature \\
+        \code{IntegerDivision} & \code{ArithmeticException} \\
+        \code{IntegerRemainder} & \code{ArithmeticException} \\
+        \code{ObjectCreation} & \code{Throwable}, types in throws clause of the signature \\
+        \code{TypeCast} & \code{ClassCastException} \\
+        \code{Throw} & Type of \code{e} when \code{throw e} \\
+        \code{AssertionError} & \code{AssertionError} \\
+        \midrule
+
+        \caption{All node types could throw Exception and types to be thrown.}
+        \label{tab:nodesWithException}
+    \end{longtable}
+
 \begin{workinprogress}
 ThisLiteral shouldn't be considered a literal value node, because a use of
 \code{this} is not a literal expression.  I would change the name and group
@@ -850,14 +881,6 @@ it with accessor expressions.
 
 \begin{workinprogress}
 Can \code{StringConversion} be implicit?  I think so, but in any event discuss.
-\end{workinprogress}
-
-\begin{workinprogress}
-I think it might be helpful to indicate which nodes can possibly throw
-an exception.  This could be done by segregating them to a different
-part of the table, or by having another column or an asterisk.  In the
-meantime, this information can be rather easily found in the source
-code of the CFGBuilder.
 \end{workinprogress}
 
 \begin{workinprogress}

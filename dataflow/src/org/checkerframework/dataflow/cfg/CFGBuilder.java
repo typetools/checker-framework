@@ -2680,6 +2680,10 @@ public class CFGBuilder {
                         } else if (kind == Tree.Kind.DIVIDE_ASSIGNMENT) {
                             if (TypesUtils.isIntegral(exprType)) {
                                 operNode = new IntegerDivisionNode(operTree, targetRHS, value);
+
+                                TypeElement throwableElement =
+                                        elements.getTypeElement("java.lang.ArithmeticException");
+                                extendWithNodeWithException(operNode, throwableElement.asType());
                             } else {
                                 operNode = new FloatingDivisionNode(operTree, targetRHS, value);
                             }
@@ -2687,6 +2691,10 @@ public class CFGBuilder {
                             assert kind == Kind.REMAINDER_ASSIGNMENT;
                             if (TypesUtils.isIntegral(exprType)) {
                                 operNode = new IntegerRemainderNode(operTree, targetRHS, value);
+
+                                TypeElement throwableElement =
+                                        elements.getTypeElement("java.lang.ArithmeticException");
+                                extendWithNodeWithException(operNode, throwableElement.asType());
                             } else {
                                 operNode = new FloatingRemainderNode(operTree, targetRHS, value);
                             }
@@ -2890,6 +2898,10 @@ public class CFGBuilder {
                         } else if (kind == Tree.Kind.DIVIDE) {
                             if (TypesUtils.isIntegral(exprType)) {
                                 r = new IntegerDivisionNode(tree, left, right);
+
+                                TypeElement throwableElement =
+                                        elements.getTypeElement("java.lang.ArithmeticException");
+                                extendWithNodeWithException(r, throwableElement.asType());
                             } else {
                                 r = new FloatingDivisionNode(tree, left, right);
                             }
@@ -2897,6 +2909,10 @@ public class CFGBuilder {
                             assert kind == Kind.REMAINDER;
                             if (TypesUtils.isIntegral(exprType)) {
                                 r = new IntegerRemainderNode(tree, left, right);
+
+                                TypeElement throwableElement =
+                                        elements.getTypeElement("java.lang.ArithmeticException");
+                                extendWithNodeWithException(r, throwableElement.asType());
                             } else {
                                 r = new FloatingRemainderNode(tree, left, right);
                             }
@@ -3601,6 +3617,8 @@ public class CFGBuilder {
                 arrayAccessNode.setInSource(false);
                 extendWithNode(arrayAccessNode);
                 translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
+                Element npeElement = elements.getTypeElement("java.lang.NullPointerException");
+                extendWithNodeWithException(arrayAccessNode, npeElement.asType());
 
                 if (statement != null) {
                     scan(statement, p);
@@ -3818,7 +3836,13 @@ public class CFGBuilder {
         public Node visitArrayAccess(ArrayAccessTree tree, Void p) {
             Node array = scan(tree.getExpression(), p);
             Node index = unaryNumericPromotion(scan(tree.getIndex(), p));
-            return extendWithNode(new ArrayAccessNode(tree, array, index));
+            Node arrayAccess = extendWithNode(new ArrayAccessNode(tree, array, index));
+            Element aioobeElement =
+                    elements.getTypeElement("java.lang.ArrayIndexOutOfBoundsException");
+            extendWithNodeWithException(arrayAccess, aioobeElement.asType());
+            Element npeElement = elements.getTypeElement("java.lang.NullPointerException");
+            extendWithNodeWithException(arrayAccess, npeElement.asType());
+            return arrayAccess;
         }
 
         @Override
