@@ -2474,6 +2474,21 @@ public class CFGBuilder {
         }
 
         /**
+         * Find nearest owner element(Method or Class) which holds current tree
+         *
+         * @return Nearest owner element of current tree
+         */
+        private Element findOwner() {
+            MethodTree enclosingMethod = TreeUtils.enclosingMethod(getCurrentPath());
+            if (enclosingMethod != null) {
+                return TreeUtils.elementFromDeclaration(enclosingMethod);
+            } else {
+                ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+                return TreeUtils.elementFromDeclaration(enclosingClass);
+            }
+        }
+
+        /**
          * Translates an assertion statement to the correct CFG nodes. The translation assumes that
          * assertions are enabled.
          */
@@ -3162,7 +3177,33 @@ public class CFGBuilder {
                 }
                 caseBodyLabels[cases] = breakTargetL;
 
-                switchExpr = unbox(scan(switchTree.getExpression(), p));
+                TypeMirror switchExprType = InternalUtils.typeOf(switchTree.getExpression());
+                VariableTree variable =
+                        treeBuilder.buildVariableDecl(
+                                switchExprType, uniqueName("switch"), findOwner(), null);
+                handleArtificialTree(variable);
+
+                VariableDeclarationNode variableNode = new VariableDeclarationNode(variable);
+                variableNode.setInSource(false);
+                extendWithNode(variableNode);
+
+                ExpressionTree variableUse = treeBuilder.buildVariableUse(variable);
+                handleArtificialTree(variable);
+
+                LocalVariableNode variableUseNode = new LocalVariableNode(variableUse);
+                variableUseNode.setInSource(false);
+                extendWithNode(variableUseNode);
+
+                Node switchExprNode = unbox(scan(switchTree.getExpression(), p));
+
+                AssignmentTree assign =
+                        treeBuilder.buildAssignment(variableUse, switchTree.getExpression());
+                handleArtificialTree(assign);
+
+                switchExpr = new AssignmentNode(assign, variableUseNode, switchExprNode);
+                switchExpr.setInSource(false);
+                extendWithNode(switchExpr);
+
                 extendWithNode(
                         new MarkerNode(
                                 switchTree, "start of switch statement", env.getTypeUtils()));
