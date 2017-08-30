@@ -236,7 +236,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
                             if (cache != null && cache.containsKey(n)) {
                                 transferResult = cache.get(n);
                             } else {
-                                // Copy the store to do not change the state in the cache
+                                // Copy the store not to change the state in the cache
                                 transferResult = analysis.callTransferFunction(n, store.copy());
                                 if (cache != null) {
                                     cache.put(n, transferResult);
