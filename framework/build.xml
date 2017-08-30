@@ -144,6 +144,7 @@
               failonerror="true"
               classpath="${javac.lib}:${javacutil.lib}:${dataflow.lib}:${javaparser.core.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
@@ -201,7 +202,8 @@
                  failonerror="true"
                  executable="${javadoc.bin}"
                  classpath="${build}:${javac.lib}:${javacutil.lib}:${dataflow.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
-                 excludepackagenames="org.checkerframework.framework.stub">
+                 excludepackagenames="org.checkerframework.framework.stub"
+                 bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
             <package name="org.checkerframework.javacutil.*"/>
             <package name="org.checkerframework.dataflow.*"/>
             <package name="org.checkerframework.framework.*"/>
@@ -256,6 +258,7 @@
               failonerror="true"
               classpath="${javac.lib}:${build}:${javacutil.lib}:${dataflow.lib}:${javaparser.core.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
@@ -284,6 +287,7 @@
                printsummary="false"
                haltonerror="${halt.on.test.failure}"
                haltonfailure="${halt.on.test.failure}">
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg value="-ea"/>
             <jvmarg value="-Dorg.checkerframework.common.reflection.debug=false"/>
 
@@ -331,6 +335,7 @@
              haltonerror="${halt.on.test.failure}"
              haltonfailure="${halt.on.test.failure}"
              showoutput="true">
+          <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
           <jvmarg value="-ea"/>
 
           <classpath>
@@ -740,6 +745,7 @@
               failonerror="true"
               classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
+            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>

@@ -112,6 +112,11 @@
         <jar destfile="${javacutil.javadoc.lib}" basedir="${api.doc}" includes="**"/>
     </target>
 
+    <!--
+    This target seems to only work if tools.jar is already in the
+    classpath (despite the attempt in the body to add tools.jar to the
+    classpath).  Also, ${java.home} is the jre/ directory.
+    -->
     <!-- If adding a Javadoc dependency to another project,
          there is likely also a build dependency to that project.
          Please add it as well and keep both in sync. -->
@@ -130,7 +135,7 @@
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${javac.lib}:${javadoc.lib}"
+                 classpath="${build}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
             <package name="org.checkerframework.javacutil.*"/>
 
