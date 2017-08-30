@@ -535,8 +535,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             if (covam == null) {
                 // Fall back to deprecated Nullness Checker version of the annotation.
                 // This should be removed once that version is removed.
+                // Using String instead of .class to prevent dependency.
                 try {
-                    @SuppressWarnings("unchecked")
+                    @SuppressWarnings({"unchecked", "LiteralClassName"})
                     Class<? extends Annotation> nncov =
                             (Class<? extends Annotation>)
                                     Class.forName(
