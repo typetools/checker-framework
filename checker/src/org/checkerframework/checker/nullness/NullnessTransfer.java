@@ -51,9 +51,6 @@ import org.checkerframework.javacutil.TreeUtils;
 public class NullnessTransfer
         extends InitializationTransfer<NullnessValue, NullnessTransfer, NullnessStore> {
 
-    /** Type-specific version of super.analysis. */
-    protected final NullnessAnalysis analysis;
-
     /** Annotations of the non-null type system. */
     protected final AnnotationMirror NONNULL, NULLABLE;
 
@@ -61,7 +58,6 @@ public class NullnessTransfer
 
     public NullnessTransfer(NullnessAnalysis analysis) {
         super(analysis);
-        this.analysis = analysis;
         this.keyForTypeFactory =
                 ((BaseTypeChecker) analysis.getTypeFactory().getContext().getChecker())
                         .getTypeFactoryOfSubchecker(KeyForSubchecker.class);
