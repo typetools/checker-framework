@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -858,7 +859,22 @@ public class StubParser {
         // StubParser parses all annotations in type annotation position as type annotations
         annotateDecl(declAnnos, elt, decl.getElementType().getAnnotations());
         AnnotatedTypeMirror fieldType = atypeFactory.fromElement(elt);
-        annotate(fieldType, decl.getElementType());
+
+        VariableDeclarator fieldVarDecl = null;
+        for (VariableDeclarator var : decl.getVariables()) {
+            if (var.getName().toString().equals(elt.getSimpleName().toString())) {
+                fieldVarDecl = var;
+            }
+        }
+        assert fieldVarDecl != null;
+
+        annotate(fieldType, fieldVarDecl.getType());
+
+        if (fieldType.getKind() == TypeKind.ARRAY) {
+            annotate(((AnnotatedArrayType) fieldType).getComponentType(), decl.getAnnotations());
+        } else {
+            annotate(fieldType, decl.getAnnotations());
+        }
         putNew(atypes, elt, fieldType);
     }
 
@@ -940,7 +956,7 @@ public class StubParser {
                                 .endsWith("$" + typeElt.getSimpleName().toString()))
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
 
-        Map<Element, BodyDeclaration<?>> result = new HashMap<>();
+        Map<Element, BodyDeclaration<?>> result = new LinkedHashMap<>();
         for (BodyDeclaration<?> member : typeDecl.getMembers()) {
             putNewElement(typeElt, result, member, typeDecl.getNameAsString());
         }
