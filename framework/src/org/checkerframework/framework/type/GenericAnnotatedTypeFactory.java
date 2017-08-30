@@ -57,6 +57,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -1264,6 +1265,21 @@ public abstract class GenericAnnotatedTypeFactory<
         return res;
     }
 
+    /**
+     * Returns the type of a right-hand side of an assignment for unary operation like prefix or
+     * postfix increment or decrement.
+     *
+     * @param tree unary operation tree for compound assignment
+     * @return AnnotatedTypeMirror of a right-hand side of an assignment for unary operation
+     */
+    public AnnotatedTypeMirror getAnnotatedTypeRhsUnaryAssign(UnaryTree tree) {
+        if (!useFlow) {
+            return getAnnotatedType(tree);
+        }
+        AssignmentNode n = flowResult.getAssignForUnaryTree(tree);
+        return getAnnotatedType(n.getExpression().getTree());
+    }
+
     @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(
             NewClassTree tree) {
@@ -1328,15 +1344,8 @@ public abstract class GenericAnnotatedTypeFactory<
         defaults.annotate(tree, type);
 
         if (iUseFlow) {
-            Value as;
-            if (tree.getKind() == Kind.POSTFIX_DECREMENT
-                    || tree.getKind() == Kind.POSTFIX_INCREMENT) {
-                // Dataflow incorrectly treats postfix as prefix.
-                // See Issue 867: https://github.com/typetools/checker-framework/issues/867
-                as = getInferredValueFor(((UnaryTree) tree).getExpression());
-            } else {
-                as = getInferredValueFor(tree);
-            }
+            Value as = getInferredValueFor(tree);
+
             if (as != null) {
                 applyInferredAnnotations(type, as);
             }

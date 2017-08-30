@@ -54,7 +54,10 @@ public enum I18nConversionCategory {
      */
     NUMBER(new Class<?>[] {Number.class}, new String[] {"number", "choice"});
 
+    @SuppressWarnings("ImmutableEnumChecker") // TODO: clean this up!
     public final Class<? extends Object>[] types;
+
+    @SuppressWarnings("ImmutableEnumChecker") // TODO: clean this up!
     public final String[] strings;
 
     I18nConversionCategory(Class<? extends Object>[] types, String[] strings) {
