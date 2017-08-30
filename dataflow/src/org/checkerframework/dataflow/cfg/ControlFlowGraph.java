@@ -7,6 +7,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
@@ -22,6 +23,7 @@ import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 
@@ -55,6 +57,9 @@ public class ControlFlowGraph {
     /** Map from AST {@link Tree}s to post-conversion {@link Node}s. */
     protected IdentityHashMap<Tree, Node> convertedTreeLookup;
 
+    /** Map from AST {@link UnaryTree}s to corresponding {@link AssignmentNode}s. */
+    protected IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup;
+
     /**
      * All return nodes (if any) encountered. Only includes return statements that actually return
      * something
@@ -68,11 +73,13 @@ public class ControlFlowGraph {
             UnderlyingAST underlyingAST,
             IdentityHashMap<Tree, Node> treeLookup,
             IdentityHashMap<Tree, Node> convertedTreeLookup,
+            IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup,
             List<ReturnNode> returnNodes) {
         super();
         this.entryBlock = entryBlock;
         this.underlyingAST = underlyingAST;
         this.treeLookup = treeLookup;
+        this.unaryAssignNodeLookup = unaryAssignNodeLookup;
         this.convertedTreeLookup = convertedTreeLookup;
         this.regularExitBlock = regularExitBlock;
         this.exceptionalExitBlock = exceptionalExitBlock;
@@ -211,9 +218,14 @@ public class ControlFlowGraph {
         return succs;
     }
 
-    /** @return the tree-lookup map */
+    /** @return the copied tree-lookup map */
     public IdentityHashMap<Tree, Node> getTreeLookup() {
         return new IdentityHashMap<>(treeLookup);
+    }
+
+    /** @return the copied lookup-map of the assign node for unary operation */
+    public IdentityHashMap<UnaryTree, AssignmentNode> getUnaryAssignNodeLookup() {
+        return new IdentityHashMap<>(unaryAssignNodeLookup);
     }
 
     /**
