@@ -79,6 +79,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
             Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>> analysisCaches) {
         this.nodeValues = new IdentityHashMap<>();
         this.treeLookup = new IdentityHashMap<>();
+        this.unaryAssignNodeLookup = new IdentityHashMap<>();
         this.stores = new IdentityHashMap<>();
         this.finalLocalValues = new HashMap<>();
         this.analysisCaches = analysisCaches;
