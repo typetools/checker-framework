@@ -45,7 +45,8 @@ The following repositories will be cloned or updated from their origins:
         message += interm_to_build[1] + "\n"
 
     message += PLUME_LIB + "\n"
-    message += PLUME_BIB + "\n\n"
+    message += PLUME_BIB + "\n"
+    message += STUBPARSER + "\n\n"
 
     message += "Clone repositories from scratch (answer no to be given a chance to update them instead)?"
 
@@ -66,6 +67,7 @@ The following repositories will be cloned or updated from their origins:
 
     clone_from_scratch_or_update(LIVE_PLUME_LIB, PLUME_LIB, clone_from_scratch, False)
     clone_from_scratch_or_update(LIVE_PLUME_BIB, PLUME_BIB, clone_from_scratch, False)
+    clone_from_scratch_or_update(LIVE_STUBPARSER, STUBPARSER, clone_from_scratch, False)
 
 def get_afu_date(building_afu):
     """If the AFU is being built, return the current date, otherwise return the
