@@ -1450,6 +1450,9 @@ public class CFGBuilder {
             this.annotationProvider = annotationProvider;
             elements = env.getElementUtils();
             types = env.getTypeUtils();
+            if (trees == null) {
+                trees = Trees.instance(env);
+            }
 
             // initialize lists and maps
             treeLookupMap = new IdentityHashMap<>();

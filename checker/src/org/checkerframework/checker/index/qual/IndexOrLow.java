@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
  *
  * <p>The <a
  * href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#indexOf-java.lang.String-">
- * <code>String.indexOf(String)</code></a> method is declared as
+ * {@code String.indexOf(String)}</a> method is declared as
  *
  * <pre><code>
  *   class String {
