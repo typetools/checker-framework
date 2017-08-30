@@ -964,14 +964,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * corresponding required varargs, and issues "argument.invalid" error if it's not a subtype of
      * the required one.
      *
-     * <p>Note it's required that type checking for the each elements of varargs is executed by
+     * <p>Note it's required that type checking for each element in varargs is executed by the
      * caller before or after calling this method.
      *
      * @see #checkArguments(List, List)
      * @param invokedMethod the method type to be invoked
      * @param tree method or constructor invocation tree
      */
-    private void checkVarargs(AnnotatedExecutableType invokedMethod, Tree tree) {
+    protected void checkVarargs(AnnotatedExecutableType invokedMethod, Tree tree) {
         if (!invokedMethod.isVarArgs()) {
             return;
         }
@@ -1007,16 +1007,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         AnnotatedTypeMirror wrappedVarargsType = atypeFactory.getAnnotatedTypeVarargsArray(tree);
 
-        // When dataflow analysis is not enabled, it will be null and we can suppose to there is no
+        // When dataflow analysis is not enabled, it will be null and we can suppose there is no
         // annotation to be checked for generated varargs array.
         if (wrappedVarargsType == null) {
             return;
         }
 
-        // If the component type is intersection or including type variable by type inference,
-        // the comparison doesn't work well.
-        // We can consider that the component type of actual is same with formal one,
-        // because type checking for elements will be done in checkArguments.
+        // The component type of wrappedVarargsType might not be a subtype of the component type of
+        // lastParamAnnotatedType due to the difference of type inference between for an expression
+        // and an invoked method element. We can consider that the component type of actual is same
+        // with formal one because type checking for elements will be done in checkArguments. This
+        // is also needed to avoid duplicating error message caused by elements in varargs
         if (wrappedVarargsType.getKind() == TypeKind.ARRAY) {
             ((AnnotatedArrayType) wrappedVarargsType)
                     .setComponentType(lastParamAnnotatedType.getComponentType());
