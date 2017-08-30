@@ -96,8 +96,7 @@
                   <arg>-Xbootclasspath/p:${annotatedJdk}</arg>
                   <!--treat Checker Framework errors as warnings-->
                   <!-- <arg>-Awarns</arg> -->
-                  <!-- Uncomment the following line if using Java 7. -->
-                  <!--<arg>-J-Xbootclasspath/p:${typeAnnotationsJavac}</arg>-->
+                  <arg>-classpath ${typeAnnotationsJavac}</arg>
                   <arg>-Alint</arg>
               </compilerArgs>
           </configuration>

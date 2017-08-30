@@ -15,11 +15,6 @@ repositories {
 
 
 configurations {
-    if (targetJavaVersion.isJava7()) {
-        checkerFrameworkJavac {
-            description = 'a customization of the Open JDK javac compiler with additional support for type annotations'
-        }
-    }
     checkerFrameworkAnnotatedJDK {
        description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
     }
@@ -53,10 +48,5 @@ allprojects {
                 //'-Awarns',
                 "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
         ]
-        if (targetJavaVersion.isJava7()) {
-            compile.options.compilerArgs += ['-source', '7', '-target', '7']
-            options.fork = true
-            options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.checkerFrameworkJavac.asPath}"]
-        }
     }
 }
