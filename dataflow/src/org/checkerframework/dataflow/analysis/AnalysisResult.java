@@ -55,7 +55,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         this.treeLookup = new IdentityHashMap<>(treeLookup);
         this.stores = stores;
         this.finalLocalValues = finalLocalValues;
-        analysisCaches = new IdentityHashMap<>();
+        this.analysisCaches = new IdentityHashMap<>();
     }
 
     /** Initialize empty result. */
@@ -70,10 +70,10 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     /** Initialize empty result with specified cache. */
     public AnalysisResult(
             Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>> analysisCaches) {
-        nodeValues = new IdentityHashMap<>();
-        treeLookup = new IdentityHashMap<>();
-        stores = new IdentityHashMap<>();
-        finalLocalValues = new HashMap<>();
+        this.nodeValues = new IdentityHashMap<>();
+        this.treeLookup = new IdentityHashMap<>();
+        this.stores = new IdentityHashMap<>();
+        this.finalLocalValues = new HashMap<>();
         this.analysisCaches = analysisCaches;
     }
 
@@ -236,6 +236,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
                             if (cache != null && cache.containsKey(n)) {
                                 transferResult = cache.get(n);
                             } else {
+                                // Copy the store to do not change the state in the cache
                                 transferResult = analysis.callTransferFunction(n, store.copy());
                                 if (cache != null) {
                                     cache.put(n, transferResult);
