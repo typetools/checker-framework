@@ -4,17 +4,15 @@ apply plugin: 'java'
 
 assert (JavaVersion.current().isJava7() || JavaVersion.current().isJava8Compatible())
 
-
-// Indicates the version of Java to which the source and class files should conform
-// If set to JavaVersion.VERSION_1_7 then type annotations must be in comments.
-ext.targetJavaVersion = JavaVersion.current().isJava7() ? JavaVersion.VERSION_1_7 : JavaVersion.VERSION_1_8
-
 repositories {
     mavenCentral()
 }
 
 
 configurations {
+    checkerFrameworkJavac {
+       description = 'a customization of the Open JDK javac compiler with additional support for type annotations'
+    }
     checkerFrameworkAnnotatedJDK {
        description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
     }
@@ -28,9 +26,7 @@ dependencies {
     ext.jdkVersion = JavaVersion.current().isJava7() ? 'jdk7' : 'jdk8'
     checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
 
-    if (targetJavaVersion.isJava7()) {
-        checkerFrameworkJavac "org.checkerframework:compiler:${checkerFrameworkVersion}"
-    }
+    checkerFrameworkJavac "org.checkerframework:compiler:${checkerFrameworkVersion}"
     checkerFramework "org.checkerframework:checker:${checkerFrameworkVersion}"
     compile "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
 
@@ -48,5 +44,7 @@ allprojects {
                 //'-Awarns',
                 "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
         ]
+        options.fork = true
+        options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.checkerFrameworkJavac.asPath}"]
     }
 }
