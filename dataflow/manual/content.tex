@@ -875,11 +875,6 @@ forward reference to the section with the discussion.
 \end{workinprogress}
 
 \begin{workinprogress}
-There is a \code{CaseNode}. How is the default case of a switch
-handled?
-\end{workinprogress}
-
-\begin{workinprogress}
 There is a \code{StringConcatenateAssignmentNode}.
 What about other compound assignments? Are they desugared?
 \end{workinprogress}
@@ -930,6 +925,18 @@ exhibiting this behavior is shown in \autoref{lst:CFGFieldAssignment}.
 left-to-right (cf.\ \jlsref{15.26.1}),
 which is properly handled by the translation.}
 
+\subsubsection{Postfix/Prefix Increment/Decrement}
+\label{sec:postpre-incdec}
+Both of postfix and prefix increment or decrement have a side effect to
+update the variable or field. To represent this side effect, Dataflow
+Framework create an artificial assignment node like \code{n = n + 1}
+for \code{++n} or \code{n++}. This artificial assignment node is stored
+in \code{unaryAssignNodeLookup} of \code{ControlFlowGraph}. The assignment
+node is also stored in \code{treeLookup} for prefix increment or decrement
+so that the result of it is after the assignment. However, the node before
+the assignment is stored in \code{treeLookup} for postfix increment or decrement
+because the result of it should be before the assignment. For further information
+about node-tree mapping, see \autoref{sec:conversions} also.
 
 \subsubsection{Conditional stores}
 \label{sec:cond-stores}
@@ -1093,6 +1100,25 @@ Framework creates an \code{ArrayCreationNode} with initializer for varargs
 in the same way as Java compiler. Note that it doesn't create an \code{ArrayCreationNode}
 when the varargs is an array which is same depth with the type of
 the formal parameter or \code{null} is given as actual varargs.
+
+\subsubsection{Default case and fall through for switch statement}
+\label{sec:default-switch}
+Switch statement is handled as a chain of \code{CaseNode} and nodes in
+the case. \code{CaseNode} makes a branch by comparing the equality of
+the expression of the switch statement and the expression of the case.
+Note that the expression of a switch statement must be executed just only
+once at first of switch statement. To refer its value, a fake variable
+is created and it is assigned to a fake variable. \code{THEN_TO_BOTH}
+edge goes to nodes in the case and \code{ELSE_TO_BOTH} edge goes to next
+\code{CaseNode}. When a next is default case, it goes to nodes in the default
+case. If a break statement is in nodes, it creates an edge to next node of
+the switch statement. If there is any possibility of fall-through, an edge
+to the first of nodes in the next case is created after nodes in the case.
+For example, the code in \autoref{lst:CFGSwitch} produces the control flow
+graph in \autoref{fig:CFGSwitch}. The fake variable named \code{switch#num0}
+is created and each of case nodes creates the branches.
+
+\flow{Switch}{Example of a switch statement with case, default and fall through.}
 
 \subsection{AST to CFG Translation}
 \label{sec:ast_to_cfg_translation}
