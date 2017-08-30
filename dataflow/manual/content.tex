@@ -930,6 +930,18 @@ exhibiting this behavior is shown in \autoref{lst:CFGFieldAssignment}.
 left-to-right (cf.\ \jlsref{15.26.1}),
 which is properly handled by the translation.}
 
+\subsubsection{Postfix/Prefix Increment/Decrement}
+\label{sec:postpre-incdec}
+Both of postfix and prefix increment or decrement have a side effect to
+update the variable or field. To represent this side effect, Dataflow
+Framework create an artificial assignment node like \code{n = n + 1}
+for \code{++n} or \code{n++}. This artificial assignment node is stored
+in \code{unaryAssignNodeLookup} of \code{ControlFlowGraph}. The assignment
+node is also stored in \code{treeLookup} for prefix increment or decrement
+so that the result of it is after the assignment. However, the node before
+the assignment is stored in \code{treeLookup} for postfix increment or decrement
+because the result of it should be before the assignment. For further information
+about node-tree mapping, see \autoref{sec:conversions} also.
 
 \subsubsection{Conditional stores}
 \label{sec:cond-stores}
