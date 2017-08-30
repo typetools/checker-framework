@@ -1113,6 +1113,17 @@ the \code{throw}? Why are they not in the same basic block, as there
 is no alternate control flow?
 \end{workinprogress}
 
+\subsubsection{Varargs method invocation}
+\label{sec:varargs}
+In Java, varargs in method or constructor invocation is compiled
+as new array creation (cf.\ \jlsref{15.12.4.2}). For example,
+\code{m(1, 2, 3)} will be compiled as \code{m(new int[]\{1, 2, 3\})}
+when the signature of \code{m} is \code{m(int... args)}. Dataflow
+Framework creates an \code{ArrayCreationNode} with initializer for varargs
+in the same way as Java compiler. Note that it doesn't create an \code{ArrayCreationNode}
+when the varargs is an array which is same depth with the type of
+the formal parameter or \code{null} is given as actual varargs.
+
 \subsubsection{Default case and fall through for switch statement}
 \label{sec:default-switch}
 Switch statement is handled as a chain of \code{CaseNode} and nodes in
