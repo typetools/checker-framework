@@ -5,8 +5,7 @@ public final class Loops {
 
     public void test1(int[] a, @LTLengthOf("#1") int offset, @LTLengthOf("#1") int offset2) {
         while (flag) {
-            // TODO: should error, but doesn't because of #867
-            ////:: error: (compound.assignment.type.incompatible)
+            //:: error: (compound.assignment.type.incompatible)
             offset++;
             //:: error: (compound.assignment.type.incompatible)
             offset += 1;
@@ -39,8 +38,7 @@ public final class Loops {
 
     public void test4(int[] a, @LTLengthOf("#1") int offset, @LTLengthOf("#1") int offset2) {
         while (flag) {
-            // TODO: should error, but doesn't because of #867
-            ////:: error: (compound.assignment.type.incompatible)
+            //:: error: (compound.assignment.type.incompatible)
             offset++;
             //:: error: (compound.assignment.type.incompatible)
             offset += 1;
@@ -62,8 +60,7 @@ public final class Loops {
         int otherOffset = offset;
         while (flag) {
             otherOffset += 1;
-            // TODO: should error, but doesn't because of #867
-            ////:: error: (compound.assignment.type.incompatible)
+            //:: error: (compound.assignment.type.incompatible)
             offset++;
             //:: error: (compound.assignment.type.incompatible)
             offset += 1;

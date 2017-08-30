@@ -32,7 +32,7 @@ public final class Class<T extends @Nullable Object> extends Object implements j
   public java.lang.reflect.Type[] getGenericInterfaces() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect. @Nullable Method getEnclosingMethod() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect. @Nullable Constructor<?> getEnclosingConstructor() { throw new RuntimeException("skeleton method"); }
-  public @Nullable Class<?> getEnclosingClass() { throw new RuntimeException("skeleton method"); }
+  @Pure public @Nullable Class<?> getEnclosingClass() { throw new RuntimeException("skeleton method"); }
   public String getSimpleName() { throw new RuntimeException("skeleton method"); }
   @Pure public native @Nullable Class<? super T> getSuperclass();
   @Pure public native Class<?>[] getInterfaces();

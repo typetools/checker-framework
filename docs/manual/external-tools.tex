@@ -387,7 +387,7 @@ latest bug fixes and new features.
   <dependencies>
     ... existing <dependency> items ...
 
-    <!-- annotations from the Checker Framework: nullness, interning, locking, ... -->
+    <!-- Annotations from the Checker Framework: nullness, interning, locking, ... -->
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
@@ -402,7 +402,7 @@ latest bug fixes and new features.
       <scope>system</scope>
       <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/checker.jar</systemPath>
     </dependency>
-    <!-- The Type Annotations compiler. Uncomment if using Java annotations in comments. -->
+    <!-- The Type Annotations compiler. Uncomment if using annotations in comments. -->
     <!-- <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>compiler</artifactId>
@@ -410,6 +410,7 @@ latest bug fixes and new features.
       <scope>system</scope>
       <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/compiler.jar</systemPath>
     </dependency> -->
+    <!-- The annotated JDK to use. -->
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
@@ -423,7 +424,7 @@ latest bug fixes and new features.
 
 
 \item Use Maven properties to hold the locations of the
-  annotated JDK and (if using annotations in comments), the type annotations compiler.  Both were declared as Maven dependencies above.
+  annotated JDK and (if using annotations in comments), the Type Annotations compiler.  Both were declared as Maven dependencies above.
 To set the value of these properties automatically, you will use the Maven Dependency plugin.
 
 First, create the properties in the \code{properties} section of the POM:
@@ -432,7 +433,7 @@ First, create the properties in the \code{properties} section of the POM:
 <properties>
   <!-- These properties will be set by the Maven Dependency plugin -->
   <annotatedJdk>$\{org.checkerframework:jdk8:jar\}</annotatedJdk>
-  <!-- Uncomment to use the type annotations compiler. -->
+  <!-- Uncomment to use the Type Annotations compiler. -->
   <!-- <typeAnnotationsJavac>$\{org.checkerframework:compiler:jar\}</typeAnnotationsJavac> -->
 </properties>
 \end{alltt}
@@ -483,7 +484,7 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
       <compilerArgs>
         <!-- location of the annotated JDK, which comes from a Maven dependency -->
         <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
-        <!-- Uncomment the following line to use the type annotations compiler. -->
+        <!-- Uncomment the following line to use the Type Annotations compiler. -->
         <!-- <arg>-J-Xbootclasspath/p:$\{typeAnnotationsJavac\}</arg> -->
       </compilerArgs>
     </configuration>
