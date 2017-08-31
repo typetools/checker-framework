@@ -58,7 +58,9 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -1240,7 +1242,38 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Returns the type of a right-hand side of an assignment for unary operation like prefix or
+     * Returns the type of a varargs array of a method invocation or a constructor invocation.
+     *
+     * @param tree a method invocation or a constructor invocation
+     * @return AnnotatedTypeMirror of varargs array for a method or constructor invocation {@code
+     *     tree}
+     */
+    public AnnotatedTypeMirror getAnnotatedTypeVarargsArray(Tree tree) {
+        if (!useFlow) {
+            return null;
+        }
+
+        Node node;
+        List<Node> args;
+        switch (tree.getKind()) {
+            case METHOD_INVOCATION:
+                node = getNodeForTree(tree);
+                args = ((MethodInvocationNode) node).getArguments();
+                break;
+            case NEW_CLASS:
+                node = getNodeForTree(tree);
+                args = ((ObjectCreationNode) node).getArguments();
+                break;
+            default:
+                throw new AssertionError("Unexpected kind of tree: " + tree);
+        }
+
+        assert !args.isEmpty() : "Arguments are empty";
+        Node varargsArray = args.get(args.size() - 1);
+        return getAnnotatedType(varargsArray.getTree());
+    }
+
+    /* Returns the type of a right-hand side of an assignment for unary operation like prefix or
      * postfix increment or decrement.
      *
      * @param tree unary operation tree for compound assignment
