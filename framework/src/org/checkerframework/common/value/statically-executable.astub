@@ -340,3 +340,10 @@ class Pattern {
     String @MinLen(1) [] split(CharSequence input, int limit) ;
     String @MinLen(1) [] split(CharSequence input) ;
 }
+
+package java.util;
+
+class StringTokenizer {
+    @MinLen(1) String nextToken();
+    @MinLen(1) String nextToken(String delim);
+}
