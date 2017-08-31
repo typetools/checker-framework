@@ -58,16 +58,19 @@ public class InitializationVisitor<
         extends BaseTypeVisitor<Factory> {
 
     protected final AnnotationFormatter annoFormatter;
+
     // Error message keys
-    private static final String COMMITMENT_INVALID_CAST = "initialization.invalid.cast";
-    private static final String COMMITMENT_FIELDS_UNINITIALIZED =
+    private static final @CompilerMessageKey String COMMITMENT_INVALID_CAST =
+            "initialization.invalid.cast";
+    private static final @CompilerMessageKey String COMMITMENT_FIELDS_UNINITIALIZED =
             "initialization.fields.uninitialized";
-    private static final String COMMITMENT_INVALID_FIELD_TYPE = "initialization.invalid.field.type";
-    private static final String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE =
+    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_TYPE =
+            "initialization.invalid.field.type";
+    private static final @CompilerMessageKey String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE =
             "initialization.invalid.constructor.return.type";
-    private static final String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED =
+    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED =
             "initialization.invalid.field.write.unknown";
-    private static final String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED =
+    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED =
             "initialization.invalid.field.write.initialized";
 
     public InitializationVisitor(BaseTypeChecker checker) {
