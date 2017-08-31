@@ -596,6 +596,25 @@ allprojects {
 }
 \end{Verbatim}
 \end{mysmall}
+
+\item To use the Type Annotations compiler to support annotations-in-comments:
+
+\begin{mysmall}
+\begin{Verbatim}
+allprojects {
+    tasks.withType(JavaCompile).all { JavaCompile compile ->
+        compile.options.compilerArgs = [
+           // ... as above
+           '-source', '7', '-target', '7' // Include if Java 7 compatibility is needed
+        ]
+        options.fork = true
+        options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.checkerFrameworkJavac.asPath}"]
+    }
+}
+\end{Verbatim}
+\end{mysmall}
+
+
 \end{enumerate}
 
 \section{Android Studio 3.0 and the Android Gradle Plugin 3.0\label{android-gradle}}
