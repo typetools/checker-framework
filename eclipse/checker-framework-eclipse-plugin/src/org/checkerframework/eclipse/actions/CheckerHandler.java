@@ -24,7 +24,7 @@ public abstract class CheckerHandler extends AbstractHandler {
      * @param selection Current user selection
      * @return A list of JavaElements that are in the same project and in the given selection
      */
-    protected /*@Nullable*/ List<IJavaElement> selectionToJavaElements(final ISelection selection) {
+    protected @Nullable List<IJavaElement> selectionToJavaElements(final ISelection selection) {
         // ITreeSelection
 
         final List<IJavaElement> elements;
