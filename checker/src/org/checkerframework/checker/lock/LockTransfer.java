@@ -74,8 +74,7 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
     }
 
     @Override
-    public LockStore initialStore(
-            UnderlyingAST underlyingAST, /*@Nullable */ List<LocalVariableNode> parameters) {
+    public LockStore initialStore(UnderlyingAST underlyingAST, List<LocalVariableNode> parameters) {
 
         LockStore store = super.initialStore(underlyingAST, parameters);
 

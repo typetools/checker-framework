@@ -2,11 +2,8 @@ package org.checkerframework.checker.units;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-
-/*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;
-*/
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /** Interface that is used to specify the relation between units. */
 public interface UnitsRelations {
@@ -26,7 +23,7 @@ public interface UnitsRelations {
      * @return the annotation to use for the result of the multiplication or null if no special
      *     relation is known
      */
-    /*@Nullable*/ AnnotationMirror multiplication(AnnotatedTypeMirror lht, AnnotatedTypeMirror rht);
+    @Nullable AnnotationMirror multiplication(AnnotatedTypeMirror lht, AnnotatedTypeMirror rht);
 
     /**
      * Called for the division of type lht and rht.
@@ -36,5 +33,5 @@ public interface UnitsRelations {
      * @return the annotation to use for the result of the division or null if no special relation
      *     is known
      */
-    /*@Nullable*/ AnnotationMirror division(AnnotatedTypeMirror lht, AnnotatedTypeMirror rht);
+    @Nullable AnnotationMirror division(AnnotatedTypeMirror lht, AnnotatedTypeMirror rht);
 }

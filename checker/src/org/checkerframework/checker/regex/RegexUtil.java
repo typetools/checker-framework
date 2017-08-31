@@ -2,6 +2,8 @@
 
 package org.checkerframework.checker.regex;
 
+// Uses annotations in comments because it may be run on a Java 7 JVM
+// when called from user code.
 /*>>>
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.regex.qual.*;
