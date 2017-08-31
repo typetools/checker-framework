@@ -284,6 +284,6 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         if (value == null) {
             return false;
         }
-        return varQual.isValuePlusOffsetLessThanMinLen(arrayName, value.intValue(), minLen);
+        return varQual.isValuePlusOffsetLessThanMinLen(arrayName, value, minLen);
     }
 }

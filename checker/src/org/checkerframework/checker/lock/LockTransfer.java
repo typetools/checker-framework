@@ -26,20 +26,11 @@ import org.checkerframework.javacutil.TreeUtils;
  * LockTransfer handles constructors, initializers, synchronized methods, and synchronized blocks.
  */
 public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTransfer> {
-
-    /** Type-specific version of super.analysis. */
-    protected LockAnalysis analysis;
-
-    protected LockChecker checker;
-    private LockAnnotatedTypeFactory atypeFactory;
+    private final LockAnnotatedTypeFactory atypeFactory;
 
     public LockTransfer(LockAnalysis analysis, LockChecker checker) {
         // Always run the Lock Checker with -AconcurrentSemantics turned on.
         super(analysis, true /* useConcurrentSemantics */);
-        // This assignment is needed (even though the super constructor is called) because
-        // LockTransfer.analysis shadows CFAbstractTransfer.analysis,
-        this.analysis = analysis;
-        this.checker = checker;
         this.atypeFactory = (LockAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 

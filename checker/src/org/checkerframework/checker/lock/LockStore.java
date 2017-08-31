@@ -35,7 +35,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
      */
     protected boolean inConstructorOrInitializer = false;
 
-    private LockAnnotatedTypeFactory atypeFactory;
+    private final LockAnnotatedTypeFactory atypeFactory;
 
     public LockStore(LockAnalysis analysis, boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
@@ -45,7 +45,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     /** Copy constructor. */
     public LockStore(LockAnalysis analysis, CFAbstractStore<CFValue, LockStore> other) {
         super(other);
-        inConstructorOrInitializer = ((LockStore) other).inConstructorOrInitializer;
+        this.inConstructorOrInitializer = ((LockStore) other).inConstructorOrInitializer;
         this.atypeFactory = ((LockStore) other).atypeFactory;
     }
 
@@ -56,7 +56,6 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         // Least upper bound of a boolean
         newStore.inConstructorOrInitializer =
                 this.inConstructorOrInitializer && other.inConstructorOrInitializer;
-        newStore.atypeFactory = this.atypeFactory;
 
         return newStore;
     }

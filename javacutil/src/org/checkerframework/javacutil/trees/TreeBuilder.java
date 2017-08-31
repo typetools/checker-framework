@@ -8,6 +8,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
@@ -17,10 +18,12 @@ import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -651,5 +654,27 @@ public class TreeBuilder {
                 maker.Binary(jcOp, (JCTree.JCExpression) left, (JCTree.JCExpression) right);
         binary.setType((Type) type);
         return binary;
+    }
+
+    /**
+     * Builds an AST Tree to create a new array with initializers.
+     *
+     * @param componentType component type of the new array
+     * @param elems expression trees of initializers
+     * @return a NewArrayTree to create a new array with initializers
+     */
+    public NewArrayTree buildNewArray(TypeMirror componentType, List<ExpressionTree> elems) {
+        List<JCExpression> exprs = new ArrayList<>();
+        for (ExpressionTree elem : elems) {
+            exprs.add((JCExpression) elem);
+        }
+
+        JCTree.JCNewArray newArray =
+                maker.NewArray(
+                        (JCTree.JCExpression) buildClassUse(((Type) componentType).tsym),
+                        com.sun.tools.javac.util.List.<JCExpression>nil(),
+                        com.sun.tools.javac.util.List.from(exprs));
+        newArray.setType(javacTypes.makeArrayType((Type) componentType));
+        return newArray;
     }
 }
