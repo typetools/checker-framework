@@ -12,14 +12,14 @@ public class CheckerDevelMain extends CheckerMain {
     private static final String CP_PROP = PROP_PREFIX + ".cp";
     private static final String PP_PROP = PROP_PREFIX + ".pp";
     private static final String COMPILE_BCP_PROP = PROP_PREFIX + ".compile.bcp";
-    private static final String RUNTIME_BCP_PROP = PROP_PREFIX + ".runtime.bcp";
+    private static final String RUNTIME_CP_PROP = PROP_PREFIX + ".runtime.cp";
     private static final String VERBOSE_PROP = PROP_PREFIX + ".verbose";
 
     public static void main(final String[] args) {
 
         final String cp = System.getProperty(CP_PROP);
         final String pp = System.getProperty(PP_PROP);
-        final String runtimeBcp = System.getProperty(RUNTIME_BCP_PROP);
+        final String runtimeCp = System.getProperty(RUNTIME_CP_PROP);
         final String compileBcp = System.getProperty(COMPILE_BCP_PROP);
         final String binDir = System.getProperty(BINARY_PROP);
         final String verbose = System.getProperty(VERBOSE_PROP);
@@ -35,8 +35,8 @@ public class CheckerDevelMain extends CheckerMain {
                             + "Prepended to compile bootclasspath: "
                             + compileBcp
                             + "\n"
-                            + "Prepended to runtime bootclasspath: "
-                            + runtimeBcp
+                            + "Prepended to runtime classpath: "
+                            + runtimeCp
                             + "\n"
                             + "Binary Dir:                 "
                             + binDir
@@ -52,9 +52,9 @@ public class CheckerDevelMain extends CheckerMain {
         assert (pp != null)
                 : PP_PROP + " must specify a path entry to prepend to the processor path";
 
-        assert (runtimeBcp != null)
-                : RUNTIME_BCP_PROP
-                        + " must specify a path entry to prepend to the Java bootclasspath when running Javac"; //TODO: Fix the assert messages
+        assert (runtimeCp != null)
+                : RUNTIME_CP_PROP
+                        + " must specify a path entry to prepend to the Java classpath when running Javac"; //TODO: Fix the assert messages
         assert (compileBcp != null)
                 : COMPILE_BCP_PROP
                         + " must specify a path entry to prepend to the compiler bootclasspath";
@@ -81,8 +81,8 @@ public class CheckerDevelMain extends CheckerMain {
     public void assertValidState() {}
 
     @Override
-    protected List<String> createRuntimeBootclasspath(final List<String> argsList) {
-        return prependPathOpts(RUNTIME_BCP_PROP, new ArrayList<String>());
+    protected List<String> createRuntimeClasspath(final List<String> argsList) {
+        return prependPathOpts(RUNTIME_CP_PROP, new ArrayList<String>());
     }
 
     @Override

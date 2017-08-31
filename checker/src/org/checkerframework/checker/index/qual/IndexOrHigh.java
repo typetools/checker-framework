@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
  *
  * <p>The <a
  * href="https://docs.oracle.com/javase/8/docs/api/java/util/Arrays.html#binarySearch-java.lang.Object:A-int-int-java.lang.Object-">
- * <code>Arrays.binarySearch</code></a> method is declared as
+ * {@code Arrays.binarySearch}</a> method is declared as
  *
  * <pre>{@code
  * class Arrays {

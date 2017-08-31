@@ -35,7 +35,7 @@ annoToolsDir="${cfDir}"/../annotation-tools
 # Put afu jar files last, as they might contain out-of-date CF files.
 # Put "checker" after the other sub-projects, as "ant bindist" puts
 # other projects into the checker/build directory.
-buildDirs="${cfDir}"/dataflow/build:"${cfDir}"/javacutil/build:"${cfDir}"/stubparser/build:"${cfDir}"/framework/build:"${cfDir}"/checker/build:"${annoToolsDir}"/scene-lib/bin:"${annoToolsDir}"/annotation-file-utilities/annotation-file-utilities.jar
+buildDirs="${cfDir}"/dataflow/build:"${cfDir}"/javacutil/build:"${cfDir}"/framework/build:"${cfDir}"/checker/build:"${cfDir}"/framework/lib/stubparser-core.jar:"${annoToolsDir}"/scene-lib/bin:"${annoToolsDir}"/annotation-file-utilities/annotation-file-utilities.jar
 
 ## Preserve quoting and spaces in arguments, which would otherwise be lost
 ## due to being passed through the shell twice.
@@ -63,7 +63,7 @@ eval "java" \
      "-DCheckerDevelMain.cp=${buildDirs} " \
      "-DCheckerDevelMain.pp=${buildDirs} " \
      "-DCheckerDevelMain.compile.bcp=${jdkPaths} " \
-     "-DCheckerDevelMain.runtime.bcp=${ltBinDir} " \
+     "-DCheckerDevelMain.runtime.cp=${ltBinDir} " \
      "-DCheckerDevelMain.binary=${binaryDir}" \
      "-classpath ${buildDirs} " \
      "org.checkerframework.framework.util.CheckerDevelMain" \

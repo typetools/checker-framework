@@ -1127,6 +1127,14 @@ expressiveness, the Lock Checker (see Chapter~\ref{lock-checker}) uses the
 \<@GuardedBy> with two distinct meanings.
 
 
+A final example of a type-and-declaration annotation is some \<@Nullable>
+or \<@NonNull> annotations that are intended to work both with modern tools
+that process type annotations and with old tools that were written before
+Java had type annotations.  Such type-and-declaration annotations were a
+temporary measure, intended to be used until the tool supported Java 8, and
+should not be necessary any longer.
+
+
 \subsection{How do I annotate a fully-qualified type name?\label{faq-annotate-fully-qualified-name}}
 
 If you write a fully-qualified type name in your program, then the Java
