@@ -25,5 +25,5 @@
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value=""/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="checker"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DJDK_JAR=${resource_loc:/checker/dist/jdk7.jar}"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DJDK_JAR=${resource_loc:/checker/dist/jdk8.jar}"/>
 </launchConfiguration>

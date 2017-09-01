@@ -8,12 +8,12 @@ similar cases are correctly handled now. TODO!
 If the two classes are compiled individually or in the superclass then
 subclass order:
 
-runcheckers-jdk7.sh -processor org.checkerframework.checker.nullness.NullnessChecker Bug109_A.java Bug109_B.java
+javac -processor org.checkerframework.checker.nullness.NullnessChecker Bug109_A.java Bug109_B.java
 
 everything works as expected.
 If they are compiled in the subclass then superclass order:
 
-runcheckers-jdk7.sh -processor org.checkerframework.checker.nullness.NullnessChecker Bug109_B.java Bug109_A.java
+javac -processor org.checkerframework.checker.nullness.NullnessChecker Bug109_B.java Bug109_A.java
 
 the compiler used to throw exceptions.
 These two problems are now fixed.
