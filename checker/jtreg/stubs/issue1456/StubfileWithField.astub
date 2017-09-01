@@ -1,0 +1,13 @@
+import org.checkerframework.checker.nullness.qual.*;
+
+package java.io;
+
+public class BufferedInputStream {
+    // Parsing this field will fail if the issue #1456 is not resolved.
+    // The issue happens when the StubParser tries to annotate the field
+    // that contain the array of primitive types. It tries to cast the
+    // type in the field to the ReferenceType, but expected type is array
+    // and it gets an underlying type which is primitive.
+    // It does not matter what annotation is used, it should fail anyway.
+    @NonNull byte[] buf;
+}
