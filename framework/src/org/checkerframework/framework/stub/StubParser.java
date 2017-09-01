@@ -628,6 +628,7 @@ public class StubParser {
                 // workaround
                 assert paramType.getKind() == TypeKind.ARRAY;
                 annotate(((AnnotatedArrayType) paramType).getComponentType(), param.getType());
+                annotate(paramType, param.getVarArgsAnnotations());
             } else {
                 annotate(paramType, param.getType());
             }
