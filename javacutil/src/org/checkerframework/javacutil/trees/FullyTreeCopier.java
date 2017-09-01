@@ -43,6 +43,7 @@ class FullyTreeCopier extends TreeCopier<Void> {
         super(treeMaker);
     }
 
+    @Override
     public <T extends JCTree> T copy(T tree, Void p) {
         T t = super.copy(tree, p);
         if (t == null) {
@@ -53,42 +54,49 @@ class FullyTreeCopier extends TreeCopier<Void> {
         return t;
     }
 
+    @Override
     public JCTree visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
         JCAssignOp t = (JCAssignOp) super.visitCompoundAssignment(node, p);
         t.operator = ((JCAssignOp) node).operator;
         return t;
     }
 
+    @Override
     public JCTree visitBinary(BinaryTree node, Void p) {
         JCBinary t = (JCBinary) super.visitBinary(node, p);
         t.operator = ((JCBinary) node).operator;
         return t;
     }
 
+    @Override
     public JCTree visitClass(ClassTree node, Void p) {
         JCClassDecl t = (JCClassDecl) super.visitClass(node, p);
         t.sym = ((JCClassDecl) node).sym;
         return t;
     }
 
+    @Override
     public JCTree visitIdentifier(IdentifierTree node, Void p) {
         JCIdent t = (JCIdent) super.visitIdentifier(node, p);
         t.sym = ((JCIdent) node).sym;
         return t;
     }
 
+    @Override
     public JCTree visitMethod(MethodTree node, Void p) {
         JCMethodDecl t = (JCMethodDecl) super.visitMethod(node, p);
         t.sym = ((JCMethodDecl) node).sym;
         return t;
     }
 
+    @Override
     public JCTree visitMethodInvocation(MethodInvocationTree node, Void p) {
         JCMethodInvocation t = (JCMethodInvocation) super.visitMethodInvocation(node, p);
         t.varargsElement = ((JCMethodInvocation) node).varargsElement;
         return t;
     }
 
+    @Override
     public JCTree visitNewClass(NewClassTree node, Void p) {
         JCNewClass t = (JCNewClass) super.visitNewClass(node, p);
         t.constructor = ((JCNewClass) node).constructor;
@@ -97,18 +105,21 @@ class FullyTreeCopier extends TreeCopier<Void> {
         return t;
     }
 
+    @Override
     public JCTree visitLambdaExpression(LambdaExpressionTree node, Void p) {
         JCLambda t = (JCLambda) super.visitLambdaExpression(node, p);
         t.canCompleteNormally = ((JCLambda) node).canCompleteNormally;
         return t;
     }
 
+    @Override
     public JCTree visitMemberSelect(MemberSelectTree node, Void p) {
         JCFieldAccess t = (JCFieldAccess) super.visitMemberSelect(node, p);
         t.sym = ((JCFieldAccess) node).sym;
         return t;
     }
 
+    @Override
     public JCTree visitMemberReference(MemberReferenceTree node, Void p) {
         JCMemberReference t = (JCMemberReference) super.visitMemberReference(node, p);
         t.kind = ((JCMemberReference) node).kind;
@@ -120,18 +131,21 @@ class FullyTreeCopier extends TreeCopier<Void> {
         return t;
     }
 
+    @Override
     public JCTree visitTry(TryTree node, Void p) {
         JCTry t = (JCTry) super.visitTry(node, p);
         t.finallyCanCompleteNormally = ((JCTry) node).finallyCanCompleteNormally;
         return t;
     }
 
+    @Override
     public JCTree visitUnary(UnaryTree node, Void p) {
         JCUnary t = (JCUnary) super.visitUnary(node, p);
         t.operator = ((JCUnary) node).operator;
         return t;
     }
 
+    @Override
     public JCTree visitVariable(VariableTree node, Void p) {
         JCVariableDecl t = (JCVariableDecl) super.visitVariable(node, p);
         t.sym = ((JCVariableDecl) node).sym;
