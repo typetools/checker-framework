@@ -68,8 +68,16 @@ public class BoundsInitializer {
         final List<AnnotatedTypeMirror> typeArgs = new ArrayList<>();
 
         for (int i = 0; i < typeElement.getTypeParameters().size(); i++) {
-            TypeMirror javaTypeArg =
-                    getJavaTypeArg(declaredType, typeElement.getTypeParameters(), i);
+            TypeMirror javaTypeArg;
+            if (declaredType.wasRaw()) {
+                TypeMirror upperBound =
+                        ((TypeVariable) typeElement.getTypeParameters().get(i).asType())
+                                .getUpperBound();
+                javaTypeArg = declaredType.atypeFactory.types.getWildcardType(upperBound, null);
+            } else {
+                javaTypeArg = declaredType.getUnderlyingType().getTypeArguments().get(i);
+            }
+
             final AnnotatedTypeMirror typeArg =
                     AnnotatedTypeMirror.createType(javaTypeArg, declaredType.atypeFactory, false);
             switch (typeArg.getKind()) {
@@ -93,25 +101,6 @@ public class BoundsInitializer {
         }
 
         declaredType.typeArgs = Collections.unmodifiableList(typeArgs);
-    }
-
-    /**
-     * Returns the underlying java type of the {@code i} type parameter of {@code type}. If {@code
-     * type} is raw, then a new wildcard is created and returned.
-     *
-     * @param type declared type
-     * @param parameters elements of the type parameters
-     * @param i index of the type parameter
-     * @return the underlying java type of the {@code i} type parameter of {@code type}
-     */
-    private static TypeMirror getJavaTypeArg(
-            AnnotatedDeclaredType type, List<? extends TypeParameterElement> parameters, int i) {
-        if (type.wasRaw()) {
-            TypeMirror upperBound = ((TypeVariable) parameters.get(i).asType()).getUpperBound();
-            return type.atypeFactory.types.getWildcardType(upperBound, null);
-        } else {
-            return type.getUnderlyingType().getTypeArguments().get(i);
-        }
     }
 
     /**
@@ -508,17 +497,17 @@ public class BoundsInitializer {
          * Store the wildcards created as type arguments to raw types. This way if the raw type is
          * visited again, the same wildcard can be used.
          */
-        private Map<TypeVariable, WildcardType> rawTypeWildcards = new HashMap<>();
+        private final Map<TypeVariable, WildcardType> rawTypeWildcards = new HashMap<>();
 
         /**
-         * Returns the underlying java type of the {@code i} type parameter of {@code type}. If
+         * Returns the underlying java type of the {@code i}-th type argument of {@code type}. If
          * {@code type} is raw, then a new wildcard is created or returned from {@code
          * rawTypeWildcards}.
          *
          * @param type declared type
          * @param parameters elements of the type parameters
          * @param i index of the type parameter
-         * @return the underlying java type of the {@code i} type parameter of {@code type}
+         * @return the underlying java type of the {@code i}-th type argument of {@code type}
          */
         private TypeMirror getJavaType(
                 AnnotatedDeclaredType type,
