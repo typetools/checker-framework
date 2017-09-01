@@ -932,7 +932,7 @@ public abstract class AnnotatedTypeMirror {
                 typeArgs = Collections.unmodifiableList(typeArgs);
                 return typeArgs;
             } else if (getUnderlyingType().getTypeArguments().isEmpty()) {
-                typeArgs = Collections.unmodifiableList(new ArrayList<AnnotatedTypeMirror>());
+                typeArgs = Collections.emptyList();
                 return typeArgs;
             } else {
                 BoundsInitializer.initializeTypeArgs(this);
@@ -1872,7 +1872,7 @@ public abstract class AnnotatedTypeMirror {
          * The type variable to which this wildcard is an argument. Used to initialize the upper
          * bound of unbounded wildcards and wildcards in raw types.
          */
-        TypeVariable typeVariable = null;
+        private TypeVariable typeVariable = null;
 
         private AnnotatedWildcardType(WildcardType type, AnnotatedTypeFactory factory) {
             super(type, factory);
@@ -1963,10 +1963,18 @@ public abstract class AnnotatedTypeMirror {
             }
         }
 
+        /**
+         * Sets type variable to which this wildcard is an argument. This method should only be
+         * called during initialization of the type.
+         */
         void setTypeVariable(TypeParameterElement typeParameterElement) {
             this.typeVariable = (TypeVariable) typeParameterElement.asType();
         }
 
+        /**
+         * Sets type variable to which this wildcard is an argument. This method should only be
+         * called during initialization of the type.
+         */
         void setTypeVariable(TypeVariable typeVariable) {
             this.typeVariable = typeVariable;
         }
