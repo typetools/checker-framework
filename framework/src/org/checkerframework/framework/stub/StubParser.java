@@ -871,11 +871,27 @@ public class StubParser {
         annotate(fieldType, fieldVarDecl.getType());
 
         if (fieldType.getKind() == TypeKind.ARRAY) {
-            annotate(((AnnotatedArrayType) fieldType).getComponentType(), decl.getAnnotations());
+            annotateInnerMostComponentType((AnnotatedArrayType) fieldType, decl.getAnnotations());
         } else {
             annotate(fieldType, decl.getAnnotations());
         }
         putNew(atypes, elt, fieldType);
+    }
+
+    /**
+     * Adds {@code annotations} to the inner most component type of {@code type}.
+     *
+     * @param type array type
+     * @param annotations annotations to add
+     */
+    private void annotateInnerMostComponentType(
+            AnnotatedArrayType type, List<AnnotationExpr> annotations) {
+        AnnotatedTypeMirror componentType = type;
+        while (componentType.getKind() == TypeKind.ARRAY) {
+            componentType = ((AnnotatedArrayType) componentType).getComponentType();
+        }
+
+        annotate(componentType, annotations);
     }
 
     private void annotate(AnnotatedTypeMirror type, List<AnnotationExpr> annotations) {

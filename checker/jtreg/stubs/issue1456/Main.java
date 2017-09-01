@@ -19,5 +19,6 @@ public class Main {
         @Untainted Object o2 = lib.object2;
         @Untainted byte b2 = lib.byte1;
         @Untainted byte @Untainted [] b3 = lib.byteArray2;
+        byte @Untainted [] @Untainted [] b4 = lib.byteArray3;
     }
 }
