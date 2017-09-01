@@ -902,7 +902,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @return cache size passed as argument to checker or DEFAULT_CACHE_SIZE
      */
-    private int getCacheSize() {
+    protected int getCacheSize() {
         String option = checker.getOption("atfCacheSize");
         if (option == null) {
             return DEFAULT_CACHE_SIZE;

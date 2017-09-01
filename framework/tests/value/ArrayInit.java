@@ -91,7 +91,11 @@ class ArrayInit {
         vargs((byte[]) null);
     }
 
-    public void vargs(Object @ArrayLen(0) ... ints) {}
+    public void vargs(Object @ArrayLen(0) ... objs) {}
+
+    public void vargs(int @ArrayLen(0) ... ints) {}
+
+    public void vargs(byte @ArrayLen(0) ... bytes) {}
 
     public void nullableArrays() {
         Object @ArrayLen(2) [] @ArrayLen(1) [] o = new Object[][] {new Object[] {null}, null};

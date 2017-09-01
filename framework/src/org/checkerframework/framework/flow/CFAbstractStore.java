@@ -937,6 +937,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
     }
 
+    @Override
+    public int hashCode() {
+        // What is a good hash code to use?
+        return System.identityHashCode(this);
+    }
+
     @SideEffectFree
     @Override
     public String toString() {

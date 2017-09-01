@@ -15,10 +15,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * appears below).
  *
  * <p>Consider a class {@code B} that is a subtype of {@code A}. At the beginning of the constructor
- * of {@code B}, {@code this} has the type <code>{@literal @}UnderInitialization(A.class)</code>,
- * since all fields of {@code A} have been initialized by the super-constructor. Inside the
- * constructor body, as soon as all fields of {@code B} are initialized, then the type of {@code
- * this} changes to <code>@UnderInitialization(B.class)</code>.
+ * of {@code B}, {@code this} has the type {@code @UnderInitialization(A.class)}, since all fields
+ * of {@code A} have been initialized by the super-constructor. Inside the constructor body, as soon
+ * as all fields of {@code B} are initialized, then the type of {@code this} changes to
+ * {@code @UnderInitialization(B.class)}.
  *
  * <p>Code is allowed to store potentially not-fully-initialized objects in the fields of a
  * partially-initialized object, as long as all initialization is complete by the end of the

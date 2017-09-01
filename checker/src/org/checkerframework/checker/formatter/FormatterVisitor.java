@@ -1,11 +1,10 @@
 package org.checkerframework.checker.formatter;
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-*/
+
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.FormatCall;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.InvocationType;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
@@ -111,7 +110,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            /*@CompilerMessageKey*/ String errorKey) {
+            @CompilerMessageKey String errorKey) {
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
 
         AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);

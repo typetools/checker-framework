@@ -20,6 +20,7 @@ import org.checkerframework.checker.regex.qual.RegexBottom;
 import org.checkerframework.checker.regex.qual.UnknownRegex;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -231,7 +232,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** Returns the number of groups in the given regex String. */
-    public static int getGroupCount(/*@Regex*/ String regex) {
+    public static int getGroupCount(@Regex String regex) {
         return Pattern.compile(regex).matcher("").groupCount();
     }
 
@@ -240,7 +241,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * type annotations which cannot be used in IDEs (yet).
      */
     @SuppressWarnings("purity") // the checker cannot prove that the method is pure, but it is
-    /*@org.checkerframework.dataflow.qual.Pure*/
+    @Pure
     private static boolean isRegex(String s) {
         try {
             Pattern.compile(s);
