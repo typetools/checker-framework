@@ -67,7 +67,7 @@ public class ControlFlowGraph {
     protected final List<ReturnNode> returnNodes;
 
     /** Map from AST {@link Tree}s to generated {@link Tree}s. */
-    protected IdentityHashMap<Tree, List<Tree>> generatedTreesLookupMap;
+    protected final IdentityHashMap<Tree, List<Tree>> generatedTreesLookupMap;
 
     public ControlFlowGraph(
             SpecialBlock entryBlock,
@@ -233,7 +233,7 @@ public class ControlFlowGraph {
         return new IdentityHashMap<>(unaryAssignNodeLookup);
     }
 
-    /** @return the map to lookup generated {@link Tree}s from {@link Tree} */
+    /** @return the copied map to lookup generated {@link Tree}s from {@link Tree} */
     public IdentityHashMap<Tree, List<Tree>> getGeneratedTreesLookup() {
         return new IdentityHashMap<>(generatedTreesLookupMap);
     }

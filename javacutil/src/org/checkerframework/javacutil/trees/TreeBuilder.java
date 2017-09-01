@@ -66,15 +66,15 @@ public class TreeBuilder {
     }
 
     /**
-     * Copy an AST Tree.
+     * Copy an AST Tree, including types and symbols in the tree.
      *
-     * @param target a tree to be copied
+     * @param input a tree to be copied
      * @return a copied tree
      */
     @SuppressWarnings("unchecked")
-    public <T extends Tree> T copy(T target) {
-        T tree = (T) new FullyTreeCopier(maker).<JCTree>copy((JCTree) target);
-        return tree;
+    public <T extends Tree> T copy(T input) {
+        T copied = (T) new FullyTreeCopier(maker).<JCTree>copy((JCTree) input);
+        return copied;
     }
 
     /**

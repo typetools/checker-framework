@@ -895,6 +895,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         JCTry tree = (JCTry) node;
         JCBlock oldFinalizer = tree.finalizer;
         if (oldFinalizer != null) {
+            // Run type-checking for all generated trees. Set a generated tree to 'tree.finalizer'
+            // to emulate a path for generated tree during type-checking.
             for (Tree generatedFinalizer : atypeFactory.getGeneratedTrees(oldFinalizer)) {
                 tree.finalizer = (JCBlock) generatedFinalizer;
                 this.scan(generatedFinalizer, aVoid);
