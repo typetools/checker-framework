@@ -1529,9 +1529,6 @@ public class CFGBuilder {
                 TreeBuilder treeBuilder,
                 AnnotationProvider annotationProvider) {
             this.env = env;
-            if (trees == null) {
-                trees = Trees.instance(env);
-            }
             this.tryStack = new TryStack(exceptionalExitLabel);
             this.treeBuilder = treeBuilder;
             this.annotationProvider = annotationProvider;

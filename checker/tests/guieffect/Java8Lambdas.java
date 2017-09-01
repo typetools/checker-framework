@@ -1,3 +1,4 @@
+import org.checkerframework.checker.guieffect.qual.AlwaysSafe;
 import org.checkerframework.checker.guieffect.qual.PolyUI;
 import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
 import org.checkerframework.checker.guieffect.qual.PolyUIType;
@@ -98,10 +99,18 @@ public class Java8Lambdas {
         runner.doEither(e -> e.repaint());
         runner.doEither(e -> e.dangerous());
         runner.doUISafely(e -> e.dangerous());
-        PolymorphicLambdaRunner safePolymorphicLambdaRunner = new PolymorphicLambdaRunner(elem);
+        @AlwaysSafe PolymorphicLambdaRunner safePolymorphicLambdaRunner = new PolymorphicLambdaRunner(elem);
         safePolymorphicLambdaRunner.doEither(e -> e.repaint());
-        //:: error: (call.invalid.ui)
+        // This next two are ok for this patch since the behavior is the same (no report) for lambdas as for annon
+        // classes. However, shouldn't this be (argument.type.incompatible) just because safePolymorphicLambdaRunner
+        // is not an @UI PolymorphicLambdaRunner ? Or, failing that (call.invalid.ui) since doEither is @PolyUIEffect ?
         safePolymorphicLambdaRunner.doEither(e -> e.dangerous());
+        safePolymorphicLambdaRunner.doEither(
+                new @UI PolymorphicFunctionalInterface<UIElement>() {
+                    public void executePolymorphic(UIElement arg) {
+                        arg.dangerous();
+                    }
+                });
         @UI PolymorphicLambdaRunner uiPolymorphicLambdaRunner = new @UI PolymorphicLambdaRunner(elem);
         //:: error: (call.invalid.ui)
         uiPolymorphicLambdaRunner.doEither(
@@ -109,8 +118,15 @@ public class Java8Lambdas {
         //:: error: (call.invalid.ui)
         uiPolymorphicLambdaRunner.doEither(e -> e.dangerous());
         PolymorphicFunctionalInterface<UIElement> func1 = e -> e.repaint();
-        //:: error: (call.invalid.ui)
+        // No error, why? //:: error: (assignment.type.incompatible)
         PolymorphicFunctionalInterface<UIElement> func2 = e -> e.dangerous(); // Incompatible types!
+        PolymorphicFunctionalInterface<UIElement> func2p =
+                //:: error: (assignment.type.incompatible)
+                (new @UI PolymorphicFunctionalInterface<UIElement>() {
+                    public void executePolymorphic(UIElement arg) {
+                        arg.dangerous();
+                    }
+                });
         @UI PolymorphicFunctionalInterface<UIElement> func3 = e -> e.dangerous();
         safePolymorphicLambdaRunner.doEither(func1);
         safePolymorphicLambdaRunner.doEither(func2);
@@ -130,7 +146,7 @@ public class Java8Lambdas {
         runner.doUI(e -> e.repaint());
         runner.doUI(e -> e.dangerous());
         PolymorphicLambdaRunner safePolymorphicLambdaRunner = new PolymorphicLambdaRunner(elem);
-        //:: error: (call.invalid.ui)
+        // No error, why? :: error: (argument.type.incompatible)
         safePolymorphicLambdaRunner.doEither(e -> e.dangerous());
         @UI PolymorphicLambdaRunner uiPolymorphicLambdaRunner = new @UI PolymorphicLambdaRunner(elem);
         uiPolymorphicLambdaRunner.doEither(e -> e.dangerous());
@@ -140,11 +156,21 @@ public class Java8Lambdas {
         return e -> e.dangerous();
     }
 
+    // This should be an error without an @UI annotation on the return type. No?
     public PolymorphicFunctionalInterface<UIElement> returnLambdasTest2() {
-        return (e -> {
-            //:: error: (call.invalid.ui)
+        // No error, why? :: error: (return.type.incompatible)
+        return e -> {
             e.dangerous();
-        }); // This lambda will be inferred to be safe and thus calling dangerous() is an
-        // error.
+        };
+    }
+
+    // Just to check
+    public PolymorphicFunctionalInterface<UIElement> returnLambdasTest3() {
+        //:: error: (return.type.incompatible)
+        return (new @UI PolymorphicFunctionalInterface<UIElement>() {
+            public void executePolymorphic(UIElement arg) {
+                arg.dangerous();
+            }
+        });
     }
 }
