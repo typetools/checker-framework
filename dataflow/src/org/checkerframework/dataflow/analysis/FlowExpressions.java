@@ -578,8 +578,11 @@ public class FlowExpressions {
      * invocation.
      */
     public static class ClassName extends Receiver {
+        private final String typeString;
+
         public ClassName(TypeMirror type) {
             super(type);
+            typeString = type.toString();
         }
 
         @Override
@@ -588,17 +591,17 @@ public class FlowExpressions {
                 return false;
             }
             ClassName other = (ClassName) obj;
-            return getType().toString().equals(other.getType().toString());
+            return typeString.equals(other.typeString.toString());
         }
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(getType().toString());
+            return HashCodeUtils.hash(typeString);
         }
 
         @Override
         public String toString() {
-            return getType().toString() + ".class";
+            return typeString + ".class";
         }
 
         @Override
