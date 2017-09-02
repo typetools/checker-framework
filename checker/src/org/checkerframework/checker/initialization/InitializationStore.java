@@ -106,7 +106,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
                 ((InitializationAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
                         .getFieldInvariantAnnotation();
 
-        // Remove invariant annotated fields for optimization
+        // Remove invariant annotated fields to avoid performance issue reported in #1438
         for (FieldAccess invariantField : invariantFields.keySet()) {
             fieldValues.remove(invariantField);
         }
@@ -162,28 +162,53 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
                 return false;
             }
         }
-        return super.supersetOf(other);
+
+        for (FieldAccess invariantField : other.invariantFields.keySet()) {
+            if (!invariantFields.containsKey(invariantField)) {
+                return false;
+            }
+        }
+
+        Map<FlowExpressions.FieldAccess, V> removedFieldValues = new HashMap<>();
+        Map<FlowExpressions.FieldAccess, V> removedOtherFieldValues = new HashMap<>();
+        try {
+            // Remove invariant annotated fields to avoid performance issue reported in #1438
+            for (FieldAccess invariantField : invariantFields.keySet()) {
+                V v = fieldValues.remove(invariantField);
+                removedFieldValues.put(invariantField, v);
+            }
+            for (FieldAccess invariantField : other.invariantFields.keySet()) {
+                V v = other.fieldValues.remove(invariantField);
+                removedOtherFieldValues.put(invariantField, v);
+            }
+
+            return super.supersetOf(other);
+        } finally {
+            // Restore removed value
+            fieldValues.putAll(removedFieldValues);
+            other.fieldValues.putAll(removedOtherFieldValues);
+        }
     }
 
     @Override
     public S leastUpperBound(S other) {
-        // Remove invariant annotated fields for optimization
-        Map<FlowExpressions.FieldAccess, V> oldFieldValues = fieldValues;
-        fieldValues = new HashMap<>(fieldValues);
+        // Remove invariant annotated fields to avoid performance issue reported in #1438
+        Map<FlowExpressions.FieldAccess, V> removedFieldValues = new HashMap<>();
+        Map<FlowExpressions.FieldAccess, V> removedOtherFieldValues = new HashMap<>();
         for (FieldAccess invariantField : invariantFields.keySet()) {
-            fieldValues.remove(invariantField);
+            V v = fieldValues.remove(invariantField);
+            removedFieldValues.put(invariantField, v);
         }
-        Map<FlowExpressions.FieldAccess, V> oldOtherFieldValues = other.fieldValues;
-        other.fieldValues = new HashMap<>(other.fieldValues);
         for (FieldAccess invariantField : other.invariantFields.keySet()) {
-            other.fieldValues.remove(invariantField);
+            V v = other.fieldValues.remove(invariantField);
+            removedOtherFieldValues.put(invariantField, v);
         }
 
         S result = super.leastUpperBound(other);
 
-        // Restore fieldValues
-        fieldValues = oldFieldValues;
-        other.fieldValues = oldOtherFieldValues;
+        // Restore removed value
+        fieldValues.putAll(removedFieldValues);
+        other.fieldValues.putAll(removedOtherFieldValues);
 
         // Set intersection for initializedFields.
         result.initializedFields.addAll(other.initializedFields);
@@ -205,6 +230,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     protected void internalVisualize(CFGVisualizer<V, S, ?> viz) {
         super.internalVisualize(viz);
         viz.visualizeStoreKeyVal("initialized fields", initializedFields);
+        viz.visualizeStoreKeyVal("invariant fields", invariantFields);
     }
 
     public Map<FieldAccess, V> getFieldValues() {

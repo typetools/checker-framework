@@ -390,9 +390,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** The enabled lint options */
     private Set<String> activeLints;
 
-    /** Supported options for this checker */
-    protected Set<String> supportedOptions;
-
     /**
      * The active options for this checker. This is a processed version of {@link
      * ProcessingEnvironment#getOptions()}: If the option is of the form "-ACheckerName@key=value"
@@ -1733,12 +1730,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     @Override
     public final String getOption(String name, String def) {
-
-        if (supportedOptions == null) {
-            supportedOptions = this.getSupportedOptions();
-        }
-
-        if (!supportedOptions.contains(name)) {
+        if (!this.getSupportedOptions().contains(name)) {
             ErrorReporter.errorAbort("Illegal option: " + name);
         }
 
