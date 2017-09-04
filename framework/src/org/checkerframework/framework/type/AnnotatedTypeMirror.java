@@ -914,7 +914,7 @@ public abstract class AnnotatedTypeMirror {
             if (typeArgs != null) {
                 return typeArgs;
             } else if (wasRaw()) {
-                // Initialize the type arguments with uninferred wildcards
+                // Initialize the type arguments with uninferred wildcards.
                 BoundsInitializer.initializeTypeArgs(this);
 
                 // Copy annotations from the declaration to the wildcards.
