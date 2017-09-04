@@ -75,11 +75,9 @@
     </target>
 
     <target name="clean-jdk" description="Remove generated jdkX.jar files">
-        <delete file="dist/jdk7.jar"/>
         <delete file="dist/jdk8.jar"/>
         <delete file="dist/jdk9.jar"/>
 
-        <delete file="jdk/jdk7.jar"/>
         <delete file="jdk/jdk8.jar"/>
         <delete file="jdk/jdk9.jar"/>
     </target>
@@ -210,7 +208,7 @@
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${javaparser.core.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
+              classpath="${javac.lib}:${framework.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <arg value="-g"/>
             <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->
@@ -263,7 +261,7 @@
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${javac.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
+                 classpath="${build}:${javac.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}:${stubparser.lib}"
                  excludepackagenames="org.checkerframework.framework.stub">
 
             <package name="org.checkerframework.javacutil.*"/>
@@ -330,7 +328,7 @@
         <!-- Work-around for Issue 894, see above. -->
         <unjar src="${checker.lib.tmp}" dest="${build}" />
 
-        <unjar src="${javaparser.core.lib}" dest="${build}" />
+        <unjar src="${stubparser.lib}" dest="${build}" />
 
         <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/,reports/">
             <manifest>
@@ -1215,7 +1213,6 @@ So, use our own archived version.
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
-                    <exclude name="${checker.jdk8orhigher.sources}"/>
                 </fileset>
                 <fileset dir="${javacutil.loc}/${src}">
                     <include name="**/*.java"/>
@@ -1253,7 +1250,7 @@ So, use our own archived version.
         -->
         <java fork="true"
               failonerror="true"
-              classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
+              classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="${maybeDebug}"/>  <!-- may be empty string -->
             <arg value="-g"/>
@@ -1375,7 +1372,7 @@ So, use our own archived version.
         <javac failonerror="true"
                 includeantruntime="false"
                 debug="true"
-                classpath="${checker.lib}:${javaparser.core.lib}:${junit.lib}:${hamcrest.lib}"
+                classpath="${checker.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}"
                 srcdir="${framework.loc}/${src}:${dataflow.loc}/${src}:${javacutil.loc}/${src}:${src}"
                 includes="**/*.java"
                 excludes="**/javacutil/dist/**"
