@@ -505,17 +505,16 @@ However, the upper bound applies only after the index is explicitly checked not 
 The property of the result of \<indexOf> cannot be expressed by any combination of lower- and upper-bound annotations.
 It's because the upper-bound annotations apply independently of the lower-bound annotations,
 but in this case, the upper bound \code{i<=receiver.length() - substring.length()} holds only if \code{i>=0}.
-
 Therefore, to express this property and make the example type-check without false positives,
-a new annotation such as \<@IndexOfSubstring\allowbreak(value="substring", in="receiver")> is necessary.
+a new annotation such as
+\<@IndexOfIndexFor(value="receiver", offset="substring.length()-1")>
+%Alternaive:
+%\<@IndexOfSubstring\allowbreak(value="substring", in="receiver")>
+is necessary.
+
 This new annotation is similar to \<@LTLengthOf\allowbreak(value="receiver", offset="substring.length()-1")>,
 but explicitly allows the index to be -1 even if the upper bound would not allow it.
-
-Because of the value -1, the return type of these methods cannot be
-annotated by a \<@LTLengthOf> with a positive offset.
-The \<@IndexOfIndexFor> annotation solves it by having the same
-meaning as \<@LTLengthOf> with the same parameters, except additionally
-allowing the -1 value. The Upper Bound Checker can then infer
+The Upper Bound Checker can then infer
 the corresponding \<@LTLengthOf> annotation for expressions that
 are known to be non-negative.
 
@@ -544,13 +543,21 @@ are known to be non-negative.
   \label{fig-index-indexof}
 \end{figure}
 
-The \<@IndexOfSubstring> annotation has its own type hierarchy (Figure~\ref{fig-index-indexof}) with three type qualifiers:
+The
+\<@IndexOfIndexFor>
+%\<@IndexOfSubstring>
+annotation is implemented in a separate IndexOf Checker which runs together with the Index Checker and has its own type hierarchy (Figure~\ref{fig-index-indexof}) with three type qualifiers:
 \begin{description}
-\item[\refqualclasswithparams{checker/index/qual}{IndexOfSubstring}{String[] value, String[] in}]
+\item[\refqualclasswithparams{checker/index/qual}{IndexOfIndexFor}{String[] value, String[] offset}]
   An expression with this type represents an integer that could have been produced by calling
   \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}:
-  the annotated integer is either -1, or it is non-negative and for each sequence \<l> and substring \<s>
-  specifed in the annotation, it is less than or equal to \<l.length-s.length>.
+  the annotated integer is either -1, or for each sequence \<receiver> and offset \<offset>
+  specified in the annotation, it is less than \<receiver.length-offset>.
+%\item[\refqualclasswithparams{checker/index/qual}{IndexOfSubstring}{String[] value, String[] in}]
+%  An expression with this type represents an integer that could have been produced by calling
+%  \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}:
+%  the annotated integer is either -1, or it is non-negative and for each sequence \<l> and substring \<s>
+%  specified in the annotation, it is less than or equal to \<l.length-s.length>.
 \item[\refqualclass{checker/index/qual}{IndexOfBottom}]
   This is the bottom type, and programmers should rarely need to write it.
 \item[\refqualclass{checker/index/qual}{IndexOfUnknown}]
