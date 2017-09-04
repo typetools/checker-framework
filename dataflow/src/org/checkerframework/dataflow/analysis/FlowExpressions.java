@@ -591,7 +591,7 @@ public class FlowExpressions {
                 return false;
             }
             ClassName other = (ClassName) obj;
-            return typeString.equals(other.typeString.toString());
+            return typeString.equals(other.typeString);
         }
 
         @Override
