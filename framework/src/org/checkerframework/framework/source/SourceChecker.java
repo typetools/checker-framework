@@ -1730,6 +1730,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     @Override
     public final String getOption(String name, String def) {
+
         if (!this.getSupportedOptions().contains(name)) {
             ErrorReporter.errorAbort("Illegal option: " + name);
         }
