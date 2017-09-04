@@ -472,7 +472,7 @@ This tells us what Index Checker annotations can be applied to \<i>:
 \item
 \<i> is \<@LTEqLengthOf("receiver")>, because \code{i<=receiver.length()}.
 \item
-\<i> is not \<@IndexOrLow("receiver")>, because for \code{receiver="", substring="", i="0"},
+\<i> is not \<@IndexOrLow("receiver")>, because for \code{receiver="", substring="", i=0},
 the property \code{i>=-1 \&\& i<receiver.length()} does not hold.
 \item
 \<i> is not \<@IndexOrHigh("receiver")>, because for \code{receiver="", substring="b", i=-1},
