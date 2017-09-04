@@ -935,6 +935,7 @@ public abstract class AnnotatedTypeMirror {
                 typeArgs = Collections.emptyList();
                 return typeArgs;
             } else {
+                // Initialize type argument for a non-raw declared type that has type arguments/
                 BoundsInitializer.initializeTypeArgs(this);
                 typeArgs = Collections.unmodifiableList(typeArgs);
                 return typeArgs;
