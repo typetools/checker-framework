@@ -273,11 +273,6 @@ public class WholeProgramInferenceScenesHelper {
             }
         }
         typeEl.tlAnnotationsHere.removeAll(annosToRemove);
-
-        // Remove annotations recursively for inner types.
-        for (ATypeElement innerType : typeEl.innerTypes.values()) {
-            removeIgnoredAnnosFromATypeElement(innerType, loc);
-        }
     }
 
     /**
