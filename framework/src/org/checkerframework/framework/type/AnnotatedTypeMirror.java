@@ -929,7 +929,6 @@ public abstract class AnnotatedTypeMirror {
                             .replaceAnnotations(typeParam.getLowerBound().getAnnotations());
                     wct.replaceAnnotations(typeParam.getAnnotations());
                 }
-                typeArgs = Collections.unmodifiableList(typeArgs);
                 return typeArgs;
             } else if (getUnderlyingType().getTypeArguments().isEmpty()) {
                 typeArgs = Collections.emptyList();
@@ -937,7 +936,6 @@ public abstract class AnnotatedTypeMirror {
             } else {
                 // Initialize type argument for a non-raw declared type that has type arguments/
                 BoundsInitializer.initializeTypeArgs(this);
-                typeArgs = Collections.unmodifiableList(typeArgs);
                 return typeArgs;
             }
         }

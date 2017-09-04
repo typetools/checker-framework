@@ -4,6 +4,7 @@ import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -99,7 +100,7 @@ public class BoundsInitializer {
             typeArgs.add(typeArg);
         }
 
-        declaredType.typeArgs = typeArgs;
+        declaredType.typeArgs = Collections.unmodifiableList(typeArgs);
     }
 
     /**
