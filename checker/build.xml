@@ -75,11 +75,9 @@
     </target>
 
     <target name="clean-jdk" description="Remove generated jdkX.jar files">
-        <delete file="dist/jdk7.jar"/>
         <delete file="dist/jdk8.jar"/>
         <delete file="dist/jdk9.jar"/>
 
-        <delete file="jdk/jdk7.jar"/>
         <delete file="jdk/jdk8.jar"/>
         <delete file="jdk/jdk9.jar"/>
     </target>
@@ -210,9 +208,8 @@
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${javaparser.core.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
+              classpath="${javac.lib}:${framework.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->
             <arg value="-source"/>
@@ -246,11 +243,6 @@
     <!-- TODO: add a type-checking target that doesn't use
          -XDTA:noannotations in comments. -->
 
-    <!--
-    This target seems to only work if tools.jar is already in the
-    classpath (despite the attempt in the body to add tools.jar to the
-    classpath).  Also, ${java.home} is the jre/ directory.
-    -->
     <!-- Dependendencies on other projects (such as dataflow)
          mirrors javadoc dependencies. If changing project
          dependencies, change the Javadoc dependencies to keep
@@ -269,9 +261,8 @@
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${javac.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
-                 excludepackagenames="org.checkerframework.framework.stub"
-                 bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
+                 classpath="${build}:${javac.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}:${stubparser.lib}"
+                 excludepackagenames="org.checkerframework.framework.stub">
 
             <package name="org.checkerframework.javacutil.*"/>
             <package name="org.checkerframework.dataflow.*"/>
@@ -337,7 +328,7 @@
         <!-- Work-around for Issue 894, see above. -->
         <unjar src="${checker.lib.tmp}" dest="${build}" />
 
-        <unjar src="${javaparser.core.lib}" dest="${build}" />
+        <unjar src="${stubparser.lib}" dest="${build}" />
 
         <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/,reports/">
             <manifest>
@@ -389,8 +380,8 @@
         <echo message="Compiling qualifiers."/>
         <java fork="true"
               failonerror="true"
-              classname="com.sun.tools.javac.Main">
-            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+              classname="com.sun.tools.javac.Main"
+              classpath="${javac.lib}">
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
@@ -434,8 +425,7 @@
         <java fork="true"
               failonerror="true"
               classname="com.sun.tools.javac.Main"
-              classpath="${checker-qual-classes-tmp}">
-            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+              classpath="${javac.lib}:${checker-qual-classes-tmp}">
             <arg value="-g"/>
             <arg value="-source"/>
             <arg value="8"/>
@@ -510,8 +500,8 @@
         <echo message="${compat.qual.src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classname="com.sun.tools.javac.Main">
-            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+              classname="com.sun.tools.javac.Main"
+              classpath="${javac.lib}">
             <arg value="-g"/>
             <!-- Make sure we only generate Java 6 bytecode. -->
             <arg value="-source"/>
@@ -563,7 +553,6 @@
               failonerror="true"
               classpath="${build}:${javac.lib}:${junit.lib}:${hamcrest.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <arg value="-source"/>
             <arg value="8"/>
@@ -623,7 +612,6 @@
 
             <!-- plain output for debugging -->
 
-            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg line="${debugger.str}"/> <!-- may be empty string -->
 
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
@@ -687,7 +675,6 @@
                printsummary="false"
                haltonerror="${halt.on.test.failure}"
                haltonfailure="${halt.on.test.failure}">
-            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg value="-ea"/>
             <jvmarg line="${debugger.str}"/>  <!-- may be empty string -->
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
@@ -1226,7 +1213,6 @@ So, use our own archived version.
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
-                    <exclude name="${checker.jdk8orhigher.sources}"/>
                 </fileset>
                 <fileset dir="${javacutil.loc}/${src}">
                     <include name="**/*.java"/>
@@ -1264,9 +1250,8 @@ So, use our own archived version.
         -->
         <java fork="true"
               failonerror="true"
-              classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
+              classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg line="${maybeDebug}"/>  <!-- may be empty string -->
             <arg value="-g"/>
             <arg value="-encoding"/>
@@ -1387,7 +1372,7 @@ So, use our own archived version.
         <javac failonerror="true"
                 includeantruntime="false"
                 debug="true"
-                classpath="${checker.lib}:${javaparser.core.lib}:${junit.lib}:${hamcrest.lib}"
+                classpath="${checker.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}"
                 srcdir="${framework.loc}/${src}:${dataflow.loc}/${src}:${javacutil.loc}/${src}:${src}"
                 includes="**/*.java"
                 excludes="**/javacutil/dist/**"
@@ -1399,6 +1384,13 @@ So, use our own archived version.
             </compilerclasspath>
             <compilerarg value="-Xmaxwarns"/>
             <compilerarg value="1000"/>
+	    <!-- Many compiler classes are interned. -->
+	    <compilerarg value="-Xep:ReferenceEquality:OFF"/>
+	    <!-- These might be worth fixing. -->
+	    <compilerarg value="-Xep:DefaultCharset:OFF"/>
+	    <!-- Disable until https://github.com/google/error-prone/issues/725 is fixed. -->
+	    <compilerarg value="-Xep:NamedParameters:OFF"/>
+	    <compilerarg value="-Werror"/>
         </javac>
     </target>
 

@@ -1,9 +1,5 @@
 package org.checkerframework.checker.lock;
 
-/*>>>
-import org.checkerframework.checker.interning.qual.*;
-*/
-
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
