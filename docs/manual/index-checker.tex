@@ -479,7 +479,7 @@ the property \code{i>=-1 \&\& i<receiver.length()} does not hold.
 the property \code{i>=0 \&\& i<=receiver.length()} does not hold.
 \item
 \<i> is not \<@LTLengthOf(value="receiver", offset="substring.length()-1")>,
-because for \code{receiver="",substring="abc",i=-1},
+because for \code{receiver="", substring="abc", i=-1},
 the property \code{i+substring.length()-1<receiver.length()} does not hold.
 \end{itemize}
 The last annotation in the list above, \<@LTLengthOf(value="receiver", offset="substring.length()-1")>,
@@ -487,7 +487,7 @@ is the correct and precise upper bound for all values of \<i> except -1.
 The offset expresses the fact that we can add \<substring.length()> to
 this index and still get a valid index for \<receiver>.
 That is useful for type-checking code, where we add the length of the substring
-to the index to get the rest of the string after the occurence we found.
+to the index to get the rest of the string after the occurrence we found.
 However, the upper bound applies only after the index is explicitly checked not to be -1:
 
 \begin{Verbatim}
@@ -514,9 +514,11 @@ is necessary.
 
 This new annotation is similar to \<@LTLengthOf\allowbreak(value="receiver", offset="substring.length()-1")>,
 but explicitly allows the index to be -1 even if the upper bound would not allow it.
-The Upper Bound Checker can then infer
-the corresponding \<@LTLengthOf> annotation for expressions that
-are known to be non-negative.
+The Upper Bound Checker can infer
+the corresponding \<@LTLengthOf> annotation for expressions that have a
+\<@IndexOfIndexFor>
+%\<@IndexOfSubstring>
+annotation and at the same time are known to be non-negative (according to the Lower Bound Checker).
 
 % The \<@IndexOfIndexFor(value="this", offset="\#1.length()-1")> annotation on the return value of
 % \<String.indexOf> allows writing code such this without warnings from the Upper Bound Checker.
@@ -552,7 +554,7 @@ annotation is implemented in a separate IndexOf Checker which runs together with
   An expression with this type represents an integer that could have been produced by calling
   \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}:
   the annotated integer is either -1, or for each sequence \<receiver> and offset \<offset>
-  specified in the annotation, it is less than \<receiver.length-offset>.
+  specified in the annotation, it is less than or equal to \<receiver.length-offset>.
 %\item[\refqualclasswithparams{checker/index/qual}{IndexOfSubstring}{String[] value, String[] in}]
 %  An expression with this type represents an integer that could have been produced by calling
 %  \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}:
