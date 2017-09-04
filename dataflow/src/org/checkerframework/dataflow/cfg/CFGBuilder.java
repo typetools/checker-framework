@@ -61,6 +61,7 @@ import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
@@ -72,6 +73,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -100,7 +102,9 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.BlockImpl;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlockImpl;
+import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlockImpl;
+import org.checkerframework.dataflow.cfg.block.RegularBlock;
 import org.checkerframework.dataflow.cfg.block.RegularBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock.SpecialBlockType;
@@ -876,7 +880,62 @@ public class CFGBuilder {
                 }
             }
 
+            // collect all reachable trees
+            final Set<Tree> allReeachableTrees = new HashSet<>();
+            for (Block b : cfg.getAllBlocks()) {
+                if (b instanceof RegularBlock) {
+                    for (Node n : ((RegularBlock) b).getContents()) {
+                        allReeachableTrees.add(n.getTree());
+                    }
+                } else if (b instanceof ExceptionBlock) {
+                    allReeachableTrees.add(((ExceptionBlock) b).getNode().getTree());
+                }
+            }
+
+            // remove a generated tree if any child tree of it is unreachable because such tree is
+            // not analyzed by dataflow framework and cause of false errors.
+            ContainsAnyScanner s = new ContainsAnyScanner(allReeachableTrees);
+            for (List<Tree> generatedTrees : cfg.generatedTreesLookupMap.values()) {
+                Iterator<Tree> generatedTreesIterator = generatedTrees.iterator();
+                while (generatedTreesIterator.hasNext()) {
+                    Tree root = generatedTreesIterator.next();
+                    s.reset();
+                    s.scan(root, null);
+                    if (!s.contains) {
+                        generatedTreesIterator.remove();
+                    }
+                }
+            }
+
             return cfg;
+        }
+
+        /**
+         * {@code contains} will be true after calling {@link #scan(Tree, Void)} if {@code trees}
+         * contains {@code node} or any child tree of {@code node}
+         */
+        private static class ContainsAnyScanner extends TreeScanner<Void, Void> {
+            private boolean contains = false;
+            private final Set<Tree> trees;
+
+            private ContainsAnyScanner(Set<Tree> trees) {
+                this.trees = trees;
+            }
+
+            @Override
+            public Void scan(Tree node, Void aVoid) {
+                if (trees.contains(node)) {
+                    contains = true;
+                }
+                if (!contains) {
+                    super.scan(node, aVoid);
+                }
+                return null;
+            }
+
+            private void reset() {
+                contains = false;
+            }
         }
 
         /**
@@ -1267,7 +1326,8 @@ public class CFGBuilder {
                     in.treeLookupMap,
                     in.convertedTreeLookupMap,
                     in.unaryAssignNodeLookupMap,
-                    in.returnNodes);
+                    in.returnNodes,
+                    in.generatedTreesLookupMap);
         }
     }
 
@@ -1289,6 +1349,7 @@ public class CFGBuilder {
         private final ArrayList<ExtendedNode> nodeList;
         private final Set<Integer> leaders;
         private final List<ReturnNode> returnNodes;
+        private final IdentityHashMap<Tree, List<Tree>> generatedTreesLookupMap;
 
         public PhaseOneResult(
                 UnderlyingAST underlyingAST,
@@ -1298,7 +1359,8 @@ public class CFGBuilder {
                 ArrayList<ExtendedNode> nodeList,
                 Map<Label, Integer> bindings,
                 Set<Integer> leaders,
-                List<ReturnNode> returnNodes) {
+                List<ReturnNode> returnNodes,
+                IdentityHashMap<Tree, List<Tree>> generatedTreesLookupMap) {
             this.underlyingAST = underlyingAST;
             this.treeLookupMap = treeLookupMap;
             this.convertedTreeLookupMap = convertedTreeLookupMap;
@@ -1307,6 +1369,7 @@ public class CFGBuilder {
             this.bindings = bindings;
             this.leaders = leaders;
             this.returnNodes = returnNodes;
+            this.generatedTreesLookupMap = generatedTreesLookupMap;
         }
 
         @Override
@@ -1430,6 +1493,9 @@ public class CFGBuilder {
          */
         private List<ReturnNode> returnNodes;
 
+        /** Map from AST {@link Tree}s to generated {@link Tree}s. */
+        protected IdentityHashMap<Tree, List<Tree>> generatedTreesLookupMap;
+
         /** Nested scopes of try-catch blocks in force at the current program point. */
         private TryStack tryStack;
 
@@ -1471,6 +1537,7 @@ public class CFGBuilder {
             breakLabels = new HashMap<>();
             continueLabels = new HashMap<>();
             returnNodes = new ArrayList<>();
+            generatedTreesLookupMap = new IdentityHashMap<>();
 
             // traverse AST of the method body
             scan(bodyPath, null);
@@ -1491,7 +1558,8 @@ public class CFGBuilder {
                     nodeList,
                     bindings,
                     leaders,
-                    returnNodes);
+                    returnNodes,
+                    generatedTreesLookupMap);
         }
 
         public PhaseOneResult process(
@@ -1580,6 +1648,21 @@ public class CFGBuilder {
          */
         protected void addToUnaryAssignLookupMap(UnaryTree tree, AssignmentNode unaryAssignNode) {
             unaryAssignNodeLookupMap.put(tree, unaryAssignNode);
+        }
+
+        /**
+         * Add a tree in the generated-trees lookup map.
+         *
+         * @param tree the tree used as a key in the map
+         * @param generatedTree the tree to add to the lookup map
+         */
+        protected void addToGeneratedTreesLookupMap(Tree tree, Tree generatedTree) {
+            assert tree != null;
+            assert generatedTree != null;
+            if (!generatedTreesLookupMap.containsKey(tree)) {
+                generatedTreesLookupMap.put(tree, new ArrayList<Tree>());
+            }
+            generatedTreesLookupMap.get(tree).add(generatedTree);
         }
 
         /**
@@ -4142,9 +4225,11 @@ public class CFGBuilder {
             }
 
             Label finallyLabel = null;
+            Label exceptionalFinallyLabel = null;
             if (finallyBlock != null) {
                 finallyLabel = new Label();
-                tryStack.pushFrame(new TryFinallyFrame(finallyLabel));
+                exceptionalFinallyLabel = new Label();
+                tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
             }
 
             Label doneLabel = new Label();
@@ -4167,18 +4252,66 @@ public class CFGBuilder {
 
             if (finallyLabel != null) {
                 tryStack.popFrame();
-                addLabelForNextNode(finallyLabel);
-                scan(finallyBlock, p);
 
-                TypeMirror throwableType = elements.getTypeElement("java.lang.Throwable").asType();
-                extendWithNodeWithException(
-                        new MarkerNode(tree, "end of finally block", env.getTypeUtils()),
-                        throwableType);
+                if (hasExceptionalPath(exceptionalFinallyLabel)) {
+                    // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
+                    // and scan copied 'finallyBlock' for 'finallyLabel'(a successful path). If there
+                    // is no successful path, it will be removed in later phase.
+                    addLabelForNextNode(exceptionalFinallyLabel);
+                    scan(finallyBlock, p);
+
+                    TypeMirror throwableType =
+                            elements.getTypeElement("java.lang.Throwable").asType();
+                    NodeWithExceptionsHolder throwing =
+                            extendWithNodeWithException(
+                                    new MarkerNode(
+                                            tree, "end of finally block", env.getTypeUtils()),
+                                    throwableType);
+                    throwing.setTerminatesExecution(true);
+
+                    addLabelForNextNode(finallyLabel);
+                    BlockTree successfulFinallyBlock = treeBuilder.copy(finallyBlock);
+                    addToGeneratedTreesLookupMap(finallyBlock, successfulFinallyBlock);
+                    scan(successfulFinallyBlock, p);
+                    extendWithNode(
+                            new MarkerNode(tree, "end of finally block", env.getTypeUtils()));
+                    extendWithExtendedNode(new UnconditionalJump(doneLabel));
+                } else {
+                    // Scan 'finallyBlock' for only 'finallyLabel'(a successful path) because there
+                    // is no path to 'exceptionalFinallyLabel'.
+                    addLabelForNextNode(finallyLabel);
+                    scan(finallyBlock, p);
+
+                    extendWithNode(
+                            new MarkerNode(tree, "end of finally block", env.getTypeUtils()));
+                    extendWithExtendedNode(new UnconditionalJump(doneLabel));
+                }
             }
 
             addLabelForNextNode(doneLabel);
 
             return null;
+        }
+
+        /**
+         * Returns whether an exceptional node for {@code target} exists in {@link #nodeList} or
+         * not.
+         *
+         * @param target label for exception
+         * @return true when an exceptional node for {@code target} exists in {@link #nodeList}
+         */
+        private boolean hasExceptionalPath(Label target) {
+            for (ExtendedNode node : nodeList) {
+                if (node instanceof NodeWithExceptionsHolder) {
+                    NodeWithExceptionsHolder exceptionalNode = (NodeWithExceptionsHolder) node;
+                    for (Set<Label> labels : exceptionalNode.getExceptions().values()) {
+                        if (labels.contains(target)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         @Override

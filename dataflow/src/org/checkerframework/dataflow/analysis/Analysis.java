@@ -746,8 +746,14 @@ public class Analysis<
         IdentityHashMap<Tree, Node> treeLookup = cfg.getTreeLookup();
         IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup =
                 cfg.getUnaryAssignNodeLookup();
+        IdentityHashMap<Tree, List<Tree>> generatedTreesLookup = cfg.getGeneratedTreesLookup();
         return new AnalysisResult<>(
-                nodeValues, inputs, treeLookup, unaryAssignNodeLookup, finalLocalValues);
+                nodeValues,
+                inputs,
+                treeLookup,
+                unaryAssignNodeLookup,
+                finalLocalValues,
+                generatedTreesLookup);
     }
 
     /**

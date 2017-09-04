@@ -6,8 +6,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -41,6 +43,9 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     /** The stores before every method call. */
     protected final IdentityHashMap<Block, TransferInput<A, S>> stores;
 
+    /** Map from AST {@link Tree}s to generated {@link Tree}s. */
+    protected final IdentityHashMap<Tree, List<Tree>> generatedTreesLookup;
+
     /**
      * Caches of the analysis results for each input for the block of the node and each node.
      *
@@ -55,12 +60,14 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
             IdentityHashMap<Block, TransferInput<A, S>> stores,
             IdentityHashMap<Tree, Node> treeLookup,
             IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup,
-            HashMap<Element, A> finalLocalValues) {
+            HashMap<Element, A> finalLocalValues,
+            IdentityHashMap<Tree, List<Tree>> generatedTreesLookup) {
         this.nodeValues = new IdentityHashMap<>(nodeValues);
         this.treeLookup = new IdentityHashMap<>(treeLookup);
         this.unaryAssignNodeLookup = new IdentityHashMap<>(unaryAssignNodeLookup);
         this.stores = stores;
         this.finalLocalValues = finalLocalValues;
+        this.generatedTreesLookup = new IdentityHashMap<>(generatedTreesLookup);
         this.analysisCaches = new IdentityHashMap<>();
     }
 
@@ -71,6 +78,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         unaryAssignNodeLookup = new IdentityHashMap<>();
         stores = new IdentityHashMap<>();
         finalLocalValues = new HashMap<>();
+        generatedTreesLookup = new IdentityHashMap<>();
         analysisCaches = new IdentityHashMap<>();
     }
 
@@ -82,6 +90,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         this.unaryAssignNodeLookup = new IdentityHashMap<>();
         this.stores = new IdentityHashMap<>();
         this.finalLocalValues = new HashMap<>();
+        this.generatedTreesLookup = new IdentityHashMap<>();
         this.analysisCaches = analysisCaches;
     }
 
@@ -92,6 +101,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         unaryAssignNodeLookup.putAll(other.unaryAssignNodeLookup);
         stores.putAll(other.stores);
         finalLocalValues.putAll(other.finalLocalValues);
+        generatedTreesLookup.putAll(other.generatedTreesLookup);
     }
 
     /** @return the value of effectively final local variables */
@@ -125,6 +135,14 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     public AssignmentNode getAssignForUnaryTree(UnaryTree tree) {
         assert unaryAssignNodeLookup.containsKey(tree) : tree + " is not in unaryAssignNodeLookup";
         return unaryAssignNodeLookup.get(tree);
+    }
+
+    /** @return the generated {@link Tree}s for a given {@link Tree}. */
+    public List<Tree> getGeneratedTrees(Tree tree) {
+        if (generatedTreesLookup.containsKey(tree)) {
+            return generatedTreesLookup.get(tree);
+        }
+        return Collections.emptyList();
     }
 
     /** @return the store immediately before a given {@link Tree}. */
