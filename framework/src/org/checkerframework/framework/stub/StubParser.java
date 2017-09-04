@@ -626,9 +626,12 @@ public class StubParser {
             param.getType().setAnnotations(param.getAnnotations());
 
             if (param.isVarArgs()) {
-                // workaround
                 assert paramType.getKind() == TypeKind.ARRAY;
+                // The "type" of param is actually the component type of the vararg.
+                // For example, "Object..." the type would be "Object".
                 annotate(((AnnotatedArrayType) paramType).getComponentType(), param.getType());
+                // The "VarArgsAnnotations" are those just before "...".
+                annotate(paramType, param.getVarArgsAnnotations());
             } else {
                 annotate(paramType, param.getType());
             }
