@@ -221,15 +221,35 @@ public class WholeProgramInferenceScenesHelper {
         for (AClass aclass : scene.classes.values()) {
             for (AField field : aclass.fields.values()) {
                 removeIgnoredAnnosFromATypeElement(field.type, TypeUseLocation.FIELD);
+                if(field.type.innerTypes.size() != 0){
+                    for (ATypeElement innerType : field.type.innerTypes.values()) {
+                        removeIgnoredAnnosFromATypeElement(innerType, TypeUseLocation.FIELD);
+                    }
+                }
             }
             for (AMethod method : aclass.methods.values()) {
                 // Return type
                 removeIgnoredAnnosFromATypeElement(method.returnType, TypeUseLocation.RETURN);
+                if(method.returnType.innerTypes.size() != 0){
+                    for (ATypeElement innerType : method.returnType.innerTypes.values()) {
+                        removeIgnoredAnnosFromATypeElement(innerType, TypeUseLocation.RETURN);
+                    }
+                }
                 // Receiver type
                 removeIgnoredAnnosFromATypeElement(method.receiver.type, TypeUseLocation.RECEIVER);
+                if(method.receiver.type.innerTypes.size() != 0){
+                    for (ATypeElement innerType : method.receiver.type.innerTypes.values()) {
+                        removeIgnoredAnnosFromATypeElement(innerType, TypeUseLocation.RECEIVER);
+                    }
+                }
                 // Parameter type
                 for (AField param : method.parameters.values()) {
                     removeIgnoredAnnosFromATypeElement(param.type, TypeUseLocation.PARAMETER);
+                    if(param.type.innerTypes.size() != 0){
+                        for (ATypeElement innerType : param.type.innerTypes.values()) {
+                            removeIgnoredAnnosFromATypeElement(innerType, TypeUseLocation.PARAMETER);
+                        }
+                    }
                 }
             }
         }
