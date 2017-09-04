@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -858,8 +859,39 @@ public class StubParser {
         // StubParser parses all annotations in type annotation position as type annotations
         annotateDecl(declAnnos, elt, decl.getElementType().getAnnotations());
         AnnotatedTypeMirror fieldType = atypeFactory.fromElement(elt);
-        annotate(fieldType, decl.getElementType());
+
+        VariableDeclarator fieldVarDecl = null;
+        for (VariableDeclarator var : decl.getVariables()) {
+            if (var.getName().toString().equals(elt.getSimpleName().toString())) {
+                fieldVarDecl = var;
+            }
+        }
+        assert fieldVarDecl != null;
+
+        annotate(fieldType, fieldVarDecl.getType());
+
+        if (fieldType.getKind() == TypeKind.ARRAY) {
+            annotateInnerMostComponentType((AnnotatedArrayType) fieldType, decl.getAnnotations());
+        } else {
+            annotate(fieldType, decl.getAnnotations());
+        }
         putNew(atypes, elt, fieldType);
+    }
+
+    /**
+     * Adds {@code annotations} to the inner most component type of {@code type}.
+     *
+     * @param type array type
+     * @param annotations annotations to add
+     */
+    private void annotateInnerMostComponentType(
+            AnnotatedArrayType type, List<AnnotationExpr> annotations) {
+        AnnotatedTypeMirror componentType = type;
+        while (componentType.getKind() == TypeKind.ARRAY) {
+            componentType = ((AnnotatedArrayType) componentType).getComponentType();
+        }
+
+        annotate(componentType, annotations);
     }
 
     private void annotate(AnnotatedTypeMirror type, List<AnnotationExpr> annotations) {
@@ -940,7 +972,7 @@ public class StubParser {
                                 .endsWith("$" + typeElt.getSimpleName().toString()))
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
 
-        Map<Element, BodyDeclaration<?>> result = new HashMap<>();
+        Map<Element, BodyDeclaration<?>> result = new LinkedHashMap<>();
         for (BodyDeclaration<?> member : typeDecl.getMembers()) {
             putNewElement(typeElt, result, member, typeDecl.getNameAsString());
         }
