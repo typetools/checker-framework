@@ -496,9 +496,10 @@ public class BoundsInitializer {
         /**
          * Store the wildcards created as type arguments to raw types.
          *
-         * <p>class Foo<T extends Foo> {} The upper bound of the wildcard in Foo<?> is Foo. The type
-         * argument of Foo is initialized to ? extends Foo. The type argument of Foo in ? extends
-         * Foo needs to be initialized to the same type argument as the first Foo so that
+         * <p>{@code class Foo<T extends Foo> {}} The upper bound of the wildcard in {@code Foo<?>}
+         * is {@code Foo}. The type argument of {@code Foo} is initialized to {@code ? extends Foo}.
+         * The type argument of {@code Foo} in {@code ? extends Foo} needs to be initialized to the
+         * same type argument as the first {@code Foo} so that
          * BoundsInitializer.InitializerVisitor#replaceOrVisit will return the cached
          * AnnotatedWildcardType.
          */
