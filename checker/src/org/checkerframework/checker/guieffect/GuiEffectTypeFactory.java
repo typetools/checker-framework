@@ -302,7 +302,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotatedTypeMirror getInferedTypeForLambdaExpression(LambdaExpressionTree lambdaTree) {
         AnnotatedTypeMirror typeMirror = getAnnotatedType(lambdaTree);
         if (uiLambdas.contains(lambdaTree) && !typeMirror.hasAnnotation(UI.class)) {
-            typeMirror.addAnnotation(UI.class);
+            typeMirror.replaceAnnotation(AnnotationUtils.fromClass(elements, UI.class));
         }
         return typeMirror;
     }
@@ -313,7 +313,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         if (tree.getKind() == Tree.Kind.LAMBDA_EXPRESSION
                 && uiLambdas.contains((LambdaExpressionTree) tree)
                 && !typeMirror.hasAnnotation(UI.class)) {
-            typeMirror.addAnnotation(UI.class);
+            typeMirror.replaceAnnotation(AnnotationUtils.fromClass(elements, UI.class));
         }
         return typeMirror;
     }

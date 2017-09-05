@@ -118,7 +118,7 @@ public class Java8Lambdas {
         //:: error: (call.invalid.ui)
         uiPolymorphicLambdaRunner.doEither(e -> e.dangerous());
         PolymorphicFunctionalInterface<UIElement> func1 = e -> e.repaint();
-        // No error, why? //:: error: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         PolymorphicFunctionalInterface<UIElement> func2 = e -> e.dangerous(); // Incompatible types!
         PolymorphicFunctionalInterface<UIElement> func2p =
                 //:: error: (assignment.type.incompatible)
@@ -158,7 +158,7 @@ public class Java8Lambdas {
 
     // This should be an error without an @UI annotation on the return type. No?
     public PolymorphicFunctionalInterface<UIElement> returnLambdasTest2() {
-        // No error, why? :: error: (return.type.incompatible)
+        //:: error: (return.type.incompatible)
         return e -> {
             e.dangerous();
         };
