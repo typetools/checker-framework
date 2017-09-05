@@ -1,4 +1,4 @@
-class Foobar {
+class InnerTypeTest2 {
     public static int[] min_max(int[] a) {
         if (a.length == 0) {
             return null;
