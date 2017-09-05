@@ -20,6 +20,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @DefaultQualifierInHierarchy
 @ImplicitFor(literals = LiteralKind.NULL)
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface AlwaysSafe {}

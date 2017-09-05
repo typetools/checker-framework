@@ -14,6 +14,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 @SubtypeOf({})
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface UI {}
