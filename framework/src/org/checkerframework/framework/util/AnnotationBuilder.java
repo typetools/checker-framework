@@ -97,54 +97,65 @@ public class AnnotationBuilder {
     public AnnotationMirror build() {
         assertNotBuilt();
         wasBuilt = true;
-        return new AnnotationMirror() {
+        return new CheckerFrameworkAnnotationMirror(annotationType, elementValues);
+    }
 
-            private String toStringVal;
+    /** Implementation of AnnotationMirror used by the Checker Framework. */
+    private static class CheckerFrameworkAnnotationMirror implements AnnotationMirror {
 
-            @Override
-            public DeclaredType getAnnotationType() {
-                return annotationType;
-            }
+        private String toStringVal;
+        private final DeclaredType annotationType;
+        private final Map<ExecutableElement, AnnotationValue> elementValues;
 
-            @Override
-            public Map<? extends ExecutableElement, ? extends AnnotationValue> getElementValues() {
-                return Collections.unmodifiableMap(elementValues);
-            }
+        CheckerFrameworkAnnotationMirror(
+                DeclaredType at, Map<ExecutableElement, AnnotationValue> ev) {
+            this.annotationType = at;
+            this.elementValues = ev;
+        }
 
-            @SideEffectFree
-            @Override
-            public String toString() {
-                if (toStringVal == null) {
-                    StringBuilder buf = new StringBuilder();
-                    buf.append("@");
-                    buf.append(annotationType);
-                    int len = elementValues.size();
-                    if (len > 0) {
-                        buf.append('(');
-                        boolean first = true;
-                        for (Map.Entry<ExecutableElement, AnnotationValue> pair :
-                                elementValues.entrySet()) {
-                            if (!first) {
-                                buf.append(", ");
-                            }
-                            first = false;
+        @Override
+        public DeclaredType getAnnotationType() {
+            return annotationType;
+        }
 
-                            String name = pair.getKey().getSimpleName().toString();
-                            if (len > 1 || !name.equals("value")) {
-                                buf.append(name);
-                                buf.append('=');
-                            }
-                            buf.append(pair.getValue());
+        @Override
+        public Map<? extends ExecutableElement, ? extends AnnotationValue> getElementValues() {
+            return Collections.unmodifiableMap(elementValues);
+        }
+
+        @SideEffectFree
+        @Override
+        public String toString() {
+            if (toStringVal == null) {
+                StringBuilder buf = new StringBuilder();
+                buf.append("@");
+                buf.append(annotationType);
+                int len = elementValues.size();
+                if (len > 0) {
+                    buf.append('(');
+                    boolean first = true;
+                    for (Map.Entry<ExecutableElement, AnnotationValue> pair :
+                            elementValues.entrySet()) {
+                        if (!first) {
+                            buf.append(", ");
                         }
-                        buf.append(')');
-                    }
-                    toStringVal = buf.toString();
-                }
-                return toStringVal;
+                        first = false;
 
-                // return "@" + annotationType + "(" + elementValues + ")";
+                        String name = pair.getKey().getSimpleName().toString();
+                        if (len > 1 || !name.equals("value")) {
+                            buf.append(name);
+                            buf.append('=');
+                        }
+                        buf.append(pair.getValue());
+                    }
+                    buf.append(')');
+                }
+                toStringVal = buf.toString();
             }
-        };
+            return toStringVal;
+
+            // return "@" + annotationType + "(" + elementValues + ")";
+        }
     }
 
     public AnnotationBuilder setValue(CharSequence elementName, AnnotationMirror value) {
