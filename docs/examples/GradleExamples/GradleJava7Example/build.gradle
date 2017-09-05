@@ -21,7 +21,7 @@ configurations {
 }
 
 dependencies {
-    ext.checkerFrameworkVersion = '2.1.14'
+    ext.checkerFrameworkVersion = '2.2.0'
     ext.jdkVersion = 'jdk8'
     checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
     checkerFrameworkJavac "org.checkerframework:compiler:${checkerFrameworkVersion}"
