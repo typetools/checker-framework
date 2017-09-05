@@ -123,6 +123,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      */
     private List<BaseTypeChecker> immediateSubcheckers;
 
+    /** Supported options for this checker */
+    private Set<String> supportedOptions;
+
     /**
      * Returns the set of subchecker classes on which this checker depends. Returns an empty set if
      * this checker does not depend on any others.
@@ -624,17 +627,21 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
     @Override
     public Set<String> getSupportedOptions() {
-        Set<String> options = new HashSet<String>();
-        options.addAll(super.getSupportedOptions());
+        if (supportedOptions == null) {
+            Set<String> options = new HashSet<String>();
+            options.addAll(super.getSupportedOptions());
 
-        for (BaseTypeChecker checker : getSubcheckers()) {
-            options.addAll(checker.getSupportedOptions());
+            for (BaseTypeChecker checker : getSubcheckers()) {
+                options.addAll(checker.getSupportedOptions());
+            }
+
+            options.addAll(
+                    expandCFOptions(
+                            Arrays.asList(this.getClass()), options.toArray(new String[0])));
+
+            supportedOptions = Collections.<String>unmodifiableSet(options);
         }
-
-        options.addAll(
-                expandCFOptions(Arrays.asList(this.getClass()), options.toArray(new String[0])));
-
-        return Collections.<String>unmodifiableSet(options);
+        return supportedOptions;
     }
 
     @Override

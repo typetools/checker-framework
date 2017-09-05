@@ -320,8 +320,9 @@ public final class TypesUtils {
         if (t.hasTag(TypeTag.WILDCARD)) {
             Context context = ((JavacProcessingEnvironment) env).getContext();
             Type.WildcardType w = (Type.WildcardType) TypeAnnotationUtils.unannotatedType(t);
-            if (w.isSuperBound()) {
+            if (w.isSuperBound()) { // returns true if w is unbound
                 Symtab syms = Symtab.instance(context);
+                // w.bound is null if the wildcard is from bytecode.
                 return w.bound == null ? syms.objectType : w.bound.bound;
             } else {
                 return wildUpperBound(env, w.type);
