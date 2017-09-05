@@ -18,6 +18,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.guieffect.qual.AlwaysSafe;
 import org.checkerframework.checker.guieffect.qual.PolyUI;
 import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
@@ -210,7 +211,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     // For assignments and local variable initialization:
     // Check for @UI annotations on the lhs, use them to infer @UI types on lambda expressions in the rhs
     private void lambdaAssignmentCheck(
-            AnnotatedTypeMirror varType, LambdaExpressionTree lambdaExp, String errorKey) {
+            AnnotatedTypeMirror varType,
+            LambdaExpressionTree lambdaExp,
+            @CompilerMessageKey String errorKey) {
         AnnotatedTypeMirror lambdaType = atypeFactory.getAnnotatedType(lambdaExp);
         assert lambdaType != null : "null type for expression: " + lambdaExp;
         commonAssignmentCheck(varType, lambdaType, lambdaExp, errorKey);
