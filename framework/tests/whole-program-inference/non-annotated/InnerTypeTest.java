@@ -2,6 +2,7 @@ class Foo {
     public static String toStringQuoted(Object[] a) {
         return toString(a, true);
     }
+
     public static String toString(Object[] a, boolean quoted) {
         if (a == null) {
             return "null";
@@ -9,6 +10,7 @@ class Foo {
         StringBuffer sb = new StringBuffer();
         return sb.toString();
     }
+
     public void bar() {
         assert Foo.toStringQuoted((Object[]) null).equals("null");
     }
