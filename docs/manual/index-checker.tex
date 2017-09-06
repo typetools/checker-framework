@@ -463,20 +463,20 @@ The methods \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String
 and \sunjavadoc{java/lang/String.html\#lastIndexOf-java.lang.String-}{String.lastIndexOf} return an index
 of a given substring within a given string, or -1 if no such substring exists.
 The index \<i> returned from \<receiver.indexOf(substring)> satisfies this property:
-\code{i==-1 || i>=0 \&\& i<=receiver.length() - substring.length()}.
+\code{i == -1 || i >= 0 \&\& i <= receiver.length() - substring.length()}.
 
 This tells us what Index Checker annotations can be applied to \<i>:
 \begin{itemize}
 \item
-\<i> is \<@GTENegativeOne>, because \code{i>=-1}.
+\<i> is \<@GTENegativeOne>, because \code{i >= -1}.
 \item
-\<i> is \<@LTEqLengthOf("receiver")>, because \code{i<=receiver.length()}.
+\<i> is \<@LTEqLengthOf("receiver")>, because \code{i <= receiver.length()}.
 \item
 \<i> is not \<@IndexOrLow("receiver")>, because for \code{receiver="", substring="", i=0},
-the property \code{i>=-1 \&\& i<receiver.length()} does not hold.
+the property \code{i >= -1 \&\& i<receiver.length()} does not hold.
 \item
 \<i> is not \<@IndexOrHigh("receiver")>, because for \code{receiver="", substring="b", i=-1},
-the property \code{i>=0 \&\& i<=receiver.length()} does not hold.
+the property \code{i >= 0 \&\& i <= receiver.length()} does not hold.
 \item
 \<i> is not \<@LTLengthOf(value="receiver", offset="substring.length()-1")>,
 because for \code{receiver="", substring="abc", i=-1},
@@ -504,7 +504,7 @@ However, the upper bound applies only after the index is explicitly checked not 
 
 The property of the result of \<indexOf> cannot be expressed by any combination of lower- and upper-bound annotations.
 It's because the upper-bound annotations apply independently of the lower-bound annotations,
-but in this case, the upper bound \code{i<=receiver.length() - substring.length()} holds only if \code{i>=0}.
+but in this case, the upper bound \code{i <= receiver.length() - substring.length()} holds only if \code{i >= 0}.
 Therefore, to express this property and make the example type-check without false positives,
 a new annotation such as
 \<@IndexOfIndexFor(value="receiver", offset="substring.length()-1")>
@@ -548,7 +548,8 @@ annotation and at the same time are known to be non-negative (according to the L
 The
 \<@IndexOfIndexFor>
 %\<@IndexOfSubstring>
-annotation is implemented in a separate IndexOf Checker which runs together with the Index Checker and has its own type hierarchy (Figure~\ref{fig-index-indexof}) with three type qualifiers:
+annotation is implemented in a separate IndexOf Checker which runs together with the Index Checker
+and has its own type hierarchy (Figure~\ref{fig-index-indexof}) with three type qualifiers:
 \begin{description}
 \item[\refqualclasswithparams{checker/index/qual}{IndexOfIndexFor}{String[] value, String[] offset}]
   An expression with this type represents an integer that could have been produced by calling
