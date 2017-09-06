@@ -480,7 +480,7 @@ the property \code{i >= 0 \&\& i <= receiver.length()} does not hold.
 \item
 \<i> is not \<@LTLengthOf(value="receiver", offset="substring.length()-1")>,
 because for \code{receiver="", substring="abc", i=-1},
-the property \code{i+substring.length()-1<receiver.length()} does not hold.
+the property \code{i + substring.length() - 1 < receiver.length()} does not hold.
 \end{itemize}
 The last annotation in the list above, \<@LTLengthOf(value="receiver", offset="substring.length()-1")>,
 is the correct and precise upper bound for all values of \<i> except -1.
@@ -507,7 +507,7 @@ because the upper-bound annotations apply independently of the lower-bound annot
 but in this case, the upper bound \code{i <= receiver.length() - substring.length()} holds only if \code{i >= 0}.
 Therefore, to express this property and make the example type-check without false positives,
 a new annotation such as
-\<@IndexOfIndexFor(value="receiver", offset="substring.length()-1")>
+\<@IndexOfIndexFor\allowbreak(value="receiver", offset="substring.length()-1")>
 %Alternaive:
 %\<@IndexOfSubstring\allowbreak(value="substring", in="receiver")>
 is necessary.
@@ -522,7 +522,7 @@ annotation and at the same time are known to be non-negative (according to the L
 
 The return type of methods \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}
 and \sunjavadoc{java/lang/String.html\#lastIndexOf-java.lang.String-}{String.lastIndexOf} has the annotation
-\<@IndexOfIndexFor(value="this", offset="\#1.length()-1")>.
+\<@IndexOfIndexFor\allowbreak(value="this", offset="\#1.length()-1")>.
 This allows writing code such as the following with no warnings from the Index Checker:
 
 \begin{Verbatim}
@@ -564,12 +564,12 @@ and has its own type hierarchy (Figure~\ref{fig-index-indexof}) with three type 
   An expression with this type represents an integer that could have been produced by calling
   \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}:
   the annotated integer is either -1, or for each sequence \<receiver> and offset \<offset>
-  specified in the annotation, it is less than or equal to \<receiver.length-offset>.
+  specified in the annotation, it is less than or equal to \<receiver.length - offset>.
 %\item[\refqualclasswithparams{checker/index/qual}{IndexOfSubstring}{String[] value, String[] in}]
 %  An expression with this type represents an integer that could have been produced by calling
 %  \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}:
 %  the annotated integer is either -1, or it is non-negative and for each sequence \<l> and substring \<s>
-%  specified in the annotation, it is less than or equal to \<l.length-s.length>.
+%  specified in the annotation, it is less than or equal to \<l.length - s.length>.
 \item[\refqualclass{checker/index/qual}{IndexOfBottom}]
   This is the bottom type, and programmers should rarely need to write it.
 \item[\refqualclass{checker/index/qual}{IndexOfUnknown}]
