@@ -725,6 +725,11 @@
     ith (after you have tested it just using your development environment) do one last test on a clean version of
     eclipse with no plugin installed.
 
+    Also, the plugins are now downloaded to $HOME/.p2, so in addition to installing
+    a new copy of Eclipse, you should delete the .p2 directory.  (If you use
+    Eclipse for development, then you will want to set up a separate bundle
+    pool for the Eclipse used for testing.)
+
     <h4>Special File Editors</h4>
     For plugin related files, there are often custom file editors.  Sometimes, the UIs for these plugins don't
     actually edit the underlying file.  For instance, in Eclipse 3.7 we ran into a problem where, when we checked
