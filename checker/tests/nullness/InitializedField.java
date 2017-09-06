@@ -1,5 +1,3 @@
-// @skip-test Failing test case, commented out to avoid breaking the build
-
 import java.util.Stack;
 import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
@@ -13,8 +11,8 @@ public final class InitializedField {
         iPeek();
     }
 
-    /*@RequiresNonNull("stack")*/
-    public Object iPeek(/*>>>@UnknownInitialization @Raw InitializedField this*/) {
+    @RequiresNonNull("stack")
+    public Object iPeek(@UnknownInitialization @Raw InitializedField this) {
         return stack.peek();
     }
 

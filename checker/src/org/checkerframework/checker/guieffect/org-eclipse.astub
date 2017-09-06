@@ -259,7 +259,7 @@ public abstract class ContentViewer extends Viewer {
     @SafeEffect public Object getInput();
 }
 public abstract class StructuredViewer extends ContentViewer implements IPostSelectionProvider {
-    /*@SafeEffect void refresh(); -- Why the hell did I ever mark this safe??? */
+    // @SafeEffect void refresh(); -- Why the hell did I ever mark this safe???
 }
 public class TreeViewer extends AbstractTreeViewer {
     @SafeEffect Tree getTree();

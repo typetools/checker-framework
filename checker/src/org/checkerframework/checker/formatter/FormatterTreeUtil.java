@@ -1,9 +1,5 @@
 package org.checkerframework.checker.formatter;
 
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-*/
-
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
@@ -24,6 +20,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.SimpleElementVisitor7;
 import javax.lang.model.util.SimpleTypeVisitor7;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
@@ -350,16 +347,14 @@ public class FormatterTreeUtil {
     }
 
     /** Reports an error. Takes a {@link Result} to report the location. */
-    public final <E> void failure(
-            Result<E> res, /*@CompilerMessageKey*/ String msg, Object... args) {
+    public final <E> void failure(Result<E> res, @CompilerMessageKey String msg, Object... args) {
         ResultImpl<E> impl = (ResultImpl<E>) res;
         checker.report(
                 org.checkerframework.framework.source.Result.failure(msg, args), impl.location);
     }
 
     /** Reports an warning. Takes a {@link Result} to report the location. */
-    public final <E> void warning(
-            Result<E> res, /*@CompilerMessageKey*/ String msg, Object... args) {
+    public final <E> void warning(Result<E> res, @CompilerMessageKey String msg, Object... args) {
         ResultImpl<E> impl = (ResultImpl<E>) res;
         checker.report(
                 org.checkerframework.framework.source.Result.warning(msg, args), impl.location);

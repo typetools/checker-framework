@@ -5,7 +5,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class Stats {
 
-    /*@Nullable*/ Map<Integer, String> inv_map = null;
+    @Nullable Map<Integer, String> inv_map = null;
 
     void dump() {
 

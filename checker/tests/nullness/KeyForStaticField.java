@@ -18,7 +18,7 @@ class KeyForStaticField {
     }
 
     /** Returns the value for the given key, which must be present in the map. */
-    public Integer getValue(/*@KeyFor("this.map")*/ String key) {
+    public Integer getValue(@KeyFor("this.map") String key) {
         assert map.containsKey(key) : "Map does not contain key " + key;
         return map.get(key);
     }

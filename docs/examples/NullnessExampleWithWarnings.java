@@ -24,9 +24,9 @@ public class NullnessExampleWithWarnings {
         bar = foo;
     }
 
-    public /*@NonNull*/ String exampleGenerics() {
+    public String exampleGenerics() {
 
-        List</*@NonNull*/ String> foo = new LinkedList</*@NonNull*/ String>();
+        List<@NonNull String> foo = new LinkedList<@NonNull String>();
         List<String> bar = foo;
 
         String quux = null;
