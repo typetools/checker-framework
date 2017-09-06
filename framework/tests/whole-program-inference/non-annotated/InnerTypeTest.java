@@ -12,6 +12,6 @@ class InnerTypeTest {
     }
 
     public void bar() {
-        assert Foo.toStringQuoted((Object[]) null).equals("null");
+        assert InnerTypeTest.toStringQuoted((Object[]) null).equals("null");
     }
 }
