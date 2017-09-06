@@ -147,7 +147,7 @@ Its command-line arguments are:
 \item Processor's name.
 \item Target program's classpath.  This argument is required; pass "" if it
   is empty.
-\item Extra processor arguments which will be passed to the checker, if any.
+\item Optional: Extra processor arguments which will be passed to the checker, if any.
   You may supply any number of such arguments, or none.  Each such argument
   must start with a hyphen.
 \item Optional: Paths to \<.jaif> files used as input in the inference
@@ -261,25 +261,32 @@ The tool's annotations are legal for the program as
 currently written but may not be as general as possible and may not
 accommodate future program changes.
 
+Here are some examples:
+
+\begin{itemize}
+\item
 Suppose that your program currently calls
 method \<m1> with non-null
 arguments.  The tool will infer that \<m1>'s parameter has
-\<@NonNull> type.  If you had intended the method to be able to
+\<@NonNull> type.  (If you had intended the method to be able to
 take \<null> as an argument and you later add such a call, the type-checker
 will issue a warning because the automatically-inserted \<@NonNull>
-annotation is inconsistent with the new call.
+annotation is inconsistent with the new call.)
 You can correct the inferred results manually, or you can
 add tests that pass \<null> to \<m1> then re-run inference.
 
-As another example, it is common for whole-program inference to infer
+\item
+It is common for whole-program inference to infer
 \<@Interned> and \<@Regex> annotations on String variables for which the
 analyzed code only uses a constant string.  You can remove these inferred
 annotations, or add test cases that do not use a constant string.
 
-On the other hand, if the inferred type is the bottom type, such as
+\item
+If the inferred type is the bottom type, such as
 \<@GuardedByBottom>, then perhaps your program only passes the \<null>
 argument.  You should also correct this manually or expand your test suite
 and re-run inference.
+\end{itemize}
 
 \end{itemize}
 

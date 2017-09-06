@@ -3195,11 +3195,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * inferred. The wildcard will be marked as an uninferred wildcard so that {@link
      * AnnotatedWildcardType#isUninferredTypeArgument()} returns true.
      *
-     * <p>This method should only be used by type argument inference or for type arguments to raw
-     * types:
+     * <p>This method should only be used by type argument inference.
      * org.checkerframework.framework.util.AnnotatedTypes.inferTypeArguments(ProcessingEnvironment,
      * AnnotatedTypeFactory, ExpressionTree, ExecutableElement)
-     * org.checkerframework.framework.type.AnnotatedTypeFactory.fromTypeTree(Tree)
      *
      * @param typeVar TypeVariable which could not be inferred
      * @return a wildcard that is marked as an uninferred type argument
@@ -3218,6 +3216,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         WildcardType wc = types.getWildcardType(boundType, null);
         AnnotatedWildcardType wctype =
                 (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this, false);
+        wctype.setTypeVariable(typeVar.getUnderlyingType());
         if (!intersectionType) {
             wctype.setExtendsBound(typeVar.getUpperBound().deepCopy());
         } else {
@@ -3279,10 +3278,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param wildcard AnnotatedWildcardType whose upper bound is used to widen
      * @return {@code annotatedTypeMirror} widen to the upper bound of {@code wildcard}
      */
-    // TODO: BoundsInitializer#initializeExtendsBound(AnnotatedWildcardType) and
-    // SupertypeFinder#fixWildcardBound have similar logic for handling unbounded wildcards.
-    // Merging those methods and this into AnnotatedWildcardType would improve the code greatly and
-    // still be easier than implementing all of capture conversion
     public AnnotatedTypeMirror widenToUpperBound(
             final AnnotatedTypeMirror annotatedTypeMirror, final AnnotatedWildcardType wildcard) {
         final TypeMirror toModifyTypeMirror = annotatedTypeMirror.getUnderlyingType();
