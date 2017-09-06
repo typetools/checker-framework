@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------
 
-Version 2.2.0, ?? 2017
+Version 2.2.0, September 5, 2017
 
 A Java 8 JVM is required to run the Checker Framework.
 You can still typecheck and compile Java 7 (or earlier) code.
@@ -11,6 +11,10 @@ Most notably, receiver annotations are written using standard Java 8 syntax
 (a special first formal paramter named "this") and inner classes are written
 using standard Java syntax (rather than at the top level using a name that
 contains "$". You need to update your stub files to conform to the new syntax.
+
+Closed issues:
+220, 293, 297, 341, 375, 407, 536, 571, 798, 867, 1180, 1214, 1218, 1371, 1411,
+1427, 1428, 1435, 1438, 1450, 1456, 1460, 1466, 1473, 1474.
 
 ---------------------------------------------------------------------------
 

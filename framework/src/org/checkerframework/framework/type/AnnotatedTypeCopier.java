@@ -349,6 +349,8 @@ public class AnnotatedTypeCopier
             copy.setSuperBound(visit(original.getSuperBoundField(), originalToCopy).asUse());
         }
 
+        copy.setTypeVariable(original.getTypeVariable());
+
         return copy;
     }
 
