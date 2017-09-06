@@ -491,15 +491,15 @@ to the index to get the rest of the string after the occurrence we found.
 However, the upper bound applies only after the index is explicitly checked not to be -1:
 
 \begin{Verbatim}
- int i = receiver.indexOf(substring);
- // i is @GTENegativeOne and @LTEqLengthOf("receiver")
- // i is not @LTLengthOf(value="receiver", offset="substring.length()-1")
- if (i != -1) {
-  // i is @NonNegative and @LTLengthOf(value="receiver", offset="substring.length()-1")
-  int j = i + substring.length();
-  // j is @IndexOrHigh("receiver")
-  return receiver.substring(j); // this call is safe
- }
+  int i = receiver.indexOf(substring);
+  // i is @GTENegativeOne and @LTEqLengthOf("receiver")
+  // i is not @LTLengthOf(value="receiver", offset="substring.length()-1")
+  if (i != -1) {
+    // i is @NonNegative and @LTLengthOf(value="receiver", offset="substring.length()-1")
+    int j = i + substring.length();
+    // j is @IndexOrHigh("receiver")
+    return receiver.substring(j); // this call is safe
+  }
 \end{Verbatim}
 
 The property of the result of \<indexOf> cannot be expressed by any combination of lower- and upper-bound annotations,
