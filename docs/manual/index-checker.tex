@@ -502,8 +502,8 @@ However, the upper bound applies only after the index is explicitly checked not 
  }
 \end{Verbatim}
 
-The property of the result of \<indexOf> cannot be expressed by any combination of lower- and upper-bound annotations.
-It's because the upper-bound annotations apply independently of the lower-bound annotations,
+The property of the result of \<indexOf> cannot be expressed by any combination of lower- and upper-bound annotations,
+because the upper-bound annotations apply independently of the lower-bound annotations,
 but in this case, the upper bound \code{i <= receiver.length() - substring.length()} holds only if \code{i >= 0}.
 Therefore, to express this property and make the example type-check without false positives,
 a new annotation such as
