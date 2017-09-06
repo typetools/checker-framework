@@ -486,7 +486,7 @@ The last annotation in the list above, \<@LTLengthOf(value="receiver", offset="s
 is the correct and precise upper bound for all values of \<i> except -1.
 The offset expresses the fact that we can add \<substring.length()> to
 this index and still get a valid index for \<receiver>.
-That is useful for type-checking code, where we add the length of the substring
+That is useful for type-checking code where we add the length of the substring
 to the index to get the rest of the string after the occurrence we found.
 However, the upper bound applies only after the index is explicitly checked not to be -1:
 
