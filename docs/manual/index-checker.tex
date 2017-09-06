@@ -520,17 +520,26 @@ the corresponding \<@LTLengthOf> annotation for expressions that have a
 %\<@IndexOfSubstring>
 annotation and at the same time are known to be non-negative (according to the Lower Bound Checker).
 
-% The \<@IndexOfIndexFor(value="this", offset="\#1.length()-1")> annotation on the return value of
-% \<String.indexOf> allows writing code such this without warnings from the Upper Bound Checker.
-% \begin{Verbatim}
-%   public static String remove(String l, String s) {
-%     int i = l.indexOf(s);
-%     if (i != -1) {
-%       return l.substring(i + s.length());
-%     }
-%     return l;
-%   }
-% \end{Verbatim}
+The return type of methods \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}
+and \sunjavadoc{java/lang/String.html\#lastIndexOf-java.lang.String-}{String.lastIndexOf} has the annotation
+\<@IndexOfIndexFor(value="this", offset="\#1.length()-1")>.
+This allows writing code such as the following with no warnings from the Index Checker:
+
+\begin{Verbatim}
+  public static String removeSubstring(String original, String removed) {
+    int i = original.indexOf(removed);
+    if (i != -1) {
+      return original.substring(0, i) + original.substring(i + removed.length());
+    }
+    return original;
+  }
+\end{Verbatim}
+
+The code removes the first occurrence of \<removed> from \<original>. After checking that \code{i != -1},
+the value of \<i> must be a valid index for \<original>. Because this index is the start of an occurrence of \<removed>,
+\code{i + removed.length()} is the index of the end of the occurrence.
+Without the \<@IndexOfIndexFor> annotation, the Upper Bound Checker would not be able to verify that
+\code{i + removed.length()} is a valid argument to \<substring>, which requires both arguments to be \<@IndexOrHigh("original")>.
 
 \begin{figure}
 \begin{center}
