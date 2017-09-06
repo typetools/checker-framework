@@ -2,7 +2,6 @@ package org.checkerframework.eclipse.actions;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
