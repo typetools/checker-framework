@@ -513,7 +513,7 @@ a new annotation such as
 is necessary.
 
 This new annotation is similar to \<@LTLengthOf\allowbreak(value = "receiver", offset = "substring.length()-1")>,
-but explicitly allows the index to be -1 even if the upper bound would not allow it.
+but explicitly allows the index to be -1 even if the upper bound would not allow it because of the offset.
 The Upper Bound Checker can infer
 the corresponding \<@LTLengthOf> annotation for expressions that have a
 \<@IndexOfIndexFor>
