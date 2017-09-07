@@ -463,9 +463,82 @@ The methods \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String
 and \sunjavadoc{java/lang/String.html\#lastIndexOf-java.lang.String-}{String.lastIndexOf} return an index
 of a given substring within a given string, or -1 if no such substring exists.
 The index \<i> returned from \<receiver.indexOf(substring)> satisfies this property:
-\code{i == -1 || i >= 0 \&\& i <= receiver.length() - substring.length()}.
+\begin{Verbatim}
+ i == -1 || ( i >= 0       && i <= receiver.length() - substring.length()                  )
+ i == -1 || ( @NonNegative && @LTLengthOf(value="receiver", offset="substring.length()-1") )
+\end{Verbatim}
 
-This tells us what Index Checker annotations can be applied to \<i>:
+% This new annotation is similar to \<@LTLengthOf\allowbreak(value = "receiver", offset = "substring.length()-1")>,
+% but explicitly allows the index to be -1 even if the upper bound would not allow it because of the offset.
+% The Upper Bound Checker can infer
+% the corresponding \<@LTLengthOf> annotation for expressions that have a
+% \<@IndexOfIndexFor>
+% annotation and at the same time are known to be non-negative (according to the Lower Bound Checker).
+
+The return type of methods \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}
+and \sunjavadoc{java/lang/String.html\#lastIndexOf-java.lang.String-}{String.lastIndexOf} has the annotation
+\refqualclasswithparams{checker/index/qual}{IndexOfIndexFor}{value="this", offset="\#1.length()-1")}.
+This allows writing code such as the following with no warnings from the Index Checker:
+
+\begin{Verbatim}
+  public static String removeSubstring(String original, String removed) {
+    int i = original.indexOf(removed);
+    if (i != -1) {
+      return original.substring(0, i) + original.substring(i + removed.length());
+    }
+    return original;
+  }
+\end{Verbatim}
+
+% The code removes the first occurrence of \<removed> from \<original>. After checking that \code{i != -1},
+% the value of \<i> must be a valid index for \<original>. Because this index is the start of an occurrence of \<removed>,
+% \code{i + removed.length()} is the index of the end of the occurrence.
+% Without the \<@IndexOfIndexFor> annotation, the Upper Bound Checker would not be able to verify that
+% \code{i + removed.length()} is a valid argument to \<substring>, which requires both arguments to be \<@IndexOrHigh("original")>.
+
+\begin{figure}
+\begin{center}
+  \hfill
+  \includeimage{indexof}{3.5cm}
+  \hfill
+\end{center}
+  \caption{The type hierarchy for the Index Checker's internal type system
+  that captures information about the results of calls to
+  \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf} and
+  \sunjavadoc{java/lang/String.html\#lastIndexOf-java.lang.String-}{String.lastIndexOf}.}
+  \label{fig-index-indexof}
+\end{figure}
+
+The
+\<@IndexOfIndexFor>
+%\<@IndexOfSubstring>
+annotation is implemented in a separate IndexOf Checker which runs together with the Index Checker
+and has its own type hierarchy (Figure~\ref{fig-index-indexof}) with three type qualifiers:
+\begin{description}
+\item[\refqualclasswithparams{checker/index/qual}{IndexOfIndexFor}{String[] value, String[] offset}]
+  An expression with this type represents an integer that could have been produced by calling
+  \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}:
+  the annotated integer is either -1, or it is non-negative and
+  for each corresponding sequence \<receiver> and offset \<offset>
+  specified in the annotation, the annotated integer
+  is less than or equal to \<receiver.length - offset>.
+\item[\refqualclass{checker/index/qual}{IndexOfBottom}]
+  This is the bottom type, and programmers should rarely need to write it.
+\item[\refqualclass{checker/index/qual}{IndexOfUnknown}]
+  This is the top type, and programmers should rarely need to write it.
+\end{description}
+
+\subsection{The need for the \<@IndexOfIndexFor> annotation\label{index-indexof-justification}}
+
+No other annotation supported by the Index Checker precisely represents the
+possible return values of methods
+\sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}
+and
+\sunjavadoc{java/lang/String.html\#lastIndexOf-java.lang.String-}{String.lastIndexOf}.
+The reason is the methods' special cases for empty strings and for failed matches.
+
+Consider the result \<i> of \<receiver.indexOf(substring)>:
+
 \begin{itemize}
 \item
 \<i> is \<@GTENegativeOne>, because \code{i >= -1}.
@@ -482,12 +555,14 @@ the property \code{i >= 0 \&\& i <= receiver.length()} does not hold.
 because for \code{receiver = "", substring = "abc", i = -1},
 the property \code{i + substring.length() - 1 < receiver.length()} does not hold.
 \end{itemize}
+
+\noindent
 The last annotation in the list above, \<@LTLengthOf(value = "receiver", offset = "substring.length()-1")>,
 is the correct and precise upper bound for all values of \<i> except -1.
 The offset expresses the fact that we can add \<substring.length()> to
 this index and still get a valid index for \<receiver>.
-That is useful for type-checking code where we add the length of the substring
-to the index to get the rest of the string after the occurrence we found.
+That is useful for type-checking code that adds the length of the substring
+to the found index, in order to obtain the rest of the string.
 However, the upper bound applies only after the index is explicitly checked not to be -1:
 
 \begin{Verbatim}
@@ -512,69 +587,7 @@ a new annotation such as
 %\<@IndexOfSubstring\allowbreak(value = "substring", in = "receiver")>
 is necessary.
 
-This new annotation is similar to \<@LTLengthOf\allowbreak(value = "receiver", offset = "substring.length()-1")>,
-but explicitly allows the index to be -1 even if the upper bound would not allow it because of the offset.
-The Upper Bound Checker can infer
-the corresponding \<@LTLengthOf> annotation for expressions that have a
-\<@IndexOfIndexFor>
-%\<@IndexOfSubstring>
-annotation and at the same time are known to be non-negative (according to the Lower Bound Checker).
 
-The return type of methods \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}
-and \sunjavadoc{java/lang/String.html\#lastIndexOf-java.lang.String-}{String.lastIndexOf} has the annotation
-\<@IndexOfIndexFor\allowbreak(value = "this", offset = "\#1.length()-1")>.
-This allows writing code such as the following with no warnings from the Index Checker:
-
-\begin{Verbatim}
-  public static String removeSubstring(String original, String removed) {
-    int i = original.indexOf(removed);
-    if (i != -1) {
-      return original.substring(0, i) + original.substring(i + removed.length());
-    }
-    return original;
-  }
-\end{Verbatim}
-
-The code removes the first occurrence of \<removed> from \<original>. After checking that \code{i != -1},
-the value of \<i> must be a valid index for \<original>. Because this index is the start of an occurrence of \<removed>,
-\code{i + removed.length()} is the index of the end of the occurrence.
-Without the \<@IndexOfIndexFor> annotation, the Upper Bound Checker would not be able to verify that
-\code{i + removed.length()} is a valid argument to \<substring>, which requires both arguments to be \<@IndexOrHigh("original")>.
-
-\begin{figure}
-\begin{center}
-  \hfill
-  \includeimage{indexof}{3.5cm}
-  \hfill
-\end{center}
-  \caption{The type hierarchy for the Index Checker's internal type system
-  that captures information about the results of calls to
-  \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf} and
-  \sunjavadoc{java/lang/String.html\#lastIndexOf-java.lang.String-}{String.lastIndexOf}.}
-  \label{fig-index-indexof}
-\end{figure}
-
-The
-\<@IndexOfIndexFor>
-%\<@IndexOfSubstring>
-annotation is implemented in a separate IndexOf Checker which runs together with the Index Checker
-and has its own type hierarchy (Figure~\ref{fig-index-indexof}) with three type qualifiers:
-\begin{description}
-\item[\refqualclasswithparams{checker/index/qual}{IndexOfIndexFor}{String[] value, String[] offset}]
-  An expression with this type represents an integer that could have been produced by calling
-  \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}:
-  the annotated integer is either -1, or for each sequence \<receiver> and offset \<offset>
-  specified in the annotation, it is less than or equal to \<receiver.length - offset>.
-%\item[\refqualclasswithparams{checker/index/qual}{IndexOfSubstring}{String[] value, String[] in}]
-%  An expression with this type represents an integer that could have been produced by calling
-%  \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}:
-%  the annotated integer is either -1, or it is non-negative and for each sequence \<l> and substring \<s>
-%  specified in the annotation, it is less than or equal to \<l.length - s.length>.
-\item[\refqualclass{checker/index/qual}{IndexOfBottom}]
-  This is the bottom type, and programmers should rarely need to write it.
-\item[\refqualclass{checker/index/qual}{IndexOfUnknown}]
-  This is the top type, and programmers should rarely need to write it.
-\end{description}
 
 %%  LocalWords:  NegativeArraySizeException pre myArray IndexFor someArray
 %%  LocalWords:  MyJavaFile LTLengthOf LTEqLengthOf GTENegativeOne GTE
