@@ -348,6 +348,13 @@ checker as an annotation processor directly.
   To obtain artifacts from Maven Central:
 
 \begin{alltt}
+  <properties>
+    ... existing <property> items ...
+    <checkerframework.version>\ReleaseVersion{}</checkerframework.version>
+  </properties>
+
+  ...
+
   <dependencies>
     ... existing <dependency> items ...
 
@@ -355,23 +362,23 @@ checker as an annotation processor directly.
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
-      <version>\ReleaseVersion{}</version>
+      <version>\$\{checkerframework.version\}</version>
     </dependency>
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker</artifactId>
-      <version>\ReleaseVersion{}</version>
+      <version>\$\{checkerframework.version\}</version>
     </dependency>
     <!-- The Type Annotations compiler. Uncomment if using annotations in comments. -->
     <!-- <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>compiler</artifactId>
-      <version>\ReleaseVersion{}</version>
+      <version>\$\{checkerframework.version\}</version>
     </dependency> -->
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
-      <version>\ReleaseVersion{}</version>
+      <version>\$\{checkerframework.version\}</version>
     </dependency>
   </dependencies>
 \end{alltt}
@@ -384,6 +391,13 @@ latest bug fixes and new features.
   one that you have built from source):
 
 \begin{alltt}
+  <properties>
+    ... existing <property> items ...
+    <checkerframework.version>\ReleaseVersion{}</checkerframework.version>
+  </properties>
+
+  ...
+
   <dependencies>
     ... existing <dependency> items ...
 
@@ -391,14 +405,14 @@ latest bug fixes and new features.
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
-      <version>\ReleaseVersion{}</version>
+      <version>\$\{checkerframework.version\}</version>
       <scope>system</scope>
       <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/checker-qual.jar</systemPath>
     </dependency>
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker</artifactId>
-      <version>\ReleaseVersion{}</version>
+      <version>\$\{checkerframework.version\}</version>
       <scope>system</scope>
       <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/checker.jar</systemPath>
     </dependency>
@@ -406,7 +420,7 @@ latest bug fixes and new features.
     <!-- <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>compiler</artifactId>
-      <version>\ReleaseVersion{}</version>
+      <version>\$\{checkerframework.version\}</version>
       <scope>system</scope>
       <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/compiler.jar</systemPath>
     </dependency> -->
@@ -414,7 +428,7 @@ latest bug fixes and new features.
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
-      <version>\ReleaseVersion{}</version>
+      <version>\$\{checkerframework.version\}</version>
       <scope>system</scope>
       <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/jdk8.jar</systemPath>
     </dependency>
