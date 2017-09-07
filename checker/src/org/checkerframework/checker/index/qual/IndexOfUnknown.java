@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * The top type for the IndexOf type system. This indicates that the Index checker does not know any
  * arrays that this integer is a {@link IndexOfIndexFor indexOf index} for.
  *
- * @checker_framework.manual #index-checker Index Checker
+ * @checker_framework.manual #index-indexof Index Checker
  */
 @DefaultQualifierInHierarchy
 @SubtypeOf({})
