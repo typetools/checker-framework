@@ -240,11 +240,6 @@ public class WholeProgramInferenceScenesHelper {
      * #shouldIgnore}).
      */
     private void removeIgnoredAnnosFromATypeElement(ATypeElement typeEl, TypeUseLocation loc) {
-        if (typeEl.innerTypes.size() != 0) {
-            for (ATypeElement innerType : typeEl.innerTypes.values()) {
-                removeIgnoredAnnosFromATypeElement(innerType, loc);
-            }
-        }
         Set<Annotation> annosToRemove = new HashSet<>();
         String firstKey = typeEl.description.toString() + typeEl.tlAnnotationsHere.toString();
         Set<String> annosToIgnoreForLocation = annosToIgnore.get(Pair.of(firstKey, loc));
@@ -258,6 +253,13 @@ public class WholeProgramInferenceScenesHelper {
             }
         }
         typeEl.tlAnnotationsHere.removeAll(annosToRemove);
+
+        // Recursively remove ignored annotations from inner types
+        if (typeEl.innerTypes.size() != 0) {
+            for (ATypeElement innerType : typeEl.innerTypes.values()) {
+                removeIgnoredAnnosFromATypeElement(innerType, loc);
+            }
+        }
     }
 
     /**
