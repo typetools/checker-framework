@@ -1063,6 +1063,7 @@
 
       <exec executable="make" failonerror="${halt.on.test.failure}">
         <env key="JAVAC" value="${basedir}/bin/javac"/>
+        <arg value="CHECKERFRAMEWORK=${checkerframework}"/>
         <arg value="-C"/>
         <arg value="../docs/examples/"/>
       </exec>

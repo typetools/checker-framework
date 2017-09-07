@@ -239,7 +239,8 @@ You may be able to solve the problem by running
 to re-generate files \code{checker/jdk/jdk\{8,9\}.jar} and \code{checker/bin/jdk\{8,9\}.jar}.
 
 That usually works, but if not, then you should recompile the Checker
-Framework from source rather than using the pre-compiled distribution.
+Framework from source (Section~\ref{build-source}) rather than using
+the pre-compiled distribution.
 
 
 \item
@@ -267,7 +268,7 @@ correct this by being sure to use \<fork="yes"> (see
 Section~\ref{ant-task}) and/or setting the \<build.compiler> property to
 \<extJavac>.
 
-If you are building from source  (Section~\ref{build-source}),
+If you are building from source (Section~\ref{build-source}),
 you might need to rebuild the Annotation
 File Utilities before recompiling or using the Checker Framework.
 
@@ -797,17 +798,17 @@ cp -p /usr/local/Cellar/hevea/2.28/lib/hevea/hevea.sty $HOME/Library/texmf/tex/l
 \end{Verbatim}
 
 \item[Windows]
-  To building on Windows 10,
+  To build on Windows 10,
   run \<bash> to obtain a version of
   Ubuntu (provided by the Windows Subsystem for Linux) and follow the Ubuntu
   instructions.
 
-To building on other versions of Windows,
-here is an \emph{incomplete} list of needed prerequisites:
-\begin{itemize}
-\item
-  Install MSYS to obtain the \<cp> and \<make> commands.
-\end{itemize}
+% To build on other versions of Windows,
+% here is an \emph{incomplete} list of needed prerequisites:
+% \begin{itemize}
+% \item
+%   Install MSYS to obtain the \<cp> and \<make> commands.
+% \end{itemize}
 
 \end{description}
 
@@ -928,7 +929,7 @@ This is simply done by:
 
 \begin{Verbatim}
   cd $JSR308/stubparser
-  mvn package  -Dmaven.test.skip=true
+  mvn package -Dmaven.test.skip=true
   cp -i ./javaparser-core/target/javaparser-core-3.3.4-SNAPSHOT.jar stubparser.jar
 \end{Verbatim}
 
