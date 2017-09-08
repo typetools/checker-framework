@@ -133,13 +133,14 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     private boolean isWrappedFormatCall(FormatCall fc) {
 
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(fc.node));
+        if (enclosingMethod == null) {
+            return false;
+        }
         ExecutableElement enclosingMethodElement =
-                enclosingMethod == null ? null : TreeUtils.elementFromDeclaration(enclosingMethod);
+                TreeUtils.elementFromDeclaration(enclosingMethod);
         boolean withinFormatMethod =
-                (enclosingMethodElement != null)
-                        && (atypeFactory.getDeclAnnotation(
-                                        enclosingMethodElement, FormatMethod.class)
-                                != null);
+                (atypeFactory.getDeclAnnotation(enclosingMethodElement, FormatMethod.class)
+                        != null);
         if (!withinFormatMethod) {
             return false;
         }
