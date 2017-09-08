@@ -1,5 +1,3 @@
-// @skip-test until the bug is fixed
-
 import java.io.ByteArrayOutputStream;
 import java.io.Console;
 import java.io.PrintStream;

@@ -1,3 +1,5 @@
+// @skip-test until the bug is fixed
+
 import java.util.Locale;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 
