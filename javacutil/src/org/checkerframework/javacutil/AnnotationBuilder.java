@@ -1,9 +1,10 @@
-package org.checkerframework.framework.util;
+package org.checkerframework.javacutil;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,10 +25,10 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+
+/*>>>
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TypesUtils;
+*/
 
 /**
  * Builds an annotation mirror that may have some values.
@@ -56,6 +57,10 @@ public class AnnotationBuilder {
     private final TypeElement annotationElt;
     private final DeclaredType annotationType;
     private final Map<ExecutableElement, AnnotationValue> elementValues;
+
+    /** Caching for annotation creation. */
+    private static final Map<CharSequence, AnnotationMirror> annotationsFromNames =
+            Collections.synchronizedMap(new HashMap<CharSequence, AnnotationMirror>());
 
     public AnnotationBuilder(ProcessingEnvironment env, Class<? extends Annotation> anno) {
         this(env, anno.getCanonicalName());
@@ -86,6 +91,54 @@ public class AnnotationBuilder {
         this.elementValues.putAll(annotation.getElementValues());
     }
 
+    /**
+     * Creates an {@link AnnotationMirror} given by a particular annotation class.
+     *
+     * @param elements the element utilities to use
+     * @param clazz the annotation class
+     * @return an {@link AnnotationMirror} of type given type
+     */
+    public static AnnotationMirror fromClass(Elements elements, Class<? extends Annotation> clazz) {
+        return fromName(elements, clazz.getCanonicalName());
+    }
+
+    /**
+     * Creates an {@link AnnotationMirror} given by a particular fully-qualified name.
+     * getElementValues on the result returns an empty map.
+     *
+     * @param elements the element utilities to use
+     * @param name the name of the annotation to create
+     * @return an {@link AnnotationMirror} of type {@code} name
+     */
+    public static AnnotationMirror fromName(Elements elements, CharSequence name) {
+        AnnotationMirror res = annotationsFromNames.get(name);
+        if (res != null) {
+            return res;
+        }
+        final TypeElement annoElt = elements.getTypeElement(name);
+        if (annoElt == null) {
+            return null;
+        }
+        if (annoElt.getKind() != ElementKind.ANNOTATION_TYPE) {
+            ErrorReporter.errorAbort(annoElt + " is not an annotation");
+            return null; // dead code
+        }
+
+        final DeclaredType annoType = (DeclaredType) annoElt.asType();
+        if (annoType == null) {
+            return null;
+        }
+        AnnotationMirror result = new CheckerFrameworkAnnotationMirror(annoType, Collections.emptyMap());
+        annotationsFromNames.put(name, result);
+        return result;
+    }
+
+    // TODO: hack to clear out static state.
+    public static void clear() {
+        annotationsFromNames.clear();
+    }
+
+
     private boolean wasBuilt = false;
 
     private void assertNotBuilt() {
@@ -98,64 +151,6 @@ public class AnnotationBuilder {
         assertNotBuilt();
         wasBuilt = true;
         return new CheckerFrameworkAnnotationMirror(annotationType, elementValues);
-    }
-
-    /** Implementation of AnnotationMirror used by the Checker Framework. */
-    private static class CheckerFrameworkAnnotationMirror implements AnnotationMirror {
-
-        private String toStringVal;
-        private final DeclaredType annotationType;
-        private final Map<ExecutableElement, AnnotationValue> elementValues;
-
-        CheckerFrameworkAnnotationMirror(
-                DeclaredType at, Map<ExecutableElement, AnnotationValue> ev) {
-            this.annotationType = at;
-            this.elementValues = ev;
-        }
-
-        @Override
-        public DeclaredType getAnnotationType() {
-            return annotationType;
-        }
-
-        @Override
-        public Map<? extends ExecutableElement, ? extends AnnotationValue> getElementValues() {
-            return Collections.unmodifiableMap(elementValues);
-        }
-
-        @SideEffectFree
-        @Override
-        public String toString() {
-            if (toStringVal == null) {
-                StringBuilder buf = new StringBuilder();
-                buf.append("@");
-                buf.append(annotationType);
-                int len = elementValues.size();
-                if (len > 0) {
-                    buf.append('(');
-                    boolean first = true;
-                    for (Map.Entry<ExecutableElement, AnnotationValue> pair :
-                            elementValues.entrySet()) {
-                        if (!first) {
-                            buf.append(", ");
-                        }
-                        first = false;
-
-                        String name = pair.getKey().getSimpleName().toString();
-                        if (len > 1 || !name.equals("value")) {
-                            buf.append(name);
-                            buf.append('=');
-                        }
-                        buf.append(pair.getValue());
-                    }
-                    buf.append(')');
-                }
-                toStringVal = buf.toString();
-            }
-            return toStringVal;
-
-            // return "@" + annotationType + "(" + elementValues + ")";
-        }
     }
 
     public AnnotationBuilder setValue(CharSequence elementName, AnnotationMirror value) {
@@ -462,6 +457,64 @@ public class AnnotationBuilder {
         return new CheckerFrameworkAnnotationValue(obj);
     }
 
+    /** Implementation of AnnotationMirror used by the Checker Framework. */
+    private static class CheckerFrameworkAnnotationMirror implements AnnotationMirror {
+
+        private String toStringVal;
+        private final DeclaredType annotationType;
+        private final Map<ExecutableElement, AnnotationValue> elementValues;
+
+        CheckerFrameworkAnnotationMirror(
+                DeclaredType at, Map<ExecutableElement, AnnotationValue> ev) {
+            this.annotationType = at;
+            this.elementValues = ev;
+        }
+
+        @Override
+        public DeclaredType getAnnotationType() {
+            return annotationType;
+        }
+
+        @Override
+        public Map<? extends ExecutableElement, ? extends AnnotationValue> getElementValues() {
+            return Collections.unmodifiableMap(elementValues);
+        }
+
+        /*@SideEffectFree*/
+        @Override
+        public String toString() {
+            if (toStringVal == null) {
+                StringBuilder buf = new StringBuilder();
+                buf.append("@");
+                buf.append(annotationType);
+                int len = elementValues.size();
+                if (len > 0) {
+                    buf.append('(');
+                    boolean first = true;
+                    for (Map.Entry<ExecutableElement, AnnotationValue> pair :
+                            elementValues.entrySet()) {
+                        if (!first) {
+                            buf.append(", ");
+                        }
+                        first = false;
+
+                        String name = pair.getKey().getSimpleName().toString();
+                        if (len > 1 || !name.equals("value")) {
+                            buf.append(name);
+                            buf.append('=');
+                        }
+                        buf.append(pair.getValue());
+                    }
+                    buf.append(')');
+                }
+                toStringVal = buf.toString();
+            }
+            return toStringVal;
+
+            // return "@" + annotationType + "(" + elementValues + ")";
+        }
+    }
+
     private static class CheckerFrameworkAnnotationValue implements AnnotationValue {
         final Object value;
 
@@ -474,7 +527,7 @@ public class AnnotationBuilder {
             return value;
         }
 
-        @SideEffectFree
+        /*@SideEffectFree*/
         @Override
         public String toString() {
             if (value instanceof String) {
