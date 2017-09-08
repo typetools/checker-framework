@@ -136,8 +136,10 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         ExecutableElement enclosingMethodElement =
                 enclosingMethod == null ? null : TreeUtils.elementFromDeclaration(enclosingMethod);
         boolean withinFormatMethod =
-                (atypeFactory.getDeclAnnotation(enclosingMethodElement, FormatMethod.class)
-                        != null);
+                (enclosingMethodElement != null)
+                        && (atypeFactory.getDeclAnnotation(
+                                        enclosingMethodElement, FormatMethod.class)
+                                != null);
         if (!withinFormatMethod) {
             return false;
         }
