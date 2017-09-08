@@ -22,6 +22,6 @@ public class FormatMethodAnnotation {
     static void log2(Locale locale, String format, Object... args) {
         String ex1 = String.format(format, args);
         String ex2 = String.format(locale, format, args);
-        String ex3 = String.format(Locale.ENGLISH, format, args);
+        String ex3 = String.format(Locale.FRENCH, format, args);
     }
 }
