@@ -42,7 +42,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         if (tu.isFormatCall(node, atypeFactory)) {
             FormatCall fc = atypeFactory.treeUtil.new FormatCall(node, atypeFactory);
 
-            Result<String> err_missing_format = fc.hasFormatAnntatoion();
+            Result<String> err_missing_format = fc.hasFormatAnnotation();
             if (err_missing_format != null) {
                 // The string's type has no @Format annotation.
                 if (isWrappedFormatCall(fc)) {
