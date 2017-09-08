@@ -172,7 +172,7 @@ public class FormatterTreeUtil {
     public class FormatCall {
         private final AnnotatedTypeMirror formatAnno;
         private final List<? extends ExpressionTree> args;
-        private final MethodInvocationTree node;
+        final MethodInvocationTree node;
         private final ExpressionTree formatArg;
         private final AnnotatedTypeFactory atypeFactory;
 

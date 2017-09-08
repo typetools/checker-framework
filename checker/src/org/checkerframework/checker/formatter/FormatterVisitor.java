@@ -45,48 +45,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             Result<String> err_missing_format = fc.hasFormatAnnotation();
             if (err_missing_format != null) {
                 // The string's type has no @Format annotation.
-
-                MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(node));
-                ExecutableElement enclosingMethodElement =
-                        enclosingMethod == null
-                                ? null
-                                : TreeUtils.elementFromDeclaration(enclosingMethod);
-                boolean withinFormatMethod =
-                        (atypeFactory.getDeclAnnotation(enclosingMethodElement, FormatMethod.class)
-                                != null);
-
-                boolean sameArguments = false;
-                List<? extends ExpressionTree> args = node.getArguments();
-                if (args.size() > 0 && FormatterTreeUtil.isLocale(args.get(0), atypeFactory)) {
-                    args = args.subList(1, args.size());
-                }
-                List<? extends VariableElement> paramElements =
-                        enclosingMethodElement.getParameters();
-                List<? extends VariableTree> params = enclosingMethod.getParameters();
-
-                if (params.size() > 0) {
-                    if (TypesUtils.isDeclaredOfName(
-                            paramElements.get(0).asType(), "java.util.Locale")) {
-                        params = params.subList(1, params.size());
-                    }
-                }
-
-                // todo: Handle addition/removal of Locale argument
-                if (withinFormatMethod && args.size() == params.size()) {
-                    sameArguments = true;
-                    for (int i = 0; i < args.size(); i++) {
-                        ExpressionTree arg = args.get(i);
-                        if (!(arg instanceof IdentifierTree
-                                && ((IdentifierTree) arg)
-                                        .getName()
-                                        .equals(params.get(i).getName()))) {
-                            sameArguments = false;
-                            break;
-                        }
-                    }
-                }
-
-                if (withinFormatMethod && sameArguments) {
+                if (isWrappedFormatCall(fc)) {
                     // Nothing to do
                 } else {
                     // I.1
@@ -164,6 +123,49 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             }
         }
         return super.visitMethodInvocation(node, p);
+    }
+
+    /**
+     * Returns true if fc is within a method m annotated as {@code @FormatMethod}, and fc's
+     * arguments are m's formal parameters. In other words, fc forwards m's arguments to another
+     * format method.
+     */
+    private boolean isWrappedFormatCall(FormatCall fc) {
+
+        MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(fc.node));
+        ExecutableElement enclosingMethodElement =
+                enclosingMethod == null ? null : TreeUtils.elementFromDeclaration(enclosingMethod);
+        boolean withinFormatMethod =
+                (atypeFactory.getDeclAnnotation(enclosingMethodElement, FormatMethod.class)
+                        != null);
+        if (!withinFormatMethod) {
+            return false;
+        }
+
+        List<? extends ExpressionTree> args = fc.node.getArguments();
+        List<? extends VariableElement> paramElements = enclosingMethodElement.getParameters();
+        List<? extends VariableTree> params = enclosingMethod.getParameters();
+
+        // Strip off leading Locale arguments.
+        if (args.size() > 0 && FormatterTreeUtil.isLocale(args.get(0), atypeFactory)) {
+            args = args.subList(1, args.size());
+        }
+        if (params.size() > 0
+                && TypesUtils.isDeclaredOfName(paramElements.get(0).asType(), "java.util.Locale")) {
+            params = params.subList(1, params.size());
+        }
+
+        // todo: Handle addition/removal of Locale argument
+        if (args.size() == params.size()) {
+            for (int i = 0; i < args.size(); i++) {
+                ExpressionTree arg = args.get(i);
+                if (!(arg instanceof IdentifierTree
+                        && ((IdentifierTree) arg).getName().equals(params.get(i).getName()))) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     @Override
