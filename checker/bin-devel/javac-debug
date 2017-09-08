@@ -5,9 +5,10 @@
 # to org.checkerframework.framework.util.CheckerDevelMain
 #
 # This script loads the .class files found in the
-# build directory before it uses any jar files so
-# that a user does not have to repackage the whole
-# project (that is, create .jar files) to debug changes.
+# build directory before it uses any jar files.
+# Thus, a user can just do
+#   ant build
+# to debug changes rather than creating .jar files with "ant dist-nobuildjdk".
 #
 # This script also has debug arguments set up to allow
 # remote debugging of the framework on port 5005.
@@ -24,10 +25,10 @@ esac
 binaryDir="${mydir}"/../dist
 
 # langtools bin dir for Jenkins
-if [ -z "$LT_BIN" ] || [ "$LT_BIN" = "" ]; then
+if [ -z "${LT_BIN}" ] || [ "${LT_BIN}" = "" ]; then
    ltBinDir="${mydir}"/../../../jsr308-langtools/build/classes
 else
-   ltBinDir="$LT_BIN"
+   ltBinDir="${LT_BIN}"
 fi
 
 jdkPaths="${mydir}"/../jdk/annotated
