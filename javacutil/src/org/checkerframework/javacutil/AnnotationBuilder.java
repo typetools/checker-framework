@@ -128,7 +128,8 @@ public class AnnotationBuilder {
         if (annoType == null) {
             return null;
         }
-        AnnotationMirror result = new CheckerFrameworkAnnotationMirror(annoType, Collections.emptyMap());
+        AnnotationMirror result =
+                new CheckerFrameworkAnnotationMirror(annoType, Collections.emptyMap());
         annotationsFromNames.put(name, result);
         return result;
     }
@@ -137,7 +138,6 @@ public class AnnotationBuilder {
     public static void clear() {
         annotationsFromNames.clear();
     }
-
 
     private boolean wasBuilt = false;
 

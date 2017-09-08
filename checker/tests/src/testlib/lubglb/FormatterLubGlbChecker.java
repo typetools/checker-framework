@@ -15,7 +15,7 @@ import org.checkerframework.checker.formatter.qual.InvalidFormat;
 import org.checkerframework.checker.formatter.qual.UnknownFormat;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -31,10 +31,10 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         FormatterTreeUtil treeUtil = new FormatterTreeUtil(this);
 
         Elements elements = getElementUtils();
-        AnnotationMirror UNKNOWNFORMAT = AnnotationUtils.fromClass(elements, UnknownFormat.class);
-        AnnotationMirror FORMAT = AnnotationUtils.fromClass(elements, Format.class);
-        AnnotationMirror INVALIDFORMAT = AnnotationUtils.fromClass(elements, InvalidFormat.class);
-        AnnotationMirror FORMATBOTTOM = AnnotationUtils.fromClass(elements, FormatBottom.class);
+        AnnotationMirror UNKNOWNFORMAT = AnnotationBuilder.fromClass(elements, UnknownFormat.class);
+        AnnotationMirror FORMAT = AnnotationBuilder.fromClass(elements, Format.class);
+        AnnotationMirror INVALIDFORMAT = AnnotationBuilder.fromClass(elements, InvalidFormat.class);
+        AnnotationMirror FORMATBOTTOM = AnnotationBuilder.fromClass(elements, FormatBottom.class);
 
         AnnotationBuilder builder =
                 new AnnotationBuilder(processingEnv, InvalidFormat.class.getCanonicalName());

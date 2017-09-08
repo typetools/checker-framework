@@ -30,6 +30,7 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
@@ -48,10 +49,11 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             unitsRelationsAnnoClass = org.checkerframework.checker.units.qual.UnitsRelations.class;
 
     protected final AnnotationMirror mixedUnits =
-            AnnotationUtils.fromClass(elements, MixedUnits.class);
-    protected final AnnotationMirror TOP = AnnotationUtils.fromClass(elements, UnknownUnits.class);
+            AnnotationBuilder.fromClass(elements, MixedUnits.class);
+    protected final AnnotationMirror TOP =
+            AnnotationBuilder.fromClass(elements, UnknownUnits.class);
     protected final AnnotationMirror BOTTOM =
-            AnnotationUtils.fromClass(elements, UnitsBottom.class);
+            AnnotationBuilder.fromClass(elements, UnitsBottom.class);
 
     /**
      * Map from canonical class name to the corresponding UnitsRelations instance. We use the string
@@ -280,7 +282,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param qual the qualifier to investigate
      */
     private void addUnitsRelations(Class<? extends Annotation> qual) {
-        AnnotationMirror am = AnnotationUtils.fromClass(elements, qual);
+        AnnotationMirror am = AnnotationBuilder.fromClass(elements, qual);
 
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors()) {
             if (AnnotationUtils.areSameByClass(ama, unitsRelationsAnnoClass)) {
@@ -490,7 +492,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new UnitsQualifierHierarchy(
-                factory, AnnotationUtils.fromClass(elements, UnitsBottom.class));
+                factory, AnnotationBuilder.fromClass(elements, UnitsBottom.class));
     }
 
     protected class UnitsQualifierHierarchy extends GraphQualifierHierarchy {
