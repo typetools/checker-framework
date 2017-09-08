@@ -1,18 +1,28 @@
 package org.checkerframework.checker.formatter;
 
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.FormatCall;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.InvocationType;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Whenever a format method invocation is found in the syntax tree, checks are performed as
@@ -32,11 +42,61 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         if (tu.isFormatCall(node, atypeFactory)) {
             FormatCall fc = atypeFactory.treeUtil.new FormatCall(node, atypeFactory);
 
-            Result<String> sat = fc.isIllegalFormat();
-            if (sat != null) {
-                // I.1
-                tu.failure(sat, "format.string.invalid", sat.value());
+            Result<String> err_missing_format = fc.hasFormatAnnotation();
+            if (err_missing_format != null) {
+                // The string's type has no @Format annotation.
+
+                MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(node));
+                ExecutableElement enclosingMethodElement =
+                        enclosingMethod == null
+                                ? null
+                                : TreeUtils.elementFromDeclaration(enclosingMethod);
+                boolean withinFormatMethod =
+                        (atypeFactory.getDeclAnnotation(enclosingMethodElement, FormatMethod.class)
+                                != null);
+
+                boolean sameArguments = false;
+                List<? extends ExpressionTree> args = node.getArguments();
+                if (args.size() > 0 && FormatterTreeUtil.isLocale(args.get(0), atypeFactory)) {
+                    args = args.subList(1, args.size());
+                }
+                List<? extends VariableElement> paramElements =
+                        enclosingMethodElement.getParameters();
+                List<? extends VariableTree> params = enclosingMethod.getParameters();
+
+                if (params.size() > 0) {
+                    if (TypesUtils.isDeclaredOfName(
+                            paramElements.get(0).asType(), "java.util.Locale")) {
+                        params = params.subList(1, params.size());
+                    }
+                }
+
+                // todo: Handle addition/removal of Locale argument
+                if (withinFormatMethod && args.size() == params.size()) {
+                    sameArguments = true;
+                    for (int i = 0; i < args.size(); i++) {
+                        ExpressionTree arg = args.get(i);
+                        if (!(arg instanceof IdentifierTree
+                                && ((IdentifierTree) arg)
+                                        .getName()
+                                        .equals(params.get(i).getName()))) {
+                            sameArguments = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (withinFormatMethod && sameArguments) {
+                    // Nothing to do
+                } else {
+                    // I.1
+                    tu.failure(
+                            err_missing_format,
+                            "format.string.invalid",
+                            err_missing_format.value());
+                }
             } else {
+                // The string has a @Format annotation.
                 Result<InvocationType> invc = fc.getInvocationType();
                 ConversionCategory[] formatCats = fc.getFormatCategories();
                 switch (invc.value()) {

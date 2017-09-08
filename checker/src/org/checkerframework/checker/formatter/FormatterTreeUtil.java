@@ -155,10 +155,17 @@ public class FormatterTreeUtil {
                 asFormatCallCategoriesLowLevel(node), node.getTree());
     }
 
+    /** Returns true if {@code node} is a call to a method annotated with {@code @FormatMethod}. */
     public boolean isFormatCall(MethodInvocationTree node, AnnotatedTypeFactory atypeFactory) {
         ExecutableElement method = TreeUtils.elementFromUse(node);
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(method, FormatMethod.class);
         return anno != null;
+    }
+
+    /** Returns true if the given ExpressionTree has type java.util.Locale. */
+    public static boolean isLocale(ExpressionTree e, AnnotatedTypeFactory atypeFactory) {
+        return (typeMirrorToClass(atypeFactory.getAnnotatedType(e).getUnderlyingType())
+                == Locale.class);
     }
 
     /** Represents a format method invocation in the syntax tree. */
@@ -175,38 +182,33 @@ public class FormatterTreeUtil {
             // objects such as atypeFactory, processingEnv, ... nicer
             this.atypeFactory = atypeFactory;
             List<? extends ExpressionTree> theargs;
-            theargs = node.getArguments();
 
-            if (typeMirrorToClass(atypeFactory.getAnnotatedType(theargs.get(0)).getUnderlyingType())
-                    == Locale.class) {
+            theargs = node.getArguments();
+            if (isLocale(theargs.get(0), atypeFactory)) {
                 // call with Locale as first argument
                 theargs = theargs.subList(1, theargs.size());
             }
 
-            // TODO check that the first parameter exists and is a string
+            // TODO Check that the first parameter exists and is a string.
             formatArg = theargs.get(0);
             formatAnno = atypeFactory.getAnnotatedType(formatArg);
             this.args = theargs.subList(1, theargs.size());
         }
 
         /**
-         * Returns an error description if the format string cannot be satisfied. Returns null if
-         * the format string does not contain syntactic errors.
+         * Returns null if the format-string argument's type is annotated as {@code @Format}.
+         * Returns an error description if not annotated as {@code @Format}.
          */
-        public final Result<String> isIllegalFormat() {
-            String res = null;
+        public final Result<String> hasFormatAnnotation() {
             if (!formatAnno.hasAnnotation(Format.class)) {
-                res = "(is a @Format annotation missing?)";
+                String msg = "(is a @Format annotation missing?)";
                 AnnotationMirror inv = formatAnno.getAnnotation(InvalidFormat.class);
                 if (inv != null) {
-                    res = invalidFormatAnnotationToErrorMessage(inv);
+                    msg = invalidFormatAnnotationToErrorMessage(inv);
                 }
+                return new Result<String>(msg, formatArg);
             }
-            if (res == null) {
-                return null;
-            } else {
-                return new Result<String>(res, formatArg);
-            }
+            return null;
         }
 
         /**
@@ -409,7 +411,7 @@ public class FormatterTreeUtil {
         return list.toArray(new ConversionCategory[] {});
     }
 
-    private final Class<? extends Object> typeMirrorToClass(final TypeMirror type) {
+    private static final Class<? extends Object> typeMirrorToClass(final TypeMirror type) {
         return type.accept(
                 new SimpleTypeVisitor7<Class<? extends Object>, Class<Void>>() {
                     @Override
