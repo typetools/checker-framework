@@ -15,9 +15,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * Whenever a format method invocation is found in the syntax tree, the following checks happen,
- * read the code, seriously! (otherwise see manual 12.2)
+ * Whenever a format method invocation is found in the syntax tree, checks are performed as
+ * specified in the Format String Checker manual.
  *
+ * @checker_framework.manual #formatter-guarantees Format String Checker
  * @author Konstantin Weitz
  */
 public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFactory> {
@@ -32,7 +33,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             FormatCall fc = atypeFactory.treeUtil.new FormatCall(node, atypeFactory);
 
             Result<String> sat = fc.isIllegalFormat();
-            if (sat.value() != null) {
+            if (sat != null) {
                 // I.1
                 tu.failure(sat, "format.string.invalid", sat.value());
             } else {
@@ -116,9 +117,8 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
         AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
 
-        // From the manual:
-        // It is legal to use a format string with fewer format specifiers
-        // than required, but a warning is issued.
+        // From the manual: "It is legal to use a format string with fewer format specifiers
+        // than required, but a warning is issued."
         // The format.missing.arguments warning is issued here for assignments.
         // For method calls, it is issued in visitMethodInvocation.
         if (AnnotationUtils.areSameIgnoringValues(rhs, atypeFactory.FORMAT)
