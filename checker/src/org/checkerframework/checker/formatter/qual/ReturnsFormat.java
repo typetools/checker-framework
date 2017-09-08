@@ -5,6 +5,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.checkerframework.checker.formatter.FormatUtil;
 
 /**
  * Attach this annotation to a method with the following properties:
@@ -16,6 +17,8 @@ import java.lang.annotation.Target;
  *       passed conversion categories.
  *   <li>On success, the method returns the passed format string unmodified.
  * </ul>
+ *
+ * An example is {@link FormatUtil#asFormat}.
  *
  * @checker_framework.manual #formatter-checker Format String Checker
  */
