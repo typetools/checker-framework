@@ -129,7 +129,8 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
             return visitedNodes.get(type);
         }
         visitedNodes.put(type, null);
-        R r = scan(type.getTypeArguments(), p);
+        R r = scan(type.getEnclosingType(), p);
+        r = scanAndReduce(type.getTypeArguments(), p, r);
         return r;
     }
 

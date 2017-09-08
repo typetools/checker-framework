@@ -1490,8 +1490,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
 
-        for (int i = 0; i < targs.size(); ++i) {
-            mapping.put(((AnnotatedTypeVariable) tvars.get(i)).getUnderlyingType(), targs.get(i));
+        AnnotatedDeclaredType enclosing = type;
+        while (enclosing != null) {
+            List<AnnotatedTypeMirror> enclosingTArgs = enclosing.getTypeArguments();
+            AnnotatedDeclaredType declaredType =
+                    getAnnotatedType((TypeElement) enclosing.getUnderlyingType().asElement());
+            List<AnnotatedTypeMirror> enclosingTVars = declaredType.getTypeArguments();
+            for (int i = 0; i < enclosingTArgs.size(); i++) {
+                AnnotatedTypeVariable enclosingTVar = (AnnotatedTypeVariable) enclosingTVars.get(i);
+                mapping.put(enclosingTVar.getUnderlyingType(), enclosingTArgs.get(i));
+            }
+            enclosing = enclosing.getEnclosingType();
         }
 
         List<AnnotatedTypeParameterBounds> res = new LinkedList<>();
