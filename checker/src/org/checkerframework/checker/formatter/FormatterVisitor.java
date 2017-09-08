@@ -146,8 +146,8 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         }
 
         List<? extends ExpressionTree> args = fc.node.getArguments();
-        List<? extends VariableElement> paramElements = enclosingMethodElement.getParameters();
         List<? extends VariableTree> params = enclosingMethod.getParameters();
+        List<? extends VariableElement> paramElements = enclosingMethodElement.getParameters();
 
         // Strip off leading Locale arguments.
         if (args.size() > 0 && FormatterTreeUtil.isLocale(args.get(0), atypeFactory)) {
@@ -158,7 +158,6 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             params = params.subList(1, params.size());
         }
 
-        // todo: Handle addition/removal of Locale argument
         if (args.size() == params.size()) {
             for (int i = 0; i < args.size(); i++) {
                 ExpressionTree arg = args.get(i);
