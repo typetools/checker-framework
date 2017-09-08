@@ -105,20 +105,16 @@ public class FormatterTreeUtil {
         NULLARRAY;
     }
 
-    public interface Result<E> {
-        E value();
-    }
-
-    private static class ResultImpl<E> implements Result<E> {
+    /** A wrapper around a value of type E, plus an ExpressionTree location. */
+    public static class Result<E> {
         private final E value;
         public final ExpressionTree location;
 
-        public ResultImpl(E value, ExpressionTree location) {
+        public Result(E value, ExpressionTree location) {
             this.value = value;
             this.location = location;
         }
 
-        @Override
         public E value() {
             return value;
         }
@@ -155,7 +151,7 @@ public class FormatterTreeUtil {
 
     public Result<ConversionCategory[]> asFormatCallCategories(MethodInvocationNode node) {
         // TODO make sure the method signature looks good
-        return new ResultImpl<ConversionCategory[]>(
+        return new Result<ConversionCategory[]>(
                 asFormatCallCategoriesLowLevel(node), node.getTree());
     }
 
@@ -206,7 +202,11 @@ public class FormatterTreeUtil {
                     res = invalidFormatAnnotationToErrorMessage(inv);
                 }
             }
-            return new ResultImpl<String>(res, formatArg);
+            if (res == null) {
+                return null;
+            } else {
+                return new Result<String>(res, formatArg);
+            }
         }
 
         /**
@@ -274,7 +274,7 @@ public class FormatterTreeUtil {
             if (type != InvocationType.VARARG && args.size() > 0) {
                 loc = args.get(0);
             }
-            return new ResultImpl<InvocationType>(type, loc);
+            return new Result<InvocationType>(type, loc);
         }
 
         /**
@@ -299,7 +299,7 @@ public class FormatterTreeUtil {
             for (int i = 0; i < res.length; ++i) {
                 ExpressionTree arg = args.get(i);
                 TypeMirror argType = atypeFactory.getAnnotatedType(arg).getUnderlyingType();
-                res[i] = new ResultImpl<TypeMirror>(argType, arg);
+                res[i] = new Result<TypeMirror>(argType, arg);
             }
             return res;
         }
@@ -348,16 +348,14 @@ public class FormatterTreeUtil {
 
     /** Reports an error. Takes a {@link Result} to report the location. */
     public final <E> void failure(Result<E> res, @CompilerMessageKey String msg, Object... args) {
-        ResultImpl<E> impl = (ResultImpl<E>) res;
         checker.report(
-                org.checkerframework.framework.source.Result.failure(msg, args), impl.location);
+                org.checkerframework.framework.source.Result.failure(msg, args), res.location);
     }
 
     /** Reports an warning. Takes a {@link Result} to report the location. */
     public final <E> void warning(Result<E> res, @CompilerMessageKey String msg, Object... args) {
-        ResultImpl<E> impl = (ResultImpl<E>) res;
         checker.report(
-                org.checkerframework.framework.source.Result.warning(msg, args), impl.location);
+                org.checkerframework.framework.source.Result.warning(msg, args), res.location);
     }
 
     /**
