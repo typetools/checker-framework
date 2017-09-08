@@ -9,8 +9,10 @@ import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntry;
 import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntryKind;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -360,7 +362,7 @@ public class ElementAnnotationUtil {
     static AnnotatedTypeMirror getTypeAtLocation(
             AnnotatedTypeMirror type, List<TypeAnnotationPosition.TypePathEntry> location) {
 
-        if (location.isEmpty()) {
+        if (location.isEmpty() && type.getKind() != TypeKind.DECLARED) {
             return type;
         } else if (type.getKind() == TypeKind.NULL) {
             return getLocationTypeANT((AnnotatedNullType) type, location);
@@ -394,84 +396,47 @@ public class ElementAnnotationUtil {
     private static AnnotatedTypeMirror getLocationTypeADT(
             AnnotatedDeclaredType type, List<TypeAnnotationPosition.TypePathEntry> location) {
 
-        if (location.isEmpty()) {
-            return type;
+        // List order by outer most type to inner most type.
+        LinkedList<AnnotatedDeclaredType> innerToOuter = new LinkedList<>();
+        AnnotatedDeclaredType enclosing = type;
+        while (enclosing != null) {
+            innerToOuter.add(enclosing);
+            enclosing = enclosing.getEnclosingType();
+        }
+        Collections.reverse(innerToOuter);
 
-        } else if (location.get(0)
-                        .tag
-                        .equals(TypeAnnotationPosition.TypePathEntryKind.TYPE_ARGUMENT)
-                && location.get(0).arg < type.getTypeArguments().size()) {
-            return getTypeAtLocation(
-                    type.getTypeArguments().get(location.get(0).arg), tail(location));
-        } else if (location.get(0)
-                .tag
-                .equals(TypeAnnotationPosition.TypePathEntryKind.INNER_TYPE)) {
-            // TODO: annotations on enclosing classes (e.g. @A Map.Entry<K, V>) not tested yet
-            int totalEncl = countEnclosing(type);
-            int totalInner = countInner(location);
-            if (totalInner > totalEncl) {
-                return type;
-
-            } else if (totalInner == totalEncl) {
-                List<TypeAnnotationPosition.TypePathEntry> loc = location;
-                for (int i = 0; i < totalEncl; ++i) {
-                    loc = tail(loc);
-                }
-                return getTypeAtLocation(type, loc);
-            } else {
-                AnnotatedDeclaredType toret = type;
-                List<TypeAnnotationPosition.TypePathEntry> loc = location;
-                for (int i = 0; i < (totalEncl - totalInner); ++i) {
-                    if (toret.getEnclosingType() != null) {
-                        toret = toret.getEnclosingType();
-                        loc = tail(loc);
+        LinkedList<TypePathEntry> tailOfLocations = new LinkedList<>(location);
+        boolean error = false;
+        while (!tailOfLocations.isEmpty()) {
+            TypePathEntry currentLocation = tailOfLocations.removeFirst();
+            switch (currentLocation.tag) {
+                case INNER_TYPE:
+                    innerToOuter.removeFirst();
+                    break;
+                case TYPE_ARGUMENT:
+                    AnnotatedDeclaredType innerType = innerToOuter.getFirst();
+                    if (currentLocation.arg < innerType.getTypeArguments().size()) {
+                        AnnotatedTypeMirror typeArg =
+                                innerType.getTypeArguments().get(currentLocation.arg);
+                        return getTypeAtLocation(typeArg, tailOfLocations);
                     } else {
-                        ErrorReporter.errorAbort(
-                                "ElementAnnotationUtil.getLocationTypeADT: "
-                                        + "invalid location "
-                                        + location
-                                        + " for type: "
-                                        + type);
-                        return null; // dead code
+                        error = true;
+                        break;
                     }
-                }
-                return getTypeAtLocation(toret, loc);
+                default:
+                    error = true;
             }
-        } else {
+            if (error) {
+                break;
+            }
+        }
+
+        if (innerToOuter.isEmpty() || error) {
             ErrorReporter.errorAbort(
-                    "ElementAnnotationUtil.getLocationTypeADT: "
-                            + "invalid location "
-                            + location
-                            + " for type: "
-                            + type);
-            return null; // dead code
+                    "ElementAnnotationUtil.getLocationTypeADT: invalid location %s for type: %s",
+                    location, type);
         }
-    }
-
-    /**
-     * @param location a type path
-     * @return starting from the first index of location, return the number of INNER_TYPE entries in
-     *     location that occur consecutively
-     */
-    private static int countInner(List<TypeAnnotationPosition.TypePathEntry> location) {
-        int cnt = 0;
-        while (!location.isEmpty()
-                && location.get(0)
-                        .tag
-                        .equals(TypeAnnotationPosition.TypePathEntryKind.INNER_TYPE)) {
-            ++cnt;
-            location = tail(location);
-        }
-        return cnt;
-    }
-
-    private static int countEnclosing(AnnotatedDeclaredType type) {
-        int cnt = 0;
-        while (type.getEnclosingType() != null) {
-            ++cnt;
-            type = type.getEnclosingType();
-        }
-        return cnt;
+        return innerToOuter.getFirst();
     }
 
     private static AnnotatedTypeMirror getLocationTypeANT(
