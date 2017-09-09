@@ -127,7 +127,7 @@ class FullyTreeCopier extends TreeCopier<Void> {
         t.varargsElement = ((JCMemberReference) node).varargsElement;
         t.refPolyKind = ((JCMemberReference) node).refPolyKind;
         t.ownerAccessible = ((JCMemberReference) node).ownerAccessible;
-        t.overloadKind = ((JCMemberReference) node).overloadKind;
+        t.setOverloadKind(((JCMemberReference) node).getOverloadKind());
         return t;
     }
 
