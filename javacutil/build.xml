@@ -64,7 +64,7 @@
               failonerror="true"
               classpath="${javac.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.jdk.lib}"/>
 
             <arg value="-g"/>
             <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->

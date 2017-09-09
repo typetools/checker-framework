@@ -144,6 +144,7 @@
               failonerror="true"
               classpath="${javac.lib}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
+            <jvmarg value="-Xbootclasspath/p:${javac.jdk.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->
             <arg value="-source"/>
@@ -256,6 +257,7 @@
               failonerror="true"
               classpath="${javac.lib}:${build}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
+            <jvmarg value="-Xbootclasspath/p:${javac.jdk.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->
             <arg value="-source"/>
@@ -742,6 +744,7 @@
               failonerror="true"
               classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
+            <jvmarg value="-Xbootclasspath/p:${javac.jdk.lib}"/>
             <arg value="-g"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>

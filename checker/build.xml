@@ -210,6 +210,7 @@
               failonerror="true"
               classpath="${javac.lib}:${framework.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
+            <jvmarg value="-Xbootclasspath/p:${javac.jdk.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->
             <arg value="-source"/>
@@ -380,6 +381,7 @@
               failonerror="true"
               classname="com.sun.tools.javac.Main"
               classpath="${javac.lib}">
+            <jvmarg value="-Xbootclasspath/p:${javac.jdk.lib}"/>
             <arg value="-g"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
@@ -424,6 +426,7 @@
               failonerror="true"
               classname="com.sun.tools.javac.Main"
               classpath="${javac.lib}:${checker-qual-classes-tmp}">
+            <jvmarg value="-Xbootclasspath/p:${javac.jdk.lib}"/>
             <arg value="-g"/>
             <arg value="-source"/>
             <arg value="8"/>
@@ -500,6 +503,7 @@
               failonerror="true"
               classname="com.sun.tools.javac.Main"
               classpath="${javac.lib}">
+            <jvmarg value="-Xbootclasspath/p:${javac.jdk.lib}"/>
             <arg value="-g"/>
             <!-- Make sure we only generate Java 6 bytecode. -->
             <arg value="-source"/>
@@ -556,6 +560,7 @@
               failonerror="true"
               classpath="${build}:${javac.lib}:${junit.lib}:${hamcrest.lib}"
               classname="com.sun.tools.javac.Main">
+            <jvmarg value="-Xbootclasspath/p:${javac.jdk.lib}"/>
             <arg value="-g"/>
             <arg value="-source"/>
             <arg value="8"/>
@@ -1256,6 +1261,7 @@ So, use our own archived version.
               failonerror="true"
               classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
+            <jvmarg value="-Xbootclasspath/p:${javac.jdk.lib}"/>
             <jvmarg line="${maybeDebug}"/>  <!-- may be empty string -->
 
             <arg value="-g"/>
