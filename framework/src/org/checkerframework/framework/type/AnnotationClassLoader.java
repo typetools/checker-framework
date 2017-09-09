@@ -26,7 +26,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 

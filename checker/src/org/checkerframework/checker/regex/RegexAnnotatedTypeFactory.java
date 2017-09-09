@@ -36,9 +36,9 @@ import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -119,10 +119,10 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         0,
                         processingEnv);
 
-        REGEX = AnnotationUtils.fromClass(elements, Regex.class);
-        REGEXBOTTOM = AnnotationUtils.fromClass(elements, RegexBottom.class);
-        PARTIALREGEX = AnnotationUtils.fromClass(elements, PartialRegex.class);
-        POLYREGEX = AnnotationUtils.fromClass(elements, PolyRegex.class);
+        REGEX = AnnotationBuilder.fromClass(elements, Regex.class);
+        REGEXBOTTOM = AnnotationBuilder.fromClass(elements, RegexBottom.class);
+        PARTIALREGEX = AnnotationBuilder.fromClass(elements, PartialRegex.class);
+        POLYREGEX = AnnotationBuilder.fromClass(elements, PolyRegex.class);
 
         regexValueElement =
                 TreeUtils.getMethod(
@@ -398,7 +398,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     // ...and add a new one with the correct group count value.
                     type.replaceAnnotation(createRegexAnnotation(regexCount));
                 } else if (bottomAnno != null) {
-                    type.replaceAnnotation(AnnotationUtils.fromClass(elements, RegexBottom.class));
+                    type.replaceAnnotation(
+                            AnnotationBuilder.fromClass(elements, RegexBottom.class));
                 }
             }
             return super.visitMethodInvocation(tree, type);

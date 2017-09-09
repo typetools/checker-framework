@@ -37,6 +37,7 @@ import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -597,7 +598,7 @@ public abstract class AnnotatedTypeMirror {
      * @param a the class of the annotation to add
      */
     public void addAnnotation(Class<? extends Annotation> a) {
-        AnnotationMirror anno = AnnotationUtils.fromClass(atypeFactory.elements, a);
+        AnnotationMirror anno = AnnotationBuilder.fromClass(atypeFactory.elements, a);
         addAnnotation(anno);
     }
 
@@ -660,7 +661,7 @@ public abstract class AnnotatedTypeMirror {
     }
 
     public boolean removeAnnotation(Class<? extends Annotation> a) {
-        AnnotationMirror anno = AnnotationUtils.fromClass(atypeFactory.elements, a);
+        AnnotationMirror anno = AnnotationBuilder.fromClass(atypeFactory.elements, a);
         if (anno == null || !atypeFactory.isSupportedQualifier(anno)) {
             ErrorReporter.errorAbort(
                     "AnnotatedTypeMirror.removeAnnotation called with un-supported class: " + a);

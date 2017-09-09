@@ -12,7 +12,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.checker.units.qual.UnknownUnits;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -77,7 +77,7 @@ public class UnitsRelationsTools {
             return null;
         }
 
-        return AnnotationUtils.fromClass(env.getElementUtils(), annoClass);
+        return AnnotationBuilder.fromClass(env.getElementUtils(), annoClass);
     }
 
     /**
@@ -218,7 +218,7 @@ public class UnitsRelationsTools {
         } else {
             // the only value is the prefix value in Units Checker
             // TODO: refine sensitivity of removal for extension units, in case extension Annotations have more than just Prefix in its values.
-            return AnnotationUtils.fromName(
+            return AnnotationBuilder.fromName(
                     elements, unitsAnnotation.getAnnotationType().toString());
         }
     }

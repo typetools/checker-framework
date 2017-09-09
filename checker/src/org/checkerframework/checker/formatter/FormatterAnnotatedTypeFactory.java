@@ -20,6 +20,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -42,10 +43,10 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public FormatterAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        UNKNOWNFORMAT = AnnotationUtils.fromClass(elements, UnknownFormat.class);
-        FORMAT = AnnotationUtils.fromClass(elements, Format.class);
-        INVALIDFORMAT = AnnotationUtils.fromClass(elements, InvalidFormat.class);
-        FORMATBOTTOM = AnnotationUtils.fromClass(elements, FormatBottom.class);
+        UNKNOWNFORMAT = AnnotationBuilder.fromClass(elements, UnknownFormat.class);
+        FORMAT = AnnotationBuilder.fromClass(elements, Format.class);
+        INVALIDFORMAT = AnnotationBuilder.fromClass(elements, InvalidFormat.class);
+        FORMATBOTTOM = AnnotationBuilder.fromClass(elements, FormatBottom.class);
 
         this.treeUtil = new FormatterTreeUtil(checker);
         this.postInit();
