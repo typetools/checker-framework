@@ -1,6 +1,7 @@
 // Test case for Issue 1507:
 // https://github.com/typetools/checker-framework/issues/1507
 
+import java.io.PrintStream;
 import java.util.Locale;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 
@@ -23,5 +24,17 @@ public class FormatMethodAnnotation {
         String ex1 = String.format(format, args);
         String ex2 = String.format(locale, format, args);
         String ex3 = String.format(Locale.FRENCH, format, args);
+    }
+
+    PrintStream logfile;
+    boolean enabled;
+    String indent_str;
+
+    @FormatMethod
+    void log3(String format, Object... args) {
+        if (enabled) {
+            logfile.print(indent_str);
+            logfile.printf(format, args);
+        }
     }
 }

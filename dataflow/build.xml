@@ -103,6 +103,9 @@
             <arg value="8"/>
             <arg value="-target"/>
             <arg value="8"/>
+            <!-- To not get a warning about missing bootstrap
+                 classpath for Java 8 (once we use Java 9). -->
+            <arg value="-Xlint:-options"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
             <arg value="-sourcepath"/>

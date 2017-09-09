@@ -60,8 +60,8 @@
             description="Perform preparation useful for all projects">
         <java fork="true"
               outputproperty="compiler.version"
+              classpath="${javac.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-version"/>
         </java>
 
@@ -114,13 +114,17 @@ points to version ${build.version} of the 'javac.jar' library."/>
               failonerror="true"
               classpath="${javac.lib}:${javadoc.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg value="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
-
             <arg value="-g"/>
+            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
+            <arg value="-source"/>
+            <arg value="7"/>
+            <arg value="-target"/>
+            <arg value="7"/>
+            <!-- To not get a warning about missing bootstrap
+                 classpath for Java 7. -->
+            <arg value="-Xlint:-options"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
-            <!-- To not get a warning about bootstrap classpath -->
-            <arg value="-Xlint:-options"/>
             <arg value="-d"/>
             <arg value="${build}"/>
             <arg value="${javacutil.loc}/src/org/checkerframework/javacutil/dist/ManualTaglet.java"/>
