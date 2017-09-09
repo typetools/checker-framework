@@ -1,9 +1,53 @@
 ---------------------------------------------------------------------------
 
-Version 2.??, 3 July 2017
+Version 2.2.0, September 5, 2017
+
+A Java 8 JVM is required to run the Checker Framework.
+You can still typecheck and compile Java 7 (or earlier) code.
+With the "-target 7" flag, the resulting .class files still run with JDK 7.
+
+The stub file format has changed to be more similar to regular Java syntax.
+Most notably, receiver annotations are written using standard Java 8 syntax
+(a special first formal paramter named "this") and inner classes are written
+using standard Java syntax (rather than at the top level using a name that
+contains "$". You need to update your stub files to conform to the new syntax.
+
+Closed issues:
+220, 293, 297, 341, 375, 407, 536, 571, 798, 867, 1180, 1214, 1218, 1371, 1411,
+1427, 1428, 1435, 1438, 1450, 1456, 1460, 1466, 1473, 1474.
+
+---------------------------------------------------------------------------
+
+Version 2.1.14, 3 August 2017
+
+Nullness Checker change to annotated JDK:  The type argument to the Class,
+Constructor, and Optional classes may now be annotated as @Nullable or
+@NonNull.  The nullness of the type argument doesn't matter, but this
+enables easier integration with generic clients.
+
+Many crashes and false positives associated with uninferred method type
+arguments have been correct. By default, uninferred method type arguments,
+which can happen with Java 8 style target type contexts, are silently ignored.
+Use the option -AconservativeUninferredTypeArguments to see warnings about
+method calls where the Checker Framework fails to infer type arguments.
+
+Closed issues:
+753, 804, 961, 1032, 1062, 1066, 1098, 1209, 1280, 1316, 1329, 1355, 1365,
+1366, 1367, 1377, 1379, 1382, 1384, 1397, 1398, 1399, 1402, 1404, 1406, 1407.
+
+---------------------------------------------------------------------------
+
+Version 2.1.13, 3 July 2017
 
 Verified that the Checker Framework builds from source on Windows Subsystem
 for Linux, on Windows 10 Creators Edition.
+
+The manual explains how to configure Android projects that use Android Studio
+3.0 and Android Gradle Plugin 3.0.0, which support type annotations.
+
+Closed issues:
+146, 1264, 1275, 1290, 1303, 1308, 1310, 1312, 1313, 1315, 1323, 1324, 1331,
+1332, 1333, 1334, 1347, 1357, 1372.
 
 ---------------------------------------------------------------------------
 
@@ -2376,7 +2420,7 @@ Checker Framework API
     classes in a single file
   Added better support for annotated wildcard type bounds
   Added AnnotatedTypeFactory.annotateImplicit() methods to replace
-    overriding the getAnntoatedType() methods directly
+    overriding the getAnnotatedType() methods directly
   Fixed a bug in which constructor arguments were not checked
 
 Interned Checker

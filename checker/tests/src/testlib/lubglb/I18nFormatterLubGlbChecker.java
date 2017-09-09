@@ -16,7 +16,7 @@ import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nUnknownFormat;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -34,13 +34,13 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
 
         Elements elements = getElementUtils();
         AnnotationMirror I18NUNKNOWNFORMAT =
-                AnnotationUtils.fromClass(elements, I18nUnknownFormat.class);
-        AnnotationMirror I18NFORMAT = AnnotationUtils.fromClass(elements, I18nFormat.class);
+                AnnotationBuilder.fromClass(elements, I18nUnknownFormat.class);
+        AnnotationMirror I18NFORMAT = AnnotationBuilder.fromClass(elements, I18nFormat.class);
         AnnotationMirror I18NINVALIDFORMAT =
-                AnnotationUtils.fromClass(elements, I18nInvalidFormat.class);
-        AnnotationMirror I18NFORMATFOR = AnnotationUtils.fromClass(elements, I18nFormatFor.class);
+                AnnotationBuilder.fromClass(elements, I18nInvalidFormat.class);
+        AnnotationMirror I18NFORMATFOR = AnnotationBuilder.fromClass(elements, I18nFormatFor.class);
         AnnotationMirror I18NFORMATBOTTOM =
-                AnnotationUtils.fromClass(elements, I18nFormatBottom.class);
+                AnnotationBuilder.fromClass(elements, I18nFormatBottom.class);
 
         AnnotationBuilder builder =
                 new AnnotationBuilder(processingEnv, I18nInvalidFormat.class.getCanonicalName());

@@ -92,9 +92,6 @@
     <ant dir="javacutil">
       <target name="javadoc"/>
     </ant>
-    <ant dir="stubparser">
-      <target name="javadoc"/>
-    </ant>
   </target>
 
   <target name="javadoc-private"
@@ -156,7 +153,7 @@
 
   <fileset id="formatted.java.files" dir="."
            includes="**/*.java"
-           excludes="checker/jdk/,stubparser/,checker/tests/nullness-javac-errors/,framework/tests/whole-program-inference/annotated/"/>
+           excludes="checker/jdk/,checker/tests/nullness-javac-errors/,framework/tests/whole-program-inference/annotated/"/>
 
   <import file="./build-styleguide.xml"/>
 
@@ -175,9 +172,6 @@
     <ant dir="javacutil">
       <target name="tags"/>
     </ant>
-    <ant dir="stubparser">
-      <target name="tags"/>
-    </ant>
     <exec executable="make" dir="docs/manual" failonerror="true">
       <arg value="tags"/>
     </exec>
@@ -190,8 +184,6 @@
       <arg value="framework/TAGS"/>
       <arg value="-i"/>
       <arg value="javacutil/TAGS"/>
-      <arg value="-i"/>
-      <arg value="stubparser/TAGS"/>
       <arg value="-i"/>
       <arg value="docs/manual/TAGS"/>
     </exec>

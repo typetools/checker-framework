@@ -818,7 +818,7 @@ public class MessageFormat extends Format {
      *            <code>arguments</code> array is not of the type
      *            expected by the format element(s) that use it.
      */
-    public final StringBuffer format(Object @Nullable [] arguments, StringBuffer result,
+    public final StringBuffer format(@Nullable Object @Nullable [] arguments, StringBuffer result,
                                      @Nullable FieldPosition pos)
     {
         return subformat(arguments, result, pos, null);
@@ -839,7 +839,7 @@ public class MessageFormat extends Format {
      *            is not of the type expected by the format element(s)
      *            that use it.
      */
-    public static String format(String pattern, Object ... arguments) {
+    public static String format(String pattern, @Nullable Object ... arguments) {
         MessageFormat temp = new MessageFormat(pattern);
         return temp.format(arguments);
     }
@@ -1235,7 +1235,7 @@ public class MessageFormat extends Format {
      *            <code>arguments</code> array is not of the type
      *            expected by the format element(s) that use it.
      */
-    private StringBuffer subformat(Object[] arguments, StringBuffer result,
+    private StringBuffer subformat(@Nullable Object @Nullable [] arguments, StringBuffer result,
                                    FieldPosition fp, List<AttributedCharacterIterator> characterIterators) {
         // note: this implementation assumes a fast substring & index.
         // if this is not true, would be better to append chars one by one.

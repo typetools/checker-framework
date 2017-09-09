@@ -1,9 +1,5 @@
 package org.checkerframework.checker.index.upperbound;
 
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-*/
-
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
@@ -11,6 +7,7 @@ import com.sun.source.tree.Tree.Kind;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
@@ -148,7 +145,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             ExpressionTree valueExp,
-            /*@CompilerMessageKey*/ String errorKey) {
+            @CompilerMessageKey String errorKey) {
         if (!relaxedCommonAssignment(varType, valueExp)) {
             super.commonAssignmentCheck(varType, valueExp, errorKey);
         }
@@ -225,25 +222,25 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         ValueAnnotatedTypeFactory valueAnnotatedTypeFactory =
                 atypeFactory.getValueAnnotatedTypeFactory();
         checkloop:
-        for (String arrayName : varLtlQual.getArrays()) {
+        for (String sequenceName : varLtlQual.getSequences()) {
 
-            List<String> sameLenArrays =
-                    sameLenFactory.getSameLensFromString(arrayName, valueExp, getCurrentPath());
-            if (testSameLen(expQual, varLtlQual, sameLenArrays, arrayName)) {
+            List<String> sameLenSequences =
+                    sameLenFactory.getSameLensFromString(sequenceName, valueExp, getCurrentPath());
+            if (testSameLen(expQual, varLtlQual, sameLenSequences, sequenceName)) {
                 continue;
             }
 
             int minlen =
                     valueAnnotatedTypeFactory.getMinLenFromString(
-                            arrayName, valueExp, getCurrentPath());
-            if (testMinLen(value, minlen, arrayName, varLtlQual)) {
+                            sequenceName, valueExp, getCurrentPath());
+            if (testMinLen(value, minlen, sequenceName, varLtlQual)) {
                 continue;
             }
-            for (String array : sameLenArrays) {
+            for (String sequence : sameLenSequences) {
                 int minlenSL =
                         valueAnnotatedTypeFactory.getMinLenFromString(
-                                array, valueExp, getCurrentPath());
-                if (testMinLen(value, minlenSL, arrayName, varLtlQual)) {
+                                sequence, valueExp, getCurrentPath());
+                if (testMinLen(value, minlenSL, sequenceName, varLtlQual)) {
                     continue checkloop;
                 }
             }
@@ -287,6 +284,6 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         if (value == null) {
             return false;
         }
-        return varQual.isValuePlusOffsetLessThanMinLen(arrayName, value.intValue(), minLen);
+        return varQual.isValuePlusOffsetLessThanMinLen(arrayName, value, minLen);
     }
 }

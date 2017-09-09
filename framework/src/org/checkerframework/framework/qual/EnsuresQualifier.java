@@ -22,8 +22,13 @@ import java.lang.annotation.Target;
  *   }
  * </code></pre>
  *
+ * Some type systems have specialized versions of this annotation, such as {@link
+ * org.checkerframework.checker.nullness.qual.EnsuresNonNull @EnsuresNonNull} and {@link
+ * org.checkerframework.checker.lock.qual.EnsuresLockHeld @EnsuresLockHeld}.
+ *
  * @author Stefan Heule
  * @see EnsuresQualifiers
+ * @see EnsuresQualifierIf
  * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
  */
 @Documented

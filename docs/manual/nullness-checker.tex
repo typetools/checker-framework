@@ -398,7 +398,7 @@ example is already
 done for you in the annotated JDK that comes with the Checker Framework):
 
 \begin{Verbatim}
-  class Class {
+  class Class<T> {
     @EnsuresNonNullIf(expression="getComponentType()", result=true)
     public native boolean isArray();
 
@@ -440,7 +440,7 @@ checker.
 
 To make the Nullness Checker conservatively reject code that may leave a
 non-null value in an array, use the command-line option
-\code{-Alint=forbidnonnullarraycomponents}.  The opiton is currently disabled
+\code{-Alint=forbidnonnullarraycomponents}.  The option is currently disabled
 because it makes the checker issue many false positive errors.
 % TODO: flip the default after collecting more data.
 
@@ -564,7 +564,7 @@ Nullness Checker from reporting this particular warning to you.
 \begin{sloppypar}
 The Checker Framework supplies several ways to suppress warnings, most
 notably the \<@SuppressWarnings("nullness")> annotation (see
-Section~\ref{suppressing-warnings}).  An example use is
+Chapter~\ref{suppressing-warnings}).  An example use is
 \end{sloppypar}
 
 %BEGIN LATEX
@@ -1242,8 +1242,8 @@ helper routine that is called by constructor.  For example:
   }
 \end{Verbatim}
 
-For compatibility with Java 6 and 7, you can write the receiver
-parameter in comments (see Section~\ref{annotations-in-comments}):
+For compatibility with Java 5/6/7, you can write the receiver
+parameter in comments (see Section~\ref{receivers-and-imports-in-comments}):
 \begin{Verbatim}
     private void init_other_fields(/*>>>@UnderInitialization(Object.class) MyClass this*/) {
 \end{Verbatim}
@@ -1931,6 +1931,15 @@ This can be placed on a single field; on a constructor; or on a class to
 suppress all initialization warnings for all constructors.
 \end{sloppypar}
 
+To disable initialization checking, supply the command-line argument
+\<-AsuppressWarnings=uninitialized>.  Do \emph{not} use
+\<-AsuppressWarnings=initialization>, because doing so will disable all
+nullness checking as well as all initialization checking.  (That is because
+of an implementation detail of the Nullness and Initialization Checkers:
+they are actually the same checker, rather than being two separate checkers
+that are aggregated together.)
+
+
 \paragraph{Checking initialization of all fields, not just \code{@NonNull} ones\label{initialization-checking-all-fields}}
 
 When the \code{-Alint=uninitialized} command-line option is provided, then
@@ -2065,8 +2074,8 @@ is called by constructor.  For example:
   }
 \end{Verbatim}
 
-For compatibility with Java 6 and 7, you can write the receiver
-parameter in comments (see Section~\ref{annotations-in-comments}):
+For compatibility with Java 5/6/7, you can write the receiver
+parameter in comments (see Section~\ref{receivers-and-imports-in-comments}):
 \begin{Verbatim}
     private void init_other_fields(/*>>> @Raw MyClass this*/) {
 \end{Verbatim}
@@ -2464,7 +2473,7 @@ annotation has nothing to do with the raw types of Java Generics.
 % LocalWords:  Nullability typeargs nulltest EnsuresNonNullIf listFiles faq
 % LocalWords:  isDirectory AssertionError intraprocedurally SuppressWarnings rB
 % LocalWords:  FindBugs's getObject RequiresNonNull EnsuresNonNull KeyFor
-% LocalWords:  nonnull EnsuresNonNull arg orElse isPresent bField
+% LocalWords:  nonnull EnsuresNonNull arg orElse isPresent bField qual ccc
 % LocalWords:  keySet getField keyfor param TypeName containsValue indexOf nraA
 % LocalWords:  lastIndexOf deref getProperty getProperties classliteral MyClass
 % LocalWords:  typeofthis nraB nrbB rO nroO nroB containsKey enum
@@ -2475,6 +2484,6 @@ annotation has nothing to do with the raw types of Java Generics.
 % LocalWords:  isEmpty AssumeAssertion cleanroom varargs OtherClass
 % LocalWords:  NullnessRawnessChecker mymap mykey KeyType ValueType
 % LocalWords:  dereferenced dereference Dereferencing initializers
-% LocalWords:  initHelper helperMethod NoSuchElementException
+% LocalWords:  initHelper helperMethod NoSuchElementException classpath
 % LocalWords:  forbidnonnullarraycomponents lombok
 % LocalWords:  NotOnlyInitialized

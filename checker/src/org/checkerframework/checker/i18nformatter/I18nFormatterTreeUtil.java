@@ -1,9 +1,5 @@
 package org.checkerframework.checker.i18nformatter;
 
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-*/
-
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
@@ -24,6 +20,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.SimpleElementVisitor7;
 import javax.lang.model.util.SimpleTypeVisitor7;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.InvocationType;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
 import org.checkerframework.checker.i18nformatter.qual.I18nChecksFormat;
@@ -43,10 +40,10 @@ import org.checkerframework.dataflow.cfg.node.StringLiteralNode;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -142,35 +139,16 @@ public class I18nFormatterTreeUtil {
         return anno != null;
     }
 
-    private static class ResultImpl<E> implements Result<E> {
-        private final E value;
-        public final ExpressionTree location;
-
-        public ResultImpl(E value, ExpressionTree location) {
-            this.value = value;
-            this.location = location;
-        }
-
-        @Override
-        public E value() {
-            return value;
-        }
-    }
-
     /** Reports an error. Takes a {@link Result} to report the location. */
-    public final <E> void failure(
-            Result<E> res, /*@CompilerMessageKey*/ String msg, Object... args) {
+    public final <E> void failure(Result<E> res, @CompilerMessageKey String msg, Object... args) {
         checker.report(
-                org.checkerframework.framework.source.Result.failure(msg, args),
-                ((ResultImpl<E>) res).location);
+                org.checkerframework.framework.source.Result.failure(msg, args), res.location);
     }
 
     /** Reports an warning. Takes a {@link Result} to report the location. */
-    public final <E> void warning(
-            Result<E> res, /*@CompilerMessageKey*/ String msg, Object... args) {
+    public final <E> void warning(Result<E> res, @CompilerMessageKey String msg, Object... args) {
         checker.report(
-                org.checkerframework.framework.source.Result.warning(msg, args),
-                ((ResultImpl<E>) res).location);
+                org.checkerframework.framework.source.Result.warning(msg, args), res.location);
     }
 
     private I18nConversionCategory[] asFormatCallCategoriesLowLevel(MethodInvocationNode node) {
@@ -197,7 +175,7 @@ public class I18nFormatterTreeUtil {
     }
 
     public Result<I18nConversionCategory[]> getHasFormatCallCategories(MethodInvocationNode node) {
-        return new ResultImpl<I18nConversionCategory[]>(
+        return new Result<I18nConversionCategory[]>(
                 asFormatCallCategoriesLowLevel(node), node.getTree());
     }
 
@@ -206,7 +184,7 @@ public class I18nFormatterTreeUtil {
         Map<String, String> translations = atypeFactory.translations;
         Node firstParam = node.getArgument(0);
         Result<I18nConversionCategory[]> ret =
-                new ResultImpl<I18nConversionCategory[]>(null, node.getTree());
+                new Result<I18nConversionCategory[]>(null, node.getTree());
 
         // Now only work with a literal string
         if (firstParam != null && (firstParam instanceof StringLiteralNode)) {
@@ -214,7 +192,7 @@ public class I18nFormatterTreeUtil {
             if (translations.containsKey(s)) {
                 String value = translations.get(s);
                 ret =
-                        new ResultImpl<I18nConversionCategory[]>(
+                        new Result<I18nConversionCategory[]>(
                                 I18nFormatUtil.formatParameterCategories(value), node.getTree());
             }
         }
@@ -353,7 +331,7 @@ public class I18nFormatterTreeUtil {
                 // and we can't do anything else
                 type = FormatType.I18NFORMATFOR;
             }
-            return new ResultImpl<FormatType>(type, formatArg);
+            return new Result<FormatType>(type, formatArg);
         }
 
         public final String getInvalidError() {
@@ -431,11 +409,11 @@ public class I18nFormatterTreeUtil {
             if (type != InvocationType.VARARG && args.size() > 0) {
                 loc = args.get(0);
             }
-            return new ResultImpl<InvocationType>(type, loc);
+            return new Result<InvocationType>(type, loc);
         }
 
         public Result<FormatType> getInvalidInvocationType() {
-            return new ResultImpl<FormatType>(FormatType.I18NFORMATFOR, formatArg);
+            return new Result<FormatType>(FormatType.I18NFORMATFOR, formatArg);
         }
 
         /**
@@ -455,7 +433,7 @@ public class I18nFormatterTreeUtil {
             for (int i = 0; i < res.length; ++i) {
                 ExpressionTree arg = args.get(i);
                 TypeMirror argType = atypeFactory.getAnnotatedType(arg).getUnderlyingType();
-                res[i] = new ResultImpl<TypeMirror>(argType, arg);
+                res[i] = new Result<TypeMirror>(argType, arg);
             }
             return res;
         }

@@ -32,9 +32,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -43,7 +43,7 @@ import org.checkerframework.javacutil.TypesUtils;
 public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected final AnnotationMirror CLASSVAL_TOP =
-            AnnotationUtils.fromClass(elements, UnknownClass.class);
+            AnnotationBuilder.fromClass(elements, UnknownClass.class);
 
     public ClassValAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);

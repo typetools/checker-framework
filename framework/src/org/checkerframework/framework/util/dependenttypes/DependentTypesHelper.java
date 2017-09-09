@@ -42,10 +42,10 @@ import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeComparer;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.PluginUtil;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -97,7 +97,7 @@ public class DependentTypesHelper {
      * Returns a list of the names of elements in the annotation class that should be interpreted as
      * Java expressions.
      *
-     * @param clazz Annotation class
+     * @param clazz annotation class
      * @return a list of the names of elements in the annotation class that should be interpreted as
      *     Java expressions
      */
@@ -784,8 +784,8 @@ public class DependentTypesHelper {
      * if there aren't any.
      *
      * @param am AnnotationMirror
-     * @return Returns the list of elements of the annotation that are Java expressions, or the
-     *     empty list if there aren't any.
+     * @return the list of elements of the annotation that are Java expressions, or the empty list
+     *     if there aren't any
      */
     private List<String> getListOfExpressionElements(AnnotationMirror am) {
         for (Class<? extends Annotation> clazz : annoToElements.keySet()) {

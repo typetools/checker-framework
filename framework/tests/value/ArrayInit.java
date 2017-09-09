@@ -75,6 +75,11 @@ class ArrayInit {
         int @ArrayLen(3) [] ints2 = {2, 2, 2};
     }
 
+    public void initializerString() {
+        byte @ArrayLen(2) [] bytes = new byte[] {100, '%'};
+        char @ArrayLen(3) [] chars = new char[] {45, 'A', '%'};
+    }
+
     public void vargsTest() {
         // type of arg should be @UnknownVal Object @BottomVal[]
         vargs((Object[]) null);
@@ -86,7 +91,11 @@ class ArrayInit {
         vargs((byte[]) null);
     }
 
-    public void vargs(Object @ArrayLen(0) ... ints) {}
+    public void vargs(Object @ArrayLen(0) ... objs) {}
+
+    public void vargs(int @ArrayLen(0) ... ints) {}
+
+    public void vargs(byte @ArrayLen(0) ... bytes) {}
 
     public void nullableArrays() {
         Object @ArrayLen(2) [] @ArrayLen(1) [] o = new Object[][] {new Object[] {null}, null};

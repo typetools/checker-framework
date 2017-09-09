@@ -320,6 +320,7 @@ Here is a good way to proceed.
   Before implementing type rules (or any other code in your type-checker),
   you are recommended to read the javadoc for the utility routines in the
   \<org.checkerframework.javacutil> package, especially
+  \refclass{javacutil}{AnnotationBuilder},
   \refclass{javacutil}{AnnotationUtils},
   \refclass{javacutil}{ElementUtils},
   \refclass{javacutil}{TreeUtils},
@@ -827,7 +828,7 @@ A type system's rules define which operations on values of a
 particular type are forbidden.
 These rules must be defined procedurally, not declaratively.
 Put them in a file \<\emph{MyChecker}Visitor.java> that extends
-\refclass{common/basetype}.
+\refclass{common/basetype}{BaseTypeVisitor}.
 
 BaseTypeVisitor performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
@@ -1418,7 +1419,7 @@ Constant Value Checker (\chapterpageref{constant-value-checker}).
     regexAnnotation = factory.createRegexAnnotation(groupCount);
   } else {
     // argument is not a literal integer; fall back to @Regex(), which is the same as @Regex(0)
-    regexAnnotation = AnnotationUtils.fromClass(factory.getElementUtils(), Regex.class);
+    regexAnnotation = AnnotationBuilder.fromClass(factory.getElementUtils(), Regex.class);
   }
 \end{Verbatim}
 %BEGIN LATEX
@@ -1708,7 +1709,7 @@ uses the JDK.  As described in Section~\ref{annotated-libraries-creating},
 there are two general ways to supply an annotated library:  in Java files
 that will be compiled to \<.class> files, or as stub files (partial Java source files).
 
-It's easier to start out with stub files.  If you need to annotated many
+It's easier to start out with stub files.  If you need to annotate many
 classes (say, more than 20 or so), then you should create an annotated JDK.
 
 To supply an annotated JDK that will be compiled, see Section~\ref{annotating-jdk}.

@@ -3,11 +3,9 @@ import testlib.reflection.qual.*;
 package java.lang.reflect;
 
 class Method {
-
-   @Top Object invoke(@ReflectBottom Object obj, @ReflectBottom Object @ReflectBottom [] args) @Top;
-
+   @Top Object invoke(@Top Method this, @ReflectBottom Object obj, @ReflectBottom Object @Top [] args);
 }
 
-class Constructor {
-  @Top Object newInstance(@ReflectBottom Object obj, @ReflectBottom Object @ReflectBottom [] args) @Top;
+class Constructor<T> {
+  @Top Object newInstance(@Top Constructor<T> this, @ReflectBottom Object obj, @ReflectBottom Object @Top [] args);
 }

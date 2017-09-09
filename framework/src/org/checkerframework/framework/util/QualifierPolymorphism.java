@@ -34,6 +34,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
@@ -86,7 +87,7 @@ public class QualifierPolymorphism {
         this.types = env.getTypeUtils();
 
         Elements elements = env.getElementUtils();
-        POLYALL = AnnotationUtils.fromClass(elements, PolyAll.class);
+        POLYALL = AnnotationBuilder.fromClass(elements, PolyAll.class);
         this.qualhierarchy = factory.getQualifierHierarchy();
 
         Map<AnnotationMirror, AnnotationMirror> polys =
@@ -111,7 +112,7 @@ public class QualifierPolymorphism {
                         }
                         ttreetop = tops.iterator().next();
                     } else {
-                        AnnotationMirror ttree = AnnotationUtils.fromName(elements, plval);
+                        AnnotationMirror ttree = AnnotationBuilder.fromName(elements, plval);
                         ttreetop = qualhierarchy.getTopAnnotation(ttree);
                     }
                     if (polys.containsKey(ttreetop)) {

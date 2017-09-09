@@ -96,13 +96,14 @@
               failonerror="true"
               classpath="${javac.lib}:${javacutil.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg value="-Xbootclasspath/p:${javac.lib}"/>
-
             <arg value="-g"/>
+            <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->
+            <arg value="-source"/>
+            <arg value="8"/>
+            <arg value="-target"/>
+            <arg value="8"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
-            <!-- To not get a warning about bootstrap classpath -->
-            <arg value="-Xlint:-options"/>
             <arg value="-sourcepath"/>
             <arg value="${src}"/>
             <arg value="-d"/>
@@ -110,11 +111,6 @@
             <arg value="@${tmpdir}/srcfiles-dataflow.txt"/>
             <arg value="-version"/>
             <arg value="-XDTA:noannotationsincomments"/>
-	    <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->
-            <arg value="-source"/>
-            <arg value="8"/>
-            <arg value="-target"/>
-            <arg value="8"/>
             <arg value="-Xlint"/>
             <arg value="-Werror"/>
         </java>
@@ -137,11 +133,6 @@
         </exec>
     </target>
 
-    <!--
-    This target seems to only work if tools.jar is already in the
-    classpath (despite the attempt in the body to add tools.jar to the
-    classpath).  Also, ${java.home} is the jre/ directory.
-    -->
     <!-- Dependendencies on other projects (such as javacutil)
          mirrors javadoc dependencies. If changing project
          dependencies, change the Javadoc dependencies to keep
@@ -163,8 +154,7 @@
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${javacutil.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
-                 bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
+                 classpath="${build}:${javacutil.lib}:${javac.lib}:${javadoc.lib}">
             <package name="org.checkerframework.dataflow.*"/>
             <package name="org.checkerframework.javacutil.*"/>
             <link href="http://docs.oracle.com/javase/8/docs/api/"/>

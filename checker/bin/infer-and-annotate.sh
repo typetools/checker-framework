@@ -53,6 +53,8 @@ interactive=
 # Require user confirmation before running each command
 # interactive=1
 
+CHECKERBIN=$(dirname "$0")
+
 # This function separates extra arguments passed to the checker from Java files
 # received as arguments.
 # TODO: Handle the following limitation: This function makes the assumption
@@ -127,7 +129,7 @@ infer_and_annotate() {
         mkdir -p $WHOLE_PROGRAM_INFERENCE_DIR
 
         # Runs CF's javac
-        command="${CHECKERFRAMEWORK}/checker/bin/javac -d $TEMP_DIR/ -cp $cp -processor $processor -Ainfer -Awarns -Xmaxwarns 10000 $extra_args $java_files"
+        command="$CHECKERBIN/javac -d $TEMP_DIR/ -cp $cp -processor $processor -Ainfer -Awarns -Xmaxwarns 10000 $extra_args $java_files"
         echo "About to run: ${command}"
         if [ $interactive ]; then
             echo "Press any key to run command... "

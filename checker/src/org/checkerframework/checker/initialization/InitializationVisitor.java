@@ -1,10 +1,5 @@
 package org.checkerframework.checker.initialization;
 
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -25,6 +20,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -62,19 +58,19 @@ public class InitializationVisitor<
         extends BaseTypeVisitor<Factory> {
 
     protected final AnnotationFormatter annoFormatter;
+
     // Error message keys
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CAST =
+    private static final @CompilerMessageKey String COMMITMENT_INVALID_CAST =
             "initialization.invalid.cast";
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_FIELDS_UNINITIALIZED =
+    private static final @CompilerMessageKey String COMMITMENT_FIELDS_UNINITIALIZED =
             "initialization.fields.uninitialized";
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_TYPE =
+    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_TYPE =
             "initialization.invalid.field.type";
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE =
+    private static final @CompilerMessageKey String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE =
             "initialization.invalid.constructor.return.type";
-    private static final /*@CompilerMessageKey*/ String
-            COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED =
-                    "initialization.invalid.field.write.unknown";
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED =
+    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED =
+            "initialization.invalid.field.write.unknown";
+    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED =
             "initialization.invalid.field.write.initialized";
 
     public InitializationVisitor(BaseTypeChecker checker) {
@@ -104,7 +100,7 @@ public class InitializationVisitor<
 
     @Override
     protected void commonAssignmentCheck(
-            Tree varTree, ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
+            Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
         // field write of the form x.f = y
         if (TreeUtils.isFieldAccess(varTree)) {
             // cast is safe: a field access can only be an IdentifierTree or
@@ -124,7 +120,7 @@ public class InitializationVisitor<
                         && !(atypeFactory.isCommitted(yType)
                                 || atypeFactory.isFree(xType)
                                 || atypeFactory.isFbcBottom(yType))) {
-                    /*@CompilerMessageKey*/ String err;
+                    @CompilerMessageKey String err;
                     if (atypeFactory.isCommitted(xType)) {
                         err = COMMITMENT_INVALID_FIELD_WRITE_COMMITTED;
                     } else {

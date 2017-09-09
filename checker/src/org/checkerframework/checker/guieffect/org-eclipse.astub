@@ -15,7 +15,7 @@ package org.eclipse.core.commands;
 @PolyUIType public interface IHandler {
     @SafeEffect void addHandlerListener(IHandlerListener handlerListener);
     @SafeEffect void dispose();
-    @PolyUIEffect Object execute(ExecutionEvent event) @PolyUI;
+    @PolyUIEffect Object execute(@PolyUI IHandler this, ExecutionEvent event);
     @SafeEffect boolean isEnabled();
     @SafeEffect boolean isHandled();
     @SafeEffect void removeHandlerListener(IHandlerListener handlerListener);
@@ -34,29 +34,31 @@ public abstract class PropertyTester implements IPropertyTester {
 
 package org.eclipse.core.runtime;
 @PolyUIType public interface IProgressMonitor {
-    @PolyUIEffect void beginTask(String name, int totalWork) @PolyUI;
-    @PolyUIEffect void done() @PolyUI;
-    @PolyUIEffect void internalWorked(double work) @PolyUI;
-    @PolyUIEffect boolean isCanceled() @PolyUI;
-    @PolyUIEffect void setCanceled(boolean value) @PolyUI;
-    @PolyUIEffect void setTaskName(String name) @PolyUI;
-    @PolyUIEffect void subTask(String name) @PolyUI;
-    @PolyUIEffect void worked(int work) @PolyUI;
+    @PolyUIEffect void beginTask(@PolyUI IProgressMonitor this, String name, int totalWork);
+    @PolyUIEffect void done(@PolyUI IProgressMonitor this);
+    @PolyUIEffect void internalWorked(@PolyUI IProgressMonitor this, double work);
+    @PolyUIEffect boolean isCanceled(@PolyUI IProgressMonitor this);
+    @PolyUIEffect void setCanceled(@PolyUI IProgressMonitor this, boolean value);
+    @PolyUIEffect void setTaskName(@PolyUI IProgressMonitor this, String name);
+    @PolyUIEffect void subTask(@PolyUI IProgressMonitor this, String name);
+    @PolyUIEffect void worked(@PolyUI IProgressMonitor this, int work);
 }
 @PolyUIType
 public abstract class Plugin implements BundleActivator {
     // These methods are present on all plugins, UI or not
-    @PolyUIEffect void start(BundleContext context) @PolyUI;
-    @PolyUIEffect void stop(BundleContext context) @PolyUI;
+    @PolyUIEffect void start(@PolyUI Plugin this, BundleContext context);
+    @PolyUIEffect void stop(@PolyUI Plugin this, BundleContext context);
     @SafeEffect public final Preferences getPluginPreferences();
 }
-public static interface Preferences$IPropertyChangeListener extends EventListener {
-    @PolyUIEffect public void propertyChange(Preferences.PropertyChangeEvent event) @PolyUI;
+public class Preferences extends Object {
+    public static interface IPropertyChangeListener extends EventListener {
+        @PolyUIEffect public void propertyChange(@PolyUI Preferences$IPropertyChangeListener this, Preferences.PropertyChangeEvent event);
+    }
 }
 package org.eclipse.core.runtime.jobs;
 @PolyUIType
 public abstract class Job extends org.eclipse.core.internal.jobs.InternalJob implements IAdaptable {
-    @PolyUIEffect protected abstract IStatus run(IProgressMonitor monitor) @PolyUI;
+    @PolyUIEffect protected abstract IStatus run(@PolyUI Job this, IProgressMonitor monitor);
 }
 
 @UIPackage package org.eclipse.debug.ui;
@@ -250,14 +252,14 @@ public class PropertyChangeEvent extends EventObject {
     @SafeEffect String getProperty();
 }
 @PolyUIType public interface IPropertyChangeListener extends EventListener {
-    @PolyUIEffect void propertyChange(PropertyChangeEvent event) @PolyUI;
+    @PolyUIEffect void propertyChange(@PolyUI IPropertyChangeListener this, PropertyChangeEvent event);
 }
 @UIPackage package org.eclipse.jface.viewers;
 public abstract class ContentViewer extends Viewer {
     @SafeEffect public Object getInput();
 }
 public abstract class StructuredViewer extends ContentViewer implements IPostSelectionProvider {
-    /*@SafeEffect void refresh(); -- Why the hell did I ever mark this safe??? */
+    // @SafeEffect void refresh(); -- Why the hell did I ever mark this safe???
 }
 public class TreeViewer extends AbstractTreeViewer {
     @SafeEffect Tree getTree();

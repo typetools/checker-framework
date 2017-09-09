@@ -1,6 +1,6 @@
 // Test case for Issue 1046:
 // https://github.com/typetools/checker-framework/issues/1046
-// Addtional test case: checker/tests/nullness/Issue1046.java
+// Additonal test case: checker/tests/nullness/Issue1046.java
 // @below-java8-jdk-skip-test
 
 import java.util.List;
