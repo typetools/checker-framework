@@ -1,0 +1,10 @@
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.regex.qual.*;
+import org.checkerframework.common.value.qual.*;
+import org.checkerframework.dataflow.qual.Pure;
+
+package mypackage;
+
+class MyClass {
+   static @ArrayLen(1) @Regex(1) String toString(char c);
+}

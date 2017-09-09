@@ -62,6 +62,11 @@ Checker gives up and its type becomes
 The \<@ArrayLen> annotation means that at run time, the expression
 evaluates to an array whose length is one of the annotation's arguments.
 
+The \<@StringVal> annotation may be applied to a char array.  Although byte
+arrays are often converted to/from strings, the \<@StringVal> annotation may
+not be applied to them.  This is because the conversion depends on the
+platform's character set.
+
 % \refqualclass{checker/value/qual}{BottomVal}, meaning that the expression
 % is dead or always has the value \<null>.
 
@@ -266,7 +271,48 @@ warning message:
 
 \end{itemize}
 \end{sloppypar}
+
+
+\section{Unsoundly ignoring overflow\label{value-checker-overflow}}
+
+The Constant Value Checker takes Java's overflow rules into account when
+computing the possible values of expressions.
+%
+The \code{-AignoreRangeOverflow} command-line option makes it ignore the
+possibility of overflow for range annotations
+\refqualclass{common/value/qual}{IntRange} and
+\refqualclass{common/value/qual}{ArrayLenRange}.
+%
+Figure~\ref{fig-value-ignore-overflow} gives an example of behavior with
+and without the \code{-AignoreRangeOverflow} command-line option.
+
+\begin{figure}
+\begin{Verbatim}
+  ...
+  if (i > 5) {
+    // i now has type:  @IntRange(from=5, to=Integer.MAX_VALUE)
+    i = i + 1;
+    // If i started out as Integer.MAX_VALUE, then i is now Integer.MIN_VALUE.
+    // i's type is now @IntRange(from=Integer.MIN_VALUE, to=Integer.MAX_VALUE).
+    // When ignoring overflow, i's type is now @IntRange(from=6, to=Integer.MAX_VALUE).
+  }
+\end{Verbatim}
+\caption{With the \code{-AignoreRangeOverflow} command-line option,
+the Constant Value Checker ignores overflow
+for range types, which gives smaller ranges to range types.}
+\label{fig-value-ignore-overflow}
+\end{figure}
+
+As with any unsound behavior in the Checker Framework, this option reduces
+the number of warnings and errors produced, and may reduce the number of
+\<@IntRange> qualifiers that you need to write in the source code.
+However, it is possible that at run time, an expression might evaluate to a
+value that is not in its \<@IntRange> qualifier.  You should either accept
+that possibility, or verify the lack of overflow using some other tool or
+manual analysis.
+
+
 %%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange
 %  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
-%%  LocalWords:  classpath AreportEvalWarns ArrayLen ArrayLenRange MinLen
-%%  LocalWords:  PolyValue
+%%  LocalWords:  classpath AreportEvalWarns ArrayLen ArrayLenRange casted
+%  LocalWords:  qual AignoreRangeOverflow MinLen PolyValue

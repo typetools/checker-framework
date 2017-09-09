@@ -495,6 +495,7 @@ public class PluginUtil {
 
     /**
      * Extract the major version number from java.version (e.g. 6 from 1.6.whatever)
+     *
      * @return The major version number from java.version
      */
     public static int getJreVersion() {
@@ -503,7 +504,7 @@ public class PluginUtil {
         final Matcher oldVersionMatcher = oldVersionPattern.matcher(jreVersionStr);
         // For Early Access version of the JDK
         final Pattern eaVersionPattern = Pattern.compile("^(\\d+)-ea$");
-        final Matcher eaVersionMatcher = eaVersionPattern.matcher(jreVersionStr)
+        final Matcher eaVersionMatcher = eaVersionPattern.matcher(jreVersionStr);
 
         final int version;
         if (oldVersionMatcher.matches()) {

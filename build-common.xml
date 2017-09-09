@@ -39,7 +39,11 @@
               value="javac 1.8.0"/>
 
     <property name="compiler.version.goal.java9"
-              value="javac 9"/>
+	      value="javac"/>
+    <!-- Allow anything that starts with javac.
+	 For my local build, I get "javac (version info not available)".
+        value="javac 9"/>
+    -->
 
 
     <condition property="jdkName" value="jdk7.jar">

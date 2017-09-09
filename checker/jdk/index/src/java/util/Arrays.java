@@ -97,7 +97,7 @@ public class Arrays {
      * @throws ArrayIndexOutOfBoundsException
      *     if {@code fromIndex < 0} or {@code toIndex > a.length}
      */
-    public static void sort(int[] a, @IndexFor("#1") int fromIndex, @IndexOrHigh("1") int toIndex) {
+    public static void sort(int[] a, @IndexFor("#1") int fromIndex, @IndexOrHigh("#1") int toIndex) {
         rangeCheck(a.length, fromIndex, toIndex);
         DualPivotQuicksort.sort(a, fromIndex, toIndex - 1);
     }

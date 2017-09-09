@@ -49,10 +49,10 @@ import org.checkerframework.javacutil.TreeUtils;
  *   <li value="2">concatenation of two valid regular expression values (either {@code String} or
  *       {@code char}) or two partial regular expression values that make a valid regular expression
  *       when concatenated.
- *   <li value="3">for calls to Pattern.compile changes the group count value of the return type to
+ *   <li value="3">for calls to Pattern.compile, change the group count value of the return type to
  *       be the same as the parameter. For calls to the asRegex methods of the classes in
- *       asRegexClasses these asRegex methods will return a {@code @Regex String} with the same
- *       group count as the second argument to the call to asRegex.
+ *       asRegexClasses, the returned {@code @Regex String} gets the same group count as the second
+ *       argument to the call to asRegex.
  *       <!--<li value="4">initialization of a char array that when converted to a String
  * is a valid regular expression.</li>-->
  * </ol>
@@ -156,14 +156,6 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new RegexTransfer((CFAnalysis) analysis);
     }
 
-    @Override
-    public TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
-                new ImplicitsTreeAnnotator(this),
-                new RegexTreeAnnotator(this),
-                new RegexPropagationAnnotator(this));
-    }
-
     /** Returns a new Regex annotation with the given group count. */
     /*package-scope*/ AnnotationMirror createRegexAnnotation(int groupCount) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, Regex.class);
@@ -256,6 +248,16 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public TreeAnnotator createTreeAnnotator() {
+        // Don't call super.createTreeAnnotator because the PropagationTreeAnnotator types binary
+        // expressions as lub.
+        return new ListTreeAnnotator(
+                new ImplicitsTreeAnnotator(this),
+                new RegexTreeAnnotator(this),
+                new RegexPropagationAnnotator(this));
     }
 
     private static class RegexPropagationAnnotator extends PropagationTreeAnnotator {

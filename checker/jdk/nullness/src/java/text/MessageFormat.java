@@ -1071,7 +1071,7 @@ public class MessageFormat extends Format {
      *            index information as described above.
      * @return An <code>Object</code> array parsed from the string. In case of
      *         error, returns null.
-     * @throws NullPointerException if {@code source} or {@code pos} is null.
+     * @exception NullPointerException if <code>pos</code> is null.
      */
     public @Nullable Object parseObject(String source, ParsePosition pos) {
         return parse(source, pos);
@@ -1171,7 +1171,7 @@ public class MessageFormat extends Format {
          * indicating the index in the <code>arguments</code> array of the
          * argument from which the text was generated.
          */
-        public static final Field ARGUMENT =
+        public final static Field ARGUMENT =
                            new Field("message argument field");
     }
 
@@ -1242,7 +1242,7 @@ public class MessageFormat extends Format {
         int lastOffset = 0;
         int last = result.length();
         for (int i = 0; i <= maxOffset; ++i) {
-            result.append(pattern, lastOffset, offsets[i]);
+            result.append(pattern.substring(lastOffset, offsets[i]));
             lastOffset = offsets[i];
             int argumentNumber = argumentNumbers[i];
             if (arguments == null || argumentNumber >= arguments.length) {
@@ -1335,7 +1335,7 @@ public class MessageFormat extends Format {
                 }
             }
         }
-        result.append(pattern, lastOffset, pattern.length());
+        result.append(pattern.substring(lastOffset, pattern.length()));
         if (characterIterators != null && last != result.length()) {
             characterIterators.add(createAttributedCharacterIterator(
                                    result.substring(last)));

@@ -240,6 +240,11 @@
             <arg value="${build}"/>
             <arg value="@${tmpdir}/srcfiles-checker.txt"/>
             <arg value="-version"/>
+	    <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->
+            <arg value="-source"/>
+            <arg value="8"/>
+            <arg value="-target"/>
+            <arg value="8"/>
             <arg value="-Xlint"/>
             <arg value="-Werror"/>
         </java>
@@ -441,6 +446,11 @@
             <arg value="${checker-qual-classes-tmp}"/>
             <arg value="@${tmpdir}/srcfiles-checker.txt"/>
             <arg value="-version"/>
+	    <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->
+            <arg value="-source"/>
+            <arg value="8"/>
+            <arg value="-target"/>
+            <arg value="8"/>
             <arg value="-Xlint"/>
             <arg value="-Werror"/>
         </java>
@@ -556,6 +566,11 @@
             <arg value="${checker-compat-qual-classes-tmp}"/>
             <arg value="@${tmpdir}/srcfiles-checker.txt"/>
             <arg value="-version"/>
+	    <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->
+            <arg value="-source"/>
+            <arg value="8"/>
+            <arg value="-target"/>
+            <arg value="8"/>
             <arg value="-Xlint"/>
             <arg value="-Werror"/>
             <!-- To not get a warning about bootstrap classpath -->
@@ -862,7 +877,7 @@
     </target>
 
     <target name="nullness-tests-nobuildjdk"
-            depends="jar,jdk.jar.exists,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-assume-assertions-are-enabled-tests,nullness-extra-tests-nobuildjdk,nullness-reflection-tests,nullness-invariantarrays-tests,nullness-safedefaultsbytecode-tests,nullness-safedefaultssourcecode-tests"
+            depends="jar,jdk.jar.exists,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-assume-assertions-are-enabled-tests,nullness-extra-tests-nobuildjdk,nullness-reflection-tests,nullness-invariantarrays-tests,nullness-safedefaultsbytecode-tests,nullness-safedefaultssourcecode-tests,nullness-checkcastelementtype"
             description="Run tests for the Nullness Checker, WITHOUT updating jdkX.jar">
     </target>
 
@@ -899,6 +914,13 @@
             description="Run base tests for the rawness Nullness Checker, with assertions">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessRawnessTestWithAsserts"/>
+        </antcall>
+    </target>
+
+    <target name="nullness-checkcastelementtype" depends="jar,build-tests"
+            description="Run base tests for the rawness Nullness Checker, with assertions">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessCheckCastElementTypeTest"/>
         </antcall>
     </target>
 
@@ -1205,6 +1227,7 @@ So, use our own archived version.
             <sequential>
                 <!--As of version 4.2-b02, a NullPointerException is thrown without making this dir-->
                 <mkdir dir="${build}/jtreg/all/report/html"/>
+                <mkdir dir="${build}/jtreg/all/report/text"/>
 
                 <property name="coverage.options" value=""/>    <!-- default -->
                 <property name="coverage.classpath" value=""/>  <!-- default -->
@@ -1306,6 +1329,11 @@ So, use our own archived version.
             <arg value="${build}"/>
             <arg value="@${tmpdir}/srcfiles-checker.txt"/>
             <arg value="-version"/>
+	    <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->
+            <arg value="-source"/>
+            <arg value="8"/>
+            <arg value="-target"/>
+            <arg value="8"/>
             <arg value="-proc:only"/>
             <arg value="-processor"/>
             <arg value="${checker-name}"/>
@@ -1386,6 +1414,8 @@ So, use our own archived version.
     </target>
 
 
+    <!-- Checks whether errorprone is available, but does not run errorprone.
+         To run errorprone, use the "check-errorprone" target. -->
     <target name="errorprone.check">
       <condition property="errorprone.exists">
         <available file="${errorprone.lib}" type="file"/>
@@ -1557,12 +1587,11 @@ So, use our own archived version.
 
         <mkdir dir="dist" />
 
-        <!--
         <copy tofile="dist/javac.jar" file="${javac.lib}"
               overwrite="true" failonerror="true" />
-        -->
+
         <jar destfile="dist/javac.jar">
-            <zipgroupfileset dir="${jsr308.langtools.dist}/lib/" includes="*.jar" />
+            <zipgroupfileset dir="${jsr308.langtools.dist}" includes="*.jar" />
         </jar>
 
         <copy file="jdk/jdk7.jar" tofile="dist/jdk7.jar" overwrite="true" failonerror="false" />

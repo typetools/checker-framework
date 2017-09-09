@@ -494,28 +494,34 @@ public class PluginUtil {
     }
 
     /**
-     * Extract the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever)
+     * Extract the major version number from java.version (e.g. 6 from 1.6.whatever)
      *
-     * @return the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever)
+     * @return The major version number from java.version
      */
-    public static double getJreVersion() {
+    public static int getJreVersion() {
+        final Pattern oldVersionPattern = Pattern.compile("^\\d\\.(\\d+)\\..*$");
         final String jreVersionStr = System.getProperty("java.version");
-
-        final Pattern versionPattern = Pattern.compile("^(\\d\\.\\d+)\\..*$");
-        final Matcher versionMatcher = versionPattern.matcher(jreVersionStr);
-
+        final Matcher oldVersionMatcher = oldVersionPattern.matcher(jreVersionStr);
         // For Early Access version of the JDK
         final Pattern eaVersionPattern = Pattern.compile("^(\\d+)-ea$");
         final Matcher eaVersionMatcher = eaVersionPattern.matcher(jreVersionStr);
 
-        final double version;
-        if (versionMatcher.matches()) {
-            version = Double.parseDouble(versionMatcher.group(1));
+        final int version;
+        if (oldVersionMatcher.matches()) {
+            version = Integer.parseInt(oldVersionMatcher.group(1));
         } else if (eaVersionMatcher.matches()) {
-            version = Double.parseDouble("1." + eaVersionMatcher.group(1));
+            version = Integer.parseInt(eaVersionMatcher.group(1));
         } else {
-            throw new RuntimeException(
-                    "Could not determine version from property java.version=" + jreVersionStr);
+            // See http://openjdk.java.net/jeps/223
+            // We only care about the major version number.
+            final Pattern newVersionPattern = Pattern.compile("^(\\d).*$");
+            final Matcher newVersionMatcher = newVersionPattern.matcher(jreVersionStr);
+            if (newVersionMatcher.matches()) {
+                version = Integer.parseInt(newVersionMatcher.group(1));
+            } else {
+                throw new RuntimeException(
+                        "Could not determine version from property java.version=" + jreVersionStr);
+            }
         }
 
         return version;
@@ -528,16 +534,13 @@ public class PluginUtil {
      * @return "jdk<em>X</em>" where X is the version of Java that is being run (e.g. 6, 7, ...)
      */
     public static String getJdkJarPrefix() {
-        final double jreVersion = getJreVersion();
+        final int jreVersion = getJreVersion();
         final String prefix;
-        if (jreVersion == 1.7) {
-            prefix = "jdk7";
-        } else if (jreVersion == 1.8) {
-            prefix = "jdk8";
-        } else if (jreVersion == 1.9) {
-            prefix = "jdk9";
-        } else {
+
+        if (jreVersion <= 6 || jreVersion > 9) {
             throw new AssertionError("Unsupported JRE version: " + jreVersion);
+        } else {
+            prefix = "jdk" + jreVersion;
         }
 
         return prefix;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2011, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -40,6 +40,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @since    1.2
  */
 
+@SuppressWarnings("rawtypes")
 public abstract class Reference<T> {
 
     /* A Reference instance is in one of four possible internal states:
@@ -92,120 +93,71 @@ public abstract class Reference<T> {
 
     private T referent;         /* Treated specially by GC */
 
-    volatile ReferenceQueue<? super T> queue;
+    ReferenceQueue<? super T> queue;
 
     /* When active:   NULL
      *     pending:   this
      *    Enqueued:   next reference in queue (or this if last)
      *    Inactive:   this
      */
-    @SuppressWarnings("rawtypes")
-    volatile Reference next;
+    Reference next;
 
     /* When active:   next element in a discovered reference list maintained by GC (or this if last)
      *     pending:   next element in the pending list (or null if last)
      *   otherwise:   NULL
      */
-    private transient Reference<T> discovered;  /* used by VM */
+    transient private Reference<T> discovered;  /* used by VM */
 
+
+    /* Object used to synchronize with the garbage collector.  The collector
+     * must acquire this lock at the beginning of each collection cycle.  It is
+     * therefore critical that any code holding this lock complete as quickly
+     * as possible, allocate no new objects, and avoid calling user code.
+     */
+    static private class Lock { };
+    private static Lock lock = new Lock();
+
+
+    /* List of References waiting to be enqueued.  The collector adds
+     * References to this list, while the Reference-handler thread removes
+     * them.  This list is protected by the above lock object. The
+     * list uses the discovered field to link its elements.
+     */
+    private static Reference pending = null;
 
     /* High-priority thread to enqueue pending References
      */
     private static class ReferenceHandler extends Thread {
 
-        private static void ensureClassInitialized(Class<?> clazz) {
-            try {
-                Class.forName(clazz.getName(), true, clazz.getClassLoader());
-            } catch (ClassNotFoundException e) {
-                throw (Error) new NoClassDefFoundError(e.getMessage()).initCause(e);
-            }
-        }
-
-        static {
-            // pre-load and initialize Cleaner class so that we don't
-            // get into trouble later in the run loop if there's
-            // memory shortage while loading/initializing it lazily.
-            ensureClassInitialized(Cleaner.class);
-        }
-
         ReferenceHandler(ThreadGroup g, String name) {
-            super(g, null, name, 0, false);
+            super(g, name);
         }
 
+        @SuppressWarnings("unchecked")
         public void run() {
-            while (true) {
-                processPendingReferences();
-            }
-        }
-    }
-
-    /* Atomically get and clear (set to null) the VM's pending list.
-     */
-    private static native Reference<Object> getAndClearReferencePendingList();
-
-    /* Test whether the VM's pending list contains any entries.
-     */
-    private static native boolean hasReferencePendingList();
-
-    /* Wait until the VM's pending list may be non-null.
-     */
-    private static native void waitForReferencePendingList();
-
-    private static final Object processPendingLock = new Object();
-    private static boolean processPendingActive = false;
-
-    private static void processPendingReferences() {
-        // Only the singleton reference processing thread calls
-        // waitForReferencePendingList() and getAndClearReferencePendingList().
-        // These are separate operations to avoid a race with other threads
-        // that are calling waitForReferenceProcessing().
-        waitForReferencePendingList();
-        Reference<Object> pendingList;
-        synchronized (processPendingLock) {
-            pendingList = getAndClearReferencePendingList();
-            processPendingActive = true;
-        }
-        while (pendingList != null) {
-            Reference<Object> ref = pendingList;
-            pendingList = ref.discovered;
-            ref.discovered = null;
-
-            if (ref instanceof Cleaner) {
-                ((Cleaner)ref).clean();
-                // Notify any waiters that progress has been made.
-                // This improves latency for nio.Bits waiters, which
-                // are the only important ones.
-                synchronized (processPendingLock) {
-                    processPendingLock.notifyAll();
+            for (;;) {
+                Reference r;
+                synchronized (lock) {
+                    if (pending != null) {
+                        r = pending;
+                        pending = r.discovered;
+                        r.discovered = null;
+                    } else {
+                        try {
+                            lock.wait();
+                        } catch (InterruptedException x) { }
+                        continue;
+                    }
                 }
-            } else {
-                ReferenceQueue<? super Object> q = ref.queue;
-                if (q != ReferenceQueue.NULL) q.enqueue(ref);
-            }
-        }
-        // Notify any waiters of completion of current round.
-        synchronized (processPendingLock) {
-            processPendingActive = false;
-            processPendingLock.notifyAll();
-        }
-    }
 
-    // Wait for progress in reference processing.
-    //
-    // Returns true after waiting (for notification from the reference
-    // processing thread) if either (1) the VM has any pending
-    // references, or (2) the reference processing thread is
-    // processing references. Otherwise, returns false immediately.
-    private static boolean waitForReferenceProcessing()
-        throws InterruptedException
-    {
-        synchronized (processPendingLock) {
-            if (processPendingActive || hasReferencePendingList()) {
-                // Wait for progress, not necessarily completion.
-                processPendingLock.wait();
-                return true;
-            } else {
-                return false;
+                // Fast path for cleaners
+                if (r instanceof Cleaner) {
+                    ((Cleaner)r).clean();
+                    continue;
+                }
+
+                ReferenceQueue q = r.queue;
+                if (q != ReferenceQueue.NULL) q.enqueue(r);
             }
         }
     }
@@ -222,17 +174,8 @@ public abstract class Reference<T> {
         handler.setPriority(Thread.MAX_PRIORITY);
         handler.setDaemon(true);
         handler.start();
-
-        // provide access in SharedSecrets
-        SharedSecrets.setJavaLangRefAccess(new JavaLangRefAccess() {
-            @Override
-            public boolean waitForReferenceProcessing()
-                throws InterruptedException
-            {
-                return Reference.waitForReferenceProcessing();
-            }
-        });
     }
+
 
     /* -- Referent accessor and setters -- */
 
@@ -272,7 +215,9 @@ public abstract class Reference<T> {
      *           been enqueued
      */
     public boolean isEnqueued() {
-        return (this.queue == ReferenceQueue.ENQUEUED);
+        synchronized (this) {
+            return (this.next != null && this.queue == ReferenceQueue.ENQUEUED);
+        }
     }
 
     /**
@@ -297,125 +242,10 @@ public abstract class Reference<T> {
         this(referent, null);
     }
 
+    @SuppressWarnings("unchecked")
     Reference(T referent, ReferenceQueue<? super T> queue) {
         this.referent = referent;
         this.queue = (queue == null) ? ReferenceQueue.NULL : queue;
-    }
-
-    /**
-     * Ensures that the object referenced by the given reference remains
-     * <a href="package-summary.html#reachability"><em>strongly reachable</em></a>,
-     * regardless of any prior actions of the program that might otherwise cause
-     * the object to become unreachable; thus, the referenced object is not
-     * reclaimable by garbage collection at least until after the invocation of
-     * this method.  Invocation of this method does not itself initiate garbage
-     * collection or finalization.
-     *
-     * <p> This method establishes an ordering for
-     * <a href="package-summary.html#reachability"><em>strong reachability</em></a>
-     * with respect to garbage collection.  It controls relations that are
-     * otherwise only implicit in a program -- the reachability conditions
-     * triggering garbage collection.  This method is designed for use in
-     * uncommon situations of premature finalization where using
-     * {@code synchronized} blocks or methods, or using other synchronization
-     * facilities are not possible or do not provide the desired control.  This
-     * method is applicable only when reclamation may have visible effects,
-     * which is possible for objects with finalizers (See
-     * <a href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-12.html#jls-12.6">
-     * Section 12.6 17 of <cite>The Java&trade; Language Specification</cite></a>)
-     * that are implemented in ways that rely on ordering control for correctness.
-     *
-     * @apiNote
-     * Finalization may occur whenever the virtual machine detects that no
-     * reference to an object will ever be stored in the heap: The garbage
-     * collector may reclaim an object even if the fields of that object are
-     * still in use, so long as the object has otherwise become unreachable.
-     * This may have surprising and undesirable effects in cases such as the
-     * following example in which the bookkeeping associated with a class is
-     * managed through array indices.  Here, method {@code action} uses a
-     * {@code reachabilityFence} to ensure that the {@code Resource} object is
-     * not reclaimed before bookkeeping on an associated
-     * {@code ExternalResource} has been performed; in particular here, to
-     * ensure that the array slot holding the {@code ExternalResource} is not
-     * nulled out in method {@link Object#finalize}, which may otherwise run
-     * concurrently.
-     *
-     * <pre> {@code
-     * class Resource {
-     *   private static ExternalResource[] externalResourceArray = ...
-     *
-     *   int myIndex;
-     *   Resource(...) {
-     *     myIndex = ...
-     *     externalResourceArray[myIndex] = ...;
-     *     ...
-     *   }
-     *   protected void finalize() {
-     *     externalResourceArray[myIndex] = null;
-     *     ...
-     *   }
-     *   public void action() {
-     *     try {
-     *       // ...
-     *       int i = myIndex;
-     *       Resource.update(externalResourceArray[i]);
-     *     } finally {
-     *       Reference.reachabilityFence(this);
-     *     }
-     *   }
-     *   private static void update(ExternalResource ext) {
-     *     ext.status = ...;
-     *   }
-     * }}</pre>
-     *
-     * Here, the invocation of {@code reachabilityFence} is nonintuitively
-     * placed <em>after</em> the call to {@code update}, to ensure that the
-     * array slot is not nulled out by {@link Object#finalize} before the
-     * update, even if the call to {@code action} was the last use of this
-     * object.  This might be the case if, for example a usage in a user program
-     * had the form {@code new Resource().action();} which retains no other
-     * reference to this {@code Resource}.  While probably overkill here,
-     * {@code reachabilityFence} is placed in a {@code finally} block to ensure
-     * that it is invoked across all paths in the method.  In a method with more
-     * complex control paths, you might need further precautions to ensure that
-     * {@code reachabilityFence} is encountered along all of them.
-     *
-     * <p> It is sometimes possible to better encapsulate use of
-     * {@code reachabilityFence}.  Continuing the above example, if it were
-     * acceptable for the call to method {@code update} to proceed even if the
-     * finalizer had already executed (nulling out slot), then you could
-     * localize use of {@code reachabilityFence}:
-     *
-     * <pre> {@code
-     * public void action2() {
-     *   // ...
-     *   Resource.update(getExternalResource());
-     * }
-     * private ExternalResource getExternalResource() {
-     *   ExternalResource ext = externalResourceArray[myIndex];
-     *   Reference.reachabilityFence(this);
-     *   return ext;
-     * }}</pre>
-     *
-     * <p> Method {@code reachabilityFence} is not required in constructions
-     * that themselves ensure reachability.  For example, because objects that
-     * are locked cannot, in general, be reclaimed, it would suffice if all
-     * accesses of the object, in all methods of class {@code Resource}
-     * (including {@code finalize}) were enclosed in {@code synchronized (this)}
-     * blocks.  (Further, such blocks must not include infinite loops, or
-     * themselves be unreachable, which fall into the corner case exceptions to
-     * the "in general" disclaimer.)  However, method {@code reachabilityFence}
-     * remains a better option in cases where this approach is not as efficient,
-     * desirable, or possible; for example because it would encounter deadlock.
-     *
-     * @param ref the reference. If {@code null}, this method has no effect.
-     * @since 9
-     */
-    @DontInline
-    public static void reachabilityFence(Object ref) {
-        // Does nothing, because this method is annotated with @DontInline
-        // HotSpot needs to retain the ref and not GC it before a call to this
-        // method
     }
 
 }

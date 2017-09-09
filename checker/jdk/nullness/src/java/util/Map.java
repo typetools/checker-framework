@@ -27,8 +27,6 @@ public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
   // annotatied (see ArrayList, LinkedList, HashMap).
   @Pure public abstract @Nullable V get(@Nullable Object a1);
   public abstract @Nullable V put(K a1, V a2);
-  // TODO: check signature, dummy implementation
-  public default @Nullable V putIfAbsent(K a1, V a2) { return a2; }
   public abstract @Nullable V remove(@Nullable Object a1);
   public abstract void putAll(Map<? extends K, ? extends V> a1);
   public abstract void clear();
