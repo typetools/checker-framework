@@ -9,7 +9,6 @@ import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntry;
 import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntryKind;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
@@ -363,6 +362,8 @@ public class ElementAnnotationUtil {
             AnnotatedTypeMirror type, List<TypeAnnotationPosition.TypePathEntry> location) {
 
         if (location.isEmpty() && type.getKind() != TypeKind.DECLARED) {
+            // The annotation on a declared type might apply to the enclosing type, so that case is
+            // covered in getLocationTypeADT.
             return type;
         } else if (type.getKind() == TypeKind.NULL) {
             return getLocationTypeANT((AnnotatedNullType) type, location);
@@ -397,24 +398,24 @@ public class ElementAnnotationUtil {
             AnnotatedDeclaredType type, List<TypeAnnotationPosition.TypePathEntry> location) {
 
         // List order by outer most type to inner most type.
-        LinkedList<AnnotatedDeclaredType> innerToOuter = new LinkedList<>();
+        LinkedList<AnnotatedDeclaredType> outerToInner = new LinkedList<>();
         AnnotatedDeclaredType enclosing = type;
         while (enclosing != null) {
-            innerToOuter.add(enclosing);
+            outerToInner.addFirst(enclosing);
             enclosing = enclosing.getEnclosingType();
         }
-        Collections.reverse(innerToOuter);
 
+        // Create a linked list of the location, so removing the first element is easier.
         LinkedList<TypePathEntry> tailOfLocations = new LinkedList<>(location);
         boolean error = false;
         while (!tailOfLocations.isEmpty()) {
             TypePathEntry currentLocation = tailOfLocations.removeFirst();
             switch (currentLocation.tag) {
                 case INNER_TYPE:
-                    innerToOuter.removeFirst();
+                    outerToInner.removeFirst();
                     break;
                 case TYPE_ARGUMENT:
-                    AnnotatedDeclaredType innerType = innerToOuter.getFirst();
+                    AnnotatedDeclaredType innerType = outerToInner.getFirst();
                     if (currentLocation.arg < innerType.getTypeArguments().size()) {
                         AnnotatedTypeMirror typeArg =
                                 innerType.getTypeArguments().get(currentLocation.arg);
@@ -431,12 +432,12 @@ public class ElementAnnotationUtil {
             }
         }
 
-        if (innerToOuter.isEmpty() || error) {
+        if (outerToInner.isEmpty() || error) {
             ErrorReporter.errorAbort(
                     "ElementAnnotationUtil.getLocationTypeADT: invalid location %s for type: %s",
                     location, type);
         }
-        return innerToOuter.getFirst();
+        return outerToInner.getFirst();
     }
 
     private static AnnotatedTypeMirror getLocationTypeANT(
