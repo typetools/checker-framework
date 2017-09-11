@@ -851,6 +851,16 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         return visitUnionSubtype(subtype, supertype, visited);
     }
 
+    @Override
+    public Boolean visitUnion_Wildcard(
+            AnnotatedUnionType subtype, AnnotatedWildcardType supertype, VisitHistory visited) {
+        // } catch (RuntimeException | IOException e) {
+        //     ArrayList<? super Exception> lWildcard = new ArrayList<>();
+        //     lWildcard.add(e);
+
+        return visitWildcardSupertype(subtype, supertype, visited);
+    }
+
     //------------------------------------------------------------------------
     // typevar as subtype
     @Override
