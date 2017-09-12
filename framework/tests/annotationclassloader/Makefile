@@ -14,7 +14,7 @@ PROJECTDIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 FRAMEWORKJAR := $(PROJECTDIR)/../../dist/framework.jar
 
-STUBPARSERJAR := $(PROJECTDIR)/../../../../stubparser/stubparser.jar
+STUBPARSERJAR := $(PROJECTDIR)/../../../../stubparser/javaparser-core/target/stubparser.jar
 
 # When called by the ant tests, JAVACJAR is defined as ${jsr308.langtools.dist}/lib/javac.jar
 # When executed as a demo, we'll use javac.jar located in a directory structure
