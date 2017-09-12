@@ -19,6 +19,7 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
+import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
@@ -1362,9 +1363,9 @@ public class StubParser {
             List<MemberValuePair> pairs = nrmanno.getPairs();
             if (pairs != null) {
                 for (MemberValuePair mvp : pairs) {
-                    String meth = mvp.getNameAsString();
+                    String member = mvp.getNameAsString();
                     Expression exp = mvp.getValue();
-                    handleExpr(builder, meth, exp);
+                    handleExpr(builder, member, exp);
                 }
             }
             return builder.build();
@@ -1520,6 +1521,19 @@ public class StubParser {
                 ErrorReporter.errorAbort(
                         "StubParser: unhandled annotation attribute type: "
                                 + blexpr
+                                + " and expected: "
+                                + expected);
+            }
+        } else if (expr instanceof ClassExpr) {
+            ClassExpr classExpr = (ClassExpr) expr;
+            ExecutableElement var = builder.findElement(name);
+            TypeMirror expected = var.getReturnType();
+            if (expected.getKind() == TypeKind.DECLARED) {
+                //                            builder.setValue(name, classExpr.getType());
+            } else {
+                ErrorReporter.errorAbort(
+                        "StubParser: unhandled annotation attribute type: "
+                                + classExpr
                                 + " and expected: "
                                 + expected);
             }
