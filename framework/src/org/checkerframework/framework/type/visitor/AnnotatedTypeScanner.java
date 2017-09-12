@@ -1,5 +1,9 @@
 package org.checkerframework.framework.type.visitor;
 
+/*>>>
+import org.checkerframework.checker.nullness.qual.Nullable;
+*/
+
 import java.util.IdentityHashMap;
 import java.util.Map;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -68,11 +72,24 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
         visitedNodes.clear();
     }
 
+    /**
+     * Calls {@link #reset()} and then scans {@code type} using null as the parameter.
+     *
+     * @param type type to scan
+     * @return result of scanning {@code type}
+     */
     @Override
-    public final R visit(AnnotatedTypeMirror t) {
-        return visit(t, null);
+    public final R visit(AnnotatedTypeMirror type) {
+        return visit(type, null);
     }
 
+    /**
+     * Calls {@link #reset()} and then scans {@code type} using {@code p} as the parameter.
+     *
+     * @param type the type to visit
+     * @param p a visitor-specified parameter
+     * @return result of scanning {@code type}
+     */
     @Override
     public final R visit(AnnotatedTypeMirror type, P p) {
         reset();
@@ -80,20 +97,23 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
     }
 
     /**
-     * Processes an element by calling e.accept(this, p); this method may be overridden by
+     * Scan {@code type} by calling {@code type.accept(this, p)}; this method may be overridden by
      * subclasses.
      *
+     * @param type the possibly null type to scan
+     * @param p the parameter to use
      * @return the result of visiting {@code type}
      */
-    protected R scan(AnnotatedTypeMirror type, P p) {
+    protected R scan(/*@Nullable*/ AnnotatedTypeMirror type, P p) {
         return (type == null ? null : type.accept(this, p));
     }
 
     /**
-     * Processes an element by calling e.accept(this, p); this method may be overridden by
-     * subclasses.
+     * Scan all the types and returns the reduced result.
      *
-     * @return a visitor-specified result
+     * @param types types to scan
+     * @param p the parameter to use
+     * @return the reduced result of scanning all the types
      */
     protected R scan(Iterable<? extends AnnotatedTypeMirror> types, P p) {
         if (types == null) {
@@ -112,10 +132,26 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
         return reduce(scan(types, p), r);
     }
 
+    /**
+     * Scans {@code type} with the parameter {@code p} and reduces the result with {@code r}.
+     *
+     * @param type type to scan
+     * @param p parameter to use for when scanning {@code type}
+     * @param r result to combine with the result of scanning {@code type}
+     * @return the combination of {@code r} with the result of scanning {@code type}
+     */
     public R scanAndReduce(AnnotatedTypeMirror type, P p, R r) {
         return reduce(scan(type, p), r);
     }
 
+    /**
+     * Combines {@code r1} and {@code r2} and returns the result. The default implementation returns
+     * {@code r1} if it is not null; otherwise, it returns {@code r2}.
+     *
+     * @param r1 a result of scan
+     * @param r2 a result of scan
+     * @return the combination of {@code r1} and {@code r2}
+     */
     protected R reduce(R r1, R r2) {
         if (r1 == null) {
             return r2;
