@@ -1390,8 +1390,6 @@ public class StubParser {
 
     /*
      * Handles expressions in annotations.
-     * Supports String, int, and boolean literals, but not other literals
-     * as documented in the stub file limitation section of the manual.
      */
     private void handleExpr(AnnotationBuilder builder, String name, Expression expr) {
         if (expr instanceof FieldAccessExpr || expr instanceof NameExpr) {
@@ -1529,7 +1527,21 @@ public class StubParser {
             ExecutableElement var = builder.findElement(name);
             TypeMirror expected = var.getReturnType();
             if (expected.getKind() == TypeKind.DECLARED) {
-                //                            builder.setValue(name, classExpr.getType());
+                String className = classExpr.getType().toString();
+                Class<?> clazz;
+                try {
+                    // TODO: use import statements found earlier in the stub file
+                    clazz = Class.forName(className);
+                } catch (ClassNotFoundException e) {
+                    ErrorReporter.errorAbort("StubParser: unknown class name " + className);
+                    throw new Error("dead code; this can't happen");
+                }
+                TypeMirror val =
+                        TypesUtils.typeFromClass(
+                                atypeFactory.getContext().getTypeUtils(),
+                                atypeFactory.getElementUtils(),
+                                clazz);
+                builder.setValue(name, val);
             } else {
                 ErrorReporter.errorAbort(
                         "StubParser: unhandled annotation attribute type: "
