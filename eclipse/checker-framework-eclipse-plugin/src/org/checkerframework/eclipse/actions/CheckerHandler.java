@@ -2,6 +2,7 @@ package org.checkerframework.eclipse.actions;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jdt.core.IJavaElement;
@@ -24,7 +25,7 @@ public abstract class CheckerHandler extends AbstractHandler {
      * @param selection Current user selection
      * @return A list of JavaElements that are in the same project and in the given selection
      */
-    protected /*@Nullable*/ List<IJavaElement> selectionToJavaElements(final ISelection selection) {
+    protected @Nullable List<IJavaElement> selectionToJavaElements(final ISelection selection) {
         // ITreeSelection
 
         final List<IJavaElement> elements;

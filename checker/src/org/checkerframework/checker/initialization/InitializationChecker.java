@@ -1,9 +1,5 @@
 package org.checkerframework.checker.initialization;
 
-/*>>>
-import org.checkerframework.checker.interning.qual.*;
-*/
-
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;

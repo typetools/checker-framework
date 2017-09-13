@@ -189,7 +189,7 @@
     see the following errors:</p>
     <pre>
 incompatible types in assignment.
-                /*@Encrypted*/ int encryptInt = (character + OFFSET) % Character.MAX_VALUE ;
+                @Encrypted int encryptInt = (character + OFFSET) % Character.MAX_VALUE ;
   found   : @PossiblyUnencrypted int
   required: @Encrypted int      EncryptionDemo.java     /encryption-checker/src/encrypted
 incompatible types in argument.
@@ -209,7 +209,7 @@ incompatible types in argument.
     below.</p>
     <pre>
 <b>@SuppressWarnings("encrypted")  // this is the encryption algorithm</b>
-private /*@Encrypted*/ char encryptCharacter(char character) {
+private @Encrypted char encryptCharacter(char character) {
 </pre>
   </div>
 
@@ -331,7 +331,7 @@ Eclipse will give an error like
 <div class="alert alert-warning">
 <h5>Workaround</h5>
 Place all type annotations in  comments. For example, <code>@Encrypted</code>
-would be commented as <code>/*@Encrypted*/</code>
+would be commented as <code>@Encrypted</code>
 </div>
 </div>
 -->

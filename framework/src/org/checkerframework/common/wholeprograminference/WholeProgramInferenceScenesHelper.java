@@ -240,22 +240,23 @@ public class WholeProgramInferenceScenesHelper {
      * #shouldIgnore}).
      */
     private void removeIgnoredAnnosFromATypeElement(ATypeElement typeEl, TypeUseLocation loc) {
-        Set<Annotation> annosToRemove = new HashSet<>();
-        Set<String> annosToIgnoreForLocation = annosToIgnore.get(Pair.of(typeEl.toString(), loc));
-        if (annosToIgnoreForLocation == null) {
-            // No annotations to ignore for that position.
-            return;
-        }
-        for (Annotation anno : typeEl.tlAnnotationsHere) {
-            if (annosToIgnoreForLocation.contains(anno.def().toString())) {
-                annosToRemove.add(anno);
+        String firstKey = typeEl.description.toString() + typeEl.tlAnnotationsHere.toString();
+        Set<String> annosToIgnoreForLocation = annosToIgnore.get(Pair.of(firstKey, loc));
+        if (annosToIgnoreForLocation != null) {
+            Set<Annotation> annosToRemove = new HashSet<>();
+            for (Annotation anno : typeEl.tlAnnotationsHere) {
+                if (annosToIgnoreForLocation.contains(anno.def().toString())) {
+                    annosToRemove.add(anno);
+                }
             }
+            typeEl.tlAnnotationsHere.removeAll(annosToRemove);
         }
-        typeEl.tlAnnotationsHere.removeAll(annosToRemove);
 
-        // Remove annotations recursively for inner types.
-        for (ATypeElement innerType : typeEl.innerTypes.values()) {
-            removeIgnoredAnnosFromATypeElement(innerType, loc);
+        // Recursively remove ignored annotations from inner types
+        if (typeEl.innerTypes.size() != 0) {
+            for (ATypeElement innerType : typeEl.innerTypes.values()) {
+                removeIgnoredAnnosFromATypeElement(innerType, loc);
+            }
         }
     }
 
@@ -492,7 +493,8 @@ public class WholeProgramInferenceScenesHelper {
         // Only update the ATypeElement if there are no explicit annotations
         if (curATM.getExplicitAnnotations().size() == 0) {
             for (AnnotationMirror am : newATM.getAnnotations()) {
-                addAnnotationsToATypeElement(newATM, atf, typeToUpdate, defLoc, am);
+                addAnnotationsToATypeElement(
+                        newATM, atf, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
             }
         } else if (curATM.getKind() == TypeKind.TYPEVAR) {
             // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly annotated.
@@ -504,7 +506,8 @@ public class WholeProgramInferenceScenesHelper {
                     // in the same hierarchy.
                     break;
                 }
-                addAnnotationsToATypeElement(newATM, atf, typeToUpdate, defLoc, am);
+                addAnnotationsToATypeElement(
+                        newATM, atf, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
             }
         }
 
@@ -530,12 +533,18 @@ public class WholeProgramInferenceScenesHelper {
             AnnotatedTypeFactory atf,
             ATypeElement typeToUpdate,
             TypeUseLocation defLoc,
-            AnnotationMirror am) {
+            AnnotationMirror am,
+            boolean isEffectiveAnnotation) {
         Annotation anno = AnnotationConverter.annotationMirrorToAnnotation(am);
         if (anno != null) {
             typeToUpdate.tlAnnotationsHere.add(anno);
-            if (shouldIgnore(am, defLoc, atf, newATM)) {
-                Pair<String, TypeUseLocation> key = Pair.of(typeToUpdate.toString(), defLoc);
+            if (isEffectiveAnnotation || shouldIgnore(am, defLoc, atf, newATM)) {
+                // firstKey works as a unique identifier for each annotation
+                // that should not be inserted in source code
+                String firstKey =
+                        typeToUpdate.description.toString()
+                                + typeToUpdate.tlAnnotationsHere.toString();
+                Pair<String, TypeUseLocation> key = Pair.of(firstKey, defLoc);
                 Set<String> annosIgnored = annosToIgnore.get(key);
                 if (annosIgnored == null) {
                     annosIgnored = new HashSet<>();

@@ -123,6 +123,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      */
     private List<BaseTypeChecker> immediateSubcheckers;
 
+    /** Supported options for this checker */
+    private Set<String> supportedOptions;
+
     /**
      * Returns the set of subchecker classes on which this checker depends. Returns an empty set if
      * this checker does not depend on any others.
@@ -310,7 +313,12 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
     @Override
     public GenericAnnotatedTypeFactory<?, ?, ?, ?> getTypeFactory() {
-        return getVisitor().getTypeFactory();
+        BaseTypeVisitor<?> visitor = getVisitor();
+        // Avoid NPE if this method is called during initialization.
+        if (visitor == null) {
+            return null;
+        }
+        return visitor.getTypeFactory();
     }
 
     @Override
@@ -619,17 +627,21 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
     @Override
     public Set<String> getSupportedOptions() {
-        Set<String> options = new HashSet<String>();
-        options.addAll(super.getSupportedOptions());
+        if (supportedOptions == null) {
+            Set<String> options = new HashSet<String>();
+            options.addAll(super.getSupportedOptions());
 
-        for (BaseTypeChecker checker : getSubcheckers()) {
-            options.addAll(checker.getSupportedOptions());
+            for (BaseTypeChecker checker : getSubcheckers()) {
+                options.addAll(checker.getSupportedOptions());
+            }
+
+            options.addAll(
+                    expandCFOptions(
+                            Arrays.asList(this.getClass()), options.toArray(new String[0])));
+
+            supportedOptions = Collections.<String>unmodifiableSet(options);
         }
-
-        options.addAll(
-                expandCFOptions(Arrays.asList(this.getClass()), options.toArray(new String[0])));
-
-        return Collections.<String>unmodifiableSet(options);
+        return supportedOptions;
     }
 
     @Override
@@ -651,7 +663,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                 newList.add(processArg(o));
             }
             return newList;
-        } else if (arg instanceof AnnotationMirror) {
+        } else if (arg instanceof AnnotationMirror && getTypeFactory() != null) {
             return getTypeFactory()
                     .getAnnotationFormatter()
                     .formatAnnotationMirror((AnnotationMirror) arg);

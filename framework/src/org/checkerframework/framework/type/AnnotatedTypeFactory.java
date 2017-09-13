@@ -106,6 +106,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
 import org.checkerframework.framework.util.typeinference.TypeArgumentInference;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.CollectionUtils;
@@ -340,8 +341,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.loader = new AnnotationClassLoader(checker);
         this.supportedQuals = new HashSet<>();
 
-        this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
-        this.fromStubFile = AnnotationUtils.fromClass(elements, FromStubFile.class);
+        this.fromByteCode = AnnotationBuilder.fromClass(elements, FromByteCode.class);
+        this.fromStubFile = AnnotationBuilder.fromClass(elements, FromStubFile.class);
 
         this.cacheDeclAnnos = new HashMap<Element, Set<AnnotationMirror>>();
 
@@ -464,18 +465,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         addAliasedDeclAnnotation(
                 org.jmlspecs.annotation.Pure.class,
                 org.checkerframework.dataflow.qual.Pure.class,
-                AnnotationUtils.fromClass(elements, org.checkerframework.dataflow.qual.Pure.class));
+                AnnotationBuilder.fromClass(
+                        elements, org.checkerframework.dataflow.qual.Pure.class));
 
         addInheritedAnnotation(
-                AnnotationUtils.fromClass(elements, org.checkerframework.dataflow.qual.Pure.class));
+                AnnotationBuilder.fromClass(
+                        elements, org.checkerframework.dataflow.qual.Pure.class));
         addInheritedAnnotation(
-                AnnotationUtils.fromClass(
+                AnnotationBuilder.fromClass(
                         elements, org.checkerframework.dataflow.qual.SideEffectFree.class));
         addInheritedAnnotation(
-                AnnotationUtils.fromClass(
+                AnnotationBuilder.fromClass(
                         elements, org.checkerframework.dataflow.qual.Deterministic.class));
         addInheritedAnnotation(
-                AnnotationUtils.fromClass(
+                AnnotationBuilder.fromClass(
                         elements, org.checkerframework.dataflow.qual.TerminatesExecution.class));
 
         initializeReflectionResolution();
@@ -580,7 +583,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             MultiGraphFactory factory) {
 
         for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
-            AnnotationMirror typeQualifierAnno = AnnotationUtils.fromClass(elements, typeQualifier);
+            AnnotationMirror typeQualifierAnno =
+                    AnnotationBuilder.fromClass(elements, typeQualifier);
             assert typeQualifierAnno != null
                     : "Loading annotation \"" + typeQualifier + "\" failed!";
             factory.addQualifier(typeQualifierAnno);
@@ -611,7 +615,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (!supportedTypeQualifiers.contains(superQualifier)) {
                     continue;
                 }
-                AnnotationMirror superAnno = AnnotationUtils.fromClass(elements, superQualifier);
+                AnnotationMirror superAnno = AnnotationBuilder.fromClass(elements, superQualifier);
                 factory.addSubtype(typeQualifierAnno, superAnno);
             }
         }
@@ -902,7 +906,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @return cache size passed as argument to checker or DEFAULT_CACHE_SIZE
      */
-    private int getCacheSize() {
+    protected int getCacheSize() {
         String option = checker.getOption("atfCacheSize");
         if (option == null) {
             return DEFAULT_CACHE_SIZE;
@@ -937,7 +941,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     @Override
     public AnnotationMirror getAnnotationMirror(Tree tree, Class<? extends Annotation> target) {
-        AnnotationMirror mirror = AnnotationUtils.fromClass(elements, target);
+        AnnotationMirror mirror = AnnotationBuilder.fromClass(elements, target);
         if (isSupportedQualifier(mirror)) {
             AnnotatedTypeMirror atm = getAnnotatedType(tree);
             return atm.getAnnotation(target);
@@ -1365,7 +1369,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", true);
         List<AnnotationMirror> qualifiers = new ArrayList<>();
         for (Name name : classes) {
-            qualifiers.add(AnnotationUtils.fromName(elements, name));
+            qualifiers.add(AnnotationBuilder.fromName(elements, name));
         }
         if (fields.size() > qualifiers.size()) {
             int difference = fields.size() - qualifiers.size();
@@ -3195,11 +3199,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * inferred. The wildcard will be marked as an uninferred wildcard so that {@link
      * AnnotatedWildcardType#isUninferredTypeArgument()} returns true.
      *
-     * <p>This method should only be used by type argument inference or for type arguments to raw
-     * types:
+     * <p>This method should only be used by type argument inference.
      * org.checkerframework.framework.util.AnnotatedTypes.inferTypeArguments(ProcessingEnvironment,
      * AnnotatedTypeFactory, ExpressionTree, ExecutableElement)
-     * org.checkerframework.framework.type.AnnotatedTypeFactory.fromTypeTree(Tree)
      *
      * @param typeVar TypeVariable which could not be inferred
      * @return a wildcard that is marked as an uninferred type argument
@@ -3218,6 +3220,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         WildcardType wc = types.getWildcardType(boundType, null);
         AnnotatedWildcardType wctype =
                 (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this, false);
+        wctype.setTypeVariable(typeVar.getUnderlyingType());
         if (!intersectionType) {
             wctype.setExtendsBound(typeVar.getUpperBound().deepCopy());
         } else {
@@ -3279,10 +3282,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param wildcard AnnotatedWildcardType whose upper bound is used to widen
      * @return {@code annotatedTypeMirror} widen to the upper bound of {@code wildcard}
      */
-    // TODO: BoundsInitializer#initializeExtendsBound(AnnotatedWildcardType) and
-    // SupertypeFinder#fixWildcardBound have similar logic for handling unbounded wildcards.
-    // Merging those methods and this into AnnotatedWildcardType would improve the code greatly and
-    // still be easier than implementing all of capture conversion
     public AnnotatedTypeMirror widenToUpperBound(
             final AnnotatedTypeMirror annotatedTypeMirror, final AnnotatedWildcardType wildcard) {
         final TypeMirror toModifyTypeMirror = annotatedTypeMirror.getUnderlyingType();

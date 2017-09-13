@@ -1,0 +1,12 @@
+import org.checkerframework.checker.tainting.qual.Untainted;
+import org.checkerframework.checker.tainting.qual.Tainted;
+
+package issue1456lib;
+
+public class Lib {
+    public @Untainted Object object1, object2;
+    public @Untainted Object object;
+    public @Untainted byte @Untainted [] byteArray;
+    public @Untainted byte byte1, byteArray2 @Untainted [];
+    public @Tainted byte @Untainted [] @Untainted [] byteArray3;
+}

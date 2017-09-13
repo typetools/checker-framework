@@ -29,7 +29,6 @@ import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Finds the direct supertypes of an input AnnotatedTypeMirror. See
@@ -162,16 +161,21 @@ class SupertypeFinder {
                 }
             }
 
-            for (int i = 0; i < type.getTypeArguments().size(); ++i) {
-                AnnotatedTypeMirror typArg = type.getTypeArguments().get(i);
-                TypeParameterElement ele = typeElement.getTypeParameters().get(i);
-                if (typArg.getKind() == TypeKind.WILDCARD) {
-                    fixWildcardBound(ele, (AnnotatedWildcardType) typArg);
+            AnnotatedDeclaredType enclosing = type;
+            while (enclosing != null) {
+                TypeElement enclosingTypeElement =
+                        (TypeElement) enclosing.getUnderlyingType().asElement();
+                List<AnnotatedTypeMirror> typeArgs = enclosing.getTypeArguments();
+                List<? extends TypeParameterElement> typeParams =
+                        enclosingTypeElement.getTypeParameters();
+                for (int i = 0; i < enclosing.getTypeArguments().size(); ++i) {
+                    AnnotatedTypeMirror typArg = typeArgs.get(i);
+                    TypeParameterElement ele = typeParams.get(i);
+                    mapping.put(ele, typArg);
                 }
 
-                mapping.put(ele, typArg);
+                enclosing = enclosing.getEnclosingType();
             }
-            subTypeVarsInWildcards(mapping);
 
             ClassTree classTree = atypeFactory.trees.getTree(typeElement);
             // Testing against enum and annotation. Ideally we can simply use element!
@@ -195,66 +199,6 @@ class SupertypeFinder {
             }
 
             return supertypes;
-        }
-
-        private void subTypeVarsInWildcards(
-                Map<TypeParameterElement, AnnotatedTypeMirror> mapping) {
-            for (AnnotatedTypeMirror atm : mapping.values()) {
-                if (atm.getKind() == TypeKind.WILDCARD) {
-                    // Because the upper bound of the wildcard is copied from the upper bound of
-                    // the type parameter in #fixWildcardBound, it might contain references to
-                    // other type variables.  This replaces those references.
-                    typeParamReplacer.visit(atm, mapping);
-                }
-            }
-        }
-
-        /**
-         * If the upper bound of the wildcard is not a subtype of the upper bound of the type
-         * parameter, then this method fixes that.
-         *
-         * <p>This method is needed because, the Java compiler allows wildcards to have upper bounds
-         * above the type variable upper bounds for which they are type arguments. For example,
-         * given the following parametric type:
-         *
-         * <pre>
-         * {@code class MyClass<T extends Number>}
-         * </pre>
-         *
-         * the following is legal:
-         *
-         * <pre>
-         * {@code MyClass<? extends Object>}
-         * </pre>
-         *
-         * This is sound because in Java the wildcard is capture converted to: {@code CAP#1 extends
-         * Number from capture of ? extends Object}.
-         *
-         * <p>Because the Checker Framework does not implement capture conversion, the wildcard's
-         * upper bound may not be within the type parameter. This method fixes that.
-         *
-         * @param element type parameter to which {@code wildcard} is an argument
-         * @param wildcard wildcard type whose upper bound may be modified
-         */
-        // TODO: BoundsInitializer#initializeExtendsBound(AnnotatedWildcardType) and
-        // SupertypeFinder#fixWildcardBound have similar logic for handling unbounded wildcards.
-        // Merging those methods and this into AnnotatedWildcardType would improve the code greatly and
-        // still be easier than implementing all of capture conversion
-        private void fixWildcardBound(
-                TypeParameterElement element, AnnotatedWildcardType wildcard) {
-            if (TypesUtils.isErasedSubtype(types, wildcard.getUnderlyingType(), element.asType())) {
-                return;
-            }
-            AnnotatedTypeMirror bound = wildcard.getExtendsBound();
-            AnnotatedTypeVariable atv = (AnnotatedTypeVariable) atypeFactory.fromElement(element);
-            wildcard.setExtendsBound(atv.getUpperBound());
-            wildcard.getExtendsBound().replaceAnnotations(bound.getAnnotations());
-
-            // If the upper bound of the type parameter refers to itself, then change those
-            // references to the wildcard.
-            Map<TypeParameterElement, AnnotatedTypeMirror> mapping = new HashMap<>();
-            mapping.put(element, wildcard);
-            typeParamReplacer.visit(wildcard, mapping);
         }
 
         private List<AnnotatedDeclaredType> supertypesFromElement(
@@ -452,6 +396,7 @@ class SupertypeFinder {
                     return visitedNodes.get(type);
                 }
                 visitedNodes.put(type, null);
+                scan(type.getEnclosingType(), mapping);
 
                 List<AnnotatedTypeMirror> args = new ArrayList<AnnotatedTypeMirror>();
                 for (AnnotatedTypeMirror arg : type.getTypeArguments()) {

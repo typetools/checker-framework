@@ -166,7 +166,9 @@ If you get an error such as
 
 \noindent
 then you are trying to run the compiler using a JDK 6 or earlier JVM\@.
-Install and use a Java 7 or 8 JDK, at least for running the Checker
+Install and use a Java 8
+% or later
+JDK, at least for running the Checker
 Framework.
 
 \noindent
@@ -234,10 +236,11 @@ You may be able to solve the problem by running
 \end{Verbatim}
 
 \noindent
-to re-generate files \code{checker/jdk/jdk\{7,8\}.jar} and \code{checker/bin/jdk\{7,8\}.jar}.
+to re-generate files \code{checker/jdk/jdk\{8,9\}.jar} and \code{checker/bin/jdk\{8,9\}.jar}.
 
 That usually works, but if not, then you should recompile the Checker
-Framework from source rather than using the pre-compiled distribution.
+Framework from source (Section~\ref{build-source}) rather than using
+the pre-compiled distribution.
 
 
 \item
@@ -265,7 +268,7 @@ correct this by being sure to use \<fork="yes"> (see
 Section~\ref{ant-task}) and/or setting the \<build.compiler> property to
 \<extJavac>.
 
-If you are building from source  (Section~\ref{build-source}),
+If you are building from source (Section~\ref{build-source}),
 you might need to rebuild the Annotation
 File Utilities before recompiling or using the Checker Framework.
 
@@ -666,7 +669,7 @@ warning: [classfile] RuntimeVisibleTypeAnnotations attribute introduced in versi
 This warning results when you compile a library using the Checker Framework
 compiler, then use a normal Java compiler to compile client code that uses
 the library.
-The Checker Framework compiler puts Java 8 type annotations even in Java 7
+The Checker Framework compiler puts type annotations even in Java 7
 classfiles, for the benefit of modular type-checking.  The Checker Framework
 compiler reads these annotations in Java 7, and other compilers ignore them
 (but some compilers print a warning that they are ignoring them).
@@ -773,8 +776,8 @@ Follow the instructions for your operating system.
 
 \begin{Verbatim}
 sudo apt-get update
-sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make \
- mercurial openjdk-8-jdk texlive-latex-base texlive-latex-recommended \
+sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin libcurl3-gnutls \
+ make maven mercurial openjdk-8-jdk texlive-latex-base texlive-latex-recommended \
  texlive-latex-extra texlive-fonts-recommended unzip
 \end{Verbatim}
 
@@ -787,7 +790,7 @@ sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make \
 \begin{Verbatim}
 brew update
 brew install caskroom/cask/brew-cask
-brew install git ant hevea mercurial librsvg unzip make
+brew install git ant hevea maven mercurial librsvg unzip make
 brew cask install java
 brew cask install mactex
 mkdir -p $HOME/Library/texmf/tex/latex
@@ -795,17 +798,17 @@ cp -p /usr/local/Cellar/hevea/2.28/lib/hevea/hevea.sty $HOME/Library/texmf/tex/l
 \end{Verbatim}
 
 \item[Windows]
-  To building on Windows 10,
+  To build on Windows 10,
   run \<bash> to obtain a version of
   Ubuntu (provided by the Windows Subsystem for Linux) and follow the Ubuntu
   instructions.
 
-To building on other versions of Windows,
-here is an \emph{incomplete} list of needed prerequisites:
-\begin{itemize}
-\item
-  Install MSYS to obtain the \<cp> and \<make> commands.
-\end{itemize}
+% To build on other versions of Windows,
+% here is an \emph{incomplete} list of needed prerequisites:
+% \begin{itemize}
+% \item
+%   Install MSYS to obtain the \<cp> and \<make> commands.
+% \end{itemize}
 
 \end{description}
 
@@ -821,6 +824,7 @@ cd $JSR308
 hg clone https://bitbucket.org/typetools/jsr308-langtools jsr308-langtools
 git clone https://github.com/typetools/checker-framework.git checker-framework
 git clone https://github.com/typetools/annotation-tools.git annotation-tools
+git clone https://github.com/typetools/stubparser.git stubparser
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
@@ -844,7 +848,7 @@ adds annotated JDKs and the Checker Framework jars to the classpath.
 %  * the location of tools.jar, below.
 %  * the default location of RTJAR, in checker/jdk/Makefile.
 Set the \<JAVA\_HOME> environment variable to the location of your JDK
-7 or 8 installation (not the JRE installation, and not JDK 6 or earlier).
+8 installation (not the JRE installation, and not JDK 7 or earlier).
 This needs to be an Oracle JDK.
 (The \<JAVA\_HOME> environment
 variable might already be set, because it is needed for Ant to work.)
@@ -870,8 +874,8 @@ the Checker Framework anyway.)
   Add one of the following two commands in your \code{.bash\_profile} or
   \code{.profile} file according to the version of your JDK.
 \begin{Verbatim}
-  export JAVA_HOME=$(/usr/libexec/java_home -v 1.7)
   export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+  export JAVA_HOME=$(/usr/libexec/java_home -v 1.9)
 \end{Verbatim}
 
 \end{description}
@@ -916,6 +920,19 @@ This is simply done by:
 \end{Verbatim}
 
 You do not need to add the Annotation File Utilities to the path, as
+the Checker Framework build finds it using relative paths.
+
+
+\subsection{Build the StubParser\label{stubparser-building}}
+
+This is simply done by:
+
+\begin{Verbatim}
+  cd $JSR308/stubparser
+  mvn package -Dmaven.test.skip=true
+\end{Verbatim}
+
+You do not need to add the StubParser to the path, as
 the Checker Framework build finds it using relative paths.
 
 
@@ -1163,7 +1180,7 @@ Another implementation of Universe Types and \href{http://www.cs.rpi.edu/~huangw
 ``Inference and checking of object ownership''~\cite{HuangDME2012} (ECOOP 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infer-ownership-ecoop2012-abstract.html}).
 
 \item[Approximate data (Section~\ref{enerj-checker})]
-``EnerJ: Approximate Data Types for Safe and General Low-Power Computation''~\cite{SampsonDFGCG2011} (PLDI 2011, \myurl{http://www.cs.cornell.edu/~asampson/media/papers/enerj-pldi2011.pdf})
+``EnerJ: Approximate Data Types for Safe and General Low-Power Computation''~\cite{SampsonDFGCG2011} (PLDI 2011, \myurl{https://homes.cs.washington.edu/~luisceze/publications/Enerj-pldi2011.pdf})
 
 \item[Information flow and tainting (Section~\ref{sparta-checker})]
 ``Collaborative Verification of Information Flow

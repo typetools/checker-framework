@@ -1,24 +1,34 @@
 package org.checkerframework.checker.formatter;
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-*/
+
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.FormatCall;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.InvocationType;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Whenever a format method invocation is found in the syntax tree, the following checks happen,
- * read the code, seriously! (otherwise see manual 12.2)
+ * Whenever a format method invocation is found in the syntax tree, checks are performed as
+ * specified in the Format String Checker manual.
  *
+ * @checker_framework.manual #formatter-guarantees Format String Checker
  * @author Konstantin Weitz
  */
 public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFactory> {
@@ -32,11 +42,20 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         if (tu.isFormatCall(node, atypeFactory)) {
             FormatCall fc = atypeFactory.treeUtil.new FormatCall(node, atypeFactory);
 
-            Result<String> sat = fc.isIllegalFormat();
-            if (sat.value() != null) {
-                // I.1
-                tu.failure(sat, "format.string.invalid", sat.value());
+            Result<String> err_missing_format = fc.hasFormatAnnotation();
+            if (err_missing_format != null) {
+                // The string's type has no @Format annotation.
+                if (isWrappedFormatCall(fc)) {
+                    // Nothing to do, because call is legal.
+                } else {
+                    // I.1
+                    tu.failure(
+                            err_missing_format,
+                            "format.string.invalid",
+                            err_missing_format.value());
+                }
             } else {
+                // The string has a @Format annotation.
                 Result<InvocationType> invc = fc.getInvocationType();
                 ConversionCategory[] formatCats = fc.getFormatCategories();
                 switch (invc.value()) {
@@ -106,20 +125,64 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         return super.visitMethodInvocation(node, p);
     }
 
+    /**
+     * Returns true if fc is within a method m annotated as {@code @FormatMethod}, and fc's
+     * arguments are m's formal parameters. In other words, fc forwards m's arguments to another
+     * format method.
+     */
+    private boolean isWrappedFormatCall(FormatCall fc) {
+
+        MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(fc.node));
+        if (enclosingMethod == null) {
+            return false;
+        }
+        ExecutableElement enclosingMethodElement =
+                TreeUtils.elementFromDeclaration(enclosingMethod);
+        boolean withinFormatMethod =
+                (atypeFactory.getDeclAnnotation(enclosingMethodElement, FormatMethod.class)
+                        != null);
+        if (!withinFormatMethod) {
+            return false;
+        }
+
+        List<? extends ExpressionTree> args = fc.node.getArguments();
+        List<? extends VariableTree> params = enclosingMethod.getParameters();
+        List<? extends VariableElement> paramElements = enclosingMethodElement.getParameters();
+
+        // Strip off leading Locale arguments.
+        if (args.size() > 0 && FormatterTreeUtil.isLocale(args.get(0), atypeFactory)) {
+            args = args.subList(1, args.size());
+        }
+        if (params.size() > 0
+                && TypesUtils.isDeclaredOfName(paramElements.get(0).asType(), "java.util.Locale")) {
+            params = params.subList(1, params.size());
+        }
+
+        if (args.size() == params.size()) {
+            for (int i = 0; i < args.size(); i++) {
+                ExpressionTree arg = args.get(i);
+                if (!(arg instanceof IdentifierTree
+                        && ((IdentifierTree) arg).getName().equals(params.get(i).getName()))) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     @Override
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            /*@CompilerMessageKey*/ String errorKey) {
+            @CompilerMessageKey String errorKey) {
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
 
         AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
         AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
 
-        // From the manual:
-        // It is legal to use a format string with fewer format specifiers
-        // than required, but a warning is issued.
+        // From the manual: "It is legal to use a format string with fewer format specifiers
+        // than required, but a warning is issued."
         // The format.missing.arguments warning is issued here for assignments.
         // For method calls, it is issued in visitMethodInvocation.
         if (AnnotationUtils.areSameIgnoringValues(rhs, atypeFactory.FORMAT)

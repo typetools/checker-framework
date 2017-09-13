@@ -3,6 +3,7 @@ package org.checkerframework.checker.units;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.checker.units.qual.h;
 import org.checkerframework.checker.units.qual.km2;
@@ -14,10 +15,6 @@ import org.checkerframework.checker.units.qual.mPERs2;
 import org.checkerframework.checker.units.qual.mm2;
 import org.checkerframework.checker.units.qual.s;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
- */
 
 /** Default relations between SI units. TODO: what relations are missing? */
 public class UnitsRelationsDefault implements UnitsRelations {
@@ -56,7 +53,7 @@ public class UnitsRelationsDefault implements UnitsRelations {
      * provided Units
      */
     @Override
-    public /*@Nullable*/ AnnotationMirror multiplication(
+    public @Nullable AnnotationMirror multiplication(
             AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
         // TODO: does this handle scaling correctly?
 
@@ -103,8 +100,7 @@ public class UnitsRelationsDefault implements UnitsRelations {
      * Units
      */
     @Override
-    public /*@Nullable*/ AnnotationMirror division(
-            AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
+    public @Nullable AnnotationMirror division(AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
         if (havePairOfUnits(lht, m, rht, s)) {
             // m / s => mPERs
             return mPERs;

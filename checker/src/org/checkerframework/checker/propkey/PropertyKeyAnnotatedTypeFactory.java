@@ -22,7 +22,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationBuilder;
 
 /**
  * This AnnotatedTypeFactory adds PropertyKey annotations to String literals that contain values
@@ -64,7 +64,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public KeyLookupTreeAnnotator(
                 BaseAnnotatedTypeFactory atf, Class<? extends Annotation> annot) {
             super(atf);
-            theAnnot = AnnotationUtils.fromClass(elements, annot);
+            theAnnot = AnnotationBuilder.fromClass(elements, annot);
         }
 
         @Override

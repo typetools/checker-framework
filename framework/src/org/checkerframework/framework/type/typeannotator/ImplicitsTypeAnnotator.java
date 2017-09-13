@@ -15,7 +15,7 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -71,7 +71,7 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
             if (implicit == null) continue;
 
             AnnotationMirror theQual =
-                    AnnotationUtils.fromClass(typeFactory.getElementUtils(), qual);
+                    AnnotationBuilder.fromClass(typeFactory.getElementUtils(), qual);
             for (TypeKind typeKind : implicit.types()) {
                 addTypeKind(typeKind, theQual);
             }

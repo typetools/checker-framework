@@ -5,8 +5,8 @@
 
 class Issue653 {
 
-    public static /*@PolyAll*/ String[] concat(
-            /*@PolyAll*/ String /*@Nullable*/ [] a, /*@PolyAll*/ String /*@Nullable*/ [] b) {
+    public static @PolyAll String[] concat(
+            @PolyAll String @Nullable [] a, @PolyAll String @Nullable [] b) {
         if (a == null) {
             if (b == null) {
                 return new String[0];
@@ -17,7 +17,7 @@ class Issue653 {
             if (b == null) {
                 return a;
             } else {
-                /*@PolyAll*/ String[] result = new String[a.length + b.length];
+                @PolyAll String[] result = new String[a.length + b.length];
 
                 System.arraycopy(a, 0, result, 0, a.length);
                 System.arraycopy(b, 0, result, a.length, b.length);

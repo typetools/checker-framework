@@ -535,8 +535,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             if (covam == null) {
                 // Fall back to deprecated Nullness Checker version of the annotation.
                 // This should be removed once that version is removed.
+                // Using String instead of .class to prevent dependency.
                 try {
-                    @SuppressWarnings("unchecked")
+                    @SuppressWarnings({"unchecked", "LiteralClassName"})
                     Class<? extends Annotation> nncov =
                             (Class<? extends Annotation>)
                                     Class.forName(
@@ -830,6 +831,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     @Override
     public Boolean visitUnion_Intersection(
             AnnotatedUnionType subtype, AnnotatedIntersectionType supertype, VisitHistory visited) {
+        // For example:
         // <T extends Throwable & Cloneable> void method(T param) {}
         // ...
         // catch (Exception1 | Exception2 union) { // Assuming Exception1 and Exception2 implement Cloneable
@@ -842,12 +844,24 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     @Override
     public Boolean visitUnion_Union(
             AnnotatedUnionType subtype, AnnotatedUnionType supertype, VisitHistory visited) {
+        // For example:
         // <T> void method(T param) {}
         // ...
         // catch (Exception1 | Exception2 union) {
         //   method(union);
         // This case happens when checking the arguments to method after type variable substitution
         return visitUnionSubtype(subtype, supertype, visited);
+    }
+
+    @Override
+    public Boolean visitUnion_Wildcard(
+            AnnotatedUnionType subtype, AnnotatedWildcardType supertype, VisitHistory visited) {
+        // For example:
+        // } catch (RuntimeException | IOException e) {
+        //     ArrayList<? super Exception> lWildcard = new ArrayList<>();
+        //     lWildcard.add(e);
+
+        return visitWildcardSupertype(subtype, supertype, visited);
     }
 
     //------------------------------------------------------------------------
