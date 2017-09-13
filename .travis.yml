@@ -7,15 +7,18 @@ services:
 
 matrix:
 env:
+  global:
+    - THIS_REPO = checker-framework
+  matrix:
 ## Jobs used when downloading JDK during testing.
 ## all-tests = junit + nonjunit + demos.  Separately, test building the JDK.
-  - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=all-tests
-  - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=jdk.jar
-  - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=downstream
-#TODO  - BUILDJDK=downloadjdk JDKVER=jdk9 GROUP=all-tests
-#TODO  - BUILDJDK=downloadjdk JDKVER=jdk9 GROUP=jdk.jar
-#TODO  - BUILDJDK=downloadjdk JDKVER=jdk9 GROUP=downstream
-  - BUILDJDK=downloadjdk JDKVER=jdkany GROUP=misc
+    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=all-tests
+    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=jdk.jar
+    - BUILDJDK=downloadjdk JDKVER=jdk8 GROUP=downstream
+#TODO    - BUILDJDK=downloadjdk JDKVER=jdk9 GROUP=all-tests
+#TODO    - BUILDJDK=downloadjdk JDKVER=jdk9 GROUP=jdk.jar
+#TODO    - BUILDJDK=downloadjdk JDKVER=jdk9 GROUP=downstream
+    - BUILDJDK=downloadjdk JDKVER=jdkany GROUP=misc
 ## Jobs used when building JDK during testing.
 #  - BUILDJDK=buildjdk JDKVER=jdk8 GROUP=junit
 #  - BUILDJDK=buildjdk JDKVER=jdk8 GROUP=nonjunit
