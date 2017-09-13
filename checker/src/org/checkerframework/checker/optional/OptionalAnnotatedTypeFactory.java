@@ -13,7 +13,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationBuilder;
 
 /** Adds {@link Present} to the type of tree, for calls to ofNullable whose argument is @NonNull. */
 public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -25,7 +25,7 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public OptionalAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        PRESENT = AnnotationUtils.fromClass(elements, Present.class);
+        PRESENT = AnnotationBuilder.fromClass(elements, Present.class);
         nullnessTypeFactory = getTypeFactoryOfSubchecker(NullnessChecker.class);
 
         this.postInit();
