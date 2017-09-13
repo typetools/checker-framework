@@ -1530,7 +1530,13 @@ public class StubParser {
                 String className = classExpr.getType().toString();
                 Class<?> clazz;
                 try {
-                    // TODO: use import statements found earlier in the stub file
+                    // If it is a simply-named class literal then fully-qualified class
+                    // name should be found in stubfile imports.
+                    for (ImportDeclaration impDecl : theCompilationUnit.getImports()) {
+                        if (impDecl.getName().getIdentifier().equals(className)) {
+                            className = impDecl.getNameAsString();
+                        }
+                    }
                     clazz = Class.forName(className);
                 } catch (ClassNotFoundException e) {
                     ErrorReporter.errorAbort("StubParser: unknown class name " + className);

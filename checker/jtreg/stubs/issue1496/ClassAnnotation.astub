@@ -1,5 +1,10 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
 
-@DefaultQualifier(Nullable.class)
+// This checks that fully-qualified class name in annotation properly handled by the StubParser.
+@DefaultQualifier(org.checkerframework.checker.nullness.qual.Nullable.class)
 package java.lang;
+
+// This checks that simply-named class literal in annotation properly handled by the StubParser.
+@DefaultQualifier(Nullable.class)
+package java.util;
