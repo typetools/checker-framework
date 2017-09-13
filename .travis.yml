@@ -82,22 +82,22 @@ jobs:
 
             git ls-remote https://github.com/${SLUGOWNER}/checker-framework.demos.git &>-
             if [ "$?" -eq 0 ]; then
-              sh trigger-travis.sh ${SLUGOWNER} checker-framework.demos $TRAVISTOKEN
+              sh trigger-travis.sh ${SLUGOWNER} checker-framework.demos $TRAVIS_ACCESS_TOKEN
             fi
 
             git ls-remote https://github.com/${SLUGOWNER}/checker-framework-inference.git &>-
             if [ "$?" -eq 0 ]; then
-              sh trigger-travis.sh ${SLUGOWNER} checker-framework-inference $TRAVISTOKEN
+              sh trigger-travis.sh ${SLUGOWNER} checker-framework-inference $TRAVIS_ACCESS_TOKEN
             fi
 
             git ls-remote https://github.com/${SLUGOWNER}/sparta.git &>-
             if [ "$?" -eq 0 ]; then
-              sh trigger-travis.sh ${SLUGOWNER} sparta $TRAVISTOKEN
+              sh trigger-travis.sh ${SLUGOWNER} sparta $TRAVIS_ACCESS_TOKEN
             fi
 
             if [[ "${SLUGOWNER}" == "typetools" ]]; then
-              sh trigger-travis.sh typetests daikon-typecheck $TRAVISTOKEN
-              sh trigger-travis.sh typetests plume-lib-typecheck $TRAVISTOKEN
+              sh trigger-travis.sh typetests daikon-typecheck $TRAVIS_ACCESS_TOKEN
+              sh trigger-travis.sh typetests plume-lib-typecheck $TRAVIS_ACCESS_TOKEN
             fi
           fi
 
