@@ -7,7 +7,7 @@ services:
 
 env:
   global:
-    - THIS_REPO = checker-framework
+    - THIS_REPO=checker-framework
   matrix:
 ## Jobs used when downloading JDK during testing.
 ## all-tests = junit + nonjunit + demos.  Separately, test building the JDK.
