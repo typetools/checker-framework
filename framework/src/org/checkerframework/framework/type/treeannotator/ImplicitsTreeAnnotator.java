@@ -18,7 +18,7 @@ import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**
@@ -103,7 +103,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
             }
 
             AnnotationMirror theQual =
-                    AnnotationUtils.fromClass(atypeFactory.getElementUtils(), qual);
+                    AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), qual);
             for (LiteralKind literalKind : implicit.literals()) {
                 addLiteralKind(literalKind, theQual);
             }

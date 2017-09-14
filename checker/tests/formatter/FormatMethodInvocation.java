@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 import java.util.Formatter;
 import java.util.Locale;
 
-public class FormatMethods {
+public class FormatMethodInvocation {
     public static void main(String... p) {
         Formatter f = new Formatter();
         f.format("%d", 1337);

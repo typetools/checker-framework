@@ -27,7 +27,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationBuilder;
 
 /** @checker_framework.manual #signedness-checker Signedness Checker */
 public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -60,10 +60,10 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        UNKNOWN_SIGNEDNESS = AnnotationUtils.fromClass(elements, UnknownSignedness.class);
-        UNSIGNED = AnnotationUtils.fromClass(elements, Unsigned.class);
-        SIGNED = AnnotationUtils.fromClass(elements, Signed.class);
-        CONSTANT = AnnotationUtils.fromClass(elements, Constant.class);
+        UNKNOWN_SIGNEDNESS = AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
+        UNSIGNED = AnnotationBuilder.fromClass(elements, Unsigned.class);
+        SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
+        CONSTANT = AnnotationBuilder.fromClass(elements, Constant.class);
 
         postInit();
     }

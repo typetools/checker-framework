@@ -19,8 +19,8 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -33,8 +33,8 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public SearchIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        UNKNOWN = AnnotationUtils.fromClass(elements, SearchIndexUnknown.class);
-        BOTTOM = AnnotationUtils.fromClass(elements, SearchIndexBottom.class);
+        UNKNOWN = AnnotationBuilder.fromClass(elements, SearchIndexUnknown.class);
+        BOTTOM = AnnotationBuilder.fromClass(elements, SearchIndexBottom.class);
         this.postInit();
     }
 

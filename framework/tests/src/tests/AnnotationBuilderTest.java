@@ -9,8 +9,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.util.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -287,7 +286,7 @@ public class AnnotationBuilderTest {
 
     @Test
     public void testAnnoAsArgPositive() {
-        AnnotationMirror anno = AnnotationUtils.fromClass(env.getElementUtils(), MyAnno.class);
+        AnnotationMirror anno = AnnotationBuilder.fromClass(env.getElementUtils(), MyAnno.class);
         AnnotationBuilder builder = new AnnotationBuilder(env, ContainingAnno.class);
         builder.setValue("value", anno);
         assertEquals(
@@ -297,7 +296,7 @@ public class AnnotationBuilderTest {
 
     @Test(expected = SourceChecker.CheckerError.class)
     public void testAnnoAsArgNegative() {
-        AnnotationMirror anno = AnnotationUtils.fromClass(env.getElementUtils(), Anno.class);
+        AnnotationMirror anno = AnnotationBuilder.fromClass(env.getElementUtils(), Anno.class);
         AnnotationBuilder builder = new AnnotationBuilder(env, ContainingAnno.class);
         builder.setValue("value", anno);
     }

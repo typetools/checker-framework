@@ -5,9 +5,10 @@
 # to org.checkerframework.framework.util.CheckerDevelMain
 #
 # This script loads the .class files found in the
-# build directory before it uses any jar files so
-# that a user does not have to repackage the whole
-# project (that is, create .jar files) to debug changes.
+# build directory before it uses any jar files.
+# Thus, a user can just do
+#   ant build
+# to debug changes rather than creating .jar files with "ant dist-nobuildjdk".
 
 # When editing, keep this file in sync with javac-debug in this directory.
 

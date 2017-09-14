@@ -89,7 +89,7 @@ public final class TypesUtils {
     }
 
     /**
-     * Check if the type represent a declared type of the given qualified name
+     * Check if the type represents a declared type of the given qualified name.
      *
      * @param type the type
      * @return type iff type represents a declared type of the qualified name

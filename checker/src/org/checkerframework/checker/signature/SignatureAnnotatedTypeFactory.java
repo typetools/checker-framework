@@ -13,7 +13,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
 // TODO: Does not yet handle method signature annotations, such as
@@ -25,7 +25,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public SignatureAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        SIGNATURE_UNKNOWN = AnnotationUtils.fromClass(elements, SignatureUnknown.class);
+        SIGNATURE_UNKNOWN = AnnotationBuilder.fromClass(elements, SignatureUnknown.class);
         this.postInit();
     }
 

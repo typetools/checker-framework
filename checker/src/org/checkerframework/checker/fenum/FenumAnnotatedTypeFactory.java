@@ -15,6 +15,7 @@ import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -25,9 +26,9 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public FenumAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        FENUM_BOTTOM = AnnotationUtils.fromClass(elements, FenumBottom.class);
-        FENUM = AnnotationUtils.fromClass(elements, Fenum.class);
-        FENUM_UNQUALIFIED = AnnotationUtils.fromClass(elements, FenumUnqualified.class);
+        FENUM_BOTTOM = AnnotationBuilder.fromClass(elements, FenumBottom.class);
+        FENUM = AnnotationBuilder.fromClass(elements, Fenum.class);
+        FENUM_UNQUALIFIED = AnnotationBuilder.fromClass(elements, FenumUnqualified.class);
 
         this.postInit();
     }

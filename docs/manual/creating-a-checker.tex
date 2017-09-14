@@ -320,6 +320,7 @@ Here is a good way to proceed.
   Before implementing type rules (or any other code in your type-checker),
   you are recommended to read the javadoc for the utility routines in the
   \<org.checkerframework.javacutil> package, especially
+  \refclass{javacutil}{AnnotationBuilder},
   \refclass{javacutil}{AnnotationUtils},
   \refclass{javacutil}{ElementUtils},
   \refclass{javacutil}{TreeUtils},
@@ -1418,7 +1419,7 @@ Constant Value Checker (\chapterpageref{constant-value-checker}).
     regexAnnotation = factory.createRegexAnnotation(groupCount);
   } else {
     // argument is not a literal integer; fall back to @Regex(), which is the same as @Regex(0)
-    regexAnnotation = AnnotationUtils.fromClass(factory.getElementUtils(), Regex.class);
+    regexAnnotation = AnnotationBuilder.fromClass(factory.getElementUtils(), Regex.class);
   }
 \end{Verbatim}
 %BEGIN LATEX

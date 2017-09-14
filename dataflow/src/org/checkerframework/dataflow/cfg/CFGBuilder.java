@@ -881,20 +881,27 @@ public class CFGBuilder {
             }
 
             // collect all reachable trees
-            final Set<Tree> allReeachableTrees = new HashSet<>();
+            final Set<Tree> allReachableTrees =
+                    Collections.newSetFromMap(new IdentityHashMap<Tree, Boolean>());
             for (Block b : cfg.getAllBlocks()) {
                 if (b instanceof RegularBlock) {
                     for (Node n : ((RegularBlock) b).getContents()) {
-                        allReeachableTrees.add(n.getTree());
+                        Tree tree = n.getTree();
+                        if (tree != null) {
+                            allReachableTrees.add(tree);
+                        }
                     }
                 } else if (b instanceof ExceptionBlock) {
-                    allReeachableTrees.add(((ExceptionBlock) b).getNode().getTree());
+                    Tree tree = ((ExceptionBlock) b).getNode().getTree();
+                    if (tree != null) {
+                        allReachableTrees.add(tree);
+                    }
                 }
             }
 
             // remove a generated tree if any child tree of it is unreachable because such tree is
             // not analyzed by dataflow framework and cause of false errors.
-            ContainsAnyScanner s = new ContainsAnyScanner(allReeachableTrees);
+            ContainsAnyScanner s = new ContainsAnyScanner(allReachableTrees);
             for (List<Tree> generatedTrees : cfg.generatedTreesLookupMap.values()) {
                 Iterator<Tree> generatedTreesIterator = generatedTrees.iterator();
                 while (generatedTreesIterator.hasNext()) {
@@ -924,6 +931,10 @@ public class CFGBuilder {
 
             @Override
             public Void scan(Tree node, Void aVoid) {
+                if (node == null) {
+                    return null;
+                }
+
                 if (trees.contains(node)) {
                     contains = true;
                 }

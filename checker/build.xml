@@ -216,10 +216,11 @@
             <arg value="8"/>
             <arg value="-target"/>
             <arg value="8"/>
+            <!-- To not get a warning about missing bootstrap
+                 classpath for Java 8 (once we use Java 9). -->
+            <arg value="-Xlint:-options"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
-            <!-- To not get a warning about bootstrap classpath -->
-            <arg value="-Xlint:-options"/>
             <arg value="-sourcepath"/>
             <arg value="${src}"/>
             <arg value="-d"/>
@@ -388,10 +389,11 @@
             <arg value="7"/>
             <arg value="-target"/>
             <arg value="7"/>
+            <!-- To not get a warning about missing bootstrap
+                 classpath for Java 7. -->
+            <arg value="-Xlint:-options"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
-            <!-- To not get a warning about bootstrap classpath -->
-            <arg value="-Xlint:-options"/>
             <arg value="-d"/>
             <arg value="${checker-qual-classes-tmp}"/>
             <arg value="@${tmpdir}/srcfiles-checker.txt"/>
@@ -431,10 +433,11 @@
             <arg value="8"/>
             <arg value="-target"/>
             <arg value="8"/>
+            <!-- To not get a warning about missing bootstrap
+                 classpath for Java 8 (once we use Java 9). -->
+            <arg value="-Xlint:-options"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
-            <!-- To not get a warning about bootstrap classpath -->
-            <arg value="-Xlint:-options"/>
             <arg value="-d"/>
             <arg value="${checker-qual-classes-tmp}"/>
             <arg value="@${tmpdir}/srcfiles-checker.txt"/>
@@ -508,6 +511,9 @@
             <arg value="6"/>
             <arg value="-target"/>
             <arg value="6"/>
+            <!-- To not get a warning about missing bootstrap
+                 classpath for Java 6. -->
+            <arg value="-Xlint:-options"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
             <arg value="-d"/>
@@ -516,8 +522,6 @@
             <arg value="-version"/>
             <arg value="-Xlint"/>
             <arg value="-Werror"/>
-            <!-- To not get a warning about bootstrap classpath -->
-            <arg value="-Xlint:-options"/>
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
 
@@ -558,10 +562,11 @@
             <arg value="8"/>
             <arg value="-target"/>
             <arg value="8"/>
+            <!-- To not get a warning about missing bootstrap
+                 classpath for Java 8 (once we use Java 9). -->
+            <arg value="-Xlint:-options"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
-            <!-- To not get a warning about bootstrap classpath -->
-            <arg value="-Xlint:-options"/>
             <arg value="-sourcepath"/>
             <arg value="${tests}"/>
             <arg value="-d"/>
@@ -1257,8 +1262,6 @@ So, use our own archived version.
             <arg value="-g"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
-            <!-- To not get a warning about bootstrap classpath -->
-            <arg value="-Xlint:-options"/>
             <arg value="-d"/>
             <arg value="${build}"/>
             <arg value="@${tmpdir}/srcfiles-checker.txt"/>
@@ -1385,13 +1388,13 @@ So, use our own archived version.
             </compilerclasspath>
             <compilerarg value="-Xmaxwarns"/>
             <compilerarg value="1000"/>
-	    <!-- Many compiler classes are interned. -->
-	    <compilerarg value="-Xep:ReferenceEquality:OFF"/>
-	    <!-- These might be worth fixing. -->
-	    <compilerarg value="-Xep:DefaultCharset:OFF"/>
-	    <!-- Disable until https://github.com/google/error-prone/issues/725 is fixed. -->
-	    <compilerarg value="-Xep:NamedParameters:OFF"/>
-	    <compilerarg value="-Werror"/>
+            <!-- Many compiler classes are interned. -->
+            <compilerarg value="-Xep:ReferenceEquality:OFF"/>
+            <!-- These might be worth fixing. -->
+            <compilerarg value="-Xep:DefaultCharset:OFF"/>
+            <!-- Disable until https://github.com/google/error-prone/issues/725 is fixed. -->
+            <compilerarg value="-Xep:NamedParameters:OFF"/>
+            <compilerarg value="-Werror"/>
         </javac>
     </target>
 

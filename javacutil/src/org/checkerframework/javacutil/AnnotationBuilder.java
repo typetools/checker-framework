@@ -1,9 +1,10 @@
-package org.checkerframework.framework.util;
+package org.checkerframework.javacutil;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,13 +25,30 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
-/* @deprecated use {@link org.checkerframework.javacutil.AnnotationBuilder} instead. */
-@Deprecated
+/*>>>
+import org.checkerframework.dataflow.qual.SideEffectFree;
+*/
+
+/**
+ * Builds an annotation mirror that may have some values.
+ *
+ * <p>Constructing an {@link AnnotationMirror} requires:
+ *
+ * <ol>
+ *   <li>Constructing the builder with the desired annotation class
+ *   <li>Setting each value individually using {@code setValue} methods
+ *   <li>Calling {@link #build()} to get the annotation
+ * </ol>
+ *
+ * Once an annotation is built, no further modification or calls to build can be made. Otherwise, a
+ * {@link IllegalStateException} is thrown.
+ *
+ * <p>All setter methods throw {@link IllegalArgumentException} if the specified element is not
+ * found, or if the given value is not a subtype of the expected type.
+ *
+ * <p>TODO: Doesn't type-check arrays yet
+ */
 public class AnnotationBuilder {
 
     private final Elements elements;
@@ -40,22 +58,14 @@ public class AnnotationBuilder {
     private final DeclaredType annotationType;
     private final Map<ExecutableElement, AnnotationValue> elementValues;
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#AnnotationBuilder(ProcessingEnvironment,Class)}
-     *     instead.
-     */
-    @Deprecated
+    /** Caching for annotation creation. */
+    private static final Map<CharSequence, AnnotationMirror> annotationsFromNames =
+            Collections.synchronizedMap(new HashMap<CharSequence, AnnotationMirror>());
+
     public AnnotationBuilder(ProcessingEnvironment env, Class<? extends Annotation> anno) {
         this(env, anno.getCanonicalName());
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#AnnotationBuilder(ProcessingEnvironment,CharSequence)}
-     *     instead.
-     */
-    @Deprecated
     public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
@@ -69,12 +79,6 @@ public class AnnotationBuilder {
         this.elementValues = new LinkedHashMap<ExecutableElement, AnnotationValue>();
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#AnnotationBuilder(ProcessingEnvironment,AnnotationMirror)}
-     *     instead.
-     */
-    @Deprecated
     public AnnotationBuilder(ProcessingEnvironment env, AnnotationMirror annotation) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
@@ -87,6 +91,54 @@ public class AnnotationBuilder {
         this.elementValues.putAll(annotation.getElementValues());
     }
 
+    /**
+     * Creates an {@link AnnotationMirror} given by a particular annotation class.
+     *
+     * @param elements the element utilities to use
+     * @param clazz the annotation class
+     * @return an {@link AnnotationMirror} of type given type
+     */
+    public static AnnotationMirror fromClass(Elements elements, Class<? extends Annotation> clazz) {
+        return fromName(elements, clazz.getCanonicalName());
+    }
+
+    /**
+     * Creates an {@link AnnotationMirror} given by a particular fully-qualified name.
+     * getElementValues on the result returns an empty map.
+     *
+     * @param elements the element utilities to use
+     * @param name the name of the annotation to create
+     * @return an {@link AnnotationMirror} of type {@code} name
+     */
+    public static AnnotationMirror fromName(Elements elements, CharSequence name) {
+        AnnotationMirror res = annotationsFromNames.get(name);
+        if (res != null) {
+            return res;
+        }
+        final TypeElement annoElt = elements.getTypeElement(name);
+        if (annoElt == null) {
+            return null;
+        }
+        if (annoElt.getKind() != ElementKind.ANNOTATION_TYPE) {
+            ErrorReporter.errorAbort(annoElt + " is not an annotation");
+            return null; // dead code
+        }
+
+        final DeclaredType annoType = (DeclaredType) annoElt.asType();
+        if (annoType == null) {
+            return null;
+        }
+        AnnotationMirror result =
+                new CheckerFrameworkAnnotationMirror(annoType, Collections.emptyMap());
+        annotationsFromNames.put(name, result);
+        return result;
+    }
+
+    // TODO: hack to clear out static state.
+    public static void clear() {
+        annotationsFromNames.clear();
+    }
+
     private boolean wasBuilt = false;
 
     private void assertNotBuilt() {
@@ -95,30 +147,17 @@ public class AnnotationBuilder {
         }
     }
 
-    /** @deprecated use {@link org.checkerframework.javacutil.AnnotationBuilder#build()} instead. */
-    @Deprecated
     public AnnotationMirror build() {
         assertNotBuilt();
         wasBuilt = true;
         return new CheckerFrameworkAnnotationMirror(annotationType, elementValues);
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#setValue(CharSequence,AnnotationMirror)}
-     *     instead.
-     */
-    @Deprecated
     public AnnotationBuilder setValue(CharSequence elementName, AnnotationMirror value) {
         setValue(elementName, (Object) value);
         return this;
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#setValue(CharSequence,List)} instead.
-     */
-    @Deprecated
     public AnnotationBuilder setValue(CharSequence elementName, List<? extends Object> values) {
         assertNotBuilt();
         List<AnnotationValue> value = new ArrayList<AnnotationValue>(values.size());
@@ -139,95 +178,42 @@ public class AnnotationBuilder {
         return this;
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#setValue(CharSequence,Object[])}
-     *     instead.
-     */
-    @Deprecated
     public AnnotationBuilder setValue(CharSequence elementName, Object[] values) {
         return setValue(elementName, Arrays.asList(values));
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#setValue(CharSequence,Boolean)} instead.
-     */
-    @Deprecated
     public AnnotationBuilder setValue(CharSequence elementName, Boolean value) {
         return setValue(elementName, (Object) value);
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#setValue(CharSequence,Character)}
-     *     instead.
-     */
-    @Deprecated
     public AnnotationBuilder setValue(CharSequence elementName, Character value) {
         return setValue(elementName, (Object) value);
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#setValue(CharSequence,Double)} instead.
-     */
-    @Deprecated
     public AnnotationBuilder setValue(CharSequence elementName, Double value) {
         return setValue(elementName, (Object) value);
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#setValue(CharSequence,Float)} instead.
-     */
-    @Deprecated
     public AnnotationBuilder setValue(CharSequence elementName, Float value) {
         return setValue(elementName, (Object) value);
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#setValue(CharSequence,Integer)} instead.
-     */
-    @Deprecated
     public AnnotationBuilder setValue(CharSequence elementName, Integer value) {
         return setValue(elementName, (Object) value);
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#setValue(CharSequence,Long)} instead.
-     */
-    @Deprecated
     public AnnotationBuilder setValue(CharSequence elementName, Long value) {
         return setValue(elementName, (Object) value);
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#setValue(CharSequence,Short)} instead.
-     */
-    @Deprecated
     public AnnotationBuilder setValue(CharSequence elementName, Short value) {
         return setValue(elementName, (Object) value);
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#setValue(CharSequence,String)} instead.
-     */
-    @Deprecated
     public AnnotationBuilder setValue(CharSequence elementName, String value) {
         return setValue(elementName, (Object) value);
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#setValue(CharSequence,TypeMirror)}
-     *     instead.
-     */
-    @Deprecated
     public AnnotationBuilder setValue(CharSequence elementName, TypeMirror value) {
         assertNotBuilt();
         AnnotationValue val = createValue(value);
@@ -262,32 +248,16 @@ public class AnnotationBuilder {
         }
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#setValue(CharSequence,Class)} instead.
-     */
-    @Deprecated
     public AnnotationBuilder setValue(CharSequence elementName, Class<?> value) {
         return setValue(elementName, typeFromClass(value));
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#setValue(CharSequence,Enum)} instead.
-     */
-    @Deprecated
     public AnnotationBuilder setValue(CharSequence elementName, Enum<?> value) {
         assertNotBuilt();
         VariableElement enumElt = findEnumElement(value);
         return setValue(elementName, enumElt);
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#setValue(CharSequence,VariableElement)}
-     *     instead.
-     */
-    @Deprecated
     public AnnotationBuilder setValue(CharSequence elementName, VariableElement value) {
         ExecutableElement var = findElement(elementName);
         if (var.getReturnType().getKind() != TypeKind.DECLARED) {
@@ -303,11 +273,6 @@ public class AnnotationBuilder {
         return this;
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#setValue(CharSequence,Enum[])} instead.
-     */
-    @Deprecated
     // Keep this version synchronized with the VariableElement[] version below
     public AnnotationBuilder setValue(CharSequence elementName, Enum<?>[] values) {
         assertNotBuilt();
@@ -348,12 +313,6 @@ public class AnnotationBuilder {
         return this;
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#setValue(CharSequence,VariableElement[])}
-     *     instead.
-     */
-    @Deprecated
     // Keep this version synchronized with the Enum<?>[] version above.
     // Which one is more useful/general? Unifying adds overhead of creating
     // another array.
@@ -423,11 +382,6 @@ public class AnnotationBuilder {
         return this;
     }
 
-    /**
-     * @deprecated use {@link
-     *     org.checkerframework.javacutil.AnnotationBuilder#findElement(CharSequence)} instead.
-     */
-    @Deprecated
     public ExecutableElement findElement(CharSequence key) {
         for (ExecutableElement elt : ElementFilter.methodsIn(annotationElt.getEnclosedElements())) {
             if (elt.getSimpleName().contentEquals(key)) {
@@ -526,7 +480,7 @@ public class AnnotationBuilder {
             return Collections.unmodifiableMap(elementValues);
         }
 
-        @SideEffectFree
+        /*@SideEffectFree*/
         @Override
         public String toString() {
             if (toStringVal == null) {
@@ -573,7 +527,7 @@ public class AnnotationBuilder {
             return value;
         }
 
-        @SideEffectFree
+        /*@SideEffectFree*/
         @Override
         public String toString() {
             if (value instanceof String) {

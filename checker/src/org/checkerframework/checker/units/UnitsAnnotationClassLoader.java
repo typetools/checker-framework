@@ -5,7 +5,7 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.units.qual.UnitsMultiple;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotationClassLoader;
-import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 public class UnitsAnnotationClassLoader extends AnnotationClassLoader {
