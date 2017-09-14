@@ -19,6 +19,7 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
+import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
@@ -1389,8 +1390,6 @@ public class StubParser {
 
     /*
      * Handles expressions in annotations.
-     * Supports String, int, and boolean literals, but not other literals
-     * as documented in the stub file limitation section of the manual.
      */
     private void handleExpr(AnnotationBuilder builder, String name, Expression expr) {
         if (expr instanceof FieldAccessExpr || expr instanceof NameExpr) {
@@ -1520,6 +1519,39 @@ public class StubParser {
                 ErrorReporter.errorAbort(
                         "StubParser: unhandled annotation attribute type: "
                                 + blexpr
+                                + " and expected: "
+                                + expected);
+            }
+        } else if (expr instanceof ClassExpr) {
+            ClassExpr classExpr = (ClassExpr) expr;
+            ExecutableElement var = builder.findElement(name);
+            TypeMirror expected = var.getReturnType();
+            if (expected.getKind() == TypeKind.DECLARED) {
+                String className = classExpr.getType().toString();
+                Class<?> clazz;
+                try {
+                    // If it is a simply-named class literal then fully-qualified class
+                    // name should be found in stubfile imports.
+                    for (ImportDeclaration impDecl : theCompilationUnit.getImports()) {
+                        if (impDecl.getName().getIdentifier().equals(className)) {
+                            className = impDecl.getNameAsString();
+                        }
+                    }
+                    clazz = Class.forName(className);
+                } catch (ClassNotFoundException e) {
+                    ErrorReporter.errorAbort("StubParser: unknown class name " + className);
+                    throw new Error("dead code; this can't happen");
+                }
+                TypeMirror val =
+                        TypesUtils.typeFromClass(
+                                atypeFactory.getContext().getTypeUtils(),
+                                atypeFactory.getElementUtils(),
+                                clazz);
+                builder.setValue(name, val);
+            } else {
+                ErrorReporter.errorAbort(
+                        "StubParser: unhandled annotation attribute type: "
+                                + classExpr
                                 + " and expected: "
                                 + expected);
             }
