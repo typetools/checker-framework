@@ -140,7 +140,7 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
      * @param r result to combine with the result of scanning {@code type}
      * @return the combination of {@code r} with the result of scanning {@code type}
      */
-    public R scanAndReduce(AnnotatedTypeMirror type, P p, R r) {
+    public R scanAndReduce(/*@Nullable*/ AnnotatedTypeMirror type, P p, R r) {
         return reduce(scan(type, p), r);
     }
 
