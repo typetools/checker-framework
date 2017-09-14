@@ -1,9 +1,5 @@
 package org.checkerframework.framework.type.visitor;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import java.util.IdentityHashMap;
 import java.util.Map;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -100,12 +96,12 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
      * Scan {@code type} by calling {@code type.accept(this, p)}; this method may be overridden by
      * subclasses.
      *
-     * @param type the possibly null type to scan
+     * @param type type to scan
      * @param p the parameter to use
      * @return the result of visiting {@code type}
      */
-    protected R scan(/*@Nullable*/ AnnotatedTypeMirror type, P p) {
-        return (type == null ? null : type.accept(this, p));
+    protected R scan(AnnotatedTypeMirror type, P p) {
+        return type.accept(this, p);
     }
 
     /**
@@ -140,7 +136,7 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
      * @param r result to combine with the result of scanning {@code type}
      * @return the combination of {@code r} with the result of scanning {@code type}
      */
-    public R scanAndReduce(/*@Nullable*/ AnnotatedTypeMirror type, P p, R r) {
+    protected R scanAndReduce(AnnotatedTypeMirror type, P p, R r) {
         return reduce(scan(type, p), r);
     }
 
@@ -165,7 +161,10 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
             return visitedNodes.get(type);
         }
         visitedNodes.put(type, null);
-        R r = scan(type.getEnclosingType(), p);
+        R r = null;
+        if (type.getEnclosingType() != null) {
+            scan(type.getEnclosingType(), p);
+        }
         r = scanAndReduce(type.getTypeArguments(), p, r);
         return r;
     }
@@ -199,7 +198,9 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
     @Override
     public R visitExecutable(AnnotatedExecutableType type, P p) {
         R r = scan(type.getReturnType(), p);
-        r = scanAndReduce(type.getReceiverType(), p, r);
+        if (type.getReceiverType() != null) {
+            r = scanAndReduce(type.getReceiverType(), p, r);
+        }
         r = scanAndReduce(type.getParameterTypes(), p, r);
         r = scanAndReduce(type.getThrownTypes(), p, r);
         r = scanAndReduce(type.getTypeVariables(), p, r);
