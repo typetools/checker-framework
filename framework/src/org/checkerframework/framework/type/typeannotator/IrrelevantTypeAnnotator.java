@@ -71,9 +71,6 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
 
     @Override
     protected Void scan(AnnotatedTypeMirror type, Void aVoid) {
-        if (type == null) {
-            return aVoid;
-        }
         switch (type.getKind()) {
             case TYPEVAR:
             case WILDCARD:
@@ -124,7 +121,9 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
     public Void visitExecutable(AnnotatedExecutableType t, Void p) {
         // super skips the receiver
         scan(t.getReturnType(), p);
-        scanAndReduce(t.getReceiverType(), p, null);
+        if (t.getReceiverType() != null) {
+            scanAndReduce(t.getReceiverType(), p, null);
+        }
         scanAndReduce(t.getParameterTypes(), p, null);
         scanAndReduce(t.getThrownTypes(), p, null);
         scanAndReduce(t.getTypeVariables(), p, null);
