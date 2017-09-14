@@ -84,6 +84,9 @@ public abstract class AnnotatedTypeComparer<R>
     public final R visitDeclared(AnnotatedDeclaredType type, AnnotatedTypeMirror p) {
         assert p instanceof AnnotatedDeclaredType : p;
         R r = scan(type.getTypeArguments(), ((AnnotatedDeclaredType) p).getTypeArguments());
+        r =
+                scanAndReduce(
+                        type.getEnclosingType(), ((AnnotatedDeclaredType) p).getEnclosingType(), r);
         return r;
     }
 
