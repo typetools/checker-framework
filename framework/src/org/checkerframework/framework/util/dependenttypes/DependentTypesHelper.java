@@ -517,9 +517,6 @@ public class DependentTypesHelper {
 
         @Override
         protected Void scan(AnnotatedTypeMirror type, Void aVoid) {
-            if (type == null) {
-                return null;
-            }
             List<AnnotationMirror> newAnnos = new ArrayList<>();
             for (AnnotationMirror anno : type.getAnnotations()) {
                 AnnotationMirror annotationMirror =
@@ -634,9 +631,6 @@ public class DependentTypesHelper {
 
         @Override
         protected List<DependentTypesError> scan(AnnotatedTypeMirror type, Void aVoid) {
-            if (type == null) {
-                return super.scan(type, aVoid);
-            }
             List<DependentTypesError> errors = new ArrayList<>();
             for (AnnotationMirror am : type.getAnnotations()) {
                 if (isExpressionAnno(am)) {
@@ -753,9 +747,6 @@ public class DependentTypesHelper {
     private class ContainsDependentType extends AnnotatedTypeScanner<Boolean, Void> {
         @Override
         protected Boolean scan(AnnotatedTypeMirror type, Void aVoid) {
-            if (type == null) {
-                return false;
-            }
             for (AnnotationMirror am : type.getAnnotations()) {
                 if (isExpressionAnno(am)) {
                     return true;
