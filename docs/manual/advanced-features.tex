@@ -1113,6 +1113,7 @@ expression as an argument include:
 
 % TODO: Need to periodically check/update this list.
 \begin{itemize}
+\item \refqualclass{framework/qual}{DefaultQualifier}
 \item \refqualclass{framework/qual}{RequiresQualifier}
 \item \refqualclass{framework/qual}{EnsuresQualifier}
 \item \refqualclass{framework/qual}{EnsuresQualifierIf}
@@ -1184,6 +1185,12 @@ The set of permitted expressions is a subset of all Java expressions:
   \<this.next>, \<\#1.next>. %, \<myLocalVar.next>.
   You may optionally omit a leading ``\<this.>'', just as in Java.  Thus,
   \<this.next> and \<next> are equivalent.
+
+\item
+  a fully-qualified class name
+  (e.g org.checkerframework.checker.nullness.qual.NonNull.class) or simply
+  named class (e.g Nullable.class) that should has appropriate import in
+  the containing stub file.
 
 \item
   an array access.  For example:  \<this.myArray[i]>, \<vals[\#1]>.
