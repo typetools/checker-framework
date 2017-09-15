@@ -313,9 +313,6 @@ public class TypesIntoElements {
                 ErrorReporter.errorAbort(
                         "TypesIntoElements: invalid usage, null pos with type: " + type);
             }
-            if (type == null) {
-                return List.nil();
-            }
             List<TypeCompound> res = super.scan(type, pos);
             return res;
         }
