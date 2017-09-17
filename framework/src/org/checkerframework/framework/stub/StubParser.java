@@ -106,6 +106,9 @@ public class StubParser {
     /** A list of imports that are not annotation types. Used for importing enums. */
     private final List<String> imports;
 
+    /** A map of imported types names and types in a stub file. */
+    private final Map<String, TypeElement> importedTypes;
+
     /**
      * Mapping of a field access expression that has already been encountered to the resolved
      * variable element.
@@ -142,7 +145,8 @@ public class StubParser {
         this.atypeFactory = factory;
         this.processingEnv = env;
         this.elements = env.getElementUtils();
-        imports = new ArrayList<String>();
+        imports = new ArrayList<>();
+        importedTypes = new HashMap<>();
 
         // getSupportedAnnotations uses these for warnings
         Map<String, String> options = env.getOptions();
@@ -179,8 +183,8 @@ public class StubParser {
                             "No supported annotations found! This likely means stub file %s doesn't import them correctly.",
                             filename));
         }
-        faexprcache = new HashMap<FieldAccessExpr, VariableElement>();
-        nexprcache = new HashMap<NameExpr, VariableElement>();
+        faexprcache = new HashMap<>();
+        nexprcache = new HashMap<>();
 
         this.fromStubFile = AnnotationBuilder.fromClass(elements, FromStubFile.class);
     }
@@ -199,7 +203,7 @@ public class StubParser {
 
     private Map<String, AnnotationMirror> createImportedAnnotationsMap(
             List<TypeElement> typeElements) {
-        Map<String, AnnotationMirror> r = new HashMap<String, AnnotationMirror>();
+        Map<String, AnnotationMirror> r = new HashMap<>();
         for (TypeElement typeElm : typeElements) {
             if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
                 AnnotationMirror anno =
@@ -217,7 +221,7 @@ public class StubParser {
      * @return a list fully qualified member names
      */
     private static List<String> getImportableMembers(TypeElement typeElement) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         List<VariableElement> memberElements =
                 ElementFilter.fieldsIn(typeElement.getEnclosedElements());
         for (VariableElement varElement : memberElements) {
@@ -240,7 +244,7 @@ public class StubParser {
         assert !stubUnit.getCompilationUnits().isEmpty();
         CompilationUnit cu = stubUnit.getCompilationUnits().get(0);
 
-        Map<String, AnnotationMirror> result = new HashMap<String, AnnotationMirror>();
+        Map<String, AnnotationMirror> result = new HashMap<>();
 
         if (cu.getImports() == null) {
             return result;
@@ -261,6 +265,7 @@ public class StubParser {
                             // Find compile time constant fields, or values of an enum
                             putAllNew(result, annosInType(element));
                             imports.addAll(getImportableMembers(element));
+                            importedTypes.put(element.getSimpleName().toString(), element);
                         }
                     } else {
                         // Members of a package (according to JLS)
@@ -295,10 +300,12 @@ public class StubParser {
                             if (findFieldElement(enclType, fieldName) != null) {
                                 imports.add(imported);
                             }
+                            importedTypes.put(enclType.getSimpleName().toString(), enclType);
                         }
 
                     } else if (importType.getKind() == ElementKind.ANNOTATION_TYPE) {
                         // Single annotation or nested annotation
+                        importedTypes.put(importType.getSimpleName().toString(), importType);
 
                         AnnotationMirror anno = AnnotationBuilder.fromName(elements, imported);
                         if (anno != null) {
@@ -311,6 +318,7 @@ public class StubParser {
                         // Class or nested class
 
                         imports.add(imported);
+                        importedTypes.put(importType.getSimpleName().toString(), importType);
                     }
                 }
             } catch (AssertionError error) {
@@ -1390,6 +1398,8 @@ public class StubParser {
 
     /*
      * Handles expressions in annotations.
+     * Writing Java expressions as annotation arguments and limitations writen in
+     * https://checkerframework.org/manual/#java-expressions-as-arguments
      */
     private void handleExpr(AnnotationBuilder builder, String name, Expression expr) {
         if (expr instanceof FieldAccessExpr || expr instanceof NameExpr) {
@@ -1528,26 +1538,31 @@ public class StubParser {
             TypeMirror expected = var.getReturnType();
             if (expected.getKind() == TypeKind.DECLARED) {
                 String className = classExpr.getType().toString();
-                Class<?> clazz;
-                try {
-                    // If it is a simply-named class literal then fully-qualified class
-                    // name should be found in stubfile imports.
-                    for (ImportDeclaration impDecl : theCompilationUnit.getImports()) {
-                        if (impDecl.getName().getIdentifier().equals(className)) {
-                            className = impDecl.getNameAsString();
+
+                if (getImportedTypes().containsKey(className)) {
+                    builder.setValue(name, getImportedTypes().get(className).asType());
+                } else {
+                    Class<?> clazz;
+                    try {
+                        // If it is a simply-named class literal then fully-qualified class
+                        // name should be found in stubfile imports.
+                        for (ImportDeclaration impDecl : theCompilationUnit.getImports()) {
+                            if (impDecl.getName().getIdentifier().equals(className)) {
+                                className = impDecl.getNameAsString();
+                            }
                         }
+                        clazz = Class.forName(className);
+                    } catch (ClassNotFoundException e) {
+                        ErrorReporter.errorAbort("StubParser: unknown class name " + className);
+                        throw new Error("dead code; this can't happen");
                     }
-                    clazz = Class.forName(className);
-                } catch (ClassNotFoundException e) {
-                    ErrorReporter.errorAbort("StubParser: unknown class name " + className);
-                    throw new Error("dead code; this can't happen");
+                    TypeMirror val =
+                            TypesUtils.typeFromClass(
+                                    atypeFactory.getContext().getTypeUtils(),
+                                    atypeFactory.getElementUtils(),
+                                    clazz);
+                    builder.setValue(name, val);
                 }
-                TypeMirror val =
-                        TypesUtils.typeFromClass(
-                                atypeFactory.getContext().getTypeUtils(),
-                                atypeFactory.getElementUtils(),
-                                clazz);
-                builder.setValue(name, val);
             } else {
                 ErrorReporter.errorAbort(
                         "StubParser: unhandled annotation attribute type: "
@@ -1633,5 +1648,9 @@ public class StubParser {
         VariableElement res = findFieldElement(rcvElt, faexpr.getNameAsString());
         faexprcache.put(faexpr, res);
         return res;
+    }
+
+    public Map<String, TypeElement> getImportedTypes() {
+        return importedTypes;
     }
 }
