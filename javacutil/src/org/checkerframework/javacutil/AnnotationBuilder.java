@@ -466,7 +466,7 @@ public class AnnotationBuilder {
         private final DeclaredType annotationType;
         private final Map<ExecutableElement, AnnotationValue> elementValues;
 
-        // default visibility to allow access from AnnotationUtils
+        // default visibility to allow access from within package.
         final /*@Interned*/ String annotationName;
 
         CheckerFrameworkAnnotationMirror(
