@@ -20,6 +20,7 @@ import org.checkerframework.checker.regex.qual.RegexBottom;
 import org.checkerframework.checker.regex.qual.UnknownRegex;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -35,9 +36,9 @@ import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -118,10 +119,10 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         0,
                         processingEnv);
 
-        REGEX = AnnotationUtils.fromClass(elements, Regex.class);
-        REGEXBOTTOM = AnnotationUtils.fromClass(elements, RegexBottom.class);
-        PARTIALREGEX = AnnotationUtils.fromClass(elements, PartialRegex.class);
-        POLYREGEX = AnnotationUtils.fromClass(elements, PolyRegex.class);
+        REGEX = AnnotationBuilder.fromClass(elements, Regex.class);
+        REGEXBOTTOM = AnnotationBuilder.fromClass(elements, RegexBottom.class);
+        PARTIALREGEX = AnnotationBuilder.fromClass(elements, PartialRegex.class);
+        POLYREGEX = AnnotationBuilder.fromClass(elements, PolyRegex.class);
 
         regexValueElement =
                 TreeUtils.getMethod(
@@ -231,7 +232,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** Returns the number of groups in the given regex String. */
-    public static int getGroupCount(/*@Regex*/ String regex) {
+    public static int getGroupCount(@Regex String regex) {
         return Pattern.compile(regex).matcher("").groupCount();
     }
 
@@ -240,7 +241,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * type annotations which cannot be used in IDEs (yet).
      */
     @SuppressWarnings("purity") // the checker cannot prove that the method is pure, but it is
-    /*@org.checkerframework.dataflow.qual.Pure*/
+    @Pure
     private static boolean isRegex(String s) {
         try {
             Pattern.compile(s);
@@ -397,7 +398,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     // ...and add a new one with the correct group count value.
                     type.replaceAnnotation(createRegexAnnotation(regexCount));
                 } else if (bottomAnno != null) {
-                    type.replaceAnnotation(AnnotationUtils.fromClass(elements, RegexBottom.class));
+                    type.replaceAnnotation(
+                            AnnotationBuilder.fromClass(elements, RegexBottom.class));
                 }
             }
             return super.visitMethodInvocation(tree, type);

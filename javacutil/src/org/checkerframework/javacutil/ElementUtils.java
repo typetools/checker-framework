@@ -430,6 +430,13 @@ public class ElementUtils {
         return Collections.<ExecutableElement>unmodifiableList(meths);
     }
 
+    /** Return all nested/inner classes/interfaces declared in the given type. */
+    public static List<TypeElement> getAllTypeElementsIn(TypeElement type) {
+        List<TypeElement> types = new ArrayList<>();
+        types.addAll(ElementFilter.typesIn(type.getEnclosedElements()));
+        return types;
+    }
+
     public static boolean isTypeDeclaration(Element elt) {
         switch (elt.getKind()) {
                 // These tree kinds are always declarations.  Uses of the declared

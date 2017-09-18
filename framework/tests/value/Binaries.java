@@ -17,7 +17,7 @@ class Binaries {
 
     void write(int t) {}
 
-    // Test widenUpperBound is working.
+    // Test widenedUpperBound is working.
     public void loop(int c) {
         double v = 0;
         int decexp = 0;

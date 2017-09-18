@@ -42,7 +42,9 @@ import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
@@ -56,6 +58,7 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.DependentTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -87,10 +90,10 @@ public class NullnessAnnotatedTypeFactory
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
         super(checker, useFbc);
 
-        NONNULL = AnnotationUtils.fromClass(elements, NonNull.class);
-        NULLABLE = AnnotationUtils.fromClass(elements, Nullable.class);
-        POLYNULL = AnnotationUtils.fromClass(elements, PolyNull.class);
-        MONOTONIC_NONNULL = AnnotationUtils.fromClass(elements, MonotonicNonNull.class);
+        NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
+        NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
+        POLYNULL = AnnotationBuilder.fromClass(elements, PolyNull.class);
+        MONOTONIC_NONNULL = AnnotationBuilder.fromClass(elements, MonotonicNonNull.class);
 
         Set<Class<? extends Annotation>> tempNullnessAnnos = new LinkedHashSet<>();
         tempNullnessAnnos.add(NonNull.class);
@@ -302,6 +305,21 @@ public class NullnessAnnotatedTypeFactory
         systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
         return mfuPair;
+    }
+
+    @Override
+    public void adaptGetClassReturnTypeToReceiver(
+            final AnnotatedExecutableType getClassType, final AnnotatedTypeMirror receiverType) {
+
+        super.adaptGetClassReturnTypeToReceiver(getClassType, receiverType);
+
+        // Make the wildcard always @NonNull, regardless of the declared type.
+
+        final AnnotatedDeclaredType returnAdt =
+                (AnnotatedDeclaredType) getClassType.getReturnType();
+        final List<AnnotatedTypeMirror> typeArgs = returnAdt.getTypeArguments();
+        final AnnotatedWildcardType classWildcardArg = (AnnotatedWildcardType) typeArgs.get(0);
+        classWildcardArg.getExtendsBoundField().replaceAnnotation(NONNULL);
     }
 
     @Override

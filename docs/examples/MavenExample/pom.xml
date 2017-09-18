@@ -13,11 +13,9 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- These properties will be set by the Maven Dependency plugin -->
-    <!-- Change to jdk7 if using Java 7 -->
     <annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>
-    <checkerFrameworkVersion><!-- checker-framework-version -->2.1.12<!-- /checker-framework-version --></checkerFrameworkVersion>
-     <!-- The type annotations compiler is required if using Java 7. -->
-     <!-- Uncomment the following line if using Java 7. -->
+    <checkerFrameworkVersion><!-- checker-framework-version -->2.2.0<!-- /checker-framework-version --></checkerFrameworkVersion>
+     <!-- Uncomment to use the Type Annotations compiler. -->
      <!--<typeAnnotationsJavac>${org.checkerframework:compiler:jar}</typeAnnotationsJavac>-->
   </properties>
 
@@ -39,13 +37,13 @@
       <artifactId>checker</artifactId>
       <version>${checkerFrameworkVersion}</version>
     </dependency>
-    <!-- The type annotations compiler - uncomment if using Java 7 -->
+    <!-- The Type Annotations compiler. Uncomment if using annotations in comments. -->
     <!--<dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>compiler</artifactId>
       <version>${checkerFrameworkVersion}</version>
     </dependency>-->
-    <!-- The annotated JDK to use (change to jdk7 if using Java 7) -->
+    <!-- annotations from the Checker Framework: nullness, interning, locking, ... -->
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
@@ -82,7 +80,7 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.6.1</version>
           <configuration>
-              <!-- Change source and target to 1.7 if using Java 7 -->
+              <!-- Change source and target to 1.7 to create .class files that can be run on a Java 7 JVM -->
               <source>1.8</source>
               <target>1.8</target>
               <fork>true</fork>
@@ -96,8 +94,8 @@
                   <arg>-Xbootclasspath/p:${annotatedJdk}</arg>
                   <!--treat Checker Framework errors as warnings-->
                   <!-- <arg>-Awarns</arg> -->
-                  <!-- Uncomment the following line if using Java 7. -->
-                  <!--<arg>-J-Xbootclasspath/p:${typeAnnotationsJavac}</arg>-->
+                  <!-- Uncomment the following line to use the type annotations compiler. -->
+                  <!-- <arg>-classpath ${typeAnnotationsJavac}</arg> -->
                   <arg>-Alint</arg>
               </compilerArgs>
           </configuration>

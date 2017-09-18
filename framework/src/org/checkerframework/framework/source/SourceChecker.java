@@ -784,7 +784,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             if (ce.userError) {
                 msg.append('.');
             } else {
-                msg.append("; invoke the compiler with -AprintErrorStack to see the stack trace.");
+                msg.append(
+                        "; The Checker Framework crashed.  Please report the crash.  To see "
+                                + "the full stack trace invoke the compiler with -AprintErrorStack");
             }
         }
 

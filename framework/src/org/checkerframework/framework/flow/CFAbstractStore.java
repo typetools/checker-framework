@@ -33,6 +33,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
@@ -204,7 +205,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                             AnnotationUtils.getElementValueClassName(
                                     monotonicAnnotation, "value", false);
                     AnnotationMirror target =
-                            AnnotationUtils.fromName(atypeFactory.getElementUtils(), annotation);
+                            AnnotationBuilder.fromName(atypeFactory.getElementUtils(), annotation);
                     // Make sure the 'target' annotation is present.
                     if (AnnotationUtils.containsSame(otherVal.getAnnotations(), target)) {
                         newOtherVal =
@@ -374,7 +375,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                         AnnotationUtils.getElementValueClassName(
                                 monotonicAnnotation, "value", false);
                 AnnotationMirror target =
-                        AnnotationUtils.fromName(atypeFactory.getElementUtils(), annotation);
+                        AnnotationBuilder.fromName(atypeFactory.getElementUtils(), annotation);
                 // Make sure the 'target' annotation is present.
                 if (AnnotationUtils.containsSame(value.getAnnotations(), target)) {
                     isMonotonic = true;
@@ -792,8 +793,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     @Override
-    public S widenUpperBound(S other) {
-        return upperBound(other, true);
+    public S widenedUpperBound(S previous) {
+        return upperBound(previous, true);
     }
 
     private S upperBound(S other, boolean shouldWiden) {
@@ -935,6 +936,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         } else {
             return false;
         }
+    }
+
+    @Override
+    public int hashCode() {
+        // What is a good hash code to use?
+        return System.identityHashCode(this);
     }
 
     @SideEffectFree

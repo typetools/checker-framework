@@ -7,6 +7,8 @@ package java.lang;
 
 public final class Class<T> {
     @Pure public String getName();
+    @Pure public java.lang.reflect.Method getMethod(String a1, Class<?> ... a2);
+    @Pure public java.lang.reflect.Constructor<T> getConstructor(Class<?>... a1);
 }
 
 public final class Character {
@@ -96,24 +98,25 @@ public final class Character {
     @Pure public static int compare(char x, char y);
     @Pure public static char reverseBytes(char ch);
     @Pure public static String getName(int codePoint);
-}
 
-public static class Character$Subset {
-   @Pure protected Subset(String name);
-   @Pure public final boolean equals(Object obj);
-   @Pure public final int hashCode();
-   @SideEffectFree public final String toString();
+    public static class Subset {
+       @Pure protected Subset(String name);
+       @Pure public final boolean equals(Object obj);
+       @Pure public final int hashCode();
+       @SideEffectFree public final String toString();
+    }
+    public static final class UnicodeBlock {
+       @Pure public static UnicodeBlock of(char c);
+       @Pure public static UnicodeBlock of(int codePoint);
+       @Pure public static final UnicodeBlock forName(String blockName);
+    }
+    public static enum UnicodeScript {
+    // At least one enum constant should be declared in a stub file.
+       COMMON;
+       @Pure public static UnicodeScript of(int codePoint);
+       @Pure public static final UnicodeScript forName(String scriptName);
+    }
 }
-public static final class Character$UnicodeBlock {
-   @Pure public static UnicodeBlock of(char c);
-   @Pure public static UnicodeBlock of(int codePoint);
-   @Pure public static final UnicodeBlock forName(String blockName);
-}
-// Stub file parser bug?  Can it handle enums?
-// public static enum Character$UnicodeScript {
-//    @Pure public static UnicodeScript of(int codePoint);
-//    @Pure public static final UnicodeScript forName(String scriptName);
-// }
 
 public class Object {
     @Pure public Object();
@@ -125,6 +128,7 @@ public class Object {
 public final class String {
     @Pure public String intern();
     @Pure public int lastIndexOf(int ch);
+    @Pure int length();
     @Pure public String substring(int beginIndex);
 }
 

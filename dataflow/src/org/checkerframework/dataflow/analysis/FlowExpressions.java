@@ -39,6 +39,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -577,8 +578,11 @@ public class FlowExpressions {
      * invocation.
      */
     public static class ClassName extends Receiver {
+        private final String typeString;
+
         public ClassName(TypeMirror type) {
             super(type);
+            typeString = type.toString();
         }
 
         @Override
@@ -587,17 +591,17 @@ public class FlowExpressions {
                 return false;
             }
             ClassName other = (ClassName) obj;
-            return getType().toString().equals(other.getType().toString());
+            return typeString.equals(other.typeString);
         }
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(getType().toString());
+            return HashCodeUtils.hash(typeString);
         }
 
         @Override
         public String toString() {
-            return getType().toString() + ".class";
+            return typeString + ".class";
         }
 
         @Override
@@ -678,15 +682,14 @@ public class FlowExpressions {
             LocalVariable other = (LocalVariable) obj;
             VarSymbol vs = (VarSymbol) element;
             VarSymbol vsother = (VarSymbol) other.element;
-            // Use type.unannotatedType().toString().equals(...) instead of Types.isSameType(...)
+            // Use TypeAnnotationUtils.unannotatedType(type).toString().equals(...) instead of Types.isSameType(...)
             // because Types requires a processing environment, and FlowExpressions is
             // designed to be independent of processing environment.  See also
             // calls to getType().toString() in FlowExpressions.
             return vsother.name.contentEquals(vs.name)
-                    && vsother.type
-                            .unannotatedType()
+                    && TypeAnnotationUtils.unannotatedType(vsother.type)
                             .toString()
-                            .equals(vs.type.unannotatedType().toString())
+                            .equals(TypeAnnotationUtils.unannotatedType(vs.type).toString())
                     && vsother.owner.toString().equals(vs.owner.toString());
         }
 
@@ -698,7 +701,9 @@ public class FlowExpressions {
         public int hashCode() {
             VarSymbol vs = (VarSymbol) element;
             return HashCodeUtils.hash(
-                    vs.name.toString(), vs.type.unannotatedType().toString(), vs.owner.toString());
+                    vs.name.toString(),
+                    TypeAnnotationUtils.unannotatedType(vs.type).toString(),
+                    vs.owner.toString());
         }
 
         @Override

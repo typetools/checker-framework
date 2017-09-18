@@ -166,7 +166,9 @@ If you get an error such as
 
 \noindent
 then you are trying to run the compiler using a JDK 6 or earlier JVM\@.
-Install and use a Java 7 or 8 JDK, at least for running the Checker
+Install and use a Java 8
+% or later
+JDK, at least for running the Checker
 Framework.
 
 \noindent
@@ -234,10 +236,11 @@ You may be able to solve the problem by running
 \end{Verbatim}
 
 \noindent
-to re-generate files \code{checker/jdk/jdk\{7,8\}.jar} and \code{checker/bin/jdk\{7,8\}.jar}.
+to re-generate files \code{checker/jdk/jdk\{8,9\}.jar} and \code{checker/bin/jdk\{8,9\}.jar}.
 
 That usually works, but if not, then you should recompile the Checker
-Framework from source rather than using the pre-compiled distribution.
+Framework from source (Section~\ref{build-source}) rather than using
+the pre-compiled distribution.
 
 
 \item
@@ -265,7 +268,7 @@ correct this by being sure to use \<fork="yes"> (see
 Section~\ref{ant-task}) and/or setting the \<build.compiler> property to
 \<extJavac>.
 
-If you are building from source  (Section~\ref{build-source}),
+If you are building from source (Section~\ref{build-source}),
 you might need to rebuild the Annotation
 File Utilities before recompiling or using the Checker Framework.
 
@@ -666,7 +669,7 @@ warning: [classfile] RuntimeVisibleTypeAnnotations attribute introduced in versi
 This warning results when you compile a library using the Checker Framework
 compiler, then use a normal Java compiler to compile client code that uses
 the library.
-The Checker Framework compiler puts Java 8 type annotations even in Java 7
+The Checker Framework compiler puts type annotations even in Java 7
 classfiles, for the benefit of modular type-checking.  The Checker Framework
 compiler reads these annotations in Java 7, and other compilers ignore them
 (but some compilers print a warning that they are ignoring them).
@@ -764,24 +767,50 @@ report the problems to the Checker Framework developers.
 \subsection{Install prerequisites\label{building-prerequisites}}
 
 You need to install several packages in order to build the Checker
-Framework.  The following command installs them for Ubuntu:
+Framework.
+Follow the instructions for your operating system.
+
+\begin{description}
+\item[Ubuntu]
+  Run the following commands:
 
 \begin{Verbatim}
 sudo apt-get update
-sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial openjdk-8-jdk \
- texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended unzip
+sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin libcurl3-gnutls \
+ make maven mercurial openjdk-8-jdk texlive-latex-base texlive-latex-recommended \
+ texlive-latex-extra texlive-fonts-recommended unzip
 \end{Verbatim}
 
-If you are building on Windows 10, then run \<bash> to obtain a version of
-Ubuntu (provided by the Windows Subsystem for Linux) and follow the Ubuntu
-instructions.
+% Building Checker Framework from source on Mac OS
 
-If you are building on other versions of Windows,
-here is an \emph{incomplete} list of needed prerequisites:
-\begin{itemize}
-\item
-  Install MSYS to obtain the \<cp> and \<make> commands.
-\end{itemize}
+\item[Mac OS]
+  If you employ \ahref{https://brew.sh}{homebrew} to install packages, run
+  the following commands:
+
+\begin{Verbatim}
+brew update
+brew install caskroom/cask/brew-cask
+brew install git ant hevea maven mercurial librsvg unzip make
+brew cask install java
+brew cask install mactex
+mkdir -p $HOME/Library/texmf/tex/latex
+cp -p /usr/local/Cellar/hevea/2.28/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
+\end{Verbatim}
+
+\item[Windows]
+  To build on Windows 10,
+  run \<bash> to obtain a version of
+  Ubuntu (provided by the Windows Subsystem for Linux) and follow the Ubuntu
+  instructions.
+
+% To build on other versions of Windows,
+% here is an \emph{incomplete} list of needed prerequisites:
+% \begin{itemize}
+% \item
+%   Install MSYS to obtain the \<cp> and \<make> commands.
+% \end{itemize}
+
+\end{description}
 
 
 \subsection{Obtain the source\label{building-obtain-source}}
@@ -795,6 +824,7 @@ cd $JSR308
 hg clone https://bitbucket.org/typetools/jsr308-langtools jsr308-langtools
 git clone https://github.com/typetools/checker-framework.git checker-framework
 git clone https://github.com/typetools/annotation-tools.git annotation-tools
+git clone https://github.com/typetools/stubparser.git stubparser
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
@@ -818,14 +848,17 @@ adds annotated JDKs and the Checker Framework jars to the classpath.
 %  * the location of tools.jar, below.
 %  * the default location of RTJAR, in checker/jdk/Makefile.
 Set the \<JAVA\_HOME> environment variable to the location of your JDK
-7 or 8 installation (not the JRE installation, and not JDK 6 or earlier).
+8 installation (not the JRE installation, and not JDK 7 or earlier).
 This needs to be an Oracle JDK.
 (The \<JAVA\_HOME> environment
 variable might already be set, because it is needed for Ant to work.)
 
-In the bash shell, putting the following command in your \code{.bashrc} file
-\emph{sometimes} works (it might
-not because \<java> might be the version in the JDK or in the JRE):
+\begin{description}
+\item[Ubuntu]
+If you use the bash shell, put the following command in your
+\code{.bashrc} file.  (This might not work if \<java> refers to an executable
+in the JRE rather than in the JDK, but you need the JDK installed to build
+the Checker Framework anyway.)
 % Can someone give a simpler command?
 %BEGIN LATEX
 \begin{smaller}
@@ -836,6 +869,16 @@ not because \<java> might be the version in the JDK or in the JRE):
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
+
+\item[Mac OSX 10.5 or later]
+  Add one of the following two commands in your \code{.bash\_profile} or
+  \code{.profile} file according to the version of your JDK.
+\begin{Verbatim}
+  export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+  export JAVA_HOME=$(/usr/libexec/java_home -v 1.9)
+\end{Verbatim}
+
+\end{description}
 
 \item
 Compile the Type Annotations tools:
@@ -877,6 +920,19 @@ This is simply done by:
 \end{Verbatim}
 
 You do not need to add the Annotation File Utilities to the path, as
+the Checker Framework build finds it using relative paths.
+
+
+\subsection{Build the StubParser\label{stubparser-building}}
+
+This is simply done by:
+
+\begin{Verbatim}
+  cd $JSR308/stubparser
+  mvn package -Dmaven.test.skip=true
+\end{Verbatim}
+
+You do not need to add the StubParser to the path, as
 the Checker Framework build finds it using relative paths.
 
 
@@ -926,7 +982,7 @@ ensure that the Checker Framework's version is used.
 If you are developing a checker within the Checker Framework, there is
 a developer version of \<javac> in the \<bin-devel> directory. This
 version will use compiled classes from \<dataflow/build>,
-\<javacutil/build>, \<stubparser/build>, \<framework/build>,
+\<javacutil/build>, \<framework/build>,
 and \<checker/build> in the \<checker-framework> directory instead of
 the compiled jar files, and by default will print stack traces for all
 errors.
@@ -1106,6 +1162,15 @@ See the ICSE 2011 paper about the Checker Framework, described above.
 ``Loci: Simple thread-locality for Java''~\cite{WrigstadPMZV2009} (ECOOP 2009,
 \myurl{http://janvitek.org/pubs/ecoop09.pdf})
 
+\item[Security (Section~\ref{sparta-checker})]
+``Static analysis of implicit control flow: Resolving Java reflection and
+  Android intents''~\cite{BarrosJMVDdAE2015} (ASE 2015,
+  \myurl{http://homes.cs.washington.edu/~mernst/pubs/implicit-control-flow-ase2015-abstract.html})
+  describes the SPARTA toolset and information flow type-checker.
+
+``Boolean formulas for the static identification of injection attacks in
+  Java''~\cite{ErnstLMSS2015} (LPAR 2015, \myurl{http://homes.cs.washington.edu/~mernst/pubs/detect-injections-lpar2015-abstract.html})
+
 \item[\href{https://ece.uwaterloo.ca/~wdietl/ownership/}{Generic Universe
     Types} (Section~\ref{gut-checker})]
 ``Tunable static inference for Generic Universe Types'' (ECOOP 2011, \myurl{http://homes.cs.washington.edu/~mernst/pubs/tunable-typeinf-ecoop2011-abstract.html})
@@ -1115,7 +1180,7 @@ Another implementation of Universe Types and \href{http://www.cs.rpi.edu/~huangw
 ``Inference and checking of object ownership''~\cite{HuangDME2012} (ECOOP 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infer-ownership-ecoop2012-abstract.html}).
 
 \item[Approximate data (Section~\ref{enerj-checker})]
-``EnerJ: Approximate Data Types for Safe and General Low-Power Computation''~\cite{SampsonDFGCG2011} (PLDI 2011, \myurl{http://www.cs.cornell.edu/~asampson/media/papers/enerj-pldi2011.pdf})
+``EnerJ: Approximate Data Types for Safe and General Low-Power Computation''~\cite{SampsonDFGCG2011} (PLDI 2011, \myurl{https://homes.cs.washington.edu/~luisceze/publications/Enerj-pldi2011.pdf})
 
 \item[Information flow and tainting (Section~\ref{sparta-checker})]
 ``Collaborative Verification of Information Flow
@@ -1181,7 +1246,7 @@ differs from a bug detector in several ways:
 
   Both types of tools may issue false alarms,
   also known as false positive warnings;
-  see Section~\ref{suppressing-warnings}.
+  see Chapter~\ref{suppressing-warnings}.
 
 \item
   A type-checker requires you to annotate your code with type qualifiers,
@@ -1228,6 +1293,7 @@ Developers who have contributed code to the Checker Framework include
 Abraham Lin,
 Anatoly Kupriyanov,
 Asumu Takikawa,
+Bohdan Sharipov,
 Charlie Garrett,
 Chris Mackie,
 Colin Gordon,
@@ -1256,6 +1322,7 @@ Philip Lai,
 Renato Athaydes,
 Ren\'e Just,
 Ryan Oblak,
+Shinya Yoshida,
 Stefan Heule,
 Steph Dietzel,
 Stuart Pernsteiner,

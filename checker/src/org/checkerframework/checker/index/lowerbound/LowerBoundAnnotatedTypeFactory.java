@@ -17,6 +17,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
@@ -42,6 +43,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -67,19 +69,21 @@ import org.checkerframework.javacutil.TreeUtils;
 public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The canonical @{@link GTENegativeOne} annotation. */
-    public final AnnotationMirror GTEN1 = AnnotationUtils.fromClass(elements, GTENegativeOne.class);
+    public final AnnotationMirror GTEN1 =
+            AnnotationBuilder.fromClass(elements, GTENegativeOne.class);
     /** The canonical @{@link NonNegative} annotation. */
-    public final AnnotationMirror NN = AnnotationUtils.fromClass(elements, NonNegative.class);
+    public final AnnotationMirror NN = AnnotationBuilder.fromClass(elements, NonNegative.class);
     /** The canonical @{@link Positive} annotation. */
-    public final AnnotationMirror POS = AnnotationUtils.fromClass(elements, Positive.class);
+    public final AnnotationMirror POS = AnnotationBuilder.fromClass(elements, Positive.class);
     /** The bottom annotation. */
     public final AnnotationMirror BOTTOM =
-            AnnotationUtils.fromClass(elements, LowerBoundBottom.class);
+            AnnotationBuilder.fromClass(elements, LowerBoundBottom.class);
     /** The canonical @{@link LowerBoundUnknown} annotation. */
     public final AnnotationMirror UNKNOWN =
-            AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);
+            AnnotationBuilder.fromClass(elements, LowerBoundUnknown.class);
     /** The canonical @{@link PolyLowerBound} annotation. */
-    public final AnnotationMirror POLY = AnnotationUtils.fromClass(elements, PolyLowerBound.class);
+    public final AnnotationMirror POLY =
+            AnnotationBuilder.fromClass(elements, PolyLowerBound.class);
 
     private final IndexMethodIdentifier imf;
 
@@ -286,9 +290,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * This handles the lowerbound part of that type, so the result is converted to
          * {@code @NonNegative}.
          *
-         * @param searchIndexType The type of an expression in a bitwise complement. For instance,
+         * @param searchIndexType the type of an expression in a bitwise complement. For instance,
          *     in {@code ~x}, this is the type of {@code x}.
-         * @param typeDst The type of the entire bitwise complement expression. It is modified by
+         * @param typeDst the type of the entire bitwise complement expression. It is modified by
          *     this method.
          */
         private void handleBitWiseComplement(
@@ -319,16 +323,18 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         private Integer getMinLenFromMemberSelectTree(MemberSelectTree tree) {
             if (TreeUtils.isArrayLengthAccess(tree)) {
-                AnnotatedTypeMirror minLenType =
-                        getValueAnnotatedTypeFactory().getAnnotatedType(tree);
-                Long min = getValueAnnotatedTypeFactory().getMinimumIntegralValue(minLenType);
-                if (min == null) {
-                    return null;
-                }
-                if (min < 0 || min > Integer.MAX_VALUE) {
-                    min = 0L;
-                }
-                return min.intValue();
+                return IndexUtil.getMinLenFromTree(tree, getValueAnnotatedTypeFactory());
+            }
+            return null;
+        }
+
+        /**
+         * Looks up the minlen of a method invocation tree. Returns null if the tree doesn't
+         * represent an string length method.
+         */
+        private Integer getMinLenFromMethodInvocationTree(MethodInvocationTree tree) {
+            if (imf.isStringLength(tree, processingEnv)) {
+                return IndexUtil.getMinLenFromTree(tree, getValueAnnotatedTypeFactory());
             }
             return null;
         }
@@ -512,15 +518,21 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // Instead of a separate method for subtraction, add the negative of a constant.
                 addAnnotationForLiteralPlus(-1 * valRight.intValue(), leftType, type);
 
-                // Check if the left side is a field access of an array's length. If so,
+                Integer minLen = null;
+                // Check if the left side is a field access of an array's length,
+                // or invocation of String.length. If so,
                 // try to look up the MinLen of the array, and potentially keep
                 // this either NN or POS instead of GTEN1 or LBU.
                 if (leftExpr.getKind() == Kind.MEMBER_SELECT) {
                     MemberSelectTree mstree = (MemberSelectTree) leftExpr;
-                    Integer minLen = getMinLenFromMemberSelectTree(mstree);
-                    if (minLen != null) {
-                        type.replaceAnnotation(anmFromVal(minLen - valRight));
-                    }
+                    minLen = getMinLenFromMemberSelectTree(mstree);
+                } else if (leftExpr.getKind() == Kind.METHOD_INVOCATION) {
+                    MethodInvocationTree mitree = (MethodInvocationTree) leftExpr;
+                    minLen = getMinLenFromMethodInvocationTree(mitree);
+                }
+
+                if (minLen != null) {
+                    type.replaceAnnotation(anmFromVal(minLen - valRight));
                 }
 
                 return;

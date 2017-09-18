@@ -1,3 +1,5 @@
+// Test case for Issue 414.
+// https://github.com/typetools/checker-framework/issues/414
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,18 +16,18 @@ class Issue414 {
 
     Map<String, Integer> someField = new HashMap<String, Integer>();
 
-    void semiSimple(/*@KeyFor("this.someField")*/ String s) {
+    void semiSimple(@KeyFor("this.someField") String s) {
         Map<String, Integer> mymap = new HashMap<String, Integer>();
         mymap.put(s, 1);
-        /*@KeyFor({"this.someField","mymap"})*/ String s2 = s;
+        @KeyFor({"this.someField", "mymap"}) String s2 = s;
     }
 
     void dominatorsNoGenerics(Map<String, Integer> preds) {
 
         Map<String, Integer> dom = new HashMap<String, Integer>();
-        /*@KeyFor({"preds","dom"})*/ String root;
+        @KeyFor({"preds", "dom"}) String root;
 
-        List</*@KeyFor({"preds","dom"})*/ String> roots = new ArrayList<String>();
+        List<@KeyFor({"preds", "dom"}) String> roots = new ArrayList<String>();
 
         for (String node : preds.keySet()) {
             dom.put(node, 1);
@@ -38,9 +40,9 @@ class Issue414 {
 
         Map<T, Integer> dom = new HashMap<T, Integer>();
 
-        /*@KeyFor({"preds","dom"})*/ T root;
+        @KeyFor({"preds", "dom"}) T root;
 
-        List</*@KeyFor({"preds","dom"})*/ T> roots = new ArrayList<T>();
+        List<@KeyFor({"preds", "dom"}) T> roots = new ArrayList<T>();
 
         for (T node : preds.keySet()) {
             dom.put(node, 1);

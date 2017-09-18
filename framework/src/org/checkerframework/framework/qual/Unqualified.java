@@ -12,8 +12,8 @@ import java.lang.annotation.Target;
  * <p>Note that because of the missing RetentionPolicy, the qualifier will not be stored in
  * bytecode.
  *
- * <p>Only use this qualifier for very simple type systems. For realistic systems, introduce a top
- * and bottom qualifier that gets stored in bytecode.
+ * <p>Only use this qualifier when experimenting with very simple type systems. For any more
+ * realistic type systems, introduce a top and bottom qualifier that gets stored in bytecode.
  */
 @InvisibleQualifier
 @SubtypeOf({})

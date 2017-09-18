@@ -17,6 +17,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -33,8 +34,10 @@ import javax.lang.model.util.Types;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.PolyAll;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -595,7 +598,7 @@ public abstract class AnnotatedTypeMirror {
      * @param a the class of the annotation to add
      */
     public void addAnnotation(Class<? extends Annotation> a) {
-        AnnotationMirror anno = AnnotationUtils.fromClass(atypeFactory.elements, a);
+        AnnotationMirror anno = AnnotationBuilder.fromClass(atypeFactory.elements, a);
         addAnnotation(anno);
     }
 
@@ -658,7 +661,7 @@ public abstract class AnnotatedTypeMirror {
     }
 
     public boolean removeAnnotation(Class<? extends Annotation> a) {
-        AnnotationMirror anno = AnnotationUtils.fromClass(atypeFactory.elements, a);
+        AnnotationMirror anno = AnnotationBuilder.fromClass(atypeFactory.elements, a);
         if (anno == null || !atypeFactory.isSupportedQualifier(anno)) {
             ErrorReporter.errorAbort(
                     "AnnotatedTypeMirror.removeAnnotation called with un-supported class: " + a);
@@ -871,26 +874,10 @@ public abstract class AnnotatedTypeMirror {
             if (!this.isDeclaration()) {
                 return this;
             }
-
             AnnotatedDeclaredType result = this.shallowCopy(true);
             result.declaration = false;
-
-            List<AnnotatedTypeMirror> newArgs = new ArrayList<>();
-            for (AnnotatedTypeMirror arg : result.getTypeArguments()) {
-                switch (arg.getKind()) {
-                    case TYPEVAR:
-                        AnnotatedTypeVariable paramTypevar = (AnnotatedTypeVariable) arg;
-                        newArgs.add(paramTypevar.asUse());
-                        break;
-                    case WILDCARD:
-                        AnnotatedWildcardType paramWildcard = (AnnotatedWildcardType) arg;
-                        newArgs.add(paramWildcard.asUse());
-                        break;
-                    default:
-                        newArgs.add(arg);
-                }
-            }
-            result.setTypeArguments(newArgs);
+            // setTypeArguments calls asUse on all the new type arguments.
+            result.setTypeArguments(typeArgs);
 
             return result;
         }
@@ -925,29 +912,33 @@ public abstract class AnnotatedTypeMirror {
 
         /** @return the type argument for this type */
         public List<AnnotatedTypeMirror> getTypeArguments() {
-            if (typeArgs == null) {
-                typeArgs = new ArrayList<AnnotatedTypeMirror>();
-                if (wasRaw()) {
-                    // TODO: This doesn't handle recursive type parameter
-                    // e.g. class Pair<Y extends List<Y>> { ... }
-                    // Type argument inference for raw types can be improved. See Issue #635.
-                    // https://github.com/typetools/checker-framework/issues/635
-                    AnnotatedDeclaredType declaration =
-                            atypeFactory.fromElement((TypeElement) getUnderlyingType().asElement());
-                    for (AnnotatedTypeMirror typeParam : declaration.getTypeArguments()) {
-                        AnnotatedWildcardType wct =
-                                atypeFactory.getUninferredWildcardType(
-                                        (AnnotatedTypeVariable) typeParam);
-                        typeArgs.add(wct);
-                    }
-                } else if (!getUnderlyingType().getTypeArguments().isEmpty()) { // lazy init
-                    for (TypeMirror t : getUnderlyingType().getTypeArguments()) {
-                        typeArgs.add(createType(t, atypeFactory, declaration));
-                    }
+            if (typeArgs != null) {
+                return typeArgs;
+            } else if (wasRaw()) {
+                // Initialize the type arguments with uninferred wildcards.
+                BoundsInitializer.initializeTypeArgs(this);
+
+                // Copy annotations from the declaration to the wildcards.
+                AnnotatedDeclaredType declaration =
+                        atypeFactory.fromElement((TypeElement) getUnderlyingType().asElement());
+                for (int i = 0; i < typeArgs.size(); i++) {
+                    AnnotatedTypeVariable typeParam =
+                            (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);
+                    AnnotatedWildcardType wct = (AnnotatedWildcardType) typeArgs.get(i);
+                    AnnotatedTypeMerger.merge(typeParam.getUpperBound(), wct.getExtendsBound());
+                    wct.getSuperBound()
+                            .replaceAnnotations(typeParam.getLowerBound().getAnnotations());
+                    wct.replaceAnnotations(typeParam.getAnnotations());
                 }
-                typeArgs = Collections.unmodifiableList(typeArgs);
+                return typeArgs;
+            } else if (getUnderlyingType().getTypeArguments().isEmpty()) {
+                typeArgs = Collections.emptyList();
+                return typeArgs;
+            } else {
+                // Initialize type argument for a non-raw declared type that has type arguments/
+                BoundsInitializer.initializeTypeArgs(this);
+                return typeArgs;
             }
-            return typeArgs;
         }
 
         /**
@@ -1877,6 +1868,12 @@ public abstract class AnnotatedTypeMirror {
         /** ExtendBound */
         private AnnotatedTypeMirror extendsBound;
 
+        /**
+         * The type variable to which this wildcard is an argument. Used to initialize the upper
+         * bound of unbounded wildcards and wildcards in raw types.
+         */
+        private TypeVariable typeVariable = null;
+
         private AnnotatedWildcardType(WildcardType type, AnnotatedTypeFactory factory) {
             super(type, factory);
         }
@@ -1922,7 +1919,7 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * Sets the upper bound of this wild card
+         * Sets the upper bound of this wildcard
          *
          * @param type the type of the upper bound
          */
@@ -1966,6 +1963,32 @@ public abstract class AnnotatedTypeMirror {
             }
         }
 
+        /**
+         * Sets type variable to which this wildcard is an argument. This method should only be
+         * called during initialization of the type.
+         */
+        void setTypeVariable(TypeParameterElement typeParameterElement) {
+            this.typeVariable = (TypeVariable) typeParameterElement.asType();
+        }
+
+        /**
+         * Sets type variable to which this wildcard is an argument. This method should only be
+         * called during initialization of the type.
+         */
+        void setTypeVariable(TypeVariable typeVariable) {
+            this.typeVariable = typeVariable;
+        }
+
+        /**
+         * Returns the type variable to which this wildcard is an argument. Used to initialize the
+         * upper bound of unbounded wildcards and wildcards in raw types.
+         *
+         * @return the type variable to which this wildcard is an argument
+         */
+        public TypeVariable getTypeVariable() {
+            return typeVariable;
+        }
+
         @Override
         public <R, P> R accept(AnnotatedTypeVisitor<R, P> v, P p) {
             return v.visitWildcard(this, p);
@@ -1997,6 +2020,7 @@ public abstract class AnnotatedTypeMirror {
             }
 
             type.uninferredTypeArgument = uninferredTypeArgument;
+            type.typeVariable = typeVariable;
 
             return type;
         }

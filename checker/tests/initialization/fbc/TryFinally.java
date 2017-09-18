@@ -1,6 +1,5 @@
 // Test case for issue #293: https://github.com/typetools/checker-framework/issues/293
 // Thanks to Ed Price for the test case.
-// @skip-test
 
 // Design space:
 //  try
@@ -301,7 +300,7 @@ class TestCtmethodFnoactionNonfinal {
     }
 
     private String foo;
-    //:: error: initialization.fields.uninitialized
+
     public TestCtmethodFnoactionNonfinal() {
         try {
             this.foo = getFoo();
@@ -403,7 +402,7 @@ class TestCemethodFnoactionNonfinal {
     }
 
     private String foo;
-    //:: error: initialization.fields.uninitialized
+
     public TestCemethodFnoactionNonfinal() {
         try {
             this.foo = getFoo();
@@ -437,7 +436,7 @@ class TestCestringFnoactionNonfinal {
     }
 
     private String foo;
-    //:: error: initialization.fields.uninitialized
+
     public TestCestringFnoactionNonfinal() {
         try {
             this.foo = getFoo();

@@ -6,7 +6,7 @@ import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.framework.flow.CFAnalysis;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -21,9 +21,10 @@ import org.checkerframework.javacutil.ErrorReporter;
 public class IndexRefinementInfo {
 
     public Node left, right;
+
     /**
      * Annotation for left and right expressions. Might be null if dataflow doesn't have a value for
-     * the expression. *
+     * the expression.
      */
     public AnnotationMirror leftAnno, rightAnno;
 
@@ -31,7 +32,10 @@ public class IndexRefinementInfo {
     public ConditionalTransferResult<CFValue, CFStore> newResult;
 
     public IndexRefinementInfo(
-            TransferResult<CFValue, CFStore> result, CFAnalysis analysis, Node r, Node l) {
+            TransferResult<CFValue, CFStore> result,
+            CFAbstractAnalysis<?, ?, ?> analysis,
+            Node r,
+            Node l) {
         right = r;
         left = l;
 
@@ -55,7 +59,7 @@ public class IndexRefinementInfo {
 
     public IndexRefinementInfo(
             TransferResult<CFValue, CFStore> result,
-            CFAnalysis analysis,
+            CFAbstractAnalysis<?, ?, ?> analysis,
             BinaryOperationNode node) {
         this(result, analysis, node.getRightOperand(), node.getLeftOperand());
     }

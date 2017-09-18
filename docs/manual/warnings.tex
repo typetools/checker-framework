@@ -8,10 +8,14 @@
 % misbehaves at run time.
 
 When the Checker Framework reports a warning, it's best to fix the
-underlying problem, by changing the code or its annotations.  (See
-Section~\ref{handling-warnings} for some tips.)  Alternately, you can
-suppress the warning, which does not change the code but prevents the
-Checker Framework from reporting this particular warning to you.
+underlying problem, by changing the code or its annotations.  For each
+warning, follow the methodology in Section~\ref{handling-warnings} to
+correct the underlying problem.
+
+This section describes what to do if the methodology of
+Section~\ref{handling-warnings} indicates that you need to suppress the
+warning.  You won't change your code, but you will prevent the Checker
+Framework from reporting this particular warning to you.
 
 You may wish to suppress checker warnings because of unannotated libraries
 or un-annotated portions of your own code, because of application
@@ -23,8 +27,8 @@ program:  the programmer knows more about the type than the type system does
 and uses the warning suppression or cast to convey that information to the
 type system.
 
-You can suppress a single warning message (or those in a single method or
-class) by using the following mechanisms:
+You can suppress a warning message in a single variable initializer,
+method, or class by using the following mechanisms:
 
 \newcounter{lastsinglesuppression}
 \begin{itemize}
@@ -61,7 +65,7 @@ Some type checkers can suppress warnings via
 \end{itemize}
 
 \noindent
-We now explain these mechanisms in turn.
+The rest of this chapter explains these mechanisms in turn.
 
 % See the @SuppressWarningsKey annotation and the getSuppressWarningsKey method.
 
@@ -104,7 +108,7 @@ Section~\ref{subtyping-using}).  While not recommended, using
 checkers.
 
 The \<@SuppressWarnings> argument string can also  be of the form
-\emph{checkername:messagekey}, in which case only
+\emph{checkername:messagekey} or \emph{messagekey}, in which case only
 errors/warnings relating to the given message key are suppressed.  For example,
 \code{cast.unsafe} is the messagekey for warnings about an unsafe cast, and
 \code{cast.redundant} is the messagekey for warnings about a redundant cast.
@@ -147,15 +151,20 @@ not just the most specific one.
 
 \<@SuppressWarnings> is a declaration annotation, so it may be placed on
 program declarations such as a local variable declaration, a method, or a
-class.  It cannot be used on statements, expressions, or types.  To reduce
-the scope of a \<@SuppressWarnings> annotation, it is sometimes desirable
-to extract part of an expression into a local variable, so that warnings
-can be suppressed just for that local variable's initializer expression.
+class.  It cannot be used on statements, expressions, or types.
 
-As an example, consider suppressing a warnings at a cast that you know is safe.  Here is an example
-that uses the Tainting Checker (Section~\ref{tainting-checker}); assume
-that \<expr> has compile-time (declared) type \<@Tainted String>, but you
-know that the run-time value of \<expr> is untainted.
+Always write a \<@SuppressWarnings> annotation on the smallest possible
+scope.  To reduce the scope of a \<@SuppressWarnings> annotation, it is
+sometimes desirable to refactor the code.  You might extract an expression
+into a local variable, so that warnings can be suppressed just for that
+local variable's initializer expression.  Likewise, you might extract some
+code into a separate method.
+
+As an example, consider suppressing a warning at a cast that you know is
+safe.  Here is an example that uses the Tainting Checker
+(Section~\ref{tainting-checker}); assume that \<expr> has compile-time
+(declared) type \<@Tainted String>, but you know that the run-time value of
+\<expr> is untainted.
 
 %BEGIN LATEX
 \begin{smaller}
@@ -229,20 +238,29 @@ best style:
 \end{Verbatim}
 
 
-
-
-
 \subsubsection{Justify why the warning is a false positive\label{suppresswarnings-best-practices-justification}}
 
-A \<@SuppressWarnings> annotation asserts that the code is actually
-correct or safe (that is, no undesired behavior will occur), even though
-the type system is unable to prove that the code is correct or safe.
+A \<@SuppressWarnings> annotation asserts that the programmer knows that
+the code is actually correct or safe (that is, no undesired behavior will
+occur), even though the type system is unable to prove that the code is
+correct or safe.
 
 Whenever you write a \<@SuppressWarnings> annotation, you should also
 write, typically on the same line, a code comment
 explaining why the code is actually correct.  In some cases you might also
 justify why the code cannot be rewritten in a simpler way that would be
 amenable to type-checking.
+
+Here are some examples from \href{https://mernst.github.io/plume-lib/}{plume-lib}:
+
+\begin{Verbatim}
+@SuppressWarnings("purity") // side effect to local state of type BitSet
+@SuppressWarnings("cast") // cast is redundant (except in JSR 308)
+@SuppressWarnings("interning") // FbType.FREE is interned but is not annotated
+@SuppressWarnings("interning") // equality testing optimization
+@SuppressWarnings("nullness") // used portion of array is non-null
+@SuppressWarnings("nullness") // oi.factory is a static method, so null first argument is OK
+\end{Verbatim}
 
 This documentation will help you and others to understand the reason for
 the \<@SuppressWarnings> annotation.  It will also help if you decide to
@@ -260,14 +278,17 @@ message.
 For example, in this code:
 
 \begin{Verbatim}
-  assert x != null : "@AssumeAssertion(nullness)";
-  ... x.f ...
+while (c != Object.class) {
+  ...
+  c = c.getSuperclass();
+  assert c != null
+    : "@AssumeAssertion(nullness): c was not Object, so its superclass is not null";
+ }
 \end{Verbatim}
 
 \noindent
-the Nullness Checker assumes that \<x> is non-null from the \<assert>
-statement forward, and so the expression \<x.f> cannot throw a null pointer
-exception.
+the Nullness Checker assumes that \<c> is non-null from the \<assert>
+statement forward (including on the next iteration through the loop).
 
 The \<assert> expression must be an expression that would affect flow-sensitive
 type qualifier refinement (Section~\ref{type-refinement}), if the
@@ -320,8 +341,8 @@ Assertions are commonly used for two distinct purposes:  documenting how
 the program works and debugging the program when it does not work
 correctly.  By default, the Checker Framework assumes that each assertion
 is used for debugging:  the assertion might fail at run time, and the programmer
-wishes to be informed at compile time about such run-time errors.  On the
-other hand, if you write the \<@AssumeAssertion> string in the \<assert>
+wishes to be informed at compile time about such possible run-time errors.  On
+the other hand, if you write the \<@AssumeAssertion> string in the \<assert>
 message, then the Checker Framework assumes that you have used some other
 technique to verify that the assertion can never fail at run time, so the
 checker assumes the assertion passes and does not issue a warning.
@@ -639,7 +660,7 @@ there are several ways to eliminate the compiler warnings.
 \item Annotate only the signature of \code{unannotated\_method}, and
   suppress warnings in its body.  Two ways to suppress the warnings are via a
   \code{@SuppressWarnings} annotation or by not running the checker on that
-  file (see Section~\ref{suppressing-warnings}).
+  file (see Chapter~\ref{suppressing-warnings}).
 \item Suppress all warnings related to uses of \code{unannotated\_method}
   via the \code{skipUses} processor option
   (see Section~\ref{askipuses}).
@@ -654,7 +675,7 @@ there are several ways to eliminate the compiler warnings.
 
 Chapter~\ref{annotating-libraries} discusses adding annotations to
 signatures when you do not have source code available.
-Section~\ref{suppressing-warnings} discusses suppressing warnings.
+Chapter~\ref{suppressing-warnings} discusses suppressing warnings.
 
 
 \section{Backward compatibility with earlier versions of Java\label{backward-compatibility}}
@@ -806,16 +827,20 @@ Suppose that your codebase currently uses annotations in comments, but you
 wish to remove the comment characters around your annotations, because in
 the future you will use only compilers that support type annotations and
 your code will only run on Java 8 or later JVMs.
-This Unix command removes
+To remove
 the comment characters, for all Java files in the current
-working directory or any subdirectory.
+working directory or any subdirectory, run the following two Unix commands.
 
 \begin{Verbatim}
    find . -type f -name '*.java' -print \
-     | xargs grep -l -P '/\*\s*@([^ */]+)\s*\*/' \
-     | xargs perl -pi.bak -e 's|/\*\s*@([^ */]+)\s*\*/|@\1|g'
+     | xargs grep -l -E '/\*\s*@([^*/]+)\s*\*/' \
+     | xargs perl -pi.bak -e 's|/\*\s*@([^*/]+)\s*\*/|@\1|g'
+   find . -type f -name '*.java' -print \
+     | xargs grep -l -E '/\*>>>' \
+     | xargs perl -pi.bak -00 -e 's|/\*>>>([^*]+)\*/|\1|g'
 \end{Verbatim}
 
+The first command handles ordinary annotations in comments.
 You can customize this command:
 \begin{itemize}
 \item
@@ -826,11 +851,18 @@ To ignore comments with leading or trailing spaces, remove the four
 instances of ``\verb|\s*|''.
 \item
   To not make backups, remove ``\verb|.bak|''.
+\item
+  To remove all commented annotations, remove ``\verb|@\1|''.
 \end{itemize}
 
-% TODO: adapt it to do so.
-The command does not handle the \code{>>>} comments; you will need to
-adapt the above command to do so, or remove them in another way.
+The second command handles \code{/*>>>...*/} comments (.
+You can customize this command:
+\begin{itemize}
+\item
+  To not make backups, remove ``\verb|.bak|''.
+\item
+  To remove all \code{/*>>>...*/} comments, remove ``\verb|\1|''.
+\end{itemize}
 
 
 \subsection{No modular type-checking when targeting Java 5/6/7\label{no-modular-type-checking-java7-jvm}}

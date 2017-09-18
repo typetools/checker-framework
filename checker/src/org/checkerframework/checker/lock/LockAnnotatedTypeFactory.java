@@ -1,9 +1,5 @@
 package org.checkerframework.checker.lock;
 
-/*>>>
-import org.checkerframework.checker.interning.qual.*;
-*/
-
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
@@ -51,13 +47,13 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -93,13 +89,13 @@ public class LockAnnotatedTypeFactory
     public LockAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
 
-        LOCKHELD = AnnotationUtils.fromClass(elements, LockHeld.class);
-        LOCKPOSSIBLYHELD = AnnotationUtils.fromClass(elements, LockPossiblyHeld.class);
-        SIDEEFFECTFREE = AnnotationUtils.fromClass(elements, SideEffectFree.class);
-        GUARDEDBYUNKNOWN = AnnotationUtils.fromClass(elements, GuardedByUnknown.class);
-        GUARDEDBY = AnnotationUtils.fromClass(elements, GuardedBy.class);
-        GUARDEDBYBOTTOM = AnnotationUtils.fromClass(elements, GuardedByBottom.class);
-        GUARDSATISFIED = AnnotationUtils.fromClass(elements, GuardSatisfied.class);
+        LOCKHELD = AnnotationBuilder.fromClass(elements, LockHeld.class);
+        LOCKPOSSIBLYHELD = AnnotationBuilder.fromClass(elements, LockPossiblyHeld.class);
+        SIDEEFFECTFREE = AnnotationBuilder.fromClass(elements, SideEffectFree.class);
+        GUARDEDBYUNKNOWN = AnnotationBuilder.fromClass(elements, GuardedByUnknown.class);
+        GUARDEDBY = AnnotationBuilder.fromClass(elements, GuardedBy.class);
+        GUARDEDBYBOTTOM = AnnotationBuilder.fromClass(elements, GuardedByBottom.class);
+        GUARDSATISFIED = AnnotationBuilder.fromClass(elements, GuardSatisfied.class);
 
         // This alias is only true for the Lock Checker. All other checkers must
         // ignore the @LockingFree annotation.

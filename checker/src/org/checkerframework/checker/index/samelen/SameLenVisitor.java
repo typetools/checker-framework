@@ -1,14 +1,11 @@
 package org.checkerframework.checker.index.samelen;
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-*/
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.PolySameLen;
 import org.checkerframework.checker.index.qual.SameLen;
@@ -33,8 +30,8 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            /*@CompilerMessageKey*/ String errorKey) {
-        if (valueType.getKind() == TypeKind.ARRAY
+            @CompilerMessageKey String errorKey) {
+        if (IndexUtil.isSequenceType(valueType.getUnderlyingType())
                 && TreeUtils.isExpressionTree(valueTree)
                 && !(valueType.hasAnnotation(PolySameLen.class)
                         && varType.hasAnnotation(PolySameLen.class))) {

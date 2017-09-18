@@ -112,7 +112,9 @@ public enum ConversionCategory {
         this.chars = chars;
     }
 
+    @SuppressWarnings("ImmutableEnumChecker") // TODO: clean this up!
     public final Class<? extends Object>[] types;
+
     public final String chars;
 
     /**

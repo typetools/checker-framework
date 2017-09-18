@@ -7,12 +7,11 @@ public interface List<@Nullable T> {}  // overrules annotated jdk
 
 package java.lang;
 
-
-public final class  String {
+public final class String {
      public @NonNull String intern();
-     public @Nullable String substring(@NonNull int beginIndex) @NonNull;
+     public @Nullable String substring(@NonNull int beginIndex);
      String(@Nullable String arg0);
-     void getChars(@Nullable int arg0, @NonNull int arg1, @NonNull char @NonNull [] arg2, @NonNull int arg3) @NonNull;
+     void getChars(@Nullable int arg0, @NonNull int arg1, @NonNull char @NonNull [] arg2, @NonNull int arg3);
 //Used to test stub file warnings
      void thisMethodIsNotReal(String s);
 }

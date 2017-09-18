@@ -8,8 +8,8 @@ class Boolean{
     @StaticallyExecutable boolean booleanValue();
     @StaticallyExecutable static boolean getBoolean(String name);
     @StaticallyExecutable static boolean parseBoolean(String s);
-    @StaticallyExecutable String toString();
-    @StaticallyExecutable static String toString(boolean b);
+    @StaticallyExecutable @StringVal({"true", "false"}) String toString();
+    @StaticallyExecutable static @StringVal({"true", "false"}) String toString(boolean b);
     @StaticallyExecutable static Boolean valueOf(boolean b);
     @StaticallyExecutable static Boolean valueOf(String s);
 }
@@ -18,17 +18,17 @@ class Byte{
     @StaticallyExecutable Byte(byte value);
     @StaticallyExecutable Byte(String s);
 
-    @StaticallyExecutable @PolyValue byte byteValue() @PolyValue;
+    @StaticallyExecutable @PolyValue byte byteValue(@PolyValue Byte this);
     @StaticallyExecutable static Byte decode(String nm);
-    @StaticallyExecutable @PolyValue double doubleValue() @PolyValue;
-    @StaticallyExecutable @PolyValue float floatValue() @PolyValue;
-    @StaticallyExecutable @PolyValue int intValue() @PolyValue;
-    @StaticallyExecutable @PolyValue long longValue() @PolyValue;
+    @StaticallyExecutable @PolyValue double doubleValue(@PolyValue Byte this);
+    @StaticallyExecutable @PolyValue float floatValue(@PolyValue Byte this);
+    @StaticallyExecutable @PolyValue int intValue(@PolyValue Byte this);
+    @StaticallyExecutable @PolyValue long longValue(@PolyValue Byte this);
     @StaticallyExecutable static byte parseByte(String s);
     @StaticallyExecutable static byte parseByte(String s, int radix);
-    @StaticallyExecutable @PolyValue short shortValue() @PolyValue;
-    @StaticallyExecutable String toString();
-    @StaticallyExecutable static String toString(byte b);
+    @StaticallyExecutable @PolyValue short shortValue(@PolyValue Byte this);
+    @StaticallyExecutable @ArrayLen({1,2,3,4}) String toString();
+    @StaticallyExecutable static @ArrayLen({1,2,3,4}) String toString(byte b);
     @StaticallyExecutable static @PolyValue Byte valueOf(@PolyValue byte b);
     @StaticallyExecutable static Byte valueOf(String s);
     @StaticallyExecutable static Byte valueOf(String s, int radix);
@@ -104,8 +104,8 @@ class Character{
     @StaticallyExecutable static int toCodePoint(char high, char low);
     @StaticallyExecutable static char toLowerCase(char ch);
     @StaticallyExecutable static int toLowerCase(int codePoint);
-    @StaticallyExecutable String toString();
-    @StaticallyExecutable static String toString(char c);
+    @StaticallyExecutable @ArrayLen(1) String toString();
+    @StaticallyExecutable static @ArrayLen(1) String toString(char c);
     @StaticallyExecutable static char toTitleCase(char ch);
     @StaticallyExecutable static int toTitleCase(int codePoint);
     @StaticallyExecutable static char toUpperCase(char ch);
@@ -117,21 +117,21 @@ class Double{
     @StaticallyExecutable Double(double value);
     @StaticallyExecutable Double(String s);
 
-    @StaticallyExecutable @PolyValue byte byteValue() @PolyValue;
+    @StaticallyExecutable @PolyValue byte byteValue(@PolyValue Double this);
     @StaticallyExecutable static int compare(double d1, double d2);
     @StaticallyExecutable static long doubleToLongBits(double value);
     @StaticallyExecutable static long doubleToRawLongBits(double value);
-    @StaticallyExecutable @PolyValue double doubleValue() @PolyValue;
-    @StaticallyExecutable @PolyValue float floatValue() @PolyValue;
-    @StaticallyExecutable @PolyValue int intValue() @PolyValue;
+    @StaticallyExecutable @PolyValue double doubleValue(@PolyValue Double this);
+    @StaticallyExecutable @PolyValue float floatValue(@PolyValue Double this);
+    @StaticallyExecutable @PolyValue int intValue(@PolyValue Double this);
     @StaticallyExecutable boolean isInfinite();
     @StaticallyExecutable static boolean isInfinite(double v);
     @StaticallyExecutable boolean isNaN();
     @StaticallyExecutable static boolean isNaN(double v);
     @StaticallyExecutable static double longBitsToDouble(long bits);
-    @StaticallyExecutable @PolyValue long longValue() @PolyValue;
+    @StaticallyExecutable @PolyValue long longValue(@PolyValue Double this);
     @StaticallyExecutable static double parseDouble(String s);
-    @StaticallyExecutable @PolyValue short shortValue() @PolyValue;
+    @StaticallyExecutable @PolyValue short shortValue(@PolyValue Double this);
     @StaticallyExecutable static String toHexString(double d);
     @StaticallyExecutable String toString();
     @StaticallyExecutable static String toString(double d);
@@ -143,21 +143,21 @@ class Float{
     @StaticallyExecutable Float(float value);
     @StaticallyExecutable Float(String s);
 
-    @StaticallyExecutable @PolyValue byte byteValue() @PolyValue;
+    @StaticallyExecutable @PolyValue byte byteValue(@PolyValue Float this);
     @StaticallyExecutable static int compare(float f1, float f2);
-    @StaticallyExecutable @PolyValue double doubleValue() @PolyValue;
+    @StaticallyExecutable @PolyValue double doubleValue(@PolyValue Float this);
     @StaticallyExecutable static int floatToIntBits(float value);
     @StaticallyExecutable static int floatToRawIntBits(float value);
-    @StaticallyExecutable @PolyValue float floatValue() @PolyValue;
+    @StaticallyExecutable @PolyValue float floatValue(@PolyValue Float this);
     @StaticallyExecutable static float intBitsToFloat(int bits);
-    @StaticallyExecutable @PolyValue int intValue() @PolyValue;
+    @StaticallyExecutable @PolyValue int intValue(@PolyValue Float this);
     @StaticallyExecutable boolean isInfinite();
     @StaticallyExecutable static boolean isInfinite(float v);
     @StaticallyExecutable boolean isNaN();
     @StaticallyExecutable static boolean isNaN(float v);
-    @StaticallyExecutable @PolyValue long longValue() @PolyValue;
+    @StaticallyExecutable @PolyValue long longValue(@PolyValue Float this);
     @StaticallyExecutable static float parseFloat(String s);
-    @StaticallyExecutable @PolyValue short shortValue() @PolyValue;
+    @StaticallyExecutable @PolyValue short shortValue(@PolyValue Float this);
     @StaticallyExecutable static String toHexString(float f);
     @StaticallyExecutable String toString();
     @StaticallyExecutable static String toString(float f);
@@ -170,16 +170,16 @@ class Integer{
     @StaticallyExecutable Integer(String s);
 
     @StaticallyExecutable static int bitCount(int i);
-    @StaticallyExecutable @PolyValue byte byteValue() @PolyValue;
+    @StaticallyExecutable @PolyValue byte byteValue(@PolyValue Integer this);
     @StaticallyExecutable static Integer decode(String nm);
-    @StaticallyExecutable @PolyValue double doubleValue() @PolyValue;
-    @StaticallyExecutable @PolyValue float floatValue() @PolyValue;
+    @StaticallyExecutable @PolyValue double doubleValue(@PolyValue Integer this);
+    @StaticallyExecutable @PolyValue float floatValue(@PolyValue Integer this);
     @StaticallyExecutable static Integer getInteger(String nm);
     @StaticallyExecutable static Integer getInteger(String nm, int val);
     @StaticallyExecutable static Integer getInteger(String nm, Integer val);
     @StaticallyExecutable static int highestOneBit(int i);
-    @StaticallyExecutable @PolyValue int intValue() @PolyValue;
-    @StaticallyExecutable @PolyValue long longValue() @PolyValue;
+    @StaticallyExecutable @PolyValue int intValue(@PolyValue Integer this);
+    @StaticallyExecutable @PolyValue long longValue(@PolyValue Integer this);
     @StaticallyExecutable static int lowestOneBit(int i);
     @StaticallyExecutable static int numberOfLeadingZeros(int i);
     @StaticallyExecutable static int numberOfTrailingZeros(int i);
@@ -191,12 +191,12 @@ class Integer{
     @StaticallyExecutable static int rotateRight(int i, int distance);
     @StaticallyExecutable short  shortValue();
     @StaticallyExecutable static int signum(int i);
-    @StaticallyExecutable static String toBinaryString(int i);
-    @StaticallyExecutable static String toHexString(int i);
-    @StaticallyExecutable static String toOctalString(int i);
-    @StaticallyExecutable String toString();
-    @StaticallyExecutable static String toString(int i);
-    @StaticallyExecutable static String toString(int i, int radix);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 32) String toBinaryString(int i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 8) String toHexString(int i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 11) String toOctalString(int i);
+    @StaticallyExecutable @ArrayLenRange(from = 1, to = 11) String toString();
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 11) String toString(int i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1) String toString(int i, int radix);
     @StaticallyExecutable static @PolyValue Integer valueOf(@PolyValue int i);
     @StaticallyExecutable static Integer valueOf(String s);
     @StaticallyExecutable static Integer valueOf(String s, int radix);
@@ -207,16 +207,16 @@ class Long{
     @StaticallyExecutable Long(String s);
 
     @StaticallyExecutable static int bitCount(long i);
-    @StaticallyExecutable @PolyValue byte byteValue() @PolyValue;
+    @StaticallyExecutable @PolyValue byte byteValue(@PolyValue Long this);
     @StaticallyExecutable static Long decode(String nm);
-    @StaticallyExecutable @PolyValue double doubleValue() @PolyValue;
-    @StaticallyExecutable @PolyValue float floatValue() @PolyValue;
+    @StaticallyExecutable @PolyValue double doubleValue(@PolyValue Long this);
+    @StaticallyExecutable @PolyValue float floatValue(@PolyValue Long this);
     @StaticallyExecutable static Long getLong(String nm);
     @StaticallyExecutable static Long getLong(String nm, long val);
     @StaticallyExecutable static Long getLong(String nm, Long val);
     @StaticallyExecutable static long highestOneBit(long i);
-    @StaticallyExecutable @PolyValue int intValue() @PolyValue;
-    @StaticallyExecutable @PolyValue long longValue() @PolyValue;
+    @StaticallyExecutable @PolyValue int intValue(@PolyValue Long this);
+    @StaticallyExecutable @PolyValue long longValue(@PolyValue Long this);
     @StaticallyExecutable static long lowestOneBit(long i);
     @StaticallyExecutable static int numberOfLeadingZeros(long i);
     @StaticallyExecutable static int numberOfTrailingZeros(long i);
@@ -226,14 +226,14 @@ class Long{
     @StaticallyExecutable static long reverseBytes(long i);
     @StaticallyExecutable static long rotateLeft(long i, int distance);
     @StaticallyExecutable static long rotateRight(long i, int distance);
-    @StaticallyExecutable @PolyValue short shortValue() @PolyValue;
+    @StaticallyExecutable @PolyValue short shortValue(@PolyValue Long this);
     @StaticallyExecutable static int signum(long i);
-    @StaticallyExecutable static String toBinaryString(long i);
-    @StaticallyExecutable static String toHexString(long i);
-    @StaticallyExecutable static String toOctalString(long i);
-    @StaticallyExecutable String toString();
-    @StaticallyExecutable static String toString(long i);
-    @StaticallyExecutable static String toString(long i, int radix);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 64) String toBinaryString(long i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 16) String toHexString(long i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 22) String toOctalString(long i);
+    @StaticallyExecutable @ArrayLenRange(from = 1, to = 20) String toString();
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 20) String toString(long i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1) String toString(long i, int radix);
     @StaticallyExecutable static @PolyValue Long valueOf(@PolyValue long l);
     @StaticallyExecutable static Long valueOf(String s);
     @StaticallyExecutable static Long valueOf(String s, int radix);
@@ -243,18 +243,18 @@ class Short{
     @StaticallyExecutable Short(short value);
     @StaticallyExecutable Short(String s);
 
-    @StaticallyExecutable @PolyValue byte byteValue() @PolyValue;
+    @StaticallyExecutable @PolyValue byte byteValue(@PolyValue Short this);
     @StaticallyExecutable static Short decode(String nm);
-    @StaticallyExecutable @PolyValue double doubleValue() @PolyValue;
-    @StaticallyExecutable @PolyValue float floatValue() @PolyValue;
-    @StaticallyExecutable @PolyValue int intValue() @PolyValue;
-    @StaticallyExecutable @PolyValue long longValue() @PolyValue;
+    @StaticallyExecutable @PolyValue double doubleValue(@PolyValue Short this);
+    @StaticallyExecutable @PolyValue float floatValue(@PolyValue Short this);
+    @StaticallyExecutable @PolyValue int intValue(@PolyValue Short this);
+    @StaticallyExecutable @PolyValue long longValue(@PolyValue Short this);
     @StaticallyExecutable static short parseShort(String s);
     @StaticallyExecutable static short parseShort(String s, int radix);
     @StaticallyExecutable static short reverseBytes(short i);
-    @StaticallyExecutable @PolyValue short shortValue() @PolyValue;
-    @StaticallyExecutable String toString();
-    @StaticallyExecutable static String toString(short s);
+    @StaticallyExecutable @PolyValue short shortValue(@PolyValue Short this);
+    @StaticallyExecutable @ArrayLen({1, 2, 3, 4, 5, 6}) String toString();
+    @StaticallyExecutable static @ArrayLen({1, 2, 3, 4, 5, 6}) String toString(short s);
     @StaticallyExecutable static @PolyValue Short valueOf(@PolyValue short s);
     @StaticallyExecutable static Short valueOf(String s);
     @StaticallyExecutable static Short valueOf(String s, int radix);
@@ -323,14 +323,14 @@ class String{
     @StaticallyExecutable String toUpperCase();
     @StaticallyExecutable String toUpperCase(Locale locale);
     @StaticallyExecutable String trim();
-    @StaticallyExecutable static String valueOf(boolean b);
-    @StaticallyExecutable static String valueOf(char c);
+    @StaticallyExecutable static @StringVal({"true", "false"}) String valueOf(boolean b);
+    @StaticallyExecutable static @ArrayLen(1) String valueOf(char c);
     @StaticallyExecutable static String valueOf(char[] data);
     @StaticallyExecutable static String valueOf(char[] data, int offset, int count);
     @StaticallyExecutable static String valueOf(double d);
     @StaticallyExecutable static String valueOf(float f);
-    @StaticallyExecutable static String valueOf(int i);
-    @StaticallyExecutable static String valueOf(long l);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 11) String valueOf(int i);
+    @StaticallyExecutable static @ArrayLenRange(from = 1, to = 20) String valueOf(long l);
     @StaticallyExecutable static String valueOf(Object obj) ;
 }
 
@@ -339,4 +339,11 @@ package java.util.regex;
 class Pattern {
     String @MinLen(1) [] split(CharSequence input, int limit) ;
     String @MinLen(1) [] split(CharSequence input) ;
+}
+
+package java.util;
+
+class StringTokenizer {
+    @MinLen(1) String nextToken();
+    @MinLen(1) String nextToken(String delim);
 }

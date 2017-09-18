@@ -8,6 +8,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -486,13 +487,17 @@ public class Analysis<
         S thenStore = getStoreBefore(b, Store.Kind.THEN);
         S elseStore = getStoreBefore(b, Store.Kind.ELSE);
         boolean shouldWiden = false;
-        Integer count = null;
         if (blockCount != null) {
-            count = blockCount.get(b);
+            Integer count = blockCount.get(b);
             if (count == null) {
                 count = 0;
             }
             shouldWiden = count >= maxCountBeforeWidening;
+            if (shouldWiden) {
+                blockCount.put(b, 0);
+            } else {
+                blockCount.put(b, count + 1);
+            }
         }
 
         switch (kind) {
@@ -553,24 +558,17 @@ public class Analysis<
                     }
                 }
         }
-        if (blockCount != null) {
-            if (shouldWiden) {
-                blockCount.put(b, 0);
-            } else {
-                blockCount.put(b, count + 1);
-            }
-        }
 
         if (addBlockToWorklist) {
             addToWorklist(b);
         }
     }
 
-    private S mergeStores(S previousStore, S newStore, boolean shouldWiden) {
-        if (newStore == null) {
-            return previousStore;
+    private S mergeStores(S newStore, S previousStore, boolean shouldWiden) {
+        if (previousStore == null) {
+            return newStore;
         } else if (shouldWiden) {
-            return newStore.widenUpperBound(previousStore);
+            return newStore.widenedUpperBound(previousStore);
         } else {
             return newStore.leastUpperBound(previousStore);
         }
@@ -746,7 +744,16 @@ public class Analysis<
     public AnalysisResult<A, S> getResult() {
         assert !isRunning;
         IdentityHashMap<Tree, Node> treeLookup = cfg.getTreeLookup();
-        return new AnalysisResult<>(nodeValues, inputs, treeLookup, finalLocalValues);
+        IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup =
+                cfg.getUnaryAssignNodeLookup();
+        IdentityHashMap<Tree, List<Tree>> generatedTreesLookup = cfg.getGeneratedTreesLookup();
+        return new AnalysisResult<>(
+                nodeValues,
+                inputs,
+                treeLookup,
+                unaryAssignNodeLookup,
+                finalLocalValues,
+                generatedTreesLookup);
     }
 
     /**

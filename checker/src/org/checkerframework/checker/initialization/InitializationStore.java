@@ -1,8 +1,7 @@
 package org.checkerframework.checker.initialization;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -33,12 +32,15 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class InitializationStore<V extends CFAbstractValue<V>, S extends InitializationStore<V, S>>
         extends CFAbstractStore<V, S> {
 
-    /** The list of fields that are initialized. */
+    /** The set of fields that are initialized. */
     protected final Set<VariableElement> initializedFields;
+    /** The set of fields that have 'invariant' annotation. */
+    protected final Map<FieldAccess, V> invariantFields;
 
     public InitializationStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
         initializedFields = new HashSet<>();
+        invariantFields = new HashMap<>();
     }
 
     /**
@@ -54,11 +56,30 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
             // top and top is also the default value.
             return;
         }
-        super.insertValue(r, value);
+
         InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory =
                 (InitializationAnnotatedTypeFactory<?, ?, ?, ?>) analysis.getTypeFactory();
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
         AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
+
+        // Remember fields that have the 'invariant' annotation in the store.
+        if (r instanceof FieldAccess) {
+            FieldAccess fieldAccess = (FieldAccess) r;
+            if (!fieldValues.containsKey(r)) {
+                Set<AnnotationMirror> declaredAnnos =
+                        atypeFactory.getAnnotatedType(fieldAccess.getField()).getAnnotations();
+                if (AnnotationUtils.containsSame(declaredAnnos, invariantAnno)) {
+                    if (!invariantFields.containsKey(fieldAccess)) {
+                        invariantFields.put(
+                                fieldAccess,
+                                analysis.createSingleAnnotationValue(invariantAnno, r.getType()));
+                    }
+                }
+            }
+        }
+
+        super.insertValue(r, value);
+
         for (AnnotationMirror a : value.getAnnotations()) {
             if (qualifierHierarchy.isSubtype(a, invariantAnno)) {
                 if (r instanceof FieldAccess) {
@@ -81,34 +102,22 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     @Override
     public void updateForMethodCall(
             MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, V val) {
-        AnnotationMirror fieldInvariantAnnotation =
-                ((InitializationAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
-                        .getFieldInvariantAnnotation();
-
-        // Are there fields that have the 'invariant' annotations and are in the
-        // store?
-        List<FlowExpressions.FieldAccess> invariantFields = new ArrayList<>();
-        for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
-            FlowExpressions.FieldAccess fieldAccess = e.getKey();
-            Set<AnnotationMirror> declaredAnnos =
-                    atypeFactory.getAnnotatedType(fieldAccess.getField()).getAnnotations();
-            if (AnnotationUtils.containsSame(declaredAnnos, fieldInvariantAnnotation)) {
-                invariantFields.add(fieldAccess);
-            }
+        // Remove invariant annotated fields to avoid performance issue reported in #1438.
+        for (FieldAccess invariantField : invariantFields.keySet()) {
+            fieldValues.remove(invariantField);
         }
 
         super.updateForMethodCall(n, atypeFactory, val);
 
         // Add invariant annotation again.
-        for (FieldAccess invariantField : invariantFields) {
-            insertValue(invariantField, fieldInvariantAnnotation);
-        }
+        fieldValues.putAll(invariantFields);
     }
 
     /** A copy constructor. */
     public InitializationStore(S other) {
         super(other);
         initializedFields = new HashSet<>(other.initializedFields);
+        invariantFields = new HashMap<>(other.invariantFields);
     }
 
     /**
@@ -149,16 +158,66 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
                 return false;
             }
         }
-        return super.supersetOf(other);
+
+        for (FieldAccess invariantField : other.invariantFields.keySet()) {
+            if (!invariantFields.containsKey(invariantField)) {
+                return false;
+            }
+        }
+
+        Map<FlowExpressions.FieldAccess, V> removedFieldValues = new HashMap<>();
+        Map<FlowExpressions.FieldAccess, V> removedOtherFieldValues = new HashMap<>();
+        try {
+            // Remove invariant annotated fields to avoid performance issue reported in #1438.
+            for (FieldAccess invariantField : invariantFields.keySet()) {
+                V v = fieldValues.remove(invariantField);
+                removedFieldValues.put(invariantField, v);
+            }
+            for (FieldAccess invariantField : other.invariantFields.keySet()) {
+                V v = other.fieldValues.remove(invariantField);
+                removedOtherFieldValues.put(invariantField, v);
+            }
+
+            return super.supersetOf(other);
+        } finally {
+            // Restore removed values.
+            fieldValues.putAll(removedFieldValues);
+            other.fieldValues.putAll(removedOtherFieldValues);
+        }
     }
 
     @Override
     public S leastUpperBound(S other) {
+        // Remove invariant annotated fields to avoid performance issue reported in #1438.
+        Map<FlowExpressions.FieldAccess, V> removedFieldValues = new HashMap<>();
+        Map<FlowExpressions.FieldAccess, V> removedOtherFieldValues = new HashMap<>();
+        for (FieldAccess invariantField : invariantFields.keySet()) {
+            V v = fieldValues.remove(invariantField);
+            removedFieldValues.put(invariantField, v);
+        }
+        for (FieldAccess invariantField : other.invariantFields.keySet()) {
+            V v = other.fieldValues.remove(invariantField);
+            removedOtherFieldValues.put(invariantField, v);
+        }
+
         S result = super.leastUpperBound(other);
+
+        // Restore removed values.
+        fieldValues.putAll(removedFieldValues);
+        other.fieldValues.putAll(removedOtherFieldValues);
 
         // Set intersection for initializedFields.
         result.initializedFields.addAll(other.initializedFields);
         result.initializedFields.retainAll(initializedFields);
+
+        // Set intersection for invariantFields.
+        for (Entry<FieldAccess, V> e : invariantFields.entrySet()) {
+            if (other.invariantFields.containsKey(e.getKey())) {
+                result.invariantFields.put(e.getKey(), e.getValue());
+            }
+        }
+        // Add invariant annotation.
+        result.fieldValues.putAll(result.invariantFields);
 
         return result;
     }
@@ -167,6 +226,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     protected void internalVisualize(CFGVisualizer<V, S, ?> viz) {
         super.internalVisualize(viz);
         viz.visualizeStoreKeyVal("initialized fields", initializedFields);
+        viz.visualizeStoreKeyVal("invariant fields", invariantFields);
     }
 
     public Map<FieldAccess, V> getFieldValues() {

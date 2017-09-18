@@ -18,7 +18,7 @@ import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
@@ -53,30 +53,33 @@ public abstract class UBQualifier {
     }
 
     private static UBQualifier parseLTLengthOf(AnnotationMirror am) {
-        List<String> arrays = AnnotationUtils.getElementValueArray(am, "value", String.class, true);
+        List<String> sequences =
+                AnnotationUtils.getElementValueArray(am, "value", String.class, true);
         List<String> offset =
                 AnnotationUtils.getElementValueArray(am, "offset", String.class, true);
         if (offset.isEmpty()) {
-            offset = Collections.nCopies(arrays.size(), "");
+            offset = Collections.nCopies(sequences.size(), "");
         }
-        return createUBQualifier(arrays, offset);
+        return createUBQualifier(sequences, offset);
     }
 
     private static UBQualifier parseLTEqLengthOf(AnnotationMirror am) {
-        List<String> arrays = AnnotationUtils.getElementValueArray(am, "value", String.class, true);
-        List<String> offset = Collections.nCopies(arrays.size(), "-1");
-        return createUBQualifier(arrays, offset);
+        List<String> sequences =
+                AnnotationUtils.getElementValueArray(am, "value", String.class, true);
+        List<String> offset = Collections.nCopies(sequences.size(), "-1");
+        return createUBQualifier(sequences, offset);
     }
 
     private static UBQualifier parseLTOMLengthOf(AnnotationMirror am) {
-        List<String> arrays = AnnotationUtils.getElementValueArray(am, "value", String.class, true);
-        List<String> offset = Collections.nCopies(arrays.size(), "1");
-        return createUBQualifier(arrays, offset);
+        List<String> sequences =
+                AnnotationUtils.getElementValueArray(am, "value", String.class, true);
+        List<String> offset = Collections.nCopies(sequences.size(), "1");
+        return createUBQualifier(sequences, offset);
     }
 
-    public static UBQualifier createUBQualifier(String array, String offset) {
+    public static UBQualifier createUBQualifier(String sequence, String offset) {
         return createUBQualifier(
-                Collections.singletonList(array), Collections.singletonList(offset));
+                Collections.singletonList(sequence), Collections.singletonList(offset));
     }
 
     public static UBQualifier createUBQualifier(AnnotatedTypeMirror type, AnnotationMirror top) {
@@ -84,30 +87,30 @@ public abstract class UBQualifier {
     }
 
     /**
-     * Creates an {@link UBQualifier} from the given arrays and offsets. The list of arrays may not
-     * be empty. If the offsets list is empty, then an offset of 0 is used for each array. If the
-     * offsets list is not empty, then it must be the same size as array.
+     * Creates an {@link UBQualifier} from the given sequences and offsets. The list of sequences
+     * may not be empty. If the offsets list is empty, then an offset of 0 is used for each
+     * sequence. If the offsets list is not empty, then it must be the same size as sequence.
      *
-     * @param arrays Non-empty list of arrays
+     * @param sequences non-empty list of sequences
      * @param offsets list of offset, if empty, an offset of 0 is used
-     * @return an {@link UBQualifier} for the arrays with the given offsets.
+     * @return an {@link UBQualifier} for the sequences with the given offsets
      */
-    public static UBQualifier createUBQualifier(List<String> arrays, List<String> offsets) {
-        assert !arrays.isEmpty();
+    public static UBQualifier createUBQualifier(List<String> sequences, List<String> offsets) {
+        assert !sequences.isEmpty();
         Map<String, Set<OffsetEquation>> map = new HashMap<>();
         if (offsets.isEmpty()) {
-            for (String array : arrays) {
-                map.put(array, Collections.singleton(OffsetEquation.ZERO));
+            for (String sequence : sequences) {
+                map.put(sequence, Collections.singleton(OffsetEquation.ZERO));
             }
         } else {
-            assert arrays.size() == offsets.size();
-            for (int i = 0; i < arrays.size(); i++) {
-                String array = arrays.get(i);
+            assert sequences.size() == offsets.size();
+            for (int i = 0; i < sequences.size(); i++) {
+                String sequence = sequences.get(i);
                 String offset = offsets.get(i);
-                Set<OffsetEquation> set = map.get(array);
+                Set<OffsetEquation> set = map.get(sequence);
                 if (set == null) {
                     set = new HashSet<>();
-                    map.put(array, set);
+                    map.put(sequence, set);
                 }
                 OffsetEquation eq = OffsetEquation.createOffsetFromJavaExpression(offset);
                 if (eq.hasError()) {
@@ -124,7 +127,7 @@ public abstract class UBQualifier {
      * BOTTOM, then UNKNOWN is returned. Otherwise, see {@link LessThanLengthOf#plusOffset(int)} for
      * an explanation of how node is added as an offset.
      *
-     * @param node Node
+     * @param node a Node
      * @param factory AnnotatedTypeFactory
      * @return a copy of this qualifier with node added as an offset
      */
@@ -171,44 +174,45 @@ public abstract class UBQualifier {
     public abstract UBQualifier glb(UBQualifier other);
 
     /**
-     * Is the value with this qualifier less than the length of array?
+     * Is the value with this qualifier less than the length of sequence?
      *
-     * @param array String array
-     * @return whether or not the value with this qualifier is less than the length of array
+     * @param sequence a String sequence
+     * @return whether or not the value with this qualifier is less than the length of sequence
      */
-    public boolean isLessThanLengthOf(String array) {
+    public boolean isLessThanLengthOf(String sequence) {
         return false;
     }
 
     /**
-     * Is the value with this qualifier less than the length of any of the arrays?
+     * Is the value with this qualifier less than the length of any of the sequences?
      *
-     * @param arrays list of arrays
+     * @param sequences list of sequences
      * @return whether or not the value with this qualifier is less than the length of any of the
-     *     arrays
+     *     sequences
      */
-    public boolean isLessThanLengthOfAny(List<String> arrays) {
+    public boolean isLessThanLengthOfAny(List<String> sequences) {
         return false;
     }
 
     /**
-     * Returns whether or not this qualifier has array with offset of -1.
+     * Returns whether or not this qualifier has sequence with the specified offset.
      *
-     * @param array array expression
-     * @return whether or not this qualifier has array with offset of -1.
+     * @param sequence sequence expression
+     * @param offset the offset being looked for
+     * @return whether or not this qualifier has sequence with the specified offset
      */
-    public boolean hasArrayWithOffsetNeg1(String array) {
+    public boolean hasSequenceWithOffset(String sequence, int offset) {
         return false;
     }
 
     /**
-     * Is the value with this qualifier less than or equal to the length of array?
+     * Is the value with this qualifier less than or equal to the length of sequence?
      *
-     * @param array String array
+     * @param sequence a String sequence
      * @return whether or not the value with this qualifier is less than or equal to the length of
-     *     array.
+     *     sequence
      */
-    public boolean isLessThanOrEqualTo(String array) {
+    public boolean isLessThanOrEqualTo(String sequence) {
         return false;
     }
 
@@ -221,49 +225,49 @@ public abstract class UBQualifier {
         }
 
         @Override
-        public boolean hasArrayWithOffsetNeg1(String array) {
-            Set<OffsetEquation> offsets = map.get(array);
+        public boolean hasSequenceWithOffset(String sequence, int offset) {
+            Set<OffsetEquation> offsets = map.get(sequence);
             if (offsets == null) {
                 return false;
             }
-            return offsets.contains(OffsetEquation.NEG_1);
+            return offsets.contains(OffsetEquation.createOffsetForInt(offset));
         }
 
         /**
-         * Is a value with this type less than or equal to the length of array?
+         * Is a value with this type less than or equal to the length of sequence?
          *
-         * @param array String array
-         * @return Is a value with this type less than or equal to the length of array?
+         * @param sequence a String sequence
+         * @return true if a value with this type is less than or equal to the length of sequence
          */
         @Override
-        public boolean isLessThanOrEqualTo(String array) {
-            return isLessThanLengthOf(array) || hasArrayWithOffsetNeg1(array);
+        public boolean isLessThanOrEqualTo(String sequence) {
+            return isLessThanLengthOf(sequence) || hasSequenceWithOffset(sequence, -1);
         }
 
         /**
-         * Is a value with this type less than the length of any of the arrays?
+         * Is a value with this type less than the length of any of the sequences?
          *
-         * @param arrays String array
-         * @return Is a value with this type less than the length of any of the arrays?
+         * @param sequences list of sequences
+         * @return true if a value with this type is less than the length of any of the sequences
          */
         @Override
-        public boolean isLessThanLengthOfAny(List<String> arrays) {
-            for (String array : arrays) {
-                if (isLessThanLengthOf(array)) {
+        public boolean isLessThanLengthOfAny(List<String> sequences) {
+            for (String sequence : sequences) {
+                if (isLessThanLengthOf(sequence)) {
                     return true;
                 }
             }
             return false;
         }
         /**
-         * Is a value with this type less than the length of the array?
+         * Is a value with this type less than the length of the sequence?
          *
-         * @param array String array
-         * @return Is a value with this type less than the length of the array?
+         * @param sequence a String sequence
+         * @return true if a value with this type is less than the length of the sequence
          */
         @Override
-        public boolean isLessThanLengthOf(String array) {
-            Set<OffsetEquation> offsets = map.get(array);
+        public boolean isLessThanLengthOf(String sequence) {
+            Set<OffsetEquation> offsets = map.get(sequence);
             if (offsets == null) {
                 return false;
             }
@@ -283,7 +287,7 @@ public abstract class UBQualifier {
          * AnnotationMirrors using @{@link LTEqLengthOf} or @{@link LTOMLengthOf} are returned.
          * Otherwise, @{@link LTLengthOf} is used.
          *
-         * <p>The annotation is sorted by array and then offset. This is so that {@link
+         * <p>The annotation is sorted by sequence and then offset. This is so that {@link
          * AnnotationUtils#areSame(AnnotationMirror, AnnotationMirror)} returns true for equivalent
          * annotations.
          *
@@ -291,35 +295,35 @@ public abstract class UBQualifier {
          * @return the AnnotationMirror that represents this qualifier
          */
         public AnnotationMirror convertToAnnotationMirror(ProcessingEnvironment env) {
-            List<String> sortedArrays = new ArrayList<>(map.keySet());
-            Collections.sort(sortedArrays);
-            List<String> arrays = new ArrayList<>();
+            List<String> sortedSequences = new ArrayList<>(map.keySet());
+            Collections.sort(sortedSequences);
+            List<String> sequences = new ArrayList<>();
             List<String> offsets = new ArrayList<>();
             boolean isLTEq = true;
             boolean isLTOM = true;
-            for (String array : sortedArrays) {
+            for (String sequence : sortedSequences) {
                 List<String> sortOffsets = new ArrayList<>();
-                for (OffsetEquation eq : map.get(array)) {
+                for (OffsetEquation eq : map.get(sequence)) {
                     isLTEq = isLTEq && eq.equals(OffsetEquation.NEG_1);
                     isLTOM = isLTOM && eq.equals(OffsetEquation.ONE);
                     sortOffsets.add(eq.toString());
                 }
                 Collections.sort(sortOffsets);
                 for (String offset : sortOffsets) {
-                    arrays.add(array);
+                    sequences.add(sequence);
                     offsets.add(offset);
                 }
             }
             AnnotationBuilder builder;
             if (isLTEq) {
                 builder = new AnnotationBuilder(env, LTEqLengthOf.class);
-                builder.setValue("value", arrays);
+                builder.setValue("value", sequences);
             } else if (isLTOM) {
                 builder = new AnnotationBuilder(env, LTOMLengthOf.class);
-                builder.setValue("value", arrays);
+                builder.setValue("value", sequences);
             } else {
                 builder = new AnnotationBuilder(env, LTLengthOf.class);
-                builder.setValue("value", arrays);
+                builder.setValue("value", sequences);
                 builder.setValue("offset", offsets);
             }
             return builder.build();
@@ -365,9 +369,9 @@ public abstract class UBQualifier {
         /**
          * If superType is Unknown, return true. If superType is Bottom, return false.
          *
-         * <p>Otherwise, this qualifier must contain all the arrays in superType. For each the
-         * offsets for each array in superType, there must be an offset in this qualifier for the
-         * array that is greater than or equal to the super offset.
+         * <p>Otherwise, this qualifier must contain all the sequences in superType. For each the
+         * offsets for each sequence in superType, there must be an offset in this qualifier for the
+         * sequence that is greater than or equal to the super offset.
          *
          * @param superType other qualifier
          * @return whether this qualifier is a subtype of superType
@@ -386,9 +390,9 @@ public abstract class UBQualifier {
                 return false;
             }
             for (Map.Entry<String, Set<OffsetEquation>> entry : superTypeLTL.map.entrySet()) {
-                String array = entry.getKey();
+                String sequence = entry.getKey();
                 Set<OffsetEquation> superOffsets = entry.getValue();
-                Set<OffsetEquation> subOffsets = map.get(array);
+                Set<OffsetEquation> subOffsets = map.get(sequence);
 
                 if (!isSubtypeOffset(subOffsets, superOffsets)) {
                     return false;
@@ -426,10 +430,10 @@ public abstract class UBQualifier {
          *
          * <p>1. Create the intersection of the sets of arrays for this and other.
          *
-         * <p>2. For each array in the intersection, get the offsets for this and other. If any
+         * <p>2. For each sequence in the intersection, get the offsets for this and other. If any
          * offset in this is a less than or equal to an offset in other, then that offset is an
-         * offset for the array in lub. If any offset in other is a less than or equal to an offset
-         * in this, then that offset is an offset for the array in lub.
+         * offset for the sequence in lub. If any offset in other is a less than or equal to an
+         * offset in this, then that offset is an offset for the sequence in lub.
          *
          * @param other to lub with this
          * @return the lub
@@ -443,14 +447,14 @@ public abstract class UBQualifier {
             }
             LessThanLengthOf otherLtl = (LessThanLengthOf) other;
 
-            Set<String> arrays = new HashSet<>(map.keySet());
-            arrays.retainAll(otherLtl.map.keySet());
+            Set<String> sequences = new HashSet<>(map.keySet());
+            sequences.retainAll(otherLtl.map.keySet());
 
             Map<String, Set<OffsetEquation>> lubMap = new HashMap<>();
-            for (String array : arrays) {
+            for (String sequence : sequences) {
                 Set<OffsetEquation> lub = new HashSet<>();
-                Set<OffsetEquation> offsets1 = map.get(array);
-                Set<OffsetEquation> offsets2 = otherLtl.map.get(array);
+                Set<OffsetEquation> offsets1 = map.get(sequence);
+                Set<OffsetEquation> offsets2 = otherLtl.map.get(sequence);
                 for (OffsetEquation offset1 : offsets1) {
                     for (OffsetEquation offset2 : offsets2) {
                         if (offset2.lessThanOrEqual(offset1)) {
@@ -461,7 +465,7 @@ public abstract class UBQualifier {
                     }
                 }
                 if (!lub.isEmpty()) {
-                    lubMap.put(array, lub);
+                    lubMap.put(sequence, lub);
                 }
             }
             if (lubMap.isEmpty()) {
@@ -501,9 +505,9 @@ public abstract class UBQualifier {
          *
          * <p>3. @LTLengthOf(value="a', offset="-3")
          *
-         * <p>In order to prevent this, if both types passed to lub include all the same arrays with
-         * the same non-constant value offsets and if the constant value offsets are different then
-         * remove that array-offset pair from lub.
+         * <p>In order to prevent this, if both types passed to lub include all the same sequences
+         * with the same non-constant value offsets and if the constant value offsets are different
+         * then remove that sequence-offset pair from lub.
          *
          * <p>For example:
          *
@@ -519,10 +523,10 @@ public abstract class UBQualifier {
             }
             List<Pair<String, OffsetEquation>> remove = new ArrayList<>();
             for (Entry<String, Set<OffsetEquation>> entry : lubMap.entrySet()) {
-                String array = entry.getKey();
+                String sequence = entry.getKey();
                 Set<OffsetEquation> lubOffsets = entry.getValue();
-                Set<OffsetEquation> thisOffsets = this.map.get(array);
-                Set<OffsetEquation> otherOffsets = other.map.get(array);
+                Set<OffsetEquation> thisOffsets = this.map.get(sequence);
+                Set<OffsetEquation> otherOffsets = other.map.get(sequence);
                 if (lubOffsets.size() != thisOffsets.size()
                         || lubOffsets.size() != otherOffsets.size()) {
                     return;
@@ -532,7 +536,7 @@ public abstract class UBQualifier {
                         int thisInt = OffsetEquation.getIntOffsetEquation(thisOffsets).getInt();
                         int otherInt = OffsetEquation.getIntOffsetEquation(otherOffsets).getInt();
                         if (thisInt != otherInt) {
-                            remove.add(Pair.of(array, lubEq));
+                            remove.add(Pair.of(sequence, lubEq));
                         }
                     } else if (thisOffsets.contains(lubEq) && otherOffsets.contains(lubEq)) {
                         //  continue;
@@ -559,19 +563,19 @@ public abstract class UBQualifier {
             }
             LessThanLengthOf otherLtl = (LessThanLengthOf) other;
 
-            Set<String> arrays = new HashSet<>(map.keySet());
-            arrays.addAll(otherLtl.map.keySet());
+            Set<String> sequences = new HashSet<>(map.keySet());
+            sequences.addAll(otherLtl.map.keySet());
 
             Map<String, Set<OffsetEquation>> glbMap = new HashMap<>();
-            for (String array : arrays) {
-                Set<OffsetEquation> glb = map.get(array);
-                Set<OffsetEquation> otherglb = otherLtl.map.get(array);
+            for (String sequence : sequences) {
+                Set<OffsetEquation> glb = map.get(sequence);
+                Set<OffsetEquation> otherglb = otherLtl.map.get(sequence);
                 if (glb == null) {
                     glb = otherglb;
                 } else if (otherglb != null) {
                     glb.addAll(otherglb);
                 }
-                glbMap.put(array, simplifyOffsets(glb));
+                glbMap.put(sequence, simplifyOffsets(glb));
             }
             return new LessThanLengthOf(glbMap);
         }
@@ -602,7 +606,7 @@ public abstract class UBQualifier {
          * equation for node and then adding that equation to every offset equation in a copy of
          * this object.
          *
-         * @param node Node
+         * @param node a Node
          * @param factory AnnotatedTypeFactory
          * @return a copy of this qualifier with node add as an offset
          */
@@ -616,7 +620,7 @@ public abstract class UBQualifier {
          * negative offset equation for node and then adding that equation to every offset equation
          * in a copy of this object.
          *
-         * @param node Node
+         * @param node a Node
          * @param factory AnnotatedTypeFactory
          * @return a copy of this qualifier with node add as an offset
          */
@@ -684,44 +688,45 @@ public abstract class UBQualifier {
         }
 
         /**
-         * Returns a copy of this qualifier with array-offset pairs where in the original the offset
-         * contains an access of an array length in arrays. The array length access has been removed
-         * from the offset. If the original qualifier has no array length offsets, then UNKNOWN is
-         * returned.
+         * Returns a copy of this qualifier with sequence-offset pairs where in the original the
+         * offset contains an access of an sequence length in {@code sequences}. The sequence length
+         * access has been removed from the offset. If the original qualifier has no sequence length
+         * offsets, then UNKNOWN is returned.
          *
-         * @param arrays access of the length of these arrays are removed
-         * @return Returns a copy of this qualifier with some offsets removed
+         * @param sequences access of the length of these sequences are removed
+         * @return a copy of this qualifier with some offsets removed
          */
-        public UBQualifier removeArrayLengthAccess(final List<String> arrays) {
-            if (arrays.isEmpty()) {
+        public UBQualifier removeSequenceLengthAccess(final List<String> sequences) {
+            if (sequences.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
-            OffsetEquationFunction removeArrayLengthsFunc =
+            OffsetEquationFunction removeSequenceLengthsFunc =
                     new OffsetEquationFunction() {
                         @Override
                         public OffsetEquation compute(OffsetEquation eq) {
-                            return eq.removeArrayLengths(arrays);
+                            return eq.removeSequenceLengths(sequences);
                         }
                     };
-            return computeNewOffsets(removeArrayLengthsFunc);
+            return computeNewOffsets(removeSequenceLengthsFunc);
         }
         /**
-         * Returns a copy of this qualifier with array-offset pairs where in the original the offset
-         * contains an access of an array length in arrays. The array length access has been removed
-         * from the offset. If the offset also has -1 then -1 is also removed.
+         * Returns a copy of this qualifier with sequence-offset pairs where in the original the
+         * offset contains an access of an sequence length in {@code sequences}. The sequence length
+         * access has been removed from the offset. If the offset also has -1 then -1 is also
+         * removed.
          *
-         * @param arrays access of the length of these arrays are removed
-         * @return Returns a copy of this qualifier with some offsets removed
+         * @param sequences access of the length of these sequences are removed
+         * @return a copy of this qualifier with some offsets removed
          */
-        public UBQualifier removeArrayLengthAccessAndNeg1(final List<String> arrays) {
-            if (arrays.isEmpty()) {
+        public UBQualifier removeSequenceLengthAccessAndNeg1(final List<String> sequences) {
+            if (sequences.isEmpty()) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
-            OffsetEquationFunction removeArrayLenFunc =
+            OffsetEquationFunction removeSequenceLenFunc =
                     new OffsetEquationFunction() {
                         @Override
                         public OffsetEquation compute(OffsetEquation eq) {
-                            OffsetEquation newEq = eq.removeArrayLengths(arrays);
+                            OffsetEquation newEq = eq.removeSequenceLengths(sequences);
                             if (newEq == null) {
                                 return null;
                             }
@@ -731,7 +736,7 @@ public abstract class UBQualifier {
                             return newEq;
                         }
                     };
-            return computeNewOffsets(removeArrayLenFunc);
+            return computeNewOffsets(removeSequenceLenFunc);
         }
 
         private UBQualifier addOffset(final OffsetEquation newOffset) {
@@ -748,8 +753,8 @@ public abstract class UBQualifier {
         /**
          * If divisor == 1, return this object.
          *
-         * <p>If divisor greater than 1, then return a copy of this object keeping only arrays and
-         * offsets where the offset is less than or equal to zero.
+         * <p>If divisor greater than 1, then return a copy of this object keeping only sequences
+         * and offsets where the offset is less than or equal to zero.
          *
          * <p>Otherwise, return UNKNOWN.
          *
@@ -775,30 +780,31 @@ public abstract class UBQualifier {
             return UpperBoundUnknownQualifier.UNKNOWN;
         }
 
-        public boolean isValuePlusOffsetLessThanMinLen(String array, int value, int minlen) {
-            Set<OffsetEquation> offsets = map.get(array);
+        public boolean isValuePlusOffsetLessThanMinLen(String sequence, long value, int minlen) {
+            Set<OffsetEquation> offsets = map.get(sequence);
             if (offsets == null) {
                 return false;
             }
             for (OffsetEquation offset : offsets) {
                 if (offset.isInt()) {
-                    return minlen > value + offset.getInt();
+                    // This expression must not overflow
+                    return (long) minlen - offset.getInt() > value;
                 }
             }
             return false;
         }
 
         /**
-         * Checks whether replacing array with replacementArray in this qualifier creates
-         * replacementArray's entry in other.
+         * Checks whether replacing sequence with replacementSequence in this qualifier creates
+         * replacementSequence entry in other.
          */
         public boolean isValidReplacement(
-                String array, String replacementArray, LessThanLengthOf other) {
-            Set<OffsetEquation> offsets = map.get(array);
+                String sequence, String replacementSequence, LessThanLengthOf other) {
+            Set<OffsetEquation> offsets = map.get(sequence);
             if (offsets == null) {
                 return false;
             }
-            Set<OffsetEquation> otherOffsets = other.map.get(replacementArray);
+            Set<OffsetEquation> otherOffsets = other.map.get(replacementSequence);
             if (otherOffsets == null) {
                 return false;
             }
@@ -810,7 +816,7 @@ public abstract class UBQualifier {
             return "LessThanLengthOf{" + "map=" + map + '}';
         }
 
-        public Iterable<? extends String> getArrays() {
+        public Iterable<? extends String> getSequences() {
             return map.keySet();
         }
 
@@ -820,7 +826,7 @@ public abstract class UBQualifier {
              * Returns the result of the computation or null if the passed equation should be
              * removed.
              *
-             * @param eq Current offset equation
+             * @param eq current offset equation
              * @return the result of the computation or null if the passed equation should be
              *     removed
              */
@@ -832,13 +838,13 @@ public abstract class UBQualifier {
          * applied to each offset.
          *
          * <p>If the {@link OffsetEquationFunction} returns null, it's not added as an offset. If
-         * after all functions have been applied, an array has no offsets, then that array is not
-         * added to the returned qualifier. If no arrays are added to the returned qualifier, then
-         * UNKNOWN is returned.
+         * after all functions have been applied, an sequence has no offsets, then that sequence is
+         * not added to the returned qualifier. If no sequences are added to the returned qualifier,
+         * then UNKNOWN is returned.
          *
          * @param f function to apply
          * @return a new qualifier that is a copy of this qualifier with the OffsetEquationFunction
-         *     applied to each offset.
+         *     applied to each offset
          */
         private UBQualifier computeNewOffsets(OffsetEquationFunction f) {
             Map<String, Set<OffsetEquation>> newMap = new HashMap<>(map.size());

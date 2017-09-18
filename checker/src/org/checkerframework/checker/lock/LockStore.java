@@ -1,14 +1,11 @@
 package org.checkerframework.checker.lock;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import java.util.ArrayList;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
@@ -38,7 +35,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
      */
     protected boolean inConstructorOrInitializer = false;
 
-    private LockAnnotatedTypeFactory atypeFactory;
+    private final LockAnnotatedTypeFactory atypeFactory;
 
     public LockStore(LockAnalysis analysis, boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
@@ -48,7 +45,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     /** Copy constructor. */
     public LockStore(LockAnalysis analysis, CFAbstractStore<CFValue, LockStore> other) {
         super(other);
-        inConstructorOrInitializer = ((LockStore) other).inConstructorOrInitializer;
+        this.inConstructorOrInitializer = ((LockStore) other).inConstructorOrInitializer;
         this.atypeFactory = ((LockStore) other).atypeFactory;
     }
 
@@ -59,7 +56,6 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         // Least upper bound of a boolean
         newStore.inConstructorOrInitializer =
                 this.inConstructorOrInitializer && other.inConstructorOrInitializer;
-        newStore.atypeFactory = this.atypeFactory;
 
         return newStore;
     }
@@ -136,7 +132,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
 
     /** {@inheritDoc} */
     @Override
-    public /*@Nullable*/ CFValue getValue(FlowExpressions.Receiver expr) {
+    public @Nullable CFValue getValue(FlowExpressions.Receiver expr) {
 
         if (inConstructorOrInitializer) {
             // 'this' is automatically considered as being held in a constructor or initializer.
@@ -193,6 +189,10 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
                 CFValue newValue = changeLockAnnoToTop(var, localVariableValues.get(var));
                 localVariableValues.put(var, newValue);
             }
+
+            if (thisValue != null) {
+                thisValue = changeLockAnnoToTop(null, thisValue);
+            }
         }
     }
 
@@ -205,7 +205,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     }
 
     @Override
-    public void insertValue(FlowExpressions.Receiver r, /*@Nullable*/ CFValue value) {
+    public void insertValue(FlowExpressions.Receiver r, @Nullable CFValue value) {
         if (value == null) {
             // No need to insert a null abstract value because it represents
             // top and top is also the default value.

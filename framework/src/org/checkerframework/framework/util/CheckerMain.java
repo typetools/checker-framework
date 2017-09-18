@@ -72,7 +72,7 @@ public class CheckerMain {
 
     private final List<String> compilationBootclasspath;
 
-    private final List<String> runtimeBootClasspath;
+    private final List<String> runtimeClasspath;
 
     private final List<String> jvmOpts;
 
@@ -105,7 +105,7 @@ public class CheckerMain {
                 extractFileArg(PluginUtil.JDK_PATH_OPT, new File(searchPath, jdkJarName), args);
 
         this.compilationBootclasspath = createCompilationBootclasspath(args);
-        this.runtimeBootClasspath = createRuntimeBootclasspath(args);
+        this.runtimeClasspath = createRuntimeClasspath(args);
         this.jvmOpts = extractJvmOpts(args);
 
         this.cpOpts = createCpOpts(args);
@@ -127,11 +127,11 @@ public class CheckerMain {
         this.ppOpts.addAll(ppOpts);
     }
 
-    public void addToRuntimeBootclasspath(List<String> runtimeBootClasspathOpts) {
-        this.runtimeBootClasspath.addAll(runtimeBootClasspathOpts);
+    public void addToRuntimeClasspath(List<String> runtimeClasspathOpts) {
+        this.runtimeClasspath.addAll(runtimeClasspathOpts);
     }
 
-    protected List<String> createRuntimeBootclasspath(final List<String> argsList) {
+    protected List<String> createRuntimeClasspath(final List<String> argsList) {
         return new ArrayList<String>(Arrays.asList(javacJar.getAbsolutePath()));
     }
 
@@ -373,9 +373,8 @@ public class CheckerMain {
         final String java = PluginUtil.getJavaCommand(System.getProperty("java.home"), System.out);
         args.add(java);
 
-        // Prepend ("/p:") because our javac.jar doesn't have all classes
-        // required by the Java runtime to execute the compiler.
-        args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, runtimeBootClasspath));
+        args.add("-classpath");
+        args.add(PluginUtil.join(File.pathSeparator, runtimeClasspath));
         args.add("-ea");
         // com.sun.tools needs to be enabled separately
         args.add("-ea:com.sun.tools...");

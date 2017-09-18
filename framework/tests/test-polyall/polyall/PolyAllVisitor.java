@@ -9,7 +9,7 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import polyall.quals.H1Invalid;
 
 public class PolyAllVisitor extends BaseTypeVisitor<PolyAllAnnotatedTypeFactory> {
@@ -34,7 +34,7 @@ public class PolyAllVisitor extends BaseTypeVisitor<PolyAllAnnotatedTypeFactory>
 
         @Override
         public Void visitDeclared(AnnotatedDeclaredType type, Tree p) {
-            AnnotationMirror h1Invalid = AnnotationUtils.fromClass(elements, H1Invalid.class);
+            AnnotationMirror h1Invalid = AnnotationBuilder.fromClass(elements, H1Invalid.class);
             if (AnnotatedTypes.containsModifier(type, h1Invalid)) {
                 checker.report(
                         Result.failure(
