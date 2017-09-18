@@ -15,6 +15,7 @@ import javax.lang.model.element.TypeElement;
 import org.checkerframework.checker.guieffect.qual.AlwaysSafe;
 import org.checkerframework.checker.guieffect.qual.PolyUI;
 import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
+import org.checkerframework.checker.guieffect.qual.PolyUIType;
 import org.checkerframework.checker.guieffect.qual.SafeEffect;
 import org.checkerframework.checker.guieffect.qual.UI;
 import org.checkerframework.checker.guieffect.qual.UIEffect;
@@ -65,16 +66,116 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         // TODO: Undo this hack!
     }
 
-    @Override
-    protected boolean checkOverride(
-            MethodTree overriderTree,
-            AnnotatedTypeMirror.AnnotatedDeclaredType enclosingType,
-            AnnotatedTypeMirror.AnnotatedExecutableType overridden,
-            AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType,
-            Void p) {
-        // Method override validity is checked manually by the type factory during visitation
-        return true;
+    protected class GuiEffectOverrideChecker extends OverrideChecker {
+        /**
+         * Extend the receiver part of the method override check. We extend the standard check, to
+         * additionally permit narrowing the receiver's permission to <code>@AlwaysSafe</code> in a
+         * safe instantiation of a <code>@PolyUIType</code> Returns true if the override is
+         * permitted.
+         */
+        @Override
+        protected boolean checkReceiverOverride() {
+            // We cannot reuse the inherited method because it directly issues the failure, but we want a more permissive check.  So this is copied down and modified from BaseTypeVisitor.OverrideChecker.checkReceiverOverride.
+            // Check the receiver type.
+            // isSubtype() requires its arguments to be actual subtypes with
+            // respect to JLS, but overrider receiver is not a subtype of the
+            // overridden receiver.  Hence copying the annotations.
+            // TODO: this will need to be improved for generic receivers.
+            AnnotatedTypeMirror overriddenReceiver =
+                    overrider.getReceiverType().getErased().shallowCopy(false);
+            overriddenReceiver.addAnnotations(overridden.getReceiverType().getAnnotations());
+            if (!atypeFactory
+                    .getTypeHierarchy()
+                    .isSubtype(overriddenReceiver, overrider.getReceiverType().getErased())) {
+                // This is the point at which the default check would issue an error.
+                // We additionally permit overrides to move from @PolyUI receivers to @AlwaysSafe receivers, if it's in a @AlwaysSafe specialization of a @PolyUIType
+                boolean safeParent = overriddenType.getAnnotation(AlwaysSafe.class) != null;
+                boolean polyParentDecl =
+                        atypeFactory.getDeclAnnotation(
+                                        overriddenType.getUnderlyingType().asElement(),
+                                        PolyUIType.class)
+                                != null;
+                // TODO: How much validation do I need here?  Do I need to check that the overridden receiver was really @PolyUI and the method is really an @PolyUIEffect?  I don't think so - we know it's a polymorphic parent type, so all receivers would be @PolyUI.
+                // Java would already reject before running type annotation processors if the Java types were wrong.
+                // The *only* extra leeway we want to permit is overriding @PolyUI receiver to @AlwaysSafe.  But with generics, the tentative check below is inadequate.
+                boolean safeReceiverOverride =
+                        overrider.getReceiverType().getAnnotation(AlwaysSafe.class) != null;
+                System.err.println(
+                        "safeParent: "
+                                + safeParent
+                                + ", polyParentDecl: "
+                                + polyParentDecl
+                                + ", safeReceiverOverride: "
+                                + safeReceiverOverride);
+                System.err.println("receiverType: " + overrider.getReceiverType());
+                if (safeParent && polyParentDecl && safeReceiverOverride) {
+                    return true;
+                }
+                checker.report(
+                        Result.failure(
+                                "override.receiver.invalid",
+                                overriderMeth,
+                                overriderTyp,
+                                overriddenMeth,
+                                overriddenTyp,
+                                overrider.getReceiverType(),
+                                overridden.getReceiverType()),
+                        overriderTree);
+                return false;
+            }
+            return true;
+        }
+
+        public GuiEffectOverrideChecker(
+                Tree overriderTree,
+                AnnotatedTypeMirror.AnnotatedExecutableType overrider,
+                AnnotatedTypeMirror overridingType,
+                AnnotatedTypeMirror overridingReturnType,
+                AnnotatedExecutableType overridden,
+                AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType,
+                AnnotatedTypeMirror overriddenReturnType) {
+            super(
+                    overriderTree,
+                    overrider,
+                    overridingType,
+                    overridingReturnType,
+                    overridden,
+                    overriddenType,
+                    overriddenReturnType);
+        }
     }
+
+    @Override
+    protected OverrideChecker createOverrideChecker(
+            Tree overriderTree,
+            AnnotatedExecutableType overrider,
+            AnnotatedTypeMirror overridingType,
+            AnnotatedTypeMirror overridingReturnType,
+            AnnotatedExecutableType overridden,
+            AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType,
+            AnnotatedTypeMirror overriddenReturnType) {
+        return new GuiEffectOverrideChecker(
+                overriderTree,
+                overrider,
+                overridingType,
+                overridingReturnType,
+                overridden,
+                overriddenType,
+                overriddenReturnType);
+    }
+
+    //@Override
+    //protected boolean checkOverride(
+    //        MethodTree overriderTree,
+    //        AnnotatedTypeMirror.AnnotatedDeclaredType enclosingType,
+    //        AnnotatedTypeMirror.AnnotatedExecutableType overridden,
+    //        AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType,
+    //        Void p) {
+    //    // Method override validity is checked manually by the type factory during visitation
+    //    // TODO: We do need to relax the inherited override check.  Critically, we want to permit an @AlwaysSafe subtype of a @PolyUIType to assume the receiver is actually @AlwaysSafe, while the inherited check requires the receiver qualifier to remain the same.  But we do want the same inherited check to occur for the non-receiver arguments: this prevents also specializing @PolyUI parameters to @AlwaysSafe, which is currently permitted and unsound.  So we'll need to duplicate some logic here.
+    //    // It looks like I can do this without much repetition by overriding createOverrideChecker rather than this method, and producing a child class of BaseTypeVisitor<...>.OverrideChecker with checkReceiverOverride replaced
+    //    return true;
+    //}
 
     @Override
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
@@ -183,6 +284,44 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         return super.visitMethodInvocation(node, p);
     }
 
+    /**
+     * The GuiEffectChecker has only one implicitly-named effect variable - PolyUI - but *two* ways
+     * to bind it. The Checker Framework in general presumes polymorphic qualifiers are instantiated
+     * only at method call sites, but we abuse them to also instantiate class-level implicit effect
+     * variables via type formation.
+     *
+     * <p>In general, this can lead to unsoundness, if a method attempts to use PolyUI to both: (1)
+     * make the method's effect depend on the receiver's qualifier, and (2) constrain the qualifier
+     * of a method parameter to match the qualifier on the receiver then we effectively permit
+     * unsound covariant subtyping on a generic parameter. At a call to a method <code>
+     * @PolyUIEffect void m(@PolyUI arg)</code> on a <code>@AlwaysSafe</code> instance, the receiver
+     * may be implicitly coerced to <code>@UI</code>, allowing the framework to choose <code>@UI
+     * </code> as the polymorphic qualifier instantiation, and thereby passing a <code>@UI</code>
+     * argument where the receiver expects a <code>@AlwaysSafe</code> instance.
+     *
+     * <p>In general, the correct place to fix this is in checkOverride above, but as a stop-gap
+     * we'll simply reject methods that try to mix method-bound with class-bound uses of <code>
+     * @PolyUI</code>
+     */
+    protected void checkSaveCovariantReceiver(MethodTree node, ExecutableElement methElt) {
+        AnnotatedTypeMirror.AnnotatedExecutableType matm = atypeFactory.getAnnotatedType(node);
+        AnnotatedTypeMirror.AnnotatedDeclaredType receiver = matm.getReceiverType();
+
+        AnnotationMirror targetPolyP = atypeFactory.getDeclAnnotation(methElt, PolyUIEffect.class);
+        AnnotationMirror receiverExplicitPoly =
+                receiver != null ? receiver.getAnnotation(PolyUI.class) : null;
+
+        if (targetPolyP != null || receiverExplicitPoly != null) {
+            // This method uses class-bound PolyUI.  Check if it also uses polymorphic arguments that might be conflated with the receiver's class-derived PolyUI
+            for (AnnotatedTypeMirror arg : matm.getParameterTypes()) {
+                if (arg.getAnnotation(PolyUI.class) != null) {
+                    // TODO: Report which argument
+                    checker.report(Result.failure("effect.polymorphism.collision"), node);
+                }
+            }
+        }
+    }
+
     @Override
     public Void visitMethod(MethodTree node, Void p) {
         // TODO: If the type we're in is a polymorphic (over effect qualifiers) type, the receiver must be @PolyUI.
@@ -200,6 +339,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         if (debugSpew) {
             System.err.println("\nVisiting method " + methElt);
         }
+
+        //checkSaveCovariantReceiver(node, methElt);
 
         // Check for conflicting (multiple) annotations
         assert (methElt != null);
