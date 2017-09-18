@@ -396,7 +396,9 @@ class SupertypeFinder {
                     return visitedNodes.get(type);
                 }
                 visitedNodes.put(type, null);
-                scan(type.getEnclosingType(), mapping);
+                if (type.getEnclosingType() != null) {
+                    scan(type.getEnclosingType(), mapping);
+                }
 
                 List<AnnotatedTypeMirror> args = new ArrayList<AnnotatedTypeMirror>();
                 for (AnnotatedTypeMirror arg : type.getTypeArguments()) {

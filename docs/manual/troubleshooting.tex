@@ -930,13 +930,10 @@ This is simply done by:
 \begin{Verbatim}
   cd $JSR308/stubparser
   mvn package -Dmaven.test.skip=true
-  cp -i ./javaparser-core/target/javaparser-core-3.3.4-SNAPSHOT.jar stubparser.jar
 \end{Verbatim}
 
 You do not need to add the StubParser to the path, as
 the Checker Framework build finds it using relative paths.
-However, note that you need to copy the generated jar file
-to the stable location \<\$JSR308/stubparser/stubparser.jar>.
 
 
 \subsection{Build the Checker Framework\label{building}}

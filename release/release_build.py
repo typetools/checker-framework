@@ -231,7 +231,6 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
 
     # build stubparser
     execute("mvn package -Dmaven.test.skip=true", True, False, STUBPARSER)
-    execute("cp -i ./javaparser-core/target/javaparser-core-3.3.4-SNAPSHOT.jar stubparser.jar", True, False, STUBPARSER)
 
     # update jsr308_langtools versions
     ant_props = "-Dchecker=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (checker_dir, version, afu_version, afu_build_properties, afu_release_date)
