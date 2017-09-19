@@ -16,6 +16,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -35,8 +36,8 @@ public class IndexOfAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public IndexOfAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        UNKNOWN = AnnotationUtils.fromClass(elements, IndexOfUnknown.class);
-        BOTTOM = AnnotationUtils.fromClass(elements, IndexOfBottom.class);
+        UNKNOWN = AnnotationBuilder.fromClass(elements, IndexOfUnknown.class);
+        BOTTOM = AnnotationBuilder.fromClass(elements, IndexOfBottom.class);
         this.postInit();
     }
 
