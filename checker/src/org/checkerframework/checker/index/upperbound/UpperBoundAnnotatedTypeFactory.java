@@ -41,8 +41,8 @@ import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.samelen.SameLenChecker;
 import org.checkerframework.checker.index.searchindex.SearchIndexAnnotatedTypeFactory;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
-import org.checkerframework.checker.index.substringindex.IndexOfAnnotatedTypeFactory;
-import org.checkerframework.checker.index.substringindex.IndexOfChecker;
+import org.checkerframework.checker.index.substringindex.SubstringIndexAnnotatedTypeFactory;
+import org.checkerframework.checker.index.substringindex.SubstringIndexChecker;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -129,12 +129,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Gets the annotated type factory of the IndexOf Checker running along with the Upper Bound
-     * checker, allowing it to refine the upper bounds of expressions annotated by IndexOf Checker
-     * annotations.
+     * Gets the annotated type factory of the Substring Index Checker running along with the Upper
+     * Bound checker, allowing it to refine the upper bounds of expressions annotated by Substring
+     * Index Checker annotations.
      */
-    IndexOfAnnotatedTypeFactory getIndexOfAnnotatedTypeFactory() {
-        return getTypeFactoryOfSubchecker(IndexOfChecker.class);
+    SubstringIndexAnnotatedTypeFactory getSubstringIndexAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(SubstringIndexChecker.class);
     }
 
     /**

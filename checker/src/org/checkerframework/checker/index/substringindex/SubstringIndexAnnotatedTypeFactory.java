@@ -6,9 +6,9 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
-import org.checkerframework.checker.index.qual.IndexOfBottom;
-import org.checkerframework.checker.index.qual.IndexOfIndexFor;
-import org.checkerframework.checker.index.qual.IndexOfUnknown;
+import org.checkerframework.checker.index.qual.SubstringIndexBottom;
+import org.checkerframework.checker.index.qual.SubstringIndexFor;
+import org.checkerframework.checker.index.qual.SubstringIndexUnknown;
 import org.checkerframework.checker.index.upperbound.UBQualifier;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -20,48 +20,53 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * Builds types with annotations from the IndexOf checker hierarchy, which contains the @{@link
- * IndexOfIndexFor} annotation. This annotation is used to annotate the return value of {@link
- * java.lang.String#indexOf(String) String.indexOf} and {@link java.lang.String#lastIndexOf(String)
- * String.lastIndexOf} and allow the Upper Bound Checker to infer @{@link
- * org.checkerframework.checker.index.qual.LTLengthOf} annotations with the same parameters for
- * expressions that are known by the index checker to be non-negative.
+ * Builds types with annotations from the Substring Index checker hierarchy, which contains
+ * the @{@link SubstringIndexFor} annotation. This annotation is used to annotate the return value
+ * of {@link java.lang.String#indexOf(String) String.indexOf} and {@link
+ * java.lang.String#lastIndexOf(String) String.lastIndexOf} and allow the Upper Bound Checker to
+ * infer @{@link org.checkerframework.checker.index.qual.LTLengthOf} annotations with the same
+ * parameters for expressions that are known by the index checker to be non-negative.
  */
-public class IndexOfAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    /** The top qualifier of the IndexOf hierarchy */
+    /** The top qualifier of the Substring Index hierarchy */
     public final AnnotationMirror UNKNOWN;
-    /** The bottom qualifier of the IndexOf hierarchy */
+    /** The bottom qualifier of the Substring Index hierarchy */
     public final AnnotationMirror BOTTOM;
 
-    public IndexOfAnnotatedTypeFactory(BaseTypeChecker checker) {
+    public SubstringIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        UNKNOWN = AnnotationBuilder.fromClass(elements, IndexOfUnknown.class);
-        BOTTOM = AnnotationBuilder.fromClass(elements, IndexOfBottom.class);
+        UNKNOWN = AnnotationBuilder.fromClass(elements, SubstringIndexUnknown.class);
+        BOTTOM = AnnotationBuilder.fromClass(elements, SubstringIndexBottom.class);
         this.postInit();
     }
 
     /**
-     * Returns a mutable set of annotation classes that are supported by the IndexOf Checker.
+     * Returns a mutable set of annotation classes that are supported by the Substring Index
+     * Checker.
      *
-     * @return mutable set containing annotation classes from the IndexOf qualifier hierarchy
+     * @return mutable set containing annotation classes from the Substring Index qualifier
+     *     hierarchy
      */
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return new LinkedHashSet<>(
-                Arrays.asList(IndexOfBottom.class, IndexOfUnknown.class, IndexOfIndexFor.class));
+                Arrays.asList(
+                        SubstringIndexBottom.class,
+                        SubstringIndexUnknown.class,
+                        SubstringIndexFor.class));
     }
 
-    /** Creates the IndexOf qualifier hierarchy. */
+    /** Creates the Substring Index qualifier hierarchy. */
     @Override
     public QualifierHierarchy createQualifierHierarchy(
             MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
-        return new IndexOfQualifierHierarchy(factory);
+        return new SubstringIndexQualifierHierarchy(factory);
     }
 
     /**
      * Creates an {@link DependentTypesHelper} that allows use of addition and subtraction in the
-     * IndexOf Checker annotations.
+     * Substring Index Checker annotations.
      */
     @Override
     protected DependentTypesHelper createDependentTypesHelper() {
@@ -69,14 +74,15 @@ public class IndexOfAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * The IndexOf qualifier hierarchy. The hierarchy consists of a top element {@link UNKNOWN} of
-     * type {@link IndexOfUnknown}, bottom element {@link BOTTOM} of type {@link IndexOfBottom}, and
-     * elements of type {@link IndexOfIndexFor} that follow the subtyping relation of {@link
-     * UBQualifier}.
+     * The Substring Index qualifier hierarchy. The hierarchy consists of a top element {@link
+     * UNKNOWN} of type {@link SubstringIndexUnknown}, bottom element {@link BOTTOM} of type {@link
+     * SubstringIndexBottom}, and elements of type {@link SubstringIndexFor} that follow the
+     * subtyping relation of {@link UBQualifier}.
      */
-    private final class IndexOfQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    private final class SubstringIndexQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
-        public IndexOfQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
+        public SubstringIndexQualifierHierarchy(
+                MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
             super(factory);
         }
 
@@ -122,16 +128,16 @@ public class IndexOfAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameByClass(superAnno, IndexOfUnknown.class)) {
+            if (AnnotationUtils.areSameByClass(superAnno, SubstringIndexUnknown.class)) {
                 return true;
             }
-            if (AnnotationUtils.areSameByClass(subAnno, IndexOfBottom.class)) {
+            if (AnnotationUtils.areSameByClass(subAnno, SubstringIndexBottom.class)) {
                 return true;
             }
-            if (AnnotationUtils.areSameByClass(subAnno, IndexOfUnknown.class)) {
+            if (AnnotationUtils.areSameByClass(subAnno, SubstringIndexUnknown.class)) {
                 return false;
             }
-            if (AnnotationUtils.areSameByClass(superAnno, IndexOfBottom.class)) {
+            if (AnnotationUtils.areSameByClass(superAnno, SubstringIndexBottom.class)) {
                 return false;
             }
 
@@ -142,10 +148,11 @@ public class IndexOfAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Converts an instance of {@link UBQualifier} to an annotation from the IndexOf hierarchy.
+     * Converts an instance of {@link UBQualifier} to an annotation from the Substring Index
+     * hierarchy.
      *
      * @param qualifier the {@link UBQualifier} to be converted
-     * @return an annotation from the IndexOf hierarchy, representing {@code qualifier}
+     * @return an annotation from the Substring Index hierarchy, representing {@code qualifier}
      */
     public AnnotationMirror convertUBQualifierToAnnotation(UBQualifier qualifier) {
         if (qualifier.isUnknown()) {
@@ -155,6 +162,6 @@ public class IndexOfAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         LessThanLengthOf ltlQualifier = (LessThanLengthOf) qualifier;
-        return ltlQualifier.convertToIndexOfAnnotation(processingEnv);
+        return ltlQualifier.convertToSubstringIndexAnnotation(processingEnv);
     }
 }

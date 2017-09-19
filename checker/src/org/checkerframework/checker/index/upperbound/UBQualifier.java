@@ -10,11 +10,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.index.qual.IndexOfIndexFor;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.PolyUpperBound;
+import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -41,7 +41,7 @@ public abstract class UBQualifier {
         } else if (AnnotationUtils.areSameByClass(am, UpperBoundBottom.class)) {
             return UpperBoundBottomQualifier.BOTTOM;
         } else if (AnnotationUtils.areSameByClass(am, LTLengthOf.class)
-                || AnnotationUtils.areSameByClass(am, IndexOfIndexFor.class)) {
+                || AnnotationUtils.areSameByClass(am, SubstringIndexFor.class)) {
             return parseLTLengthOf(am);
         } else if (AnnotationUtils.areSameByClass(am, LTEqLengthOf.class)) {
             return parseLTEqLengthOf(am);
@@ -301,19 +301,19 @@ public abstract class UBQualifier {
         }
 
         /**
-         * Returns the @{@link IndexOfIndexFor} AnnotationMirror that represents this qualifier in
-         * the IndexOf hierarchy.
+         * Returns the @{@link SubstringIndexFor} AnnotationMirror that represents this qualifier in
+         * the Substring Index hierarchy.
          *
          * @param env ProcessingEnvironment
          * @return the AnnotationMirror that represents this qualifier
          */
-        public AnnotationMirror convertToIndexOfAnnotation(ProcessingEnvironment env) {
+        public AnnotationMirror convertToSubstringIndexAnnotation(ProcessingEnvironment env) {
             return convertToAnnotation(env, true);
         }
 
-        /** Common implementation of convertToAnnotation and convertToIndexOfAnnotation. */
+        /** Common implementation of convertToAnnotation and convertToSubstringIndexAnnotation. */
         private AnnotationMirror convertToAnnotation(
-                ProcessingEnvironment env, boolean buildIndexOfAnnotation) {
+                ProcessingEnvironment env, boolean buildSubstringIndexAnnotation) {
             List<String> sortedSequences = new ArrayList<>(map.keySet());
             Collections.sort(sortedSequences);
             List<String> sequences = new ArrayList<>();
@@ -334,8 +334,8 @@ public abstract class UBQualifier {
                 }
             }
             AnnotationBuilder builder;
-            if (buildIndexOfAnnotation) {
-                builder = new AnnotationBuilder(env, IndexOfIndexFor.class);
+            if (buildSubstringIndexAnnotation) {
+                builder = new AnnotationBuilder(env, SubstringIndexFor.class);
                 builder.setValue("value", sequences);
                 builder.setValue("offset", offsets);
             } else if (isLTEq) {

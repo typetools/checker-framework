@@ -8,9 +8,9 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
 import org.checkerframework.checker.index.IndexUtil;
-import org.checkerframework.checker.index.qual.IndexOfIndexFor;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
@@ -555,25 +555,26 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     private UBQualifier getUBQualifierForAddition(Node n, TransferInput<CFValue, CFStore> in) {
 
         // The method takes the greatest lower bound of the qualifier returned by
-        // getUBQualifier and a qualifier created from a IndexOfIndexFor annotation, if such
+        // getUBQualifier and a qualifier created from a SubstringIndexFor annotation, if such
         // annotation is present and the index is known to be non-negative.
 
         UBQualifier ubQualifier = getUBQualifier(n, in);
         Tree nodeTree = n.getTree();
-        // Annotation from the IndexOf hierarchy
-        AnnotatedTypeMirror indexOfType =
-                atypeFactory.getIndexOfAnnotatedTypeFactory().getAnnotatedType(nodeTree);
-        AnnotationMirror indexOfAnno = indexOfType.getAnnotation(IndexOfIndexFor.class);
+        // Annotation from the Substring Index hierarchy
+        AnnotatedTypeMirror substringIndexType =
+                atypeFactory.getSubstringIndexAnnotatedTypeFactory().getAnnotatedType(nodeTree);
+        AnnotationMirror substringIndexAnno =
+                substringIndexType.getAnnotation(SubstringIndexFor.class);
         // Annotation from the Lower bound hierarchy
         AnnotatedTypeMirror lowerBoundType =
                 atypeFactory.getLowerBoundAnnotatedTypeFactory().getAnnotatedType(nodeTree);
-        // If the index has an IndexOfIndexFor annotation and at the same time is non-negative,
-        // convert the IndexOfIndexFor annotation to a upper bound qualifier.
-        if (indexOfAnno != null
+        // If the index has an SubstringIndexFor annotation and at the same time is non-negative,
+        // convert the SubstringIndexFor annotation to a upper bound qualifier.
+        if (substringIndexAnno != null
                 && (lowerBoundType.hasAnnotation(NonNegative.class)
                         || lowerBoundType.hasAnnotation(Positive.class))) {
-            UBQualifier indexOfQualifier = UBQualifier.createUBQualifier(indexOfAnno);
-            ubQualifier = ubQualifier.glb(indexOfQualifier);
+            UBQualifier substringIndexQualifier = UBQualifier.createUBQualifier(substringIndexAnno);
+            ubQualifier = ubQualifier.glb(substringIndexQualifier);
         }
         return ubQualifier;
     }

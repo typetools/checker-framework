@@ -6,12 +6,12 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The top type for the IndexOf type system. This indicates that the Index checker does not know any
- * arrays that this integer is a {@link IndexOfIndexFor indexOf index} for.
+ * The top type for the Substring Index type system. This indicates that the Index checker does not
+ * know any sequences that this integer is a {@link SubstringIndexFor substring index} for.
  *
- * @checker_framework.manual #index-indexof Index Checker
+ * @checker_framework.manual #index-substringindex Index Checker
  */
 @DefaultQualifierInHierarchy
 @SubtypeOf({})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface IndexOfUnknown {}
+public @interface SubstringIndexUnknown {}

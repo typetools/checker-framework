@@ -10,5 +10,5 @@ import org.checkerframework.framework.source.SuppressWarningsKeys;
  *
  * @checker_framework.manual #index-checker Index Checker
  */
-@SuppressWarningsKeys({"index", "indexof"})
-public class IndexOfChecker extends BaseTypeChecker {}
+@SuppressWarningsKeys({"index", "substringindex"})
+public class SubstringIndexChecker extends BaseTypeChecker {}

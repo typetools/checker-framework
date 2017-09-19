@@ -7,13 +7,13 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="538"
-   height="150"
-   viewBox="358 100 477.19743 211.66667"
+   width="590"
+   height="160"
+   viewBox="358 100 490.61309 211.66667"
    id="svg3577"
    version="1.1"
-   inkscape:version="0.48.5 r10040"
-   sodipodi:docname="indexof.svg">
+   inkscape:version="0.92.1 r15371"
+   sodipodi:docname="substringindex.svg">
   <metadata
      id="metadata3693">
     <rdf:RDF>
@@ -22,7 +22,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -37,12 +37,12 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1366"
-     inkscape:window-height="616"
+     inkscape:window-width="1920"
+     inkscape:window-height="1035"
      id="namedview3689"
      showgrid="false"
      inkscape:zoom="1.6651112"
-     inkscape:cx="254.22338"
+     inkscape:cx="162.93819"
      inkscape:cy="115.00128"
      inkscape:window-x="0"
      inkscape:window-y="0"
@@ -64,15 +64,15 @@
        height="44"
        id="rect3591" />
     <rect
-       style="fill:none;stroke:#7f7f7f;stroke-width:2.18256378;stroke-opacity:1"
-       x="340.9155"
-       y="120.09128"
-       width="240.36746"
-       height="43.817436"
+       style="fill:none;stroke:#7f7f7f;stroke-width:2.39919949;stroke-opacity:1"
+       x="316.28244"
+       y="120.14493"
+       width="291.1651"
+       height="43.71014"
        id="rect3593" />
     <text
        font-size="15.8044"
-       style="font-size:14.32277775px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#7f7f7f;fill-opacity:1;font-family:courier new"
+       style="font-style:normal;font-weight:normal;font-size:14.32277775px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#7f7f7f;fill-opacity:1"
        x="460.5"
        y="146.772"
        id="text3595">
@@ -80,12 +80,12 @@
          x="460.5"
          y="146.772"
          id="tspan3597"
-         style="font-size:21.16666603px;fill:#7f7f7f;fill-opacity:1">@IndexOfUnknown</tspan>
+         style="font-size:21.16666603px;fill:#7f7f7f;fill-opacity:1">@SubstringIndexUnknown</tspan>
     </text>
   </g>
   <text
      font-size="12.8"
-     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
+     style="font-style:normal;font-weight:normal;font-size:12.80000019px;line-height:0%;font-family:'courier new';text-anchor:start;fill:#000000"
      x="755.19824"
      y="257.47388"
      id="text3619">
@@ -106,16 +106,16 @@
        id="line3659" />
     <polygon
        style="fill:#000000"
-       points="455.5,176.236 460.5,166.236 465.5,176.236 460.5,173.736 "
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
        id="polygon3661" />
     <polygon
        style="fill:none;stroke:#000000;stroke-width:2"
-       points="455.5,176.236 460.5,166.236 465.5,176.236 460.5,173.736 "
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
        id="polygon3663" />
   </g>
   <text
      font-size="12.8"
-     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
+     style="font-style:normal;font-weight:normal;font-size:12.80000019px;line-height:0%;font-family:'courier new';text-anchor:start;fill:#000000"
      x="755.19824"
      y="257.47388"
      id="text3673">
@@ -125,15 +125,15 @@
        id="tspan3675" />
   </text>
   <rect
-     style="fill:none;stroke:#7f7f7f;stroke-width:2.14008689;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-     x="478.58206"
-     y="266.0228"
-     width="230.82231"
-     height="43.860157"
+     style="fill:none;stroke:#7f7f7f;stroke-width:2.36985517;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     x="454.12445"
+     y="266.08267"
+     width="283.82175"
+     height="43.740437"
      id="rect3561" />
   <text
      font-size="15.8044"
-     style="font-size:15.80440044px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#7f7f7f;fill-opacity:1;font-family:courier new"
+     style="font-style:normal;font-weight:normal;font-size:15.80440044px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#7f7f7f;fill-opacity:1"
      x="593.39355"
      y="294.41983"
      id="text3563">
@@ -141,7 +141,7 @@
        style="font-size:21.16666603px;fill:#7f7f7f;fill-opacity:1"
        x="593.39355"
        y="294.41983"
-       id="tspan3565">@IndexOfBottom</tspan>
+       id="tspan3565">@SubstringIndexBottom</tspan>
   </text>
   <g
      transform="translate(135.43608,64.158695)"
@@ -155,34 +155,34 @@
        style="fill:none;stroke:#000000;stroke-width:2" />
     <polygon
        id="polygon4860"
-       points="465.5,176.236 460.5,173.736 455.5,176.236 460.5,166.236 "
+       points="460.5,173.736 455.5,176.236 460.5,166.236 465.5,176.236 "
        style="fill:#000000" />
     <polygon
        id="polygon4862"
-       points="465.5,176.236 460.5,173.736 455.5,176.236 460.5,166.236 "
+       points="460.5,173.736 455.5,176.236 460.5,166.236 465.5,176.236 "
        style="fill:none;stroke:#000000;stroke-width:2" />
   </g>
   <g
-     transform="translate(161.25381,150.92016)"
+     transform="translate(166.54547,150.92016)"
      id="g3704">
     <rect
-       style="fill:none;stroke:#000000;stroke-width:1.32192183;stroke-miterlimit:4;stroke-dasharray:none"
-       x="58.361988"
-       y="30.574276"
-       width="754.97662"
-       height="45.63316"
+       style="fill:none;stroke:#000000;stroke-width:1.34152377;stroke-miterlimit:4;stroke-dasharray:none"
+       x="49.110027"
+       y="30.580036"
+       width="777.72925"
+       height="45.621639"
        id="rect3706" />
     <text
        font-size="15.8044"
-       style="font-size:15.80440044px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
-       x="436.12527"
+       style="font-style:normal;font-weight:normal;font-size:15.80440044px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="438.77112"
        y="56.765598"
        id="text3708">
       <tspan
          style="font-size:21.16666603px"
-         x="436.12527"
+         x="438.77112"
          y="56.765598"
-         id="tspan3710">@IndexOfIndexFor(value=&quot;myStr&quot;, offset=&quot;subStr.length()-1&quot;)</tspan>
+         id="tspan3710">@SubstringIndexFor(value=&quot;myStr&quot;, offset=&quot;subStr.length()-1&quot;)</tspan>
     </text>
   </g>
 </svg>
