@@ -1,4 +1,4 @@
-package org.checkerframework.checker.index.indexof;
+package org.checkerframework.checker.index.substringindex;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;

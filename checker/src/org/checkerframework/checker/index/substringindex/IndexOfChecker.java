@@ -1,4 +1,4 @@
-package org.checkerframework.checker.index.indexof;
+package org.checkerframework.checker.index.substringindex;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.source.SuppressWarningsKeys;
