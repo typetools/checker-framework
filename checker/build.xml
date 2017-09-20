@@ -264,7 +264,8 @@
                  failonerror="true"
                  executable="${javadoc.bin}"
                  classpath="${build}:${javac.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}:${stubparser.lib}"
-                 excludepackagenames="org.checkerframework.framework.stub">
+                 excludepackagenames="org.checkerframework.framework.stub"
+                 bootclasspath="${javac.jdk.lib}">
 
             <package name="org.checkerframework.javacutil.*"/>
             <package name="org.checkerframework.dataflow.*"/>
@@ -627,6 +628,7 @@
                printsummary="withOutAndErr"
                >
             <formatter type="plain" usefile="false"/>
+            <jvmarg value="-Xbootclasspath/p:${javac.jdk.lib}"/>
             <jvmarg value="-Demit.test.debug=true"/>
     <!-- end of debugging version. -->
 
@@ -694,6 +696,7 @@
                printsummary="false"
                haltonerror="${halt.on.test.failure}"
                haltonfailure="${halt.on.test.failure}">
+            <jvmarg value="-Xbootclasspath/p:${javac.jdk.lib}"/>
             <jvmarg value="-ea"/>
             <jvmarg line="${debugger.str}"/>  <!-- may be empty string -->
 

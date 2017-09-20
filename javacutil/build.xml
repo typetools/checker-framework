@@ -133,7 +133,7 @@
                  failonerror="true"
                  executable="${javadoc.bin}"
                  classpath="${build}:${javac.lib}:${javadoc.lib}"
-                 bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
+                 bootclasspath="${javac.jdk.lib}">
             <package name="org.checkerframework.javacutil.*"/>
 
             <link href="http://docs.oracle.com/javase/8/docs/api/"/>
