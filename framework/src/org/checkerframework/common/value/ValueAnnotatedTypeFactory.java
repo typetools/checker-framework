@@ -142,7 +142,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         addAliasedAnnotation(
                 android.support.annotation.IntRange.class,
-                AnnotationBuilder.fromClass(elements, IntRange.class));
+                AnnotationBuilder.fromClass(elements, IntRange.class),
+                true);
 
         // The actual ArrayLenRange is created by
         // {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)};

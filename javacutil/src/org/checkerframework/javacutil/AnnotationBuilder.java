@@ -156,14 +156,20 @@ public class AnnotationBuilder {
 
     /**
      * Copies every element value from the given annotation. If an element in the given annotation
-     * doesn't exist in the annotation to be built, an error would be raised.
+     * doesn't exist in the annotation to be built, an error would be raised unless the element is
+     * specified in {@code ignorableElements}.
      *
      * @param valueHolder the annotation that holds the values to be copied
+     * @param ignorableElements the elements that can be safely dropped
      */
-    public AnnotationBuilder copyElementValuesFromAnnotation(AnnotationMirror valueHolder) {
+    public AnnotationBuilder copyElementValuesFromAnnotation(
+            AnnotationMirror valueHolder, String... ignorableElements) {
         for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> eltValToCopy :
                 valueHolder.getElementValues().entrySet()) {
             Name eltNameToCopy = eltValToCopy.getKey().getSimpleName();
+            if (Arrays.asList(ignorableElements).contains(eltNameToCopy)) {
+                continue;
+            }
             boolean hasElement = false;
             for (ExecutableElement elt :
                     ElementFilter.methodsIn(annotationElt.getEnclosedElements())) {

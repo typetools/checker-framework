@@ -250,6 +250,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final Map<String, AnnotationMirror> aliases = new HashMap<String, AnnotationMirror>();
 
     /**
+     * Map from class name of an annotation, to whether we need to copy the elements over when
+     * getting the alias in the framework
+     */
+    private final Map<String, Boolean> aliasesCopyElements = new HashMap<>();
+
+    /**
+     * Map from class name of an annotation, to the ignorable elements that the framework can safely
+     * drop when copying over the elements *?
+     */
+    private final Map<String, String[]> aliasesIgnorableElements = new HashMap<>();
+
+    /**
      * A map from the class name (canonical name) of an annotation to the set of class names
      * (canonical names) for annotations with the same meaning (i.e., aliases), as well as the
      * annotation mirror that should be used.
@@ -2402,6 +2414,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         addAliasedAnnotation(alias.getCanonicalName(), type);
     }
 
+    /** Add the annotation {@code clazz} as an alias for the annotation {@code type}. */
+    protected void addAliasedAnnotation(
+            Class<?> alias,
+            AnnotationMirror type,
+            boolean copyElements,
+            String... optionalElements) {
+        addAliasedAnnotation(alias.getCanonicalName(), type, copyElements, optionalElements);
+    }
+
     /**
      * Add the annotation whose canonical name is given by {@code canonicalName} as an alias for the
      * annotation {@code type}.
@@ -2411,43 +2432,42 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * Add the annotation whose canonical name is given by {@code canonicalName} as an alias for the
+     * annotation {@code type}.
+     */
+    protected void addAliasedAnnotation(
+            String canonicalName,
+            AnnotationMirror type,
+            boolean copyElements,
+            String... ignorableElements) {
+        addAliasedAnnotation(canonicalName, type);
+        aliasesCopyElements.put(canonicalName, copyElements);
+        aliasesIgnorableElements.put(canonicalName, ignorableElements);
+    }
+
+    /**
      * Returns the canonical annotation for the passed annotation if it is an alias of a canonical
      * one in the framework. If it is not an alias, the method returns null.
      *
      * <p>Returns an aliased type of the current one. The attributes contained by the passed
-     * annotation are also copied over by default, however, if any one of them is not contained by
-     * the canonical annotation, an error would be raised. Override this function in the specific
-     * checker for such cases.
+     * annotation are not copied over unless specified when {@link #addAliasedAnnotation(String,
+     * Annotation, boolean)}
      *
      * @param a the qualifier to check for an alias
      * @return the alias or null if none exists
      */
     public /*@Nullable*/ AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
-        return aliasedAnnotation(a, true);
-    }
-
-    protected /*@Nullable*/ AnnotationMirror aliasedAnnotation(
-            AnnotationMirror a, boolean copyValues) {
         TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
         String qualName = elem.getQualifiedName().toString();
-        AnnotationMirror canonicalAnno = aliases.get(qualName);
-        if (canonicalAnno != null && a.getElementValues().size() > 0) {
-            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, canonicalAnno);
-            if (copyValues) {
-                if (!AnnotationUtils.containsAllElementsByNames(canonicalAnno, a)) {
-                    ErrorReporter.errorAbort(
-                            "Tried to copy attributes from the aliased annotation "
-                                    + a
-                                    + " to the canonical annotation "
-                                    + canonicalAnno
-                                    + ", however, the alias contains attribute(s) that does not exist in the canonical. You should try to override the aliasedAnnotation in the specific checker for special cases.");
-                    return null; // dead code
-                }
-                builder.copyElementValuesFromAnnotation(a);
+        AnnotationMirror frameworkAnno = aliases.get(qualName);
+        if (frameworkAnno != null && a.getElementValues().size() > 0) {
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, frameworkAnno);
+            if (aliasesCopyElements.getOrDefault(qualName, false)) {
+                builder.copyElementValuesFromAnnotation(a, aliasesIgnorableElements.get(qualName));
             }
             return builder.build();
         } else {
-            return canonicalAnno;
+            return frameworkAnno;
         }
     }
 
