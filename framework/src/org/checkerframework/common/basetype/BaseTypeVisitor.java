@@ -2301,7 +2301,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * <p>Note this method requires the lists to have the same length, as it does not handle cases
      * like var args.
      *
-     * @see #checkVarargs(AnnotatedExecutableType, Tree)
+     * @see #checkVarargs(AnnotatedTypeMirror.AnnotatedExecutableType, Tree)
      * @param requiredArgs the required types
      * @param passedArgs the expressions passed to the corresponding types
      */
