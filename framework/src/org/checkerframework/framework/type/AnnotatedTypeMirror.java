@@ -333,6 +333,7 @@ public abstract class AnnotatedTypeMirror {
      * annotationName if one exists, null otherwise.
      *
      * @return the annotation mirror for annotationName
+     * @deprecated use {@link AnnotationUtils#getAnnotationByName(Collection,String)} instead.
      */
     @Deprecated // Remove after 2.2.1 release
     public AnnotationMirror getAnnotation(Name annotationName) {
@@ -345,6 +346,7 @@ public abstract class AnnotatedTypeMirror {
      * argument if one exists, null otherwise.
      *
      * @return the annotation mirror for annotationStr
+     * @deprecated use {@link AnnotationUtils#getAnnotationByName(Collection,String)} instead.
      */
     @Deprecated // Remove after 2.2.1 release
     public AnnotationMirror getAnnotation(/*@Interned*/ String annotationStr) {
@@ -432,6 +434,7 @@ public abstract class AnnotatedTypeMirror {
      * @param a the annotation name to check for
      * @return true iff the type contains the annotation {@code a}
      * @see #hasAnnotationRelaxed(AnnotationMirror)
+     * @deprecated use {@link AnnotationUtils#containsSameByNameCollection,String)} instead.
      */
     @Deprecated // Remove after 2.2.1 release
     public boolean hasAnnotation(Name a) {
