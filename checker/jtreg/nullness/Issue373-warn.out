@@ -1,4 +1,8 @@
-Issue373.java:16:15: compiler.warn.proc.messager: [override.return.invalid] Set<Entry<String, String>> entrySet(Issue373 this) in Issue373 cannot override Set<Entry<@KeyFor("this") String, String>> entrySet(AbstractMap<String, String> this) in java.util.AbstractMap; attempting to use an incompatible return type
+Issue373.java:16:15: compiler.warn.proc.messager: [override.return.invalid] Incompatible return type.
+Method
+  Set<Entry<String, String>> entrySet(Issue373 this) in Issue373
+cannot override
+  Set<Entry<@KeyFor("this") String, String>> entrySet(AbstractMap<String, String> this) in java.util.AbstractMap
 found   : Set<Entry<String, String>>
 required: Set<Entry<@KeyFor("this") String, String>>
 1 warning

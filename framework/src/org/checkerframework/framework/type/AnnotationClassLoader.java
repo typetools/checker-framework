@@ -26,7 +26,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 
@@ -174,7 +174,7 @@ public class AnnotationClassLoader {
         // won't be a resourceURL since there isn't a qual directory
 
         // each path from the set of classpaths will be checked to see if it
-        // contains the qual directory of a checker, if so, the the first
+        // contains the qual directory of a checker, if so, the first
         // directory or jar that contains the package will be used as the source
         // for loading classes from the qual package
 
@@ -282,7 +282,7 @@ public class AnnotationClassLoader {
      * dot)
      *
      * <p>Each step of the recursion checks to see if there's a subdirectory in the current
-     * directory which has a name matching the package name segment, if so, it recursively descends
+     * directory that has a name matching the package name segment, if so, it recursively descends
      * into that subdirectory to check the next package name segment
      *
      * <p>If there's no more segments left, then we've found the qual directory of interest

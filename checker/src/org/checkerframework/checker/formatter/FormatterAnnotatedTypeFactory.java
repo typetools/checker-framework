@@ -20,6 +20,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -42,10 +43,10 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public FormatterAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        UNKNOWNFORMAT = AnnotationUtils.fromClass(elements, UnknownFormat.class);
-        FORMAT = AnnotationUtils.fromClass(elements, Format.class);
-        INVALIDFORMAT = AnnotationUtils.fromClass(elements, InvalidFormat.class);
-        FORMATBOTTOM = AnnotationUtils.fromClass(elements, FormatBottom.class);
+        UNKNOWNFORMAT = AnnotationBuilder.fromClass(elements, UnknownFormat.class);
+        FORMAT = AnnotationBuilder.fromClass(elements, Format.class);
+        INVALIDFORMAT = AnnotationBuilder.fromClass(elements, InvalidFormat.class);
+        FORMATBOTTOM = AnnotationBuilder.fromClass(elements, FormatBottom.class);
 
         this.treeUtil = new FormatterTreeUtil(checker);
         this.postInit();
@@ -106,11 +107,11 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameIgnoringValues(rhs, FORMAT)
-                    && AnnotationUtils.areSameIgnoringValues(lhs, FORMAT)) {
-                ConversionCategory[] rhsArgTypes = treeUtil.formatAnnotationToCategories(rhs);
-                ConversionCategory[] lhsArgTypes = treeUtil.formatAnnotationToCategories(lhs);
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, FORMAT)
+                    && AnnotationUtils.areSameIgnoringValues(superAnno, FORMAT)) {
+                ConversionCategory[] rhsArgTypes = treeUtil.formatAnnotationToCategories(subAnno);
+                ConversionCategory[] lhsArgTypes = treeUtil.formatAnnotationToCategories(superAnno);
 
                 if (rhsArgTypes.length > lhsArgTypes.length) {
                     return false;
@@ -123,20 +124,20 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 return true;
             }
-            if (AnnotationUtils.areSameIgnoringValues(lhs, FORMAT)) {
-                lhs = FORMAT;
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, FORMAT)) {
+                superAnno = FORMAT;
             }
-            if (AnnotationUtils.areSameIgnoringValues(rhs, FORMAT)) {
-                rhs = FORMAT;
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, FORMAT)) {
+                subAnno = FORMAT;
             }
-            if (AnnotationUtils.areSameIgnoringValues(lhs, INVALIDFORMAT)) {
-                lhs = INVALIDFORMAT;
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, INVALIDFORMAT)) {
+                superAnno = INVALIDFORMAT;
             }
-            if (AnnotationUtils.areSameIgnoringValues(rhs, INVALIDFORMAT)) {
-                rhs = INVALIDFORMAT;
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, INVALIDFORMAT)) {
+                subAnno = INVALIDFORMAT;
             }
 
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
 
         @Override

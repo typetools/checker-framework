@@ -396,7 +396,7 @@ public class DOTCFGVisualizer<
                 this.sbStore.setLength(0);
                 this.sbStore.append("\\n~~~~~~~~~\\n");
                 this.sbStore.append("After:");
-                visualizeStore(analysis.getResult().getStoreAfter(lastNode.getTree()));
+                visualizeStore(analysis.getResult().getStoreAfter(lastNode));
                 this.sbBlock.append(this.sbStore);
             }
         }

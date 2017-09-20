@@ -161,8 +161,20 @@ class SupertypeFinder {
                 }
             }
 
-            for (int i = 0; i < type.getTypeArguments().size(); ++i) {
-                mapping.put(typeElement.getTypeParameters().get(i), type.getTypeArguments().get(i));
+            AnnotatedDeclaredType enclosing = type;
+            while (enclosing != null) {
+                TypeElement enclosingTypeElement =
+                        (TypeElement) enclosing.getUnderlyingType().asElement();
+                List<AnnotatedTypeMirror> typeArgs = enclosing.getTypeArguments();
+                List<? extends TypeParameterElement> typeParams =
+                        enclosingTypeElement.getTypeParameters();
+                for (int i = 0; i < enclosing.getTypeArguments().size(); ++i) {
+                    AnnotatedTypeMirror typArg = typeArgs.get(i);
+                    TypeParameterElement ele = typeParams.get(i);
+                    mapping.put(ele, typArg);
+                }
+
+                enclosing = enclosing.getEnclosingType();
             }
 
             ClassTree classTree = atypeFactory.trees.getTree(typeElement);
@@ -384,6 +396,9 @@ class SupertypeFinder {
                     return visitedNodes.get(type);
                 }
                 visitedNodes.put(type, null);
+                if (type.getEnclosingType() != null) {
+                    scan(type.getEnclosingType(), mapping);
+                }
 
                 List<AnnotatedTypeMirror> args = new ArrayList<AnnotatedTypeMirror>();
                 for (AnnotatedTypeMirror arg : type.getTypeArguments()) {

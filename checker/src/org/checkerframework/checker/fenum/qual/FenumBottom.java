@@ -13,19 +13,20 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * The bottom qualifier for fenums, its relationships are setup via the FenumAnnotatedTypeFactory.
+ * The bottom type in the Fenum type system. Programmers should rarely write this type.
+ *
+ * <p>Its relationships are set up via the FenumAnnotatedTypeFactory.
  *
  * @checker_framework.manual #propkey-checker Property File Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
 @Documented
-@TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf({}) // subtype relationships are set up by passing this class as a bottom
-// to the multigraph hierarchy constructor
+@TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
+// Subtype relationships are set up by passing this class as a bottom
+// to the multigraph hierarchy constructor.
+@SubtypeOf({})
 @Retention(RetentionPolicy.RUNTIME)
-@ImplicitFor(
-    literals = {LiteralKind.NULL},
-    typeNames = {java.lang.Void.class}
-)
+@ImplicitFor(literals = LiteralKind.NULL, typeNames = java.lang.Void.class)
 @DefaultFor(TypeUseLocation.LOWER_BOUND)
 public @interface FenumBottom {}

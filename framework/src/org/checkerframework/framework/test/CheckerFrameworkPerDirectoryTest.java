@@ -30,17 +30,17 @@ import org.junit.runner.RunWith;
  *       It is unnecessary to list child directories of a directory you have already listed.
  * </ol>
  *
- * <pre>{@code
+ * <pre><code>
  * public class MyTest extends CheckerFrameworkPerDirectoryTest {
- *   public MyTest(List<File> testFiles) {
+ *   public MyTest(List{@literal <}File{@literal >} testFiles) {
  *     super(testFiles, MyChecker.class, "", "Anomsgtext");
  *   }
- *   {@literal @}Parameters
+ *  {@literal @}Parameters
  *   public static String [] getTestDirs() {
  *     return new String[]{"all-systems"};
  *   }
  * }
- * }</pre>
+ * </code></pre>
  */
 @RunWith(PerDirectorySuite.class)
 public abstract class CheckerFrameworkPerDirectoryTest {

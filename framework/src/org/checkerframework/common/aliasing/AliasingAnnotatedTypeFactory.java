@@ -19,12 +19,11 @@ import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -33,10 +32,10 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public AliasingAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        MAYBE_ALIASED = AnnotationUtils.fromClass(elements, MaybeAliased.class);
-        NON_LEAKED = AnnotationUtils.fromClass(elements, NonLeaked.class);
-        UNIQUE = AnnotationUtils.fromClass(elements, Unique.class);
-        MAYBE_LEAKED = AnnotationUtils.fromClass(elements, MaybeLeaked.class);
+        MAYBE_ALIASED = AnnotationBuilder.fromClass(elements, MaybeAliased.class);
+        NON_LEAKED = AnnotationBuilder.fromClass(elements, NonLeaked.class);
+        UNIQUE = AnnotationBuilder.fromClass(elements, Unique.class);
+        MAYBE_LEAKED = AnnotationBuilder.fromClass(elements, MaybeLeaked.class);
         if (this.getClass().equals(AliasingAnnotatedTypeFactory.class)) {
             this.postInit();
         }
@@ -88,10 +87,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected ListTreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
-                new AliasingTreeAnnotator(this),
-                new PropagationTreeAnnotator(this),
-                new ImplicitsTreeAnnotator(this));
+        return new ListTreeAnnotator(new AliasingTreeAnnotator(this), super.createTreeAnnotator());
     }
 
     @Override
@@ -135,8 +131,8 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (isLeakedQualifier(lhs) && isLeakedQualifier(rhs)) {
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (isLeakedQualifier(superAnno) && isLeakedQualifier(subAnno)) {
                 // @LeakedToResult and @NonLeaked were supposed to be
                 // non-type-qualifiers annotations.
                 // Currently the stub parser does not support non-type-qualifier
@@ -145,7 +141,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // warnings related to the hierarchy are ignored.
                 return true;
             }
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
     }
 }

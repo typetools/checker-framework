@@ -5,9 +5,10 @@
 # to org.checkerframework.framework.util.CheckerDevelMain
 #
 # This script loads the .class files found in the
-# build directory before it uses any jar files so
-# that a user does not have to repackage the whole
-# project (that is, create .jar files) to debug changes.
+# build directory before it uses any jar files.
+# Thus, a user can just do
+#   ant build
+# to debug changes rather than creating .jar files with "ant dist-nobuildjdk".
 
 # When editing, keep this file in sync with javac-debug in this directory.
 
@@ -21,21 +22,22 @@ esac
 binaryDir="${mydir}"/../dist
 
 # langtools bin dir for Jenkins
-if [ -z "$LT_BIN" ] || [ "$LT_BIN" = "" ]; then
+if [ -z "${LT_BIN}" ] || [ "${LT_BIN}" = "" ]; then
    ltBinDir="${mydir}"/../../../jsr308-langtools/build/classes
 else
-   ltBinDir="$LT_BIN"
+   ltBinDir="${LT_BIN}"
 fi
 
 jdkPaths="${mydir}"/../jdk/annotated
 
 cfDir="${mydir}"/../..
 annoToolsDir="${cfDir}"/../annotation-tools
+stubparserDir="${cfDir}"/../stubparser
 
 # Put afu jar files last, as they might contain out-of-date CF files.
 # Put "checker" after the other sub-projects, as "ant bindist" puts
 # other projects into the checker/build directory.
-buildDirs="${cfDir}"/dataflow/build:"${cfDir}"/javacutil/build:"${cfDir}"/stubparser/build:"${cfDir}"/framework/build:"${cfDir}"/checker/build:"${annoToolsDir}"/scene-lib/bin:"${annoToolsDir}"/annotation-file-utilities/annotation-file-utilities.jar
+buildDirs="${cfDir}"/dataflow/build:"${cfDir}"/javacutil/build:"${cfDir}"/framework/build:"${cfDir}"/checker/build:"${stubparserDir}"/stubparser.jar:"${annoToolsDir}"/scene-lib/bin:"${annoToolsDir}"/annotation-file-utilities/annotation-file-utilities.jar
 
 ## Preserve quoting and spaces in arguments, which would otherwise be lost
 ## due to being passed through the shell twice.
@@ -63,7 +65,7 @@ eval "java" \
      "-DCheckerDevelMain.cp=${buildDirs} " \
      "-DCheckerDevelMain.pp=${buildDirs} " \
      "-DCheckerDevelMain.compile.bcp=${jdkPaths} " \
-     "-DCheckerDevelMain.runtime.bcp=${ltBinDir} " \
+     "-DCheckerDevelMain.runtime.cp=${ltBinDir} " \
      "-DCheckerDevelMain.binary=${binaryDir}" \
      "-classpath ${buildDirs} " \
      "org.checkerframework.framework.util.CheckerDevelMain" \

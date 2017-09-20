@@ -1,5 +1,8 @@
 package org.checkerframework.checker.index.qual;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
+
 /**
  * An integer that can be used to index any of the given sequences.
  *
@@ -8,7 +11,7 @@ package org.checkerframework.checker.index.qual;
  * different lengths.
  *
  * <p>The <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#charAt-int-">
- * <code>String.charAt(int)</code></a> method is declared as
+ * {@code String.charAt(int)}</a> method is declared as
  *
  * <pre>{@code
  * class String {
@@ -25,6 +28,7 @@ package org.checkerframework.checker.index.qual;
  * @see LTLengthOf
  * @checker_framework.manual #index-checker Index Checker
  */
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface IndexFor {
     /** Sequences that the annotated expression is a valid index for. */
     String[] value() default {};

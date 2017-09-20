@@ -3,6 +3,7 @@ import org.checkerframework.dataflow.qual.*;
 
 class AnnotatedGenerics {
     public static void testNullableTypeVariable() {
+        //:: error: (initialization.fields.uninitialized)
         class Test<T extends @Nullable Object> {
             T f;
 

@@ -29,9 +29,9 @@ import java.lang.annotation.Target;
  * }</pre>
  *
  * <p>Note that {@code @Deterministic} guarantees that the result is identical according to {@code
- * ==}, <b>not</b> equal according to {@code equals}. This means that writing {@code @Deterministic}
- * on a method that returns a reference is often erroneous unless the returned value is cached or
- * interned.
+ * ==}, <b>not</b> just equal according to {@code equals()}. This means that writing
+ * {@code @Deterministic} on a method that returns a reference (including a String) is often
+ * erroneous unless the returned value is cached or interned.
  *
  * <p>Also see {@link Pure}, which means both deterministic and {@link SideEffectFree}.
  *

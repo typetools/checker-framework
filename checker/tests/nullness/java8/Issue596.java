@@ -15,7 +15,7 @@ class Issue596 {
 // From Google Guava
 class Optional<T> {
 
-    public static <T> Optional<T> fromNullable(/*@Nullable*/ T nullableReference) {
+    public static <T> Optional<T> fromNullable(@Nullable T nullableReference) {
         return new Optional<T>();
     }
 

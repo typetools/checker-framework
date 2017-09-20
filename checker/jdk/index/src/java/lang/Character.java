@@ -4665,7 +4665,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * {@link CharSequence#length() seq.length()}.
      * @since  1.5
      */
-    public static int codePointAt(CharSequence seq, /*@ IndexFor("#1")*/ int index) {
+    public static int codePointAt(CharSequence seq, @IndexFor("#1") int index) {
         char c1 = seq.charAt(index++);
         if (isHighSurrogate(c1)) {
             if (index < seq.length()) {
@@ -4770,7 +4770,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * CharSequence#length() seq.length()}.
      * @since  1.5
      */
-    public static int codePointBefore(CharSequence seq, /*@Positive @ LTEqLengthOf("#1")*/ int index) {
+    public static int codePointBefore(CharSequence seq, @Positive @LTEqLengthOf("#1") int index) {
         char c2 = seq.charAt(--index);
         if (isLowSurrogate(c2)) {
             if (index > 0) {
@@ -4804,7 +4804,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * {@code char} array
      * @since  1.5
      */
-    public static int codePointBefore(char[] a, /*@Positive @LTEqLengthOf("#1")*/ int index) {
+    public static int codePointBefore(char[] a, @Positive @LTEqLengthOf("#1") int index) {
         return codePointBeforeImpl(a, index, 0);
     }
 
@@ -4835,7 +4835,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * the length of the {@code char} array.
      * @since  1.5
      */
-    public static int codePointBefore(char[] a, /*@Positive @LTEqLengthOf("#1")*/ int index, @IndexOrHigh("#1") int start) {
+    public static int codePointBefore(char[] a, @Positive @LTEqLengthOf("#1") int index, @IndexOrHigh("#1") int start) {
         if (index <= start || start < 0 || start >= a.length) {
             throw new IndexOutOfBoundsException();
         }
@@ -5013,7 +5013,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * {@code beginIndex} is larger than {@code endIndex}.
      * @since  1.5
      */
-    public static @NonNegative int codePointCount(CharSequence seq, /*@ IndexFor("#1")*/ int beginIndex, /*@ IndexOrHigh("#1")*/ int endIndex) {
+    public static @NonNegative int codePointCount(CharSequence seq, @IndexOrHigh("#1") int beginIndex, @IndexOrHigh("#1") int endIndex) {
         int length = seq.length();
         if (beginIndex < 0 || endIndex > length || beginIndex > endIndex) {
             throw new IndexOutOfBoundsException();
@@ -5090,7 +5090,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      *   of {@code codePointOffset} code points.
      * @since 1.5
      */
-    public static /*@ IndexFor("#1")*/ int offsetByCodePoints(CharSequence seq, /*@ IndexFor("#1")*/ int index,
+    public static int offsetByCodePoints(CharSequence seq, @IndexOrHigh("#1") int index,
                                          int codePointOffset) {
         int length = seq.length();
         if (index < 0 || index > length) {

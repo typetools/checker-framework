@@ -9,59 +9,32 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * This type qualifier belongs to the freedom-before-commitment type-system for tracking
- * initialization. This type-system is not used on its own, but in conjunction with some other
- * type-system that wants to ensure safe initialization. For instance, {@link
- * org.checkerframework.checker.nullness.NullnessChecker} uses freedom-before-commitment to track
- * initialization of {@link NonNull} fields.
+ * This type qualifier indicates that an object is (definitely) in the process of being
+ * constructed/initialized. The type qualifier also indicates how much of the object has already
+ * been initialized. Please see the manual for examples of how to use the annotation (the link
+ * appears below).
  *
- * <p>This type qualifier indicates that the object is (definitely) under initialization at the
- * moment and that no aliases that are typed differently exist.
+ * <p>Consider a class {@code B} that is a subtype of {@code A}. At the beginning of the constructor
+ * of {@code B}, {@code this} has the type {@code @UnderInitialization(A.class)}, since all fields
+ * of {@code A} have been initialized by the super-constructor. Inside the constructor body, as soon
+ * as all fields of {@code B} are initialized, then the type of {@code this} changes to
+ * {@code @UnderInitialization(B.class)}.
  *
- * <p>Because the object is currently under initialization it is allowed to store potentially not
- * fully initialized object in fields.
+ * <p>Code is allowed to store potentially not-fully-initialized objects in the fields of a
+ * partially-initialized object, as long as all initialization is complete by the end of the
+ * constructor.
  *
- * <p>Similar to {@link UnknownInitialization}, this type qualifier supports type frames.
+ * <p>What type qualifiers on the field are considered depends on the checker; for instance, the
+ * {@link org.checkerframework.checker.nullness.NullnessChecker} considers {@link NonNull}. The
+ * initialization type system (called "freedom before commitment") is not used on its own, but in
+ * conjunction with some other type-system that wants to ensure safe initialization.
  *
- * <p>At the beginning of a constructor, the fields of the object are not yet initialized and thus
- * {@link UnknownInitialization UnknownInitialization(<em>supertype</em>)} is used as the type of
- * the self-reference {@code this}. Consider a class {@code B} that is a subtype of {@code A}. At
- * the beginning of the constructor of {@code B}, {@code this} has the type
- * {@code @UnderInitialization(A.class)}, since all fields of {@code A} have been initialized by the
- * super-constructor. If during the constructor also all fields of {@code B} are initialized, then
- * the type of {@code this} changes to {@code @UnderInitialization(B.class)} (and otherwise, if not
- * all fields are initialized, an error is issued).
- *
- * <p>Note that it would not be sound to type {@code this} as {@link Initialized} anywhere in a
- * constructor (with the exception of final classes; but this is currently not implemented), because
- * there might be subclasses with uninitialized fields. The following example shows why:
- *
- * <pre>{@code
- * class A {
- *    &#64;NonNull String a;
- *    public A() {
- *        a = "";
- *        // Now, all fields of A are initialized.
- *        // However, if this constructor is invoked as part of 'new B()', then
- *        // the fields of B are not yet initialized.
- *        // If we would type 'this' as &#64;Initialized, then the following call is valid:
- *        foo();
- *    }
- *    void foo() {}
- * }
- *
- * class B extends A {
- *    &#64;NonNull String b;
- *    &#64;Override
- *    void foo() {
- *        // Dereferencing 'b' is ok, since 'this' is &#64;Initialized and 'b' &#64;NonNull.
- *        // However, when executing 'new B()', this line throws a null-pointer exception.
- *        b.toString();
- *    }
- * }
- * }</pre>
+ * <p>When an expression has type {@code @UnderInitialization}, then no aliases that are typed
+ * differently may exist.
  *
  * @checker_framework.manual #initialization-checker Initialization Checker
+ * @checker_framework.manual #underinitialization-examples Examples of the @UnderInitialization
+ *     annotation
  */
 @SubtypeOf(UnknownInitialization.class)
 @Documented

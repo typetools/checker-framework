@@ -61,11 +61,6 @@ public abstract class AnnotatedTypeComparer<R>
     }
 
     @Override
-    public R scanAndReduce(AnnotatedTypeMirror type, AnnotatedTypeMirror p, R r) {
-        return reduce(scan(type, p), r);
-    }
-
-    @Override
     protected R scanAndReduce(
             Iterable<? extends AnnotatedTypeMirror> types, AnnotatedTypeMirror p, R r) {
         ErrorReporter.errorAbort(
@@ -84,6 +79,13 @@ public abstract class AnnotatedTypeComparer<R>
     public final R visitDeclared(AnnotatedDeclaredType type, AnnotatedTypeMirror p) {
         assert p instanceof AnnotatedDeclaredType : p;
         R r = scan(type.getTypeArguments(), ((AnnotatedDeclaredType) p).getTypeArguments());
+        if (type.getEnclosingType() != null) {
+            r =
+                    scanAndReduce(
+                            type.getEnclosingType(),
+                            ((AnnotatedDeclaredType) p).getEnclosingType(),
+                            r);
+        }
         return r;
     }
 
@@ -99,7 +101,9 @@ public abstract class AnnotatedTypeComparer<R>
         assert p instanceof AnnotatedExecutableType : p;
         AnnotatedExecutableType ex = (AnnotatedExecutableType) p;
         R r = scan(type.getReturnType(), ex.getReturnType());
-        r = scanAndReduce(type.getReceiverType(), ex.getReceiverType(), r);
+        if (type.getReceiverType() != null) {
+            r = scanAndReduce(type.getReceiverType(), ex.getReceiverType(), r);
+        }
         r = scanAndReduce(type.getParameterTypes(), ex.getParameterTypes(), r);
         r = scanAndReduce(type.getThrownTypes(), ex.getThrownTypes(), r);
         r = scanAndReduce(type.getTypeVariables(), ex.getTypeVariables(), r);

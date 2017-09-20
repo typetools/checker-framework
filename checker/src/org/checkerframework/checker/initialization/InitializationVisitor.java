@@ -1,10 +1,5 @@
 package org.checkerframework.checker.initialization;
 
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -25,11 +20,13 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -61,19 +58,19 @@ public class InitializationVisitor<
         extends BaseTypeVisitor<Factory> {
 
     protected final AnnotationFormatter annoFormatter;
+
     // Error message keys
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CAST =
+    private static final @CompilerMessageKey String COMMITMENT_INVALID_CAST =
             "initialization.invalid.cast";
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_FIELDS_UNINITIALIZED =
+    private static final @CompilerMessageKey String COMMITMENT_FIELDS_UNINITIALIZED =
             "initialization.fields.uninitialized";
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_TYPE =
+    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_TYPE =
             "initialization.invalid.field.type";
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE =
+    private static final @CompilerMessageKey String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE =
             "initialization.invalid.constructor.return.type";
-    private static final /*@CompilerMessageKey*/ String
-            COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED =
-                    "initialization.invalid.field.write.unknown";
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED =
+    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED =
+            "initialization.invalid.field.write.unknown";
+    private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED =
             "initialization.invalid.field.write.initialized";
 
     public InitializationVisitor(BaseTypeChecker checker) {
@@ -103,7 +100,7 @@ public class InitializationVisitor<
 
     @Override
     protected void commonAssignmentCheck(
-            Tree varTree, ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
+            Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
         // field write of the form x.f = y
         if (TreeUtils.isFieldAccess(varTree)) {
             // cast is safe: a field access can only be an IdentifierTree or
@@ -123,7 +120,7 @@ public class InitializationVisitor<
                         && !(atypeFactory.isCommitted(yType)
                                 || atypeFactory.isFree(xType)
                                 || atypeFactory.isFbcBottom(yType))) {
-                    /*@CompilerMessageKey*/ String err;
+                    @CompilerMessageKey String err;
                     if (atypeFactory.isCommitted(xType)) {
                         err = COMMITMENT_INVALID_FIELD_WRITE_COMMITTED;
                     } else {
@@ -146,7 +143,9 @@ public class InitializationVisitor<
             // Fields cannot have commitment annotations.
             for (Class<? extends Annotation> c : atypeFactory.getInitializationAnnotations()) {
                 for (AnnotationMirror a : annotationMirrors) {
-                    if (atypeFactory.isUnclassified(a)) continue; // unclassified is allowed
+                    if (atypeFactory.isUnclassified(a)) {
+                        continue; // unclassified is allowed
+                    }
                     if (AnnotationUtils.areSameByClass(a, c)) {
                         checker.report(Result.failure(COMMITMENT_INVALID_FIELD_TYPE, node), node);
                         break;
@@ -164,7 +163,8 @@ public class InitializationVisitor<
             AnnotationMirror inferredAnnotation,
             CFAbstractStore<?, ?> store) {
         // also use the information about initialized fields to check contracts
-        AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
+        final AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
+
         if (atypeFactory.getQualifierHierarchy().isSubtype(invariantAnno, necessaryAnnotation)) {
             if (expr instanceof FieldAccess) {
                 FieldAccess fa = (FieldAccess) expr;
@@ -180,6 +180,35 @@ public class InitializationVisitor<
                                 fieldType.getAnnotations(), invariantAnno)) {
                             return true;
                         }
+                    }
+                } else {
+                    Set<AnnotationMirror> recvAnnoSet;
+                    @SuppressWarnings("unchecked")
+                    Value value = (Value) store.getValue(fa.getReceiver());
+                    if (value != null) {
+                        recvAnnoSet = value.getAnnotations();
+                    } else if (fa.getReceiver() instanceof LocalVariable) {
+                        Element elem = ((LocalVariable) fa.getReceiver()).getElement();
+                        AnnotatedTypeMirror recvType = atypeFactory.getAnnotatedType(elem);
+                        recvAnnoSet = recvType.getAnnotations();
+                    } else {
+                        // Is there anything better we could do?
+                        return false;
+                    }
+                    boolean isRecvCommitted = false;
+                    for (AnnotationMirror anno : recvAnnoSet) {
+                        if (atypeFactory.isCommitted(anno)) {
+                            isRecvCommitted = true;
+                        }
+                    }
+
+                    AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fa.getField());
+                    // The receiver is fully initialized and the field type
+                    // has the invariant type.
+                    if (isRecvCommitted
+                            && AnnotationUtils.containsSame(
+                                    fieldType.getAnnotations(), invariantAnno)) {
+                        return true;
                     }
                 }
             }

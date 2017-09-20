@@ -25,6 +25,8 @@
 
 package java.util;
 
+import org.checkerframework.checker.index.qual.*;
+
 /**
  * A collection that contains no duplicate elements.  More formally, sets
  * contain no pair of elements <code>e1</code> and <code>e2</code> such that
@@ -92,7 +94,7 @@ public interface Set<E> extends Collection<E> {
      *
      * @return the number of elements in this set (its cardinality)
      */
-    int size();
+    @NonNegative int size();
 
     /**
      * Returns <tt>true</tt> if this set contains no elements.

@@ -207,7 +207,7 @@
             <tr>
                 <td><span class="glyphicon glyphicon-folder-open"></span> lib</td>
                 <td> A directory full of the Checker Framework jars used when checking source code
-                    (checker.jar, jdk7.jar, jdk8.jar, javac.jar and checker-qual.jar).  These must be overwritten
+                    (checker.jar, jdk8.jar, javac.jar and checker-qual.jar).  These must be overwritten
                     for the version of the Checker Framework you wish to build the plugin with.  There are no
                     files in this folder by default.
                 </td>
@@ -366,15 +366,15 @@
             Create a new CheckerAction class in CheckerActions:
             /eclipse/checker-framework-eclipse-plugin/src/org/checkerframework/eclipse/actions/CheckerActions.java
             </td>
-        <tr>
         </tr>
+        <tr>
             <td>3.</td>
             <td><strong>Add checker to plugin.xml</strong><br/>
             In eclipse/checker-framework-eclipse-plugin/plugin.xml, add the checked to the both the "org.eclipse.ui.menus"
-            extension point and and the "org.eclipse.ui.commands" extension point.
+            extension point and the "org.eclipse.ui.commands" extension point.
             </td>
-        <tr>
         </tr>
+        <tr>
             <td>4.</td>
             <td><strong>Build and test the plugin</strong><br/>
              See the <a href="#building_the_plugin">Building the plugin</a> and <a href="#testing">Testing</a> sections.
@@ -394,7 +394,7 @@
                 are included by copying them to the checker-framework-eclipse-plugin/lib directory before the
                 plugin is built.  If you wish to test the plugin with a different set of artifacts, copy them
                 here.  If these artifacts aren't present, the plugin will not build. From the top-level of a
-                Checker Framework clone that has been built with JDK 7:
+                Checker Framework clone that has been built with JDK 8:
 
                 <code><br/>
                 cd eclipse<br/>
@@ -724,6 +724,11 @@
     eclipse that does not have the plugin installed in it.  And every time you have a new plugin version to work w
     ith (after you have tested it just using your development environment) do one last test on a clean version of
     eclipse with no plugin installed.
+
+    Also, the plugins are now downloaded to $HOME/.p2, so in addition to installing
+    a new copy of Eclipse, you should delete the .p2 directory.  (If you use
+    Eclipse for development, then you will want to set up a separate bundle
+    pool for the Eclipse used for testing.)
 
     <h4>Special File Editors</h4>
     For plugin related files, there are often custom file editors.  Sometimes, the UIs for these plugins don't

@@ -29,6 +29,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -58,11 +59,11 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
     public I18nFormatterAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        I18NUNKNOWNFORMAT = AnnotationUtils.fromClass(elements, I18nUnknownFormat.class);
-        I18NFORMAT = AnnotationUtils.fromClass(elements, I18nFormat.class);
-        I18NINVALIDFORMAT = AnnotationUtils.fromClass(elements, I18nInvalidFormat.class);
-        I18NFORMATBOTTOM = AnnotationUtils.fromClass(elements, I18nFormatBottom.class);
-        I18NFORMATFOR = AnnotationUtils.fromClass(elements, I18nFormatFor.class);
+        I18NUNKNOWNFORMAT = AnnotationBuilder.fromClass(elements, I18nUnknownFormat.class);
+        I18NFORMAT = AnnotationBuilder.fromClass(elements, I18nFormat.class);
+        I18NINVALIDFORMAT = AnnotationBuilder.fromClass(elements, I18nInvalidFormat.class);
+        I18NFORMATBOTTOM = AnnotationBuilder.fromClass(elements, I18nFormatBottom.class);
+        I18NFORMATFOR = AnnotationBuilder.fromClass(elements, I18nFormatFor.class);
 
         this.translations = Collections.unmodifiableMap(buildLookup());
 
@@ -222,12 +223,14 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameIgnoringValues(rhs, I18NFORMAT)
-                    && AnnotationUtils.areSameIgnoringValues(lhs, I18NFORMAT)) {
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, I18NFORMAT)
+                    && AnnotationUtils.areSameIgnoringValues(superAnno, I18NFORMAT)) {
 
-                I18nConversionCategory[] rhsArgTypes = treeUtil.formatAnnotationToCategories(rhs);
-                I18nConversionCategory[] lhsArgTypes = treeUtil.formatAnnotationToCategories(lhs);
+                I18nConversionCategory[] rhsArgTypes =
+                        treeUtil.formatAnnotationToCategories(subAnno);
+                I18nConversionCategory[] lhsArgTypes =
+                        treeUtil.formatAnnotationToCategories(superAnno);
 
                 if (rhsArgTypes.length > lhsArgTypes.length) {
                     return false;
@@ -241,32 +244,34 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                 return true;
             }
 
-            if (AnnotationUtils.areSameIgnoringValues(lhs, I18NINVALIDFORMAT)
-                    && AnnotationUtils.areSameIgnoringValues(rhs, I18NINVALIDFORMAT)) {
-                return (AnnotationUtils.getElementValue(rhs, "value", String.class, true))
-                        .equals(AnnotationUtils.getElementValue(lhs, "value", String.class, true));
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, I18NINVALIDFORMAT)
+                    && AnnotationUtils.areSameIgnoringValues(subAnno, I18NINVALIDFORMAT)) {
+                return (AnnotationUtils.getElementValue(subAnno, "value", String.class, true))
+                        .equals(
+                                AnnotationUtils.getElementValue(
+                                        superAnno, "value", String.class, true));
             }
 
-            if (AnnotationUtils.areSameIgnoringValues(lhs, I18NFORMAT)) {
-                lhs = I18NFORMAT;
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, I18NFORMAT)) {
+                superAnno = I18NFORMAT;
             }
-            if (AnnotationUtils.areSameIgnoringValues(rhs, I18NFORMAT)) {
-                rhs = I18NFORMAT;
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, I18NFORMAT)) {
+                subAnno = I18NFORMAT;
             }
-            if (AnnotationUtils.areSameIgnoringValues(lhs, I18NINVALIDFORMAT)) {
-                lhs = I18NINVALIDFORMAT;
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, I18NINVALIDFORMAT)) {
+                superAnno = I18NINVALIDFORMAT;
             }
-            if (AnnotationUtils.areSameIgnoringValues(rhs, I18NINVALIDFORMAT)) {
-                rhs = I18NINVALIDFORMAT;
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, I18NINVALIDFORMAT)) {
+                subAnno = I18NINVALIDFORMAT;
             }
-            if (AnnotationUtils.areSameIgnoringValues(lhs, I18NFORMATFOR)) {
-                lhs = I18NFORMATFOR;
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, I18NFORMATFOR)) {
+                superAnno = I18NFORMATFOR;
             }
-            if (AnnotationUtils.areSameIgnoringValues(rhs, I18NFORMATFOR)) {
-                rhs = I18NFORMATFOR;
+            if (AnnotationUtils.areSameIgnoringValues(subAnno, I18NFORMATFOR)) {
+                subAnno = I18NFORMATFOR;
             }
 
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
 
         @Override

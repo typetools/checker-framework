@@ -8,6 +8,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import testlib.flowexpression.qual.FEBot;
 import testlib.flowexpression.qual.FETop;
@@ -17,8 +18,8 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
     public FlowExpressionAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        TOP = AnnotationUtils.fromClass(elements, FETop.class);
-        BOTTOM = AnnotationUtils.fromClass(elements, FEBot.class);
+        TOP = AnnotationBuilder.fromClass(elements, FETop.class);
+        BOTTOM = AnnotationBuilder.fromClass(elements, FEBot.class);
         postInit();
     }
 

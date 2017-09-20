@@ -6,8 +6,14 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.Covariant;
 
-public final class Class<T> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
+// The type argument to Class is meaningless.
+// Class<@NonNull String> and Class<@Nullable String> have the same
+// meaning, but are unrelated by the Java type hierarchy.
+// @Covariant makes Class<@NonNull String> a subtype of Class<@Nullable String>.
+@Covariant(0)
+public final class Class<T extends @Nullable Object> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
   private static final long serialVersionUID = 0;
   protected Class() {}
   @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
@@ -26,7 +32,7 @@ public final class Class<T> extends Object implements java.io.Serializable, java
   public java.lang.reflect.Type[] getGenericInterfaces() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect. @Nullable Method getEnclosingMethod() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect. @Nullable Constructor<?> getEnclosingConstructor() { throw new RuntimeException("skeleton method"); }
-  public @Nullable Class<?> getEnclosingClass() { throw new RuntimeException("skeleton method"); }
+  @Pure public @Nullable Class<?> getEnclosingClass() { throw new RuntimeException("skeleton method"); }
   public String getSimpleName() { throw new RuntimeException("skeleton method"); }
   @Pure public native @Nullable Class<? super T> getSuperclass();
   @Pure public native Class<?>[] getInterfaces();
@@ -54,7 +60,7 @@ public final class Class<T> extends Object implements java.io.Serializable, java
   public boolean desiredAssertionStatus() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isEnum() { throw new RuntimeException("skeleton method"); }
   public @NonNull T @Nullable [] getEnumConstants() { throw new RuntimeException("skeleton method"); }
-  java.util.Map<String, T> enumConstantDirectory() { throw new RuntimeException("skeleton method"); }
+  java.util.Map<String, @NonNull T> enumConstantDirectory() { throw new RuntimeException("skeleton method"); }
   public @PolyNull T cast(@PolyNull Object a1) { throw new RuntimeException("skeleton method"); }
   public <U> Class<? extends U> asSubclass(Class<U> a1) { throw new RuntimeException("skeleton method"); }
   public <A extends java.lang.annotation.Annotation> @Nullable A getAnnotation(Class<A> a1) { throw new RuntimeException("skeleton method"); }

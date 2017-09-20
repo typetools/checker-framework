@@ -22,25 +22,25 @@ import java.lang.annotation.Target;
  *
  * <p>If a qualified type is a subtype of the same type without any qualifier, then use {@code
  * Unqualified.class} in place of a type qualifier class. For example, to express that
- * {@code @Encrypted <em>C</em>} is a subtype of {@code <em>C</em>} (for every class {@code
- * <em>C</em>}), and likewise for {@code @Interned}, write:
+ * {@code @Encrypted C} is a subtype of {@code C} (for every class {@code C}), and likewise for
+ * {@code @Interned}, write:
  *
- * <pre> @SubtypeOf(Unqualified.class)
+ * <pre><code> @SubtypeOf(Unqualified.class)
  * public @interface Encrypted { }
  *
  * &#64;SubtypeOf(Unqualified.class)
  * public @interface Interned { }
- * </pre>
+ * </code></pre>
  *
  * <p>For the top qualifier in the qualifier hierarchy (i.e., the qualifier that is a supertype of
  * all other qualifiers in the given hierarchy), use an empty set of values:
  *
- * <pre> @SubtypeOf( { } )
+ * <pre><code> @SubtypeOf( { } )
  * public @interface Nullable { }
  *
  * &#64;SubtypeOf( {} )
  * public @interface MaybeAliased { }
- * </pre>
+ * </code></pre>
  *
  * <p>Together, all the @SubtypeOf meta-annotations fully describe the type qualifier hierarchy.
  *

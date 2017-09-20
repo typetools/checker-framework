@@ -12,21 +12,25 @@ set -e
 # Need to keep checked files in sync with formatted.java.files in
 # build.xml. Otherwise `ant reformat` might not reformat a file that this
 # hook complains about.
-CHANGED_JAVA_FILES=`git diff --staged --name-only --diff-filter=ACM | grep '\.java$' | grep -v '/jdk/' | grep -v 'stubparser/' | grep -v '/eclipse/' ` || true
+CHANGED_JAVA_FILES=`git diff --staged --name-only --diff-filter=ACM | grep '\.java$' | grep -v '/jdk/' | grep -v '/eclipse/' ` || true
 # echo CHANGED_JAVA_FILES "'"${CHANGED_JAVA_FILES}"'"
 if [ ! -z "$CHANGED_JAVA_FILES" ]; then
-    ((cd checker/bin-devel && ((cd .run-google-java-format && git pull -q) || git clone -q https://github.com/plume-lib/run-google-java-format.git .run-google-java-format)) || true)
+    ant -silent update-run-google-java-format
     ## For debugging:
     # echo "CHANGED_JAVA_FILES: ${CHANGED_JAVA_FILES}"
-    python checker/bin-devel/.run-google-java-format/check-google-java-format.py --aosp ${CHANGED_JAVA_FILES}
+    python checker/bin-devel/.run-google-java-format/check-google-java-format.py --aosp ${CHANGED_JAVA_FILES} || (echo "Try running:  ant reformat" && /bin/false)
 fi
 
 # This is to handle non-.java files, since the above already handled .java files.
-# May need to remove files that are allowed to have trailing whitespace.
-CHANGED_STYLE_FILES=`git diff --staged --name-only --diff-filter=ACM | grep -v '.png$' | grep -v '.xcf$'` || true
-if [ ! -z "$CHANGED_STYLE_FILES" ]; then
-    # echo "CHANGED_STYLE_FILES: ${CHANGED_STYLE_FILES}"
-    grep -q '[[:blank:]]$' ${CHANGED_STYLE_FILES} 2>&1 && (echo "Some files have trailing whitespace:" && grep -l '[[:blank:]]$' ${CHANGED_STYLE_FILES} && exit 1)
+# May need to remove files that are allowed to have trailing whitespace or are
+# not text files.
+CHANGED_FILES=`git diff --staged --name-only --diff-filter=ACM | grep -v '\.class$' | grep -v '\.gz$' | grep -v '\.jar$' | grep -v '\.pdf$' | grep -v '\.png$' | grep -v '\.xcf$'` || true
+if [ ! -z "$CHANGED_FILES" ]; then
+    # echo "CHANGED_FILES: ${CHANGED_FILES}"
+    FILES_WITH_TRAILING_SPACES=`grep -l -s '[[:blank:]]$' ${CHANGED_FILES} 2>&1` || true
+    if [ ! -z "$FILES_WITH_TRAILING_SPACES" ]; then
+        echo "Some files have trailing whitespace: ${FILES_WITH_TRAILING_SPACES}" && exit 1
+    fi
 fi
 
 

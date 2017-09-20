@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Troubleshooting and getting help\label{troubleshooting}}
+\chapter{Troubleshooting, getting help, and contributing\label{troubleshooting}}
 
 \begin{sloppypar}
 The manual might already answer your question, so first please look for
@@ -12,7 +12,8 @@ To report bugs, please see Section~\ref{reporting-bugs}.
 If you want to help out, you can give feedback (including on the
 documentation), choose a bug and fix it, or select a
 project from the ideas list at
-\url{https://github.com/typetools/checker-framework/wiki/Ideas}.
+% \url{https://github.com/typetools/checker-framework/wiki/Ideas}.
+\url{https://checkerframework.org/gsoc-2017-ideas.html}.
 \end{sloppypar}
 
 
@@ -165,7 +166,9 @@ If you get an error such as
 
 \noindent
 then you are trying to run the compiler using a JDK 6 or earlier JVM\@.
-Install and use a Java 7 or 8 JDK, at least for running the Checker
+Install and use a Java 8
+% or later
+JDK, at least for running the Checker
 Framework.
 
 \noindent
@@ -233,10 +236,11 @@ You may be able to solve the problem by running
 \end{Verbatim}
 
 \noindent
-to re-generate files \code{checker/jdk/jdk\{7,8\}.jar} and \code{checker/bin/jdk\{7,8\}.jar}.
+to re-generate files \code{checker/jdk/jdk\{8,9\}.jar} and \code{checker/bin/jdk\{8,9\}.jar}.
 
 That usually works, but if not, then you should recompile the Checker
-Framework from source rather than using the pre-compiled distribution.
+Framework from source (Section~\ref{build-source}) rather than using
+the pre-compiled distribution.
 
 
 \item
@@ -264,7 +268,7 @@ correct this by being sure to use \<fork="yes"> (see
 Section~\ref{ant-task}) and/or setting the \<build.compiler> property to
 \<extJavac>.
 
-If you are building from source  (Section~\ref{build-source}),
+If you are building from source (Section~\ref{build-source}),
 you might need to rebuild the Annotation
 File Utilities before recompiling or using the Checker Framework.
 
@@ -540,6 +544,36 @@ You want the one with a name like
 Add this .jar file to your build path.
 
 
+\item
+When one formal parameter's annotation references another formal
+parameter's name, as in this constructor:
+
+\begin{smaller}
+\begin{Verbatim}
+public String(char value[], @IndexFor("value") int offset, @IndexOrHigh("value") int count) { ... }
+\end{Verbatim}
+\end{smaller}
+
+\noindent
+you will get an error such as
+
+\begin{smaller}
+\begin{Verbatim}[]
+[expression.unparsable.type.invalid] Expression in dependent type annotation invalid:
+[error for expression: myParamName error: myParamName: identifier not found]
+\end{Verbatim}
+\end{smaller}
+
+Section~\ref{java-expressions-as-arguments} explains that you need to use
+a different syntax to refer to a formal parameter:
+
+\begin{smaller}
+\begin{Verbatim}
+public String(char value[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int count) { ... }
+\end{Verbatim}
+\end{smaller}
+
+
 \end{itemize}
 
 
@@ -564,6 +598,35 @@ they have a different representation in bytecode.  More importantly,
 means that the compiler permits uses of the former in some locations where
 it issues a warning for the latter.  You can suppress the warning.
 
+A message of the form
+
+\begin{Verbatim}
+  error: annotation values must be of the form 'name=value'
+        @LTLengthOf("firstName", "lastName") int index;
+                    ^
+\end{Verbatim}
+
+\noindent
+is caused by incorrect Java syntax.  When you supply a set of multiple
+values as an annotation argument, you need to put curly braces around them:
+
+\begin{Verbatim}
+        @LTLengthOf({"firstName", "lastName"}) int index;
+\end{Verbatim}
+
+A message of the form
+
+\begin{Verbatim}
+  Error: cannot find symbol
+\end{Verbatim}
+
+\noindent
+for an annotation type that is imported, and is a applied to a
+statically-imported enum, is caused by a javac bug, unrelated to the
+Checker Framework.  See
+\url{https://bugs.openjdk.java.net/browse/JDK-7101822} and \url{https://bugs.openjdk.java.net/browse/JDK-8169095}.
+% Also see https://github.com/typetools/checker-framework/issues/1304
+
 
 \subsection{Unable to build the checker, or to run programs\label{common-problems-running-java}}
 
@@ -573,6 +636,7 @@ An error like this
 Unsupported major.minor version 52.0
 \end{Verbatim}
 
+\noindent
 means that you have compiled some files into the Java 8 format (version
 52.0), but you are trying to run them with Java 7 or earlier.
 Likewise, ``Unsupported major.minor version 51.0''
@@ -605,7 +669,7 @@ warning: [classfile] RuntimeVisibleTypeAnnotations attribute introduced in versi
 This warning results when you compile a library using the Checker Framework
 compiler, then use a normal Java compiler to compile client code that uses
 the library.
-The Checker Framework compiler puts Java 8 type annotations even in Java 7
+The Checker Framework compiler puts type annotations even in Java 7
 classfiles, for the benefit of modular type-checking.  The Checker Framework
 compiler reads these annotations in Java 7, and other compilers ignore them
 (but some compilers print a warning that they are ignoring them).
@@ -636,9 +700,10 @@ helpful if you:
 \item
   Indicate exactly what you did.  Don't skip any steps, and don't merely
   describe your actions in words.  Show the exact commands by attaching a
-  file or using cut-and-paste from your command shell.  A screenshot is not
-  as useful as plaintext, and if you can only reproduce the problem in an
-  IDE but not from the command line, then the problem is with the IDE\@.
+  file or using cut-and-paste from your command shell.  Always include
+  plaintext, not just a screenshot.  Try to reproduce the problem from the
+  command line as well as from an IDE or within a build system; that helps
+  to indicate whether the problem is with the IDE or build system.
 \item
   Include all files that are necessary to reproduce the problem.  This
   includes every file that is used by any of the commands you reported, and
@@ -674,6 +739,11 @@ instance, for the Nullness
 Checker, see directory \<checker-framework/checker/tests/nullness/>.
 But, please report your bug even if you do not report it in this format.
 
+When reporting bugs, please focus on realistic scenarios and well-written
+code.  We are sure that you can make up artificial code that stymies the
+type-checker!  Those aren't a good use of your time to report nor the
+maintainers' time to evaluate and fix.
+
 
 \section{Building from source\label{build-source}}
 
@@ -688,15 +758,59 @@ the Checker Framework, rather than an official release.
 % checkers and of the checker framework.  It may also help you to debug
 % problems more effectively.
 
+The Checker Framework can be easily built on Unix (Linux and Mac).  You
+might have trouble building on Windows.  If so, you can switch to Unix (at
+least for building, if not for running, the Checker Framework) or you can
+report the problems to the Checker Framework developers.
+
 
 \subsection{Install prerequisites\label{building-prerequisites}}
 
 You need to install several packages in order to build the Checker
-Framework.  The following command installs them for Ubuntu 16.04:
+Framework.
+Follow the instructions for your operating system.
+
+\begin{description}
+\item[Ubuntu]
+  Run the following commands:
 
 \begin{Verbatim}
-sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial openjdk-8-jdk unzip
+sudo apt-get update
+sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin libcurl3-gnutls \
+ make maven mercurial openjdk-8-jdk texlive-latex-base texlive-latex-recommended \
+ texlive-latex-extra texlive-fonts-recommended unzip
 \end{Verbatim}
+
+% Building Checker Framework from source on Mac OS
+
+\item[Mac OS]
+  If you employ \ahref{https://brew.sh}{homebrew} to install packages, run
+  the following commands:
+
+\begin{Verbatim}
+brew update
+brew install caskroom/cask/brew-cask
+brew install git ant hevea maven mercurial librsvg unzip make
+brew cask install java
+brew cask install mactex
+mkdir -p $HOME/Library/texmf/tex/latex
+cp -p /usr/local/Cellar/hevea/2.28/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
+\end{Verbatim}
+
+\item[Windows]
+  To build on Windows 10,
+  run \<bash> to obtain a version of
+  Ubuntu (provided by the Windows Subsystem for Linux) and follow the Ubuntu
+  instructions.
+
+% To build on other versions of Windows,
+% here is an \emph{incomplete} list of needed prerequisites:
+% \begin{itemize}
+% \item
+%   Install MSYS to obtain the \<cp> and \<make> commands.
+% \end{itemize}
+
+\end{description}
 
 
 \subsection{Obtain the source\label{building-obtain-source}}
@@ -710,6 +824,7 @@ cd $JSR308
 hg clone https://bitbucket.org/typetools/jsr308-langtools jsr308-langtools
 git clone https://github.com/typetools/checker-framework.git checker-framework
 git clone https://github.com/typetools/annotation-tools.git annotation-tools
+git clone https://github.com/typetools/stubparser.git stubparser
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
@@ -733,14 +848,17 @@ adds annotated JDKs and the Checker Framework jars to the classpath.
 %  * the location of tools.jar, below.
 %  * the default location of RTJAR, in checker/jdk/Makefile.
 Set the \<JAVA\_HOME> environment variable to the location of your JDK
-7 or 8 installation (not the JRE installation, and not JDK 6 or earlier).
+8 installation (not the JRE installation, and not JDK 7 or earlier).
 This needs to be an Oracle JDK.
 (The \<JAVA\_HOME> environment
 variable might already be set, because it is needed for Ant to work.)
 
-In the bash shell, putting the following command in your \code{.bashrc} file
-\emph{sometimes} works (it might
-not because \<java> might be the version in the JDK or in the JRE):
+\begin{description}
+\item[Ubuntu]
+If you use the bash shell, put the following command in your
+\code{.bashrc} file.  (This might not work if \<java> refers to an executable
+in the JRE rather than in the JDK, but you need the JDK installed to build
+the Checker Framework anyway.)
 % Can someone give a simpler command?
 %BEGIN LATEX
 \begin{smaller}
@@ -751,6 +869,16 @@ not because \<java> might be the version in the JDK or in the JRE):
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
+
+\item[Mac OSX 10.5 or later]
+  Add one of the following two commands in your \code{.bash\_profile} or
+  \code{.profile} file according to the version of your JDK.
+\begin{Verbatim}
+  export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+  export JAVA_HOME=$(/usr/libexec/java_home -v 1.9)
+\end{Verbatim}
+
+\end{description}
 
 \item
 Compile the Type Annotations tools:
@@ -792,6 +920,19 @@ This is simply done by:
 \end{Verbatim}
 
 You do not need to add the Annotation File Utilities to the path, as
+the Checker Framework build finds it using relative paths.
+
+
+\subsection{Build the StubParser\label{stubparser-building}}
+
+This is simply done by:
+
+\begin{Verbatim}
+  cd $JSR308/stubparser
+  mvn package -Dmaven.test.skip=true
+\end{Verbatim}
+
+You do not need to add the StubParser to the path, as
 the Checker Framework build finds it using relative paths.
 
 
@@ -841,7 +982,7 @@ ensure that the Checker Framework's version is used.
 If you are developing a checker within the Checker Framework, there is
 a developer version of \<javac> in the \<bin-devel> directory. This
 version will use compiled classes from \<dataflow/build>,
-\<javacutil/build>, \<stubparser/build>, \<framework/build>,
+\<javacutil/build>, \<framework/build>,
 and \<checker/build> in the \<checker-framework> directory instead of
 the compiled jar files, and by default will print stack traces for all
 errors.
@@ -883,9 +1024,6 @@ an IDE such as Eclipse.
 \item
 Install needed packages; see Section~\ref{building-prerequisites} for
 instructions.
-% To build the manual, you will need \LaTeX and
-% {\hevea} (\myurl{http://hevea.inria.fr/}) installed, and either
-% \<rsvg-convert> or \<convert>.
 
 \item
 Run \code{make} in the \code{docs/manual} directory to build both the PDF and HTML versions of the manual.
@@ -902,6 +1040,24 @@ Run the
 \ahref{https://docs.travis-ci.com/user/getting-started/#To-get-started-with-Travis-CI\%3A}{Travis-CI getting started directions},
 though note that the \<.travis.yml> files already exist, so only the first
 two steps may be necessary.
+
+To save time, by default the Travis jobs download a pre-built version of
+the JDK rather than building the JDK from the sources in the Checker
+Framework repository.  This means that if you make a change to the
+annotated JDK, your tests will fail.  Here is how to deal with this issue:
+\begin{enumerate}
+\item
+In your pull request, edit file \<.travis.yml> so that it rebuilds
+the JDK (some jobs might time out).
+\item Verify that all tests pass.
+\item A Checker Framework developer needs to update the pre-built JDK from
+  your branch.
+\item
+  Undo your edits to file \<.travis.yml>.
+\item Verify that all tests pass.
+\item A Checker Framework developer will review your code and merge your branch.
+\end{enumerate}
+
 
 \subsection{Code style\label{code-style}}
 
@@ -920,6 +1076,18 @@ If the pre-commit hook or \<ant reformat> fails with an
 "Argument list too long" error, then create a \code{local.properties} file
 in the top-level directory that sets the property \code{maxparallel} to 4000.  If the error is still issued, reduce the number and
 try again.
+
+
+\section{Contributing fixes (creating a pull request)\label{pull-request}}
+
+Please see the document
+\ahref{http://homes.cs.washington.edu/\%7emernst/advice/github-pull-request.html}{How
+  to create and review a GitHub pull request} for instructions about how to
+create a pull request, which is the way you can contribute code to the
+Checker Framework project.  Thanks in advance for your participation!
+
+For writing new test cases, see file
+\ahref{https://raw.githubusercontent.com/typetools/checker-framework/master/checker/tests/README}{\<checker-framework/checker/tests/README>}.
 
 
 \section{Publications\label{publications}\label{learning-more}}
@@ -994,6 +1162,15 @@ See the ICSE 2011 paper about the Checker Framework, described above.
 ``Loci: Simple thread-locality for Java''~\cite{WrigstadPMZV2009} (ECOOP 2009,
 \myurl{http://janvitek.org/pubs/ecoop09.pdf})
 
+\item[Security (Section~\ref{sparta-checker})]
+``Static analysis of implicit control flow: Resolving Java reflection and
+  Android intents''~\cite{BarrosJMVDdAE2015} (ASE 2015,
+  \myurl{http://homes.cs.washington.edu/~mernst/pubs/implicit-control-flow-ase2015-abstract.html})
+  describes the SPARTA toolset and information flow type-checker.
+
+``Boolean formulas for the static identification of injection attacks in
+  Java''~\cite{ErnstLMSS2015} (LPAR 2015, \myurl{http://homes.cs.washington.edu/~mernst/pubs/detect-injections-lpar2015-abstract.html})
+
 \item[\href{https://ece.uwaterloo.ca/~wdietl/ownership/}{Generic Universe
     Types} (Section~\ref{gut-checker})]
 ``Tunable static inference for Generic Universe Types'' (ECOOP 2011, \myurl{http://homes.cs.washington.edu/~mernst/pubs/tunable-typeinf-ecoop2011-abstract.html})
@@ -1003,7 +1180,7 @@ Another implementation of Universe Types and \href{http://www.cs.rpi.edu/~huangw
 ``Inference and checking of object ownership''~\cite{HuangDME2012} (ECOOP 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infer-ownership-ecoop2012-abstract.html}).
 
 \item[Approximate data (Section~\ref{enerj-checker})]
-``EnerJ: Approximate Data Types for Safe and General Low-Power Computation''~\cite{SampsonDFGCG2011} (PLDI 2011, \myurl{http://www.cs.cornell.edu/~asampson/media/papers/enerj-pldi2011.pdf})
+``EnerJ: Approximate Data Types for Safe and General Low-Power Computation''~\cite{SampsonDFGCG2011} (PLDI 2011, \myurl{https://homes.cs.washington.edu/~luisceze/publications/Enerj-pldi2011.pdf})
 
 \item[Information flow and tainting (Section~\ref{sparta-checker})]
 ``Collaborative Verification of Information Flow
@@ -1069,7 +1246,7 @@ differs from a bug detector in several ways:
 
   Both types of tools may issue false alarms,
   also known as false positive warnings;
-  see Section~\ref{suppressing-warnings}.
+  see Chapter~\ref{suppressing-warnings}.
 
 \item
   A type-checker requires you to annotate your code with type qualifiers,
@@ -1116,6 +1293,7 @@ Developers who have contributed code to the Checker Framework include
 Abraham Lin,
 Anatoly Kupriyanov,
 Asumu Takikawa,
+Bohdan Sharipov,
 Charlie Garrett,
 Chris Mackie,
 Colin Gordon,
@@ -1127,6 +1305,7 @@ Eric Spishak,
 Google Inc.\ (via @wmdietlGC),
 Javier Thaine,
 Jeff Luo,
+Jiasen (Jason) Xu,
 Jonathan Burke,
 Kivanc Muslu,
 Konstantin Weitz,
@@ -1143,11 +1322,13 @@ Philip Lai,
 Renato Athaydes,
 Ren\'e Just,
 Ryan Oblak,
+Shinya Yoshida,
 Stefan Heule,
 Steph Dietzel,
 Stuart Pernsteiner,
 Suzanne Millstein,
 Trask Stalnaker,
+Vlastimil Dort,
 Werner Dietl.
 %
 In addition, too many users to list have provided valuable feedback, which

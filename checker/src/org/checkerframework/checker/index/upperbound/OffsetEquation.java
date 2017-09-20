@@ -1,11 +1,11 @@
 package org.checkerframework.checker.index.upperbound;
 
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
@@ -118,20 +118,25 @@ public class OffsetEquation {
 
     /**
      * Makes a copy of this offset and removes any added terms that are accesses to the length of
-     * the listed arrays. If any terms were removed, then the copy is returned. Otherwise, null is
-     * returned.
+     * the listed sequences. If any terms were removed, then the copy is returned. Otherwise, null
+     * is returned.
      *
-     * @param arrays List of arrays
-     * @return a copy of this equation with array.length removed or null if no array.lengths could
-     *     be removed
+     * @param sequences list of sequences (arrays or strings)
+     * @return a copy of this equation with array.length and string.length() removed or null if no
+     *     array.lengths or string.length() could be removed
      */
-    public OffsetEquation removeArrayLengths(List<String> arrays) {
+    public OffsetEquation removeSequenceLengths(List<String> sequences) {
         OffsetEquation copy = new OffsetEquation(this);
         boolean simplified = false;
-        for (String array : arrays) {
-            String arrayLen = array + ".length";
+        for (String sequence : sequences) {
+            String arrayLen = sequence + ".length";
             if (addedTerms.contains(arrayLen)) {
                 copy.addedTerms.remove(arrayLen);
+                simplified = true;
+            }
+            String stringLen = sequence + ".length()";
+            if (addedTerms.contains(stringLen)) {
+                copy.addedTerms.remove(stringLen);
                 simplified = true;
             }
         }
@@ -188,9 +193,9 @@ public class OffsetEquation {
     }
 
     /**
-     * Returns true if this equation is is a single int value.
+     * Returns true if this equation is a single int value.
      *
-     * @return true if this equation is is a single int value.
+     * @return true if this equation is a single int value
      */
     public boolean isInt() {
         return addedTerms.isEmpty() && subtractedTerms.isEmpty();
@@ -306,7 +311,7 @@ public class OffsetEquation {
     /**
      * Returns the offset equation that is an int value or null if there isn't one.
      *
-     * @param equationSet Set of offset equations
+     * @param equationSet a set of offset equations
      * @return the offset equation that is an int value or null if there isn't one
      */
     public static OffsetEquation getIntOffsetEquation(Set<OffsetEquation> equationSet) {
@@ -335,7 +340,7 @@ public class OffsetEquation {
      * with + or -. If the expressionEquation is the empty string, then the offset equation returned
      * is zero.
      *
-     * @param expressionEquation Java expressions add or subtracted from one another
+     * @param expressionEquation a Java expression made up of sums and differences
      * @return an offset equation created form expressionEquation
      */
     public static OffsetEquation createOffsetFromJavaExpression(String expressionEquation) {
@@ -409,7 +414,7 @@ public class OffsetEquation {
      *
      * <p>Otherwise, null is returned.
      *
-     * @param node Node from which to create offset equation
+     * @param node the Node from which to create an offset equation
      * @param factory AnnotationTypeFactory
      * @param op '+' or '-'
      * @return an offset equation from value of known or null if the value isn't known
@@ -418,16 +423,14 @@ public class OffsetEquation {
             Node node, UpperBoundAnnotatedTypeFactory factory, char op) {
         assert op == '+' || op == '-';
         if (node.getTree() != null && TreeUtils.isExpressionTree(node.getTree())) {
-            Integer i;
-            if (op == '+') {
-                i = factory.valMinFromExpressionTree((ExpressionTree) node.getTree());
-            } else {
-                i = factory.valMaxFromExpressionTree((ExpressionTree) node.getTree());
-                i = i == null ? null : -i;
-            }
+            Long i =
+                    IndexUtil.getExactValue(node.getTree(), factory.getValueAnnotatedTypeFactory());
             if (i != null) {
+                if (op == '-') {
+                    i = -i;
+                }
                 OffsetEquation eq = new OffsetEquation();
-                eq.addInt(i);
+                eq.addInt(i.intValue());
                 return eq;
             }
         }
@@ -442,10 +445,10 @@ public class OffsetEquation {
      * on the value of op.
      *
      * <p>Otherwise the return equation is created by converting the node to a {@link
-     * FlowExpressions.Receiver} and then then added as a term to the returned equation. If op is
-     * '-' then it is a subtracted term.
+     * FlowExpressions.Receiver} and then added as a term to the returned equation. If op is '-'
+     * then it is a subtracted term.
      *
-     * @param node Node from which to create offset equation
+     * @param node the Node from which to create an offset equation
      * @param factory AnnotationTypeFactory
      * @param op '+' or '-'
      * @return an offset equation from the Node

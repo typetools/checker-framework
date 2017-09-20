@@ -149,6 +149,14 @@ The number between the colons is the line number of the expected error
 message.  This format is harder to maintain, and we suggest using the
 in-line comment format.
 
+By convention, when a test is about an issue in the issue tracker, we write
+a comment at the top of the file, in this format:
+
+  // Test case for issue 266:
+  // https://github.com/typetools/checker-framework/issues/266
+
+  // @skip-test until the issue is fixed
+
 
 Writing tests for a new checker or with different command-line arguments
 ========================================================================

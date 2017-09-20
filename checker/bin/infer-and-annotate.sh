@@ -6,8 +6,8 @@
 # previous iteration (which means there is nothing new to infer anymore).
 
 # To use this script, the $CHECKERFRAMEWORK variable must be set to the
-# Checker Framework's directory. Also, insert-annotations-to-source must
-# be available from the $PATH.
+# Checker Framework's directory. Also, the AFU's insert-annotations-to-source
+# program must be on the search path (that is, in the PATH environment variable).
 
 # This script receives as arguments:
 # 0. Any number of cmd-line arguments to insert-annotations-to-source (optional).
@@ -52,6 +52,8 @@ interactive=
 # debug=1
 # Require user confirmation before running each command
 # interactive=1
+
+CHECKERBIN=$(dirname "$0")
 
 # This function separates extra arguments passed to the checker from Java files
 # received as arguments.
@@ -127,7 +129,7 @@ infer_and_annotate() {
         mkdir -p $WHOLE_PROGRAM_INFERENCE_DIR
 
         # Runs CF's javac
-        command="${CHECKERFRAMEWORK}/checker/bin/javac -d $TEMP_DIR/ -cp $cp -processor $processor -Ainfer -Awarns -Xmaxwarns 10000 $extra_args $java_files"
+        command="$CHECKERBIN/javac -d $TEMP_DIR/ -cp $cp -processor $processor -Ainfer -Awarns -Xmaxwarns 10000 $extra_args $java_files"
         echo "About to run: ${command}"
         if [ $interactive ]; then
             echo "Press any key to run command... "

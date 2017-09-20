@@ -2,13 +2,24 @@ package org.checkerframework.checker.signedness;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
+import java.lang.Byte;
+import java.lang.Integer;
+import java.lang.Long;
+import java.lang.Short;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.signedness.qual.UnknownSignedness;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.index.IndexUtil;
+import org.checkerframework.checker.signedness.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -16,14 +27,27 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationBuilder;
 
 /** @checker_framework.manual #signedness-checker Signedness Checker */
 public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    // private final AnnotationMirror UNSIGNED;
-    // private final AnnotationMirror SIGNED;
     private final AnnotationMirror UNKNOWN_SIGNEDNESS;
+    private final AnnotationMirror UNSIGNED;
+    private final AnnotationMirror SIGNED;
+    private final AnnotationMirror CONSTANT;
+
+    private ValueAnnotatedTypeFactory valueAtypefactory;
+
+    /**
+     * Provides a way to query the Constant Value Checker, which computes the values of expressions
+     * known at compile time (constant propagation and folding).
+     */
+    private ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
+        if (valueAtypefactory == null)
+            valueAtypefactory = getTypeFactoryOfSubchecker(ValueChecker.class);
+        return valueAtypefactory;
+    }
 
     // These are commented out until issues with making boxed implicitly signed
     // are worked out. (https://github.com/typetools/checker-framework/issues/797)
@@ -36,9 +60,10 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        // UNSIGNED = AnnotationUtils.fromClass(elements, Unsigned.class);
-        // SIGNED = AnnotationUtils.fromClass(elements, Signed.class);
-        UNKNOWN_SIGNEDNESS = AnnotationUtils.fromClass(elements, UnknownSignedness.class);
+        UNKNOWN_SIGNEDNESS = AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
+        UNSIGNED = AnnotationBuilder.fromClass(elements, Unsigned.class);
+        SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
+        CONSTANT = AnnotationBuilder.fromClass(elements, Constant.class);
 
         postInit();
     }
@@ -110,8 +135,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * This TreeAnnotator ensures that booleans expressions are not given Unsigned or Signed
-     * annotations by {@link PropagationTreeAnnotator}
+     * annotations by {@link PropagationTreeAnnotator}, that shift results take on the type of their
+     * left operand, and that the types of identifiers are refined based on the results of the Value
+     * Checker.
      */
+    // TODO: Refine the type of expressions using the Value Checker as well.
     private class SignednessTreeAnnotator extends TreeAnnotator {
 
         public SignednessTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
@@ -122,7 +150,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Change the type of booleans to @UnknownSignedness so that the {@link
          * PropagationTreeAnnotator} does not change the type of them.
          */
-        private Void annotateBoolean(AnnotatedTypeMirror type) {
+        private void annotateBoolean(AnnotatedTypeMirror type) {
             switch (type.getKind()) {
                 case BOOLEAN:
                     type.addAnnotation(UNKNOWN_SIGNEDNESS);
@@ -130,18 +158,77 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 default:
                     // Nothing for other cases.
             }
-
-            return null;
         }
 
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
-            return annotateBoolean(type);
+            switch (tree.getKind()) {
+                case LEFT_SHIFT:
+                case RIGHT_SHIFT:
+                case UNSIGNED_RIGHT_SHIFT:
+                    AnnotatedTypeMirror lht = getAnnotatedType(tree.getLeftOperand());
+                    type.replaceAnnotations(lht.getAnnotations());
+                    break;
+                default:
+                    // Do nothing
+            }
+            annotateBoolean(type);
+            return null;
         }
 
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
-            return annotateBoolean(type);
+            annotateBoolean(type);
+            return null;
+        }
+
+        // Refines the type of an integer primitive to @Constant if it is within the signed positive range
+        // (i.e. its MSB is zero). Note that boxed primitives are not handled because they are not yet
+        // handled by the Signedness Checker (Issue #797).
+        @Override
+        public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
+            TypeMirror javaType = type.getUnderlyingType();
+            TypeKind javaTypeKind = javaType.getKind();
+
+            if (javaTypeKind == TypeKind.BYTE
+                    || javaTypeKind == TypeKind.CHAR
+                    || javaTypeKind == TypeKind.SHORT
+                    || javaTypeKind == TypeKind.INT
+                    || javaTypeKind == TypeKind.LONG) {
+                ValueAnnotatedTypeFactory valFact = getValueAnnotatedTypeFactory();
+                Range treeRange =
+                        IndexUtil.getPossibleValues(valFact.getAnnotatedType(tree), valFact);
+
+                if (treeRange != null) {
+                    switch (javaType.getKind()) {
+                        case BYTE:
+                        case CHAR:
+                            if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
+                                type.replaceAnnotation(CONSTANT);
+                            }
+                            break;
+                        case SHORT:
+                            if (treeRange.isWithin(0, Short.MAX_VALUE)) {
+                                type.replaceAnnotation(CONSTANT);
+                            }
+                            break;
+                        case INT:
+                            if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
+                                type.replaceAnnotation(CONSTANT);
+                            }
+                            break;
+                        case LONG:
+                            if (treeRange.isWithin(0, Long.MAX_VALUE)) {
+                                type.replaceAnnotation(CONSTANT);
+                            }
+                            break;
+                        default:
+                            // Nothing
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

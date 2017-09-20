@@ -6,8 +6,7 @@ import org.checkerframework.checker.index.qual.LTLengthOf;
 public class IndexOrLowTests {
     int[] array = {1, 2};
 
-    @IndexOrLow("array")
-    int index = -1;
+    @IndexOrLow("array") int index = -1;
 
     void test() {
 

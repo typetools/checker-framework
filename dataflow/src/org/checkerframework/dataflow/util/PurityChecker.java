@@ -87,8 +87,8 @@ public class PurityChecker {
     }
 
     /**
-     * Result of the {@link PurityChecker}. Can be queried queried regarding whether a given tree
-     * was side-effect-free, deterministic, or both; also gives reasons if the answer is "no".
+     * Result of the {@link PurityChecker}. Can be queried regarding whether a given tree was
+     * side-effect-free, deterministic, or both; also gives reasons if the answer is "no".
      */
     public static class PurityResult {
 

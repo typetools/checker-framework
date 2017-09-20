@@ -10,16 +10,13 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Represents the bottom of the ClassVal qualifier hierarchy. This is used to make the {@code null}
- * literal a subtype of all ClassVal annotations.
+ * The bottom type in the ClassVal type system. Programmers should rarely write this type.
  *
  * @checker_framework.manual #methodval-and-classval-checkers ClassVal Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
 @InvisibleQualifier
-@ImplicitFor(
-    literals = {LiteralKind.NULL},
-    typeNames = {java.lang.Void.class}
-)
+@ImplicitFor(literals = LiteralKind.NULL, typeNames = java.lang.Void.class)
 @SubtypeOf({ClassVal.class, ClassBound.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})

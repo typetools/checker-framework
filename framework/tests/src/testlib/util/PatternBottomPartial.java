@@ -5,8 +5,11 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TargetLocations;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
 @SubtypeOf({PatternAB.class, PatternBC.class, PatternAC.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@ImplicitFor(literals = {LiteralKind.NULL})
+@TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
+@ImplicitFor(literals = LiteralKind.NULL)
 public @interface PatternBottomPartial {}

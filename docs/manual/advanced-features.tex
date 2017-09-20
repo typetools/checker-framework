@@ -459,14 +459,17 @@ unbounded wildcards.  The two wildcards in the
 following example are equivalent.
 
 \begin{Verbatim}
-class MyList<@Nullable T extends @Nullable Object> {}
+class MyList<@NonNull T extends @Nullable Object> {}
 
-List<? extends Object> listOfNonNulls;
-List<@NonNull ? extends @NonNull Object> listOfNonNulls2;
+MyList<? extends Object> listOfNonNulls;
+MyList<@NonNull ? extends @NonNull Object> listOfNonNulls2;
 \end{Verbatim}
 
 Note, the upper bound of the wildcard \code{? extends Object} is defaulted to
 \code{@NonNull} using the CLIMB-to-top rule (see Section~\ref{climb-to-top}).
+Also note that the \code{MyList} class declaration could have been more succinctly
+written as: \code{class MyList<T extends @Nullable Object>} where the lower bound
+is implicitly the bottom annotation: \code {@NonNull}.
 
 \subsection{Default qualifiers for \<.class> files (conservative library defaults)\label{defaults-classfile}}
 
@@ -518,7 +521,7 @@ These choices are conservative.  They are likely to cause many
 false-positive type-checking errors, which will help you to know which
 library methods need annotations.  You can then write those library
 annotations (see Chapter~\ref{annotating-libraries}) or alternately
-suppress the warnings (see Section~\ref{suppressing-warnings}).
+suppress the warnings (see Chapter~\ref{suppressing-warnings}).
 
 For example, an unannotated method
 
@@ -569,13 +572,15 @@ improve handling of mutable public fields in unannotated libraries.
 \section{Automatic type refinement (flow-sensitive type qualifier inference)\label{type-refinement}}
 
 The
-checkers soundly treat certain variables and expressions as having a
+checkers soundly treat local variables and expressions within a method body as having a
 subtype of their declared or defaulted (Section~\ref{defaults})
 type.
 This functionality
 reduces your burden of annotating types in your program and
 eliminates some false positive warnings, but it
 never introduces unsoundness nor causes an error to be missed.
+This functionality works within a method, but you still need to
+annotate method signatures (parameter and return type) and field types.
 
 By default all checkers
 automatically incorporate type refinement.  Most of the time, users don't
@@ -918,10 +923,11 @@ Usually, you only need to use \refqualclass{dataflow/qual}{SideEffectFree}.
 
 \item[\refqualclass{dataflow/qual}{Deterministic}]
   indicates that if the method is called multiple times with identical
-  arguments, then it returns the identical result.
+  arguments, then it returns the identical result according to \<==>
+  (not just according to \<equals()>).
 
 \item[\refqualclass{dataflow/qual}{Pure}]
-  indicates that the method is both @SideEffectFree and @Deterministic.
+  indicates that the method is both \<@SideEffectFree> and \<@Deterministic>.
 
 \end{description}
 
@@ -1146,7 +1152,7 @@ The set of permitted expressions is a subset of all Java expressions:
   referenced by \<o>.
 
 \item
-  a formal parameter.  Write \<\#> followed by the \textbf{one-based} parameter
+  a formal parameter, represented as \<\#> followed by the \textbf{one-based} parameter
   index.  For example: \<\#1>, \<\#3>.  It is not permitted to write \<\#0> to
   refer to the receiver object; use \<this> instead.  (A side note:
   The formal parameter syntax \<\#1> is less natural in source code
@@ -1235,6 +1241,62 @@ quantification over all array components (e.g. to express that all
   array elements are non-null).  There is no such Java expression, but it
   would be useful when writing specifications.
 
+\section{Field invariants\label{field-invariants}}
+
+Sometimes a field declared in a superclass has a more precise type in a
+subclass.  To express this fact, write
+\refqualclass{framework/qual}{FieldInvariant} on the subclass. It specifies
+the field's type in the class on which this annotation is written.
+The field must be declared in a superclass and
+must be final.
+
+% Other possible examples:
+% Vehicles have some number of wheels; motorcycles have exactly 2 wheels.
+% Sentence: subject (missing for imperative, which would let us use
+%   @Unused, but that's not the point here), verb, object (optional,
+%   missing for some types of sentences?).
+% Book might have an index
+% DOM tree might have parent or not.
+% Computer might have a sound card or not.
+
+For example,
+\begin{Verbatim}
+class Person {
+  final @Nullable String nickname;
+  public Person(@Nullable String nickname) {
+    this.nickname = nickname;
+  }
+}
+
+// A rapper always has a nickname.
+@FieldInvariant(qualifier = NonNull.class, field = "nickname")
+class Rapper extends Person {
+  public Rapper(String nickname) {
+    super(nickname);
+  }
+  void method() {
+    ... nickname.length() ...   // legal, nickname is non-null in this class.
+  }
+}
+\end{Verbatim}
+ A field invariant annotation can refer to more than one field. For example,
+\<@FieldInvariant(qualifier = NonNull.class, field = \{fieldA, fieldB\})> means
+that \<fieldA> and \<fieldB> are both non-null in the class upon which the
+annotation is written.  A field invariant annotation
+can also apply different qualifiers to different fields. For example,
+\<@FieldInvariant(qualifier = \{NonNull.class, Untainted.class\}, field =
+\{fieldA, fieldB\})> means that \<fieldA> is non-null and \<fieldB> is untainted.
+
+This annotation is inherited:  if a superclass is annotated with
+\<@FieldInvariant>, its subclasses have the same annotation. If a subclass has its
+own \<@FieldInvariant>, then it must include the fields in the superclass
+annotation and those fields' annotations must be a subtype (or equal) to the
+annotations for those fields in the the superclass \<@FieldInvariant>.
+
+Currently, the \<@FieldInvariant> annotation is trusted rather than
+checked.  In other words, the \<@FieldInvariant> annotation introduces a
+loophole in the type system, which requires verification by other means
+such as manual examination.
 
 
 % \section{Unused fields and dependent types\label{unused-fields-and-dependent-types}}

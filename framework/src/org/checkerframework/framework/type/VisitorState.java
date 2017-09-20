@@ -13,7 +13,7 @@ import org.checkerframework.javacutil.Pair;
  * the visitor.
  */
 public class VisitorState {
-    /** The type of the enclosing class tree* */
+    /** The type of the enclosing class tree */
     private AnnotatedDeclaredType act;
     /** The enclosing class tree */
     private ClassTree ct;

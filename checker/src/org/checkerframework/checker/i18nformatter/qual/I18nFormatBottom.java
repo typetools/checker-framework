@@ -10,17 +10,16 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Represents the bottom of the Internationalization Format String type hierarchy.
+ * The bottom type in the Internationalization Format String type system. Programmers should rarely
+ * write this type.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
+ * @checker_framework.manual #bottom-type the bottom type
  * @author Siwakorn Srisakaokul
  */
 @SubtypeOf({I18nFormat.class, I18nInvalidFormat.class, I18nFormatFor.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
-@ImplicitFor(
-    literals = {LiteralKind.NULL},
-    typeNames = {java.lang.Void.class}
-)
+@ImplicitFor(literals = LiteralKind.NULL, typeNames = java.lang.Void.class)
 @DefaultFor(value = {TypeUseLocation.LOWER_BOUND})
 public @interface I18nFormatBottom {}

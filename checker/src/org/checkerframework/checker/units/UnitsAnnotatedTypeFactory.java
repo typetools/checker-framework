@@ -5,12 +5,14 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.units.qual.MixedUnits;
 import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.checker.units.qual.UnitsBottom;
@@ -28,12 +30,9 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
- */
 
 /**
  * Annotated type factory for the Units Checker.
@@ -50,10 +49,11 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             unitsRelationsAnnoClass = org.checkerframework.checker.units.qual.UnitsRelations.class;
 
     protected final AnnotationMirror mixedUnits =
-            AnnotationUtils.fromClass(elements, MixedUnits.class);
-    protected final AnnotationMirror TOP = AnnotationUtils.fromClass(elements, UnknownUnits.class);
+            AnnotationBuilder.fromClass(elements, MixedUnits.class);
+    protected final AnnotationMirror TOP =
+            AnnotationBuilder.fromClass(elements, UnknownUnits.class);
     protected final AnnotationMirror BOTTOM =
-            AnnotationUtils.fromClass(elements, UnitsBottom.class);
+            AnnotationBuilder.fromClass(elements, UnitsBottom.class);
 
     /**
      * Map from canonical class name to the corresponding UnitsRelations instance. We use the string
@@ -253,7 +253,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
-    private /*@Nullable*/ Class<? extends Annotation> getBaseUnitAnnoClass(AnnotationMirror anno) {
+    private @Nullable Class<? extends Annotation> getBaseUnitAnnoClass(AnnotationMirror anno) {
         // loop through the meta annotations of the annotation, look for UnitsMultiple
         for (AnnotationMirror metaAnno :
                 anno.getAnnotationType().asElement().getAnnotationMirrors()) {
@@ -282,7 +282,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param qual the qualifier to investigate
      */
     private void addUnitsRelations(Class<? extends Annotation> qual) {
-        AnnotationMirror am = AnnotationUtils.fromClass(elements, qual);
+        AnnotationMirror am = AnnotationBuilder.fromClass(elements, qual);
 
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors()) {
             if (AnnotationUtils.areSameByClass(ama, unitsRelationsAnnoClass)) {
@@ -303,13 +303,27 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 if (!getUnitsRel().containsKey(classname)) {
                     try {
-                        unitsRel.put(classname, theclass.newInstance().init(processingEnv));
+                        unitsRel.put(
+                                classname,
+                                theclass.getDeclaredConstructor()
+                                        .newInstance()
+                                        .init(processingEnv));
+                    } catch (NoSuchMethodException e) {
+                        // TODO
+                        e.printStackTrace();
+                        ErrorReporter.errorAbort("Exception NoSuchMethodException");
+                    } catch (InvocationTargetException e) {
+                        // TODO
+                        e.printStackTrace();
+                        ErrorReporter.errorAbort("Exception InvocationTargetException");
                     } catch (InstantiationException e) {
                         // TODO
                         e.printStackTrace();
+                        ErrorReporter.errorAbort("Exception InstantiationException");
                     } catch (IllegalAccessException e) {
                         // TODO
                         e.printStackTrace();
+                        ErrorReporter.errorAbort("Exception IllegalAccessException");
                     }
                 }
             }
@@ -318,11 +332,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
+        // Don't call super.createTreeAnnotator because it includes PropagationTreeAnnotator which is incorrect.
         return new ListTreeAnnotator(
                 new UnitsPropagationTreeAnnotator(this),
-                implicitsTreeAnnotator,
+                new ImplicitsTreeAnnotator(this),
                 new UnitsTreeAnnotator(this));
     }
 
@@ -479,7 +492,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new UnitsQualifierHierarchy(
-                factory, AnnotationUtils.fromClass(elements, UnitsBottom.class));
+                factory, AnnotationBuilder.fromClass(elements, UnitsBottom.class));
     }
 
     protected class UnitsQualifierHierarchy extends GraphQualifierHierarchy {
@@ -489,14 +502,14 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
-                return AnnotationUtils.areSame(lhs, rhs);
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSameIgnoringValues(superAnno, subAnno)) {
+                return AnnotationUtils.areSame(superAnno, subAnno);
             }
-            lhs = removePrefix(lhs);
-            rhs = removePrefix(rhs);
+            superAnno = removePrefix(superAnno);
+            subAnno = removePrefix(subAnno);
 
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
 
         // Overriding leastUpperBound due to the fact that alias annotations are

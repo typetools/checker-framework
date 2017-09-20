@@ -44,5 +44,5 @@ public class FormatterTransfer extends CFTransfer {
         }
 
         return result;
-    };
+    }
 }

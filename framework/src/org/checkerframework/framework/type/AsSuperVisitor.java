@@ -369,10 +369,10 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @Override
     public AnnotatedTypeMirror visitDeclared_Typevar(
             AnnotatedDeclaredType type, AnnotatedTypeVariable superType, Void p) {
-        AnnotatedTypeMirror upperBound = visit(type, superType.getUpperBound(), p);
+        AnnotatedTypeMirror upperBound = visit(type, superType.getUpperBound(), p).asUse();
         superType.setUpperBound(upperBound);
 
-        AnnotatedTypeMirror lowerBound = asSuperTypevarLowerBound(type, superType, p);
+        AnnotatedTypeMirror lowerBound = asSuperTypevarLowerBound(type, superType, p).asUse();
         superType.setLowerBound(lowerBound);
 
         return copyPrimaryAnnos(type, superType);
@@ -388,10 +388,10 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @Override
     public AnnotatedTypeMirror visitDeclared_Wildcard(
             AnnotatedDeclaredType type, AnnotatedWildcardType superType, Void p) {
-        AnnotatedTypeMirror upperBound = visit(type, superType.getExtendsBound(), p);
+        AnnotatedTypeMirror upperBound = visit(type, superType.getExtendsBound(), p).asUse();
         superType.setExtendsBound(upperBound);
 
-        AnnotatedTypeMirror lowerBound = asSuperWildcardLowerBound(type, superType, p);
+        AnnotatedTypeMirror lowerBound = asSuperWildcardLowerBound(type, superType, p).asUse();
         superType.setSuperBound(lowerBound);
 
         return copyPrimaryAnnos(type, superType);
@@ -719,6 +719,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
         AnnotatedTypeMirror asSuper = visit(type.getExtendsBound(), superType, p);
         isUninferredTypeAgrument = oldIsUninferredTypeArgument;
+        annotatedTypeFactory.addDefaultAnnotations(superType);
+
         return copyPrimaryAnnos(type, asSuper);
     }
 
@@ -768,6 +770,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
         superType.setLowerBound(lowerBound);
         isUninferredTypeAgrument = oldIsUninferredTypeArgument;
+        annotatedTypeFactory.addDefaultAnnotations(superType);
 
         return copyPrimaryAnnos(type, superType);
     }
@@ -801,6 +804,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
         superType.setSuperBound(lowerBound);
         isUninferredTypeAgrument = oldIsUninferredTypeArgument;
+        annotatedTypeFactory.addDefaultAnnotations(superType);
 
         return copyPrimaryAnnos(type, superType);
     }

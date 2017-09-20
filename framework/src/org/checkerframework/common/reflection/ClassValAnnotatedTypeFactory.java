@@ -32,9 +32,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -43,7 +43,7 @@ import org.checkerframework.javacutil.TypesUtils;
 public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected final AnnotationMirror CLASSVAL_TOP =
-            AnnotationUtils.fromClass(elements, UnknownClass.class);
+            AnnotationBuilder.fromClass(elements, UnknownClass.class);
 
     public ClassValAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -166,29 +166,29 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /*
          * Computes subtyping as per the subtyping in the qualifier hierarchy
          * structure unless both annotations are ClassVal. In this case, rhs is
-         * a subtype of lhs iff lhs contains at least every element of rhs
+         * a subtype of lhs iff lhs contains at least every element of rhs.
          */
         @Override
-        public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
-            if (AnnotationUtils.areSame(sub, sup)
-                    || AnnotationUtils.areSameByClass(sup, UnknownClass.class)
-                    || AnnotationUtils.areSameByClass(sub, ClassValBottom.class)) {
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSame(subAnno, superAnno)
+                    || AnnotationUtils.areSameByClass(superAnno, UnknownClass.class)
+                    || AnnotationUtils.areSameByClass(subAnno, ClassValBottom.class)) {
                 return true;
             }
-            if (AnnotationUtils.areSameByClass(sub, UnknownClass.class)
-                    || AnnotationUtils.areSameByClass(sup, ClassValBottom.class)) {
+            if (AnnotationUtils.areSameByClass(subAnno, UnknownClass.class)
+                    || AnnotationUtils.areSameByClass(superAnno, ClassValBottom.class)) {
                 return false;
             }
-            if (AnnotationUtils.areSameByClass(sup, ClassVal.class)
-                    && AnnotationUtils.areSameByClass(sub, ClassBound.class)) {
+            if (AnnotationUtils.areSameByClass(superAnno, ClassVal.class)
+                    && AnnotationUtils.areSameByClass(subAnno, ClassBound.class)) {
                 return false;
             }
 
             // if super: ClassVal && sub is ClassVal
             // if super: ClassBound && (sub is ClassBound or ClassVal)
 
-            List<String> supValues = getClassNamesFromAnnotation(sup);
-            List<String> subValues = getClassNamesFromAnnotation(sub);
+            List<String> supValues = getClassNamesFromAnnotation(superAnno);
+            List<String> subValues = getClassNamesFromAnnotation(subAnno);
 
             return supValues.containsAll(subValues);
         }

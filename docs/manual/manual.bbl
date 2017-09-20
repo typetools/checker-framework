@@ -13,6 +13,22 @@ Cyrille Artho.
 \newblock Master's thesis, Swiss Federal Institute of Technology, March~15,
   2001.
 
+\bibitem[BJM{\etalchar{+}}15]{BarrosJMVDdAE2015}
+Paulo Barros, Ren\'e Just, Suzanne Millstein, Paul Vines, Werner Dietl, Marcelo
+  d'Amorim, and Michael~D. Ernst.
+\newblock Static analysis of implicit control flow: Resolving {Java} reflection
+  and {Android} intents.
+\newblock In {\em ASE 2015: Proceedings of the 30th Annual International
+  Conference on Automated Software Engineering}, pages 669--679, Lincoln, NE,
+  USA, November 2015.
+
+\bibitem[CNA{\etalchar{+}}17]{CoblenzNAMS2017}
+Michael Coblenz, Whitney Nelson, Jonathan Aldrich, Brad Myers, and Joshua
+  Sunshine.
+\newblock Glacier: Transitive class immutability for {Java}.
+\newblock In {\em ICSE 2017, Proceedings of the 39th International Conference
+  on Software Engineering}, pages 496--506, Buenos Aires, Argentina, May 2017.
+
 \bibitem[Cop05]{Copeland2005}
 Tom Copeland.
 \newblock {\em PMD Applied}.
@@ -34,15 +50,14 @@ Joe Darcy.
 Werner Dietl, Stephanie Dietzel, Michael~D. Ernst, K{\i}van{\c{c}} Mu{\c{s}}lu,
   and Todd Schiller.
 \newblock Building and using pluggable type-checkers.
-\newblock In {\em ICSE'11, Proceedings of the 33rd International Conference on
-  Software Engineering}, pages 681--690, Waikiki, Hawaii, USA, May~25--27,
-  2011.
+\newblock In {\em ICSE 2011, Proceedings of the 33rd International Conference
+  on Software Engineering}, pages 681--690, Waikiki, Hawaii, USA, May 2011.
 
 \bibitem[DEM11]{DietlEM2011}
 Werner Dietl, Michael~D. Ernst, and Peter M{\"u}ller.
 \newblock Tunable static inference for {Generic} {Universe} {Types}.
 \newblock In {\em ECOOP 2011 --- Object-Oriented Programming, 25th European
-  Conference}, pages 333--357, Lancaster, UK, July~27--29, 2011.
+  Conference}, pages 333--357, Lancaster, UK, July 2011.
 
 \bibitem[EJM{\etalchar{+}}14]{ErnstJMDPRKBBHVW2014}
 Michael~D. Ernst, Ren{\'e} Just, Suzanne Millstein, Werner Dietl, Stuart
@@ -50,9 +65,18 @@ Michael~D. Ernst, Ren{\'e} Just, Suzanne Millstein, Werner Dietl, Stuart
   Seungyeop Han, Paul Vines, and Edward~X. Wu.
 \newblock Collaborative verification of information flow for a high-assurance
   app store.
-\newblock In {\em Proceedings of the 21st ACM Conference on Computer and
-  Communications Security (CCS)}, pages 1092--1104, Scottsdale, AZ, USA,
-  November~4--6, 2014.
+\newblock In {\em CCS 2014: Proceedings of the 21st ACM Conference on Computer
+  and Communications Security}, pages 1092--1104, Scottsdale, AZ, USA, November
+  2014.
+
+\bibitem[ELM{\etalchar{+}}15]{ErnstLMSS2015}
+Michael~D. Ernst, Alberto Lovato, Damiano Macedonio, Ciprian Spiridon, and
+  Fausto Spoto.
+\newblock Boolean formulas for the static identification of injection attacks
+  in {Java}.
+\newblock In {\em LPAR 2015: Proceedings of the 20th International Conference
+  on Logic for Programming, Artificial Intelligence, and Reasoning}, pages
+  130--145, Suva, Fiji, November 2015.
 
 \bibitem[Ern08]{JSR308-2008-09-12}
 Michael~D. Ernst.
@@ -62,35 +86,34 @@ Michael~D. Ernst.
 \bibitem[Eva96]{Evans96}
 David Evans.
 \newblock Static detection of dynamic memory errors.
-\newblock In {\em PLDI 1996, Proceedings of the SIGPLAN '96 Conference on
+\newblock In {\em PLDI '96: Proceedings of the SIGPLAN '96 Conference on
   Programming Language Design and Implementation}, pages 44--53, Philadelphia,
-  PA, USA, May~21--24, 1996.
+  PA, USA, May 1996.
 
 \bibitem[FL03]{FahndrichL2003}
 Manuel F{\"a}hndrich and K.~Rustan~M. Leino.
 \newblock Declaring and checking non-null types in an object-oriented language.
-\newblock In {\em Object-Oriented Programming Systems, Languages, and
-  Applications (OOPSLA 2003)}, pages 302--312, Anaheim, CA, USA, November~6--8,
-  2003.
+\newblock In {\em OOPSLA 2003, Object-Oriented Programming Systems, Languages,
+  and Applications}, pages 302--312, Anaheim, CA, USA, November 2003.
 
 \bibitem[FLL{\etalchar{+}}02]{FlanaganLLNSS02}
 Cormac Flanagan, K.~Rustan~M. Leino, Mark Lillibridge, Greg Nelson, James~B.
   Saxe, and Raymie Stata.
 \newblock Extended static checking for {Java}.
-\newblock In {\em PLDI 2002, Proceedings of the {ACM} {SIGPLAN} 2002 Conference
+\newblock In {\em PLDI 2002: Proceedings of the {ACM} {SIGPLAN} 2002 Conference
   on Programming Language Design and Implementation}, pages 234--245, Berlin,
-  Germany, June~17--19, 2002.
+  Germany, June 2002.
 
 \bibitem[GDEG13]{GordonDEG2013}
 Colin~S. Gordon, Werner Dietl, Michael~D. Ernst, and Dan Grossman.
 \newblock {JavaUI}: Effects for controlling {UI} object access.
 \newblock In {\em ECOOP 2013 --- Object-Oriented Programming, 27th European
-  Conference}, pages 179--204, Montpellier, France, July~3--5, 2013.
+  Conference}, pages 179--204, Montpellier, France, July 2013.
 
 \bibitem[Goe06]{Goetz2006:typedef}
 Brian Goetz.
 \newblock The pseudo-typedef antipattern: Extension is not type definition.
-\newblock \url{http://www.ibm.com/developerworks/java/library/j-jtp02216/},
+\newblock \url{https://www.ibm.com/developerworks/java/library/j-jtp02216/},
   February~21, 2006.
 
 \bibitem[GPB{\etalchar{+}}06]{Goetz2006}
@@ -103,29 +126,28 @@ Brian Goetz, Tim Peierls, Joshua Bloch, Joseph Bowbeer, David Holmes, and Doug
 Wei Huang, Werner Dietl, Ana Milanova, and Michael~D. Ernst.
 \newblock Inference and checking of object ownership.
 \newblock In {\em ECOOP 2012 --- Object-Oriented Programming, 26th European
-  Conference}, pages 181--206, Beijing, China, June~14--16, 2012.
+  Conference}, pages 181--206, Beijing, China, June 2012.
 
 \bibitem[HMDE12]{HuangMDE2012}
 Wei Huang, Ana Milanova, Werner Dietl, and Michael~D. Ernst.
 \newblock {ReIm} \& {ReImInfer}: Checking and inference of reference
   immutability and method purity.
-\newblock In {\em Object-Oriented Programming Systems, Languages, and
-  Applications (OOPSLA 2012)}, pages 879--896, Tucson, AZ, USA, October~23--25,
-  2012.
+\newblock In {\em OOPSLA 2012, Object-Oriented Programming Systems, Languages,
+  and Applications}, pages 879--896, Tucson, AZ, USA, October 2012.
 
 \bibitem[HP04]{HovemeyerP2004}
 David Hovemeyer and William Pugh.
 \newblock Finding bugs is easy.
-\newblock In {\em Companion to Object-Oriented Programming Systems, Languages,
-  and Applications (OOPSLA 2004)}, pages 132--136, Vancouver, BC, Canada,
-  October~26--28, 2004.
+\newblock In {\em OOPSLA Companion: Companion to Object-Oriented Programming
+  Systems, Languages, and Applications}, pages 132--136, Vancouver, BC, Canada,
+  October 2004.
 
 \bibitem[HSP05]{HovemeyerSP2005}
 David Hovemeyer, Jaime Spacco, and William Pugh.
 \newblock Evaluating and tuning a static analysis to find null pointer bugs.
-\newblock In {\em ACM SIGPLAN/SIGSOFT Workshop on Program Analysis for Software
-  Tools and Engineering (PASTE 2005)}, pages 13--19, Lisbon, Portugal,
-  September~5--6, 2005.
+\newblock In {\em PASTE 2005: ACM SIGPLAN/SIGSOFT Workshop on Program Analysis
+  for Software Tools and Engineering (PASTE 2005)}, pages 13--19, Lisbon,
+  Portugal, September 2005.
 
 \bibitem[LBR06]{LeavensBR2006:JML}
 Gary~T. Leavens, Albert~L. Baker, and Clyde Ruby.
@@ -138,51 +160,49 @@ Matthew~M. Papi, Mahmood Ali, Telmo~Luis {Correa~Jr.}, Jeff~H. Perkins, and
   Michael~D. Ernst.
 \newblock Practical pluggable types for {Java}.
 \newblock In {\em ISSTA 2008, Proceedings of the 2008 International Symposium
-  on Software Testing and Analysis}, pages 201--212, Seattle, WA, USA,
-  July~22--24, 2008.
+  on Software Testing and Analysis}, pages 201--212, Seattle, WA, USA, July
+  2008.
 
 \bibitem[QTE08]{QuinonezTE2008}
 Jaime Quinonez, Matthew~S. Tschantz, and Michael~D. Ernst.
 \newblock Inference of reference immutability.
 \newblock In {\em ECOOP 2008 --- Object-Oriented Programming, 22nd European
-  Conference}, pages 616--641, Paphos, Cyprus, July~9--11, 2008.
+  Conference}, pages 616--641, Paphos, Cyprus, July 2008.
 
 \bibitem[SDE12]{SpishakDE2012}
 Eric Spishak, Werner Dietl, and Michael~D. Ernst.
 \newblock A type system for regular expressions.
-\newblock In {\em FTfJP 2012: 14th Workshop on Formal Techniques for Java-like
-  Programs}, pages 20--26, Beijing, China, June~12, 2012.
+\newblock In {\em FTfJP: 14th Workshop on Formal Techniques for Java-like
+  Programs}, pages 20--26, Beijing, China, June 2012.
 
 \bibitem[SDF{\etalchar{+}}11]{SampsonDFGCG2011}
 Adrian Sampson, Werner Dietl, Emily Fortuna, Danushen Gnanapragasam, Luis Ceze,
   and Dan Grossman.
 \newblock {EnerJ}: Approximate data types for safe and general low-power
   computation.
-\newblock In {\em PLDI 2011, Proceedings of the {ACM} {SIGPLAN} 2011 Conference
+\newblock In {\em PLDI 2011: Proceedings of the {ACM} {SIGPLAN} 2011 Conference
   on Programming Language Design and Implementation}, pages 164--174, San Jose,
-  CA, USA, June~6--8, 2011.
+  CA, USA, June 2011.
 
 \bibitem[SM11]{SummersM2011}
 Alexander~J. Summers and Peter M{\"u}ller.
 \newblock Freedom before commitment: A lightweight type system for object
   initialisation.
-\newblock In {\em Object-Oriented Programming Systems, Languages, and
-  Applications (OOPSLA 2011)}, pages 1013--1032, Portland, OR, USA,
-  October~25--27, 2011.
+\newblock In {\em OOPSLA 2011, Object-Oriented Programming Systems, Languages,
+  and Applications}, pages 1013--1032, Portland, OR, USA, October 2011.
 
 \bibitem[TE05]{TschantzE2005}
 Matthew~S. Tschantz and Michael~D. Ernst.
 \newblock Javari: Adding reference immutability to {Java}.
-\newblock In {\em Object-Oriented Programming Systems, Languages, and
-  Applications (OOPSLA 2005)}, pages 211--230, San Diego, CA, USA,
-  October~18--20, 2005.
+\newblock In {\em OOPSLA 2005, Object-Oriented Programming Systems, Languages,
+  and Applications}, pages 211--230, San Diego, CA, USA, October 2005.
 
 \bibitem[TPV10]{TangPJ2010}
 Daniel Tang, Ales Plsek, and Jan Vitek.
 \newblock Static checking of safety critical {Java} annotations.
-\newblock In {\em 8th International Workshop on Java Technologies for Real-time
-  and Embedded Systems}, pages 148--154, Prague, Czech Republic, August~19--21,
-  2010.
+\newblock In {\em JTRES 2010: 8th International Workshop on Java Technologies
+  for Real-time and Embedded Systems}, pages 148--154, Prague, Czech Republic,
+  August 2010.
 
 \bibitem[VPEJ14]{VakilianPEJ2014}
 Mohsen Vakilian, Amarin Phaosawasdi, Michael~D. Ernst, and Ralph~E. Johnson.
@@ -194,14 +214,14 @@ Mohsen Vakilian, Amarin Phaosawasdi, Michael~D. Ernst, and Ralph~E. Johnson.
 Konstantin Weitz, Gene Kim, Siwakorn Srisakaokul, and Michael~D. Ernst.
 \newblock A type system for format strings.
 \newblock In {\em ISSTA 2014, Proceedings of the 2014 International Symposium
-  on Software Testing and Analysis}, pages 127--137, San Jose, CA, USA,
-  July~23--25, 2014.
+  on Software Testing and Analysis}, pages 127--137, San Jose, CA, USA, July
+  2014.
 
 \bibitem[WPM{\etalchar{+}}09]{WrigstadPMZV2009}
 Tobias Wrigstad, Filip Pizlo, Fadi Meawad, Lei Zhao, and Jan Vitek.
 \newblock Loci: Simple thread-locality for {J}ava.
 \newblock In {\em ECOOP 2009 --- Object-Oriented Programming, 23rd European
-  Conference}, pages 445--469, Genova, Italy, July~8--10, 2009.
+  Conference}, pages 445--469, Genova, Italy, July 2009.
 
 \bibitem[ZPA{\etalchar{+}}07]{ZibinPAAKE2007}
 Yoav Zibin, Alex Potanin, Mahmood Ali, Shay Artzi, Adam Kie{\.z}un, and
@@ -210,13 +230,12 @@ Yoav Zibin, Alex Potanin, Mahmood Ali, Shay Artzi, Adam Kie{\.z}un, and
 \newblock In {\em ESEC/FSE 2007: Proceedings of the 11th European Software
   Engineering Conference and the 15th {ACM} {SIGSOFT} Symposium on the
   Foundations of Software Engineering}, pages 75--84, Dubrovnik, Croatia,
-  September~5--7, 2007.
+  September 2007.
 
 \bibitem[ZPL{\etalchar{+}}10]{ZibinPLAE2010}
 Yoav Zibin, Alex Potanin, Paley Li, Mahmood Ali, and Michael~D. Ernst.
 \newblock Ownership and immutability in generic {Java}.
-\newblock In {\em Object-Oriented Programming Systems, Languages, and
-  Applications (OOPSLA 2010)}, pages 598--617, Revo, NV, USA, October~19--21,
-  2010.
+\newblock In {\em OOPSLA 2010, Object-Oriented Programming Systems, Languages,
+  and Applications}, pages 598--617, Revo, NV, USA, October 2010.
 
 \end{thebibliography}

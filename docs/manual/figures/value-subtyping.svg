@@ -1,575 +1,183 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="1062.9921"
-   height="182.88882"
-   viewBox="158 238 1283.1598 53.317458"
-   id="svg2"
-   version="1.1"
-   inkscape:version="0.48.4 r9939"
-   sodipodi:docname="value-subtyping.svg">
-  <metadata
-     id="metadata84">
+<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#"
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg"
+  xmlns="http://www.w3.org/2000/svg" width="860" height="410" viewBox="-2 -2 1205 565"
+  version="1.1">
+  <metadata id="metadata84">
     <rdf:RDF>
-      <cc:Work
-         rdf:about="">
+      <cc:Work rdf:about="">
         <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
-  <defs
-     id="defs82" />
-  <sodipodi:namedview
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1"
-     objecttolerance="10"
-     gridtolerance="10"
-     guidetolerance="10"
-     inkscape:pageopacity="0"
-     inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="978"
-     id="namedview80"
-     showgrid="false"
-     inkscape:zoom="1.6576842"
-     inkscape:cx="384.6542"
-     inkscape:cy="223.12021"
-     inkscape:window-x="0"
-     inkscape:window-y="31"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="svg2"
-     fit-margin-top="0"
-     fit-margin-left="0"
-     fit-margin-right="0"
-     fit-margin-bottom="0" />
-  <g
-     id="g4"
-     transform="translate(912.15981,-82.917825)">
-    <rect
-       style="fill:#ffffff"
-       x="160"
-       y="240"
-       width="176"
-       height="38"
-       id="rect6" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x="160"
-       y="240"
-       width="176"
-       height="38"
-       id="rect8" />
-    <text
-       font-size="12.8"
-       style="font-size:14.10753822px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
-       x="248"
-       y="262.89999"
-       id="text10">
-      <tspan
-         x="248"
-         y="262.89999"
-         id="tspan12"
-         style="font-size:14.10753822px">@DoubleVal({1.0,2.0})</tspan>
-    </text>
+  <style type="text/css">
+    rect{
+    fill:#fff;
+    stroke:#000;
+    stroke-width:2.14;
+    }
+    text{
+    font-size:14.10753822px;
+    font-style:normal;
+    font-weight:normal;
+    font-family:courier new;
+    text-anchor:middle;
+    }
+    polyline{
+    fill:none;
+    stroke:#000;
+    stroke-width:3.2;
+    marker-start:url(#arrow);
+    stroke-dasharray:0, 5, 1000;
+    }
+    polyline.noarrow{
+    marker-start:none;
+    stroke-dasharray:none;
+    }
+    text.gray{
+    fill:#808080;
+    }
+    rect.gray{
+    stroke:#808080;
+    }
+  </style>
+  <defs>
+    <marker id="arrow" orient="auto" markerWidth="5"
+      markerHeight="5" refY="2.5" refX="0">
+      <path style="fill:#000;" d="M5,0 L0,2.5 L5,5" />
+    </marker>
+  </defs>
+  <g id="value-subtyping">
+    <g id="sub-top">
+      <rect x="510" y="0" width="130" height="40" class="gray" />
+      <text x="575" y="24.10753822px" class="gray">@UnknownVal</text>
+    </g>
+    <g id="sub-intval">
+      <rect x="350" y="90" width="130" height="40" />
+      <text x="415" y="114.10753822px">@IntVal(long[])</text>
+    </g>
+    <g id="sub-intrange">
+      <rect x="170" y="90" width="170" height="40" />
+      <text x="255" y="114.10753822px">@IntRange(long,long)</text>
+    </g>
+    <g id="sub-doubleval">
+      <rect x="490" y="90" width="170" height="40" />
+      <text x="575" y="114.10753822px">@DoubleVal(double[])</text>
+    </g>
+    <g id="sub-boolval">
+      <rect x="0" y="90" width="160" height="40" />
+      <text x="80" y="114.10753822px">@BoolVal(boolean[])</text>
+    </g>
+    <g id="sub-stringval">
+      <rect x="670" y="90" width="170" height="40" />
+      <text x="755" y="114.10753822px">@StringVal(String[])</text>
+    </g>
+    <g id="sub-arraylen">
+      <rect x="850" y="90" width="140" height="40" />
+      <text x="920" y="114.10753822px">@ArrayLen(int[])</text>
+    </g>
+    <g id="sub-arraylenrange">
+      <rect x="1000" y="90" width="200" height="40" />
+      <text x="1100" y="114.10753822px">@ArrayLenRange(int,int)</text>
+    </g>
+    <g id="sub-bot">
+      <rect x="510" y="180" width="130" height="40" class="gray" />
+      <text x="575" y="204.10753822px" class="gray">@BottomVal</text>
+    </g>
+    <polyline points="575,40 575,90" />
+    <polyline points="575,65 80,65 80,90" class="noarrow" />
+    <polyline points="575,65 1100,65 1100,90" class="noarrow" />
+    <polyline points="255,65 255,90" class="noarrow" />
+    <polyline points="415,65 415,90" class="noarrow" />
+    <polyline points="755,65 755,90" class="noarrow" />
+    <polyline points="920,65 920,90" class="noarrow" />
+
+    <polyline points="575,130 575,180" />
+    <polyline points="80,130 80,155 575,155" />
+    <polyline points="1100,130 1100,155 570,155" />
+    <polyline points="255,130 255,155" />
+    <polyline points="415,130 415,155" />
+    <polyline points="755,130 755,155" />
+    <polyline points="920,130 920,155" />
   </g>
-  <g
-     id="g14"
-     transform="translate(912.15981,-82.917825)">
-    <rect
-       style="fill:#ffffff"
-       x="380"
-       y="320"
-       width="148"
-       height="38"
-       id="rect16" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x="380"
-       y="320"
-       width="148"
-       height="38"
-       id="rect18" />
-    <text
-       font-size="12.8"
-       style="font-size:14.10753822px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
-       x="454"
-       y="342.89999"
-       id="text20">
-      <tspan
-         x="454"
-         y="342.89999"
-         id="tspan22"
-         style="font-size:14.10753822px">@DoubleVal({1.0})</tspan>
-    </text>
+  <g id="numeric-subtyping">
+    <g id="num-int-range-0-200">
+      <rect x="35" y="240" width="200" height="40" />
+      <text x="135" y="264.10753822px">@IntRange(from=0,to=200)</text>
+    </g>
+    <g id="num-int-1">
+      <rect x="310" y="400" width="130" height="40" />
+      <text x="375" y="424.10753822px">@IntVal(1)</text>
+    </g>
+    <g id="num-int-1-2">
+      <rect x="310" y="320" width="130" height="40" />
+      <text x="375" y="344.10753822px">@IntVal({1,2})</text>
+    </g>
+    <g id="num-int-range-0-1">
+      <rect x="35" y="320" width="200" height="40" />
+      <text x="135" y="344.10753822px">@IntRange(from=0,to=1)</text>
+    </g>
+    <g id="num-double-1">
+      <rect x="490" y="320" width="130" height="40" />
+      <text x="555" y="344.10753822px">@DoubleVal(1.0)</text>
+    </g>
+    <g id="num-double-0-2">
+      <rect x="270" y="240" width="210" height="40" />
+      <text x="375" y="264.10753822px">@DoubleVal({0.0,1.0,2.0})</text>
+    </g>
+
+    <polyline points="135,280 135,320" />
+    <polyline points="375,280 375,320" />
+    <polyline points="375,360 375,400" />
+
+    <polyline points="195,280 315,320" />
+    <polyline points="315,280 195,320" />
+    <polyline points="435,280 555,320" />
+    <polyline points="195,360 315,400" />
+    <polyline points="555,360 435,400" />
+
   </g>
-  <g
-     id="g24"
-     transform="translate(912.15981,-82.917825)">
-    <rect
-       style="fill:#ffffff"
-       x="380"
-       y="400"
-       width="148"
-       height="38"
-       id="rect26" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x="380"
-       y="400"
-       width="148"
-       height="38"
-       id="rect28" />
-    <text
-       font-size="12.8"
-       style="font-size:14.10753822px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
-       x="454"
-       y="422.89999"
-       id="text30">
-      <tspan
-         x="454"
-         y="422.89999"
-         id="tspan32"
-         style="font-size:14.10753822px">@IntVal({1})</tspan>
-    </text>
-  </g>
-  <g
-     id="g34"
-     transform="translate(912.15981,-82.917825)">
-    <rect
-       style="fill:#ffffff"
-       x="160"
-       y="320"
-       width="176"
-       height="38"
-       id="rect36" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x="160"
-       y="320"
-       width="176"
-       height="38"
-       id="rect38" />
-    <text
-       font-size="12.8"
-       style="font-size:14.10753822px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
-       x="248"
-       y="342.89999"
-       id="text40">
-      <tspan
-         x="248"
-         y="342.89999"
-         id="tspan42"
-         style="font-size:14.10753822px">@IntVal({1,2})</tspan>
-    </text>
-  </g>
-  <g
-     id="g44"
-     transform="translate(912.15981,-82.917825)">
-    <line
-       style="fill:none;stroke:#000000;stroke-width:3"
-       x1="248"
-       y1="320"
-       x2="248"
-       y2="289.5"
-       id="line46" />
-    <polygon
-       style="fill:#000000"
-       points="243,289.5 253,289.5 248,279.5 "
-       id="polygon48" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="243,289.5 253,289.5 248,279.5 "
-       id="polygon50" />
-  </g>
-  <g
-     id="g52"
-     transform="translate(912.15981,-82.917825)">
-    <line
-       style="fill:none;stroke:#000000;stroke-width:3"
-       x1="454"
-       y1="400"
-       x2="454"
-       y2="369.5"
-       id="line54" />
-    <polygon
-       style="fill:#000000"
-       points="449,369.5 459,369.5 454,359.5 "
-       id="polygon56" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="449,369.5 459,369.5 454,359.5 "
-       id="polygon58" />
-  </g>
-  <g
-     id="g60"
-     transform="translate(912.15981,-82.917825)">
-    <line
-       style="fill:none;stroke:#000000;stroke-width:3"
-       x1="402.10901"
-       y1="399.461"
-       x2="302.76199"
-       y2="362.052"
-       id="line62" />
-    <polygon
-       style="fill:#000000"
-       points="301,366.732 304.524,357.373 293.404,358.529 "
-       id="polygon64" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="301,366.732 304.524,357.373 293.404,358.529 "
-       id="polygon66" />
-  </g>
-  <g
-     id="g68"
-     transform="translate(912.15981,-82.917825)">
-    <line
-       style="fill:none;stroke:#000000;stroke-width:3"
-       x1="400"
-       y1="320"
-       x2="302.71799"
-       y2="282.168"
-       id="line70" />
-    <polygon
-       style="fill:#000000"
-       points="300.906,286.828 304.53,277.508 293.398,278.544 "
-       id="polygon72" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="300.906,286.828 304.53,277.508 293.398,278.544 "
-       id="polygon74" />
-  </g>
-  <text
-     font-size="12.8"
-     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
-     x="444.76227"
-     y="336.08212"
-     id="text76">
-    <tspan
-       x="444.76227"
-       y="336.08212"
-       id="tspan78" />
-  </text>
-  <g
-     id="g14-6"
-     transform="translate(-1.0000003,-83.067815)">
-    <rect
-       style="fill:#ffffff"
-       x="380"
-       y="320"
-       width="148"
-       height="38"
-       id="rect16-5" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x="380"
-       y="320"
-       width="148"
-       height="38"
-       id="rect18-3" />
-    <text
-       font-size="12.8"
-       style="font-size:14.10753822px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
-       x="454"
-       y="342.89999"
-       id="text20-0">
-      <tspan
-         x="454"
-         y="342.89999"
-         id="tspan22-2"
-         style="font-size:14.10753822px">@IntVal(long[])</tspan>
-    </text>
-  </g>
-  <g
-     id="g24-05"
-     transform="translate(98.193624,-63.22909)">
-    <rect
-       style="fill:#ffffff"
-       x="380"
-       y="400"
-       width="148"
-       height="38"
-       id="rect26-6" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x="380"
-       y="400"
-       width="148"
-       height="38"
-       id="rect28-1" />
-    <text
-       font-size="12.8"
-       style="font-size:15.43011951px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
-       x="454"
-       y="422.89999"
-       id="text30-8">
-      <tspan
-         x="454"
-         y="422.89999"
-         id="tspan32-3"
-         style="font-size:15.43011951px">@<tspan
-   style="font-size:14.10753822px"
-   id="tspan3492">BottomVal</tspan>
-</tspan>
-    </text>
-  </g>
-  <g
-     id="g34-2"
-     transform="translate(-1,-83.067815)">
-    <rect
-       style="fill:#ffffff"
-       x="160"
-       y="320"
-       width="176"
-       height="38"
-       id="rect36-3" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x="160"
-       y="320"
-       width="176"
-       height="38"
-       id="rect38-9" />
-    <text
-       font-size="12.8"
-       style="font-size:14.10753822px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
-       x="248"
-       y="342.89999"
-       id="text40-7">
-      <tspan
-         x="248"
-         y="342.89999"
-         id="tspan42-4"
-         style="font-size:14.10753822px">@<tspan
-   style="font-size:14.10753822px"
-   id="tspan3486">BoolVal</tspan>
-(boolean[])</tspan>
-    </text>
-  </g>
-  <g
-     id="g14-6-9"
-     transform="translate(97.624214,-163.99797)">
-    <rect
-       style="fill:#ffffff"
-       x="380"
-       y="320"
-       width="148"
-       height="38"
-       id="rect16-5-2" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x="380"
-       y="320"
-       width="148"
-       height="38"
-       id="rect18-3-3" />
-    <text
-       font-size="12.8"
-       style="font-size:14.10753822px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
-       x="454"
-       y="342.89999"
-       id="text20-0-2">
-      <tspan
-         x="454"
-         y="342.89999"
-         id="tspan22-2-9"
-         style="font-size:14.10753822px">@UnknownVal</tspan>
-    </text>
-  </g>
-  <g
-     id="g34-2-5"
-     transform="translate(410.99679,-82.474595)">
-    <rect
-       style="fill:#ffffff"
-       x="160"
-       y="320"
-       width="176"
-       height="38"
-       id="rect36-3-8" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x="160"
-       y="320"
-       width="176"
-       height="38"
-       id="rect38-9-1" />
-    <text
-       font-size="12.8"
-       style="font-size:14.10753822px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
-       x="248"
-       y="342.89999"
-       id="text40-7-1">
-      <tspan
-         x="248"
-         y="342.89999"
-         id="tspan42-4-7"
-         style="font-size:14.10753822px">@DoubleVal(double[])</tspan>
-    </text>
-  </g>
-  <g
-     id="g34-2-5-5"
-     transform="translate(633.38053,-83.139475)">
-    <rect
-       style="fill:#ffffff"
-       x="160"
-       y="320"
-       width="176"
-       height="38"
-       id="rect36-3-8-1" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x="160"
-       y="320"
-       width="176"
-       height="38"
-       id="rect38-9-1-7" />
-    <text
-       font-size="12.8"
-       style="font-size:14.10753822px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
-       x="248"
-       y="342.89999"
-       id="text40-7-1-0">
-      <tspan
-         x="248"
-         y="342.89999"
-         id="tspan42-4-7-0"
-         style="font-size:14.10753822px">@DoubleVal(double[])</tspan>
-    </text>
-  </g>
-  <g
-     id="g78"
-     transform="matrix(0.99992458,0,0,0.99992458,52.59029,597.28398)">
-    <polyline
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="500,-260 500,-291 231,-291 231,-310.5 "
-       id="polyline80" />
-    <polygon
-       style="fill:#000000"
-       points="236,-310.5 231,-320.5 226,-310.5 "
-       id="polygon82" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="236,-310.5 231,-320.5 226,-310.5 "
-       id="polygon84" />
-  </g>
-  <g
-     id="g86"
-     transform="matrix(0.99992458,0,0,0.99992458,52.59029,597.28398)">
-    <polyline
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="500,-260 500,-291 592.525,-291 592.525,-310.5 "
-       id="polyline88" />
-    <polygon
-       style="fill:#000000"
-       points="597.525,-310.5 592.525,-320.5 587.525,-310.5 "
-       id="polygon90" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="597.525,-310.5 592.525,-320.5 587.525,-310.5 "
-       id="polygon92" />
-  </g>
-  <g
-     id="g94"
-     transform="matrix(0.99992458,0,0,0.99992458,52.59029,597.28398)">
-    <polyline
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="500,-260 500,-291 411,-291 411,-310.5 "
-       id="polyline96" />
-    <polygon
-       style="fill:#000000"
-       points="416,-310.5 411,-320.5 406,-310.5 "
-       id="polygon98" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="416,-310.5 411,-320.5 406,-310.5 "
-       id="polygon100" />
-  </g>
-  <g
-     id="g102"
-     transform="matrix(1.1047793,0,0,0.99992458,0.3202199,597.28398)">
-    <polyline
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="500,-260 500,-291 771,-291 771,-310.5 "
-       id="polyline104" />
-    <polygon
-       style="fill:#000000"
-       points="771,-320.5 766,-310.5 776,-310.5 "
-       id="polygon106" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="771,-320.5 766,-310.5 776,-310.5 "
-       id="polygon108" />
-  </g>
-  <g
-     id="g54"
-     transform="matrix(0.99992458,0,0,0.99992458,52.34097,596.86505)">
-    <polyline
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="231,-360 231,-381 500,-381 500,-390.5 "
-       id="polyline56" />
-    <polygon
-       style="fill:#000000"
-       points="500,-400.5 495,-390.5 505,-390.5 "
-       id="polygon58-2" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="500,-400.5 495,-390.5 505,-390.5 "
-       id="polygon60" />
-  </g>
-  <g
-     id="g62"
-     transform="matrix(0.99992458,0,0,0.99992458,52.34097,596.86505)">
-    <polyline
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="592.525,-360 592.525,-381 500,-381 500,-390.5 "
-       id="polyline64" />
-    <polygon
-       style="fill:#000000"
-       points="500,-400.5 495,-390.5 505,-390.5 "
-       id="polygon66-9" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="500,-400.5 495,-390.5 505,-390.5 "
-       id="polygon68" />
-  </g>
-  <g
-     id="g70"
-     transform="matrix(0.99992458,0,0,0.99992458,52.34097,596.86505)">
-    <polyline
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="411,-360 411,-381 500,-381 500,-390.5 "
-       id="polyline72" />
-    <polygon
-       style="fill:#000000"
-       points="500,-400.5 495,-390.5 505,-390.5 "
-       id="polygon74-3" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="500,-400.5 495,-390.5 505,-390.5 "
-       id="polygon76" />
-  </g>
-  <g
-     id="g110"
-     transform="matrix(1.1047793,0,0,0.99992458,0.5951735,596.86505)">
-    <polyline
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="771,-360 771,-381 500,-381 500,-390.5 "
-       id="polyline112" />
-    <polygon
-       style="fill:#000000"
-       points="495,-390.5 505,-390.5 500,-400.5 "
-       id="polygon114" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:3"
-       points="495,-390.5 505,-390.5 500,-400.5 "
-       id="polygon116" />
+  <g id="array-subtyping">
+    <g id="string-a">
+      <rect x="800" y="520" width="130" height="40" />
+      <text x="865" y="544.10753822px">@StringVal("a")</text>
+    </g>
+    <g id="string-a-aa">
+      <rect x="650" y="450" width="190" height="40" />
+      <text x="745" y="474.10753822px">@StringVal({"a","aa"})</text>
+    </g>
+    <g id="string-a-b">
+      <rect x="895" y="450" width="180" height="40" />
+      <text x="985" y="474.10753822px">@StringVal({"a","b"})</text>
+    </g>
+    <g id="string-a-aa-b">
+      <rect x="755" y="380" width="220" height="40" />
+      <text x="865" y="404.10753822px">@StringVal({"a","aa","b"})</text>
+    </g>
+
+    <g id="arraylen-1">
+      <rect x="1040" y="380" width="130" height="40" />
+      <text x="1105" y="404.10753822px">@ArrayLen(1)</text>
+    </g>
+    <g id="arraylen-1-2">
+      <rect x="915" y="310" width="140" height="40" />
+      <text x="985" y="334.10753822px">@ArrayLen({1,2})</text>
+    </g>
+    <g id="arraylenrange">
+      <rect x="895" y="240" width="180" height="40" />
+      <text x="985" y="264.10753822px">@ArrayLenRange(0,200)</text>
+    </g>
+
+    <polyline points="985,280 985,310" />
+    <polyline points="1015,350 1075,380" />
+    <polyline points="955,350 895,380" />
+    <polyline points="835,420 775,450" />
+    <polyline points="895,420 955,450" />
+    <polyline points="1075,420 1015,450" />
+    <polyline points="955,490 895,520" />
+    <polyline points="775,490 835,520" />
+
   </g>
 </svg>

@@ -1,1 +1,1 @@
-../Makefile.jdk
+include ../Makefile.jdk

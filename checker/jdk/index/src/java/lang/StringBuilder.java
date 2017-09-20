@@ -188,7 +188,7 @@ public final class StringBuilder
     /**
      * @throws     IndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder append(CharSequence s, /*@ IndexFor("#1")*/ int start, /*@ IndexOrHigh("#1")*/ int end) {
+    public StringBuilder append(CharSequence s, @IndexOrHigh("#1") int start, @IndexOrHigh("#1") int end) {
         super.append(s, start, end);
         return this;
     }
@@ -247,7 +247,7 @@ public final class StringBuilder
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder delete(/* @ IndexFor("this") */ int start, /* @ IndexOrHigh("this") */ int end) {
+    public StringBuilder delete(/* !IndexFor("this") */ int start, /* !IndexOrHigh("this") */ int end) {
         super.delete(start, end);
         return this;
     }
@@ -255,7 +255,7 @@ public final class StringBuilder
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder deleteCharAt(/* @ IndexFor("this") */ int index) {
+    public StringBuilder deleteCharAt(/* !IndexFor("this") */ int index) {
         super.deleteCharAt(index);
         return this;
     }
@@ -263,7 +263,7 @@ public final class StringBuilder
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder replace(/* @ IndexFor("this") */ int start, /* @ IndexOrHigh("this") */ int end, String str) {
+    public StringBuilder replace(/* !IndexFor("this") */ int start, /* !IndexOrHigh("this") */ int end, String str) {
         super.replace(start, end, str);
         return this;
     }
@@ -271,7 +271,7 @@ public final class StringBuilder
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder insert(/* @ IndexFor("this") */ int index, char[] str, @IndexFor("#2") int offset,
+    public StringBuilder insert(/* !IndexFor("this") */ int index, char[] str, @IndexFor("#2") int offset,
                                 @IndexOrHigh("#2") int len)
     {
         super.insert(index, str, offset, len);
@@ -281,14 +281,14 @@ public final class StringBuilder
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder insert(/* @ IndexFor("this") */ int offset, Object obj) {
+    public StringBuilder insert(/* !IndexFor("this") */ int offset, Object obj) {
         return insert(offset, String.valueOf(obj));
     }
 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder insert(/* @ IndexFor("this") */ int offset, String str) {
+    public StringBuilder insert(/* !IndexFor("this") */ int offset, String str) {
         super.insert(offset, str);
         return this;
     }
@@ -296,7 +296,7 @@ public final class StringBuilder
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder insert(/* @ IndexFor("this") */ int offset, char[] str) {
+    public StringBuilder insert(/* !IndexFor("this") */ int offset, char[] str) {
         super.insert(offset, str);
         return this;
     }
@@ -304,7 +304,7 @@ public final class StringBuilder
     /**
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder insert(/* @ IndexFor("this") */ int dstOffset, CharSequence s) {
+    public StringBuilder insert(/* !IndexFor("this") */ int dstOffset, CharSequence s) {
         if (s == null)
             s = "null";
         if (s instanceof String)
@@ -315,8 +315,8 @@ public final class StringBuilder
     /**
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder insert(/* @ IndexFor("this") */ int dstOffset, CharSequence s,
-                                /* @ IndexFor("#2") */ int start, /* @ IndexOrHigh("#2") */ int end)
+    public StringBuilder insert(/* !IndexFor("this") */ int dstOffset, CharSequence s,
+                                /* !IndexFor("#2") */ int start, /* !IndexOrHigh("#2") */ int end)
     {
         super.insert(dstOffset, s, start, end);
         return this;
@@ -325,7 +325,7 @@ public final class StringBuilder
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder insert(/* @ IndexFor("this") */ int offset, boolean b) {
+    public StringBuilder insert(/* !IndexFor("this") */ int offset, boolean b) {
         super.insert(offset, b);
         return this;
     }
@@ -333,7 +333,7 @@ public final class StringBuilder
     /**
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder insert(/* @ IndexFor("this") */ int offset, char c) {
+    public StringBuilder insert(/* !IndexFor("this") */ int offset, char c) {
         super.insert(offset, c);
         return this;
     }
@@ -341,28 +341,28 @@ public final class StringBuilder
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder insert(/* @ IndexFor("this") */ int offset, int i) {
+    public StringBuilder insert(/* !IndexFor("this") */ int offset, int i) {
         return insert(offset, String.valueOf(i));
     }
 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder insert(/* @ IndexFor("this") */ int offset, long l) {
+    public StringBuilder insert(/* !IndexFor("this") */ int offset, long l) {
         return insert(offset, String.valueOf(l));
     }
 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder insert(/* @ IndexFor("this") */ int offset, float f) {
+    public StringBuilder insert(/* !IndexFor("this") */ int offset, float f) {
         return insert(offset, String.valueOf(f));
     }
 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder insert(/* @ IndexFor("this") */ int offset, double d) {
+    public StringBuilder insert(/* !IndexFor("this") */ int offset, double d) {
         return insert(offset, String.valueOf(d));
     }
 
@@ -376,7 +376,7 @@ public final class StringBuilder
     /**
      * @throws NullPointerException {@inheritDoc}
      */
-    public @GTENegativeOne int indexOf(String str, /* @ IndexFor("this") */ int fromIndex) {
+    public @GTENegativeOne int indexOf(String str, /* !IndexFor("this") */ int fromIndex) {
         return String.indexOf(value, 0, count,
                               str.toCharArray(), 0, str.length(), fromIndex);
     }
@@ -391,7 +391,7 @@ public final class StringBuilder
     /**
      * @throws NullPointerException {@inheritDoc}
      */
-    public @GTENegativeOne int lastIndexOf(String str, /* @ IndexFor("this") */ int fromIndex) {
+    public @GTENegativeOne int lastIndexOf(String str, /* !IndexFor("this") */ int fromIndex) {
         return String.lastIndexOf(value, 0, count,
                               str.toCharArray(), 0, str.length(), fromIndex);
     }

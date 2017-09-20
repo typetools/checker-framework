@@ -636,7 +636,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @return an {@code Integer} instance representing {@code i}.
      * @since  1.5
      */
-    public static /*@ PolyLowerBound @ PolyUpperBound*/ Integer valueOf(/*@ PolyLowerBound @ PolyUpperBound*/ int i) {
+    public static @PolyIndex Integer valueOf(@PolyIndex int i) {
         assert IntegerCache.high >= 127;
         if (i >= IntegerCache.low && i <= IntegerCache.high)
             return IntegerCache.cache[i + (-IntegerCache.low)];
@@ -657,7 +657,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @param   value   the value to be represented by the
      *                  {@code Integer} object.
      */
-    public /*@ PolyLowerBound @ PolyUpperBound*/ Integer(/*@ PolyLowerBound @ PolyUpperBound*/ int value) {
+    public @PolyIndex Integer(@PolyIndex int value) {
         this.value = value;
     }
 
@@ -682,7 +682,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * Returns the value of this {@code Integer} as a
      * {@code byte}.
      */
-    public byte byteValue() {
+    public @PolyIndex byte byteValue(@PolyIndex Integer this) {
         return (byte)value;
     }
 
@@ -690,7 +690,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * Returns the value of this {@code Integer} as a
      * {@code short}.
      */
-    public short shortValue() {
+    public @PolyIndex short shortValue(@PolyIndex Integer this) {
         return (short)value;
     }
 
@@ -698,7 +698,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * Returns the value of this {@code Integer} as an
      * {@code int}.
      */
-    public int intValue() {
+    public @PolyIndex int intValue(@PolyIndex Integer this) {
         return value;
     }
 
@@ -706,7 +706,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * Returns the value of this {@code Integer} as a
      * {@code long}.
      */
-    public long longValue() {
+    public @PolyIndex long longValue(@PolyIndex Integer this) {
         return (long)value;
     }
 

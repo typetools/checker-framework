@@ -64,24 +64,26 @@
               failonerror="true"
               classpath="${javac.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
-            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
+            <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->
             <arg value="-source"/>
-            <arg value="7"/>
+            <arg value="8"/>
             <arg value="-target"/>
-            <arg value="7"/>
+            <arg value="8"/>
+            <!-- To not get a warning about missing bootstrap
+                 classpath for Java 8 (once we use Java 9). -->
+            <arg value="-Xlint:-options"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
-            <!-- To not get a warning about bootstrap classpath -->
-            <arg value="-Xlint:-options"/>
-            <arg line="-sourcepath ${src}"/>
-            <arg line="-d ${build}"/>
-            <arg line="@${tmpdir}/srcfiles-javacutil.txt"/>
-            <arg line="-version"/>
-            <arg line="-XDTA:noannotationsincomments"/>
-            <arg line="-Xlint"/>
-            <arg line="-Werror"/>
+            <arg value="-sourcepath"/>
+            <arg value="${src}"/>
+            <arg value="-d"/>
+            <arg value="${build}"/>
+            <arg value="@${tmpdir}/srcfiles-javacutil.txt"/>
+            <arg value="-version"/>
+            <arg value="-XDTA:noannotationsincomments"/>
+            <arg value="-Xlint"/>
+            <arg value="-Werror"/>
         </java>
         <delete file="${tmpdir}/srcfiles-javacutil.txt"/>
 
@@ -110,11 +112,6 @@
         <jar destfile="${javacutil.javadoc.lib}" basedir="${api.doc}" includes="**"/>
     </target>
 
-    <!--
-    This target seems to only work if tools.jar is already in the
-    classpath (despite the attempt in the body to add tools.jar to the
-    classpath).  Also, ${java.home} is the jre/ directory.
-    -->
     <!-- If adding a Javadoc dependency to another project,
          there is likely also a build dependency to that project.
          Please add it as well and keep both in sync. -->
@@ -133,14 +130,14 @@
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
+                 classpath="${build}:${javac.lib}:${javadoc.lib}"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
             <package name="org.checkerframework.javacutil.*"/>
 
             <link href="http://docs.oracle.com/javase/8/docs/api/"/>
             <link href="http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
             <taglet name="org.checkerframework.javacutil.dist.ManualTaglet" path="${build}"/>
-            <arg line="-XDTA:noannotationsincomments"/>
+            <arg value="-XDTA:noannotationsincomments"/>
         </javadoc>
     </target>
 

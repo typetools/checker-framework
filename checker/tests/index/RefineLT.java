@@ -4,16 +4,7 @@ import org.checkerframework.checker.index.qual.LTLengthOf;
 class RefineLT {
     int[] arr = {1};
 
-    void testLTL(@LTLengthOf("arr") int test) {
-        // The reason for the parsing is so that the Value Checker
-        // can't figure it out but normal humans can.
-
-        //:: error: (assignment.type.incompatible)
-        @LTLengthOf("arr") int a = Integer.parseInt("1");
-
-        //:: error: (assignment.type.incompatible)
-        @LTLengthOf("arr") int a3 = Integer.parseInt("3");
-
+    void testLTL(@LTLengthOf("arr") int test, @LTLengthOf("arr") int a, @LTLengthOf("arr") int a3) {
         int b = 2;
         if (b < test) {
             @LTLengthOf("arr") int c = b;

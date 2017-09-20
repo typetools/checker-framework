@@ -227,7 +227,7 @@ public final class Short extends Number implements Comparable<Short> {
      * @return a {@code Short} instance representing {@code s}.
      * @since  1.5
      */
-    public static /*@ PolyLowerBound @ PolyUpperBound*/ Short valueOf(/*@ PolyLowerBound @ PolyUpperBound*/ short s) {
+    public static @PolyIndex Short valueOf(@PolyIndex short s) {
         final int offset = 128;
         int sAsInt = s;
         if (sAsInt >= -128 && sAsInt <= 127) { // must cache
@@ -300,7 +300,7 @@ public final class Short extends Number implements Comparable<Short> {
      * @param value     the value to be represented by the
      *                  {@code Short}.
      */
-    public /*@ PolyLowerBound @ PolyUpperBound*/ Short(/*@ PolyLowerBound @ PolyUpperBound*/ short value) {
+    public @PolyIndex Short(@PolyIndex short value) {
         this.value = value;
     }
 
@@ -325,7 +325,7 @@ public final class Short extends Number implements Comparable<Short> {
      * Returns the value of this {@code Short} as a
      * {@code byte}.
      */
-    public byte byteValue() {
+    public @PolyIndex byte byteValue(@PolyIndex Short this) {
         return (byte)value;
     }
 
@@ -333,7 +333,7 @@ public final class Short extends Number implements Comparable<Short> {
      * Returns the value of this {@code Short} as a
      * {@code short}.
      */
-    public short shortValue() {
+    public @PolyIndex short shortValue(@PolyIndex Short this) {
         return value;
     }
 
@@ -341,7 +341,7 @@ public final class Short extends Number implements Comparable<Short> {
      * Returns the value of this {@code Short} as an
      * {@code int}.
      */
-    public int intValue() {
+    public @PolyIndex int intValue(@PolyIndex Short this) {
         return (int)value;
     }
 
@@ -349,7 +349,7 @@ public final class Short extends Number implements Comparable<Short> {
      * Returns the value of this {@code Short} as a
      * {@code long}.
      */
-    public long longValue() {
+    public @PolyIndex long longValue(@PolyIndex Short this) {
         return (long)value;
     }
 

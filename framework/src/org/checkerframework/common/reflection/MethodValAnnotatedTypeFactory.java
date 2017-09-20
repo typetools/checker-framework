@@ -28,18 +28,18 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror METHODVAL_BOTTOM =
-            AnnotationUtils.fromClass(elements, MethodValBottom.class);
+            AnnotationBuilder.fromClass(elements, MethodValBottom.class);
     private final AnnotationMirror UNKNOWN_METHOD =
-            AnnotationUtils.fromClass(elements, UnknownMethod.class);
+            AnnotationBuilder.fromClass(elements, UnknownMethod.class);
 
     private static final int UNKNOWN_PARAM_LENGTH = -1;
 
@@ -57,7 +57,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected void initilizeReflectionResolution() {
+    protected void initializeReflectionResolution() {
         boolean debug = "debug".equals(checker.getOption("resolveReflection"));
         reflectionResolver = new DefaultReflectionResolver(checker, this, debug);
     }
@@ -179,21 +179,21 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
-            if (AnnotationUtils.areSame(sub, sup)
-                    || AnnotationUtils.areSameByClass(sup, UnknownMethod.class)
-                    || AnnotationUtils.areSameByClass(sub, MethodValBottom.class)) {
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (AnnotationUtils.areSame(subAnno, superAnno)
+                    || AnnotationUtils.areSameByClass(superAnno, UnknownMethod.class)
+                    || AnnotationUtils.areSameByClass(subAnno, MethodValBottom.class)) {
                 return true;
             }
-            if (AnnotationUtils.areSameByClass(sub, UnknownMethod.class)
-                    || AnnotationUtils.areSameByClass(sup, MethodValBottom.class)) {
+            if (AnnotationUtils.areSameByClass(subAnno, UnknownMethod.class)
+                    || AnnotationUtils.areSameByClass(superAnno, MethodValBottom.class)) {
                 return false;
             }
-            assert AnnotationUtils.areSameByClass(sub, MethodVal.class)
-                            && AnnotationUtils.areSameByClass(sup, MethodVal.class)
+            assert AnnotationUtils.areSameByClass(subAnno, MethodVal.class)
+                            && AnnotationUtils.areSameByClass(superAnno, MethodVal.class)
                     : "Unexpected annotation in MethodVal";
-            List<MethodSignature> subSignatures = getListOfMethodSignatures(sub);
-            List<MethodSignature> superSignatures = getListOfMethodSignatures(sup);
+            List<MethodSignature> subSignatures = getListOfMethodSignatures(subAnno);
+            List<MethodSignature> superSignatures = getListOfMethodSignatures(superAnno);
             for (MethodSignature sig : subSignatures) {
                 if (!superSignatures.contains(sig)) {
                     return false;

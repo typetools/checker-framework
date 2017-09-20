@@ -21,7 +21,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -56,8 +56,8 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public InterningAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        this.INTERNED = AnnotationUtils.fromClass(elements, Interned.class);
-        this.TOP = AnnotationUtils.fromClass(elements, UnknownInterned.class);
+        this.INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
+        this.TOP = AnnotationBuilder.fromClass(elements, UnknownInterned.class);
 
         // If you update the following, also update ../../../../../docs/manual/interning-checker.tex .
         addAliasedAnnotation(com.sun.istack.internal.Interned.class, INTERNED);
@@ -124,7 +124,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Adds @Interned to enum types and any use of a class that is declared to be @Interned */
+    /** Adds @Interned to enum types and any use of a class that is declared to be @Interned. */
     private class InterningTypeAnnotator extends TypeAnnotator {
 
         InterningTypeAnnotator(InterningAnnotatedTypeFactory atypeFactory) {
@@ -156,8 +156,8 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Unbox type and replace any interning type annotations with @Interned since all all primitives
-     * can safely use ==. See case 4 in the class comments.
+     * Unbox type and replace any interning type annotations with @Interned since all primitives can
+     * safely use ==. See case 4 in the class comments.
      */
     @Override
     public AnnotatedPrimitiveType getUnboxedType(AnnotatedDeclaredType type) {

@@ -217,7 +217,7 @@ public class OutputStreamWriter extends Writer {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    public void write(String str, /*@ IndexFor("#1")*/ int off, /*@ IndexOrHigh("#1")*/ int len) throws IOException {
+    public void write(String str, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         se.write(str, off, len);
     }
 

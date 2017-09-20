@@ -128,11 +128,6 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "compiler-javadoc.jar"),
                             pgp_user, pgp_passphrase)
 
-    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JDK7_BINARY_RELEASE_POM, JDK7_BINARY,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk7-source.jar"),
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk7-javadoc.jar"),
-                            pgp_user, pgp_passphrase)
-
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JDK8_BINARY_RELEASE_POM, JDK8_BINARY,
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-source.jar"),
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-javadoc.jar"),
@@ -343,7 +338,7 @@ def main(argv):
             maven_sanity_check("maven-dev", MAVEN_DEV_REPO, new_checker_version)
 
         print_step("3c: Build the Eclipse plugin and test.")
-        print "Please download: https://checkerframework.org/dev/checker-framework/checker-framework-%s.zip" % new_checker_version
+        print "Please download: https://checkerframework.org/dev/checker-framework-%s.zip" % new_checker_version
         print("Use the jars in the dist directory along with the instructions at " +
               "checker-framework/eclipse/README-developers.html to build the Eclipse plugin.\n" +
               "Please install this version in the latest version of Eclipse and follow the tutorial at:\n" +
@@ -480,18 +475,15 @@ def main(argv):
                "To drop, log into https://oss.sonatype.org using your " +
                "Sonatype credentials and follow the 'DROP' instructions at: " + SONATYPE_DROPPING_DIRECTIONS_URL)
     else:
-        msg = ("Please 'release' the artifacts, but IMPORTANTLY first ensure that the Checker Framework maven plug-in directory " +
-               "(and only that directory) is removed from the artifacts.\n" +
+        msg = ("Please 'release' the artifacts.\n" +
                "First log into https://oss.sonatype.org using your Sonatype credentials. Go to Staging Repositories and " +
                "locate the orgcheckerframework repository and click on it.\n" +
-               "Then, in the view for the orgcheckerframework staging repository at the bottom of the page, click on the Content tab. " +
-               "Expand subdirectories to find org/checkerframework/checkerframework-maven-plugin. Right-click on it, and choose delete.\n" +
                "If you have a permissions problem, try logging out and back in.\n" +
                "Finally, click on the Release button at the top of the page. In the dialog box that pops up, " +
                "leave the \"Automatically drop\" box checked. For the description, write " +
                "Checker Framework release " + new_checker_version + "\n\n")
 
-    # TODO: fix this so that the maven plug-in directory directory is not included in the first place.
+    # TODO: fix this so that the maven plug-in directory is not included in the first place.
 
     print  msg
     prompt_to_continue()

@@ -34,7 +34,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.Heuristics;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -62,7 +62,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
     public InterningVisitor(BaseTypeChecker checker) {
         super(checker);
-        this.INTERNED = AnnotationUtils.fromClass(elements, Interned.class);
+        this.INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
         typeToCheck = typeToCheck();
     }
 
@@ -296,8 +296,6 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
     /**
      * Tests whether a method invocation is an invocation of {@link Comparable#compareTo}.
-     *
-     * <p>
      *
      * @param node a method invocation node
      * @return true iff {@code node} is a invocation of {@code compareTo()}
@@ -821,10 +819,14 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      */
     DeclaredType typeToCheck() {
         String className = checker.getOption("checkclass");
-        if (className == null) return null;
+        if (className == null) {
+            return null;
+        }
 
         TypeElement classElt = elements.getTypeElement(className);
-        if (classElt == null) return null;
+        if (classElt == null) {
+            return null;
+        }
 
         return types.getDeclaredType(classElt);
     }

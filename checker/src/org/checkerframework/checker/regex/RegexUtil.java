@@ -2,6 +2,8 @@
 
 package org.checkerframework.checker.regex;
 
+// Uses annotations in comments because it may be run on a Java 7 JVM
+// when called from user code.
 /*>>>
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.regex.qual.*;
@@ -153,7 +155,7 @@ public final class RegexUtil {
      *
      * @param s string to check for being a regular expression
      * @param groups number of groups expected
-     * @return true iff s is a regular expression with groups groups
+     * @return true iff s is a regular expression with {@code groups} groups
      */
     @SuppressWarnings({"regex", "deterministic"}) // RegexUtil; for purity, catches an exception
     /*@Pure*/

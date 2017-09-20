@@ -36,7 +36,7 @@ public class MaskedShifts {
 
         // Use mask that doesn't render the MSB irrelevent, but does render the next 7 MSB_s irrelevent
 
-        // Now the left-most introduced introduced bit matters
+        // Now the left-most introduced bit matters
         testRes = (unsigned >>> 8) & 0x90FFFFFF;
 
         //:: error: (shift.signed)
@@ -197,7 +197,7 @@ public class MaskedShifts {
 
         // Use mask that doesn't render the MSB irrelevent, but does render the next 7 MSB_s irrelevent
 
-        // Now the left-most introduced introduced bit matters
+        // Now the left-most introduced bit matters
         testRes = (unsigned >>> 8) | 0x8F000000;
 
         //:: error: (shift.signed)
@@ -322,5 +322,21 @@ public class MaskedShifts {
         //:: error: (shift.unsigned)
         testRes = signed >>> 8 | ((0x0));
         testRes = signed >> 8 | ((0x0));
+    }
+
+    public void ZeroShiftTests(@Unsigned int unsigned, @Signed int signed) {
+        @UnknownSignedness int testRes;
+
+        // Tests shift by zero followed by "and" mask
+        testRes = (unsigned >>> 0) & 0xFFFFFFFF;
+        testRes = (unsigned >> 0) & 0xFFFFFFFF;
+        testRes = (signed >>> 0) & 0xFFFFFFFF;
+        testRes = (signed >> 0) & 0xFFFFFFFF;
+
+        // Tests shift by zero followed by "or" mask
+        testRes = (unsigned >>> 0) | 0x0;
+        testRes = (unsigned >> 0) | 0x0;
+        testRes = (signed >>> 0) | 0x0;
+        testRes = (signed >> 0) | 0x0;
     }
 }

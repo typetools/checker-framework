@@ -108,12 +108,10 @@ Given the library annotations, you have two options:
   The stub file approach does not require you to compile the library source
   code.
   A stub file is applicable to multiple versions of a library, so
-  the stub file does not need to to be updated when a new version of the
+  the stub file does not need to be updated when a new version of the
   library is released.
   When provided by the author of the checker, a stub file is used
   automatically, with no need for the user to supply a command-line option.
-  The stub file reader approach has some limitations, notably using
-  non-standard syntax in some locations (Section~\ref{stub-limitations}).
   Section~\ref{stub} describes how to create and use stub files.
 
 \end{enumerate}
@@ -135,6 +133,25 @@ when getting started, but you should always examine their results.
 % Nullness (Section~\ref{nullness-inference}) type system.
 
 
+\subsection{Tips for annotating a library\label{annotating-tips}}
+
+When you annotate a library, you should only add annotations and, when
+necessary, documentation of those annotations in a Java comment (\<//>
+or \</*...*/>).
+
+Do not change the library's code, including formatting and whitespace.
+Do not change publicly-visible documentation, such as Javadoc comments.
+Changes like these will increase the size of the diffs
+between upstream and your version.  Unnecessary diffs make it harder for
+others to understand what you have done, and they make it harder to pull
+changes from upstream into the annotated library.
+
+While annotating the library, you may discover bugs or missing/wrong
+documentation.  If you have a documentation improvement or a bug fix, then
+pull-request them against the upstream version of the library.  This will
+benefit all users of the library.
+
+
 \subsection{Creating a new annotated JDK\label{annotating-jdk}}
 
 When you create a new checker, you need to also supply annotations for
@@ -144,9 +161,9 @@ section describes the latter approach.
 
 \begin{enumerate}
 \item
-Get Java 7 source code (must be version 7)
+Get Java 8 source code (must be version 8)
 \begin{enumerate}
-\item Download JDK7 from oracle
+\item Download JDK8 from Oracle
 \item Open the downloaded tar (\<tar -xvzf>)
 \item Unzip the contained \<src.zip> (resulting in folders: \<com/>, \<java/>, \<javax/>, \<launcher/>, \<org/>)
 \end{enumerate}
@@ -156,7 +173,7 @@ Set up the Checker Framework (replace \textit{mychecker} with the name of your c
 \begin{enumerate}
 \item \<mkdir \$JSR308/checker-framework/checker/jdk/\textit{mychecker}/> \\
   \<cd \$JSR308/checker-framework/checker/jdk/\textit{mychecker}/> \\
-  \<ln -s ../Makefile.jdk Makefile>
+  \code{echo "include ../Makefile.jdk" > Makefile}
 
 \item Add \textit{mychecker} to
   \<\$JSR308/checker-framework/checker/jdk/MakeFile> in the  definition of
@@ -450,40 +467,9 @@ following ways:
   This simplifies the creation of stub files.
 
 \item{\textbf{Import statements:}}
-  All imports must be at the beginning of the file.
+  Imports may appear at the beginning of the file or after any package declaration.
   The only required import statements are the ones to import type
   annotations.  Import statements for types are optional.
-
-  Enum constants in annotations need to be either fully-qualified
-  or imported.
-  For example, one has to either write the enum constant \<ANY> in
-  fully-qualified form:
-
-\begin{Verbatim}
-@Source(sparta.checkers.quals.FlowPermission.ANY)
-\end{Verbatim}
-
-\noindent
-or correctly import the enum class:
-
-\begin{Verbatim}
-import sparta.checkers.quals.FlowPermission;
-...
-@Source(FlowPermission.ANY)
-\end{Verbatim}
-
-\noindent
-or statically import the enum constants:
-
-\begin{Verbatim}
-import static sparta.checkers.quals.FlowPermission.*;
-...
-@Source(ANY)
-\end{Verbatim}
-
-  Importing all packages from a class (\<import my.package.*;>) only
-  considers annotations from that package; enum types need to be
-  explicitly imported.
 
 \item{\textbf{Multiple classes and packages:}}
   The stub file format permits having multiple classes and packages.
@@ -624,81 +610,6 @@ StubParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
 \end{Verbatim}
 
 
-\subsection{Limitations\label{stub-limitations}}
-
-The stub file reader has several limitations that are violations of Java 8 syntax.  We will fix these in a
-future release.
-
-\begin{itemize}
-
-\item
-  The receiver is written after the method parameter list, instead of as an
-  explicit first parameter.  That is, instead of
-
-\begin{Verbatim}
-     returntype methodname(@Annotations C this, params);
-\end{Verbatim}
-
-\noindent
-in a stub file one has to write
-
-\begin{Verbatim}
-     returntype methodname(params) @Annotations;
-\end{Verbatim}
-
-\item
-  The stub file reader
-  does not handle nested class declarations.  To work around this, it permits a
-  top-level class to be written with a \<\$> in its name, and applies the
-  annotations to the appropriate nested class.
-
-\begin{Verbatim}
-    class Lib$Inner {
-       // methods
-    }
-\end{Verbatim}
-
-\item
-  Annotations must be written before the package name on a fully-qualified
-  types rather than directly on the type it qualifies.  However, it is usually not
-  necessary to write the fully-qualified name.
-
-  \begin{Verbatim}
-          void init(@Nullable java.security.SecureRandom random);
-   \end{Verbatim}
-\item
-   Annotations on types that are inner classes must be written before the
-   package if the type is written as a
-   fully-qualified type, or before the inner class name if the type is
-   written as a simple type. For example,
-
-\begin{Verbatim}
-        ProcessBuilder redirectError(@NonNull java.lang.ProcessBuilder.Redirect destination);
-\end{Verbatim}
- or
-\begin{Verbatim}
-        ProcessBuilder redirectError(@NonNull Redirect destination);
-\end{Verbatim}
-   The code below will cause an error.
-\begin{Verbatim}
-        // error
-        ProcessBuilder redirectError(@NonNull ProcessBuilder.Redirect destination);
-\end{Verbatim}
- or
-\begin{Verbatim}
-        // error
-        ProcessBuilder redirectError(ProcessBuilder.@NonNull Redirect destination);
-\end{Verbatim}
-
-\item
-  Annotations can only use string, boolean, or integer literals; other literals are not
-  yet supported.
-\end{itemize}
-
-If these limitations are a problem, then you should insert annotations
-in the library's \<.class> files instead.
-
-
 \section{Library annotations should reflect the specification, not the implementation\label{libraries-specification}}
 
 When you write library annotations, you should base them on the library
@@ -748,5 +659,5 @@ read whether the library's annotations are parsed.
 %%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs bcel mkdir
 %%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1 cd
 %%  LocalWords:  TypeSystem2 TypeSystem3 AuseDefaultsForUncheckedCode ln
-%  LocalWords:  mychecker DIRS README TypeSystem un debugJSR org
+%  LocalWords:  mychecker DIRS README TypeSystem un debugJSR org boolean
 %  LocalWords:  AstubWarnIfOverwritesBytecode

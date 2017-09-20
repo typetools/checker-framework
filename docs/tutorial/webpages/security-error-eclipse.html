@@ -146,7 +146,7 @@ incompatible types in argument.
       <p>To correct this error, <b>add <code>@Untainted</code></b> to the
       type of the <code>category</code> parameter.</p>
       <pre>
-  public List&lt;?&gt; getPostsByCategory(<b>/*@Untainted*/</b> String category) throws ServiceException {
+  public List&lt;?&gt; getPostsByCategory(<b>@Untainted</b> String category) throws ServiceException {
 </pre>This forces clients to pass an <code>@Untainted</code> value, which
 was the intention of the designer of the <code>getPostsByCategory</code>
 method.
@@ -190,6 +190,13 @@ incompatible types in argument.
     </div>
   </div>
 
+  <div id="end">
+    <div class="page-header short">
+      <h2>The end of the Checker Framework Tutorial <small><strong>Return
+      to the <a href="../index.html">main page</a> of the
+      Tutorial.</strong></small></h2>
+    </div>
+  </div><!--
   <div id="installation">
     <div class="page-header short">
       <h2><small>Next, try <a href=
@@ -197,7 +204,7 @@ incompatible types in argument.
       or return to the <a href="../index.html">main page</a> of the
       Tutorial.</small></h2>
     </div>
-  </div><!--
+  </div>--><!--
 <div class="bottom_liner well">
     <a href="#">Top</a>
 </div>

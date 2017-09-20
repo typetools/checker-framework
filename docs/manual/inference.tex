@@ -121,7 +121,7 @@ Framework.
 You can find installation instructions and a video tutorial at \url{https://github.com/reprogrammer/cascade}.
 
 
-\subsection{Whole-program inference\label{whole-program-inference}}
+\section{Whole-program inference\label{whole-program-inference}}
 
 Whole-program inference is an interprocedural inference that
 infers types for fields, method parameters, and method return types that do not
@@ -134,12 +134,10 @@ least upper bound of the types of all the expressions that are assigned
 into the field.
 
 \begin{sloppypar}
-To use whole-program inference,
-set the \<\$CHECKERFRAMEWORK> variable to the Checker Framework's
-directory (if you haven't already), and make sure that
+To use whole-program inference, make sure that
 \<insert-annotations-to-source>, from the Annotation File Utilities project,
 is on your path (for example in the \<\$PATH> environment variable).
-Then, run the script \<\$CHECKERFRAMEWORK/checker/bin/infer-and-annotate.sh>.
+Then, run the script \<checker-framework/checker/bin/infer-and-annotate.sh>.
 Its command-line arguments are:
 \end{sloppypar}
 
@@ -149,7 +147,7 @@ Its command-line arguments are:
 \item Processor's name.
 \item Target program's classpath.  This argument is required; pass "" if it
   is empty.
-\item Extra processor arguments which will be passed to the checker, if any.
+\item Optional: Extra processor arguments which will be passed to the checker, if any.
   You may supply any number of such arguments, or none.  Each such argument
   must start with a hyphen.
 \item Optional: Paths to \<.jaif> files used as input in the inference
@@ -189,9 +187,9 @@ or a supertype of the default type, by contrast with type refinement which
 always refines the current type to a subtype.
 
 
-\subsubsection{Whole-program inference ignores some code\label{whole-program-inference-ignores-some-code}}
+\subsection{Whole-program inference ignores some code\label{whole-program-inference-ignores-some-code}}
 
-Whole-program inference ignores code within the the scope of a
+Whole-program inference ignores code within the scope of a
 \<@SuppressWarnings> annotation with an appropriate key
 (Section~\ref{suppresswarnings-annotation}).  In particular, uses within
 the scope do not contribute to the inferred type, and declarations within
@@ -221,7 +219,7 @@ Whole-program inference, for a type-checker other than the Nullness Checker,
 ignores (pseudo-)assignments where the right-hand-side is the \<null> literal.
 
 
-\subsubsection{Manually checking whole-program inference results\label{whole-program-inference-manual-checking}}
+\subsection{Manually checking whole-program inference results\label{whole-program-inference-manual-checking}}
 
 As with any type inference tool, it is a good idea to manually examine the
 results.
@@ -234,14 +232,14 @@ particular field, as explained below.
 This is especially noticeable when the arguments or assignments are literals.
 
 \item
-Also carefully examine annotations inferred for uses of type variables; in
-some cases, it might be more appropriate for you to move those annotations
-to the corresponding upper bounds of the type variable declaration.
+If an annotation is inferred for a \emph{use} of type variables;
+it might be more appropriate for you to move those annotations
+to the corresponding upper bounds of the type variable \emph{declaration}.
 
 \end{itemize}
 
 
-\paragraph{Poor whole-program inference results due to non-representative uses\label{whole-program-inference-non-representative-uses}}
+\subsubsection{Poor whole-program inference results due to non-representative uses\label{whole-program-inference-non-representative-uses}}
 
 Whole-program inference determines a method parameter's type
 annotation based on what arguments are passed to the method, but not on how the
@@ -259,29 +257,41 @@ to \<m2> passes \<null> as the argument.  Then the tool will infer that
 You should correct the bug and re-run inference.
 
 \item
-The tool's annotations are legal for the program as
+If the program uses (say) a method in a limited way, then the inferred
+annotations will be legal for the program as
 currently written but may not be as general as possible and may not
 accommodate future program changes.
 
+Here are some examples:
+
+\begin{itemize}
+\item
 Suppose that your program currently calls
-method \<m1> with non-null
-arguments.  This tool will infer that \<m1>'s parameter has
+method \<m1> only with non-null
+arguments.  The tool will infer that \<m1>'s parameter has
 \<@NonNull> type.  If you had intended the method to be able to
 take \<null> as an argument and you later add such a call, the type-checker
 will issue a warning because the automatically-inserted \<@NonNull>
 annotation is inconsistent with the new call.
-You can correct the inferred results manually, or you can
-add tests that pass \<null> to \<m1> then re-run inference.
 
-On the other hand, if the inferred type is the bottom type, such as
-\<@GuardedByBottom>, then perhaps your program only passes the \<null>
-argument.  You should also correct this manually or expand your test suite
-and re-run inference.
+\item
+If your program (or test suite) passes only \<null> as an argument, the
+inferred type will be the bottom type, such as \<@GuardedByBottom>.
+
+\item
+It is common for whole-program inference to infer
+\<@Interned> and \<@Regex> annotations on String variables for which the
+analyzed code only uses a constant string.
+
+\end{itemize}
+
+In each case, you can correct the inferred results manually, or you can
+add tests that pass additional values then re-run inference.
 
 \end{itemize}
 
 
-\subsubsection{How whole-program inference works\label{how-whole-program-inference-works}}
+\subsection{How whole-program inference works\label{how-whole-program-inference-works}}
 
 This section explains how the \<infer-and-annotate.sh> script works.  If you
 merely want to run the script and you are not encountering trouble, you can

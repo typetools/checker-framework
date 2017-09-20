@@ -120,7 +120,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(node.getExpression());
         AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(node.getVariable());
         Set<? extends AnnotationMirror> lubs =
-                qualHierarchy.leastUpperBounds(rhs.getAnnotations(), lhs.getAnnotations());
+                qualHierarchy.leastUpperBounds(
+                        rhs.getEffectiveAnnotations(), lhs.getEffectiveAnnotations());
         type.addMissingAnnotations(lubs);
         return null;
     }
@@ -184,9 +185,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
                 // If both types are type variables, take the direct annotations.
                 type.addMissingAnnotations(exprType.getAnnotations());
             }
-            // else do nothing
-            // TODO: What should we do if the type is a type variable, but the expression
-            // is not?
+            // else do nothing.
         } else {
             // Use effective annotations from the expression, to get upper bound
             // of type variables.

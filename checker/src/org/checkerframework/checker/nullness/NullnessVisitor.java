@@ -55,18 +55,16 @@ import org.checkerframework.javacutil.TypesUtils;
 public class NullnessVisitor
         extends InitializationVisitor<NullnessAnnotatedTypeFactory, NullnessValue, NullnessStore> {
     // Error message keys
-    // private static final /*@CompilerMessageKey*/ String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
-    private static final /*@CompilerMessageKey*/ String UNBOXING_OF_NULLABLE =
-            "unboxing.of.nullable";
-    private static final /*@CompilerMessageKey*/ String KNOWN_NONNULL = "known.nonnull";
-    private static final /*@CompilerMessageKey*/ String LOCKING_NULLABLE = "locking.nullable";
-    private static final /*@CompilerMessageKey*/ String THROWING_NULLABLE = "throwing.nullable";
-    private static final /*@CompilerMessageKey*/ String ACCESSING_NULLABLE = "accessing.nullable";
-    private static final /*@CompilerMessageKey*/ String CONDITION_NULLABLE = "condition.nullable";
-    private static final /*@CompilerMessageKey*/ String ITERATING_NULLABLE =
-            "iterating.over.nullable";
-    private static final /*@CompilerMessageKey*/ String SWITCHING_NULLABLE = "switching.nullable";
-    private static final /*@CompilerMessageKey*/ String DEREFERENCE_OF_NULLABLE =
+    // private static final @CompilerMessageKey String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
+    private static final @CompilerMessageKey String UNBOXING_OF_NULLABLE = "unboxing.of.nullable";
+    private static final @CompilerMessageKey String KNOWN_NONNULL = "known.nonnull";
+    private static final @CompilerMessageKey String LOCKING_NULLABLE = "locking.nullable";
+    private static final @CompilerMessageKey String THROWING_NULLABLE = "throwing.nullable";
+    private static final @CompilerMessageKey String ACCESSING_NULLABLE = "accessing.nullable";
+    private static final @CompilerMessageKey String CONDITION_NULLABLE = "condition.nullable";
+    private static final @CompilerMessageKey String ITERATING_NULLABLE = "iterating.over.nullable";
+    private static final @CompilerMessageKey String SWITCHING_NULLABLE = "switching.nullable";
+    private static final @CompilerMessageKey String DEREFERENCE_OF_NULLABLE =
             "dereference.of.nullable";
 
     // Annotation and type constants
@@ -176,7 +174,7 @@ public class NullnessVisitor
 
     @Override
     protected void commonAssignmentCheck(
-            Tree varTree, ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
+            Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
 
         // allow MonotonicNonNull to be initialized to null at declaration
         if (varTree.getKind() == Tree.Kind.VARIABLE) {
@@ -195,7 +193,7 @@ public class NullnessVisitor
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             ExpressionTree valueExp,
-            /*@CompilerMessageKey*/ String errorKey) {
+            @CompilerMessageKey String errorKey) {
         // Use the valueExp as the context because data flow will have a value for that tree.
         // It might not have a value for the var tree.  This is sound because
         // if data flow has determined @PolyNull is @Nullable at the RHS, then
@@ -209,7 +207,7 @@ public class NullnessVisitor
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            /*@CompilerMessageKey*/ String errorKey) {
+            @CompilerMessageKey String errorKey) {
         if (TypesUtils.isPrimitive(varType.getUnderlyingType())
                 && !TypesUtils.isPrimitive(valueType.getUnderlyingType())) {
             boolean succeed = checkForNullability(valueType, valueTree, UNBOXING_OF_NULLABLE);
@@ -274,7 +272,7 @@ public class NullnessVisitor
         for (ExpressionTree dim : node.getDimensions()) {
             if (dim instanceof LiteralTree) {
                 Object val = ((LiteralTree) dim).getValue();
-                if (!(val instanceof Number) || !(new Integer(0).equals(val))) {
+                if (!(val instanceof Number) || !(Integer.valueOf(0).equals(val))) {
                     isAllZeros = false;
                     break;
                 }
@@ -448,8 +446,7 @@ public class NullnessVisitor
      * @param errMsg the error message (must be {@link CompilerMessageKey})
      * @return whether or not the check succeeded
      */
-    private boolean checkForNullability(
-            ExpressionTree tree, /*@CompilerMessageKey*/ String errMsg) {
+    private boolean checkForNullability(ExpressionTree tree, @CompilerMessageKey String errMsg) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
         return checkForNullability(type, tree, errMsg);
     }
@@ -463,7 +460,7 @@ public class NullnessVisitor
      * @return whether or not the check succeeded
      */
     private boolean checkForNullability(
-            AnnotatedTypeMirror type, Tree tree, /*@CompilerMessageKey*/ String errMsg) {
+            AnnotatedTypeMirror type, Tree tree, @CompilerMessageKey String errMsg) {
         if (!type.hasEffectiveAnnotation(NONNULL)) {
             checker.report(Result.failure(errMsg, tree), tree);
             return false;

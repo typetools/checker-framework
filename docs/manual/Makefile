@@ -48,12 +48,12 @@ figures-all:
 
 manual.pdf: bib-update figures-all check-labels
 	pdflatex manual.tex
-	bibtex manual
+	bibtex -min-crossrefs=9999 manual
 	pdflatex manual.tex
 	while grep "Rerun to get" manual.log; do pdflatex manual.tex; done
 
 html: manual.html
-manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
+manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 	hevea -fix -exec xxdate.exe manual.tex
 # I'm not sure why this is necessary; "hevea -fix" should run it automatically.
 # Also, you need ImageMagick 6.8.0-2 Beta or later to avoid a bug.
@@ -70,6 +70,9 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 # Add CSS styling, since \newstyle doesn't work for me.
 	sed -i -e "s%<style type=\"text/css\">%<style type=\"text/css\">\nimg { max-width: 100\%; max-height: 100\%; }%" manual.html
 
+../api:
+	cd .. && ln -fs ../checker/api api
+
 CFLogo.png: ../logo/Logo/CFLogo.png
 	cp -p $< $@
 
@@ -79,7 +82,7 @@ favicon-checkerframework.png: ../logo/Checkmark/CFCheckmark_favicon.png
 # Ensure that every section of the manual has a \label{} command.
 .PHONY: check-labels
 check-labels:
-	if grep -n --perl-regexp "\\\\((sub)*section|paragraph){[^#](?!.*\\\\label.*}})" *.tex ; then false ; else true ; fi
+	if ( grep -n '^\\\(chapter\|\(sub\)*section\|paragraph\){' *.tex | grep -v "{.*\\label{.*}}" ) ; then false ; else true ; fi
 
 export BIBINPUTS = $BIBINPUTS:.:bib
 bib:

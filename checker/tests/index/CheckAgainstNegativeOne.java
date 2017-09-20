@@ -1,5 +1,7 @@
-// @skip-test so that the travis build stops failing...
-
+// @skip-test
+// The upper bound checker does not handle offsets precisely
+// enough to prove that lastend is @IndexOrHigh("target")
+// Github issue about disabling this test: https://github.com/panacekcz/checker-framework/issues/4
 class CheckAgainstNegativeOne {
 
     public static String replaceString(String target, String oldStr, String newStr) {

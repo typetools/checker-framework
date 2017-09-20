@@ -5,6 +5,8 @@ import org.checkerframework.checker.signedness.qual.*;
 public class Utils {
 
     public void getTests(
+            @Unsigned int uint,
+            @Signed int sint,
             @Unsigned short ushort,
             @Signed short sshort,
             @Unsigned byte ubyte,
@@ -12,6 +14,11 @@ public class Utils {
             @Unsigned byte[] ubyteArr,
             @Signed byte[] sbyteArr,
             ByteBuffer b) {
+
+        //:: error: (assignment.type.incompatible)
+        sint = SignednessUtil.getUnsignedInt(b);
+
+        uint = SignednessUtil.getUnsignedInt(b);
 
         //:: error: (assignment.type.incompatible)
         sshort = SignednessUtil.getUnsignedShort(b);
@@ -137,5 +144,26 @@ public class Utils {
         res = SignednessUtil.toUnsignedString(sbyte, 10);
 
         res = SignednessUtil.toUnsignedString(ubyte, 10);
+    }
+
+    public void floatingPointConversionTests(
+            @Unsigned long ulong,
+            @Unsigned int uint,
+            @Unsigned short ushort,
+            @Unsigned byte ubyte) {
+
+        float resFloat;
+
+        resFloat = SignednessUtil.toFloat(ubyte);
+        resFloat = SignednessUtil.toFloat(ushort);
+        resFloat = SignednessUtil.toFloat(uint);
+        resFloat = SignednessUtil.toFloat(ulong);
+
+        double resDouble;
+
+        resDouble = SignednessUtil.toDouble(ubyte);
+        resDouble = SignednessUtil.toDouble(ushort);
+        resDouble = SignednessUtil.toDouble(uint);
+        resDouble = SignednessUtil.toDouble(ulong);
     }
 }

@@ -2,13 +2,17 @@
 \section{Introduction}
 
 This document describes a \emph{Dataflow Framework} for the
-Java Programming Language.  In particular, the framework is designed
-to be used in the Checker Framework, a framework that adds pluggable
-types to the Java type system.
+Java Programming Language.  The framework
+used in the \href{https://checkerframework.org/}{Checker Framework}, in
+\href{http://errorprone.info/}{Error Prone}, in internal tools used at
+Uber, and on other contexts.
 
-The primary purpose of the Dataflow Framework is to enable
-flow-sensitive type checking in the Checker Framework, which serves to
-reduce the burden of annotating a program.  The Dataflow Framework was
+The primary purpose of the Dataflow Framework is to estimate values:
+that is, to determine that, on a particular line of source code, what
+values a variable might contain.  This can also determine that a variable
+has a more precise type than its declared type.  This enables
+flow-sensitive type checking in the Checker Framework, which
+reduces the burden of annotating a program.  The Dataflow Framework was
 designed with several goals in mind.  First, to encourage other uses
 of the framework, it is written as a separate package that can be
 built and used with no dependence on the Checker Framework.  Second,
@@ -22,8 +26,6 @@ checker in the Checker Framework. The
 \href{https://docs.google.com/document/d/1oYzbOrrS4ZEEx4wQgIHbijNzcI5CiQAq_-1NrOS8JME/edit?usp=sharing}{Dataflow User's Guide}
 gives an introduction to customizing dataflow to add checker specific
 enhancements.
-
-
 
 The Dataflow Framework's result (\autoref{sec:analysis_result_class})
 is an abstract value for each expression (an estimate of the
@@ -116,11 +118,6 @@ A Node class represents an individual operation of a program,
 including arithmetic operations, logical operations, method calls,
 variable references, array accesses, etc.  \autoref{tab:nodes} lists
 the Node types.
-
-\begin{workinprogress}
-Need to double-check whether the code adds exceptions properly.  Also, does
-division possibly throw a DivideByZero exception?
-\end{workinprogress}
 
 \begin{verbatim}
 package org.checkerframework.dataflow.cfg.node;
@@ -840,6 +837,42 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \label{tab:nodes}
     \end{longtable}
 
+\autoref{tab:nodesWithException} shows all node types which can possibly throw
+an exception and the exception type to be thrown.
+Java class name of nodes are simplified as with \autoref{tab:nodes}.
+All exception types in \autoref{tab:nodesWithException} are in package \code{java.lang}.
+
+Considering \code{Error} such as \code{OutOfMemoryError} or \code{NoSuchFieldError},
+an exceptional edge of \code{Error} is not created except for method or
+constructor invocation, assertion statement or throw statement. Because
+it's not recommended to catch it due to a critical situation which is not
+to able to execute JVM and handle in an application.
+
+    \begin{longtable}{lp{0.6\linewidth}l}
+        \midrule
+        \multicolumn{2}{c}{\autoref{tab:nodesWithException}: All node types could throw Exception and types to be thrown.} \\ \\
+        \textbf{Node type} & \textbf{Exception type} \\ \midrule \endfirsthead
+
+        \textbf{Node type} & \textbf{Exception type} \\ \midrule \endhead
+        \hline \multicolumn{2}{|c|}{{Continued on next page}} \\ \hline \endfoot
+        \endlastfoot
+
+        \code{ArrayAccess} & \code{NullPointerException}, \code{ArrayIndexOutOfBoundsException} \\
+        \code{FieldAccess} & \code{NullPointerException} \\
+        \code{MethodAccess} & \code{NullPointerException} \\
+        \code{MethodInvocation} & \code{Throwable}, types in throws clause of the signature \\
+        \code{IntegerDivision} & \code{ArithmeticException} \\
+        \code{IntegerRemainder} & \code{ArithmeticException} \\
+        \code{ObjectCreation} & \code{Throwable}, types in throws clause of the signature \\
+        \code{TypeCast} & \code{ClassCastException} \\
+        \code{Throw} & Type of \code{e} when \code{throw e} \\
+        \code{AssertionError} & \code{AssertionError} \\
+        \midrule
+
+        \caption{All node types could throw Exception and types to be thrown.}
+        \label{tab:nodesWithException}
+    \end{longtable}
+
 \begin{workinprogress}
 ThisLiteral shouldn't be considered a literal value node, because a use of
 \code{this} is not a literal expression.  I would change the name and group
@@ -848,14 +881,6 @@ it with accessor expressions.
 
 \begin{workinprogress}
 Can \code{StringConversion} be implicit?  I think so, but in any event discuss.
-\end{workinprogress}
-
-\begin{workinprogress}
-I think it might be helpful to indicate which nodes can possibly throw
-an exception.  This could be done by segregating them to a different
-part of the table, or by having another column or an asterisk.  In the
-meantime, this information can be rather easily found in the source
-code of the CFGBuilder.
 \end{workinprogress}
 
 \begin{workinprogress}
@@ -870,11 +895,6 @@ desugaring in the Dataflow Framework?   Discuss that.  Here, at least
 forward-reference to \autoref{sec:desugaring}, if that's relevant. \\
 More generally, for any cases that will be discussed in the text, add a
 forward reference to the section with the discussion.
-\end{workinprogress}
-
-\begin{workinprogress}
-There is a \code{CaseNode}. How is the default case of a switch
-handled?
 \end{workinprogress}
 
 \begin{workinprogress}
@@ -928,6 +948,18 @@ exhibiting this behavior is shown in \autoref{lst:CFGFieldAssignment}.
 left-to-right (cf.\ \jlsref{15.26.1}),
 which is properly handled by the translation.}
 
+\subsubsection{Postfix/Prefix Increment/Decrement}
+\label{sec:postpre-incdec}
+Both of postfix and prefix increment or decrement have a side effect to
+update the variable or field. To represent this side effect, Dataflow
+Framework create an artificial assignment node like \code{n = n + 1}
+for \code{++n} or \code{n++}. This artificial assignment node is stored
+in \code{unaryAssignNodeLookup} of \code{ControlFlowGraph}. The assignment
+node is also stored in \code{treeLookup} for prefix increment or decrement
+so that the result of it is after the assignment. However, the node before
+the assignment is stored in \code{treeLookup} for postfix increment or decrement
+because the result of it should be before the assignment. For further information
+about node-tree mapping, see \autoref{sec:conversions} also.
 
 \subsubsection{Conditional stores}
 \label{sec:cond-stores}
@@ -1081,6 +1113,35 @@ the \code{throw}? Why are they not in the same basic block, as there
 is no alternate control flow?
 \end{workinprogress}
 
+\subsubsection{Varargs method invocation}
+\label{sec:varargs}
+In Java, varargs in method or constructor invocation is compiled
+as new array creation (cf.\ \jlsref{15.12.4.2}). For example,
+\code{m(1, 2, 3)} will be compiled as \code{m(new int[]\{1, 2, 3\})}
+when the signature of \code{m} is \code{m(int... args)}. Dataflow
+Framework creates an \code{ArrayCreationNode} with initializer for varargs
+in the same way as Java compiler. Note that it doesn't create an \code{ArrayCreationNode}
+when the varargs is an array which is same depth with the type of
+the formal parameter or \code{null} is given as actual varargs.
+
+\subsubsection{Default case and fall through for switch statement}
+\label{sec:default-switch}
+Switch statement is handled as a chain of \code{CaseNode} and nodes in
+the case. \code{CaseNode} makes a branch by comparing the equality of
+the expression of the switch statement and the expression of the case.
+Note that the expression of a switch statement must be executed just only
+once at first of switch statement. To refer its value, a fake variable
+is created and it is assigned to a fake variable. \code{THEN_TO_BOTH}
+edge goes to nodes in the case and \code{ELSE_TO_BOTH} edge goes to next
+\code{CaseNode}. When a next is default case, it goes to nodes in the default
+case. If a break statement is in nodes, it creates an edge to next node of
+the switch statement. If there is any possibility of fall-through, an edge
+to the first of nodes in the next case is created after nodes in the case.
+For example, the code in \autoref{lst:CFGSwitch} produces the control flow
+graph in \autoref{fig:CFGSwitch}. The fake variable named \code{switch#num0}
+is created and each of case nodes creates the branches.
+
+\flow{Switch}{Example of a switch statement with case, default and fall through.}
 
 \subsection{AST to CFG Translation}
 \label{sec:ast_to_cfg_translation}
@@ -1909,7 +1970,7 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  TransferFunction NodeVisitor TransferResults isRegex lst
 %  LocalWords:  CFAbstractTransfer AbstractNodeVisitor asRegex ClassTree
 %  LocalWords:  InitializationTransfer visitMethodInvocation RegexTransfer
-%  LocalWords:  CFAbstractAnalysis NullnessTransfer RegexChecker's lp
+%  LocalWords:  CFAbstractAnalysis NullnessTransfer RegexChecker's lp Uber
 %  LocalWords:  AnalysisResult AnnotatedTypeFactory AnnotatedTypeFactorys
 %  LocalWords:  AnnotationProvider getAnnotatedType BaseTypeChecker
 %  LocalWords:  GenericAnnotatedTypeFactory FlowAnalysis CFAnalysis
@@ -1936,7 +1997,8 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  IdentifierTree FieldAccessNode ImplicitThisNode unboxing
 %  LocalWords:  TreePath pathHack MethodTree VarSymbol DetachedVarSymbols
 %  LocalWords:  DeclarationFromElement BoxedClass treeLookup getValue
-%  LocalWords:  nodeValues AdditionNode postconversion treelookup
+%  LocalWords:  nodeValues AdditionNode postconversion treelookup desugar
 %  LocalWords:  LocalVariableNode AconcurrentSemantics MonotonicNonNull
 %  LocalWords:  MonotonicQualifier IntegerLiteralNode EqualToNode
-%  LocalWords:  ConstSimple SelfReference PureMethodCall
+%  LocalWords:  ConstSimple SelfReference PureMethodCall javacutil
+%  LocalWords:  stubparser TreeParser TreeBuilder DetachedVarSymbol

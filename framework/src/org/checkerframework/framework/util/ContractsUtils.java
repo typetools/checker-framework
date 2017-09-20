@@ -19,6 +19,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.qual.RequiresQualifiers;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
@@ -55,7 +56,7 @@ public class ContractsUtils {
             PRECONDITION("precondition"),
             POSTCONDTION("postcondition"),
             CONDITIONALPOSTCONDTION("conditional.postcondition");
-            public String errorKey;
+            public final String errorKey;
 
             Kind(String errorKey) {
                 this.errorKey = errorKey;
@@ -224,7 +225,7 @@ public class ContractsUtils {
         Class<? extends Annotation> c =
                 (Class<? extends Annotation>)
                         AnnotationUtils.getElementValueClass(metaAnno, "qualifier", false);
-        AnnotationMirror anno = AnnotationUtils.fromClass(factory.getElementUtils(), c);
+        AnnotationMirror anno = AnnotationBuilder.fromClass(factory.getElementUtils(), c);
         if (factory.isSupportedQualifier(anno)) {
             return anno;
         } else {

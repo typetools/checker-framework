@@ -109,7 +109,7 @@ public class StringWriter extends Writer {
      * @param  off  Offset from which to start writing characters
      * @param  len  Number of characters to write
      */
-    public void write(String str, /*@ IndexFor("#1")*/ int off, /*@ IndexOrHigh("#1")*/ int len)  {
+    public void write(String str, @IndexFor("#1") int off, @IndexOrHigh("#1") int len)  {
         buf.append(str.substring(off, off + len));
     }
 
@@ -177,7 +177,7 @@ public class StringWriter extends Writer {
      *
      * @since  1.5
      */
-    public StringWriter append(CharSequence csq, /*@ IndexFor("#1")*/ int start, /*@ IndexOrHigh("#1")*/ int end) {
+    public StringWriter append(CharSequence csq, @IndexOrHigh("#1") int start, @IndexOrHigh("#1") int end) {
         CharSequence cs = (csq == null ? "null" : csq);
         write(cs.subSequence(start, end).toString());
         return this;

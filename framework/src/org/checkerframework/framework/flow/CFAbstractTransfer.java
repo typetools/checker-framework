@@ -529,8 +529,7 @@ public abstract class CFAbstractTransfer<
                                 false);
                 info.insertValue(expr, annotation);
             } catch (FlowExpressionParseException e) {
-                // report errors here
-                analysis.checker.report(e.getResult(), methodTree);
+                // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration()
             }
         }
     }
@@ -705,6 +704,10 @@ public abstract class CFAbstractTransfer<
      * precise than {@code firstvalue}. This is possible, if {@code secondNode} is an expression
      * that is tracked by the store (e.g., a local variable or a field).
      *
+     * <p>Note that when overriding this method, when a new type is inserted into the store,
+     * splitAssignments should be called, and the new type should be inserted into the store for
+     * each of the resulting nodes.
+     *
      * @param res the previous result
      * @param notEqualTo if true, indicates that the logic is flipped (i.e., the information is
      *     added to the {@code elseStore} instead of the {@code thenStore}) for a not-equal
@@ -733,8 +736,11 @@ public abstract class CFAbstractTransfer<
                         } else {
                             thenStore.insertValue(secondInternal, firstValue);
                         }
-                        return new ConditionalTransferResult<>(
-                                res.getResultValue(), thenStore, elseStore);
+                        // To handle `(a = b = c) == x`, repeat for all insertable receivers of
+                        // splitted assignments instead of returning.
+                        res =
+                                new ConditionalTransferResult<>(
+                                        res.getResultValue(), thenStore, elseStore);
                     }
                 }
             }
@@ -1039,7 +1045,35 @@ public abstract class CFAbstractTransfer<
     @Override
     public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
         S store = in.getRegularStore();
-        return new RegularTransferResult<>(finishValue(null, store), store);
+        TransferResult<V, S> result =
+                new ConditionalTransferResult<>(
+                        finishValue(null, store), in.getThenStore(), in.getElseStore(), false);
+
+        V caseValue = in.getValueOfSubNode(n.getCaseOperand());
+        AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
+        V switchValue =
+                store.getValue(
+                        FlowExpressions.internalReprOf(
+                                analysis.getTypeFactory(), assign.getTarget()));
+        result =
+                strengthenAnnotationOfEqualTo(
+                        result,
+                        n.getCaseOperand(),
+                        assign.getExpression(),
+                        caseValue,
+                        switchValue,
+                        false);
+
+        // Update value of switch temporary variable
+        result =
+                strengthenAnnotationOfEqualTo(
+                        result,
+                        n.getCaseOperand(),
+                        assign.getTarget(),
+                        caseValue,
+                        switchValue,
+                        false);
+        return result;
     }
 
     /**
@@ -1112,6 +1146,7 @@ public abstract class CFAbstractTransfer<
     }
 
     /** @see CFAbstractAnalysis#getTypeFactoryOfSubchecker(Class) */
+    @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
     public <W extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker>
             W getTypeFactoryOfSubchecker(Class<U> checkerClass) {
         return analysis.getTypeFactoryOfSubchecker(checkerClass);

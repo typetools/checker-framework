@@ -258,9 +258,9 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets the enclosing class of the tree node defined by the given {@code {@link TreePath}}. It
-     * returns a {@link Tree}, from which {@code checkers.types.AnnotatedTypeMirror} or {@link
-     * Element} can be obtained.
+     * Gets the enclosing class of the tree node defined by the given {@link TreePath}. It returns a
+     * {@link Tree}, from which {@code checkers.types.AnnotatedTypeMirror} or {@link Element} can be
+     * obtained.
      *
      * @param path the path defining the tree node
      * @return the enclosing class (or interface) as given by the path, or null if one does not
@@ -281,9 +281,9 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets the enclosing method of the tree node defined by the given {@code {@link TreePath}}. It
-     * returns a {@link Tree}, from which an {@code checkers.types.AnnotatedTypeMirror} or {@link
-     * Element} can be obtained.
+     * Gets the enclosing method of the tree node defined by the given {@link TreePath}. It returns
+     * a {@link Tree}, from which an {@code checkers.types.AnnotatedTypeMirror} or {@link Element}
+     * can be obtained.
      *
      * @param path the path defining the tree node
      * @return the enclosing method as given by the path, or null if one does not exist

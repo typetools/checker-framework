@@ -18,7 +18,7 @@ import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**
@@ -36,9 +36,10 @@ import org.checkerframework.javacutil.ErrorReporter;
  *
  * <p>This class takes care of three of the attributes of {@link
  * org.checkerframework.framework.qual.ImplicitFor}; the others are handled in {@link
- * org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}. TODO: we currently
- * don't check that any attribute is set, that is, a qualifier could be annotated as @ImplicitFor(),
- * which might be misleading.
+ * org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}.
+ *
+ * <p>TODO: we currently don't check that any attribute is set, that is, a qualifier could be
+ * annotated as @ImplicitFor(), which might be misleading.
  *
  * @see org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator
  * @see TreeAnnotator
@@ -102,7 +103,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
             }
 
             AnnotationMirror theQual =
-                    AnnotationUtils.fromClass(atypeFactory.getElementUtils(), qual);
+                    AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), qual);
             for (LiteralKind literalKind : implicit.literals()) {
                 addLiteralKind(literalKind, theQual);
             }

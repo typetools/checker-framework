@@ -6,8 +6,7 @@ public class SimpleVPA {
 
     class MyClass {
         //:: error: (expression.unparsable.type.invalid)
-        @FlowExp("this.bad")
-        Object field;
+        @FlowExp("this.bad") Object field;
     }
 
     class Use {

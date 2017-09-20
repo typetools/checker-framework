@@ -1,5 +1,5 @@
 import org.checkerframework.checker.index.qual.LTLengthOf;
-import org.checkerframework.checker.index.qual.MinLen;
+import org.checkerframework.common.value.qual.MinLen;
 
 // @skip-test until the type system is enriched so it can express either
 //   * N = Grid.length and N-1 = Grid.length-1, or

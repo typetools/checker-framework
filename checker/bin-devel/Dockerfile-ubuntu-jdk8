@@ -13,9 +13,12 @@ RUN apt-get -qqy update && apt-get -qqy install \
   cpp \
   git \
   gradle \
+  libcurl3-gnutls \
   make \
+  maven \
   mercurial \
   unzip \
+  wget \
   default-jdk \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*

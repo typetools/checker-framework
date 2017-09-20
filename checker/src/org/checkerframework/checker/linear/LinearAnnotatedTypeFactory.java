@@ -7,7 +7,7 @@ import org.checkerframework.checker.linear.qual.Unusable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationBuilder;
 
 /**
  * Adds {@link Unusable} qualifier to a type if it represents:
@@ -25,8 +25,8 @@ public class LinearAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public LinearAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        LINEAR = AnnotationUtils.fromClass(elements, Linear.class);
-        UNUSABLE = AnnotationUtils.fromClass(elements, Unusable.class);
+        LINEAR = AnnotationBuilder.fromClass(elements, Linear.class);
+        UNUSABLE = AnnotationBuilder.fromClass(elements, Unusable.class);
 
         this.postInit();
     }

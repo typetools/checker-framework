@@ -1,9 +1,5 @@
 package org.checkerframework.checker.lock;
 
-/*>>>
-import org.checkerframework.checker.interning.qual.*;
-*/
-
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
@@ -51,13 +47,13 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -93,13 +89,13 @@ public class LockAnnotatedTypeFactory
     public LockAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
 
-        LOCKHELD = AnnotationUtils.fromClass(elements, LockHeld.class);
-        LOCKPOSSIBLYHELD = AnnotationUtils.fromClass(elements, LockPossiblyHeld.class);
-        SIDEEFFECTFREE = AnnotationUtils.fromClass(elements, SideEffectFree.class);
-        GUARDEDBYUNKNOWN = AnnotationUtils.fromClass(elements, GuardedByUnknown.class);
-        GUARDEDBY = AnnotationUtils.fromClass(elements, GuardedBy.class);
-        GUARDEDBYBOTTOM = AnnotationUtils.fromClass(elements, GuardedByBottom.class);
-        GUARDSATISFIED = AnnotationUtils.fromClass(elements, GuardSatisfied.class);
+        LOCKHELD = AnnotationBuilder.fromClass(elements, LockHeld.class);
+        LOCKPOSSIBLYHELD = AnnotationBuilder.fromClass(elements, LockPossiblyHeld.class);
+        SIDEEFFECTFREE = AnnotationBuilder.fromClass(elements, SideEffectFree.class);
+        GUARDEDBYUNKNOWN = AnnotationBuilder.fromClass(elements, GuardedByUnknown.class);
+        GUARDEDBY = AnnotationBuilder.fromClass(elements, GuardedBy.class);
+        GUARDEDBYBOTTOM = AnnotationBuilder.fromClass(elements, GuardedByBottom.class);
+        GUARDSATISFIED = AnnotationBuilder.fromClass(elements, GuardSatisfied.class);
 
         // This alias is only true for the Lock Checker. All other checkers must
         // ignore the @LockingFree annotation.
@@ -206,7 +202,7 @@ public class LockAnnotatedTypeFactory
             return PurityUtils.isDeterministic(this, methodCall.getElement())
                     && isExpressionEffectivelyFinal(methodCall.getReceiver());
         } else if (expr instanceof ThisReference || expr instanceof ClassName) {
-            // this is always final. "ClassName" is actually a class literal,(String.class), it's
+            // this is always final. "ClassName" is actually a class literal (String.class), it's
             // final too.
             return true;
         } else { // type of 'expr' is not supported in @GuardedBy(...) lock expressions
@@ -257,24 +253,25 @@ public class LockAnnotatedTypeFactory
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
 
-            boolean lhsIsGuardedBy = isGuardedBy(lhs);
-            boolean rhsIsGuardedBy = isGuardedBy(rhs);
+            boolean lhsIsGuardedBy = isGuardedBy(superAnno);
+            boolean rhsIsGuardedBy = isGuardedBy(subAnno);
 
             if (lhsIsGuardedBy && rhsIsGuardedBy) {
                 // Two @GuardedBy annotations are considered subtypes of each other if and only if their values match exactly.
 
                 List<String> lhsValues =
-                        AnnotationUtils.getElementValueArray(lhs, "value", String.class, true);
+                        AnnotationUtils.getElementValueArray(
+                                superAnno, "value", String.class, true);
                 List<String> rhsValues =
-                        AnnotationUtils.getElementValueArray(rhs, "value", String.class, true);
+                        AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
 
                 return rhsValues.containsAll(lhsValues) && lhsValues.containsAll(rhsValues);
             }
 
-            boolean lhsIsGuardSatisfied = isGuardSatisfied(lhs);
-            boolean rhsIsGuardSatisfied = isGuardSatisfied(rhs);
+            boolean lhsIsGuardSatisfied = isGuardSatisfied(superAnno);
+            boolean rhsIsGuardSatisfied = isGuardSatisfied(subAnno);
 
             if (lhsIsGuardSatisfied && rhsIsGuardSatisfied) {
                 // There are cases in which two expressions with identical @GuardSatisfied(...) annotations are not
@@ -291,24 +288,24 @@ public class LockAnnotatedTypeFactory
                 // to an actual receiver (see LockVisitor.skipReceiverSubtypeCheck) or a formal parameter to an
                 // actual parameter (see LockVisitor.commonAssignmentCheck for the details on this rule).
 
-                return AnnotationUtils.areSame(lhs, rhs);
+                return AnnotationUtils.areSame(superAnno, subAnno);
             }
 
             // Remove values from @GuardedBy annotations for further subtype checking. Remove indices from @GuardSatisfied annotations.
 
             if (lhsIsGuardedBy) {
-                lhs = GUARDEDBY;
+                superAnno = GUARDEDBY;
             } else if (lhsIsGuardSatisfied) {
-                lhs = GUARDSATISFIED;
+                superAnno = GUARDSATISFIED;
             }
 
             if (rhsIsGuardedBy) {
-                rhs = GUARDEDBY;
+                subAnno = GUARDEDBY;
             } else if (rhsIsGuardSatisfied) {
-                rhs = GUARDSATISFIED;
+                subAnno = GUARDSATISFIED;
             }
 
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
 
         @Override

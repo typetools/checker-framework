@@ -1,11 +1,13 @@
 package org.checkerframework.framework.util.typeinference;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,6 +19,8 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic.Kind;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -49,6 +53,8 @@ import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -95,6 +101,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     private final SubtypesSolver subtypesSolver = new SubtypesSolver();
     private final ConstraintMapBuilder constraintMapBuilder = new ConstraintMapBuilder();
 
+    private final boolean showInferenceSteps;
+
+    public DefaultTypeArgumentInference(AnnotatedTypeFactory typeFactory) {
+        this.showInferenceSteps =
+                typeFactory.getContext().getChecker().hasOption("showInferenceSteps");
+    }
+
     @Override
     public Map<TypeVariable, AnnotatedTypeMirror> inferTypeArgs(
             AnnotatedTypeFactory typeFactory,
@@ -109,17 +122,70 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             return new HashMap<>();
         }
 
-        final List<AnnotatedTypeMirror> argTypes = getArgumentTypes(expressionTree, typeFactory);
-        final AnnotatedTypeMirror assignedTo = getAssignedTo(expressionTree, typeFactory);
+        final List<AnnotatedTypeMirror> argTypes =
+                TypeArgInferenceUtil.getArgumentTypes(expressionTree, typeFactory);
+        final TreePath pathToExpression = typeFactory.getPath(expressionTree);
+        final AnnotatedTypeMirror assignedTo =
+                TypeArgInferenceUtil.assignedTo(typeFactory, pathToExpression);
+
+        SourceChecker checker = typeFactory.getContext().getChecker();
+
+        if (showInferenceSteps) {
+            checker.message(
+                    Kind.NOTE,
+                    "DTAI: expression: %s\n  argTypes: %s\n  assignedTo: %s\n",
+                    expressionTree.toString().replace("\n", " "),
+                    argTypes,
+                    assignedTo);
+        }
 
         final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
-        final Map<TypeVariable, AnnotatedTypeMirror> inferredArgs =
-                infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets, true);
 
-        handleNullTypeArguments(
-                typeFactory, methodElem, methodType, argTypes, assignedTo, targets, inferredArgs);
+        if (assignedTo == null && TreeUtils.getAssignmentContext(pathToExpression) != null) {
+            // If the type of the assignment context isn't found, but the expression is assigned,
+            // then don't attempt to infere type arguments, because the Java type inferred will be
+            // incorrect.  The assignment type is null when it includes uninferred type arguments.
+            // For example:
+            // <T> T outMethod()
+            // <U> void inMethod(U u);
+            // inMethod(outMethod())
+            // would require solving the constraints for both type argument inferences simultaneously
+            Map<TypeVariable, AnnotatedTypeMirror> inferredArgs = new LinkedHashMap<>();
+            handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
+            return inferredArgs;
+        }
+
+        Map<TypeVariable, AnnotatedTypeMirror> inferredArgs;
+        try {
+            inferredArgs =
+                    infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets, true);
+            if (showInferenceSteps) {
+                checker.message(Kind.NOTE, "  after infer: %s\n", inferredArgs);
+            }
+            handleNullTypeArguments(
+                    typeFactory,
+                    methodElem,
+                    methodType,
+                    argTypes,
+                    assignedTo,
+                    targets,
+                    inferredArgs);
+            if (showInferenceSteps) {
+                checker.message(Kind.NOTE, "  after handleNull: %s\n", inferredArgs);
+            }
+        } catch (Exception ex) {
+            // Catch any errors thrown by inference.
+            inferredArgs = new LinkedHashMap<>();
+            if (showInferenceSteps) {
+                checker.message(Kind.NOTE, "  exception: %s\n", ex.getLocalizedMessage());
+            }
+        }
 
         handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
+
+        if (showInferenceSteps) {
+            checker.message(Kind.NOTE, "  results: %s\n", inferredArgs);
+        }
 
         return inferredArgs;
     }
@@ -179,53 +245,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             }
         }
         return false;
-    }
-
-    private List<AnnotatedTypeMirror> boxPrimitives(
-            AnnotatedTypeFactory factory, List<AnnotatedTypeMirror> args) {
-        List<AnnotatedTypeMirror> boxedArgs = new ArrayList<>(args.size());
-        for (AnnotatedTypeMirror arg : args) {
-            if (TypesUtils.isPrimitive(arg.getUnderlyingType())) {
-                AnnotatedTypeMirror boxed = factory.getBoxedType((AnnotatedPrimitiveType) arg);
-                boxedArgs.add(boxed);
-            } else {
-                boxedArgs.add(arg);
-            }
-        }
-        return boxedArgs;
-    }
-
-    @Override
-    public void adaptMethodType(
-            AnnotatedTypeFactory typeFactory,
-            ExpressionTree invocation,
-            AnnotatedExecutableType methodType) {
-        // do nothing
-    }
-    // TODO: THIS IS A BIG VIOLATION OF Single Responsibility and SHOULD BE FIXED, IT IS SOLELY HERE
-    // TODO: AS A TEMPORARY KLUDGE BEFORE A RELEASE/SPARTA ENGAGEMENT
-    // TODO: TypeArgumentInference should only have an infer method (its sole responsibility)
-    // TODO: Subclasses should NOT be able to call adaptMethodType and getArgumentTypes (getArgumentTypes should be inlined)
-    protected List<AnnotatedTypeMirror> getArgumentTypes(
-            final ExpressionTree expression, final AnnotatedTypeFactory typeFactory) {
-        final List<? extends ExpressionTree> argTrees =
-                TypeArgInferenceUtil.expressionToArgTrees(expression);
-        List<AnnotatedTypeMirror> argtypes =
-                TypeArgInferenceUtil.treesToTypes(argTrees, typeFactory);
-        return boxPrimitives(typeFactory, argtypes);
-    }
-
-    protected AnnotatedTypeMirror getAssignedTo(
-            ExpressionTree expression, AnnotatedTypeFactory typeFactory) {
-        AnnotatedTypeMirror assignedTo =
-                TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expression));
-        if (assignedTo == null) {
-            return null;
-        } else if (TypesUtils.isPrimitive(assignedTo.getUnderlyingType())) {
-            return typeFactory.getBoxedType((AnnotatedPrimitiveType) assignedTo);
-        } else {
-            return assignedTo;
-        }
     }
 
     /**
@@ -719,9 +738,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         for (AnnotatedTypeVariable atv : methodType.getTypeVariables()) {
             final TypeVariable typeVar = atv.getUnderlyingType();
-            if (targets.contains(typeVar)) {
+            if (targets.contains(TypeAnnotationUtils.unannotatedType(typeVar))) {
                 final AnnotatedTypeMirror inferredType = inferredArgs.get(typeVar);
-                if (inferredType == null) {
+                if (inferredType == null
+                        || TypeArgInferenceUtil.containsTypeParameter(inferredType, targets)) {
                     AnnotatedTypeMirror dummy = typeFactory.getUninferredWildcardType(atv);
                     inferredArgs.put(atv.getUnderlyingType(), dummy);
                 }

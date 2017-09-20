@@ -1,5 +1,7 @@
 package org.checkerframework.checker.nullness;
 
+// Uses annotations in comments because it may be run on a Java 7 JVM
+// when called from user code.
 /*>>>
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -43,9 +45,9 @@ public final class NullnessUtil {
      * be used either as a cast expression or as a statement. The Nullness Checker issues no
      * warnings in any of the following code:
      *
-     * <pre>
+     * <pre><code>
      *   // one way to use as a cast:
-     *   &#64;NonNull String s = castNonNull(possiblyNull1);
+     *  {@literal @}NonNull String s = castNonNull(possiblyNull1);
      *
      *   // another way to use as a cast:
      *   castNonNull(possiblyNull2).toString();
@@ -53,7 +55,7 @@ public final class NullnessUtil {
      *   // one way to use as a statement:
      *   castNonNull(possiblyNull3);
      *   possiblyNull3.toString();`
-     * </pre>
+     * }</code></pre>
      *
      * The {@code castNonNull} method is intended to be used in situations where the programmer
      * definitively knows that a given reference is not null, but the type system is unable to make
@@ -64,8 +66,6 @@ public final class NullnessUtil {
      * <p>The method throws {@link AssertionError} if Java assertions are enabled and the argument
      * is {@code null}. If the exception is ever thrown, then that indicates that the programmer
      * misused the method by using it in a circumstance where its argument can be null.
-     *
-     * <p>
      *
      * @param ref a reference of @Nullable type
      * @return the argument, casted to have the type qualifier @NonNull

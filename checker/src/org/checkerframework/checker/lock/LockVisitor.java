@@ -1,9 +1,5 @@
 package org.checkerframework.checker.lock;
 
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-*/
-
 import static org.checkerframework.javacutil.TreeUtils.getReceiverTree;
 
 import com.sun.source.tree.AnnotatedTypeTree;
@@ -37,6 +33,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
 import org.checkerframework.checker.lock.qual.EnsuresLockHeld;
 import org.checkerframework.checker.lock.qual.EnsuresLockHeldIf;
@@ -329,7 +326,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            /*@CompilerMessageKey*/ String errorKey) {
+            @CompilerMessageKey String errorKey) {
 
         Kind valueTreeKind = valueTree.getKind();
 
@@ -424,7 +421,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     private void reportFailure(
-            /*@CompilerMessageKey*/ String messageKey,
+            @CompilerMessageKey String messageKey,
             MethodTree overriderTree,
             AnnotatedDeclaredType enclosingType,
             AnnotatedExecutableType overridden,
@@ -1314,7 +1311,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
     }
 
-    private class LockExpression {
+    private static class LockExpression {
         final String expressionString;
         Receiver lockExpression = null;
         DependentTypesError error = null;

@@ -15,15 +15,20 @@ import java.lang.annotation.Target;
  *
  * <p>Here is an example use:
  *
- * <pre>
+ * <pre><code>
  *  {@literal @}EnsuresQualifier(expression = "p.f1", qualifier = Odd.class)
  *   void oddF1_1() {
  *       p.f1 = null;
  *   }
- * </pre>
+ * </code></pre>
+ *
+ * Some type systems have specialized versions of this annotation, such as {@link
+ * org.checkerframework.checker.nullness.qual.EnsuresNonNull @EnsuresNonNull} and {@link
+ * org.checkerframework.checker.lock.qual.EnsuresLockHeld @EnsuresLockHeld}.
  *
  * @author Stefan Heule
  * @see EnsuresQualifiers
+ * @see EnsuresQualifierIf
  * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
  */
 @Documented

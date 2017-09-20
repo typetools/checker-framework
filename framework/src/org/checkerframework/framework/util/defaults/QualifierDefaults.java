@@ -43,6 +43,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.PluginUtil;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -473,19 +474,17 @@ public class QualifierDefaults {
         // System.out.println("applyDefaults on tree " + tree +
         //        " gives elt: " + elt + "(" + elt.getKind() + ")");
 
-        if (elt != null) {
-            boolean defaultTypeVarLocals =
-                    (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>)
-                            && (((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
-                                    .getShouldDefaultTypeVarLocals());
-
-            applyToTypeVar =
-                    defaultTypeVarLocals
-                            && elt.getKind() == ElementKind.LOCAL_VARIABLE
-                            && type.getKind() == TypeKind.TYPEVAR;
-            applyDefaultsElement(elt, type);
-            applyToTypeVar = false;
-        }
+        boolean defaultTypeVarLocals =
+                (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>)
+                        && (((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
+                                .getShouldDefaultTypeVarLocals());
+        applyToTypeVar =
+                defaultTypeVarLocals
+                        && elt != null
+                        && elt.getKind() == ElementKind.LOCAL_VARIABLE
+                        && type.getKind() == TypeKind.TYPEVAR;
+        applyDefaultsElement(elt, type);
+        applyToTypeVar = false;
     }
 
     private DefaultSet fromDefaultQualifier(DefaultQualifier dq) {
@@ -508,7 +507,7 @@ public class QualifierDefaults {
             }
         }
 
-        AnnotationMirror anno = AnnotationUtils.fromClass(elements, cls);
+        AnnotationMirror anno = AnnotationBuilder.fromClass(elements, cls);
 
         if (anno == null) {
             return null;

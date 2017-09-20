@@ -25,7 +25,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.util.Elements;
 import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory;
 import org.checkerframework.checker.initialization.qual.FBCBottom;
 import org.checkerframework.checker.initialization.qual.Initialized;
@@ -43,7 +42,9 @@ import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
@@ -54,8 +55,10 @@ import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.DependentTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -87,10 +90,10 @@ public class NullnessAnnotatedTypeFactory
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
         super(checker, useFbc);
 
-        NONNULL = AnnotationUtils.fromClass(elements, NonNull.class);
-        NULLABLE = AnnotationUtils.fromClass(elements, Nullable.class);
-        POLYNULL = AnnotationUtils.fromClass(elements, PolyNull.class);
-        MONOTONIC_NONNULL = AnnotationUtils.fromClass(elements, MonotonicNonNull.class);
+        NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
+        NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
+        POLYNULL = AnnotationBuilder.fromClass(elements, PolyNull.class);
+        MONOTONIC_NONNULL = AnnotationBuilder.fromClass(elements, MonotonicNonNull.class);
 
         Set<Class<? extends Annotation>> tempNullnessAnnos = new LinkedHashSet<>();
         tempNullnessAnnos.add(NonNull.class);
@@ -305,6 +308,21 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
+    public void adaptGetClassReturnTypeToReceiver(
+            final AnnotatedExecutableType getClassType, final AnnotatedTypeMirror receiverType) {
+
+        super.adaptGetClassReturnTypeToReceiver(getClassType, receiverType);
+
+        // Make the wildcard always @NonNull, regardless of the declared type.
+
+        final AnnotatedDeclaredType returnAdt =
+                (AnnotatedDeclaredType) getClassType.getReturnType();
+        final List<AnnotatedTypeMirror> typeArgs = returnAdt.getTypeArguments();
+        final AnnotatedWildcardType classWildcardArg = (AnnotatedWildcardType) typeArgs.get(0);
+        classWildcardArg.getExtendsBoundField().replaceAnnotation(NONNULL);
+    }
+
+    @Override
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
         AnnotatedTypeMirror result = super.getMethodReturnType(m, r);
         replacePolyQualifier(result, r);
@@ -326,6 +344,8 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
+        // Don't call super.createTreeAnnotator because the default tree annotators are incorrect
+        // for the Nullness Checker.
         ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
         implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_CLASS, NONNULL);
         implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_ARRAY, NONNULL);
@@ -386,7 +406,7 @@ public class NullnessAnnotatedTypeFactory
      *
      * <p>Would this be valid to move into CommitmentTreeAnnotator.
      */
-    protected class NullnessPropagationAnnotator extends PropagationTreeAnnotator {
+    protected static class NullnessPropagationAnnotator extends PropagationTreeAnnotator {
 
         public NullnessPropagationAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
@@ -507,8 +527,23 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     public AnnotationMirror getFieldInvariantAnnotation() {
-        Elements elements = processingEnv.getElementUtils();
-        return AnnotationUtils.fromClass(elements, NonNull.class);
+        return NONNULL;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>In other words, is the lower bound @NonNull?
+     *
+     * @param type of field that might have invariant annotation
+     * @return whether or not type has the invariant annotation
+     */
+    @Override
+    protected boolean hasFieldInvariantAnnotation(AnnotatedTypeMirror type) {
+        AnnotationMirror invariant = getFieldInvariantAnnotation();
+        Set<AnnotationMirror> lowerBounds =
+                AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type);
+        return AnnotationUtils.containsSame(lowerBounds, invariant);
     }
 
     @Override
@@ -523,11 +558,11 @@ public class NullnessAnnotatedTypeFactory
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (isInitializationAnnotation(rhs) || isInitializationAnnotation(lhs)) {
-                return this.isSubtypeInitialization(rhs, lhs);
+        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+            if (isInitializationAnnotation(subAnno) || isInitializationAnnotation(superAnno)) {
+                return this.isSubtypeInitialization(subAnno, superAnno);
             }
-            return super.isSubtype(rhs, lhs);
+            return super.isSubtype(subAnno, superAnno);
         }
 
         @Override
