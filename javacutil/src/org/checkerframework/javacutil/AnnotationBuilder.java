@@ -167,7 +167,7 @@ public class AnnotationBuilder {
         for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> eltValToCopy :
                 valueHolder.getElementValues().entrySet()) {
             Name eltNameToCopy = eltValToCopy.getKey().getSimpleName();
-            if (Arrays.asList(ignorableElements).contains(eltNameToCopy)) {
+            if (Arrays.asList(ignorableElements).contains(eltNameToCopy.toString())) {
                 continue;
             }
             boolean hasElement = false;
