@@ -434,7 +434,7 @@ public abstract class AnnotatedTypeMirror {
      * @param a the annotation name to check for
      * @return true iff the type contains the annotation {@code a}
      * @see #hasAnnotationRelaxed(AnnotationMirror)
-     * @deprecated use {@link AnnotationUtils#containsSameByNameCollection,String)} instead.
+     * @deprecated use {@link AnnotationUtils#containsSameByName(Collection,String)} instead.
      */
     @Deprecated // Remove after 2.2.1 release
     public boolean hasAnnotation(Name a) {
