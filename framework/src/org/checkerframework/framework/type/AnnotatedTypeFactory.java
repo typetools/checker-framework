@@ -2454,7 +2454,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * <p>Returns an aliased type of the current one. The attributes contained by the passed
      * annotation are not copied over unless specified when {@link #addAliasedAnnotation(String,
-     * Annotation, boolean, String...)}
+     * AnnotationMirror, boolean, String...)}
      *
      * @param a the qualifier to check for an alias
      * @return the alias or null if none exists
