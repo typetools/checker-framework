@@ -2409,12 +2409,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 this.getQualifierHierarchy().getTypeQualifiers(), a);
     }
 
-    /** Add the annotation {@code clazz} as an alias for the annotation {@code type}. */
+    /** Add the annotation {@code alias} as an alias for the annotation {@code type}. */
     protected void addAliasedAnnotation(Class<?> alias, AnnotationMirror type) {
         addAliasedAnnotation(alias.getCanonicalName(), type);
     }
 
-    /** Add the annotation {@code clazz} as an alias for the annotation {@code type}. */
+    /** Add the annotation {@code alias} as an alias for the annotation {@code type}. */
     protected void addAliasedAnnotation(
             Class<?> alias,
             AnnotationMirror type,
@@ -2433,7 +2433,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Add the annotation whose canonical name is given by {@code canonicalName} as an alias for the
-     * annotation {@code type}.
+     * annotation {@code type}. An {@code copyElements} flag is passed in to indicate whether we
+     * want to copy the elements over when getting the alias from the canonical one. An optional
+     * {@code ignorableElements} contains a list of elements that can be safely dropped when the
+     * elements are being copied over.
      */
     protected void addAliasedAnnotation(
             String canonicalName,
@@ -2451,7 +2454,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * <p>Returns an aliased type of the current one. The attributes contained by the passed
      * annotation are not copied over unless specified when {@link #addAliasedAnnotation(String,
-     * Annotation, boolean)}
+     * Annotation, boolean, String...)}
      *
      * @param a the qualifier to check for an alias
      * @return the alias or null if none exists
