@@ -63,11 +63,11 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -98,7 +98,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected final AnnotationMirror BOTTOMVAL;
 
     /** The canonical @{@link PolyValue} annotation. */
-    public final AnnotationMirror POLY = AnnotationUtils.fromClass(elements, PolyValue.class);
+    public final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolyValue.class);
 
     /** Should this type factory report warnings? */
     private final boolean reportEvalWarnings;
@@ -135,8 +135,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        BOTTOMVAL = AnnotationUtils.fromClass(elements, BottomVal.class);
-        UNKNOWNVAL = AnnotationUtils.fromClass(elements, UnknownVal.class);
+        BOTTOMVAL = AnnotationBuilder.fromClass(elements, BottomVal.class);
+        UNKNOWNVAL = AnnotationBuilder.fromClass(elements, UnknownVal.class);
 
         reportEvalWarnings = checker.hasOption(ValueChecker.REPORT_EVAL_WARNS);
         Range.IGNORE_OVERFLOW = checker.hasOption(ValueChecker.IGNORE_RANGE_OVERFLOW);
@@ -316,9 +316,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         protected Void scan(AnnotatedTypeMirror type, Void aVoid) {
-            if (type != null) {
-                replaceWithNewAnnoInSpecialCases(type);
-            }
+            replaceWithNewAnnoInSpecialCases(type);
             return super.scan(type, aVoid);
         }
 

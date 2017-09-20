@@ -49,6 +49,25 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * <pre>{@code   @EnsuresNonNullIf(expression="getComponentType()", result=true)
  *   public native @Pure boolean isArray();}</pre>
  *
+ * <!-- Issue:  https://tinyurl.com/cfissue/1307 -->
+ * You cannot write two {@code @EnsuresNonNullIf} annotations on a single method; to get the effect
+ * of
+ *
+ * <pre><code>
+ * &nbsp;   @EnsuresNonNullIf(expression="outputFile", result=true)
+ * &nbsp;   @EnsuresNonNullIf(expression="memoryOutputStream", result=false)
+ *     public boolean isThresholdExceeded() { ... }
+ * </code></pre>
+ *
+ * you need to instead write
+ *
+ * <pre><code>
+ * &nbsp;@EnsuresQualifiersIf({
+ * &nbsp;  @EnsuresQualifierIf(result=true, qualifier=NonNull.class, expression="outputFile"),
+ * &nbsp;  @EnsuresQualifierIf(result=false, qualifier=NonNull.class, expression="memoryOutputStream")
+ * })
+ * </code></pre>
+ *
  * @see NonNull
  * @see EnsuresNonNull
  * @see org.checkerframework.checker.nullness.NullnessChecker

@@ -1,6 +1,5 @@
 // Test case for Issue 798
 // https://github.com/typetools/checker-framework/issues/798
-// @skip-test
 import polyall.quals.*;
 
 public class Issue798 {

@@ -32,6 +32,7 @@ import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -51,9 +52,6 @@ import org.checkerframework.javacutil.TreeUtils;
 public class NullnessTransfer
         extends InitializationTransfer<NullnessValue, NullnessTransfer, NullnessStore> {
 
-    /** Type-specific version of super.analysis. */
-    protected final NullnessAnalysis analysis;
-
     /** Annotations of the non-null type system. */
     protected final AnnotationMirror NONNULL, NULLABLE;
 
@@ -61,15 +59,14 @@ public class NullnessTransfer
 
     public NullnessTransfer(NullnessAnalysis analysis) {
         super(analysis);
-        this.analysis = analysis;
         this.keyForTypeFactory =
                 ((BaseTypeChecker) analysis.getTypeFactory().getContext().getChecker())
                         .getTypeFactoryOfSubchecker(KeyForSubchecker.class);
         NONNULL =
-                AnnotationUtils.fromClass(
+                AnnotationBuilder.fromClass(
                         analysis.getTypeFactory().getElementUtils(), NonNull.class);
         NULLABLE =
-                AnnotationUtils.fromClass(
+                AnnotationBuilder.fromClass(
                         analysis.getTypeFactory().getElementUtils(), Nullable.class);
     }
 

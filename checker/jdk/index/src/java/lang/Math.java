@@ -798,7 +798,7 @@ public final class Math {
      * @param   b   another argument.
      * @return  the larger of {@code a} and {@code b}.
      */
-    public static int max(int a, int b) {
+    public static @PolyUpperBound int max(@PolyUpperBound int a, @PolyUpperBound int b) {
         return (a >= b) ? a : b;
     }
 
@@ -812,7 +812,7 @@ public final class Math {
      * @param   b   another argument.
      * @return  the larger of {@code a} and {@code b}.
      */
-    public static long max(long a, long b) {
+    public static @PolyUpperBound long max(@PolyUpperBound long a, @PolyUpperBound long b) {
         return (a >= b) ? a : b;
     }
 

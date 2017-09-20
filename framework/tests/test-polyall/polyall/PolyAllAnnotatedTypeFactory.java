@@ -12,7 +12,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import polyall.quals.H1Bot;
 import polyall.quals.H1Invalid;
 import polyall.quals.H1Poly;
@@ -32,7 +32,7 @@ public class PolyAllAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public PolyAllAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         this.postInit();
-        H1S2 = AnnotationUtils.fromClass(elements, polyall.quals.H1S2.class);
+        H1S2 = AnnotationBuilder.fromClass(elements, polyall.quals.H1S2.class);
     }
 
     @Override

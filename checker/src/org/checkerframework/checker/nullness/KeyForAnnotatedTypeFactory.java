@@ -1,9 +1,5 @@
 package org.checkerframework.checker.nullness;
 
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-*/
-
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
@@ -38,10 +34,10 @@ import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.visitor.VisitHistory;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
@@ -59,9 +55,9 @@ public class KeyForAnnotatedTypeFactory
     public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
 
-        KEYFOR = AnnotationUtils.fromClass(elements, KeyFor.class);
-        UNKNOWNKEYFOR = AnnotationUtils.fromClass(elements, UnknownKeyFor.class);
-        KEYFORBOTTOM = AnnotationUtils.fromClass(elements, KeyForBottom.class);
+        KEYFOR = AnnotationBuilder.fromClass(elements, KeyFor.class);
+        UNKNOWNKEYFOR = AnnotationBuilder.fromClass(elements, UnknownKeyFor.class);
+        KEYFORBOTTOM = AnnotationBuilder.fromClass(elements, KeyForBottom.class);
         keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
 
         // Add compatibility annotations:

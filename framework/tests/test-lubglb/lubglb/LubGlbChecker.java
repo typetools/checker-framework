@@ -12,6 +12,7 @@ import lubglb.quals.Poly;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 // Type hierarchy:
@@ -33,13 +34,13 @@ public class LubGlbChecker extends BaseTypeChecker {
 
         Elements elements = processingEnv.getElementUtils();
 
-        A = AnnotationUtils.fromClass(elements, A.class);
-        B = AnnotationUtils.fromClass(elements, B.class);
-        C = AnnotationUtils.fromClass(elements, C.class);
-        D = AnnotationUtils.fromClass(elements, D.class);
-        E = AnnotationUtils.fromClass(elements, E.class);
-        F = AnnotationUtils.fromClass(elements, F.class);
-        POLY = AnnotationUtils.fromClass(elements, Poly.class);
+        A = AnnotationBuilder.fromClass(elements, A.class);
+        B = AnnotationBuilder.fromClass(elements, B.class);
+        C = AnnotationBuilder.fromClass(elements, C.class);
+        D = AnnotationBuilder.fromClass(elements, D.class);
+        E = AnnotationBuilder.fromClass(elements, E.class);
+        F = AnnotationBuilder.fromClass(elements, F.class);
+        POLY = AnnotationBuilder.fromClass(elements, Poly.class);
 
         QualifierHierarchy qh =
                 ((BaseTypeVisitor<?>) visitor).getTypeFactory().getQualifierHierarchy();
