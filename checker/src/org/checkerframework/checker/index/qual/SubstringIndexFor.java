@@ -21,6 +21,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * {@literal @}{@link NonNegative} {@literal @}{@link LTLengthOf}(args)</code>, except that
  * {@code @SubstringIndexFor(args)} additionally permits the value -1.
  *
+ * <p>When multiple values or offsets are given, they are considered pairwise. For example,
+ * {@code @SubstringIndexFor(value={"a", "b"}, offset={"c", "d"})} is equivalent to writing both
+ * {@code @SubstringIndexFor(value="a", offset="c")} and {@code @SubstringIndexFor(value="b",
+ * offset="d")}.
+ *
  * <p>The name of this annotation, "substring index for", is intended to mean that the annotated
  * expression is a index of a substring (returned by {@code indexOf} or similar methods) for the
  * specified sequence.
