@@ -107,4 +107,5 @@ jobs:
 git:
   depth: 9
 
-after_failure: "cat /checker-framework/checker/build/jtreg/all/work/softwarnings/Main.jtr"
+after_failure:
+- find ~ -path "*/softwarnings/Main.jtr" -exec cat {} \;
