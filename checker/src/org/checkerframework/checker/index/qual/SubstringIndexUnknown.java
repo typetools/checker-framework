@@ -6,7 +6,7 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The top type for the Substring Index type system. This indicates that the Index checker does not
+ * The top type for the Substring Index type system. This indicates that the Index Checker does not
  * know any sequences that this integer is a {@link SubstringIndexFor substring index} for.
  *
  * @checker_framework.manual #index-substringindex Index Checker

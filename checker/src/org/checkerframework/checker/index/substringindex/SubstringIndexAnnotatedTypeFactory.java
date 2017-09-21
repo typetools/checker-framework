@@ -21,11 +21,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * Builds types with annotations from the Substring Index checker hierarchy, which contains
- * the @{@link SubstringIndexFor} annotation. This annotation is used to annotate the return value
- * of {@link java.lang.String#indexOf(String) String.indexOf} and {@link
- * java.lang.String#lastIndexOf(String) String.lastIndexOf} and allow the Upper Bound Checker to
- * infer @{@link org.checkerframework.checker.index.qual.LTLengthOf} annotations with the same
- * parameters for expressions that are known by the index checker to be non-negative.
+ * the @{@link SubstringIndexFor} annotation.
  */
 public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -100,9 +96,9 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
             if (AnnotationUtils.areSame(a2, BOTTOM)) {
                 return a2;
             }
-            UBQualifier a1Obj = UBQualifier.createUBQualifier(a1);
-            UBQualifier a2Obj = UBQualifier.createUBQualifier(a2);
-            UBQualifier glb = a1Obj.glb(a2Obj);
+            UBQualifier ubq1 = UBQualifier.createUBQualifier(a1);
+            UBQualifier ubq2 = UBQualifier.createUBQualifier(a2);
+            UBQualifier glb = ubq1.glb(ubq2);
             return convertUBQualifierToAnnotation(glb);
         }
 
@@ -120,9 +116,9 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
             if (AnnotationUtils.areSame(a2, BOTTOM)) {
                 return a1;
             }
-            UBQualifier a1Obj = UBQualifier.createUBQualifier(a1);
-            UBQualifier a2Obj = UBQualifier.createUBQualifier(a2);
-            UBQualifier lub = a1Obj.lub(a2Obj);
+            UBQualifier ubq1 = UBQualifier.createUBQualifier(a1);
+            UBQualifier ubq2 = UBQualifier.createUBQualifier(a2);
+            UBQualifier lub = ubq1.lub(ubq2);
             return convertUBQualifierToAnnotation(lub);
         }
 
