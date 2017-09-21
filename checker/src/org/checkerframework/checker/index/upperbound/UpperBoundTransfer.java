@@ -546,7 +546,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     /**
      * Returns the UBQualifier for a node, with additional refinement useful specifically for
-     * integer addition, based on the information from other checkers under the Index Checker.
+     * integer addition, based on the information from subcheckers of the Index Checker.
      *
      * @param n the node
      * @param in dataflow analysis transfer input

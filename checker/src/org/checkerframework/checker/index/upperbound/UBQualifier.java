@@ -289,9 +289,9 @@ public abstract class UBQualifier {
          * AnnotationMirrors using @{@link LTEqLengthOf} or @{@link LTOMLengthOf} are returned.
          * Otherwise, @{@link LTLengthOf} is used.
          *
-         * <p>The annotation is sorted by sequence and then offset. This is so that {@link
-         * AnnotationUtils#areSame(AnnotationMirror, AnnotationMirror)} returns true for equivalent
-         * annotations.
+         * <p>The returned annotation is canonicalized by sorting its arguments by sequence and then
+         * offset. This is so that {@link AnnotationUtils#areSame(AnnotationMirror,
+         * AnnotationMirror)} returns true for equivalent annotations.
          *
          * @param env ProcessingEnvironment
          * @return the AnnotationMirror that represents this qualifier
@@ -311,7 +311,15 @@ public abstract class UBQualifier {
             return convertToAnnotation(env, true);
         }
 
-        /** Common implementation of convertToAnnotation and convertToSubstringIndexAnnotation. */
+        /**
+         * Common implementation of convertToAnnotation and convertToSubstringIndexAnnotation.
+         *
+         * @param env ProcessingEnvironment
+         * @param buildSubstringIndexAnnotation if true, act like {@link
+         *     #convertToSubstringIndexAnnotation} and return a @{@link SubstringIndexFor}
+         *     annotation; if false, act like {@link #convertToAnnotation}
+         * @return the AnnotationMirror that represents this qualifier
+         */
         private AnnotationMirror convertToAnnotation(
                 ProcessingEnvironment env, boolean buildSubstringIndexAnnotation) {
             List<String> sortedSequences = new ArrayList<>(map.keySet());
