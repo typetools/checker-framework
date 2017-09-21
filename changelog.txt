@@ -1,5 +1,15 @@
 ---------------------------------------------------------------------------
 
+Version 2.2.1, September 29, 2017
+
+Deprecated some methods in AnnotatedTypeMirror and AnnotationUtils, to
+be removed after the 2.2.1 release.
+
+Closed issues:
+1482
+
+---------------------------------------------------------------------------
+
 Version 2.2.0, September 5, 2017
 
 A Java 8 JVM is required to run the Checker Framework.

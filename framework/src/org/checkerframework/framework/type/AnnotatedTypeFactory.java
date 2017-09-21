@@ -2392,7 +2392,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *     operates, false otherwise
      */
     public boolean isSupportedQualifier(/*@Nullable*/ AnnotationMirror a) {
-        if (a == null) return false;
+        if (a == null) {
+            return false;
+        }
         return AnnotationUtils.containsSameIgnoringValues(
                 this.getQualifierHierarchy().getTypeQualifiers(), a);
     }
