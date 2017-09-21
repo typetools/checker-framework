@@ -106,3 +106,5 @@ jobs:
 
 git:
   depth: 9
+
+after_failure: "cat /checker-framework/checker/build/jtreg/all/work/softwarnings/Main.jtr"
