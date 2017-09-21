@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -156,35 +158,24 @@ public class AnnotationBuilder {
 
     /**
      * Copies every element value from the given annotation. If an element in the given annotation
-     * doesn't exist in the annotation to be built, an error would be raised unless the element is
+     * doesn't exist in the annotation to be built, an error is raised unless the element is
      * specified in {@code ignorableElements}.
      *
      * @param valueHolder the annotation that holds the values to be copied
      * @param ignorableElements the elements that can be safely dropped
      */
-    public AnnotationBuilder copyElementValuesFromAnnotation(
+    public void copyElementValuesFromAnnotation(
             AnnotationMirror valueHolder, String... ignorableElements) {
+        Set<String> ignorableElementsSet = new HashSet<>(Arrays.asList(ignorableElements));
         for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> eltValToCopy :
                 valueHolder.getElementValues().entrySet()) {
             Name eltNameToCopy = eltValToCopy.getKey().getSimpleName();
-            if (Arrays.asList(ignorableElements).contains(eltNameToCopy.toString())) {
+            if (ignorableElementsSet.contains(eltNameToCopy.toString())) {
                 continue;
             }
-            boolean hasElement = false;
-            for (ExecutableElement elt :
-                    ElementFilter.methodsIn(annotationElt.getEnclosedElements())) {
-                if (elt.getSimpleName().contentEquals(eltNameToCopy)) {
-                    elementValues.put(elt, eltValToCopy.getValue());
-                    hasElement = true;
-                    break;
-                }
-            }
-            if (!hasElement) {
-                ErrorReporter.errorAbort(
-                        "Couldn't find " + eltNameToCopy + " element in " + annotationElt);
-            }
+            elementValues.put(findElement(eltNameToCopy), eltValToCopy.getValue());
         }
-        return this;
+        return;
     }
 
     public AnnotationBuilder setValue(CharSequence elementName, AnnotationMirror value) {
