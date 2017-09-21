@@ -496,6 +496,7 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
         <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
       </annotationProcessors>
       <compilerArgs>
+        <arg>-AprintErrorStack</arg>
         <!-- location of the annotated JDK, which comes from a Maven dependency -->
         <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
         <!-- Uncomment the following line to use the type annotations compiler. -->
@@ -602,7 +603,7 @@ allprojects {
                 '-processor', 'org.checkerframework.checker.nullness.NullnessChecker',
                 '-processorpath', "${configurations.checkerFramework.asPath}",
                 '-Xmaxerrs', '10000',
-                // uncomment to turn Checker Framework errors into warnings
+                // uncomment to turn type-checking errors into warnings
                 // '-Awarns', '-Xmaxwarns', '10000',
                 "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
         ]
