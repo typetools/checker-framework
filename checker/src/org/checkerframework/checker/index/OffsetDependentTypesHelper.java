@@ -31,7 +31,8 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
         if (DependentTypesError.isExpressionError(expression)) {
             return expression;
         }
-        if (indexOf(expression, '-', '+', 0) == -1) {
+        if (indexOf(expression, '-') == -1 && indexOf(expression, '+') == -1) {
+            // The expression contains no "-" or "+".
             return super.standardizeString(expression, context, localScope, useLocalScope);
         }
 
@@ -48,37 +49,14 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
         return equation.toString();
     }
 
-    /**
-     * Returns the index of the first occurrence of one of two characters in an expression, starting
-     * from a specified index. If there is no such occurrence, returns -1.
-     *
-     * @param expression the expression being searched
-     * @param a the first character searched for
-     * @param b the second character searched for
-     * @param index the starting index of the search
-     * @return the index of the first occurrence of {@code a} or {@code b} in {@code expression}
-     *     starting from {@code index}, or -1
-     */
-    private int indexOf(String expression, char a, char b, int index) {
-        int aIndex = expression.indexOf(a, index);
-        int bIndex = expression.indexOf(b, index);
-        if (aIndex == -1) {
-            return bIndex;
-        } else if (bIndex == -1) {
-            return aIndex;
-        } else {
-            return Math.min(aIndex, bIndex);
-        }
-    }
-
     @Override
     public TreeAnnotator createDependentTypesTreeAnnotator(AnnotatedTypeFactory factory) {
         return new DependentTypesTreeAnnotator(factory, this) {
             @Override
             public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
-                // UpperBoundTreeAnnotator changes the type of array.length to @LTEL
-                // ("array"). If the DependentTypesTreeAnnotator tries to viewpoint
-                // adapt it based on the declaration of length; it will fail.
+                // UpperBoundTreeAnnotator changes the type of array.length to @LTEL("array").
+                // If the DependentTypesTreeAnnotator tries to viewpoint-adapt it based on the
+                // declaration of length, it will fail.
                 if (TreeUtils.isArrayLengthAccess(tree)) {
                     return null;
                 }
