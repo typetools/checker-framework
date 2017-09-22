@@ -110,6 +110,12 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
                             CHECKER_SOURCE, CHECKER_JAVADOC,
                             pgp_user, pgp_passphrase)
 
+    # checker.jar is a superset of checker-qual7.jar, so use the same javadoc jar
+    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_QUAL7_RELEASE_POM, CHECKER_QUAL7,
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_QUAL7_SOURCE),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
+                            pgp_user, pgp_passphrase)
+
     # checker.jar is a superset of checker-qual.jar, so use the same javadoc jar
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_QUAL_RELEASE_POM, CHECKER_QUAL,
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_QUAL_SOURCE),
