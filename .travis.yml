@@ -106,6 +106,3 @@ jobs:
 
 git:
   depth: 9
-
-after_failure:
-- ls /checker-framework/checker/build/jtreg/all/work
