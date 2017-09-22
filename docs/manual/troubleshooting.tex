@@ -1075,7 +1075,14 @@ docker run -it mdernst/ubuntu-for-cf-jdk8 /bin/bash
 \end{Verbatim}
 
 Then, you can run arbitrary commands, including those that appear in the
-\<docker run> command in the \<.travis.yml> file.
+\<docker run> command in the \<.travis.yml> file.  For example:
+
+\begin{Verbatim}
+export JAVA_HOME=`which javac|xargs readlink -f|xargs dirname|xargs dirname`
+git clone -b $BRANCHNAME --depth 9 https://github.com/$USER/checker-framework.git checker-framework
+cd checker-framework
+./.travis-build.sh all-tests downloadjdk
+\end{Verbatim}
 
 
 \subsection{Code style\label{code-style}}
