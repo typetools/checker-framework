@@ -125,10 +125,6 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
 
     @Override
     protected Void scan(AnnotatedTypeMirror type, Void p) {
-
-        if (type == null) // on bounds, etc.
-        return super.scan(type, p);
-
         // If the type's fully-qualified name is in the appropriate map, annotate
         // the type. Do this before looking at kind or class, as this information
         // is more specific.

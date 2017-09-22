@@ -1362,9 +1362,9 @@ public class StubParser {
             List<MemberValuePair> pairs = nrmanno.getPairs();
             if (pairs != null) {
                 for (MemberValuePair mvp : pairs) {
-                    String meth = mvp.getNameAsString();
+                    String member = mvp.getNameAsString();
                     Expression exp = mvp.getValue();
-                    handleExpr(builder, meth, exp);
+                    handleExpr(builder, member, exp);
                 }
             }
             return builder.build();

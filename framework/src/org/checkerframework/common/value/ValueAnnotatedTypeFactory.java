@@ -305,9 +305,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         protected Void scan(AnnotatedTypeMirror type, Void aVoid) {
-            if (type != null) {
-                replaceWithNewAnnoInSpecialCases(type);
-            }
+            replaceWithNewAnnoInSpecialCases(type);
             return super.scan(type, aVoid);
         }
 

@@ -102,10 +102,6 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     @Override
     public void updateForMethodCall(
             MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, V val) {
-        AnnotationMirror fieldInvariantAnnotation =
-                ((InitializationAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
-                        .getFieldInvariantAnnotation();
-
         // Remove invariant annotated fields to avoid performance issue reported in #1438.
         for (FieldAccess invariantField : invariantFields.keySet()) {
             fieldValues.remove(invariantField);
