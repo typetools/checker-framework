@@ -4,6 +4,7 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.dataflow.analysis.FlowExpressions;

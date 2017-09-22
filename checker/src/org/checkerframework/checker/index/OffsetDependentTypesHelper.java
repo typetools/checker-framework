@@ -31,7 +31,7 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
         if (DependentTypesError.isExpressionError(expression)) {
             return expression;
         }
-        if (indexOf(expression, '-') == -1 && indexOf(expression, '+') == -1) {
+        if (expression.indexOf('-') == -1 && expression.indexOf('+') == -1) {
             // The expression contains no "-" or "+".
             return super.standardizeString(expression, context, localScope, useLocalScope);
         }
