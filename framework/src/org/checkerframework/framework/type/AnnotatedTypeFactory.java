@@ -244,8 +244,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final BaseTypeChecker checker;
 
     /**
-     * Map from class name (canonical name) of an annotation, to the annotation in the Checker
-     * Framework that will be used in its place.
+     * Map from class names of aliases, to the annotations in the Checker Framework that will be
+     * used in its place.
      */
     private final Map<String, AnnotationMirror> aliases = new HashMap<String, AnnotationMirror>();
 
@@ -253,15 +253,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final Set<String> aliasesCopyElements = new HashSet<>();
 
     /**
-     * Map from class name (canonical name) of an annotation, to the ignorable elements that the
-     * framework can safely drop when copying over the elements.
+     * Map from class names of aliases, to the ignorable elements that the framework can safely drop
+     * when copying over the elements.
      */
     private final Map<String, String[]> aliasesIgnorableElements = new HashMap<>();
 
     /**
-     * A map from the class name (canonical name) of an annotation to the set of class names
-     * (canonical names) for annotations with the same meaning (i.e., aliases), as well as the
-     * annotation mirror that should be used.
+     * A map from the class name (canonical name) of an annotation to the set of class names for
+     * annotations with the same meaning, as well as the annotation mirror that should be used.
      */
     private final Map<String, Pair<AnnotationMirror, Set</*@Interned*/ String>>> declAliases =
             new HashMap<>();
@@ -2412,8 +2411,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Adds the annotation whose canonical name is given by {@code aliasName} as an alias for the
-     * annotation {@code type}.
+     * Adds the annotation whose fully-qualified name is given by {@code aliasName} as an alias for
+     * the annotation {@code type}.
      *
      * <p>This overload provides a workaround when the alias class cannot be referenced directly. In
      * general, it is nicer and less error-prone to use the {@link #addAliasedAnnotation(Class,
@@ -2442,8 +2441,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Adds the annotation whose canonical name is given by {@code aliasName} as an alias for the
-     * annotation {@code type}.
+     * Adds the annotation whose fully-qualified name is given by {@code aliasName} as an alias for
+     * the annotation {@code type}.
      *
      * <p>This overload provides a workaround when the alias class cannot be referenced directly. In
      * general, it is nicer and less error-prone to use the {@link #addAliasedAnnotation(Class,
