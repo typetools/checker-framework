@@ -33,11 +33,11 @@ import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -55,9 +55,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        UNKNOWN = AnnotationUtils.fromClass(elements, SameLenUnknown.class);
-        BOTTOM = AnnotationUtils.fromClass(elements, SameLenBottom.class);
-        POLY = AnnotationUtils.fromClass(elements, PolySameLen.class);
+        UNKNOWN = AnnotationBuilder.fromClass(elements, SameLenUnknown.class);
+        BOTTOM = AnnotationBuilder.fromClass(elements, SameLenBottom.class);
+        POLY = AnnotationBuilder.fromClass(elements, PolySameLen.class);
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyLength.class, POLY);
 

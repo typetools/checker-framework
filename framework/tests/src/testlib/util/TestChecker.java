@@ -21,7 +21,7 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationBuilder;
 
 /**
  * A simple checker used for testing the Checker Framework. It treats the {@code @Odd} and
@@ -62,7 +62,7 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public TestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
         Elements elements = processingEnv.getElementUtils();
-        BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
+        BOTTOM = AnnotationBuilder.fromClass(elements, Bottom.class);
 
         this.postInit();
 

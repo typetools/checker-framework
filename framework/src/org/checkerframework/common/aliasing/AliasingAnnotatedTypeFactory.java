@@ -23,6 +23,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -31,10 +32,10 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public AliasingAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        MAYBE_ALIASED = AnnotationUtils.fromClass(elements, MaybeAliased.class);
-        NON_LEAKED = AnnotationUtils.fromClass(elements, NonLeaked.class);
-        UNIQUE = AnnotationUtils.fromClass(elements, Unique.class);
-        MAYBE_LEAKED = AnnotationUtils.fromClass(elements, MaybeLeaked.class);
+        MAYBE_ALIASED = AnnotationBuilder.fromClass(elements, MaybeAliased.class);
+        NON_LEAKED = AnnotationBuilder.fromClass(elements, NonLeaked.class);
+        UNIQUE = AnnotationBuilder.fromClass(elements, Unique.class);
+        MAYBE_LEAKED = AnnotationBuilder.fromClass(elements, MaybeLeaked.class);
         if (this.getClass().equals(AliasingAnnotatedTypeFactory.class)) {
             this.postInit();
         }

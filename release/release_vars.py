@@ -94,6 +94,7 @@ LIVE_ANNO_REPO = "git@github.com:typetools/annotation-tools.git"
 LIVE_CHECKER_REPO = "git@github.com:typetools/checker-framework.git"
 LIVE_PLUME_LIB = "https://github.com/mernst/plume-lib"
 LIVE_PLUME_BIB = "https://github.com/mernst/plume-bib"
+LIVE_STUBPARSER = "https://github.com/typetools/stubparser"
 
 OPENJDK_RELEASE_SITE = 'http://jdk8.java.net/download.html'
 
@@ -149,6 +150,7 @@ AFU_MANUAL = os.path.join(ANNO_FILE_UTILITIES, 'annotation-file-utilities.html')
 
 PLUME_LIB = os.path.join(BUILD_DIR, 'plume-lib')
 PLUME_BIB = os.path.join(BUILD_DIR, 'plume-bib')
+STUBPARSER = os.path.join(BUILD_DIR, 'stubparser')
 
 MAVEN_ARTIFACTS_DIR = os.path.join(CHECKER_FRAMEWORK, 'maven-artifacts')
 MAVEN_DEV_REPO = 'file:///cse/www2/types/dev/m2-repo'

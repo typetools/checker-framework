@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +59,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
-import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -180,7 +181,7 @@ public class StubParser {
         faexprcache = new HashMap<FieldAccessExpr, VariableElement>();
         nexprcache = new HashMap<NameExpr, VariableElement>();
 
-        this.fromStubFile = AnnotationUtils.fromClass(elements, FromStubFile.class);
+        this.fromStubFile = AnnotationBuilder.fromClass(elements, FromStubFile.class);
     }
 
     /** All annotations defined in the package. Keys are simple names. */
@@ -201,7 +202,7 @@ public class StubParser {
         for (TypeElement typeElm : typeElements) {
             if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
                 AnnotationMirror anno =
-                        AnnotationUtils.fromName(elements, typeElm.getQualifiedName());
+                        AnnotationBuilder.fromName(elements, typeElm.getQualifiedName());
                 putNew(r, typeElm.getSimpleName().toString(), anno);
             }
         }
@@ -298,7 +299,7 @@ public class StubParser {
                     } else if (importType.getKind() == ElementKind.ANNOTATION_TYPE) {
                         // Single annotation or nested annotation
 
-                        AnnotationMirror anno = AnnotationUtils.fromName(elements, imported);
+                        AnnotationMirror anno = AnnotationBuilder.fromName(elements, imported);
                         if (anno != null) {
                             Element annoElt = anno.getAnnotationType().asElement();
                             putNew(result, annoElt.getSimpleName().toString(), anno);
@@ -625,9 +626,12 @@ public class StubParser {
             param.getType().setAnnotations(param.getAnnotations());
 
             if (param.isVarArgs()) {
-                // workaround
                 assert paramType.getKind() == TypeKind.ARRAY;
+                // The "type" of param is actually the component type of the vararg.
+                // For example, "Object..." the type would be "Object".
                 annotate(((AnnotatedArrayType) paramType).getComponentType(), param.getType());
+                // The "VarArgsAnnotations" are those just before "...".
+                annotate(paramType, param.getVarArgsAnnotations());
             } else {
                 annotate(paramType, param.getType());
             }
@@ -858,8 +862,39 @@ public class StubParser {
         // StubParser parses all annotations in type annotation position as type annotations
         annotateDecl(declAnnos, elt, decl.getElementType().getAnnotations());
         AnnotatedTypeMirror fieldType = atypeFactory.fromElement(elt);
-        annotate(fieldType, decl.getElementType());
+
+        VariableDeclarator fieldVarDecl = null;
+        for (VariableDeclarator var : decl.getVariables()) {
+            if (var.getName().toString().equals(elt.getSimpleName().toString())) {
+                fieldVarDecl = var;
+            }
+        }
+        assert fieldVarDecl != null;
+
+        annotate(fieldType, fieldVarDecl.getType());
+
+        if (fieldType.getKind() == TypeKind.ARRAY) {
+            annotateInnerMostComponentType((AnnotatedArrayType) fieldType, decl.getAnnotations());
+        } else {
+            annotate(fieldType, decl.getAnnotations());
+        }
         putNew(atypes, elt, fieldType);
+    }
+
+    /**
+     * Adds {@code annotations} to the inner most component type of {@code type}.
+     *
+     * @param type array type
+     * @param annotations annotations to add
+     */
+    private void annotateInnerMostComponentType(
+            AnnotatedArrayType type, List<AnnotationExpr> annotations) {
+        AnnotatedTypeMirror componentType = type;
+        while (componentType.getKind() == TypeKind.ARRAY) {
+            componentType = ((AnnotatedArrayType) componentType).getComponentType();
+        }
+
+        annotate(componentType, annotations);
     }
 
     private void annotate(AnnotatedTypeMirror type, List<AnnotationExpr> annotations) {
@@ -940,7 +975,7 @@ public class StubParser {
                                 .endsWith("$" + typeElt.getSimpleName().toString()))
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
 
-        Map<Element, BodyDeclaration<?>> result = new HashMap<>();
+        Map<Element, BodyDeclaration<?>> result = new LinkedHashMap<>();
         for (BodyDeclaration<?> member : typeDecl.getMembers()) {
             putNewElement(typeElt, result, member, typeDecl.getNameAsString());
         }
@@ -1327,9 +1362,9 @@ public class StubParser {
             List<MemberValuePair> pairs = nrmanno.getPairs();
             if (pairs != null) {
                 for (MemberValuePair mvp : pairs) {
-                    String meth = mvp.getNameAsString();
+                    String member = mvp.getNameAsString();
                     Expression exp = mvp.getValue();
-                    handleExpr(builder, meth, exp);
+                    handleExpr(builder, member, exp);
                 }
             }
             return builder.build();

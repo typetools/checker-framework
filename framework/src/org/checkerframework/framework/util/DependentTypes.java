@@ -19,6 +19,7 @@ import org.checkerframework.framework.qual.Dependent;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -42,12 +43,12 @@ public class DependentTypes {
 
     private AnnotationMirror getResult(AnnotationMirror anno) {
         Name valName = AnnotationUtils.getElementValueClassName(anno, "result", false);
-        return AnnotationUtils.fromName(elements, valName);
+        return AnnotationBuilder.fromName(elements, valName);
     }
 
     private AnnotationMirror getWhen(AnnotationMirror anno) {
         Name valName = AnnotationUtils.getElementValueClassName(anno, "when", false);
-        return AnnotationUtils.fromName(elements, valName);
+        return AnnotationBuilder.fromName(elements, valName);
     }
 
     private AnnotationMirror findDependent(Element element) {

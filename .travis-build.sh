@@ -51,10 +51,12 @@ fi
 
 set -e
 
+# Subsumed by "all-tests" group.
 if [[ "${GROUP}" == "junit" || "${GROUP}" == "all" ]]; then
   (cd checker && ant junit-tests-nojtreg-nobuild)
 fi
 
+# Subsumed by "all-tests" group.
 if [[ "${GROUP}" == "nonjunit" || "${GROUP}" == "all" ]]; then
   (cd checker && ant nonjunit-tests-nojtreg-nobuild jtreg-tests)
 fi

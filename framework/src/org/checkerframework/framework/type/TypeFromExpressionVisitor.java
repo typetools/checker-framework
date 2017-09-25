@@ -139,7 +139,6 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             // the type of a class literal is the type of the "class" element.
             return f.getAnnotatedType(elt);
         }
-        String kind = elt.getKind().toString();
         switch (elt.getKind()) {
             case METHOD:
             case PACKAGE: // "java.lang" in new java.lang.Short("2")

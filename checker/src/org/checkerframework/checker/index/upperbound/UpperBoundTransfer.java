@@ -306,9 +306,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
     }
 
     /**
-     * If lengthAccess node is an sequence length field or method access and the other node is less
-     * than or equal to that sequence length, then refine the other nodes type to less than the
-     * sequence length.
+     * If lengthAccess node is an sequence length field or method access (optionally with a constant
+     * offset subtracted) and the other node is less than or equal to that sequence length (minus
+     * the offset), then refine the other nodes type to less than the sequence length (minus the
+     * offset).
      */
     private void refineNeqSequenceLength(
             Node lengthAccess,
@@ -317,6 +318,25 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
             UpperBoundStore store) {
 
         Receiver receiver = null;
+        // If lengthAccess is "receiver.length - c" where c is an integer constant, stores c
+        // into lengthOffset
+        int lengthOffset = 0;
+        if (lengthAccess instanceof NumericalSubtractionNode) {
+            NumericalSubtractionNode subtraction = (NumericalSubtractionNode) lengthAccess;
+            Node offsetNode = subtraction.getRightOperand();
+            Long offsetValue =
+                    IndexUtil.getExactValue(
+                            offsetNode.getTree(), atypeFactory.getValueAnnotatedTypeFactory());
+            if (offsetValue != null
+                    && offsetValue > Integer.MIN_VALUE
+                    && offsetValue <= Integer.MAX_VALUE) {
+                lengthOffset = offsetValue.intValue();
+                lengthAccess = subtraction.getLeftOperand();
+            } else {
+                // Subtraction of non-constant expressions is not supported
+                return;
+            }
+        }
 
         if (NodeUtils.isArrayLengthFieldAccess(lengthAccess)) {
             FieldAccess fa =
@@ -334,8 +354,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
         if (receiver != null && !receiver.containsUnknown()) {
             UBQualifier otherQualifier = UBQualifier.createUBQualifier(otherNodeAnno);
             String sequence = receiver.toString();
-            if (otherQualifier.hasSequenceWithOffsetNeg1(sequence)) {
-                otherQualifier = otherQualifier.glb(UBQualifier.createUBQualifier(sequence, "0"));
+            // Check if otherNode + c - 1 < receiver.length
+            if (otherQualifier.hasSequenceWithOffset(sequence, lengthOffset - 1)) {
+                // Add otherNode + c < receiver.length
+                UBQualifier newQualifier =
+                        UBQualifier.createUBQualifier(sequence, Integer.toString(lengthOffset));
+                otherQualifier = otherQualifier.glb(newQualifier);
                 for (Node internal : splitAssignments(otherNode)) {
                     Receiver leftRec =
                             FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
@@ -408,7 +432,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
         for (String sequence : i.getSequences()) {
             if (i.isLessThanLengthOf(sequence)) {
                 lessThan.add(sequence);
-            } else if (i.hasSequenceWithOffsetNeg1(sequence)) {
+            } else if (i.hasSequenceWithOffset(sequence, -1)) {
                 lessThanOrEqaul.add(sequence);
             }
         }

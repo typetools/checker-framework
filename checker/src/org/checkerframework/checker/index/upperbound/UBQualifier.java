@@ -18,7 +18,7 @@ import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
@@ -195,12 +195,13 @@ public abstract class UBQualifier {
     }
 
     /**
-     * Returns whether or not this qualifier has sequence with offset of -1.
+     * Returns whether or not this qualifier has sequence with the specified offset.
      *
      * @param sequence sequence expression
-     * @return whether or not this qualifier has sequence with offset of -1
+     * @param offset the offset being looked for
+     * @return whether or not this qualifier has sequence with the specified offset
      */
-    public boolean hasSequenceWithOffsetNeg1(String sequence) {
+    public boolean hasSequenceWithOffset(String sequence, int offset) {
         return false;
     }
 
@@ -224,12 +225,12 @@ public abstract class UBQualifier {
         }
 
         @Override
-        public boolean hasSequenceWithOffsetNeg1(String sequence) {
+        public boolean hasSequenceWithOffset(String sequence, int offset) {
             Set<OffsetEquation> offsets = map.get(sequence);
             if (offsets == null) {
                 return false;
             }
-            return offsets.contains(OffsetEquation.NEG_1);
+            return offsets.contains(OffsetEquation.createOffsetForInt(offset));
         }
 
         /**
@@ -240,7 +241,7 @@ public abstract class UBQualifier {
          */
         @Override
         public boolean isLessThanOrEqualTo(String sequence) {
-            return isLessThanLengthOf(sequence) || hasSequenceWithOffsetNeg1(sequence);
+            return isLessThanLengthOf(sequence) || hasSequenceWithOffset(sequence, -1);
         }
 
         /**

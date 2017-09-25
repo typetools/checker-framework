@@ -18,7 +18,9 @@ RUN apt-get -qqy update && apt-get -qqy install \
   cpp \
   git \
   gradle \
+  libcurl3-gnutls \
   make \
+  maven \
   mercurial \
   unzip \
   wget \
@@ -28,9 +30,11 @@ RUN apt-get -qqy update && apt-get -qqy install \
   hevea \
   librsvg2-bin \
   maven \
+  python-pip \
   texlive-fonts-recommended \
   texlive-latex-base \
   texlive-latex-extra \
   texlive-latex-recommended \
 && apt-get clean \
-&& rm -rf /var/lib/apt/lists/*
+&& rm -rf /var/lib/apt/lists/* \
+&& pip install html5validator

@@ -50,9 +50,9 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -107,20 +107,20 @@ public abstract class InitializationAnnotatedTypeFactory<
         Set<Class<? extends Annotation>> tempInitAnnos = new LinkedHashSet<>();
 
         if (useFbc) {
-            COMMITTED = AnnotationUtils.fromClass(elements, Initialized.class);
-            FREE = AnnotationUtils.fromClass(elements, UnderInitialization.class);
-            NOT_ONLY_COMMITTED = AnnotationUtils.fromClass(elements, NotOnlyInitialized.class);
-            FBCBOTTOM = AnnotationUtils.fromClass(elements, FBCBottom.class);
-            UNCLASSIFIED = AnnotationUtils.fromClass(elements, UnknownInitialization.class);
+            COMMITTED = AnnotationBuilder.fromClass(elements, Initialized.class);
+            FREE = AnnotationBuilder.fromClass(elements, UnderInitialization.class);
+            NOT_ONLY_COMMITTED = AnnotationBuilder.fromClass(elements, NotOnlyInitialized.class);
+            FBCBOTTOM = AnnotationBuilder.fromClass(elements, FBCBottom.class);
+            UNCLASSIFIED = AnnotationBuilder.fromClass(elements, UnknownInitialization.class);
 
             tempInitAnnos.add(UnderInitialization.class);
             tempInitAnnos.add(Initialized.class);
             tempInitAnnos.add(UnknownInitialization.class);
             tempInitAnnos.add(FBCBottom.class);
         } else {
-            COMMITTED = AnnotationUtils.fromClass(elements, NonRaw.class);
+            COMMITTED = AnnotationBuilder.fromClass(elements, NonRaw.class);
             FBCBOTTOM = COMMITTED; // @NonRaw is also bottom
-            UNCLASSIFIED = AnnotationUtils.fromClass(elements, Raw.class);
+            UNCLASSIFIED = AnnotationBuilder.fromClass(elements, Raw.class);
             FREE = null; // unused
             NOT_ONLY_COMMITTED = null; // unused
 

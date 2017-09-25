@@ -21,6 +21,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
@@ -94,7 +95,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                             atypeFactory.getElementUtils(), qual);
             if (pqtopclass != null) {
                 AnnotationMirror pqtop =
-                        AnnotationUtils.fromClass(atypeFactory.getElementUtils(), pqtopclass);
+                        AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), pqtopclass);
                 if (QualifierPolymorphism.isPolyAll(qual)) {
                     // Use key null as marker for polyall
                     this.polyQualifiers.put(null, qual);
@@ -195,7 +196,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         Set<AnnotationMirror> newbottoms = findBottoms(fullMap);
 
         this.polymorphicQualifier =
-                AnnotationUtils.fromClass(
+                AnnotationBuilder.fromClass(
                         f.atypeFactory.getElementUtils(), PolymorphicQualifier.class);
         this.polyQualifiers = f.polyQualifiers;
 
@@ -946,10 +947,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             if (hashCode == -1) {
                 hashCode = 31;
                 if (a1 != null) {
-                    hashCode += 17 * AnnotationUtils.annotationName(a1).toString().hashCode();
+                    hashCode += 17 * AnnotationUtils.annotationName(a1).hashCode();
                 }
                 if (a2 != null) {
-                    hashCode += 17 * AnnotationUtils.annotationName(a2).toString().hashCode();
+                    hashCode += 17 * AnnotationUtils.annotationName(a2).hashCode();
                 }
             }
             return hashCode;

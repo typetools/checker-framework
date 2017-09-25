@@ -47,14 +47,14 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-2.1.14/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-2.2.0/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.14
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.2.0
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -79,7 +79,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.14
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.2.0
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -87,7 +87,7 @@ use the last one.
     command-line arguments to so indicate:
 
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.14
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.2.0
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac -source 7 -target 7'
 \end{Verbatim}
 
@@ -113,11 +113,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.14
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.2.0
   alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.1.14\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.2.0\
   doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
@@ -140,7 +140,7 @@ Framework \<javac> to your path).
 The output should be:
 
 \begin{Verbatim}
-  javac 1.8.0-jsr308-2.1.14
+  javac 1.8.0-jsr308-2.2.0
 \end{Verbatim}
 
 
@@ -348,6 +348,13 @@ checker as an annotation processor directly.
   To obtain artifacts from Maven Central:
 
 \begin{alltt}
+  <properties>
+    ... existing <property> items ...
+    <checkerframework.version>\ReleaseVersion{}</checkerframework.version>
+  </properties>
+
+  ...
+
   <dependencies>
     ... existing <dependency> items ...
 
@@ -355,23 +362,23 @@ checker as an annotation processor directly.
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
-      <version>\ReleaseVersion{}</version>
+      <version>\$\{checkerframework.version\}</version>
     </dependency>
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker</artifactId>
-      <version>\ReleaseVersion{}</version>
+      <version>\$\{checkerframework.version\}</version>
     </dependency>
     <!-- The Type Annotations compiler. Uncomment if using annotations in comments. -->
     <!-- <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>compiler</artifactId>
-      <version>\ReleaseVersion{}</version>
+      <version>\$\{checkerframework.version\}</version>
     </dependency> -->
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
-      <version>\ReleaseVersion{}</version>
+      <version>\$\{checkerframework.version\}</version>
     </dependency>
   </dependencies>
 \end{alltt}
@@ -384,6 +391,13 @@ latest bug fixes and new features.
   one that you have built from source):
 
 \begin{alltt}
+  <properties>
+    ... existing <property> items ...
+    <checkerframework.version>\ReleaseVersion{}</checkerframework.version>
+  </properties>
+
+  ...
+
   <dependencies>
     ... existing <dependency> items ...
 
@@ -391,14 +405,14 @@ latest bug fixes and new features.
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
-      <version>\ReleaseVersion{}</version>
+      <version>\$\{checkerframework.version\}</version>
       <scope>system</scope>
       <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/checker-qual.jar</systemPath>
     </dependency>
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker</artifactId>
-      <version>\ReleaseVersion{}</version>
+      <version>\$\{checkerframework.version\}</version>
       <scope>system</scope>
       <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/checker.jar</systemPath>
     </dependency>
@@ -406,7 +420,7 @@ latest bug fixes and new features.
     <!-- <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>compiler</artifactId>
-      <version>\ReleaseVersion{}</version>
+      <version>\$\{checkerframework.version\}</version>
       <scope>system</scope>
       <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/compiler.jar</systemPath>
     </dependency> -->
@@ -414,7 +428,7 @@ latest bug fixes and new features.
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
-      <version>\ReleaseVersion{}</version>
+      <version>\$\{checkerframework.version\}</version>
       <scope>system</scope>
       <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/jdk8.jar</systemPath>
     </dependency>
@@ -482,10 +496,11 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
         <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
       </annotationProcessors>
       <compilerArgs>
+        <arg>-AprintErrorStack</arg>
         <!-- location of the annotated JDK, which comes from a Maven dependency -->
         <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
-        <!-- Uncomment the following line to use the Type Annotations compiler. -->
-        <!-- <arg>-J-Xbootclasspath/p:$\{typeAnnotationsJavac\}</arg> -->
+        <!-- Uncomment the following line to use the type annotations compiler. -->
+        <!-- <arg>-classpath $\{typeAnnotationsJavac\}</arg> -->
       </compilerArgs>
     </configuration>
   </plugin>
@@ -557,7 +572,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '2.1.14'
+    ext.checkerFrameworkVersion = '2.2.0'
     ext.jdkVersion = JavaVersion.current().isJava8() ? 'jdk8' : 'jdk9'
     checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
 
@@ -588,19 +603,33 @@ allprojects {
                 '-processor', 'org.checkerframework.checker.nullness.NullnessChecker',
                 '-processorpath', "${configurations.checkerFramework.asPath}",
                 '-Xmaxerrs', '10000',
-                // uncomment to turn Checker Framework errors into warnings
+                // uncomment to turn type-checking errors into warnings
                 // '-Awarns', '-Xmaxwarns', '10000',
                 "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
         ]
-        if (targetJavaVersion.isJava7()) {
-            compile.options.compilerArgs += ['-source', '7', '-target', '7']
-            options.fork = true
-            options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.checkerFrameworkJavac.asPath}"]
-        }
     }
 }
 \end{Verbatim}
 \end{mysmall}
+
+\item To use the Type Annotations compiler to support annotations-in-comments:
+
+\begin{mysmall}
+\begin{Verbatim}
+allprojects {
+    tasks.withType(JavaCompile).all { JavaCompile compile ->
+        compile.options.compilerArgs = [
+           // ... as above
+           '-source', '7', '-target', '7' // Include if Java 7 compatibility is needed
+        ]
+        options.fork = true
+        options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.checkerFrameworkJavac.asPath}"]
+    }
+}
+\end{Verbatim}
+\end{mysmall}
+
+
 \end{enumerate}
 
 \section{Android Studio 3.0 and the Android Gradle Plugin 3.0\label{android-gradle}}
@@ -663,7 +692,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '2.1.14'
+    ext.checkerFrameworkVersion = '2.2.0'
     implementation "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
     annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
     checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
@@ -873,7 +902,7 @@ There are two approaches to running a checker in NetBeans:  via modifying the pr
   Add \<checker.jar> to the processor-path libraries. To do so, select
   the ``Processor'' tab, click the ``Add JAR/Folder'' button on the
   right and browse to
-  add \<\$CHECKERFRAMEWORK/checker/dist/checker-qual.jar>.
+  add \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>.
 
 \item
   Enable annotation processor underlining in the editor. Go to

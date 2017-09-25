@@ -5,6 +5,8 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+import static org.checkerframework.framework.util.AnnotatedTypes.getArrayDepth;
+
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
@@ -28,6 +30,7 @@ import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
@@ -36,6 +39,8 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCBlock;
+import com.sun.tools.javac.tree.JCTree.JCTry;
 import com.sun.tools.javac.tree.TreeInfo;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -54,7 +59,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -884,6 +888,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return super.visitEnhancedForLoop(node, p);
     }
 
+    @Override
+    public Void visitTry(TryTree node, Void aVoid) {
+        Void ret = super.visitTry(node, aVoid);
+        JCTry tree = (JCTry) node;
+        JCBlock oldFinalizer = tree.finalizer;
+        if (oldFinalizer != null) {
+            // Run type-checking for all generated trees. Set a generated tree to 'tree.finalizer'
+            // to emulate a path for generated tree during type-checking.
+            for (Tree generatedFinalizer : atypeFactory.getGeneratedTrees(oldFinalizer)) {
+                tree.finalizer = (JCBlock) generatedFinalizer;
+                this.scan(generatedFinalizer, aVoid);
+            }
+            tree.finalizer = oldFinalizer;
+        }
+        return ret;
+    }
+
     /**
      * Performs a method invocation check.
      *
@@ -937,6 +958,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         List<AnnotatedTypeMirror> params =
                 AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());
         checkArguments(params, node.getArguments());
+        checkVarargs(invokedMethod, node);
 
         if (isVectorCopyInto(invokedMethod)) {
             typeCheckVectorCopyIntoArgument(node, params);
@@ -954,6 +976,74 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // a set assignment context.
         scan(node.getMethodSelect(), p);
         return null; // super.visitMethodInvocation(node, p);
+    }
+
+    /**
+     * A helper method to check that the array type of actual varargs is a subtype of the
+     * corresponding required varargs, and issues "argument.invalid" error if it's not a subtype of
+     * the required one.
+     *
+     * <p>Note it's required that type checking for each element in varargs is executed by the
+     * caller before or after calling this method.
+     *
+     * @see #checkArguments(List, List)
+     * @param invokedMethod the method type to be invoked
+     * @param tree method or constructor invocation tree
+     */
+    protected void checkVarargs(AnnotatedExecutableType invokedMethod, Tree tree) {
+        if (!invokedMethod.isVarArgs()) {
+            return;
+        }
+
+        List<AnnotatedTypeMirror> formals = invokedMethod.getParameterTypes();
+        int numFormals = formals.size();
+        int lastArgIndex = numFormals - 1;
+        AnnotatedArrayType lastParamAnnotatedType = (AnnotatedArrayType) formals.get(lastArgIndex);
+
+        // We will skip type checking so that we avoid duplicating error message
+        // if the last argument is same depth with the depth of formal varargs
+        // because type checking is already done in checkArguments.
+        List<? extends ExpressionTree> args;
+        switch (tree.getKind()) {
+            case METHOD_INVOCATION:
+                args = ((MethodInvocationTree) tree).getArguments();
+                break;
+            case NEW_CLASS:
+                args = ((NewClassTree) tree).getArguments();
+                break;
+            default:
+                throw new AssertionError("Unexpected kind of tree: " + tree);
+        }
+        if (numFormals == args.size()) {
+            AnnotatedTypeMirror lastArgType =
+                    atypeFactory.getAnnotatedType(args.get(args.size() - 1));
+            if (lastArgType.getKind() == TypeKind.ARRAY
+                    && getArrayDepth(lastParamAnnotatedType)
+                            == getArrayDepth((AnnotatedArrayType) lastArgType)) {
+                return;
+            }
+        }
+
+        AnnotatedTypeMirror wrappedVarargsType = atypeFactory.getAnnotatedTypeVarargsArray(tree);
+
+        // When dataflow analysis is not enabled, it will be null and we can suppose there is no
+        // annotation to be checked for generated varargs array.
+        if (wrappedVarargsType == null) {
+            return;
+        }
+
+        // The component type of wrappedVarargsType might not be a subtype of the component type of
+        // lastParamAnnotatedType due to the difference of type inference between for an expression
+        // and an invoked method element. We can consider that the component type of actual is same
+        // with formal one because type checking for elements will be done in checkArguments. This
+        // is also needed to avoid duplicating error message caused by elements in varargs
+        if (wrappedVarargsType.getKind() == TypeKind.ARRAY) {
+            ((AnnotatedArrayType) wrappedVarargsType)
+                    .setComponentType(lastParamAnnotatedType.getComponentType());
+        }
+
+        commonAssignmentCheck(
+                lastParamAnnotatedType, wrappedVarargsType, tree, "varargs.type.incompatible");
     }
 
     /**
@@ -1048,12 +1138,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Type checks the method arguments of {@code Vector.copyInto()}.
      *
-     * <p>The Checker Framework special-cases the method invocation, as it is type safety cannot be
+     * <p>The Checker Framework special-cases the method invocation, as its type safety cannot be
      * expressed by Java's type system.
      *
-     * <p>For a Vector {@code v} of type {@code Vectory<E>}, the method invocation {@code
-     * v.copyInto(arr)} is type-safe iff {@code arr} is a array of type {@code T[]}, where {@code T}
-     * is a subtype of {@code E}.
+     * <p>For a Vector {@code v} of type {@code Vector<E>}, the method invocation {@code
+     * v.copyInto(arr)} is type-safe iff {@code arr} is an array of type {@code T[]}, where {@code
+     * T} is a subtype of {@code E}.
      *
      * <p>In other words, this method checks that the type argument of the receiver method is a
      * subtype of the component type of the passed array argument.
@@ -1111,6 +1201,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 AnnotatedTypes.expandVarArgs(atypeFactory, constructor, passedArguments);
 
         checkArguments(params, passedArguments);
+        checkVarargs(constructor, node);
 
         List<AnnotatedTypeParameterBounds> paramBounds = new ArrayList<>();
         for (AnnotatedTypeVariable param : constructor.getTypeVariables()) {
@@ -1359,13 +1450,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 || (node.getKind() == Tree.Kind.POSTFIX_DECREMENT)
                 || (node.getKind() == Tree.Kind.POSTFIX_INCREMENT)) {
             AnnotatedTypeMirror varType = atypeFactory.getAnnotatedTypeLhs(node.getExpression());
-            // For postfix increments/decrements, the value type is incorrect due to the workaround
-            // in GenericAnnotatedTypeFactory.addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)
-            // for the following bug:
-            // See Issue 867: https://github.com/typetools/checker-framework/issues/867
-            // This means could result in a false warning (false positive) in some cases and a lack
-            // of a warning in other cases (false negative).
-            AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(node);
+            AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedTypeRhsUnaryAssign(node);
             commonAssignmentCheck(
                     varType, valueType, node, "compound.assignment.type.incompatible");
         }
@@ -2216,6 +2301,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * <p>Note this method requires the lists to have the same length, as it does not handle cases
      * like var args.
      *
+     * @see #checkVarargs(AnnotatedTypeMirror.AnnotatedExecutableType, Tree)
      * @param requiredArgs the required types
      * @param passedArgs the expressions passed to the corresponding types
      */
@@ -3165,8 +3251,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return true;
         }
 
-        Name when = AnnotationUtils.getElementValueClassName(unused, "when", false);
-        if (receiver.getAnnotation(when) == null) {
+        String when =
+                AnnotationUtils.getElementValueClassName(unused, "when", false).toString().intern();
+        if (!AnnotationUtils.containsSameByName(receiver.getAnnotations(), when)) {
             return true;
         }
 

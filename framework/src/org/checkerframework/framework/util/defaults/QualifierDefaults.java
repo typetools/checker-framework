@@ -43,6 +43,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.PluginUtil;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -506,7 +507,7 @@ public class QualifierDefaults {
             }
         }
 
-        AnnotationMirror anno = AnnotationUtils.fromClass(elements, cls);
+        AnnotationMirror anno = AnnotationBuilder.fromClass(elements, cls);
 
         if (anno == null) {
             return null;

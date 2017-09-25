@@ -239,7 +239,8 @@ You may be able to solve the problem by running
 to re-generate files \code{checker/jdk/jdk\{8,9\}.jar} and \code{checker/bin/jdk\{8,9\}.jar}.
 
 That usually works, but if not, then you should recompile the Checker
-Framework from source rather than using the pre-compiled distribution.
+Framework from source (Section~\ref{build-source}) rather than using
+the pre-compiled distribution.
 
 
 \item
@@ -267,7 +268,7 @@ correct this by being sure to use \<fork="yes"> (see
 Section~\ref{ant-task}) and/or setting the \<build.compiler> property to
 \<extJavac>.
 
-If you are building from source  (Section~\ref{build-source}),
+If you are building from source (Section~\ref{build-source}),
 you might need to rebuild the Annotation
 File Utilities before recompiling or using the Checker Framework.
 
@@ -775,8 +776,8 @@ Follow the instructions for your operating system.
 
 \begin{Verbatim}
 sudo apt-get update
-sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make \
- mercurial openjdk-8-jdk texlive-latex-base texlive-latex-recommended \
+sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin libcurl3-gnutls \
+ make maven mercurial openjdk-8-jdk texlive-latex-base texlive-latex-recommended \
  texlive-latex-extra texlive-fonts-recommended unzip
 \end{Verbatim}
 
@@ -789,7 +790,7 @@ sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make \
 \begin{Verbatim}
 brew update
 brew install caskroom/cask/brew-cask
-brew install git ant hevea mercurial librsvg unzip make
+brew install git ant hevea maven mercurial librsvg unzip make
 brew cask install java
 brew cask install mactex
 mkdir -p $HOME/Library/texmf/tex/latex
@@ -797,17 +798,17 @@ cp -p /usr/local/Cellar/hevea/2.28/lib/hevea/hevea.sty $HOME/Library/texmf/tex/l
 \end{Verbatim}
 
 \item[Windows]
-  To building on Windows 10,
+  To build on Windows 10,
   run \<bash> to obtain a version of
   Ubuntu (provided by the Windows Subsystem for Linux) and follow the Ubuntu
   instructions.
 
-To building on other versions of Windows,
-here is an \emph{incomplete} list of needed prerequisites:
-\begin{itemize}
-\item
-  Install MSYS to obtain the \<cp> and \<make> commands.
-\end{itemize}
+% To build on other versions of Windows,
+% here is an \emph{incomplete} list of needed prerequisites:
+% \begin{itemize}
+% \item
+%   Install MSYS to obtain the \<cp> and \<make> commands.
+% \end{itemize}
 
 \end{description}
 
@@ -823,6 +824,7 @@ cd $JSR308
 hg clone https://bitbucket.org/typetools/jsr308-langtools jsr308-langtools
 git clone https://github.com/typetools/checker-framework.git checker-framework
 git clone https://github.com/typetools/annotation-tools.git annotation-tools
+git clone https://github.com/typetools/stubparser.git stubparser
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
@@ -918,6 +920,19 @@ This is simply done by:
 \end{Verbatim}
 
 You do not need to add the Annotation File Utilities to the path, as
+the Checker Framework build finds it using relative paths.
+
+
+\subsection{Build the StubParser\label{stubparser-building}}
+
+This is simply done by:
+
+\begin{Verbatim}
+  cd $JSR308/stubparser
+  mvn package -Dmaven.test.skip=true
+\end{Verbatim}
+
+You do not need to add the StubParser to the path, as
 the Checker Framework build finds it using relative paths.
 
 
@@ -1017,8 +1032,11 @@ Run \code{make} in the \code{docs/manual} directory to build both the PDF and HT
 
 \subsection{Enable Travis continuous integration builds\label{building-travis}}
 
+Travis-CI is a continuous integration system:  it runs tests every time you
+push a commit to GitHub.
+
 If you have forked any of the projects rather than just creating a clone,
-then we recommend that you enable Travis-CI continuous integration builds,
+then we recommend that you enable Travis-CI builds,
 so that you learn quickly of any errors that creep into your fork.
 
 Run the
@@ -1042,6 +1060,29 @@ the JDK (some jobs might time out).
 \item Verify that all tests pass.
 \item A Checker Framework developer will review your code and merge your branch.
 \end{enumerate}
+
+
+\subsubsection{Debugging Travis continuous integration builds\label{building-travis-debug}}
+
+If a Travis job is failing, you can reproduce the problem locally.
+The Travis jobs all run within Docker containers.
+Install Docker on your local computer, then perform commands like the
+following to get a shell within Docker:
+
+\begin{Verbatim}
+docker pull mdernst/ubuntu-for-cf-jdk8
+docker run -it mdernst/ubuntu-for-cf-jdk8 /bin/bash
+\end{Verbatim}
+
+Then, you can run arbitrary commands, including those that appear in the
+\<docker run> command in the \<.travis.yml> file.  For example:
+
+\begin{Verbatim}
+export JAVA_HOME=`which javac|xargs readlink -f|xargs dirname|xargs dirname`
+git clone -b $BRANCHNAME --depth 9 https://github.com/$USER/checker-framework.git checker-framework
+cd checker-framework
+./.travis-build.sh all-tests downloadjdk
+\end{Verbatim}
 
 
 \subsection{Code style\label{code-style}}
@@ -1165,7 +1206,7 @@ Another implementation of Universe Types and \href{http://www.cs.rpi.edu/~huangw
 ``Inference and checking of object ownership''~\cite{HuangDME2012} (ECOOP 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infer-ownership-ecoop2012-abstract.html}).
 
 \item[Approximate data (Section~\ref{enerj-checker})]
-``EnerJ: Approximate Data Types for Safe and General Low-Power Computation''~\cite{SampsonDFGCG2011} (PLDI 2011, \myurl{http://www.cs.cornell.edu/~asampson/media/papers/enerj-pldi2011.pdf})
+``EnerJ: Approximate Data Types for Safe and General Low-Power Computation''~\cite{SampsonDFGCG2011} (PLDI 2011, \myurl{https://homes.cs.washington.edu/~luisceze/publications/Enerj-pldi2011.pdf})
 
 \item[Information flow and tainting (Section~\ref{sparta-checker})]
 ``Collaborative Verification of Information Flow

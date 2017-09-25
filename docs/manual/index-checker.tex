@@ -207,7 +207,7 @@ qualifiers:
     Checker.  On the left is a type system for lower bounds.  On the right
     is a type system for upper bounds.  Qualifiers written in gray should
     never be written in source code; they are used internally by the type
-    system. ''myArray'' in the Upper Bound qualifiers is an example of
+    system. \<"myArray"> in the Upper Bound qualifiers is an example of
     an array's name.}
   \label{fig-index-int-types}
 \end{figure}
@@ -454,6 +454,7 @@ The Search Index Checker's type hierarchy (Figure~/ref{fig-index-searchindex}) h
 \item[\refqualclass{checker/index/qual}{SearchIndexBottom}]
   This is the bottom type, and programmers should rarely need to write it.
 \item[\refqualclass{checker/index/qual}{SearchIndexUnknown}]
+  No information is known about whether this integer is a search index.
   This is the top type, and programmers should rarely need to write it.
 \end{description}
 
