@@ -62,38 +62,6 @@
             <organizationUrl>https://www.cs.washington.edu/research/plse/</organizationUrl>
         </developer>
 
-        <developer>
-            <id>David McArthur &lt;mcarthur@cs.washington.edu&lt;</id>
-            <name>David McArthur</name>
-            <email>mcarthur@cs.washington.edu</email>
-            <organization>University of Washington PLSE Group</organization>
-            <organizationUrl>https://www.cs.washington.edu/research/plse/</organizationUrl>
-        </developer>
-
-        <developer>
-            <id>Javier Thaine &lt;jthaine@cs.washington.edu&lt;</id>
-            <name>David McArthur</name>
-            <email>jthaine@cs.washington.edu</email>
-            <organization>University of Washington PLSE Group</organization>
-            <organizationUrl>https://www.cs.washington.edu/research/plse/</organizationUrl>
-        </developer>
-
-        <developer>
-            <id>Dan Brown &lt;dbro@cs.washington.edu&lt;</id>
-            <name>Dan Brown</name>
-            <email>dbro@cs.washington.edu</email>
-            <organization>University of Washington PLSE Group</organization>
-            <organizationUrl>https://www.cs.washington.edu/research/plse/</organizationUrl>
-        </developer>
-
-        <developer>
-            <id>jonathangburke@gmail.com</id>
-            <name>Jonathan G. Burke</name>
-            <email>jburke@cs.washington.edu</email>
-            <organization>University of Washington PLSE Group</organization>
-            <organizationUrl>https://www.cs.washington.edu/research/plse/</organizationUrl>
-        </developer>
-
     </developers>
 
 </project>
