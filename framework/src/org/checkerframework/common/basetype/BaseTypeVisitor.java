@@ -179,6 +179,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** An instance of the {@link ContractsUtils} helper class. */
     protected final ContractsUtils contractsUtils;
 
+    /** The Vector#copyInto method from java.util.Vector. It is special-cased,
+     * because Java's type system isn't sufficiently powerful to typecheck it. */
+    private final ExecutableElement vectorCopyInto;
+
     /**
      * @param checker the type-checker associated with this visitor (for callbacks to {@link
      *     TypeHierarchy#isSubtype})
@@ -193,6 +197,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
         this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+        this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
     }
 
     protected BaseTypeVisitor(BaseTypeChecker checker, Factory typeFactory) {
@@ -205,6 +210,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
         this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+        this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
     }
 
     /**
@@ -1129,8 +1135,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** Returns true if the method symbol represents {@code Vector.copyInto} */
     protected boolean isVectorCopyInto(AnnotatedExecutableType method) {
         ExecutableElement elt = method.getElement();
-        if (elt.getSimpleName().contentEquals("copyInto") && elt.getParameters().size() == 1)
+        if (ElementUtils.isMethod(elt, vectorCopyInto, atypeFactory.getProcessingEnv())) {
             return true;
+        }
 
         return false;
     }
