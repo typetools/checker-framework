@@ -376,7 +376,7 @@ class Field extends AccessibleObject implements Member {
      *              by this method fails.
      */
     @CallerSensitive
-    public Object get(@Nullable Object obj)
+    public @Nullable Object get(@Nullable Object obj)
         throws IllegalArgumentException, IllegalAccessException
     {
         if (!override) {
