@@ -7,8 +7,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A meta-annotation indicating that an annotation type prevents whole-program inference. For
- * example, if the definition of {@code @Inject} is meta-annotated with
+ * This annotation can be used two ways:
+ *
+ * <p>1. As a meta-annotation indicating that an annotation type prevents whole-program inference.
+ * For example, if the definition of {@code @Inject} is meta-annotated with
  * {@code @IgnoreInWholeProgramInference}:<br>
  * <tt>@IgnoreInWholeProgramInference</tt><br>
  * <tt>@interface Inject { }</tt><br>
@@ -21,6 +23,9 @@ import java.lang.annotation.Target;
  * href="https://docs.oracle.com/javaee/7/api/javax/inject/Singleton.html">{@code @Singleton}</a>,
  * and <a
  * href="https://types.cs.washington.edu/plume-lib/api/plume/Option.html">{@code @Option}</a>.
+ *
+ * <p>2. As a field annotation indicating that no type qualifier will be inferred for the field it
+ * annotates.
  *
  * <p>See {@link
  * org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes#updateInferredFieldType}
