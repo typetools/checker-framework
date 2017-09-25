@@ -12,6 +12,11 @@ public class TIsU extends TUConstraint {
         super(typeVariable, relatedType, 173);
     }
 
+    public TIsU(
+            AnnotatedTypeVariable typeVariable, AnnotatedTypeMirror relatedType, boolean uIsArg) {
+        super(typeVariable, relatedType, 173, uIsArg);
+    }
+
     @Override
     public String toString() {
         return "TIsU( " + typeVariable + ", " + relatedType + " )";
