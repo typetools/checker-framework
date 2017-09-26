@@ -38,7 +38,7 @@ public class UpperBoundUtil {
 
         /*@CompilerMessageKey*/ String errorKey;
 
-        SideEffectError(String errorKey) {
+        SideEffectError(/*@CompilerMessageKey*/ String errorKey) {
             this.errorKey = errorKey;
         }
     }
