@@ -121,6 +121,14 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
      */
     private void clearFromStore(Receiver reassignedVar, Node n, SideEffectKind sideEffect) {
         TreePath path = analysis.getTypeFactory().getPath(n.getTree());
+        if (path == null) {
+            System.out.println("NPE thrown while getting path for this node:");
+            System.out.println(n);
+            System.out.println("with tree:");
+            System.out.println(n.getTree());
+            System.exit(1);
+        }
+
         Set<Entry<? extends Receiver, CFValue>> receiverAnnotationEntry = new HashSet<>();
         receiverAnnotationEntry.addAll(localVariableValues.entrySet());
         receiverAnnotationEntry.addAll(methodValues.entrySet());
