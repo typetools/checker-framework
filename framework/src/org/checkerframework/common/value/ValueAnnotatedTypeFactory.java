@@ -160,6 +160,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(
                 "org.checkerframework.checker.index.qual.GTENegativeOne",
                 createIntRangeFromGTENegativeOne());
+        // Must also alias any alias of three annotations above:
+        addAliasedAnnotation(
+                "org.checkerframework.checker.index.qual.LengthOf",
+                createIntRangeFromNonNegative());
+        addAliasedAnnotation(
+                "org.checkerframework.checker.index.qual.IndexFor",
+                createIntRangeFromNonNegative());
+        addAliasedAnnotation(
+                "org.checkerframework.checker.index.qual.IndexOrHigh",
+                createIntRangeFromNonNegative());
+        addAliasedAnnotation(
+                "org.checkerframework.checker.index.qual.IndexOrLow",
+                createIntRangeFromGTENegativeOne());
 
         // PolyLength is syntactic sugar for both @PolySameLen and @PolyValue
         addAliasedAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
