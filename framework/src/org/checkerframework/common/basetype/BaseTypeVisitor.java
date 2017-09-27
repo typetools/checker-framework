@@ -179,9 +179,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** An instance of the {@link ContractsUtils} helper class. */
     protected final ContractsUtils contractsUtils;
 
-    /** The element for java.util.Vector#copyInto. */
-    private final ExecutableElement vectorCopyInto;
-
     /**
      * @param checker the type-checker associated with this visitor (for callbacks to {@link
      *     TypeHierarchy#isSubtype})
@@ -195,10 +192,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
-        this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
-        this.vectorCopyInto =
-                TreeUtils.getMethod(
-                        "java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
     }
 
     protected BaseTypeVisitor(BaseTypeChecker checker, Factory typeFactory) {
@@ -210,10 +203,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
-        this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
-        this.vectorCopyInto =
-                TreeUtils.getMethod(
-                        "java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
     }
 
     /**
@@ -1132,13 +1121,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         .isSubtype(inferredAnnotation, necessaryAnnotation);
     }
 
-    // Handle case Vector.copyInto()
-    private final AnnotatedDeclaredType vectorType;
+    /** The element for java.util.Vector#copyInto. */
+    private ExecutableElement vectorCopyInto;
+
+    /** The tyoe of java.util.Vector. */
+    private AnnotatedDeclaredType vectorType;
 
     /** Returns true if the method symbol represents {@code Vector.copyInto} */
     protected boolean isVectorCopyInto(AnnotatedExecutableType method) {
         ExecutableElement elt = method.getElement();
         if (elt.getSimpleName().contentEquals("copyInto") && elt.getParameters().size() == 1) {
+            if (vectorCopyInto == null) {
+                vectorCopyInto =
+                        TreeUtils.getMethod(
+                                "java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
+            }
             return ElementUtils.isMethod(elt, vectorCopyInto, atypeFactory.getProcessingEnv());
         }
         return false;
@@ -1171,6 +1168,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedArrayType passedAsArray = (AnnotatedArrayType) passed;
 
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
+        if (vectorType == null) {
+            vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+        }
         AnnotatedDeclaredType receiverAsVector =
                 AnnotatedTypes.asSuper(atypeFactory, receiver, vectorType);
         if (receiverAsVector.getTypeArguments().isEmpty()) {

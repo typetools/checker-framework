@@ -25,20 +25,27 @@ class Issue1522 {
         v.copyInto(stringArray);
     }
 
-    void copyVectorErrors(Vector<@Nullable String> v, Integer[] intArray, String[] stringArray) {
+    void copyVectorErrors(Vector<@Nullable String> v, String[] stringArray) {
         //:: error: (vector.copyinto.type.incompatible)
         v.copyInto(stringArray);
     }
 
-    void copyStackErrors(
-            SubClassVector<@Nullable String> v, Integer[] intArray, String[] stringArray) {
+    void copyStackErrors(SubClassVector<@Nullable String> v, String[] stringArray) {
         //:: error: (vector.copyinto.type.incompatible)
+        v.copyInto(stringArray);
+    }
+
+    void copyVectorNullable(Vector<@Nullable String> v, @Nullable String[] stringArray) {
+        v.copyInto(stringArray);
+    }
+
+    void copyStackNullable(SubClassVector<@Nullable String> v, @Nullable String[] stringArray) {
         v.copyInto(stringArray);
     }
 
     static class SubClassVector<T> extends Vector<T> {
         @Override
-        public synchronized void copyInto(Object[] anArray) {
+        public synchronized void copyInto(@Nullable Object[] anArray) {
             //:: error: (vector.copyinto.type.incompatible)
             super.copyInto(anArray);
         }
