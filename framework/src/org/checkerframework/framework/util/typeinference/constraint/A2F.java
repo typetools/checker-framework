@@ -15,7 +15,7 @@ public class A2F extends AFConstraint {
 
     @Override
     public TUConstraint toTUConstraint() {
-        return new TSuperU((AnnotatedTypeVariable) formalParameter, argument);
+        return new TSuperU((AnnotatedTypeVariable) formalParameter, argument, true);
     }
 
     @Override

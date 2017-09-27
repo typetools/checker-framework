@@ -68,7 +68,15 @@ public class ConstraintMapBuilder {
             final AnnotatedTypeVariable typeT = constraint.typeVariable;
             final AnnotatedTypeMirror typeU = constraint.relatedType;
 
-            if (typeU.getKind() == TypeKind.TYPEVAR
+            // If typeU is from an argument to the method, then treat typeU as an ordinary type even
+            // if it is a target type variable.  This is for the case where the inferred type is the
+            // declared type parameter.  For example,
+            // public <T> T get(T t) {
+            //   return this.get(t);
+            // }
+            // The inferred type of T should be T.
+            if (!constraint.uIsArg
+                    && typeU.getKind() == TypeKind.TYPEVAR
                     && targets.contains(
                             TypeAnnotationUtils.unannotatedType(typeU.getUnderlyingType()))) {
                 if (typeT.getAnnotations().isEmpty() && typeU.getAnnotations().isEmpty()) {

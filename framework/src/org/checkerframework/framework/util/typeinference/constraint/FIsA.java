@@ -15,7 +15,7 @@ public class FIsA extends AFConstraint {
 
     @Override
     public TUConstraint toTUConstraint() {
-        return new TIsU((AnnotatedTypeVariable) formalParameter, argument);
+        return new TIsU((AnnotatedTypeVariable) formalParameter, argument, true);
     }
 
     @Override
