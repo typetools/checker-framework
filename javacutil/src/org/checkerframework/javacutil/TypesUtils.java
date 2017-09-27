@@ -347,7 +347,6 @@ public final class TypesUtils {
             return TypeAnnotationUtils.unannotatedType(t);
         }
     }
-
     /** Returns the {@link TypeMirror} for a given {@link Class}. */
     public static TypeMirror typeFromClass(Types types, Elements elements, Class<?> clazz) {
         if (clazz == void.class) {
