@@ -46,7 +46,6 @@ class Issue1522 {
     static class SubClassVector<T> extends Vector<T> {
         @Override
         public synchronized void copyInto(@Nullable Object[] anArray) {
-            //:: error: (vector.copyinto.type.incompatible)
             super.copyInto(anArray);
         }
     }
