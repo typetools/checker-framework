@@ -934,9 +934,6 @@ public abstract class AnnotatedTypeMirror {
                     AnnotatedWildcardType wct = (AnnotatedWildcardType) typeArgs.get(i);
                     if (typeParam.getUpperBound().getKind() == wct.getExtendsBound().getKind()) {
                         AnnotatedTypeMerger.merge(typeParam.getUpperBound(), wct.getExtendsBound());
-                    } else {
-                        wct.getExtendsBound()
-                                .addMissingAnnotations(typeParam.getUpperBound().getAnnotations());
                     }
                     wct.getSuperBound().replaceAnnotations(typeParam.getLowerBound().annotations);
                     wct.replaceAnnotations(typeParam.annotations);

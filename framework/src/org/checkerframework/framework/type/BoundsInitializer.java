@@ -81,18 +81,17 @@ public class BoundsInitializer {
                                 declaredType.atypeFactory.types.getWildcardType(upperBound, null);
                         break;
                     case INTERSECTION:
-                        TypeMirror object =
-                                TypesUtils.getObjectTypeMirror(
-                                        declaredType.atypeFactory.processingEnv);
-                        javaTypeArg = declaredType.atypeFactory.types.getWildcardType(object, null);
+                        // Can't create a wildcard with an intersection as the upper bound, so use
+                        // an unbound wildcard instead.  The extends bound of the AnnotatedWildcardType
+                        // be initialized properly below.
+                        javaTypeArg = declaredType.atypeFactory.types.getWildcardType(null, null);
                         break;
                     default:
-                        assert false;
-                        TypeMirror object2 =
-                                TypesUtils.getObjectTypeMirror(
-                                        declaredType.atypeFactory.processingEnv);
-                        javaTypeArg =
-                                declaredType.atypeFactory.types.getWildcardType(object2, null);
+                        ErrorReporter.errorAbort(
+                                "Unexpected upper bound kind: %s type: %s",
+                                upperBound.getKind(), upperBound);
+                        javaTypeArg = null; // dead code
+                        break;
                 }
 
             } else {
