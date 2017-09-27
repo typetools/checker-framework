@@ -192,7 +192,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
-        this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
     }
 
     protected BaseTypeVisitor(BaseTypeChecker checker, Factory typeFactory) {
@@ -204,7 +203,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
-        this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
     }
 
     /**
@@ -1123,15 +1121,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         .isSubtype(inferredAnnotation, necessaryAnnotation);
     }
 
-    // Handle case Vector.copyInto()
-    private final AnnotatedDeclaredType vectorType;
+    /** The element for java.util.Vector#copyInto. */
+    private ExecutableElement vectorCopyInto;
+
+    /** The tyoe of java.util.Vector. */
+    private AnnotatedDeclaredType vectorType;
 
     /** Returns true if the method symbol represents {@code Vector.copyInto} */
     protected boolean isVectorCopyInto(AnnotatedExecutableType method) {
         ExecutableElement elt = method.getElement();
-        if (elt.getSimpleName().contentEquals("copyInto") && elt.getParameters().size() == 1)
-            return true;
-
+        if (elt.getSimpleName().contentEquals("copyInto") && elt.getParameters().size() == 1) {
+            if (vectorCopyInto == null) {
+                vectorCopyInto =
+                        TreeUtils.getMethod(
+                                "java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
+            }
+            return ElementUtils.isMethod(elt, vectorCopyInto, atypeFactory.getProcessingEnv());
+        }
         return false;
     }
 
@@ -1162,17 +1168,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedArrayType passedAsArray = (AnnotatedArrayType) passed;
 
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
+        if (vectorType == null) {
+            vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+        }
         AnnotatedDeclaredType receiverAsVector =
                 AnnotatedTypes.asSuper(atypeFactory, receiver, vectorType);
         if (receiverAsVector.getTypeArguments().isEmpty()) {
             return;
         }
 
-        commonAssignmentCheck(
-                passedAsArray.getComponentType(),
-                receiverAsVector.getTypeArguments().get(0),
-                node.getArguments().get(0),
-                "vector.copyinto.type.incompatible");
+        AnnotatedTypeMirror argComponent = passedAsArray.getComponentType();
+        AnnotatedTypeMirror vectorTypeArg = receiverAsVector.getTypeArguments().get(0);
+        Tree errorLocation = node.getArguments().get(0);
+        if (TypesUtils.isErasedSubtype(
+                types, vectorTypeArg.getUnderlyingType(), argComponent.getUnderlyingType())) {
+            commonAssignmentCheck(
+                    argComponent,
+                    vectorTypeArg,
+                    errorLocation,
+                    "vector.copyinto.type.incompatible");
+        } else {
+            checker.report(
+                    Result.failure(
+                            "vector.copyinto.type.incompatible", vectorTypeArg, argComponent),
+                    errorLocation);
+        }
     }
 
     /**

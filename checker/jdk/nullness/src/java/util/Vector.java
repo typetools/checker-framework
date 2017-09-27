@@ -12,7 +12,8 @@ public class Vector<E extends @Nullable Object> extends AbstractList<E> implemen
   public Vector(int a1) { throw new RuntimeException("skeleton method"); }
   public Vector() { throw new RuntimeException("skeleton method"); }
   public Vector(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
-  public synchronized void copyInto(Object[] a1) { throw new RuntimeException("skeleton method"); }
+  // See special handling in BaseTypeVisitor#typeCheckVectorCopyIntoArgument
+  public synchronized void copyInto(@Nullable Object[] a1) { throw new RuntimeException("skeleton method"); }
   public synchronized void trimToSize() { throw new RuntimeException("skeleton method"); }
   public synchronized void ensureCapacity(int a1) { throw new RuntimeException("skeleton method"); }
   public synchronized void setSize(int a1) { throw new RuntimeException("skeleton method"); }
