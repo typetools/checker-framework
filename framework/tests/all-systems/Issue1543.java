@@ -1,5 +1,6 @@
 // Test case for Issue 1543
 // https://github.com/typetools/checker-framework/issues/1543
+@SuppressWarnings("") // check for crashes only
 class Issue1543 {
     static class BClass<T> {}
 
@@ -9,6 +10,5 @@ class Issue1543 {
 
     static class Test {
         GClass gClass;
-        GClass<?> gClass2;
     }
 }
