@@ -347,6 +347,13 @@ public final class TypesUtils {
             return TypeAnnotationUtils.unannotatedType(t);
         }
     }
+
+    /** Returns the {@link TypeMirror} for Object. */
+    public static TypeMirror getObjectTypeMirror(ProcessingEnvironment env) {
+        Context context = ((JavacProcessingEnvironment) env).getContext();
+        return Symtab.instance(context).objectType;
+    }
+
     /** Returns the {@link TypeMirror} for a given {@link Class}. */
     public static TypeMirror typeFromClass(Types types, Elements elements, Class<?> clazz) {
         if (clazz == void.class) {
