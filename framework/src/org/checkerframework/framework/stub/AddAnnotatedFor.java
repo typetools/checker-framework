@@ -15,7 +15,6 @@ import annotations.el.ATypeElementWithType;
 import annotations.el.AnnotationDef;
 import annotations.el.DefException;
 import annotations.el.ElementVisitor;
-import annotations.field.AnnotationFieldType;
 import annotations.field.ArrayAFT;
 import annotations.field.BasicAFT;
 import annotations.io.IndexFileParser;
@@ -51,12 +50,12 @@ public class AddAnnotatedFor {
         annotatedForMetaAnnotations.add(
                 Annotations.createValueAnnotation(
                         Annotations.adTarget,
-                        Arrays.<String>asList("TYPE", "METHOD", "CONSTRUCTOR", "PACKAGE")));
+                        Arrays.asList("TYPE", "METHOD", "CONSTRUCTOR", "PACKAGE")));
         adAnnotatedFor =
                 new AnnotationDef(
                         annotatedFor.getCanonicalName(),
                         annotatedForMetaAnnotations,
-                        Collections.<String, AnnotationFieldType>singletonMap(
+                        Collections.singletonMap(
                                 "value", new ArrayAFT(BasicAFT.forType(String.class))));
     }
 

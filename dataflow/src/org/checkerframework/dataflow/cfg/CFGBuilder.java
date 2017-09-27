@@ -1901,7 +1901,7 @@ public class CFGBuilder {
                         new MethodInvocationNode(
                                 primValueCall,
                                 primValueAccess,
-                                Collections.<Node>emptyList(),
+                                Collections.emptyList(),
                                 getCurrentPath());
                 unboxed.setInSource(false);
 
@@ -3542,7 +3542,7 @@ public class CFGBuilder {
                         new MethodInvocationNode(
                                 iteratorCall,
                                 iteratorAccessNode,
-                                Collections.<Node>emptyList(),
+                                Collections.emptyList(),
                                 getCurrentPath());
                 iteratorCallNode.setInSource(false);
                 extendWithNode(iteratorCallNode);
@@ -3576,7 +3576,7 @@ public class CFGBuilder {
                         new MethodInvocationNode(
                                 hasNextCall,
                                 hasNextAccessNode,
-                                Collections.<Node>emptyList(),
+                                Collections.emptyList(),
                                 getCurrentPath());
                 hasNextCallNode.setInSource(false);
                 extendWithNode(hasNextCallNode);
@@ -3608,7 +3608,7 @@ public class CFGBuilder {
                         new MethodInvocationNode(
                                 nextCall,
                                 nextAccessNode,
-                                Collections.<Node>emptyList(),
+                                Collections.emptyList(),
                                 getCurrentPath());
                 nextCallNode.setInSource(false);
                 extendWithNode(nextCallNode);
