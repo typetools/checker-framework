@@ -32,6 +32,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 
@@ -420,6 +421,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         // @IgnoreInWholeProgramInference meta-annotation, exit this routine.
         for (AnnotationMirror declAnno :
                 atf.getDeclAnnotations(InternalUtils.symbol(lhs.getTree()))) {
+            if (AnnotationUtils.areSameByClass(declAnno, IgnoreInWholeProgramInference.class)) {
+                return;
+            }
             Element elt = declAnno.getAnnotationType().asElement();
             if (elt.getAnnotation(IgnoreInWholeProgramInference.class) != null) {
                 return;
