@@ -126,6 +126,10 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
             System.out.println(n);
             System.out.println("with tree:");
             System.out.println(n.getTree());
+
+            System.out.println("relevant receiver:");
+            System.out.println(reassignedVar);
+
             System.exit(1);
         }
 
