@@ -9,6 +9,7 @@ class Issue1543 {
     static class GClass<T extends BClass<?> & AInterface<?>> {}
 
     static class Test {
-        GClass gClass;
+        GClass gClassRaw;
+        GClass<?> gClassWC;
     }
 }
