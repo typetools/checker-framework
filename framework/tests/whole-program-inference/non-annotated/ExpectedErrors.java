@@ -1,4 +1,5 @@
 import java.lang.reflect.Field;
+import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 import testlib.wholeprograminference.qual.*;
 /**
  * This file contains expected errors that should exist even after the jaif type inference occurs.
@@ -221,14 +222,18 @@ public class ExpectedErrors {
 
     class IgnoreMetaAnnotationTest2 {
         @ToIgnore int field;
+        @IgnoreInWholeProgramInference int field2;
 
         void foo() {
             field = getSibling1();
+            field2 = getSibling1();
         }
 
         void test() {
             //:: error: (argument.type.incompatible)
             expectsSibling1(field);
+            //:: error: (argument.type.incompatible)
+            expectsSibling1(field2);
         }
     }
 }
