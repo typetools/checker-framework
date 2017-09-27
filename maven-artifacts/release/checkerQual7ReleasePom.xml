@@ -14,7 +14,7 @@
     </description>
 
     <groupId>org.checkerframework</groupId>
-    <artifactId>checker-compat-qual</artifactId>
+    <artifactId>checker-qual7</artifactId>
 
     <licenses>
         <license>
