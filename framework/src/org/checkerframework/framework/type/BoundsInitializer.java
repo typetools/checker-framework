@@ -73,7 +73,28 @@ public class BoundsInitializer {
                 TypeMirror upperBound =
                         ((TypeVariable) typeElement.getTypeParameters().get(i).asType())
                                 .getUpperBound();
-                javaTypeArg = declaredType.atypeFactory.types.getWildcardType(upperBound, null);
+                switch (upperBound.getKind()) {
+                    case ARRAY:
+                    case DECLARED:
+                    case TYPEVAR:
+                        javaTypeArg =
+                                declaredType.atypeFactory.types.getWildcardType(upperBound, null);
+                        break;
+                    case INTERSECTION:
+                        TypeMirror object =
+                                TypesUtils.getObjectTypeMirror(
+                                        declaredType.atypeFactory.processingEnv);
+                        javaTypeArg = declaredType.atypeFactory.types.getWildcardType(object, null);
+                        break;
+                    default:
+                        assert false;
+                        TypeMirror object2 =
+                                TypesUtils.getObjectTypeMirror(
+                                        declaredType.atypeFactory.processingEnv);
+                        javaTypeArg =
+                                declaredType.atypeFactory.types.getWildcardType(object2, null);
+                }
+
             } else {
                 javaTypeArg = declaredType.getUnderlyingType().getTypeArguments().get(i);
             }
