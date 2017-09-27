@@ -9,7 +9,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
  */
 public class TSubU extends TUConstraint {
     public TSubU(AnnotatedTypeVariable typeVariable, AnnotatedTypeMirror relatedType) {
-        super(typeVariable, relatedType, 163);
+        this(typeVariable, relatedType, false);
     }
 
     public TSubU(
