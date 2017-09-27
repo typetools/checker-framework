@@ -5,6 +5,7 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import java.util.Collections;
@@ -76,6 +77,30 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
         replaceSpecialIntRangeAnnotations.visit(varType);
         super.commonAssignmentCheck(varType, valueExp, errorKey);
+    }
+
+    @Override
+    protected void commonAssignmentCheck(
+            AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType,
+            Tree valueTree,
+            /*@CompilerMessageKey*/ String errorKey) {
+
+        SimpleAnnotatedTypeScanner<Void, Void> replaceSpecialIntRangeAnnotations =
+                new SimpleAnnotatedTypeScanner<Void, Void>() {
+                    @Override
+                    protected Void defaultAction(AnnotatedTypeMirror type, Void p) {
+                        if (type.hasAnnotation(IntRangeFromPositive.class)
+                                || type.hasAnnotation(IntRangeFromNonNegative.class)
+                                || type.hasAnnotation(IntRangeFromGTENegativeOne.class)) {
+                            type.replaceAnnotation(atypeFactory.UNKNOWNVAL);
+                        }
+                        return null;
+                    }
+                };
+
+        replaceSpecialIntRangeAnnotations.visit(varType);
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 
     @Override
