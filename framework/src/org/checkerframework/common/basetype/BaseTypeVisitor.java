@@ -1406,8 +1406,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 assert meth instanceof AnnotatedExecutableType
                         : "Expected AnnotatedExecutableType as context. Found: " + meth;
                 AnnotatedTypeMirror newctx = ((AnnotatedExecutableType) meth).getReturnType();
-                visitorState.setAssignmentContext(
-                        Pair.<Tree, AnnotatedTypeMirror>of((Tree) null, newctx));
+                visitorState.setAssignmentContext(Pair.of((Tree) null, newctx));
             }
 
             try {
@@ -2339,8 +2338,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         try {
             for (int i = 0; i < requiredArgs.size(); ++i) {
                 visitorState.setAssignmentContext(
-                        Pair.<Tree, AnnotatedTypeMirror>of(
-                                (Tree) null, (AnnotatedTypeMirror) requiredArgs.get(i)));
+                        Pair.of((Tree) null, (AnnotatedTypeMirror) requiredArgs.get(i)));
                 commonAssignmentCheck(
                         requiredArgs.get(i), passedArgs.get(i), "argument.type.incompatible");
                 // Also descend into the argument within the correct assignment

@@ -47,7 +47,7 @@ public class PerFileSuite extends Suite {
 
     /** Only called reflectively. Do not use programmatically. */
     public PerFileSuite(Class<?> klass) throws Throwable {
-        super(klass, Collections.<Runner>emptyList());
+        super(klass, Collections.emptyList());
         final TestClass testClass = getTestClass();
         final Class<?> javaTestClass = testClass.getJavaClass();
         final List<Object[]> parametersList = getParametersList(testClass);
