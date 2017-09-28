@@ -65,8 +65,7 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
                                 clazz));
             }
         }
-        this.allFoundRelevantTypes =
-                Collections.newSetFromMap(CollectionUtils.<TypeMirror, Boolean>createLRUCache(300));
+        this.allFoundRelevantTypes = Collections.newSetFromMap(CollectionUtils.createLRUCache(300));
     }
 
     @Override

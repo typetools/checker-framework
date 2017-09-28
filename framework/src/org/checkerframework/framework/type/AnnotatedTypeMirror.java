@@ -1025,7 +1025,7 @@ public abstract class AnnotatedTypeMirror {
                                         atypeFactory,
                                         declaration);
                 rType.addAnnotations(annotations);
-                rType.setTypeArguments(Collections.<AnnotatedTypeMirror>emptyList());
+                rType.setTypeArguments(Collections.emptyList());
                 return rType.getErased();
 
             } else if ((getEnclosingType() != null)

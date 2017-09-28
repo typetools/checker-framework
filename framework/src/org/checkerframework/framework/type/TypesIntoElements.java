@@ -24,10 +24,12 @@ import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -337,7 +339,7 @@ public class TypesIntoElements {
             return r1.appendList(r2);
         }
 
-        List<TypeCompound> directAnnotations(
+        private List<TypeCompound> directAnnotations(
                 AnnotatedTypeMirror type, TypeAnnotationPosition tapos) {
             List<Attribute.TypeCompound> res = List.nil();
 
@@ -366,7 +368,7 @@ public class TypesIntoElements {
                 return visitedNodes.get(type);
             }
             // Hack for termination
-            visitedNodes.put(type, List.<TypeCompound>nil());
+            visitedNodes.put(type, List.nil());
             List<Attribute.TypeCompound> res;
 
             TypeAnnotationPosition oldpos = TypeAnnotationUtils.copyTAPosition(tapos);
@@ -421,6 +423,38 @@ public class TypesIntoElements {
         }
 
         @Override
+        public List<TypeCompound> visitIntersection(
+                AnnotatedIntersectionType type, TypeAnnotationPosition tapos) {
+            if (visitedNodes.containsKey(type)) {
+                return visitedNodes.get(type);
+            }
+            visitedNodes.put(type, List.nil());
+            List<Attribute.TypeCompound> res;
+            res = directAnnotations(type, tapos);
+
+            int arg = 0;
+            for (AnnotatedTypeMirror ta : type.directSuperTypes()) {
+                TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(tapos);
+                newpos.location =
+                        tapos.location.append(
+                                new TypePathEntry(TypePathEntryKind.TYPE_ARGUMENT, arg));
+                res = scanAndReduce(ta, newpos, res);
+                ++arg;
+            }
+            visitedNodes.put(type, res);
+            return res;
+        }
+
+        @Override
+        public List<TypeCompound> visitUnion(
+                AnnotatedUnionType type, TypeAnnotationPosition tapos) {
+            // We should never need to write a union type, so raise an error.
+            ErrorReporter.errorAbort(
+                    "TypesIntoElement: encountered union type: " + type + " at position: " + tapos);
+            return null;
+        }
+
+        @Override
         public List<TypeCompound> visitArray(
                 AnnotatedArrayType type, TypeAnnotationPosition tapos) {
             List<Attribute.TypeCompound> res;
@@ -457,7 +491,7 @@ public class TypesIntoElements {
             }
             // Hack for termination, otherwise we'll visit one type too far (the same recursive wildcard twice
             // and generate extra type annos)
-            visitedNodes.put(type, List.<TypeCompound>nil());
+            visitedNodes.put(type, List.nil());
             List<Attribute.TypeCompound> res;
 
             // Note: By default, an Unbound wildcard will return true for both isExtendsBound and isSuperBound
