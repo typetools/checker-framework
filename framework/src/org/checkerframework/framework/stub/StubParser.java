@@ -1574,7 +1574,7 @@ public class StubParser {
         } else if (value instanceof VariableElement) {
             builder.setValue(name, (VariableElement) value);
         } else {
-            ErrorReporter.errorAbort("Unexpected builder value");
+            ErrorReporter.errorAbort("Unexpected builder value: %s", value);
         }
     }
 
