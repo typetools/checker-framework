@@ -1506,8 +1506,6 @@ public class StubParser {
 
     /*
      * Handles expressions in annotations.
-     * Supports String, int, and boolean literals, but not other literals
-     * as documented in the stub file limitation section of the manual.
      */
     private void handleExpr(AnnotationBuilder builder, String name, Expression expr) {
         ExecutableElement var = builder.findElement(name);
