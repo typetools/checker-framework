@@ -374,7 +374,7 @@ public class AnnotationBuilder {
         return null; // dead code
     }
 
-    public AnnotationBuilder setValue(CharSequence key, Object value) {
+    private AnnotationBuilder setValue(CharSequence key, Object value) {
         assertNotBuilt();
         AnnotationValue val = createValue(value);
         ExecutableElement var = findElement(key);

@@ -1539,8 +1539,42 @@ public class StubParser {
                 Object[] valueArray = {value};
                 builder.setValue(name, valueArray);
             } else {
-                builder.setValue(name, value);
+                builderSetValue(builder, name, value);
             }
+        }
+    }
+
+    /**
+     * Cast to non-array values so that correct the correct AnnotationBuilder#setValue method is
+     * called.
+     */
+    private void builderSetValue(AnnotationBuilder builder, String name, Object value) {
+        if (value instanceof Boolean) {
+            builder.setValue(name, (Boolean) value);
+        } else if (value instanceof Character) {
+            builder.setValue(name, (Character) value);
+        } else if (value instanceof Class<?>) {
+            builder.setValue(name, (Class<?>) value);
+        } else if (value instanceof Double) {
+            builder.setValue(name, (Double) value);
+        } else if (value instanceof Enum<?>) {
+            builder.setValue(name, (Enum<?>) value);
+        } else if (value instanceof Float) {
+            builder.setValue(name, (Float) value);
+        } else if (value instanceof Integer) {
+            builder.setValue(name, (Integer) value);
+        } else if (value instanceof Long) {
+            builder.setValue(name, (Long) value);
+        } else if (value instanceof Short) {
+            builder.setValue(name, (Short) value);
+        } else if (value instanceof String) {
+            builder.setValue(name, (String) value);
+        } else if (value instanceof TypeMirror) {
+            builder.setValue(name, (TypeMirror) value);
+        } else if (value instanceof VariableElement) {
+            builder.setValue(name, (VariableElement) value);
+        } else {
+            ErrorReporter.errorAbort("Unexpected builder value");
         }
     }
 
