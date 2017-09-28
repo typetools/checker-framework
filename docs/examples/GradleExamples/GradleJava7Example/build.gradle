@@ -24,6 +24,8 @@ dependencies {
     checkerFrameworkJavac "org.checkerframework:compiler:${checkerFrameworkVersion}"
     compileOnly "org.checkerframework:checker:${checkerFrameworkVersion}"
     compile "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+    // If targeting Java 7 use checker-qual7 instead of checker-qual
+    // compile "org.checkerframework:checker-qual7:${checkerFrameworkVersion}"
 
     compile 'org.apache.commons:commons-lang3:3.1'
 
