@@ -48,13 +48,26 @@ public abstract class TUConstraint {
 
     public final int hashcodeBase;
 
+    /** Whether or not U is a type from an argument to the method. */
+    public final boolean uIsArg;
+
     public TUConstraint(
             final AnnotatedTypeVariable typeVariable,
             final AnnotatedTypeMirror relatedType,
             int hashcodeBase) {
+        this(typeVariable, relatedType, hashcodeBase, false);
+    }
+
+    public TUConstraint(
+            final AnnotatedTypeVariable typeVariable,
+            final AnnotatedTypeMirror relatedType,
+            int hashcodeBase,
+            boolean uIsArg) {
         this.typeVariable = typeVariable;
         this.relatedType = relatedType;
         this.hashcodeBase = hashcodeBase;
+        this.uIsArg = uIsArg;
+
         TypeArgInferenceUtil.checkForUninferredTypes(relatedType);
     }
 
