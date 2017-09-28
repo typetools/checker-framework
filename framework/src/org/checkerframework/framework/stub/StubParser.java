@@ -24,6 +24,7 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.CharLiteralExpr;
+import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.DoubleLiteralExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
@@ -77,6 +78,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TypesUtils;
 
 /** Main entry point is: {@link StubParser#parse(Map, Map)} */
 // Full entry point signature:
@@ -114,8 +116,11 @@ public class StubParser {
      */
     private final Map<String, AnnotationMirror> supportedAnnotations;
 
-    /** A list of imports that are not annotation types. Used for importing enums. */
-    private final List<String> imports;
+    /** A list of imports of fields with constant value and of enums. */
+    private final List<String> importedConstants;
+
+    /** A map of imported types names to type elements. */
+    private final Map<String, TypeElement> importedTypes;
 
     /**
      * Mapping of a field access expression that has already been encountered to the resolved
@@ -153,7 +158,8 @@ public class StubParser {
         this.atypeFactory = factory;
         this.processingEnv = env;
         this.elements = env.getElementUtils();
-        imports = new ArrayList<String>();
+        this.importedConstants = new ArrayList<>();
+        this.importedTypes = new HashMap<>();
 
         // getSupportedAnnotations uses these for warnings
         Map<String, String> options = env.getOptions();
@@ -182,7 +188,7 @@ public class StubParser {
         }
         this.stubUnit = parsedStubUnit;
 
-        // getSupportedAnnotations also sets imports. This should be refactored to be nicer.
+        // getSupportedAnnotations also sets importedConstants. This should be refactored to be nicer.
         supportedAnnotations = getSupportedAnnotations();
         if (supportedAnnotations.isEmpty()) {
             stubWarnIfNotFound(
@@ -271,7 +277,14 @@ public class StubParser {
                             // Find nested annotations
                             // Find compile time constant fields, or values of an enum
                             putAllNew(result, annosInType(element));
-                            imports.addAll(getImportableMembers(element));
+                            importedConstants.addAll(getImportableMembers(element));
+                        }
+                        for (Element enclosedEle : element.getEnclosedElements()) {
+                            if (enclosedEle.getKind().isClass()) {
+                                importedTypes.put(
+                                        enclosedEle.getSimpleName().toString(),
+                                        (TypeElement) enclosedEle);
+                            }
                         }
                     } else {
                         // Members of a package (according to JLS)
@@ -279,6 +292,13 @@ public class StubParser {
                         PackageElement element = findPackage(imported);
                         if (element != null) {
                             putAllNew(result, annosInPackage(element));
+                            for (Element enclosedEle : element.getEnclosedElements()) {
+                                if (enclosedEle.getKind().isClass()) {
+                                    importedTypes.put(
+                                            enclosedEle.getSimpleName().toString(),
+                                            (TypeElement) enclosedEle);
+                                }
+                            }
                         }
                     }
                 } else {
@@ -304,7 +324,7 @@ public class StubParser {
 
                         if (enclType != null) {
                             if (findFieldElement(enclType, fieldName) != null) {
-                                imports.add(imported);
+                                importedConstants.add(imported);
                             }
                         }
 
@@ -315,13 +335,16 @@ public class StubParser {
                         if (anno != null) {
                             Element annoElt = anno.getAnnotationType().asElement();
                             putNew(result, annoElt.getSimpleName().toString(), anno);
+                            importedTypes.put(
+                                    annoElt.getSimpleName().toString(), (TypeElement) annoElt);
                         } else {
                             stubWarnIfNotFound("Could not load import: " + imported);
                         }
                     } else {
                         // Class or nested class
-
-                        imports.add(imported);
+                        importedConstants.add(imported);
+                        TypeElement element = findType(imported, "Imported type not found");
+                        importedTypes.put(element.getSimpleName().toString(), element);
                     }
                 }
             } catch (AssertionError error) {
@@ -1429,6 +1452,24 @@ public class StubParser {
             return convert(((IntegerLiteralExpr) expr).asInt(), valueKind);
         } else if (expr instanceof LongLiteralExpr) {
             return convert(((LongLiteralExpr) expr).asLong(), valueKind);
+        } else if (expr instanceof ClassExpr) {
+            ClassExpr classExpr = (ClassExpr) expr;
+            String className = classExpr.getType().toString();
+            if (importedTypes.containsKey(className)) {
+                return importedTypes.get(className).asType();
+            }
+            Class<?> clazz;
+            try {
+                clazz = Class.forName(className);
+            } catch (ClassNotFoundException e) {
+                ErrorReporter.errorAbort("StubParser: unknown class name " + className);
+                throw new Error("dead code; this can't happen");
+            }
+            return TypesUtils.typeFromClass(
+                    atypeFactory.getContext().getTypeUtils(),
+                    atypeFactory.getElementUtils(),
+                    clazz);
+
         } else if (expr instanceof NullLiteralExpr) {
             ErrorReporter.errorAbort(
                     "Null found as value for %s. Null isn't allowed as an annotation value", name);
@@ -1439,8 +1480,9 @@ public class StubParser {
         }
     }
 
-    Object convert(Number number, TypeKind kind) {
-        switch (kind) {
+    /** Converts {@code number} to {@code expectedKind} */
+    private Object convert(Number number, TypeKind expectedKind) {
+        switch (expectedKind) {
             case BYTE:
                 return number.byteValue();
             case SHORT:
@@ -1456,7 +1498,7 @@ public class StubParser {
             case DOUBLE:
                 return number.doubleValue();
             default:
-                ErrorReporter.errorAbort("Unexpected kind: " + kind);
+                ErrorReporter.errorAbort("Unexpected expectedKind: " + expectedKind);
                 return null;
         }
     }
@@ -1510,7 +1552,7 @@ public class StubParser {
 
         VariableElement res = null;
         boolean importFound = false;
-        for (String imp : imports) {
+        for (String imp : importedConstants) {
             Pair<String, String> partitionedName = StubUtil.partitionQualifiedName(imp);
             String typeName = partitionedName.first;
             String fieldName = partitionedName.second;
@@ -1547,8 +1589,8 @@ public class StubParser {
         }
         TypeElement rcvElt = elements.getTypeElement(faexpr.getScope().toString());
         if (rcvElt == null) {
-            // Search imports for full annotation name.
-            for (String imp : imports) {
+            // Search importedConstants for full annotation name.
+            for (String imp : importedConstants) {
                 String[] import_delimited = imp.split("\\.");
                 if (import_delimited[import_delimited.length - 1].equals(
                         faexpr.getScope().toString())) {
