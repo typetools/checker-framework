@@ -1,0 +1,4 @@
+mport org.checkerframework.common.value.qual.IntRange;
+class NeedsIntRange {
+      @IntRange(from = 3, to = 20000L) int range(boolean big);
+}
