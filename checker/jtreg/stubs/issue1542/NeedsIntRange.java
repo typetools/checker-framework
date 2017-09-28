@@ -1,6 +1,7 @@
+package issue1542;
 
-class NeedsIntRange {
-    static int range(boolean big) {
+public class NeedsIntRange {
+    public static int range(boolean big) {
         if (big) {
             return 20000;
         } else {

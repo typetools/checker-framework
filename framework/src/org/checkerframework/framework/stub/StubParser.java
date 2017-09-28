@@ -6,7 +6,11 @@ import org.checkerframework.checker.nullness.qual.*;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseProblemException;
-import com.github.javaparser.ast.*;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.PackageDeclaration;
+import com.github.javaparser.ast.StubUnit;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
@@ -19,16 +23,24 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
+import com.github.javaparser.ast.expr.CharLiteralExpr;
+import com.github.javaparser.ast.expr.DoubleLiteralExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
+import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
+import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
-import com.github.javaparser.ast.type.*;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.ReferenceType;
+import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.type.TypeParameter;
+import com.github.javaparser.ast.type.WildcardType;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,6 +58,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -64,7 +77,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.TypesUtils;
 
 /** Main entry point is: {@link StubParser#parse(Map, Map)} */
 // Full entry point signature:
@@ -1387,148 +1399,107 @@ public class StubParser {
         return annoMirror;
     }
 
+    private Object getValueOExpressionInAnnotation(
+            String name, Expression expr, TypeKind valueKind) {
+        if (expr instanceof FieldAccessExpr) {
+            VariableElement elem = findVariableElement((FieldAccessExpr) expr);
+            Object value = elem.getConstantValue() != null ? elem.getConstantValue() : elem;
+            if (value instanceof Number) {
+                return convert((Number) value, valueKind);
+            } else {
+                return value;
+            }
+        } else if (expr instanceof NameExpr) {
+            VariableElement elem = findVariableElement((NameExpr) expr);
+            Object value = elem.getConstantValue() != null ? elem.getConstantValue() : elem;
+            if (value instanceof Number) {
+                return convert((Number) value, valueKind);
+            } else {
+                return value;
+            }
+        } else if (expr instanceof StringLiteralExpr) {
+            return ((StringLiteralExpr) expr).asString();
+        } else if (expr instanceof BooleanLiteralExpr) {
+            return ((BooleanLiteralExpr) expr).getValue();
+        } else if (expr instanceof CharLiteralExpr) {
+            return convert((int) ((CharLiteralExpr) expr).asChar(), valueKind);
+        } else if (expr instanceof DoubleLiteralExpr) {
+            return convert(((DoubleLiteralExpr) expr).asDouble(), valueKind);
+        } else if (expr instanceof IntegerLiteralExpr) {
+            return convert(((IntegerLiteralExpr) expr).asInt(), valueKind);
+        } else if (expr instanceof LongLiteralExpr) {
+            return convert(((LongLiteralExpr) expr).asLong(), valueKind);
+        } else if (expr instanceof NullLiteralExpr) {
+            ErrorReporter.errorAbort(
+                    "Null found as value for %s. Null isn't allowed as an annotation value", name);
+            return null; // dead code
+        } else {
+            ErrorReporter.errorAbort("Unexpected annotation expression: " + expr);
+            return null; // dead code
+        }
+    }
+
+    Object convert(Number number, TypeKind kind) {
+        switch (kind) {
+            case BYTE:
+                return number.byteValue();
+            case SHORT:
+                return number.shortValue();
+            case INT:
+                return number.intValue();
+            case LONG:
+                return number.longValue();
+            case CHAR:
+                return (char) number.intValue();
+            case FLOAT:
+                return number.floatValue();
+            case DOUBLE:
+                return number.doubleValue();
+            default:
+                ErrorReporter.errorAbort("Unexpected kind: " + kind);
+                return null;
+        }
+    }
+
     /*
      * Handles expressions in annotations.
      * Supports String, int, and boolean literals, but not other literals
      * as documented in the stub file limitation section of the manual.
      */
     private void handleExpr(AnnotationBuilder builder, String name, Expression expr) {
-        if (expr instanceof FieldAccessExpr || expr instanceof NameExpr) {
-            VariableElement elem;
-            if (expr instanceof FieldAccessExpr) {
-                elem = findVariableElement((FieldAccessExpr) expr);
-            } else {
-                elem = findVariableElement((NameExpr) expr);
-            }
-
-            if (elem == null) {
-                // A warning was already issued by findVariableElement;
-                return;
-            }
-
-            ExecutableElement var = builder.findElement(name);
-            TypeMirror expected = var.getReturnType();
-            if (expected.getKind() == TypeKind.DECLARED) {
-                if (elem.getConstantValue() != null) {
-                    builder.setValue(name, (String) elem.getConstantValue());
-                } else {
-                    builder.setValue(name, elem);
-                }
-            } else if (expected.getKind() == TypeKind.ARRAY) {
-                if (elem.getConstantValue() != null) {
-                    String[] arr = {(String) elem.getConstantValue()};
-                    builder.setValue(name, arr);
-                } else {
-                    VariableElement[] arr = {elem};
-                    builder.setValue(name, arr);
-                }
-            } else {
-                ErrorReporter.errorAbort(
-                        "StubParser: unhandled annotation attribute type: "
-                                + expr
-                                + " and expected: "
-                                + expected);
-            }
-        } else if (expr instanceof IntegerLiteralExpr) {
-            IntegerLiteralExpr ilexpr = (IntegerLiteralExpr) expr;
-            ExecutableElement var = builder.findElement(name);
-            TypeMirror expected = var.getReturnType();
-            if (expected.getKind() == TypeKind.DECLARED || TypesUtils.isIntegral(expected)) {
-                builder.setValue(name, Integer.valueOf(ilexpr.getValue()));
-            } else if (expected.getKind() == TypeKind.ARRAY) {
-                Integer[] arr = {Integer.valueOf(ilexpr.getValue())};
-                builder.setValue(name, arr);
-            } else {
-                ErrorReporter.errorAbort(
-                        "StubParser: unhandled annotation attribute type: "
-                                + ilexpr
-                                + " and expected: "
-                                + expected);
-            }
-        } else if (expr instanceof StringLiteralExpr) {
-            StringLiteralExpr slexpr = (StringLiteralExpr) expr;
-            ExecutableElement var = builder.findElement(name);
-            TypeMirror expected = var.getReturnType();
-            if (expected.getKind() == TypeKind.DECLARED) {
-                builder.setValue(name, slexpr.getValue());
-            } else if (expected.getKind() == TypeKind.ARRAY) {
-                String[] arr = {slexpr.getValue()};
-                builder.setValue(name, arr);
-            } else {
-                ErrorReporter.errorAbort(
-                        "StubParser: unhandled annotation attribute type: "
-                                + slexpr
-                                + " and expected: "
-                                + expected);
-            }
-        } else if (expr instanceof ArrayInitializerExpr) {
-            ExecutableElement var = builder.findElement(name);
-            TypeMirror expected = var.getReturnType();
-            if (expected.getKind() != TypeKind.ARRAY) {
-                ErrorReporter.errorAbort(
-                        "StubParser: unhandled annotation attribute type: "
-                                + expr
-                                + " and expected: "
-                                + expected);
-            }
-
-            ArrayInitializerExpr aiexpr = (ArrayInitializerExpr) expr;
-            List<Expression> aiexprvals = aiexpr.getValues();
-
-            Object[] elemarr = new Object[aiexprvals.size()];
-
-            Expression anaiexpr;
-            for (int i = 0; i < aiexprvals.size(); ++i) {
-                anaiexpr = aiexprvals.get(i);
-                if (anaiexpr instanceof FieldAccessExpr || anaiexpr instanceof NameExpr) {
-
-                    if (anaiexpr instanceof FieldAccessExpr) {
-                        elemarr[i] = findVariableElement((FieldAccessExpr) anaiexpr);
-                    } else {
-                        elemarr[i] = findVariableElement((NameExpr) anaiexpr);
-                    }
-
-                    if (elemarr[i] == null) {
-                        // A warning was already issued by findVariableElement;
-                        return;
-                    }
-                    String constval = (String) ((VariableElement) elemarr[i]).getConstantValue();
-                    if (constval != null) {
-                        elemarr[i] = constval;
-                    }
-                } else if (anaiexpr instanceof IntegerLiteralExpr) {
-                    elemarr[i] = Integer.valueOf(((IntegerLiteralExpr) anaiexpr).getValue());
-                } else if (anaiexpr instanceof StringLiteralExpr) {
-                    elemarr[i] = ((StringLiteralExpr) anaiexpr).getValue();
-                } else {
-                    ErrorReporter.errorAbort(
-                            "StubParser: unhandled annotation attribute type: " + anaiexpr);
-                }
-            }
-
-            builder.setValue(name, elemarr);
-        } else if (expr instanceof BooleanLiteralExpr) {
-            BooleanLiteralExpr blexpr = (BooleanLiteralExpr) expr;
-            ExecutableElement var = builder.findElement(name);
-            TypeMirror expected = var.getReturnType();
-            if (expected.getKind() == TypeKind.BOOLEAN) {
-                builder.setValue(name, blexpr.getValue());
-            } else if (expected.getKind() == TypeKind.ARRAY) {
-                Boolean[] arr = {blexpr.getValue()};
-                builder.setValue(name, arr);
-            } else {
-                ErrorReporter.errorAbort(
-                        "StubParser: unhandled annotation attribute type: "
-                                + blexpr
-                                + " and expected: "
-                                + expected);
-            }
+        ExecutableElement var = builder.findElement(name);
+        TypeMirror expected = var.getReturnType();
+        TypeKind valueKind;
+        if (expected.getKind() == TypeKind.ARRAY) {
+            valueKind = ((ArrayType) expected).getComponentType().getKind();
         } else {
-            ErrorReporter.errorAbort(
-                    "StubParser: unhandled annotation attribute type: "
-                            + expr
-                            + " class: "
-                            + expr.getClass());
+            valueKind = expected.getKind();
+        }
+        if (expr instanceof ArrayInitializerExpr) {
+            if (expected.getKind() != TypeKind.ARRAY) {
+                stubAlwaysWarn(
+                        "StubParser: unhandled annotation attribute type: "
+                                + expr
+                                + " and expected: "
+                                + expected);
+            }
+
+            List<Expression> arrayExpressions = ((ArrayInitializerExpr) expr).getValues();
+            Object[] values = new Object[arrayExpressions.size()];
+
+            for (int i = 0; i < arrayExpressions.size(); ++i) {
+                values[i] =
+                        getValueOExpressionInAnnotation(name, arrayExpressions.get(i), valueKind);
+            }
+            builder.setValue(name, values);
+        } else {
+            Object value = getValueOExpressionInAnnotation(name, expr, valueKind);
+            if (expected.getKind() == TypeKind.ARRAY) {
+                Object[] valueArray = {value};
+                builder.setValue(name, valueArray);
+            } else {
+                builder.setValue(name, value);
+            }
         }
     }
 
