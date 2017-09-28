@@ -486,7 +486,8 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
       <!-- Change source and target to 1.7 to create .class files that can be run on a Java 7 JVM -->
       <source>1.8</source>
       <target>1.8</target>
-      <fork>true</fork>
+      <!-- Uncomment the following line to use the type annotations compiler. -->
+      <!-- <fork>true</fork> -->
       <compilerArguments>
         <Xmaxerrs>10000</Xmaxerrs>
         <Xmaxwarns>10000</Xmaxwarns>
@@ -500,7 +501,7 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
         <!-- location of the annotated JDK, which comes from a Maven dependency -->
         <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
         <!-- Uncomment the following line to use the type annotations compiler. -->
-        <!-- <arg>-classpath $\{typeAnnotationsJavac\}</arg> -->
+        <!-- <arg>--J-Xbootclasspath/p:$\{typeAnnotationsJavac\}</arg> -->
       </compilerArgs>
     </configuration>
   </plugin>
