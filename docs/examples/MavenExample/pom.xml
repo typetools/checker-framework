@@ -83,6 +83,7 @@
               <!-- Change source and target to 1.7 to create .class files that can be run on a Java 7 JVM -->
               <source>1.8</source>
               <target>1.8</target>
+              <!-- Uncomment to use the Type Annotations compiler. -->
               <!--<fork>true</fork>-->
               <showWarnings>true</showWarnings>
               <annotationProcessors>
