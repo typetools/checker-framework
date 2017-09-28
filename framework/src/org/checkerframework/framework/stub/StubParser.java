@@ -1424,16 +1424,17 @@ public class StubParser {
 
     private Object getValueOExpressionInAnnotation(
             String name, Expression expr, TypeKind valueKind) {
-        if (expr instanceof FieldAccessExpr) {
-            VariableElement elem = findVariableElement((FieldAccessExpr) expr);
-            Object value = elem.getConstantValue() != null ? elem.getConstantValue() : elem;
-            if (value instanceof Number) {
-                return convert((Number) value, valueKind);
+        if (expr instanceof FieldAccessExpr || expr instanceof NameExpr) {
+            VariableElement elem;
+            if (expr instanceof NameExpr) {
+                elem = findVariableElement((NameExpr) expr);
             } else {
-                return value;
+                elem = findVariableElement((FieldAccessExpr) expr);
             }
-        } else if (expr instanceof NameExpr) {
-            VariableElement elem = findVariableElement((NameExpr) expr);
+            if (elem == null) {
+                ErrorReporter.errorAbort("Field not found: " + expr);
+                return null; // dead code
+            }
             Object value = elem.getConstantValue() != null ? elem.getConstantValue() : elem;
             if (value instanceof Number) {
                 return convert((Number) value, valueKind);
