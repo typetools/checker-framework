@@ -1318,7 +1318,7 @@ public class StubParser {
         }
     }
 
-    private static Set<String> warnings = new HashSet<String>();
+    private static final Set<String> warnings = new HashSet<String>();
 
     /**
      * Issues the given warning about missing elements, only if it has not been previously issued
@@ -1425,7 +1425,7 @@ public class StubParser {
         return annoMirror;
     }
 
-    private Object getValueOExpressionInAnnotation(
+    private Object getValueOfExpressionInAnnotation(
             String name, Expression expr, TypeKind valueKind) {
         if (expr instanceof FieldAccessExpr || expr instanceof NameExpr) {
             VariableElement elem;
@@ -1435,6 +1435,7 @@ public class StubParser {
                 elem = findVariableElement((FieldAccessExpr) expr);
             }
             if (elem == null) {
+                // TODO: should this be stubAlwaysWarn, as it is an input stub file error?
                 ErrorReporter.errorAbort("Field not found: " + expr);
                 return null; // dead code
             }
@@ -1469,15 +1470,18 @@ public class StubParser {
             try {
                 clazz = Class.forName(className);
             } catch (ClassNotFoundException e) {
+                // TODO: should this be stubAlwaysWarn, as it is an input stub file error?
                 ErrorReporter.errorAbort("StubParser: unknown class name " + className);
                 throw new Error("dead code; this can't happen");
             }
+            // TODO: is it worth putting this value back into importedTypes?
             return TypesUtils.typeFromClass(
                     atypeFactory.getContext().getTypeUtils(),
                     atypeFactory.getElementUtils(),
                     clazz);
 
         } else if (expr instanceof NullLiteralExpr) {
+            // TODO: should this be stubAlwaysWarn, as it is an input stub file error?
             ErrorReporter.errorAbort(
                     "Null found as value for %s. Null isn't allowed as an annotation value", name);
             return null; // dead code
@@ -1490,7 +1494,7 @@ public class StubParser {
     /**
      * Converts {@code number} to {@code expectedKind}.
      * <p>
-     * {@code @interface Anno { int value();})
+     * {@code @interface Anno { long value();})
      * {@code @Anno(1)}
      *
      * To properly build @Anno, the IntegerLiteralExpr "1" must be converted from an int to a long.
@@ -1517,7 +1521,7 @@ public class StubParser {
         }
     }
 
-    /*
+    /**
      * Handles expressions in annotations.
      */
     private void handleExpr(AnnotationBuilder builder, String name, Expression expr) {
@@ -1543,11 +1547,11 @@ public class StubParser {
 
             for (int i = 0; i < arrayExpressions.size(); ++i) {
                 values[i] =
-                        getValueOExpressionInAnnotation(name, arrayExpressions.get(i), valueKind);
+                        getValueOfExpressionInAnnotation(name, arrayExpressions.get(i), valueKind);
             }
             builder.setValue(name, values);
         } else {
-            Object value = getValueOExpressionInAnnotation(name, expr, valueKind);
+            Object value = getValueOfExpressionInAnnotation(name, expr, valueKind);
             if (expected.getKind() == TypeKind.ARRAY) {
                 Object[] valueArray = {value};
                 builder.setValue(name, valueArray);
@@ -1637,6 +1641,7 @@ public class StubParser {
         if (rcvElt == null) {
             // Search importedConstants for full annotation name.
             for (String imp : importedConstants) {
+                // TODO: should this use StubUtil.partitionQualifiedName?
                 String[] import_delimited = imp.split("\\.");
                 if (import_delimited[import_delimited.length - 1].equals(
                         faexpr.getScope().toString())) {
