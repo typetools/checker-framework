@@ -30,6 +30,8 @@
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
+      <!-- Use checker-qual7 if targeting Java 7 -->
+      <!-- <artifactId>checker-qual7</artifactId> -->
       <version>${checkerFrameworkVersion}</version>
     </dependency>
     <dependency>
@@ -83,7 +85,8 @@
               <!-- Change source and target to 1.7 to create .class files that can be run on a Java 7 JVM -->
               <source>1.8</source>
               <target>1.8</target>
-              <fork>true</fork>
+              <!-- Uncomment to use the Type Annotations compiler. -->
+              <!--<fork>true</fork>-->
               <showWarnings>true</showWarnings>
               <annotationProcessors>
                   <!-- Add all the checkers you want to enable here -->
@@ -95,7 +98,7 @@
                   <!--treat Checker Framework errors as warnings-->
                   <!-- <arg>-Awarns</arg> -->
                   <!-- Uncomment the following line to use the type annotations compiler. -->
-                  <!-- <arg>-classpath ${typeAnnotationsJavac}</arg> -->
+                  <!-- <arg>-J-Xbootclasspath/p:${typeAnnotationsJavac}</arg> -->
                   <arg>-Alint</arg>
               </compilerArgs>
           </configuration>
