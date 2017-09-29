@@ -330,6 +330,7 @@
          </delete>
         <!-- Work-around for Issue 894, see above. -->
         <unjar src="${checker.lib.tmp}" dest="${build}" />
+        <delete file="${checker.lib.tmp}"/>
 
         <unjar src="${stubparser.lib}" dest="${build}" />
 
