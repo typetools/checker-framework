@@ -1,3 +1,5 @@
+package issue1542;
+
 import org.checkerframework.common.value.qual.IntRange;
 
 class UsesIntRange {
