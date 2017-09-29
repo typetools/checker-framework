@@ -45,9 +45,9 @@ public class UpperBoundUtil {
     }
 
     /**
-     * Checks if the {@code receiver} may be effect by the side effect.
+     * Checks if the {@code receiver} may be affected by the side effect.
      *
-     * @param receiver expression to check if the side effect effects it
+     * @param receiver expression to check if the side effect affects it
      * @param reassignedVariable field that is reassigned as the side effect, possible null
      * @param sideEffectKind {@link SideEffectKind}
      * @return non-null result

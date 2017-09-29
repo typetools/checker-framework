@@ -113,7 +113,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
     }
 
     /**
-     * Clears receivers from the store whose current value may be effected by the side effect.
+     * Clears receivers from the store whose current value may be affected by the side effect.
      *
      * @param reassignedVar reassigned variable or null
      * @param n current node
@@ -122,15 +122,12 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
     private void clearFromStore(Receiver reassignedVar, Node n, SideEffectKind sideEffect) {
         TreePath path = analysis.getTypeFactory().getPath(n.getTree());
         if (path == null) {
-            System.out.println("NPE thrown while getting path for this node:");
+            System.out.println("path for this node was null:");
             System.out.println(n);
             System.out.println("with tree:");
             System.out.println(n.getTree());
-
             System.out.println("relevant receiver:");
             System.out.println(reassignedVar);
-
-            System.exit(1);
         }
 
         Set<Entry<? extends Receiver, CFValue>> receiverAnnotationEntry = new HashSet<>();
