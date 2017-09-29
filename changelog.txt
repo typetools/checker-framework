@@ -10,8 +10,8 @@ byte code. A new jar, checker-qual7.jar, includes the qualifiers and utility
 classes compiled to Java 7 byte code.
 
 Closed issues:
-1482
-
+724,  1431,  1442,  1464,  1482,  1496,  1499,  1500,  1506,  1507,  1510,
+1512,  1522,  1526,  1528,  1535,  1542,  1543.
 ---------------------------------------------------------------------------
 
 Version 2.2.0, September 5, 2017
