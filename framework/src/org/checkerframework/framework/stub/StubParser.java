@@ -1547,7 +1547,9 @@ public class StubParser {
 
             for (int i = 0; i < arrayExpressions.size(); ++i) {
                 values[i] =
-                        getValueOfExpressionInAnnotation(name, arrayExpressions.get(i), valueKind);
+                        getValueOfExpressionInAnnotation(name,
+                                                         arrayExpressions.get(i),
+                                                         valueKind);
             }
             builder.setValue(name, values);
         } else {
