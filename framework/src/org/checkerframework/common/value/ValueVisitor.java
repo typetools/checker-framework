@@ -81,7 +81,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     /**
      * Return types for methods that are annotated with {@code @IntRangeFromX} annotations need to
      * be replaced with {@code @UnknownVal}. See the documentation on {@link
-     * this#commonAssignmentCheck(AnnotatedTypeMirror, ExpressionTree, String)}.
+     * #commonAssignmentCheck(AnnotatedTypeMirror, ExpressionTree, String) commonAssignmentCheck}.
      *
      * <p>A separate override is necessary because checkOverride doesn't actually use the
      * commonAssignmentCheck.
