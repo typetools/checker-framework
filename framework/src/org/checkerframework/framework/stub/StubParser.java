@@ -116,10 +116,13 @@ public class StubParser {
      */
     private final Map<String, AnnotationMirror> supportedAnnotations;
 
-    /** A list of imports of fields with constant value and of enums. */
+    /**
+     * A list of the fully qualified names of enum constants and static fields with constants values
+     * that have been imported
+     */
     private final List<String> importedConstants;
 
-    /** A map of imported types names to type elements. */
+    /** A map of imported fully-qualified type names to type elements. */
     private final Map<String, TypeElement> importedTypes;
 
     /**
@@ -188,7 +191,8 @@ public class StubParser {
         }
         this.stubUnit = parsedStubUnit;
 
-        // getSupportedAnnotations also sets importedConstants. This should be refactored to be nicer.
+        // getSupportedAnnotations also modifies importedConstants and importedTypes. This should
+        // be refactored to be nicer.
         supportedAnnotations = getSupportedAnnotations();
         if (supportedAnnotations.isEmpty()) {
             stubWarnIfNotFound(
@@ -278,27 +282,16 @@ public class StubParser {
                             // Find compile time constant fields, or values of an enum
                             putAllNew(result, annosInType(element));
                             importedConstants.addAll(getImportableMembers(element));
+                            addEnclosingTypesToImportedTypes(element);
                         }
-                        for (Element enclosedEle : element.getEnclosedElements()) {
-                            if (enclosedEle.getKind().isClass()) {
-                                importedTypes.put(
-                                        enclosedEle.getSimpleName().toString(),
-                                        (TypeElement) enclosedEle);
-                            }
-                        }
+
                     } else {
                         // Members of a package (according to JLS)
 
                         PackageElement element = findPackage(imported);
                         if (element != null) {
                             putAllNew(result, annosInPackage(element));
-                            for (Element enclosedEle : element.getEnclosedElements()) {
-                                if (enclosedEle.getKind().isClass()) {
-                                    importedTypes.put(
-                                            enclosedEle.getSimpleName().toString(),
-                                            (TypeElement) enclosedEle);
-                                }
-                            }
+                            addEnclosingTypesToImportedTypes(element);
                         }
                     }
                 } else {
@@ -342,6 +335,7 @@ public class StubParser {
                         }
                     } else {
                         // Class or nested class
+                        // TODO: Is this needed?
                         importedConstants.add(imported);
                         TypeElement element = findType(imported, "Imported type not found");
                         importedTypes.put(element.getSimpleName().toString(), element);
@@ -352,6 +346,15 @@ public class StubParser {
             }
         }
         return result;
+    }
+
+    private void addEnclosingTypesToImportedTypes(Element element) {
+        for (Element enclosedEle : element.getEnclosedElements()) {
+            if (enclosedEle.getKind().isClass()) {
+                importedTypes.put(
+                        enclosedEle.getSimpleName().toString(), (TypeElement) enclosedEle);
+            }
+        }
     }
 
     /** The main entry point. Side-effects the arguments. */
@@ -1448,11 +1451,14 @@ public class StubParser {
         } else if (expr instanceof CharLiteralExpr) {
             return convert((int) ((CharLiteralExpr) expr).asChar(), valueKind);
         } else if (expr instanceof DoubleLiteralExpr) {
-            return convert(((DoubleLiteralExpr) expr).asDouble(), valueKind);
+            // No conversion needed if the expression is a double, the annotation value must be a
+            // double, too.
+            return ((DoubleLiteralExpr) expr).asDouble();
         } else if (expr instanceof IntegerLiteralExpr) {
             return convert(((IntegerLiteralExpr) expr).asInt(), valueKind);
         } else if (expr instanceof LongLiteralExpr) {
-            return convert(((LongLiteralExpr) expr).asLong(), valueKind);
+            // No convert if the expression is a long, the annotation value must be a long, too.
+            return ((LongLiteralExpr) expr).asLong();
         } else if (expr instanceof ClassExpr) {
             ClassExpr classExpr = (ClassExpr) expr;
             String className = classExpr.getType().toString();
@@ -1481,7 +1487,14 @@ public class StubParser {
         }
     }
 
-    /** Converts {@code number} to {@code expectedKind} */
+    /**
+     * Converts {@code number} to {@code expectedKind}.
+     * <p>
+     * {@code @interface Anno { int value();})
+     * {@code @Anno(1)}
+     *
+     * To properly build @Anno, the IntegerLiteralExpr "1" must be converted from an int to a long.
+     * */
     private Object convert(Number number, TypeKind expectedKind) {
         switch (expectedKind) {
             case BYTE:
@@ -1546,7 +1559,7 @@ public class StubParser {
 
     /**
      * Cast to non-array values so that correct the correct AnnotationBuilder#setValue method is
-     * called.
+     * called. (Different types of values are handled differently.)
      */
     private void builderSetValue(AnnotationBuilder builder, String name, Object value) {
         if (value instanceof Boolean) {
