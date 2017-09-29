@@ -759,7 +759,7 @@
         <antcall target="command-line-tests"/>
 
       <!--TODO: This breaks during the release process because the latest Maven artifacts haven't been created.
-                This targeted is called in .travis-build.sh -->
+                This target is called in .travis-build.sh -->
         <!--<antcall target="example-tests-nobuildjdk"/>-->
 
         <antcall target="check-tutorial"/>
