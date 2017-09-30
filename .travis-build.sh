@@ -64,7 +64,7 @@ fi
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
   (cd checker && ant all-tests-nobuildjdk)
   # Moved example-tests-nobuildjdk out of all tests because it fails in
-  # the release script because the newest maven artifacts are published yet.
+  # the release script because the newest maven artifacts are not published yet.
   (cd checker && ant example-tests-nobuildjdk)
   # If the above command ever exceeds the time limit on Travis, it can be split
   # using the following commands:
