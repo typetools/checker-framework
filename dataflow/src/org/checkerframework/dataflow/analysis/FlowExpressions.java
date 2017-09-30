@@ -233,8 +233,8 @@ public class FlowExpressions {
                 receiver =
                         new ArrayCreation(
                                 InternalUtils.typeOf(receiverTree),
-                                Collections.<Node>emptyList(),
-                                Collections.<Node>emptyList());
+                                Collections.emptyList(),
+                                Collections.emptyList());
                 break;
             case METHOD_INVOCATION:
                 MethodInvocationTree mn = (MethodInvocationTree) receiverTree;

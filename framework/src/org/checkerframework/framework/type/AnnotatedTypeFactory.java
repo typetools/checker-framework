@@ -1423,7 +1423,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /** Returns the set of classes of field invariant annotations. */
     protected Set<Class<? extends Annotation>> getFieldInvariantDeclarationAnnotations() {
-        return Collections.<Class<? extends Annotation>>singleton(FieldInvariant.class);
+        return Collections.singleton(FieldInvariant.class);
     }
 
     /**
@@ -2392,7 +2392,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *     operates, false otherwise
      */
     public boolean isSupportedQualifier(/*@Nullable*/ AnnotationMirror a) {
-        if (a == null) return false;
+        if (a == null) {
+            return false;
+        }
         return AnnotationUtils.containsSameIgnoringValues(
                 this.getQualifierHierarchy().getTypeQualifiers(), a);
     }

@@ -1,5 +1,5 @@
-// Testcase for Issue 471
-// https://github.com/typetools/checker-framework/pull/737
+// Testcase for Issue 741
+// https://github.com/typetools/checker-framework/pull/741
 // @skip-test
 public class Issue741 {
     @SuppressWarnings("unchecked")

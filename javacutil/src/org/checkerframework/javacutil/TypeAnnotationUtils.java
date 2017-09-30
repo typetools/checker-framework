@@ -282,7 +282,7 @@ public class TypeAnnotationUtils {
                 ArrayType arrayType = modelTypes.getArrayType(valAttrs.get(0).type);
                 return new Attribute.Array((Type) arrayType, valAttrs);
             } else {
-                return new Attribute.Array((Type) meth.getReturnType(), List.<Attribute>nil());
+                return new Attribute.Array((Type) meth.getReturnType(), List.nil());
             }
         }
 

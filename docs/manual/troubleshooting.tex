@@ -1032,8 +1032,11 @@ Run \code{make} in the \code{docs/manual} directory to build both the PDF and HT
 
 \subsection{Enable Travis continuous integration builds\label{building-travis}}
 
+Travis-CI is a continuous integration system:  it runs tests every time you
+push a commit to GitHub.
+
 If you have forked any of the projects rather than just creating a clone,
-then we recommend that you enable Travis-CI continuous integration builds,
+then we recommend that you enable Travis-CI builds,
 so that you learn quickly of any errors that creep into your fork.
 
 Run the
@@ -1057,6 +1060,29 @@ the JDK (some jobs might time out).
 \item Verify that all tests pass.
 \item A Checker Framework developer will review your code and merge your branch.
 \end{enumerate}
+
+
+\subsubsection{Debugging Travis continuous integration builds\label{building-travis-debug}}
+
+If a Travis job is failing, you can reproduce the problem locally.
+The Travis jobs all run within Docker containers.
+Install Docker on your local computer, then perform commands like the
+following to get a shell within Docker:
+
+\begin{Verbatim}
+docker pull mdernst/ubuntu-for-cf-jdk8
+docker run -it mdernst/ubuntu-for-cf-jdk8 /bin/bash
+\end{Verbatim}
+
+Then, you can run arbitrary commands, including those that appear in the
+\<docker run> command in the \<.travis.yml> file.  For example:
+
+\begin{Verbatim}
+export JAVA_HOME=`which javac|xargs readlink -f|xargs dirname|xargs dirname`
+git clone -b $BRANCHNAME --depth 9 https://github.com/$USER/checker-framework.git checker-framework
+cd checker-framework
+./.travis-build.sh all-tests downloadjdk
+\end{Verbatim}
 
 
 \subsection{Code style\label{code-style}}

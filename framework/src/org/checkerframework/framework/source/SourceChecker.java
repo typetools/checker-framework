@@ -1650,7 +1650,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 this.getClass().getAnnotation(SupportedLintOptions.class);
 
         if (sl == null) {
-            return Collections.</*@NonNull*/ String>emptySet();
+            return Collections.emptySet();
         }
 
         /*@Nullable*/ String /*@Nullable*/ [] slValue = sl.value();
@@ -1661,7 +1661,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         for (String s : lintArray) {
             lintSet.add(s);
         }
-        return Collections.</*@NonNull*/ String>unmodifiableSet(lintSet);
+        return Collections.unmodifiableSet(lintSet);
     }
 
     /**
@@ -1780,7 +1780,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         } while (clazz != null
                 && !clazz.getName().equals(AbstractTypeProcessor.class.getCanonicalName()));
 
-        return Collections.</*@NonNull*/ String>unmodifiableSet(options);
+        return Collections.unmodifiableSet(options);
     }
 
     /**

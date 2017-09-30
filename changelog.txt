@@ -1,5 +1,19 @@
 ---------------------------------------------------------------------------
 
+Version 2.2.1, September 29, 2017
+
+Deprecated some methods in AnnotatedTypeMirror and AnnotationUtils, to
+be removed after the 2.2.1 release.
+
+The qualifiers and utility classes in checker-qual.jar are compiled to Java 8
+byte code. A new jar, checker-qual7.jar, includes the qualifiers and utility
+classes compiled to Java 7 byte code.
+
+Closed issues:
+724,  1431,  1442, 1459,  1464,  1482,  1496,  1499,  1500,  1506,  1507,  1510,
+1512,  1522,  1526,  1528,  1532, 1535,  1542,  1543.
+---------------------------------------------------------------------------
+
 Version 2.2.0, September 5, 2017
 
 A Java 8 JVM is required to run the Checker Framework.
