@@ -121,15 +121,6 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
      */
     private void clearFromStore(Receiver reassignedVar, Node n, SideEffectKind sideEffect) {
         TreePath path = analysis.getTypeFactory().getPath(n.getTree());
-        if (path == null) {
-            System.out.println("path for this node was null:");
-            System.out.println(n);
-            System.out.println("with tree:");
-            System.out.println(n.getTree());
-            System.out.println("relevant receiver:");
-            System.out.println(reassignedVar);
-        }
-
         Set<Entry<? extends Receiver, CFValue>> receiverAnnotationEntry = new HashSet<>();
         receiverAnnotationEntry.addAll(localVariableValues.entrySet());
         receiverAnnotationEntry.addAll(methodValues.entrySet());
@@ -139,15 +130,23 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
 
         for (Entry<? extends Receiver, CFValue> entry : receiverAnnotationEntry) {
             Receiver r = entry.getKey();
-            for (Receiver dependent :
-                    UpperBoundUtil.getDependentReceivers(
-                            entry.getValue().getAnnotations(),
-                            path,
-                            (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory())) {
-                if (UpperBoundUtil.isSideEffected(dependent, reassignedVar, sideEffect)
-                        != UpperBoundUtil.SideEffectError.NO_ERROR) {
-                    this.clearValue(r);
+            try {
+                for (Receiver dependent :
+                        UpperBoundUtil.getDependentReceivers(
+                                entry.getValue().getAnnotations(),
+                                path,
+                                (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory())) {
+                    if (UpperBoundUtil.isSideEffected(dependent, reassignedVar, sideEffect)
+                            != UpperBoundUtil.SideEffectError.NO_ERROR) {
+                        this.clearValue(r);
+                    }
                 }
+            } catch (NullPointerException e) {
+                // This happens in the second round of type-checking of a finally block,
+                // because the enclosing class is null (as the tree is generated). It is
+                // unsafe to ignore this, as this generated tree represents the exceptional
+                // state that may occur if the code in the finally block throws an exception.
+                // We ignore it anyway.
             }
         }
     }
