@@ -174,11 +174,11 @@ public class ObjectOutputStream
     }
 
     /** filter stream for handling block data conversion */
-    private final BlockDataOutputStream bout = null;
+    private final BlockDataOutputStream bout;
     /** obj -> wire handle map */
-    private final HandleTable handles = null;
+    private final HandleTable handles;
     /** obj -> replacement obj map */
-    private final ReplaceTable subs = null;
+    private final ReplaceTable subs;
     /** stream protocol version */
     private int protocol = PROTOCOL_VERSION_2;
     /** recursion depth */
@@ -188,7 +188,7 @@ public class ObjectOutputStream
     private byte[] primVals;
 
     /** if true, invoke writeObjectOverride() instead of writeObject() */
-    private final boolean enableOverride = null;
+    private final boolean enableOverride;
     /** if true, invoke replaceObject() */
     private boolean enableReplace;
 
@@ -203,7 +203,7 @@ public class ObjectOutputStream
     private PutFieldImpl curPut;
 
     /** custom storage for debug trace info */
-    private final DebugTraceInfoStack debugInfoStack = null;
+    private final DebugTraceInfoStack debugInfoStack;
 
     /**
      * value of "sun.io.serialization.extendedDebugInfo" property,
@@ -238,18 +238,18 @@ public class ObjectOutputStream
      * @see     ObjectInputStream#ObjectInputStream(InputStream)
      */
     public ObjectOutputStream(OutputStream out) throws IOException {
-//        verifySubclass();
-//        bout = new BlockDataOutputStream(out);
-//        handles = new HandleTable(10, (float) 3.00);
-//        subs = new ReplaceTable(10, (float) 3.00);
-//        enableOverride = false;
-//        writeStreamHeader();
-//        bout.setBlockDataMode(true);
-//        if (extendedDebugInfo) {
-//            debugInfoStack = new DebugTraceInfoStack();
-//        } else {
-//            debugInfoStack = null;
-//        }
+        verifySubclass();
+        bout = new BlockDataOutputStream(out);
+        handles = new HandleTable(10, (float) 3.00);
+        subs = new ReplaceTable(10, (float) 3.00);
+        enableOverride = false;
+        writeStreamHeader();
+        bout.setBlockDataMode(true);
+        if (extendedDebugInfo) {
+            debugInfoStack = new DebugTraceInfoStack();
+        } else {
+            debugInfoStack = null;
+        }
     }
 
     /**
@@ -269,16 +269,15 @@ public class ObjectOutputStream
      * @see java.io.SerializablePermission
      */
     protected ObjectOutputStream() throws IOException, SecurityException {
-//        SecurityManager sm = System.getSecurityManager();
-//        if (sm != null) {
-//            sm.checkPermission(SUBCLASS_IMPLEMENTATION_PERMISSION);
-//        }
-//        bout = null;
-//        handles = null;
-//        subs = null;
-//        enableOverride = true;
-//        debugInfoStack = null;
-
+        SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            sm.checkPermission(SUBCLASS_IMPLEMENTATION_PERMISSION);
+        }
+        bout = null;
+        handles = null;
+        subs = null;
+        enableOverride = true;
+        debugInfoStack = null;
     }
 
     /**
@@ -302,21 +301,20 @@ public class ObjectOutputStream
      * @since   1.2
      */
     public void useProtocolVersion(int version) throws IOException {
-//        if (handles.size() != 0) {
-//            // REMIND: implement better check for pristine stream?
-//            throw new IllegalStateException("stream non-empty");
-//        }
-//        switch (version) {
-//            case PROTOCOL_VERSION_1:
-//            case PROTOCOL_VERSION_2:
-//                protocol = version;
-//                break;
-//
-//            default:
-//                throw new IllegalArgumentException(
-//                    "unknown version: " + version);
-//        }
+        if (handles.size() != 0) {
+            // REMIND: implement better check for pristine stream?
+            throw new IllegalStateException("stream non-empty");
+        }
+        switch (version) {
+            case PROTOCOL_VERSION_1:
+            case PROTOCOL_VERSION_2:
+                protocol = version;
+                break;
 
+            default:
+                throw new IllegalArgumentException(
+                    "unknown version: " + version);
+        }
     }
 
     /**
@@ -341,18 +339,18 @@ public class ObjectOutputStream
      *          OutputStream.
      */
     public final void writeObject(Object obj) throws IOException {
-//        if (enableOverride) {
-//            writeObjectOverride(obj);
-//            return;
-//        }
-//        try {
-//            writeObject0(obj, false);
-//        } catch (IOException ex) {
-//            if (depth == 0) {
-//                writeFatalException(ex);
-//            }
-//            throw ex;
-//        }
+        if (enableOverride) {
+            writeObjectOverride(obj);
+            return;
+        }
+        try {
+            writeObject0(obj, false);
+        } catch (IOException ex) {
+            if (depth == 0) {
+                writeFatalException(ex);
+            }
+            throw ex;
+        }
     }
 
     /**
@@ -412,14 +410,14 @@ public class ObjectOutputStream
      * @since 1.4
      */
     public void writeUnshared(Object obj) throws IOException {
-//        try {
-//            writeObject0(obj, true);
-//        } catch (IOException ex) {
-//            if (depth == 0) {
-//                writeFatalException(ex);
-//            }
-//            throw ex;
-//        }
+        try {
+            writeObject0(obj, true);
+        } catch (IOException ex) {
+            if (depth == 0) {
+                writeFatalException(ex);
+            }
+            throw ex;
+        }
     }
 
     /**
@@ -432,14 +430,14 @@ public class ObjectOutputStream
      *          <code>OutputStream</code>
      */
     public void defaultWriteObject() throws IOException {
-//        if ( curContext == null ) {
-//            throw new NotActiveException("not in call to writeObject");
-//        }
-//        Object curObj = curContext.getObj();
-//        ObjectStreamClass curDesc = curContext.getDesc();
-//        bout.setBlockDataMode(false);
-//        defaultWriteFields(curObj, curDesc);
-//        bout.setBlockDataMode(true);
+        if ( curContext == null ) {
+            throw new NotActiveException("not in call to writeObject");
+        }
+        Object curObj = curContext.getObj();
+        ObjectStreamClass curDesc = curContext.getDesc();
+        bout.setBlockDataMode(false);
+        defaultWriteFields(curObj, curDesc);
+        bout.setBlockDataMode(true);
     }
 
     /**
@@ -453,16 +451,15 @@ public class ObjectOutputStream
      * @since 1.2
      */
     public ObjectOutputStream.PutField putFields() throws IOException {
-//        if (curPut == null) {
-//            if (curContext == null) {
-//                throw new NotActiveException("not in call to writeObject");
-//            }
-//            Object curObj = curContext.getObj();
-//            ObjectStreamClass curDesc = curContext.getDesc();
-//            curPut = new PutFieldImpl(curDesc);
-//        }
-//        return curPut;
-        return null;
+        if (curPut == null) {
+            if (curContext == null) {
+                throw new NotActiveException("not in call to writeObject");
+            }
+            Object curObj = curContext.getObj();
+            ObjectStreamClass curDesc = curContext.getDesc();
+            curPut = new PutFieldImpl(curDesc);
+        }
+        return curPut;
     }
 
     /**
@@ -475,12 +472,12 @@ public class ObjectOutputStream
      * @since 1.2
      */
     public void writeFields() throws IOException {
-//        if (curPut == null) {
-//            throw new NotActiveException("no current PutField object");
-//        }
-//        bout.setBlockDataMode(false);
-//        curPut.writeFields();
-//        bout.setBlockDataMode(true);
+        if (curPut == null) {
+            throw new NotActiveException("no current PutField object");
+        }
+        bout.setBlockDataMode(false);
+        curPut.writeFields();
+        bout.setBlockDataMode(true);
     }
 
     /**
@@ -494,13 +491,13 @@ public class ObjectOutputStream
      * @throws  IOException if reset() is invoked while serializing an object.
      */
     public void reset() throws IOException {
-//        if (depth != 0) {
-//            throw new IOException("stream active");
-//        }
-//        bout.setBlockDataMode(false);
-//        bout.writeByte(TC_RESET);
-//        clear();
-//        bout.setBlockDataMode(true);
+        if (depth != 0) {
+            throw new IOException("stream active");
+        }
+        bout.setBlockDataMode(false);
+        bout.writeByte(TC_RESET);
+        clear();
+        bout.setBlockDataMode(true);
     }
 
     /**
@@ -611,18 +608,17 @@ public class ObjectOutputStream
     protected boolean enableReplaceObject(boolean enable)
         throws SecurityException
     {
-//        if (enable == enableReplace) {
-//            return enable;
-//        }
-//        if (enable) {
-//            SecurityManager sm = System.getSecurityManager();
-//            if (sm != null) {
-//                sm.checkPermission(SUBSTITUTION_PERMISSION);
-//            }
-//        }
-//        enableReplace = enable;
-//        return !enableReplace;
-        return false;
+        if (enable == enableReplace) {
+            return enable;
+        }
+        if (enable) {
+            SecurityManager sm = System.getSecurityManager();
+            if (sm != null) {
+                sm.checkPermission(SUBSTITUTION_PERMISSION);
+            }
+        }
+        enableReplace = enable;
+        return !enableReplace;
     }
 
     /**
@@ -634,8 +630,8 @@ public class ObjectOutputStream
      *          stream
      */
     protected void writeStreamHeader() throws IOException {
-//        bout.writeShort(STREAM_MAGIC);
-//        bout.writeShort(STREAM_VERSION);
+        bout.writeShort(STREAM_MAGIC);
+        bout.writeShort(STREAM_VERSION);
     }
 
     /**
@@ -666,7 +662,7 @@ public class ObjectOutputStream
     protected void writeClassDescriptor(ObjectStreamClass desc)
         throws IOException
     {
-//        desc.writeNonProxy(this);
+        desc.writeNonProxy(this);
     }
 
     /**
@@ -677,7 +673,7 @@ public class ObjectOutputStream
      * @throws  IOException If an I/O error has occurred.
      */
     public void write(int val) throws IOException {
-        //bout.write(val);
+        bout.write(val);
     }
 
     /**
@@ -688,7 +684,7 @@ public class ObjectOutputStream
      * @throws  IOException If an I/O error has occurred.
      */
     public void write(byte[] buf) throws IOException {
-        //bout.write(buf, 0, buf.length, false);
+        bout.write(buf, 0, buf.length, false);
     }
 
     /**
@@ -700,14 +696,14 @@ public class ObjectOutputStream
      * @throws  IOException If an I/O error has occurred.
      */
     public void write(byte[] buf, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
-//        if (buf == null) {
-//            throw new NullPointerException();
-//        }
-//        int endoff = off + len;
-//        if (off < 0 || len < 0 || endoff > buf.length || endoff < 0) {
-//            throw new IndexOutOfBoundsException();
-//        }
-//        bout.write(buf, off, len, false);
+        if (buf == null) {
+            throw new NullPointerException();
+        }
+        int endoff = off + len;
+        if (off < 0 || len < 0 || endoff > buf.length || endoff < 0) {
+            throw new IndexOutOfBoundsException();
+        }
+        bout.write(buf, off, len, false);
     }
 
     /**
