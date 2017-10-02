@@ -330,6 +330,7 @@
          </delete>
         <!-- Work-around for Issue 894, see above. -->
         <unjar src="${checker.lib.tmp}" dest="${build}" />
+        <delete file="${checker.lib.tmp}"/>
 
         <unjar src="${stubparser.lib}" dest="${build}" />
 
@@ -757,7 +758,9 @@
 
         <antcall target="command-line-tests"/>
 
-        <antcall target="example-tests-nobuildjdk"/>
+      <!--TODO: This breaks during the release process because the latest Maven artifacts haven't been created.
+                This target is called in .travis-build.sh -->
+        <!--<antcall target="example-tests-nobuildjdk"/>-->
 
         <antcall target="check-tutorial"/>
         <antcall target="check-compilermsgs"/>
