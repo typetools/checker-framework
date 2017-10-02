@@ -29,7 +29,6 @@ public class UpperBoundUtil {
         SIDE_EFFECTING_METHOD_CALL
     }
 
-    /* @SuppressWarnings("compilermessagekey") // suppressed because "" is not a key */
     public enum SideEffectError {
         NO_REASSIGN("reassignment.not.permitted"),
         NO_REASSIGN_FIELD("reassignment.field.not.permitted"),
@@ -39,7 +38,8 @@ public class UpperBoundUtil {
 
         /*@CompilerMessageKey*/ String errorKey;
 
-        SideEffectError(/*@CompilerMessageKey*/ String errorKey) {
+        /* @SuppressWarnings("compilermessagekey") // suppressed because "" is not a key */
+        SideEffectError(String errorKey) {
             this.errorKey = errorKey;
         }
     }
