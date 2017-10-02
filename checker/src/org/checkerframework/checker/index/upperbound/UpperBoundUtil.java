@@ -38,7 +38,8 @@ public class UpperBoundUtil {
 
         /*@CompilerMessageKey*/ String errorKey;
 
-        /* @SuppressWarnings("compilermessagekey") // suppressed because "" is not a key */
+        /*@SuppressWarnings("assignment.type.incompatible")*/
+        // suppressed because "" is not a key
         SideEffectError(String errorKey) {
             this.errorKey = errorKey;
         }

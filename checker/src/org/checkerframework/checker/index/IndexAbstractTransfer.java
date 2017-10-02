@@ -39,7 +39,13 @@ public abstract class IndexAbstractTransfer<
         refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore, in);
 
         // Refine the else branch, which is the inverse of the then branch.
-        refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
+        refineGTE(
+                /* left= */ rfi.right, /* leftAnno= */
+                rfi.rightAnno,
+                /* right= */ rfi.left, /* rightAnno= */
+                rfi.leftAnno,
+                rfi.elseStore,
+                in);
 
         return rfi.newResult;
     }
@@ -58,7 +64,13 @@ public abstract class IndexAbstractTransfer<
         refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore, in);
 
         // Refine the else branch.
-        refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
+        refineGT(
+                /* left= */ rfi.right, /* leftAnno= */
+                rfi.rightAnno,
+                /* right= */ rfi.left, /* rightAnno= */
+                rfi.leftAnno,
+                rfi.elseStore,
+                in);
 
         return rfi.newResult;
     }
@@ -74,7 +86,13 @@ public abstract class IndexAbstractTransfer<
         }
 
         // Refine the then branch. A <= is just a flipped >=.
-        refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.thenStore, in);
+        refineGTE(
+                /* left= */ rfi.right, /* leftAnno= */
+                rfi.rightAnno,
+                /* right= */ rfi.left, /* rightAnno= */
+                rfi.leftAnno,
+                rfi.thenStore,
+                in);
 
         // Refine the else branch.
         refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
@@ -92,7 +110,13 @@ public abstract class IndexAbstractTransfer<
         }
 
         // Refine the then branch. A < is just a flipped >.
-        refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.thenStore, in);
+        refineGT(
+                /* left= */ rfi.right, /* leftAnno= */
+                rfi.rightAnno,
+                /* right= */ rfi.left, /* rightAnno= */
+                rfi.leftAnno,
+                rfi.thenStore,
+                in);
 
         // Refine the else branch.
         refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
