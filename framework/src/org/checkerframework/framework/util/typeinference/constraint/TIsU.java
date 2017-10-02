@@ -9,7 +9,12 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
  */
 public class TIsU extends TUConstraint {
     public TIsU(AnnotatedTypeVariable typeVariable, AnnotatedTypeMirror relatedType) {
-        super(typeVariable, relatedType, 173);
+        this(typeVariable, relatedType, false);
+    }
+
+    public TIsU(
+            AnnotatedTypeVariable typeVariable, AnnotatedTypeMirror relatedType, boolean uIsArg) {
+        super(typeVariable, relatedType, 173, uIsArg);
     }
 
     @Override

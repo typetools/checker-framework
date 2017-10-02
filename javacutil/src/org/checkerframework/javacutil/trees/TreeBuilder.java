@@ -73,7 +73,7 @@ public class TreeBuilder {
      */
     @SuppressWarnings("unchecked")
     public <T extends Tree> T copy(T input) {
-        T copied = (T) new FullyTreeCopier(maker).<JCTree>copy((JCTree) input);
+        T copied = (T) new FullyTreeCopier(maker).copy((JCTree) input);
         return copied;
     }
 
@@ -127,9 +127,9 @@ public class TreeBuilder {
         // the actual element type of the expression.
         Type.MethodType updatedMethodType =
                 new Type.MethodType(
-                        com.sun.tools.javac.util.List.<Type>nil(),
+                        com.sun.tools.javac.util.List.nil(),
                         (Type) iteratorType,
-                        com.sun.tools.javac.util.List.<Type>nil(),
+                        com.sun.tools.javac.util.List.nil(),
                         methodClass);
 
         JCTree.JCFieldAccess iteratorAccess =
@@ -218,9 +218,9 @@ public class TreeBuilder {
         // the actual element type of the expression.
         Type.MethodType updatedMethodType =
                 new Type.MethodType(
-                        com.sun.tools.javac.util.List.<Type>nil(),
+                        com.sun.tools.javac.util.List.nil(),
                         elementType,
-                        com.sun.tools.javac.util.List.<Type>nil(),
+                        com.sun.tools.javac.util.List.nil(),
                         methodClass);
 
         JCTree.JCFieldAccess nextAccess =
@@ -684,7 +684,7 @@ public class TreeBuilder {
         JCTree.JCNewArray newArray =
                 maker.NewArray(
                         (JCTree.JCExpression) buildClassUse(((Type) componentType).tsym),
-                        com.sun.tools.javac.util.List.<JCExpression>nil(),
+                        com.sun.tools.javac.util.List.nil(),
                         com.sun.tools.javac.util.List.from(exprs));
         newArray.setType(javacTypes.makeArrayType((Type) componentType));
         return newArray;
