@@ -5,6 +5,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -110,6 +111,12 @@ public class DefaultInferredTypesApplier {
             TypeMirror typeMirror,
             AnnotationMirror top,
             final AnnotationMirror notInferred) {
+        if (typeMirror.getKind() == TypeKind.WILDCARD) {
+            // Treat wildcards that extend type variables, as type variables.
+            while (typeMirror.getKind() == TypeKind.WILDCARD) {
+                typeMirror = ((WildcardType) typeMirror).getExtendsBound();
+            }
+        }
         if (typeMirror.getKind() != TypeKind.TYPEVAR) {
             ErrorReporter.errorAbort("Missing annos");
             return;

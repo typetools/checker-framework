@@ -1,7 +1,8 @@
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.*;
+import java.lang.ref.WeakReference;
 
-class Ternary {
+class Ternary<F> {
     void m1(boolean b) {
         String s = b ? new String("foo") : null;
     }
@@ -59,5 +60,17 @@ class Ternary {
         ClassSymbol c = null;
         MethodSymbol m = null;
         Symbol s = (m != null) ? m : c;
+    }
+
+    public void test(MyWeakRef<? extends F> existingRef) {
+        @SuppressWarnings("known.nonnull")
+        F existing = existingRef == null ? null : existingRef.get();
+    }
+
+    private static final class MyWeakRef<L> extends WeakReference<L> {
+
+        public MyWeakRef(L referent) {
+            super(referent);
+        }
     }
 }
