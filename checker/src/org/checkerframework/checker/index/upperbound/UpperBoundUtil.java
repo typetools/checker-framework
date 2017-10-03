@@ -36,7 +36,7 @@ public class UpperBoundUtil {
         NO_REASSIGN_FIELD_METHOD("reassignment.field.not.permitted.method"),
         NO_ERROR("");
 
-        /*@CompilerMessageKey*/ String errorKey;
+        /*@CompilerMessageKey*/ final String errorKey;
 
         /*@SuppressWarnings("assignment.type.incompatible")*/
         // suppressed because "" is not a key
