@@ -293,7 +293,7 @@ public abstract class UBQualifier {
          * offset. This is so that {@link AnnotationUtils#areSame(AnnotationMirror,
          * AnnotationMirror)} returns true for equivalent annotations.
          *
-         * @param env ProcessingEnvironment
+         * @param env a processing environment used to build the returned annotation
          * @return the AnnotationMirror that represents this qualifier
          */
         public AnnotationMirror convertToAnnotation(ProcessingEnvironment env) {
@@ -304,7 +304,7 @@ public abstract class UBQualifier {
          * Returns the @{@link SubstringIndexFor} AnnotationMirror that represents this qualifier in
          * the Substring Index hierarchy.
          *
-         * @param env ProcessingEnvironment
+         * @param env a processing environment used to build the returned annotation
          * @return the AnnotationMirror that represents this qualifier
          */
         public AnnotationMirror convertToSubstringIndexAnnotation(ProcessingEnvironment env) {
@@ -314,7 +314,7 @@ public abstract class UBQualifier {
         /**
          * Common implementation of convertToAnnotation and convertToSubstringIndexAnnotation.
          *
-         * @param env ProcessingEnvironment
+         * @param env a processing environment used to build the returned annotation
          * @param buildSubstringIndexAnnotation if true, act like {@link
          *     #convertToSubstringIndexAnnotation} and return a @{@link SubstringIndexFor}
          *     annotation; if false, act like {@link #convertToAnnotation}
