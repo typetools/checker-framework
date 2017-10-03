@@ -205,6 +205,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
         store.insertValue(operandRec, atypeFactory.convertUBQualifierToAnnotation(newQual));
     }
 
+    @Override
     protected void refineGT(
             Node larger,
             AnnotationMirror largerAnno,
@@ -234,6 +235,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
      * <p>Also, if the left expression is an array access, then the types of sub expressions of the
      * right are refined.
      */
+    @Override
     protected void refineGTE(
             Node left,
             AnnotationMirror leftAnno,
