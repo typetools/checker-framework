@@ -171,6 +171,10 @@ public abstract class CFAbstractTransfer<
         Tree preTree = analysis.getCurrentTree();
         Pair<Tree, AnnotatedTypeMirror> preCtxt = factory.getVisitorState().getAssignmentContext();
         analysis.setCurrentTree(tree);
+        TreePath previousTreePath = factory.getVisitorState().getPath();
+        if (node instanceof MethodInvocationNode) {
+            factory.getVisitorState().setPath(((MethodInvocationNode) node).getTreePath());
+        }
         // is there an assignment context node available?
         if (node != null && node.getAssignmentContext() != null) {
             // get the declared type of the assignment context by looking up the
@@ -202,6 +206,7 @@ public abstract class CFAbstractTransfer<
         AnnotatedTypeMirror at = factory.getAnnotatedType(tree);
         analysis.setCurrentTree(preTree);
         factory.getVisitorState().setAssignmentContext(preCtxt);
+        factory.getVisitorState().setPath(previousTreePath);
         return analysis.createAbstractValue(at);
     }
 
