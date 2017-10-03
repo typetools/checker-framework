@@ -5,6 +5,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.KeyForPropagator.PropagationDirection;
@@ -111,8 +112,11 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
                 atypeFactory.getVisitorState().getAssignmentContext();
 
         if (type.getKind() == TypeKind.DECLARED && context != null && context.first != null) {
-            AnnotatedTypeMirror assignedTo =
-                    TypeArgInferenceUtil.assignedTo(atypeFactory, atypeFactory.getPath(node));
+            TreePath path = atypeFactory.getPath(node);
+            if (path == null) {
+                return super.visitNewClass(node, type);
+            }
+            AnnotatedTypeMirror assignedTo = TypeArgInferenceUtil.assignedTo(atypeFactory, path);
 
             if (assignedTo != null) {
 

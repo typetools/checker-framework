@@ -1,5 +1,7 @@
 // Test case for Issue 1520
-// xhttps://github.com/typetools/checker-framework/issues/1520
+// https://github.com/typetools/checker-framework/issues/1520
+import java.io.IOException;
+
 public class Issue1520 {
     void start() {
         new Runnable() {
@@ -16,4 +18,16 @@ public class Issue1520 {
     void signal() {}
 
     void _run() {}
+
+    static class Inner {}
+
+    void test2() throws IOException {
+        try {
+            throwIO();
+        } finally {
+            Inner inner = new Inner();
+        }
+    }
+
+    void throwIO() throws IOException {}
 }

@@ -3,6 +3,7 @@ package org.checkerframework.checker.nullness;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -95,7 +96,11 @@ public class KeyForAnnotatedTypeFactory
         Pair<Tree, AnnotatedTypeMirror> context = getVisitorState().getAssignmentContext();
 
         if (returnType.getKind() == TypeKind.DECLARED && context != null && context.first != null) {
-            AnnotatedTypeMirror assignedTo = TypeArgInferenceUtil.assignedTo(this, getPath(tree));
+            TreePath path = getPath(tree);
+            if (path == null) {
+                return result;
+            }
+            AnnotatedTypeMirror assignedTo = TypeArgInferenceUtil.assignedTo(this, path);
 
             if (assignedTo != null) {
                 // array types and boxed primitives etc don't require propagation
