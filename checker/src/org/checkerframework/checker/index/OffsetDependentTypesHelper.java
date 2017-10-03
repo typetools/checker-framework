@@ -32,15 +32,18 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
             return expression;
         }
         if (expression.indexOf('-') == -1 && expression.indexOf('+') == -1) {
-            // The expression contains no "-" or "+".
+            // The expression contains no "-" or "+", so it can be standardized directly.
             return super.standardizeString(expression, context, localScope, useLocalScope);
         }
 
+        // The expression is a sum of several terms. This expression is standardized by splitting it into
+        // individual terms in an OffsetEquation and standardizing each term.
         OffsetEquation equation = OffsetEquation.createOffsetFromJavaExpression(expression);
         if (equation.hasError()) {
             return equation.getError();
         }
         try {
+            // Standardize individual terms of the expression.
             equation.standardizeAndViewpointAdaptExpressions(context, localScope, useLocalScope);
         } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
             return new DependentTypesError(expression, e).toString();
