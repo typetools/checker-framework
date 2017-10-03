@@ -301,11 +301,14 @@ public abstract class UBQualifier {
         }
 
         /**
-         * Returns the @{@link SubstringIndexFor} AnnotationMirror that represents this qualifier in
-         * the Substring Index hierarchy.
+         * Returns the @{@link SubstringIndexFor} AnnotationMirror from the Substring Index
+         * hierarchy that imposes the same upper bounds on the annotated expression as this
+         * qualifier. However, the upper bounds represented by this qualifier do not apply to the
+         * value -1 which is always allowed by the returned annotation.
          *
          * @param env a processing environment used to build the returned annotation
-         * @return the AnnotationMirror that represents this qualifier
+         * @return the AnnotationMirror from the Substring Index hierarchy that represents the same
+         *     upper bounds as this qualifier
          */
         public AnnotationMirror convertToSubstringIndexAnnotation(ProcessingEnvironment env) {
             return convertToAnnotation(env, true);
@@ -318,7 +321,7 @@ public abstract class UBQualifier {
          * @param buildSubstringIndexAnnotation if true, act like {@link
          *     #convertToSubstringIndexAnnotation} and return a @{@link SubstringIndexFor}
          *     annotation; if false, act like {@link #convertToAnnotation}
-         * @return the AnnotationMirror that represents this qualifier
+         * @return the AnnotationMirror that represents the same upper bounds as this qualifier
          */
         private AnnotationMirror convertToAnnotation(
                 ProcessingEnvironment env, boolean buildSubstringIndexAnnotation) {
