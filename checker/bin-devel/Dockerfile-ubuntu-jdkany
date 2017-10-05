@@ -25,6 +25,7 @@ RUN apt-get -qqy update && apt-get -qqy install \
   unzip \
   wget \
   default-jdk \
+  binutils \
 && apt-get -qqy install \
   dia \
   hevea \
