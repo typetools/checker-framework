@@ -7,6 +7,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import edu.emory.mathcs.backport.java.util.Collections;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -119,25 +120,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Checks whether the two string lists contain at least one string that's the same. Not a smart
-     * algorithm; meant to be run over small sets of data.
-     *
-     * @param listA the first string list
-     * @param listB the second string list
-     * @return true if the intersection is non-empty; false otherwise
-     */
-    private boolean overlap(List<String> listA, List<String> listB) {
-        for (String a : listA) {
-            for (String b : listB) {
-                if (a.equals(b)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * This function finds the union of the values of two annotations. Both annotations must have a
      * value field; otherwise the function will fail.
      *
@@ -230,7 +212,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<String> a1Val = getValueOfAnnotationWithStringArgument(a1);
                 List<String> a2Val = getValueOfAnnotationWithStringArgument(a2);
 
-                if (overlap(a1Val, a2Val)) {
+                if (!Collections.disjoint(a1Val, a2Val)) {
                     return getCombinedSameLen(a1Val, a2Val);
                 } else {
                     return BOTTOM;
@@ -255,8 +237,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<String> a1Val = getValueOfAnnotationWithStringArgument(a1);
                 List<String> a2Val = getValueOfAnnotationWithStringArgument(a2);
 
-                if (overlap(a1Val, a2Val)) {
-                    return getCombinedSameLen(a1Val, a2Val);
+                if (!Collections.disjoint(a1Val, a2Val)) {
+                    a1Val.retainAll(a2Val);
+                    return createSameLen(a1Val.toArray(new String[0]));
                 } else {
                     return UNKNOWN;
                 }
