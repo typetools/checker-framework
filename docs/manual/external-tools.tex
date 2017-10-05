@@ -503,7 +503,10 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
         <!-- location of the annotated JDK, which comes from a Maven dependency -->
         <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
         <!-- Uncomment the following line to use the type annotations compiler. -->
-        <!-- <arg>--J-Xbootclasspath/p:$\{typeAnnotationsJavac\}</arg> -->
+        <!-- <arg>-J-Xbootclasspath/p:$\{typeAnnotationsJavac\}</arg> -->
+        <!-- Uncomment the following line to turn type-checking warnings
+        into errors. -->
+        <!-- <arg>-Awarns</arg> -->
       </compilerArgs>
     </configuration>
   </plugin>
