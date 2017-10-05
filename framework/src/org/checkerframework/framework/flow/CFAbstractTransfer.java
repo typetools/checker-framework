@@ -173,6 +173,8 @@ public abstract class CFAbstractTransfer<
         analysis.setCurrentTree(tree);
         TreePath previousTreePath = factory.getVisitorState().getPath();
         if (node instanceof MethodInvocationNode) {
+            // This is a work around for issue #1520.
+            // MethodInvocationNode is the only node that save's the TreePath.
             factory.getVisitorState().setPath(((MethodInvocationNode) node).getTreePath());
         }
         // is there an assignment context node available?
