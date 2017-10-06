@@ -15,7 +15,6 @@ RUN apt-get -qqy update && apt-get -qqy install \
 && add-apt-repository ppa:openjdk-r/ppa \
 && apt-get -qqy update && apt-get -qqy install \
   ant \
-  binutils \
   cpp \
   git \
   gradle \
