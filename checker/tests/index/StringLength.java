@@ -46,42 +46,34 @@ class StringLength {
             @LTLengthOf(value = "#1", offset = "#2.length()") int i,
             @LTLengthOf(value = "#2") int j,
             int k) {
-        //:: warning: (local.variable.unsafe.dependent.annotation)
         @LTLengthOf("s") int ij = i + j;
-        //::  error: (assignment.type.incompatible) :: warning: (local.variable.unsafe.dependent.annotation)
+        //::  error: (assignment.type.incompatible)
         @LTLengthOf("s") int ik = i + k;
     }
 
     void testLengthDivide(@MinLen(1) String s) {
-        //:: warning: (local.variable.unsafe.dependent.annotation)
         @IndexFor("s") int i = s.length() / 2;
     }
 
     void testAddDivide(@MinLen(1) String s, @IndexFor("#1") int i, @IndexFor("#1") int j) {
-        //:: warning: (local.variable.unsafe.dependent.annotation)
         @IndexFor("s") int ij = (i + j) / 2;
     }
 
     void testRandomMultiply(@MinLen(1) String s, Random r) {
-        //:: warning: (local.variable.unsafe.dependent.annotation)
         @LTLengthOf("s") int i = (int) (Math.random() * s.length());
-        //:: warning: (local.variable.unsafe.dependent.annotation)
         @LTLengthOf("s") int j = (int) (r.nextDouble() * s.length());
     }
 
     void testNotEqualLength(String s, @IndexOrHigh("#1") int i, @IndexOrHigh("#1") int j) {
         if (i != s.length()) {
-            //:: warning: (local.variable.unsafe.dependent.annotation)
             @IndexFor("s") int in = i;
-            //::  error: (assignment.type.incompatible) :: warning: (local.variable.unsafe.dependent.annotation)
+            //::  error: (assignment.type.incompatible)
             @IndexFor("s") int jn = j;
         }
     }
 
     void testLength(String s) {
-        //:: warning: (local.variable.unsafe.dependent.annotation)
         @IndexOrHigh("s") int i = s.length();
-        //:: warning: (local.variable.unsafe.dependent.annotation)
         @LTLengthOf("s") int j = s.length() - 1;
     }
 }

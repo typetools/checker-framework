@@ -142,11 +142,12 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                     }
                 }
             } catch (NullPointerException e) {
-                // This happens in the second round of type-checking of a finally block,
+                // This happens while type-checking a finally block,
                 // because the enclosing class is null (as the tree is generated). It is
                 // unsafe to ignore this, as this generated tree represents the exceptional
                 // state that may occur if the code in the finally block throws an exception.
-                // We ignore it anyway.
+                // We ignore it anyway, since an exception is already being thrown - warning
+                // about a different exception serves little purpose.
             }
         }
     }

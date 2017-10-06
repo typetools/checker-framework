@@ -57,10 +57,12 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * which must unrefine all qualifiers, but which cannot collect all in-scope local variables. So
      * that there are no local variables with qualifiers that are not in the store, this method
      * forbids programmers from writing such qualifiers. This may introduce false positives if the
-     * programmer would like to write a non-primary annotation on a local variable.
+     * programmer would like to write a non-primary annotation on a local variable. Note that final
+     * or effectively final are always permitted in dependent annotations, even in local variables,
+     * and will not trigger this warning (as no side-effect can effect them).
      *
      * <p>Also issues warnings if the expression in a dependent annotation is not permitted.
-     * Permitted expressions in dependent annotations are:
+     * Permitted expressions in dependent annotations must be at least one of the following:
      *
      * <ul>
      *   <li>final or effectively final variables
@@ -82,33 +84,50 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             // This is a dependent annotation. If this is a local variable,
             // issue a warning; dependent annotations should not be written on local variables.
             Element elt = TreeUtils.elementFromDeclaration(node);
-            if (elt.getKind() == ElementKind.LOCAL_VARIABLE) {
-                checker.report(Result.warning(LOCAL_VAR_ANNO), node);
-            }
+            boolean allVariablesFinal = true;
+
             UBQualifier qual = UBQualifier.createUBQualifier(anm);
             if (qual.isLessThanLengthQualifier()) {
                 LessThanLengthOf ltl = (LessThanLengthOf) qual;
                 for (String array : ltl.getSequences()) {
-                    checkIfPermittedInDependentTypeAnno(array, node);
+                    Receiver rec = getReceiverForCheckingDependentTypes(array, node);
+                    // covers final and effectively final variables
+                    boolean isFinal =
+                            rec.isUnmodifiableByOtherCode()
+                                    || rec instanceof FlowExpressions.LocalVariable;
+                    if (!isFinal) {
+                        allVariablesFinal = false;
+                        checkIfPermittedInDependentTypeAnno(rec, array, node);
+                    }
                 }
+            }
+
+            if (elt.getKind() == ElementKind.LOCAL_VARIABLE && !allVariablesFinal) {
+                checker.report(Result.warning(LOCAL_VAR_ANNO), node);
             }
         }
 
         return super.visitVariable(node, p);
     }
 
-    private boolean checkIfPermittedInDependentTypeAnno(String expr, Tree tree) {
-        FlowExpressions.Receiver rec;
+    private Receiver getReceiverForCheckingDependentTypes(String expr, Tree tree) {
         try {
-            rec = atypeFactory.getReceiverFromJavaExpressionString(expr, getCurrentPath());
+            return atypeFactory.getReceiverFromJavaExpressionString(expr, getCurrentPath());
         } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
             // issue warning
             checker.report(
                     Result.warning(DEPENDENT_NOT_PERMITTED, expr, "the expression was unparseable"),
                     tree);
+            return null;
+        }
+    }
+
+    private boolean checkIfPermittedInDependentTypeAnno(Receiver rec, String expr, Tree tree) {
+
+        if (rec == null) {
             return false;
         }
-        // covers final and effectively final variables
+
         if (rec.isUnmodifiableByOtherCode() || rec instanceof FlowExpressions.LocalVariable) {
             return true;
         }
@@ -119,7 +138,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                     || (faRec.getField().getModifiers().contains(Modifier.PUBLIC)
                             && faRec.isFinal()
                             && checkIfPermittedInDependentTypeAnno(
-                                    faRec.getReceiver().toString(), tree))) {
+                                    faRec.getReceiver(), faRec.getReceiver().toString(), tree))) {
                 return true;
             } else {
                 // issue warning
@@ -139,7 +158,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             for (FlowExpressions.Receiver r : mcRec.getParameters()) {
                 parametersArePermittedInDependentTypeAnno =
                         parametersArePermittedInDependentTypeAnno
-                                && checkIfPermittedInDependentTypeAnno(r.toString(), tree);
+                                && checkIfPermittedInDependentTypeAnno(r, r.toString(), tree);
             }
             if (!PurityUtils.isSideEffectFree(atypeFactory, mcRec.getElement())) {
                 // issue warning
@@ -152,7 +171,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 return false;
             }
             if (parametersArePermittedInDependentTypeAnno
-                    && checkIfPermittedInDependentTypeAnno(mcRec.getReceiver().toString(), tree)) {
+                    && checkIfPermittedInDependentTypeAnno(
+                            mcRec.getReceiver(), mcRec.getReceiver().toString(), tree)) {
                 return true;
             } else {
                 // warning will already have been issued in this case.

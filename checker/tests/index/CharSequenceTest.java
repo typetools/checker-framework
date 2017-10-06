@@ -52,7 +52,7 @@ public class CharSequenceTest {
             cs.charAt(i);
         }
 
-        //:: error: (assignment.type.incompatible) :: warning: (local.variable.unsafe.dependent.annotation)
+        //:: error: (assignment.type.incompatible)
         @IndexOrHigh("cs") int l = cs.length();
     }
 
