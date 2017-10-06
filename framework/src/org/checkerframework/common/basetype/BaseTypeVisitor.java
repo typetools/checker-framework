@@ -2417,6 +2417,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Get the type of the overriding method.
         AnnotatedExecutableType overrider = atypeFactory.getAnnotatedType(overriderTree);
 
+        // Call the other version of the method, which takes overrider. The split is
+        // for compatibility reasons - the other method used to include this call.
+        return checkOverride(
+                overriderTree, overrider, overridingType, overridden, overriddenType, p);
+    }
+
+    /**
+     * Type checks that a method may override another method. Uses an OverrideChecker subclass as
+     * created by createOverrideChecker().
+     *
+     * @param overriderTree declaration tree of overriding method
+     * @param overrider type of the overriding method
+     * @param overridingType type of overriding class
+     * @param overridden type of overridden method
+     * @param overriddenType type of overridden class
+     * @return true if the override is allowed
+     */
+    protected boolean checkOverride(
+            MethodTree overriderTree,
+            AnnotatedExecutableType overrider,
+            AnnotatedDeclaredType overridingType,
+            AnnotatedExecutableType overridden,
+            AnnotatedDeclaredType overriddenType,
+            Void p) {
+
         // This needs to be done before overrider.getReturnType() and overridden.getReturnType()
         if (overrider.getTypeVariables().isEmpty() && !overridden.getTypeVariables().isEmpty()) {
             overridden = overridden.getErased();
