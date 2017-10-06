@@ -258,7 +258,7 @@ import org.checkerframework.javacutil.TreeUtils;
     /// Progress tracing
 
     // Output file names before checking
-    // TODO: it looks like support for this was lost!
+    // org.checkerframework.common.basetype.BaseTypeVisitor.setRoot
     "filenames",
 
     // Output all subtyping checks
