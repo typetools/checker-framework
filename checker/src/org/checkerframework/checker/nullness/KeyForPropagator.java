@@ -138,14 +138,24 @@ public class KeyForPropagator {
         }
     }
 
+    /**
+     * Propagate annotations from the type arguments of {@code type} to the assignment context of
+     * {@code newClassTree} if one exists.
+     *
+     * @param newClassTree new class tree
+     * @param type annotated type of {@code newClassTree}
+     * @param atypeFactory factory
+     */
     public void propagateNewClassTree(
-            NewClassTree node, AnnotatedTypeMirror type, KeyForAnnotatedTypeFactory atypeFactory) {
+            NewClassTree newClassTree,
+            AnnotatedTypeMirror type,
+            KeyForAnnotatedTypeFactory atypeFactory) {
         Pair<Tree, AnnotatedTypeMirror> context =
                 atypeFactory.getVisitorState().getAssignmentContext();
         if (type.getKind() != TypeKind.DECLARED || context == null || context.first == null) {
             return;
         }
-        TreePath path = atypeFactory.getPath(node);
+        TreePath path = atypeFactory.getPath(newClassTree);
         if (path == null) {
             return;
         }
