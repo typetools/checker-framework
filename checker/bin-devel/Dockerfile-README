@@ -47,4 +47,3 @@ To stop and remove/delete all docker containers:
   docker stop $(docker ps -a -q)
   docker rm $(docker ps -a -q)
 or you can just remove some of them.
-
