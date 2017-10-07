@@ -3,6 +3,7 @@
 
 public class FieldAccess {
     class MyClass {
+
         Object field = new Object();
     }
 
@@ -30,5 +31,10 @@ public class FieldAccess {
             // Union type field access
             ex.field = new Object();
         }
+    }
+
+    void classLiterals() {
+        Class<?> c = byte.class;
+        Class<?> d = void.class;
     }
 }
