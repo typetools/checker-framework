@@ -9,10 +9,13 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -680,8 +683,27 @@ public class LockAnnotatedTypeFactory
             return;
         }
 
-        List<String> lockExpressions =
-                AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+        // The version of javax.annotation.concurrent.GuardedBy included with the Checker Framework
+        // declares the type of value as an array of Strings where as the one included with FindBugs
+        // declares it as a String. So, the code below figures out which type should be used.
+        Map<? extends ExecutableElement, ? extends AnnotationValue> valmap =
+                anno.getElementValues();
+        Object value = null;
+        for (ExecutableElement elem : valmap.keySet()) {
+            if (elem.getSimpleName().contentEquals("value")) {
+                value = valmap.get(elem).getValue();
+                break;
+            }
+        }
+        List<String> lockExpressions;
+        if (value instanceof List) {
+            lockExpressions =
+                    AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+        } else if (value instanceof String) {
+            lockExpressions = Collections.singletonList((String) value);
+        } else {
+            return;
+        }
 
         if (lockExpressions.isEmpty()) {
             atm.addAnnotation(GUARDEDBY);

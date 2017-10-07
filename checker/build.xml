@@ -109,6 +109,15 @@
 
         <delete dir="${dist}"/>
         <delete dir="dist" failonerror="false"/>
+
+        <ant dir="${checkerframework}">
+            <target name="clean-tags"/>
+        </ant>
+
+        <exec executable="make" dir="${docs.loc}/manual" failonerror="true">
+          <arg value="very_clean"/>
+        </exec>
+
     </target>
 
     <target name="clean-nojar" description="Remove generated class files, but not the .jar files">
