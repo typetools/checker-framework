@@ -28,6 +28,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.interning.qual.UsesObjectEquals;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -41,12 +42,13 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Typechecks source code for interning violations. A type is considered interned if its primary
- * annotation is {@link Interned}. This visitor reports errors or warnings for violations for the
- * following cases:
+ * annotation is {@link Interned} or {@link InternedDistinct}. This visitor reports errors or
+ * warnings for violations for the following cases:
  *
  * <ol>
  *   <li value="1">either argument to a "==" or "!=" comparison is not Interned (error
- *       "not.interned")
+ *       "not.interned"). As a special case, the comparison is permitted if either arugment is
+ *       InternedDistinct.
  *   <li value="2">the receiver and argument for a call to an equals method are both Interned
  *       (optional warning "unnecessary.equals")
  * </ol>
@@ -55,14 +57,17 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTypeFactory> {
 
-    /** The interned annotation. */
+    /** The @Interned annotation. */
     private final AnnotationMirror INTERNED;
+    /** The @InternedDistinct annotation. */
+    private final AnnotationMirror INTERNED_DISTINCT;
     /** See method typeToCheck() */
     private final DeclaredType typeToCheck;
 
     public InterningVisitor(BaseTypeChecker checker) {
         super(checker);
         this.INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
+        this.INTERNED_DISTINCT = AnnotationBuilder.fromClass(elements, InternedDistinct.class);
         typeToCheck = typeToCheck();
     }
 
@@ -102,6 +107,11 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
         // If either argument is a primitive, check passes due to auto-unboxing
         if (left.getKind().isPrimitive() || right.getKind().isPrimitive()) {
+            return super.visitBinary(node, p);
+        }
+
+        if (left.hasEffectiveAnnotation(INTERNED_DISTINCT)
+                || right.hasEffectiveAnnotation(INTERNED_DISTINCT)) {
             return super.visitBinary(node, p);
         }
 
