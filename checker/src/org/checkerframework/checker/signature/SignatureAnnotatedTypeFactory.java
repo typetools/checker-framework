@@ -99,8 +99,8 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * form and binary name:
          *
          * <pre><code>
-         * @InternalForm String internalForm = binaryName.replace('.', '/');
-         * @BinaryName String binaryName = internalForm.replace('/', '.');
+         * {@literal @}InternalForm String internalForm = binaryName.replace('.', '/');
+         * {@literal @}BinaryName String binaryName = internalForm.replace('/', '.');
          * </code></pre>
          */
         @Override
