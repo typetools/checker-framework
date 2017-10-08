@@ -98,10 +98,10 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * String.replace, when called with specific constant arguments, converts between internal
          * form and binary name:
          *
-         * <pre>
+         * <pre><code>
          * @InternalForm String internalForm = binaryName.replace('.', '/');
          * @BinaryName String binaryName = internalForm.replace('/', '.');
-         * </pre>
+         * </code></pre>
          */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
