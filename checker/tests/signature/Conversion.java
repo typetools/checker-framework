@@ -22,6 +22,7 @@ public class Conversion {
         }
 
         @InternalForm String binaryNameToInternalFormWRONG3(String bn) {
+            //:: error: (return.type.incompatible)
             return bn.replace('.', '/');
         }
 
@@ -36,6 +37,7 @@ public class Conversion {
         }
 
         @BinaryName String internalFormToBinaryNameWRONG3(String iform) {
+            //:: error: (return.type.incompatible)
             return iform.replace('/', '.');
         }
     }
@@ -60,6 +62,7 @@ public class Conversion {
         }
 
         @InternalForm String binaryNameToInternalFormWRONG3(String bn) {
+            //:: error: (return.type.incompatible)
             return bn.replace(".", "/");
         }
 
@@ -74,6 +77,7 @@ public class Conversion {
         }
 
         @BinaryName String internalFormToBinaryNameWRONG3(String iform) {
+            //:: error: (return.type.incompatible)
             return iform.replace("/", ".");
         }
     }
