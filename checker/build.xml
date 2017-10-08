@@ -118,6 +118,10 @@
           <arg value="very_clean"/>
         </exec>
 
+        <exec executable="make" dir="${dataflow.loc}/manual" failonerror="true">
+          <arg value="clean"/>
+        </exec>
+
     </target>
 
     <target name="clean-nojar" description="Remove generated class files, but not the .jar files">
