@@ -93,7 +93,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                     Receiver rec = getReceiverForCheckingDependentTypes(array, node);
                     // covers final and effectively final variables
                     boolean isFinal =
-                            rec.isUnmodifiableByOtherCode()
+                            rec == null
+                                    || rec.isUnmodifiableByOtherCode()
                                     || rec instanceof FlowExpressions.LocalVariable;
                     if (!isFinal) {
                         allVariablesFinal = false;
