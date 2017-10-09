@@ -20,4 +20,10 @@ public class Stub {
     int x17;
     int x18;
     int x19;
+    int x20;
+    class InnerStub{
+       int x20;
+    }
+
+    class InnerStub2{}
 }
