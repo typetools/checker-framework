@@ -2,7 +2,7 @@
  * @test
  * @summary Test case for issue #536: https://github.com/typetools/checker-framework/issues/536
  *
- * @compile/timeout=60 -J-Xmx256M -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Alint AssignmentPerformanceTest.java
+ * @compile/timeout=60 -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Alint AssignmentPerformanceTest.java
  */
 public class AssignmentPerformanceTest {
     private String s1;
