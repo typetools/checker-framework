@@ -31,5 +31,5 @@ public @interface IndexOrHigh {
     /**
      * Sequences that the annotated expression is a valid index for or is equal to the lengeth of.
      */
-    String[] value() default {};
+    String[] value();
 }
