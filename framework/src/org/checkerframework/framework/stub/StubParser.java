@@ -1487,7 +1487,6 @@ public class StubParser {
             }
             String packageName = "";
             if (theCompilationUnit.getPackageDeclaration().isPresent()) {
-                // Try finding the class using the current package
                 packageName = theCompilationUnit.getPackageDeclaration().get().getNameAsString();
             }
             TypeElement typeElement = findTypeOfName(packageName, currentClass, className);
