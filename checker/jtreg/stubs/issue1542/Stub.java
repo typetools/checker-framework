@@ -21,9 +21,14 @@ public class Stub {
     int x18;
     int x19;
     int x20;
-    class InnerStub{
-       int x20;
+
+    public class InnerStub {
+        int x20;
+
+        class InnerInnerStub {
+            int x20;
+        }
     }
 
-    class InnerStub2{}
+    class InnerStub2 {}
 }
