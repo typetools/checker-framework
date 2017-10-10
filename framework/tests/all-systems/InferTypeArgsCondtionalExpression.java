@@ -2,7 +2,7 @@
 // https://github.com/typetools/checker-framework/issues/579
 // Issue 579 test case is in checker/tests/nullness/java8/Issue579.java
 // A similar test case appears in checker/tests/nullness/InferTypeArgsConditionalExpression.java
-// @skip-test
+
 class InferTypeArgsConditionalExpression {
 
     public <T> void foo(Generic<T> real, Generic<? super T> other, boolean flag) {

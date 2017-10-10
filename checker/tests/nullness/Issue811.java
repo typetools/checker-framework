@@ -1,9 +1,11 @@
-// Test case for Issue 811
-// https://github.com/typetools/checker-framework/issues/811
-// @skip-test
+// Test case for Issue 266
+// https://github.com/typetools/checker-framework/issues/266
+
+// @skip-test until the issue is fixed
+
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-class A {
+public class Issue811 {
     static class T {
         void xyz() {}
     }
@@ -15,7 +17,7 @@ class A {
     private final @NonNull T tField;
     private U uField;
 
-    public A(@NonNull T t) {
+    public Issue811(@NonNull T t) {
         tField = t;
         uField =
                 new U() {
