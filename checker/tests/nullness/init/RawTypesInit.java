@@ -2,9 +2,10 @@
 
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
-@org.checkerframework.framework.qual.DefaultQualifier(Nullable.class)
-class RawTypesBounded {
+class RawTypesInit {
 
     class Bad {
         @NonNull String field;
@@ -102,6 +103,7 @@ class RawTypesBounded {
         }
     }
 
+    //:: error: (initialization.fields.uninitialized)
     class C extends B {
 
         @NonNull String[] strings;
@@ -126,23 +128,22 @@ class RawTypesBounded {
     }
 
     class MyTest {
-        int i;
+        Integer i;
 
         MyTest(int i) {
             this.i = i;
         }
 
         void myTest(@Raw @UnknownInitialization MyTest this) {
-            i++;
+            //:: error: (unboxing.of.nullable)
+            i = i + 1;
         }
     }
 
     class AllFieldsInitialized {
-        long elapsedMillis = 0;
-        long startTime = 0;
+        Integer elapsedMillis = 0;
+        Integer startTime = 0;
 
-        // If all fields have an initializer, then the type of "this"
-        // should still not be non-raw (there might be uninitilized subclasses)
         public AllFieldsInitialized() {
             //:: error: (method.invocation.invalid)
             nonRawMethod();
@@ -151,33 +152,37 @@ class RawTypesBounded {
         public void nonRawMethod() {}
     }
 
+    //:: error: (initialization.fields.uninitialized)
     class AFSIICell {
         AllFieldsSetInInitializer afsii;
     }
 
     class AllFieldsSetInInitializer {
-        long elapsedMillis;
-        long startTime;
+        Integer elapsedMillis;
+        Integer startTime;
 
         public AllFieldsSetInInitializer() {
             elapsedMillis = 0;
             //:: error: (method.invocation.invalid)
-            nonRawMethod();
+            nonRawMethod(); // error
             startTime = 0;
             //:: error: (method.invocation.invalid)
-            nonRawMethod(); // still error (subclasses...)
+            nonRawMethod(); // error
+            //:: error: (initialization.invalid.field.write.initialized)
+            new AFSIICell().afsii = this;
         }
 
+        //:: error: (initialization.fields.uninitialized)
         public AllFieldsSetInInitializer(boolean b) {
             //:: error: (method.invocation.invalid)
-            nonRawMethod();
+            nonRawMethod(); // error
         }
 
         public void nonRawMethod() {}
     }
 
     class ConstructorInvocations {
-        int v;
+        Integer v;
 
         public ConstructorInvocations(int v) {
             this.v = v;
@@ -186,7 +191,7 @@ class RawTypesBounded {
         public ConstructorInvocations() {
             this(0);
             //:: error: (method.invocation.invalid)
-            nonRawMethod();
+            nonRawMethod(); // invalid
         }
 
         public void nonRawMethod() {}
@@ -212,10 +217,9 @@ class RawTypesBounded {
         Object[] argsNonRaw2 = (Object[]) args;
     }
 
-    // default qualifier is @Nullable, so this is OK.
     class RawAfterConstructorBad {
         Object o;
-
+        //:: error: (initialization.fields.uninitialized)
         RawAfterConstructorBad() {}
     }
 
@@ -226,8 +230,53 @@ class RawTypesBounded {
     }
 
     class RawAfterConstructorOK2 {
-        int a;
-
+        Integer a;
+        //:: error: (initialization.fields.uninitialized)
         RawAfterConstructorOK2() {}
+    }
+
+    // TODO: reinstate.  This shows desired features, for initialization in
+    // a helper method rather than in the constructor.
+    class InitInHelperMethod {
+        Integer a;
+        Integer b;
+
+        InitInHelperMethod(short constructor_inits_ab) {
+            a = 1;
+            b = 1;
+            //:: error: (method.invocation.invalid)
+            nonRawMethod();
+        }
+
+        InitInHelperMethod(boolean constructor_inits_a) {
+            a = 1;
+            init_b();
+            //:: error: (method.invocation.invalid)
+            nonRawMethod();
+        }
+
+        @RequiresNonNull("a")
+        @EnsuresNonNull("b")
+        void init_b(@Raw @UnknownInitialization InitInHelperMethod this) {
+            b = 2;
+            //:: error: (method.invocation.invalid)
+            nonRawMethod();
+        }
+
+        InitInHelperMethod(int constructor_inits_none) {
+            init_ab();
+            //:: error: (method.invocation.invalid)
+            nonRawMethod();
+        }
+
+        @EnsuresNonNull({"a", "b"})
+        void init_ab(@Raw @UnknownInitialization InitInHelperMethod this) {
+            a = 1;
+            b = 2;
+            //:: error: (method.invocation.invalid)
+            nonRawMethod();
+        }
+
+        void nonRawMethod() {}
     }
 }
