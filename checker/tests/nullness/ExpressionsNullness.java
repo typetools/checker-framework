@@ -63,7 +63,7 @@ public class ExpressionsNullness {
 
     Object obj;
 
-    public Expressions(Object obj) {
+    public ExpressionsNullness(Object obj) {
         this.obj = obj;
     }
 
