@@ -18,8 +18,8 @@ public class ExpressionsNullness {
 
     public static void staticMembers() {
         Pattern.compile("^>entry *()");
-        System.out.println(Expressions.class);
-        Expressions.class.getAnnotations(); // valid
+        System.out.println(ExpressionsNullness.class);
+        ExpressionsNullness.class.getAnnotations(); // valid
     }
 
     private HashMap<String, String> map = new HashMap<String, String>();

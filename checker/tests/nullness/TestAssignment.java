@@ -13,6 +13,6 @@ public class TestAssignment {
     }
 
     void b() {
-        @UnknownInitialization @NonNull Test f = new Test();
+        @UnknownInitialization @NonNull TestAssignment f = new TestAssignment();
     }
 }

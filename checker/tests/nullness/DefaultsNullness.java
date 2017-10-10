@@ -4,13 +4,13 @@ import org.checkerframework.checker.nullness.qual.*;
 public class DefaultsNullness {
 
     // local variable defaults
-    void test(@UnknownInitialization Defaults para, @Initialized Defaults comm) {
+    void test(@UnknownInitialization DefaultsNullness para, @Initialized DefaultsNullness comm) {
         // @Nullable @UnknownInitialization by default
         String s = "abc";
 
         s = null;
 
-        Defaults d;
+        DefaultsNullness d;
         d = null; // null okay (default == @Nullable)
 
         d = comm; // committed okay (default == @Initialized)
