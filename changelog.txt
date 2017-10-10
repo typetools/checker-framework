@@ -5,6 +5,8 @@ Version 2.2.2, November 1, 2017
 The Interning Checker supports a new annotation, @InternedDistinct, which
 indicates that the value is not equals() to any other value.
 
+An annotated version of the Commons IO library appears in checker/lib/ .
+
 ---------------------------------------------------------------------------
 
 Version 2.2.1, September 29, 2017
