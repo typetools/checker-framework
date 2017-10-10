@@ -407,7 +407,7 @@ public abstract class GenericAnnotatedTypeFactory<
         List<Pair<VariableElement, CFValue>> tmp = new ArrayList<>();
         for (Pair<VariableElement, Value> fieldVal : fieldValues) {
             assert fieldVal.second instanceof CFValue;
-            tmp.add(Pair.<VariableElement, CFValue>of(fieldVal.first, (CFValue) fieldVal.second));
+            tmp.add(Pair.of(fieldVal.first, (CFValue) fieldVal.second));
         }
         return (FlowAnalysis) new CFAnalysis(checker, (GenericAnnotatedTypeFactory) this, tmp);
     }

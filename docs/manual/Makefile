@@ -102,10 +102,10 @@ endif
 
 # Leaves manual.html, and .svg files that it references.
 clean:
-	@\rm -f *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc
+	@\rm -f *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc manual.image.tex
 
 very_clean: clean
-	@\rm manual.html CFLogo.png
+	@\rm -f manual.html CFLogo.png
 
 .PHONY: checklink
 checklink:

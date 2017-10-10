@@ -1,1 +1,41 @@
-../GradleJava7Example/build.gradle
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+assert JavaVersion.current().isJava8Compatible()
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    checkerFrameworkAnnotatedJDK {
+       description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
+    }
+}
+
+dependencies {
+    ext.checkerFrameworkVersion = '2.2.0'
+    ext.jdkVersion = 'jdk8'
+    checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
+
+    compileOnly "org.checkerframework:checker:${checkerFrameworkVersion}"
+    compile "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+
+    compile 'org.apache.commons:commons-lang3:3.1'
+
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+allprojects {
+    tasks.withType(JavaCompile).all { JavaCompile compile ->
+        compile.doFirst {
+            compile.options.compilerArgs = [
+                    '-processor', 'org.checkerframework.checker.nullness.NullnessChecker',
+                    // uncomment to turn Checker Framework errors into warnings
+                    //'-Awarns',
+                    "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}",
+            ]
+        }
+    }
+}

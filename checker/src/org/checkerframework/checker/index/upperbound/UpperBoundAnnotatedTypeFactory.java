@@ -606,8 +606,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                 }
                 if (!sequences.isEmpty()) {
-                    return UBQualifier.createUBQualifier(
-                            sequences, Collections.<String>emptyList());
+                    return UBQualifier.createUBQualifier(sequences, Collections.emptyList());
                 }
             }
 

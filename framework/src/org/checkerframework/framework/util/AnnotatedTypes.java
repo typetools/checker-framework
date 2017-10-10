@@ -454,7 +454,7 @@ public class AnnotatedTypes {
             }
         }
 
-        return Collections.<AnnotatedDeclaredType>unmodifiableSet(supertypes);
+        return Collections.unmodifiableSet(supertypes);
     }
 
     /**
@@ -506,10 +506,7 @@ public class AnnotatedTypes {
             }
         }
 
-        return Collections
-                .<
-                        /*@NonNull*/ AnnotatedDeclaredType, /*@NonNull*/ ExecutableElement>
-                        unmodifiableMap(overrides);
+        return Collections.unmodifiableMap(overrides);
     }
 
     /**
@@ -752,10 +749,7 @@ public class AnnotatedTypes {
         try {
             for (int i = 0; i < trees.size(); ++i) {
                 AnnotatedTypeMirror param = paramTypes.get(i);
-                atypeFactory
-                        .getVisitorState()
-                        .setAssignmentContext(
-                                Pair.<Tree, AnnotatedTypeMirror>of((Tree) null, param));
+                atypeFactory.getVisitorState().setAssignmentContext(Pair.of((Tree) null, param));
                 ExpressionTree arg = trees.get(i);
                 types.add(atypeFactory.getAnnotatedType(arg));
             }
@@ -919,8 +913,7 @@ public class AnnotatedTypes {
      */
     public static boolean isValidType(
             QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
-        boolean res =
-                isValidType(qualifierHierarchy, type, Collections.<AnnotatedTypeMirror>emptySet());
+        boolean res = isValidType(qualifierHierarchy, type, Collections.emptySet());
         return res;
     }
 

@@ -393,7 +393,7 @@ public class InitializationVisitor<
                     (com.sun.tools.javac.code.Symbol) TreeUtils.elementFromDeclaration(node);
             rcvannos = meth.getRawTypeAttributes();
             if (rcvannos == null) {
-                rcvannos = Collections.<AnnotationMirror>emptyList();
+                rcvannos = Collections.emptyList();
             }
         }
         return rcvannos;

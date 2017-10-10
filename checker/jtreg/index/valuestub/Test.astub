@@ -1,0 +1,4 @@
+package valuestub;
+public class Test {
+    public int length();
+}

@@ -20,7 +20,7 @@ class IntroAnd {
         if (j > -1) {
             int z = a[j & k];
         }
-        //:: error: (array.access.unsafe.high)
+        //:: error: (array.access.unsafe.high.range)
         int w = a[m & k];
         if (m < a.length) {
             int u = a[m & k];
