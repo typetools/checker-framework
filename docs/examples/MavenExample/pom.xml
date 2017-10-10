@@ -26,7 +26,7 @@
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
-    <!-- annotations from the Checker Framework: nullness, interning, locking, ... -->
+    <!-- Annotations from the Checker Framework: nullness, interning, locking, ... -->
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
@@ -45,7 +45,7 @@
       <artifactId>compiler</artifactId>
       <version>${checkerFrameworkVersion}</version>
     </dependency>-->
-    <!-- annotations from the Checker Framework: nullness, interning, locking, ... -->
+    <!-- Annotations from the Checker Framework: nullness, interning, locking, ... -->
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
