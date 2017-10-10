@@ -98,7 +98,7 @@ public interface CharSequence {
      *          if <tt>end</tt> is greater than <tt>length()</tt>,
      *          or if <tt>start</tt> is greater than <tt>end</tt>
      */
-    CharSequence subSequence(@IndexOrHigh("this") int start, @IndexOrHigh("this") int end);
+    CharSequence subSequence(@IndexFor("this") int start, @IndexOrHigh("this") int end);
 
     /**
      * Returns a string containing the characters in this sequence in the same
