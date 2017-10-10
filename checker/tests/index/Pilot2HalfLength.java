@@ -1,4 +1,4 @@
-// test case for issue 43: https://github.com/kelloggm/checker-framework/issues/43
+// test case for issue 158: https://github.com/kelloggm/checker-framework/issues/158
 
 // @skip-test until fixed
 
