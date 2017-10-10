@@ -5,7 +5,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
  * These tests ensure that EnsuresNonNullIf methods
  * are verified.
  */
-public class AssertIfTrueTestSimple {
+public class EnsuresNonNullIfTestSimple {
 
     protected int @Nullable [] values;
 
@@ -20,7 +20,7 @@ public class AssertIfTrueTestSimple {
         return values == null;
     }
 
-    public void addAll(AssertIfTrueTestSimple s) {
+    public void addAll(EnsuresNonNullIfTestSimple s) {
         if (repNulled()) {
             return;
         }
