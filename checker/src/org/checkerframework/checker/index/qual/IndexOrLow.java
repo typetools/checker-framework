@@ -28,5 +28,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface IndexOrLow {
     /** Sequences that the annotated expression is a valid index for (or it's -1). */
-    String[] value() default {};
+    String[] value();
 }
