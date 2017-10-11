@@ -703,8 +703,10 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns the ExecutableElement for a method declaration of methodName, in class typeName, with
-     * params parameters. Errs if there is more than one matching method.
+     * Returns the ExecutableElement for the method declaration of methodName, in class typeName,
+     * with params formal parameters. Errs if there is not exactly one matching method. If more than
+     * one method takes the same number of formal parameters, then use {@link #getMethod(String,
+     * String, ProcessingEnvironment, String...)}.
      */
     public static ExecutableElement getMethod(
             String typeName, String methodName, int params, ProcessingEnvironment env) {
@@ -718,7 +720,7 @@ public final class TreeUtils {
 
     /**
      * Returns all ExecutableElements for method declarations of methodName, in class typeName, with
-     * params parameters.
+     * params formal parameters.
      */
     public static List<ExecutableElement> getMethodList(
             String typeName, String methodName, int params, ProcessingEnvironment env) {
@@ -735,7 +737,7 @@ public final class TreeUtils {
 
     /**
      * Returns the ExecutableElement for a method declaration of methodName, in class typeName, with
-     * parameters of the given types.
+     * formal parameters of the given types. Errs if there is no matching method.
      */
     public static ExecutableElement getMethod(
             String typeName, String methodName, ProcessingEnvironment env, String... paramTypes) {
@@ -748,7 +750,6 @@ public final class TreeUtils {
                 for (int i = 0; i < paramTypes.length; i++) {
                     VariableElement ve = params.get(i);
                     TypeMirror tm = ve.asType();
-                    // TODO: Is there a better way to do this?
                     if (!tm.toString().equals(paramTypes[i])) {
                         typesMatch = false;
                         break;
