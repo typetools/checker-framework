@@ -252,13 +252,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     @Override
     public void setRoot(CompilationUnitTree root) {
-        if (checker.hasOption("filenames")) {
-            checker.message(
-                    Kind.NOTE,
-                    "Checker: %s is Type-checking: %s",
-                    checker.getClass().getSimpleName(),
-                    root.getSourceFile().getName());
-        }
         atypeFactory.setRoot(root);
         super.setRoot(root);
     }

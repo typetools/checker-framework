@@ -258,7 +258,7 @@ import org.checkerframework.javacutil.TreeUtils;
     /// Progress tracing
 
     // Output file names before checking
-    // org.checkerframework.common.basetype.BaseTypeVisitor.setRoot
+    // org.checkerframework.framework.source.SourceChecker.typeProcess()
     "filenames",
 
     // Output all subtyping checks
@@ -954,6 +954,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
         if (p.getCompilationUnit() != currentRoot) {
             currentRoot = p.getCompilationUnit();
+            if (hasOption("filenames")) {
+                message(
+                        Kind.NOTE,
+                        "Checker: %s is Type-checking: %s",
+                        (Object) this.getClass().getSimpleName(),
+                        currentRoot.getSourceFile().getName());
+            }
             visitor.setRoot(currentRoot);
         }
 
