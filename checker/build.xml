@@ -1455,7 +1455,7 @@
 
         <!-- Fix this before merging this PR -->
         <!--get src="https://checkerframework.org/dev-jdk/jdk8.jar" dest="jdk/jdk8.jar"/-->
-        <get src="https://github.com/kelloggm/checker-framework/releases/tag/kelloggm-plume-lib-index-jdk-changes/jdk8.jar" dest="jdk/jdk8.jar"/>
+        <get src="https://github.com/kelloggm/checker-framework/releases/download/kelloggm-plume-lib-index-jdk-changes/jdk8.jar" dest="jdk/jdk8.jar"/>
 
         <!-- Copy jars to dist. If dist doesn't exist then the copy task creates it.-->
         <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar"/>
