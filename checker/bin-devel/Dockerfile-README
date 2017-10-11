@@ -1,6 +1,10 @@
 This directory contains Dockerfiles to create new Docker images for
 running Checker Framework tests reproducibly.
-To build new Docker images:
+
+The rest of this file explains how to build new Docker images:
+
+
+Preliminaries:
 
   # Finish docker setup if necessary.
   sudo usermod -aG docker $(whoami)
@@ -10,12 +14,8 @@ To build new Docker images:
   # (This is only necessary once per machine; credentials are cached.)
   docker login
 
-After running any of the below, consider deleting the docker containers,
-which can take up a lot of disk space.
-To stop and remove/delete all docker containers:
-  docker stop $(docker ps -a -q)
-  docker rm $(docker ps -a -q)
-or you can just remove some of them.
+
+Create the Docker image:
 
 # Create the Docker image, in an empty directory, and upload to Docker Hub.
 # Takes about 12 minutes for jdk8, about 1 hour for jdkany.
@@ -37,3 +37,13 @@ export OS=ubuntu
 export JDKVER=jdkany
 export PROJECT=cf
 create_upload_docker_image
+
+
+Cleanup:
+
+After creating docker images, consider deleting the docker containers,
+which can take up a lot of disk space.
+To stop and remove/delete all docker containers:
+  docker stop $(docker ps -a -q)
+  docker rm $(docker ps -a -q)
+or you can just remove some of them.

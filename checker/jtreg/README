@@ -3,7 +3,8 @@ This directory contains tests that use the jtreg testing framework.
 In general it is preferred to add test cases to
 checker-framework/checker/tests
 
-Using the jtreg approach it is easier to pass options to the compiler
-in the test file itself.
-The jtreg approach also makes it possible to check that an error message
-was output two times.
+There are a few cases when jtreg is appropriate:
+ * The jtreg approach makes it easier to pass options to the compiler
+   in the test file itself.
+ * The jtreg approach makes it possible to check that an error message
+   was output two times.
