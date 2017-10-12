@@ -2,7 +2,8 @@ import java.util.Arrays;
 import java.util.Set;
 
 class AaTest {
-    //:: warning: [unchecked] Possible heap pollution from parameterized vararg type java.util.Set<? super X>
+    // :: warning: [unchecked] Possible heap pollution from parameterized vararg type
+    // java.util.Set<? super X>
     <X> void test(Set<? super X>... args) {
         Arrays.asList(args);
     }

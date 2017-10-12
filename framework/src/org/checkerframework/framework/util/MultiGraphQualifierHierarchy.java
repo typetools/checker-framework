@@ -250,13 +250,13 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             Set<AnnotationMirror> supertypes = qual.getValue();
 
             if (supertypes.size() == 1) {
-                // if there's only 1 supertype for this qual, then directly display that in the same row
+                // if there's only 1 supertype for this qual, then directly display that in the same
+                // row
                 sb.append(supertypes.iterator().next());
             } else {
                 // otherwise, display each supertype in its own row
                 for (Iterator<AnnotationMirror> iterator = supertypes.iterator();
-                        iterator.hasNext();
-                        ) {
+                        iterator.hasNext(); ) {
                     // new line and tabbing
                     sb.append("\n\t\t");
                     // display the supertype
@@ -669,7 +669,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 } else {
                     // TODO: in a type system with a single qualifier this check will fail.
                     // ErrorReporter.errorAbort("MultiGraphQualifierHierarchy.addPolyRelations: " +
-                    //        "incorrect top qualifier given in polymorphic qualifier: " + polyQualifier +
+                    //        "incorrect top qualifier given in polymorphic qualifier: " +
+                    // polyQualifier +
                     //        " could not find bottom for: " + polyTop);
                 }
             }
@@ -753,8 +754,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return outset.iterator().next();
         }
         if (outset.size() > 1) {
-            // outset is created by climbing the supertypes of the left type, which can go higher in the lattice than needed
-            // findSmallestTypes will remove the unnecessary supertypes of supertypes, retaining only the least upper bound(s)
+            // outset is created by climbing the supertypes of the left type, which can go higher in
+            // the lattice than needed
+            // findSmallestTypes will remove the unnecessary supertypes of supertypes, retaining
+            // only the least upper bound(s)
             outset = findSmallestTypes(outset);
 
             // picks the first qualifier that isn't a polymorphic qualifier

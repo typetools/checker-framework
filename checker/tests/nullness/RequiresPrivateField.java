@@ -1,6 +1,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-// @skip-test Test case for future feature:  @RequiresNonNull is permitted to access a private field (maybe just those that are annotated with @SpecPublic)
+// @skip-test Test case for future feature:  @RequiresNonNull is permitted to access a private field
+// (maybe just those that are annotated with @SpecPublic)
 
 public class RequiresPrivateField {
 

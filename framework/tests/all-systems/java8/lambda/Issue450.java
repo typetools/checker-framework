@@ -1,4 +1,3 @@
-
 class Issue450 {
 
     Issue450(int i, Runnable... runnables) {}

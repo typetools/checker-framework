@@ -1,4 +1,3 @@
-
 import org.checkerframework.checker.nullness.qual.*;
 
 public class Simple2 {
@@ -6,7 +5,7 @@ public class Simple2 {
     @NonNull String f;
 
     public Simple2() {
-        //:: error: (method.invocation.invalid)
+        // :: error: (method.invocation.invalid)
         test();
 
         f = "abc";
@@ -18,7 +17,7 @@ public class Simple2 {
 
     public void a(Simple2 arg) {
         @Nullable String s = null;
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         s.hashCode();
     }
 

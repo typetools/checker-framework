@@ -1,4 +1,3 @@
-
 import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 
@@ -7,7 +6,7 @@ class MethodInvocation {
     String s;
 
     public MethodInvocation() {
-        //:: error: (method.invocation.invalid)
+        // :: error: (method.invocation.invalid)
         a();
         b();
         c();
@@ -15,7 +14,7 @@ class MethodInvocation {
     }
 
     public MethodInvocation(boolean p) {
-        //:: error: (method.invocation.invalid)
+        // :: error: (method.invocation.invalid)
         a(); // still not okay to be committed
         s = "abc";
     }
@@ -23,12 +22,12 @@ class MethodInvocation {
     public void a() {}
 
     public void b(@UnderInitialization @Raw MethodInvocation this) {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         s.hashCode();
     }
 
     public void c(@UnknownInitialization @Raw MethodInvocation this) {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         s.hashCode();
     }
 }

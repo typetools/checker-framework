@@ -45,9 +45,10 @@ import org.checkerframework.javacutil.TypesUtils;
  * circular references, will be created.
  */
 public class BoundsInitializer {
-    //==================================================================================================================
-    // Static helper methods called from AnnotatedTypeMirror to initialize bounds of wildcards or type variables
-    //==================================================================================================================
+    // ==================================================================================================================
+    // Static helper methods called from AnnotatedTypeMirror to initialize bounds of wildcards or
+    // type variables
+    // ==================================================================================================================
 
     /**
      * Initializes the type arguments of {@code declaredType}. The upper bound of unbound wildcards
@@ -82,7 +83,8 @@ public class BoundsInitializer {
                         break;
                     case INTERSECTION:
                         // Can't create a wildcard with an intersection as the upper bound, so use
-                        // an unbound wildcard instead.  The extends bound of the AnnotatedWildcardType
+                        // an unbound wildcard instead.  The extends bound of the
+                        // AnnotatedWildcardType
                         // be initialized properly below.
                         javaTypeArg = declaredType.atypeFactory.types.getWildcardType(null, null);
                         break;
@@ -207,9 +209,9 @@ public class BoundsInitializer {
         restoreAnnotations(wildcard, annos);
     }
 
-    //==================================================================================================================
+    // ==================================================================================================================
     // Classes and methods used to make the above static helper methods work
-    //==================================================================================================================
+    // ==================================================================================================================
 
     /**
      * Creates the AnnotatedTypeMirrors (without annotations) for the bounds of all type variables
@@ -242,10 +244,10 @@ public class BoundsInitializer {
             typeVarToStructure.put(typeVarStruct.typeVar, typeVarStruct);
         }
 
-        //--------------------------------------------------------------------------------------------------------------
+        // --------------------------------------------------------------------------------------------------------------
         // Visit methods that keep track of the path traversed through type variable bounds, and the
         // wildcards/intersections that have been encountered.
-        //--------------------------------------------------------------------------------------------------------------
+        // --------------------------------------------------------------------------------------------------------------
 
         @Override
         public Void visit(AnnotatedTypeMirror type) {
@@ -398,7 +400,7 @@ public class BoundsInitializer {
             }
         }
 
-        //--------------------------------------------------------------------------------------------------------------
+        // --------------------------------------------------------------------------------------------------------------
         //
         public void initializeUpperBound(final AnnotatedTypeVariable typeVar) {
             final AnnotatedTypeMirror upperBound = createAndSetUpperBound(typeVar);
@@ -663,7 +665,7 @@ public class BoundsInitializer {
          */
         @SuppressWarnings("serial")
         private static class ReferenceMap extends LinkedHashMap<BoundPath, AnnotatedTypeVariable> {
-            //TODO: EXPLAINED LINK DUE TO TYPEVAR SLED
+            // TODO: EXPLAINED LINK DUE TO TYPEVAR SLED
         }
 
         public void resolveTypeVarReferences(final AnnotatedTypeMirror boundedType) {
@@ -1009,7 +1011,7 @@ public class BoundsInitializer {
             if (parentAtv.getLowerBoundField() != null) {
                 return parentAtv.getLowerBoundField();
             }
-            //else //TODO: I think this should never happen at this point, throw exception
+            // else //TODO: I think this should never happen at this point, throw exception
             return createAndSetLowerBound((AnnotatedTypeVariable) parent);
         }
 

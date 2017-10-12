@@ -9,7 +9,7 @@ public class TestProgram {
             final UIElement e,
             final GenericTaskUIConsumer uicons,
             final GenericTaskSafeConsumer safecons) {
-        //:: error: (call.invalid.ui)
+        // :: error: (call.invalid.ui)
         e.dangerous(); // should be bad
         e.runOnUIThread(
                 new IAsyncUITask() {
@@ -35,20 +35,20 @@ public class TestProgram {
 
                     @Override
                     public void doGenericStuff() { // Should be inst. w/ @AlwaysSafe
-                        //:: error: (call.invalid.ui)
+                        // :: error: (call.invalid.ui)
                         e2.dangerous(); // should be an error
                         safecons.runAsync(this); // Should be okay, this:@AlwaysSafe
                     }
                 });
         safecons.runAsync(
-                //:: error: (argument.type.incompatible)
+                // :: error: (argument.type.incompatible)
                 new @UI IGenericTask() {
                     final UIElement e2 = e;
 
                     @Override
                     public void doGenericStuff() { // Should be inst. w/ @UI
                         e2.dangerous(); // should be ok
-                        //:: error: (argument.type.incompatible)
+                        // :: error: (argument.type.incompatible)
                         safecons.runAsync(this); // Should be error, this:@UI
                     }
                 });
@@ -57,7 +57,7 @@ public class TestProgram {
                     @Override
                     public void doGenericStuff() {
                         // Test that the package annotation works
-                        //:: error: (call.invalid.ui)
+                        // :: error: (call.invalid.ui)
                         UIByPackageDecl.implicitlyUI();
                         // Test that @SafeType works: SafeByDecl is inside a @UIPackage
                         SafeByDecl.safeByTypeDespiteUIPackage();
@@ -67,7 +67,7 @@ public class TestProgram {
                 new IGenericTask() {
                     @Override
                     @UIEffect
-                    //:: error: (override.effect.invalid.nonui)
+                    // :: error: (override.effect.invalid.nonui)
                     public void doGenericStuff() {
                         UIByPackageDecl.implicitlyUI();
                     }

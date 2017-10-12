@@ -1,4 +1,3 @@
-
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
@@ -12,7 +11,7 @@ class ReadyReadLine {
         }
 
         if (buf.readLine() != null) {
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             buf.readLine().toString();
         }
     }
@@ -28,7 +27,7 @@ class MyBufferedReader {
     @Pure
     public boolean ready() throws Exception {
         // don't bother with implementation.
-        //:: error: (contracts.conditional.postcondition.not.satisfied)
+        // :: error: (contracts.conditional.postcondition.not.satisfied)
         return true;
     }
 }

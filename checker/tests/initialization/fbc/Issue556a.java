@@ -11,7 +11,7 @@ public class Issue556a {
     private static final Object OBJ = new Object();
 
     private Issue556a() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull Object o = OBJ;
     }
 }

@@ -1,4 +1,3 @@
-
 /* This idiom was found in Daikon and forces us to handle assignments
  * in conditional mode, such as in the condition of an assert statement. */
 

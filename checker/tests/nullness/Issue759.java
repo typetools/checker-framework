@@ -1,6 +1,7 @@
 // Testcase for Issue759
 // https://github.com/typetools/checker-framework/issues/759
 // Also, see framework/tests/all-systems/Issue759.java
+
 import org.checkerframework.checker.nullness.qual.*;
 
 @SuppressWarnings("unchecked")
@@ -11,7 +12,7 @@ public class Issue759 {
         lowercase3(enumType.getEnumConstants());
     }
 
-    <T extends Enum<T>> void lowercase(final T @Nullable ... items) {}
+    <T extends Enum<T>> void lowercase(final T @Nullable... items) {}
 
     <T extends Enum<T>> void lowercase2(final T @Nullable [] items) {}
 
@@ -34,7 +35,7 @@ class IncompatibleTypes {
 
     void possibleValues2(final Gen<?> genType) {
         lowercase2(genType.getConstants());
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         lowercase2(genType.getNullableConstants());
     }
 
@@ -42,7 +43,7 @@ class IncompatibleTypes {
 
     void possibleValues3(final Gen<?> genType) {
         lowercase3(genType.getConstants());
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         lowercase3(genType.getNullableConstants());
     }
 

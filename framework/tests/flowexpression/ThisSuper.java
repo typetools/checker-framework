@@ -1,4 +1,5 @@
 import testlib.flowexpression.qual.FlowExp;
+
 // @skip-test
 public class ThisSuper {
     static class SuperClass {
@@ -16,9 +17,9 @@ public class ThisSuper {
         void method() {
             // super.superField : @FlowExp("super.field")
             // this.subField : @FlowExp("this.field")
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             this.subField = super.superField;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             super.superField = this.subField;
 
             @FlowExp("super.field") Object o1 = super.superField;
@@ -33,7 +34,7 @@ public class ThisSuper {
 
         class InnerClass {
             private final Object lock = new Object();
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @FlowExp("this.lock") Object field2 = field;
         }
     }

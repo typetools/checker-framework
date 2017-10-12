@@ -54,7 +54,8 @@ public class AnnotatedTypeReplacer {
             // Without this flag, any mappings in originalToCopy would replace the type parameters.
             // However, we do not replace the type parameters in an AnnotatedExecutableType.  Also,
             // AnnotatedExecutableType.typeVarTypes is of type List<AnnotatedTypeVariable> so if
-            // the mapping contained a type parameter -> (Non-type variable AnnotatedTypeMirror) then
+            // the mapping contained a type parameter -> (Non-type variable AnnotatedTypeMirror)
+            // then
             // a runtime exception would occur.
             if (visitingExecutableTypeParam) {
                 visitingExecutableTypeParam = false;

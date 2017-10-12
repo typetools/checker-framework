@@ -4265,8 +4265,10 @@ public class CFGBuilder {
                 tryStack.popFrame();
 
                 if (hasExceptionalPath(exceptionalFinallyLabel)) {
-                    // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
-                    // and scan copied 'finallyBlock' for 'finallyLabel'(a successful path). If there
+                    // If an exceptional path exists, scan 'finallyBlock' for
+                    // 'exceptionalFinallyLabel',
+                    // and scan copied 'finallyBlock' for 'finallyLabel'(a successful path). If
+                    // there
                     // is no successful path, it will be removed in later phase.
                     addLabelForNextNode(exceptionalFinallyLabel);
                     scan(finallyBlock, p);

@@ -1,7 +1,7 @@
 class TestStub {
     void demo() {
         try {
-            //:: error: (methodcall)
+            // :: error: (methodcall)
             Class.forName("Evil");
         } catch (Exception e) {
         }

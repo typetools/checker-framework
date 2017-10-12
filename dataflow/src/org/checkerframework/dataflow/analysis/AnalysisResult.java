@@ -250,7 +250,8 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
                     {
                         RegularBlock rb = (RegularBlock) block;
 
-                        // Apply transfer function to contents until we found the node we are looking for.
+                        // Apply transfer function to contents until we found the node we are
+                        // looking for.
                         TransferInput<A, S> store = transferInput;
                         TransferResult<A, S> transferResult = null;
                         for (Node n : rb.getContents()) {

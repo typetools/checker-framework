@@ -138,7 +138,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
                                         + " ) ");
                     }
 
-                    intersectionTypes.get(boundIndex).replaceAnnotation(anno); //TODO: WHY NOT ADD?
+                    intersectionTypes.get(boundIndex).replaceAnnotation(anno); // TODO: WHY NOT ADD?
                 }
 
             } else {

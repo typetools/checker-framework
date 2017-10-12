@@ -31,12 +31,15 @@ public class BasicLockTest {
     @MayReleaseLocks
     void testFields() {
         // Test in two ways that return values are @GuardedByUnknown.
-        // The first way is more durable as cannot.dereference is tied specifically to @GuardedByUnknown (and @GuardedByBottom, but it is unlikely to become the default for return values on unannotated methods).
-        //:: error: (lock.not.held)
+        // The first way is more durable as cannot.dereference is tied specifically to
+        // @GuardedByUnknown (and @GuardedByBottom, but it is unlikely to become the default for
+        // return values on unannotated methods).
+        // :: error: (lock.not.held)
         myUnannotatedMethod(o1).field = new Object();
-        // The second way is less durable because the default for fields is currently @GuardedBy({}) but
+        // The second way is less durable because the default for fields is currently @GuardedBy({})
+        // but
         // could be changed to @GuardedByUnknown.
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         p1 = myUnannotatedMethod(o1);
 
         // Now test that an unannotated method behaves as if it's annotated with @MayReleaseLocks
@@ -44,7 +47,7 @@ public class BasicLockTest {
         myAnnotatedMethod2();
         m.field = new Object();
         myUnannotatedMethod2();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         m.field = new Object();
     }
 
@@ -66,14 +69,16 @@ public class BasicLockTest {
         lock.lock();
         myAnnotatedMethod2();
         q.field = new Object();
-        // Should behave as @MayReleaseLocks, and *should* reset @LockHeld assumption about local variable lock.
+        // Should behave as @MayReleaseLocks, and *should* reset @LockHeld assumption about local
+        // variable lock.
         myUnannotatedMethod2();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         q.field = new Object();
         lock.lock();
-        // Should behave as @MayReleaseLocks, and *should* reset @LockHeld assumption about local variable lock.
+        // Should behave as @MayReleaseLocks, and *should* reset @LockHeld assumption about local
+        // variable lock.
         unannotatedReleaseLock(lock);
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         q.field = new Object();
     }
 }

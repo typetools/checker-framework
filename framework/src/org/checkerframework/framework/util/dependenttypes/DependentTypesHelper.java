@@ -286,7 +286,8 @@ public class DependentTypesHelper {
                             FlowExpressionContext.buildContextForLambda(
                                     lambdaTree, path, factory.getContext());
                     // TODO: test this.
-                    // TODO: use path.getParentPath to prevent a StackOverflowError, see Issue #1027.
+                    // TODO: use path.getParentPath to prevent a StackOverflowError, see Issue
+                    // #1027.
                     standardizeUseLocals(parameterContext, path.getParentPath(), type);
                 }
                 break;

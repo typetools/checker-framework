@@ -521,6 +521,7 @@
             <filterchain>
                 <linecontains negate="true">
                     <contains value="//:: error:"/>
+                    <contains value="// :: error:"/>
                 </linecontains>
             </filterchain>
         </copy>

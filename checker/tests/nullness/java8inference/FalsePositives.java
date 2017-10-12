@@ -3,6 +3,7 @@
 // Other parts are from the following comment.
 // https://github.com/typetools/checker-framework/pull/1387#issuecomment-316147360
 // The rest is from plume-lib.
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;

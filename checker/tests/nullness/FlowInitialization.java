@@ -7,7 +7,7 @@ public class FlowInitialization {
     @NonNull String f;
     @Nullable String g;
 
-    //:: error: (initialization.fields.uninitialized)
+    // :: error: (initialization.fields.uninitialized)
     public FlowInitialization() {}
 
     public FlowInitialization(long l) {
@@ -15,21 +15,21 @@ public class FlowInitialization {
         f = g;
     }
 
-    //:: error: (initialization.fields.uninitialized)
+    // :: error: (initialization.fields.uninitialized)
     public FlowInitialization(boolean b) {
         if (b) {
             f = "";
         }
     }
 
-    //:: error: (initialization.fields.uninitialized)
+    // :: error: (initialization.fields.uninitialized)
     public FlowInitialization(int i) {
         if (i == 0) {
             throw new RuntimeException();
         }
     }
 
-    //:: error: (initialization.fields.uninitialized)
+    // :: error: (initialization.fields.uninitialized)
     public FlowInitialization(char c) {
         if (c == 'c') {
             return;

@@ -1,4 +1,3 @@
-
 // Tests termination of a loop increasing the length of a string
 
 class StringLenWidening {

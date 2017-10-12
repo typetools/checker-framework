@@ -1,5 +1,6 @@
 // Test case for Issue 1520
 // https://github.com/typetools/checker-framework/issues/1520
+
 import java.io.IOException;
 
 public class Issue1520 {
@@ -9,7 +10,8 @@ public class Issue1520 {
                 try {
                     _run();
                 } finally {
-                    signal(); //Evaluating this node type as member of implicit `this` will throw NPE
+                    signal(); // Evaluating this node type as member of implicit `this` will throw
+                              // NPE
                 }
             }
         };

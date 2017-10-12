@@ -1,4 +1,3 @@
-
 import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 
@@ -33,26 +32,26 @@ public class Lazy {
     void test2() {}
 
     void test3() {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         g.toLowerCase();
     }
 
     void test4() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         g = null;
-        //:: error: (monotonic.type.incompatible)
+        // :: error: (monotonic.type.incompatible)
         g = g2;
     }
 
     void _test3() {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         _g.toLowerCase();
     }
 
     void _test4() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         _g = null;
-        //:: error: (monotonic.type.incompatible)
+        // :: error: (monotonic.type.incompatible)
         _g = _g2;
     }
 }

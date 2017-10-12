@@ -1,9 +1,10 @@
 // Test case for Issue #770
 // https://github.com/typetools/checker-framework/issues/770
+
 import org.checkerframework.checker.lock.qual.GuardedBy;
 
 public class ViewpointAdaptation {
-    //:: error: (expression.unparsable.type.invalid)
+    // :: error: (expression.unparsable.type.invalid)
     @GuardedBy("a") private final ViewpointAdaptation f = new ViewpointAdaptation();
 
     @GuardedBy("this.lock") private ViewpointAdaptation g = new ViewpointAdaptation();
@@ -16,7 +17,7 @@ public class ViewpointAdaptation {
         synchronized (a) {
             // The expression "a" from the @GuardedBy annotation
             // on f is not valid at the declaration site of f.
-            //:: error: (expression.unparsable.type.invalid)
+            // :: error: (expression.unparsable.type.invalid)
             f.counter++;
         }
     }
@@ -24,11 +25,11 @@ public class ViewpointAdaptation {
     public void method2() {
         ViewpointAdaptation t = new ViewpointAdaptation();
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         t.g = g; // "t.lock" != "this.lock"
 
         synchronized (t.lock) {
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             g.counter++;
         }
     }
@@ -43,7 +44,7 @@ public class ViewpointAdaptation {
         synchronized (l) {
             // Aliasing of lock expressions is not tracked by the Lock Checker.
             // The Lock Checker does not know that l == t.lock
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             g.counter++;
         }
     }

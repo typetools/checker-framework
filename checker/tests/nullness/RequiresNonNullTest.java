@@ -10,7 +10,7 @@ class RequiresNonNullTest {
     void method1() {
         field1.toString(); // OK, field1 is known to be non-null
         this.field1.toString(); // OK, field1 is known to be non-null
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         field2.toString(); // error, might throw NullPointerException
     }
 
@@ -24,7 +24,7 @@ class RequiresNonNullTest {
         field1 = new Object();
         method1(); // OK, satisfies method precondition
         field1 = null;
-        //:: error: (contracts.precondition.not.satisfied)
+        // :: error: (contracts.precondition.not.satisfied)
         method1(); // error, does not satisfy method precondition
     }
 
@@ -34,7 +34,7 @@ class RequiresNonNullTest {
     public void requiresNonNullField() {}
 
     public void clientFail(RequiresNonNullTest arg1) {
-        //:: error: (contracts.precondition.not.satisfied)
+        // :: error: (contracts.precondition.not.satisfied)
         arg1.requiresNonNullField();
     }
 
@@ -52,14 +52,14 @@ class RequiresNonNullTest {
 
     @Pure
     @RequiresNonNull("staticfield")
-    //:: warning: (purity.deterministic.void.method)
+    // :: warning: (purity.deterministic.void.method)
     public void reqStaticName() {
         reqStaticQualName();
     }
 
     @Pure
     @RequiresNonNull("RequiresNonNullTest.staticfield")
-    //:: warning: (purity.deterministic.void.method)
+    // :: warning: (purity.deterministic.void.method)
     public void reqStaticQualName() {
         reqStaticName();
     }
@@ -78,9 +78,9 @@ class RequiresNonNullTest {
     }
 
     public void statClientFail(RequiresNonNullTest arg1) {
-        //:: error: (contracts.precondition.not.satisfied)
+        // :: error: (contracts.precondition.not.satisfied)
         arg1.reqStaticName();
-        //:: error: (contracts.precondition.not.satisfied)
+        // :: error: (contracts.precondition.not.satisfied)
         arg1.reqStaticQualName();
     }
 
@@ -91,7 +91,7 @@ class RequiresNonNullTest {
         }
 
         public void subClientFail(NNOESubTest arg4) {
-            //:: error: (contracts.precondition.not.satisfied)
+            // :: error: (contracts.precondition.not.satisfied)
             arg4.requiresNonNullField();
         }
 
@@ -125,7 +125,7 @@ class RequiresNonNullTest {
         }
 
         public void hidingClient2(NNOEHidingTest arg6) {
-            //:: error: (contracts.precondition.not.satisfied)
+            // :: error: (contracts.precondition.not.satisfied)
             arg6.requiresNonNullField();
         }
 
@@ -147,6 +147,6 @@ class RequiresNonNullTest {
     @RequiresNonNull("thisShouldIssue1Error")
     // Test case for Issue 1051
     // https://github.com/typetools/checker-framework/issues/1051
-    //:: error: (flowexpr.parse.error)
+    // :: error: (flowexpr.parse.error)
     void testIssue1051() {}
 }

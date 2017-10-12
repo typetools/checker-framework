@@ -1,14 +1,15 @@
 // Unannotated version in framework/tests/all-systems/TypeVarPrimitives.java
+
 import org.checkerframework.checker.nullness.qual.*;
 
 public class TypeVarPrimitives {
     <T extends @Nullable Long> void method(T tLong) {
-        //:: error: (unboxing.of.nullable)
+        // :: error: (unboxing.of.nullable)
         long l = tLong;
     }
 
     <T extends @Nullable Long & @Nullable Cloneable> void methodIntersection(T tLong) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         long l = tLong;
     }
 
@@ -21,12 +22,12 @@ public class TypeVarPrimitives {
     }
 
     <T extends @Nullable Long> void method3(@Nullable T tLong) {
-        //:: error: (unboxing.of.nullable)
+        // :: error: (unboxing.of.nullable)
         long l = tLong;
     }
 
     <T extends @Nullable Long & @Nullable Cloneable> void methodIntersection3(@Nullable T tLong) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         long l = tLong;
     }
 }

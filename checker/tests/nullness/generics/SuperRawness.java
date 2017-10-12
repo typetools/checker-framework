@@ -2,7 +2,8 @@ import java.util.Arrays;
 import java.util.Set;
 
 class SuperRawness {
-    //:: warning: [unchecked] Possible heap pollution from parameterized vararg type java.util.Set<X>
+    // :: warning: [unchecked] Possible heap pollution from parameterized vararg type
+    // java.util.Set<X>
     static <X> void test(Set<X>... args) {
         test2(Arrays.asList(args));
     }

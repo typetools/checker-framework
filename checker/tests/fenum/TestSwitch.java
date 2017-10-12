@@ -11,7 +11,7 @@ class TestSwitch {
         int plain = 9; // FenumUnqualified
 
         switch (plain) {
-                //:: error: (switch.type.incompatible)
+                // :: error: (switch.type.incompatible)
             case annotated:
             default:
         }
@@ -24,7 +24,7 @@ class TestSwitch {
         }
 
         switch (annotated) {
-                //:: error: (switch.type.incompatible)
+                // :: error: (switch.type.incompatible)
             case 45:
             default:
         }

@@ -314,8 +314,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         if (AnnotationUtils.areSameByClass(sequenceAnno, SameLenUnknown.class)) {
                             sequenceAnno = createSameLen(rec.toString());
                         } else if (AnnotationUtils.areSameByClass(sequenceAnno, SameLen.class)) {
-                            // Ensure that the sequence whose length is actually being used is part of the
-                            // annotation. If not, add it.
+                            // Ensure that the sequence whose length is actually being used is part
+                            // of the annotation. If not, add it.
                             List<String> sequenceAnnoSequences =
                                     getValueOfAnnotationWithStringArgument(sequenceAnno);
                             if (!sequenceAnnoSequences.contains(rec.toString())) {

@@ -1,4 +1,3 @@
-
 /** BoundR and unbound constraints. */
 interface UnboundR {
     void consume(/*1*/ UnboundR this, /*2*/ MyClass my, String s);

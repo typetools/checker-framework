@@ -1,4 +1,3 @@
-
 // The location of a lambda affects locating the annotation for the lambda.
 
 import org.checkerframework.checker.nullness.qual.*;
@@ -14,7 +13,7 @@ interface NNConsumer {
 class LambdaParam {
 
     NullConsumer fn1 =
-            //:: error: (lambda.param.type.incompatible)
+            // :: error: (lambda.param.type.incompatible)
             (@NonNull String i) -> {};
     NullConsumer fn2 = (@Nullable String i) -> {};
     NullConsumer fn3 = (String i) -> {};
@@ -46,7 +45,7 @@ class LambdaParam {
 
     static void foo() {
         NullConsumer fn1 =
-                //:: error: (lambda.param.type.incompatible)
+                // :: error: (lambda.param.type.incompatible)
                 (@NonNull String i) -> {};
         NullConsumer fn2 = (@Nullable String i) -> {};
         NullConsumer fn3 = (String i) -> {};
@@ -57,7 +56,7 @@ class LambdaParam {
 
     void bar() {
         NullConsumer fn1 =
-                //:: error: (lambda.param.type.incompatible)
+                // :: error: (lambda.param.type.incompatible)
                 (@NonNull String i) -> {};
         NullConsumer fn2 = (@Nullable String i) -> {};
         NullConsumer fn3 = (String i) -> {};

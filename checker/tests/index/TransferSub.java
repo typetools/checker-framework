@@ -9,30 +9,30 @@ public class TransferSub {
         int a = 1;
 
         @NonNegative int b = a - 1;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Positive int c = a - 1;
         @GTENegativeOne int d = a - 2;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNegative int e = a - 2;
 
         @GTENegativeOne int f = b - 1;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNegative int g = b - 1;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @GTENegativeOne int h = f - 1;
 
         @GTENegativeOne int i = f - 0;
         @NonNegative int j = b - 0;
         @Positive int k = a - 0;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Positive int l = j - 0;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNegative int m = i - 0;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Positive int n = a - k;
         // this would be an error if the values of b and j (both zero) weren't known at compile time
         @NonNegative int o = b - j;
@@ -42,16 +42,17 @@ public class TransferSub {
 
         // decrements
 
-        //:: error: (compound.assignment.type.incompatible) :: error: (assignment.type.incompatible)
+        // :: error: (compound.assignment.type.incompatible) :: error:
+        // (assignment.type.incompatible)
         @Positive int q = --k; // k = 0
 
-        //:: error: (compound.assignment.type.incompatible)
+        // :: error: (compound.assignment.type.incompatible)
         @NonNegative int r = k--; // after this k = -1
 
         int k1 = 0;
         @NonNegative int s = k1--;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNegative int s1 = k1;
 
         // transferred to SimpleTransferSub.java
@@ -64,13 +65,13 @@ public class TransferSub {
         @NonNegative int t = --k1;
 
         k1 = 1;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Positive int t1 = --k1;
 
         int u1 = -1;
         @GTENegativeOne int x = u1--;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @GTENegativeOne int x1 = u1;
     }
 }
-//a comment
+// a comment

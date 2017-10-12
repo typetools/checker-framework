@@ -143,8 +143,9 @@ public class TypeVarUseApplier {
                 upperBounds = Arrays.asList(typeVariable.getUpperBound());
             }
 
-            //TODO: Should we just make primary annotations on annotated intersection types apply to all of
-            //TODO: them?  Que dealio?  What should we do?
+            // TODO: Should we just make primary annotations on annotated intersection types apply
+            // to all of
+            // TODO: them?  Que dealio?  What should we do?
             for (final AnnotatedTypeMirror bound : upperBounds) {
                 bound.removeAnnotationInHierarchy(annotation);
                 bound.addAnnotation(annotation);

@@ -139,7 +139,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                 break;
             case 1:
                 // the first call to result.getUpperBound will appropriately initialize the bound
-                // rather than replace it, copy the bounds from bounds.get(0) to the initialized bound
+                // rather than replace it, copy the bounds from bounds.get(0) to the initialized
+                // bound
                 AnnotatedTypeMerger.merge(bounds.get(0), result.getUpperBound());
                 break;
             default:
@@ -217,7 +218,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                 ((AnnotatedTypeVariable) result).setDeclaration(false);
                 return result;
             } else {
-                // ErrorReporter.errorAbort("TypeFromTree.forTypeVariable: did not find source for: " + elt);
+                // ErrorReporter.errorAbort("TypeFromTree.forTypeVariable: did not find source for:
+                // " + elt);
                 return type;
             }
         } else {

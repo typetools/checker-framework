@@ -31,7 +31,7 @@ public class ExpressionsNullness {
         Class<?> cl = Boolean.TYPE;
 
         List<?> foo = new LinkedList<Object>();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         foo.get(0).toString(); // default applies to wildcard extends
 
         Set set = new HashSet();

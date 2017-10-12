@@ -6,7 +6,7 @@ class Upper {
 
     void access() {
         // Error, because non-final field type is not refined
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         fs.hashCode();
         // Final field in the same class is refined
         ffs.hashCode();
@@ -16,13 +16,13 @@ class Upper {
 class FinalFields {
     public void foo(Upper u) {
         // Error, because final field in different class is not refined
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         u.fs.hashCode();
     }
 
     public void bar(Lower l) {
         // Error, because final field in different class is not refined
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         l.fs.hashCode();
     }
 
@@ -39,7 +39,7 @@ class Lower {
 
     void access() {
         // Error, because non-final field type is not refined
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         fs.hashCode();
         // Final field in the same class is refined
         ffs.hashCode();

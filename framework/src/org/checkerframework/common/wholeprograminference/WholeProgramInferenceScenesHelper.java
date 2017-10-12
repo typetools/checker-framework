@@ -288,9 +288,12 @@ public class WholeProgramInferenceScenesHelper {
                 break;
                 //        case WILDCARD:
                 // Because inferring type arguments is not supported, wildcards won't be encoutered
-                //            updatesATMWithLUB(atf, ((AnnotatedWildcardType) sourceCodeATM).getExtendsBound(),
-                //                              ((AnnotatedWildcardType) jaifATM).getExtendsBound());
-                //            updatesATMWithLUB(atf, ((AnnotatedWildcardType) sourceCodeATM).getSuperBound(),
+                //            updatesATMWithLUB(atf, ((AnnotatedWildcardType)
+                // sourceCodeATM).getExtendsBound(),
+                //                              ((AnnotatedWildcardType)
+                // jaifATM).getExtendsBound());
+                //            updatesATMWithLUB(atf, ((AnnotatedWildcardType)
+                // sourceCodeATM).getSuperBound(),
                 //                              ((AnnotatedWildcardType) jaifATM).getSuperBound());
                 //            break;
             case ARRAY:
@@ -497,9 +500,12 @@ public class WholeProgramInferenceScenesHelper {
                         newATM, atf, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
             }
         } else if (curATM.getKind() == TypeKind.TYPEVAR) {
-            // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly annotated.
-            // So instead, only insert the annotation if there is not primary annotation of the same hierarchy.
-            // #shouldIgnore prevent annotations that are subtypes of type vars upper bound from being inserted.
+            // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
+            // annotated.
+            // So instead, only insert the annotation if there is not primary annotation of the same
+            // hierarchy.
+            // #shouldIgnore prevent annotations that are subtypes of type vars upper bound from
+            // being inserted.
             for (AnnotationMirror am : newATM.getAnnotations()) {
                 if (curATM.getAnnotationInHierarchy(am) != null) {
                     // Don't insert if the type is already has a primary annotation

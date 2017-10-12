@@ -1,4 +1,3 @@
-
 public class SAMLineParser {
 
     private int x;

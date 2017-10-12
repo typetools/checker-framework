@@ -10,7 +10,7 @@ public class ControlFlow {
             // Can also throw exception or call System#exit
             return;
         }
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         System.out.println(s.toString());
     }
 }

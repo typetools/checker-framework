@@ -1,4 +1,5 @@
-// @skip-test How do you write a localized @SuppressWarnings rather than one that covers the whole class?
+// @skip-test How do you write a localized @SuppressWarnings rather than one that covers the whole
+// class?
 
 public class StaticInitialization {
 

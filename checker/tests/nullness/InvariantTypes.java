@@ -10,10 +10,10 @@ public class InvariantTypes {
     void testAsLocal() {
         @MonotonicNonNull Object[] lo;
         lo = new Object[5];
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         lo[0] = null;
         lo[0] = new Object();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         lo[1].toString();
     }
 

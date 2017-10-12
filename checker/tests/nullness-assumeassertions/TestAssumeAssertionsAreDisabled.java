@@ -8,7 +8,7 @@ class TestAssumeAssertionsAreDisabled {
         assert s2.equals(s1);
 
         // However, even with assertions disabled, @AssumeAssertion is still respected
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         assert s2.equals(s1) : "@AssumeAssertion(nullness)";
     }
 }

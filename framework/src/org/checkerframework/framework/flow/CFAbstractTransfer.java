@@ -338,7 +338,8 @@ public abstract class CFAbstractTransfer<
                 // Try to find an enclosing initializer block
                 // Would love to know if there was a better way
                 // Find any enclosing element of the lambda (using trees)
-                // Then go up the elements to find an initializer element (which can't be found with the tree).
+                // Then go up the elements to find an initializer element (which can't be found with
+                // the tree).
                 TreePath loopTree = factory.getPath(lambda.getLambdaTree()).getParentPath();
                 Element anEnclosingElement = null;
                 while (loopTree.getLeaf() != enclosingTree) {
@@ -475,7 +476,8 @@ public abstract class CFAbstractTransfer<
 
             if (enclosingMethodOfVariableDeclaration != null) {
 
-                // Now find all the enclosing methods of the code we are analyzing. If any one of them matches the above,
+                // Now find all the enclosing methods of the code we are analyzing. If any one of
+                // them matches the above,
                 // then the final local variable value applies.
                 Element enclosingMethodOfCurrentMethod = enclosingElement;
 

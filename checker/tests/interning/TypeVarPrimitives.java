@@ -1,4 +1,5 @@
 // Unannotated version in framework/tests/all-systems/TypeVarPrimitives.java
+
 import org.checkerframework.checker.interning.qual.*;
 
 public class TypeVarPrimitives {

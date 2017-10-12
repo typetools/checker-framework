@@ -11,7 +11,7 @@ public class EnsuresNonNullIfTestSimple {
 
     @EnsuresNonNullIf(result = true, expression = "values")
     public boolean repNulledBAD() {
-        //:: error: (contracts.conditional.postcondition.not.satisfied)
+        // :: error: (contracts.conditional.postcondition.not.satisfied)
         return values == null;
     }
 
@@ -41,7 +41,7 @@ public class EnsuresNonNullIfTestSimple {
         */
 
         if (s.repNulled()) {
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             s.values.hashCode();
         } else {
             @NonNull Object y = s.values;

@@ -186,7 +186,8 @@ public class AnnotatedTypes {
                 // TODO: https://github.com/typetools/checker-framework/issues/724
                 // testcase javacheck -processor nullness  src/java/util/AbstractMap.java
                 //                SourceChecker checker =  atypeFactory.getContext().getChecker();
-                //                String msg = (String.format("OuterAsSuper did not find outer class. type: %s superType: %s", type, superType));
+                //                String msg = (String.format("OuterAsSuper did not find outer
+                // class. type: %s superType: %s", type, superType));
                 //                checker.message(Kind.WARNING, msg);
                 return superType;
             }
@@ -260,7 +261,8 @@ public class AnnotatedTypes {
 
         switch (of.getKind()) {
             case ARRAY:
-                // Method references like String[]::clone should have a return type of String[] rather than Object
+                // Method references like String[]::clone should have a return type of String[]
+                // rather than Object
                 if (SyntheticArrays.isArrayClone(of, member)) {
                     return SyntheticArrays.replaceReturnType(member, (AnnotatedArrayType) of);
                 }
@@ -293,7 +295,8 @@ public class AnnotatedTypes {
 
         // Basic Algorithm:
         // 1. Find the enclosingClassOfMember of the element
-        // 2. Find the base type of enclosingClassOfMember (e.g. type of enclosingClassOfMember as supertype
+        // 2. Find the base type of enclosingClassOfMember (e.g. type of enclosingClassOfMember as
+        // supertype
         //      of passed type)
         // 3. Substitute for type variables if any exist
         TypeElement enclosingClassOfMember = ElementUtils.enclosingClass(member);
@@ -563,7 +566,8 @@ public class AnnotatedTypes {
                 AnnotatedTypeVariable typeVar = tvars.get(i);
                 AnnotatedTypeMirror typeArg =
                         atypeFactory.getAnnotatedTypeFromTypeTree(targs.get(i));
-                // TODO: the call to getTypeParameterDeclaration shouldn't be necessary - typeVar already
+                // TODO: the call to getTypeParameterDeclaration shouldn't be necessary - typeVar
+                // already
                 // should be a declaration.
                 typeArguments.put(typeVar.getUnderlyingType(), typeArg);
             }
@@ -682,8 +686,10 @@ public class AnnotatedTypes {
             AnnotatedTypeMirror lastArg = args.get(args.size() - 1);
             if (lastArg.getKind() == TypeKind.ARRAY
                     && (getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType) lastArg)
-                            // If the array depths don't match, but the component type of the vararg is a
-                            // type variable, then that type variable might later be substituted for an array.
+                            // If the array depths don't match, but the component type of the vararg
+                            // is a
+                            // type variable, then that type variable might later be substituted for
+                            // an array.
                             || varargs.getComponentType().getKind() == TypeKind.TYPEVAR)) {
                 return parameters;
             }
@@ -855,7 +861,8 @@ public class AnnotatedTypes {
             return isTypeAnnotationCache.get(elem);
         }
 
-        // the annotation is a type annotation if it has the proper ElementTypes in the @Target meta-annotation
+        // the annotation is a type annotation if it has the proper ElementTypes in the @Target
+        // meta-annotation
         boolean result =
                 hasTypeQualifierElementTypes(elem.getAnnotation(Target.class).value(), cls);
         isTypeAnnotationCache.put(elem, result);

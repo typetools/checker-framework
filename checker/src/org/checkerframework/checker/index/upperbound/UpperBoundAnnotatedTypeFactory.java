@@ -563,8 +563,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             result = result.glb(plusTreeDivideByVal(divisor.intValue(), numeratorTree));
 
             ExpressionTree numeratorSequenceTree = getLengthSequenceTree(numeratorTree);
-            // If the numerator is an array length access of an array with non-zero length, and the divisor is
-            // greater than one, glb the result with an LTL of the array.
+            // If the numerator is an array length access of an array with non-zero length, and the
+            // divisor is greater than one, glb the result with an LTL of the array.
             if (numeratorSequenceTree != null && divisor > 1) {
                 String arrayName = numeratorSequenceTree.toString();
                 int minlen =
@@ -629,7 +629,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
 
                 if (imf.isRandomNextDouble(mitree, processingEnv)) {
-                    // Okay, so this is Random.nextDouble() * array.length, which must be NonNegative
+                    // Okay, so this is Random.nextDouble() * array.length, which must be
+                    // NonNegative
                     type.addAnnotation(createLTLengthOfAnnotation(seqTree.toString()));
                     return true;
                 }

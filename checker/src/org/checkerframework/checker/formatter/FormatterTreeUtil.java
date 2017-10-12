@@ -235,7 +235,8 @@ public class FormatterTreeUtil {
 
                                     @Override
                                     public InvocationType visitArray(ArrayType t, Class<Void> p) {
-                                        // it's an array, now figure out if it's a (Object[])null array
+                                        // it's an array, now figure out if it's a (Object[])null
+                                        // array
                                         return first.accept(
                                                 new SimpleTreeVisitor<
                                                         InvocationType, Class<Void>>() {
@@ -451,7 +452,8 @@ public class FormatterTreeUtil {
                                                     return Class.forName(
                                                             e.getQualifiedName().toString());
                                                 } catch (ClassNotFoundException e1) {
-                                                    return null; // the lookup should work for all the classes we care about
+                                                    return null; // the lookup should work for all
+                                                                 // the classes we care about
                                                 }
                                             }
                                         },

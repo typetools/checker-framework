@@ -478,7 +478,8 @@ public class Range {
                     range = new Range(0, 0);
                 } else { // (to > Long.MIN_VALUE)
                     // When this range contains Long.MIN_VALUE, which would have a remainder of 0 if
-                    // divided by Long.MIN_VALUE, the result range is {0} unioned with [from + 1, to]
+                    // divided by Long.MIN_VALUE, the result range is {0} unioned with [from + 1,
+                    // to]
                     range = (new Range(from + 1, to)).union(new Range(0, 0));
                 }
             } else { // (from > Long.MIN_VALUE)
@@ -529,16 +530,20 @@ public class Range {
         }
 
         // Shifting operations in Java are depending on the type of the left-hand operand:
-        // If the left-hand operand is int  type, only the 5 lowest-order bits of the right-hand operand are used
-        // If the left-hand operand is long type, only the 6 lowest-order bits of the right-hand operand are used
+        // If the left-hand operand is int  type, only the 5 lowest-order bits of the right-hand
+        // operand are used
+        // If the left-hand operand is long type, only the 6 lowest-order bits of the right-hand
+        // operand are used
         // For example, while 1 << -1== 1 << 31, 1L << -1 == 1L << 63.
-        // For ths reason, we restrict the shift-bits to analyze in [0. 31] and give up the analysis when out of this range.
+        // For ths reason, we restrict the shift-bits to analyze in [0. 31] and give up the analysis
+        // when out of this range.
         //
         // Other possible solutions:
         // 1. create different methods for int type and long type and use them accordingly
         // 2. add an additional boolean parameter to indicate the type of the left-hand operand
         //
-        // see http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.19 for more detail.
+        // see http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.19 for more
+        // detail.
         if (right.isWithin(0, 31)) {
             if (this.isWithinInteger()) {
                 // This bound is adequate to guarantee no overflow when using long to evaluate
@@ -555,7 +560,8 @@ public class Range {
                 return bigRangeToLongRange(bigFrom, bigTo);
             }
         } else {
-            // In other cases, we give up on the calculation and return EVERYTHING (rare in practice).
+            // In other cases, we give up on the calculation and return EVERYTHING (rare in
+            // practice).
             return EVERYTHING;
         }
     }

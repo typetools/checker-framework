@@ -262,7 +262,7 @@ public class FlowExpressionParseUtil {
         return parseHelper(memberSelected, newContext, path);
     }
 
-    //########
+    // ########
 
     private static boolean isNullLiteral(String s, FlowExpressionContext context) {
         if (context.parsingMember) {
@@ -298,7 +298,7 @@ public class FlowExpressionParseUtil {
     }
 
     private static Receiver parseLongLiteral(String s, Types types) {
-        //Remove L or l at the end of a long literal
+        // Remove L or l at the end of a long literal
         s = s.substring(0, s.length() - 1);
         long val = Long.parseLong(s);
         return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), val);
@@ -805,8 +805,10 @@ public class FlowExpressionParseUtil {
             throws FlowExpressionParseException {
         Pair<String, String> select = parseMemberSelect(expression);
 
-        // To proceed past this point, at the minimum the expression must be composed of packageName.className .
-        // Do not remove the call to matches(), otherwise the dotMatcher groups will not be filled in.
+        // To proceed past this point, at the minimum the expression must be composed of
+        // packageName.className .
+        // Do not remove the call to matches(), otherwise the dotMatcher groups will not be filled
+        // in.
         if (select == null) {
             return null;
         }
@@ -818,7 +820,8 @@ public class FlowExpressionParseUtil {
 
         while (true) {
             // At this point, packageName is one component longer than result,
-            // and that extra component appears in remainingString but not in remainingStringIfPackageMatched.
+            // and that extra component appears in remainingString but not in
+            // remainingStringIfPackageMatched.
             // In other words, result and remainingStringIfPackageMatched are consistent,
             // and packageName and remainingString are consistent.
             // Try to set result to account for the extra component in packageName.

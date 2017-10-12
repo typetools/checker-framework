@@ -26,13 +26,13 @@ public class EnumValue {
         Color @ArrayLen(3) [] myColors = Color.values();
         Fruit @ArrayLen(3) [] myFruitBasket = Fruit.values();
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         Direction @ArrayLen(7) [] badCompass = Direction.values();
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         Color @ArrayLen(4) [] badColors = Color.values();
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         Fruit @ArrayLen(2) [] badFruit = Fruit.values();
     }
 
@@ -63,9 +63,9 @@ public class EnumValue {
 
     void advTest() {
         AdvDirection @ArrayLen(4) [] myCompass = AdvDirection.values();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         AdvDirection @ArrayLen(3) [] badCompass = AdvDirection.values();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         AdvDirection @ArrayLen(5) [] badCompass2 = AdvDirection.values();
     }
 }

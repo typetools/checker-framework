@@ -48,7 +48,7 @@ public class EnsuresNonNullIfTest2 {
         if (hasId14()) {
             id.toString();
         }
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         id.toString();
     }
 

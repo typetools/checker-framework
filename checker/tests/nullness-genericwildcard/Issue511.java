@@ -14,7 +14,9 @@ public class Issue511 extends MySuperClass {
 
     // public void method(MyGeneric<? extends Number> x) {}
     // On the above method, javac issues the following error:
-    // Issue511.java:19: error: name clash: method(MyGeneric<? extends Number>) in Issue511 and method(MyGeneric<? extends Object>) in MySuperClass have the same erasure, yet neither overrides the other
+    // Issue511.java:19: error: name clash: method(MyGeneric<? extends Number>) in Issue511 and
+    // method(MyGeneric<? extends Object>) in MySuperClass have the same erasure, yet neither
+    // overrides the other
     // public void method(MyGeneric<? extends Number> x) {}
     //    ^
     //            1 error

@@ -64,7 +64,8 @@ public class UnitsAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
             // create an empty annotation set
             Set<AnnotationMirror> trimmedAnnoSet = AnnotationUtils.createAnnotationSet();
 
-            // loop through all the annotation mirrors to see if they use Prefix.one, remove Prefix.one if it does
+            // loop through all the annotation mirrors to see if they use Prefix.one, remove
+            // Prefix.one if it does
             for (AnnotationMirror anno : annos) {
                 if (UnitsRelationsTools.getPrefix(anno) == Prefix.one) {
                     anno = UnitsRelationsTools.removePrefix(elements, anno);

@@ -220,7 +220,10 @@ public class TestDiagnosticUtils {
         long errorLine = lineNumber + 1;
 
         if (trimmedLine.startsWith("//::")) {
-            String restOfLine = trimmedLine.substring(4); // drop the //::
+            trimmedLine = "// ::" + trimmedLine.substring(4);
+        }
+        if (trimmedLine.startsWith("// ::")) {
+            String restOfLine = trimmedLine.substring(5); // drop the // ::
             String[] diagnosticStrs = restOfLine.split("::");
             List<TestDiagnostic> diagnostics = new ArrayList<>(diagnosticStrs.length);
             for (String diagnostic : diagnosticStrs) {

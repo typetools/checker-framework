@@ -166,7 +166,8 @@ public class QualifierPolymorphism {
             Elements elements, AnnotationMirror qual) {
         AnnotationMirror poly = getPolymorphicQualifier(qual);
 
-        // System.out.println("poly: " + poly + " pq: " + PolymorphicQualifier.class.getCanonicalName());
+        // System.out.println("poly: " + poly + " pq: " +
+        // PolymorphicQualifier.class.getCanonicalName());
         if (poly == null) {
             return null;
         }
@@ -248,7 +249,8 @@ public class QualifierPolymorphism {
             AnnotatedExecutableType functionalInterface, AnnotatedExecutableType memberReference) {
         for (AnnotationMirror type : functionalInterface.getReturnType().getAnnotations()) {
             if (isPolymorphicQualified(type)) {
-                // functional interface has a polymorphic qualifier, so they should not be resolved on memberReference.
+                // functional interface has a polymorphic qualifier, so they should not be resolved
+                // on memberReference.
                 return;
             }
         }
@@ -275,7 +277,7 @@ public class QualifierPolymorphism {
         if (matchingMapping != null && !matchingMapping.isEmpty()) {
             replacer.visit(memberReference, matchingMapping);
         } else {
-            //TODO: Do we need this (return type?)
+            // TODO: Do we need this (return type?)
             completer.visit(memberReference);
         }
     }
@@ -431,7 +433,7 @@ public class QualifierPolymorphism {
                             wctype.getSuperBound().getUnderlyingType())) {
                         result = visit(type, wctype.getSuperBound());
                     } else if (wctype.getSuperBound().getKind() == TypeKind.NULL) {
-                        //TODO: poly annotation on wildcards need to be reviewed.  This prevents
+                        // TODO: poly annotation on wildcards need to be reviewed.  This prevents
                         // a crash in asSuper.
                         result = Collections.emptyMap();
                     } else {
@@ -618,8 +620,10 @@ public class QualifierPolymorphism {
             } else {
                 // When using the polyCollector we compare the formal parameters to the actual
                 // arguments but, when the formal parameters are uses of method type parameters
-                // then the declared formal parameters may not actually be supertypes of their arguments
-                // (though they should be if we substituted them for the method call's type arguments)
+                // then the declared formal parameters may not actually be supertypes of their
+                // arguments
+                // (though they should be if we substituted them for the method call's type
+                // arguments)
                 // For an example of this see framework/tests/all-system/PolyCollectorTypeVars.java
                 return visit(type.getUpperBound(), actualType);
             }
@@ -646,7 +650,8 @@ public class QualifierPolymorphism {
 
             if (actualType.getKind() != TypeKind.WILDCARD
                     && actualType.getKind() != TypeKind.TYPEVAR) {
-                // currently because the default action of inferTypeArgs is to use a wildcard when we fail
+                // currently because the default action of inferTypeArgs is to use a wildcard when
+                // we fail
                 // to infer a type, the actualType might not be a wildcard
                 return Collections.emptyMap();
             }

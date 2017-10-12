@@ -31,13 +31,13 @@ class PptTopLevel {
 
     // False tests
     static void testFalse(PptTopLevel ppt) {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         ppt.splitters.toString(); // error
     }
 
     static void testFalseNoAssertion(PptTopLevel ppt) {
         ppt.has_splitters();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         ppt.splitters.toString(); // error
     }
 
@@ -45,7 +45,7 @@ class PptTopLevel {
         if (ppt.has_splitters()) {
             return;
         }
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         ppt.splitters.toString(); // error
     }
 

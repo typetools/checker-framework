@@ -15,7 +15,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * possible run-time values include {@code "(a*)(b*)"}, {@code "a(b?)c(d?)e"}, and {@code
  * "(.)(.)(.)"}, but not {@code "hello"} nor {@code "(good)bye"} nor {@code "(a*)(b*)("}.
  */
-//@ImplicitFor(trees = { Tree.Kind.NULL_LITERAL })
+// @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL })
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(UnknownRegex.class)

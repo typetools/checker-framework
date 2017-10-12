@@ -103,7 +103,8 @@ public class SupertypesSolver {
                 if (!equalityAnnos.contains(top)) {
                     final AnnotationMirror lubAnno = lub.getAnnotationInHierarchy(top);
                     if (lubAnno == null) {
-                        // If the LUB and the Equality were the SAME typevar, and the lub was unannotated
+                        // If the LUB and the Equality were the SAME typevar, and the lub was
+                        // unannotated
                         // then "NO ANNOTATION" is the correct choice
                         if (lub.getKind() == TypeKind.TYPEVAR
                                 && equalityType
@@ -247,7 +248,8 @@ public class SupertypesSolver {
             final Map<AnnotatedTypeMirror, AnnotationMirrorSet> subtypesOfTarget =
                     targetRecord.supertypes.types;
 
-            // if this target is a supertype of other targets and those targets have already been lubbed
+            // if this target is a supertype of other targets and those targets have already been
+            // lubbed
             // add that LUB to the list of lubs for this target (as it must be above this target)
             propagatePreviousLubs(targetRecord, solution, subtypesOfTarget);
 

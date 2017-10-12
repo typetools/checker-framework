@@ -170,8 +170,10 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
         final List<Attribute.TypeCompound> targeted = targetClassToAnnos.get(TargetClass.TARGETED);
         final List<Attribute.TypeCompound> valid = targetClassToAnnos.get(TargetClass.VALID);
 
-        // if this is a lambdaParam, filter out from targeted those annos that apply to method formal parameters
-        // if this is a method formal param, filter out from targeted those annos that apply to lambdas
+        // if this is a lambdaParam, filter out from targeted those annos that apply to method
+        // formal parameters
+        // if this is a method formal param, filter out from targeted those annos that apply to
+        // lambdas
         int i = 0;
         while (i < targeted.size()) {
             final Tree onLambda = targeted.get(i).position.onLambda;

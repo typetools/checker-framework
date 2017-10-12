@@ -13,19 +13,19 @@ class AnnotatedGenerics3 {
         }
 
         void indirect(Cell<T> p) {
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             setNull(p);
         }
 
         void setField(@Nullable T p) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             this.f = p;
         }
     }
 
     void run() {
         Cell<@NonNull Object> c = new Cell<@NonNull Object>(new Object());
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         c.setNull(c);
         c.f.hashCode();
 

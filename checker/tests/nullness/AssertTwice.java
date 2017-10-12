@@ -1,4 +1,3 @@
-
 public class AssertTwice {
 
     private void assertOnce() {
@@ -18,7 +17,7 @@ public class AssertTwice {
         String methodDeclaration = null;
         assert methodDeclaration != null : "@AssumeAssertion(nullness)";
         methodDeclaration.toString();
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         assert methodDeclaration != null;
         methodDeclaration = null;
     }

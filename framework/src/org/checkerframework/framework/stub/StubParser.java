@@ -454,7 +454,8 @@ public class StubParser {
         } else if (typeDecl instanceof ClassOrInterfaceDeclaration) {
             typeParameters.addAll(
                     parseType((ClassOrInterfaceDeclaration) typeDecl, typeElt, atypes, declAnnos));
-        } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have annotations, right?
+        } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have
+          // annotations, right?
 
         Map<Element, BodyDeclaration<?>> elementsToDecl = getMembers(typeElt, typeDecl);
         for (Map.Entry<Element, BodyDeclaration<?>> entry : elementsToDecl.entrySet()) {
@@ -512,7 +513,8 @@ public class StubParser {
 
         // It can be the case that args=[] and params=null.
         // if ((typeParameters == null) != (typeArguments == null)) {
-        //     throw new Error(String.format("parseType (%s, %s): inconsistent nullness for args and params%n  args = %s%n  params = %s%n", decl, elt, typeArguments, typeParameters));
+        //     throw new Error(String.format("parseType (%s, %s): inconsistent nullness for args and
+        // params%n  args = %s%n  params = %s%n", decl, elt, typeArguments, typeParameters));
         // }
 
         if (debugStubParser) {
@@ -841,7 +843,7 @@ public class StubParser {
                 annotate(atype, typeDef.getAnnotations());
             }
         } else if (atype.getKind() == TypeKind.TYPEVAR) {
-            //Add annotations from the declaration of the TypeVariable
+            // Add annotations from the declaration of the TypeVariable
             AnnotatedTypeVariable typeVarUse = (AnnotatedTypeVariable) atype;
             for (AnnotatedTypeVariable typePar : typeParameters) {
                 if (typePar.getUnderlyingType() == atype.getUnderlyingType()) {

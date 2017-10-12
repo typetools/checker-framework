@@ -1,4 +1,5 @@
 import java.util.TreeSet;
+
 // @skip-test Crashes the Checker Framework, but skipped to avoid breaking the build
 //
 // It looks like we are relying on name equality at some point when resolving
