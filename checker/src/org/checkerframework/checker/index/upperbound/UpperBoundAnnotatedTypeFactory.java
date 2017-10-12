@@ -56,7 +56,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
@@ -64,6 +63,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -80,9 +80,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        UNKNOWN = AnnotationUtils.fromClass(elements, UpperBoundUnknown.class);
-        BOTTOM = AnnotationUtils.fromClass(elements, UpperBoundBottom.class);
-        POLY = AnnotationUtils.fromClass(elements, PolyUpperBound.class);
+        UNKNOWN = AnnotationBuilder.fromClass(elements, UpperBoundUnknown.class);
+        BOTTOM = AnnotationBuilder.fromClass(elements, UpperBoundBottom.class);
+        POLY = AnnotationBuilder.fromClass(elements, PolyUpperBound.class);
 
         addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation());
         addAliasedAnnotation(IndexOrLow.class, createLTLengthOfAnnotation());
@@ -606,8 +606,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                 }
                 if (!sequences.isEmpty()) {
-                    return UBQualifier.createUBQualifier(
-                            sequences, Collections.<String>emptyList());
+                    return UBQualifier.createUBQualifier(sequences, Collections.emptyList());
                 }
             }
 

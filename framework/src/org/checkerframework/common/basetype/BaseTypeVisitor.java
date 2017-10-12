@@ -59,7 +59,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -193,7 +192,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
-        this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
     }
 
     protected BaseTypeVisitor(BaseTypeChecker checker, Factory typeFactory) {
@@ -205,7 +203,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
-        this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
     }
 
     /**
@@ -1124,27 +1121,35 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         .isSubtype(inferredAnnotation, necessaryAnnotation);
     }
 
-    // Handle case Vector.copyInto()
-    private final AnnotatedDeclaredType vectorType;
+    /** The element for java.util.Vector#copyInto. */
+    private ExecutableElement vectorCopyInto;
+
+    /** The tyoe of java.util.Vector. */
+    private AnnotatedDeclaredType vectorType;
 
     /** Returns true if the method symbol represents {@code Vector.copyInto} */
     protected boolean isVectorCopyInto(AnnotatedExecutableType method) {
         ExecutableElement elt = method.getElement();
-        if (elt.getSimpleName().contentEquals("copyInto") && elt.getParameters().size() == 1)
-            return true;
-
+        if (elt.getSimpleName().contentEquals("copyInto") && elt.getParameters().size() == 1) {
+            if (vectorCopyInto == null) {
+                vectorCopyInto =
+                        TreeUtils.getMethod(
+                                "java.util.Vector", "copyInto", 1, atypeFactory.getProcessingEnv());
+            }
+            return ElementUtils.isMethod(elt, vectorCopyInto, atypeFactory.getProcessingEnv());
+        }
         return false;
     }
 
     /**
      * Type checks the method arguments of {@code Vector.copyInto()}.
      *
-     * <p>The Checker Framework special-cases the method invocation, as it is type safety cannot be
+     * <p>The Checker Framework special-cases the method invocation, as its type safety cannot be
      * expressed by Java's type system.
      *
-     * <p>For a Vector {@code v} of type {@code Vectory<E>}, the method invocation {@code
-     * v.copyInto(arr)} is type-safe iff {@code arr} is a array of type {@code T[]}, where {@code T}
-     * is a subtype of {@code E}.
+     * <p>For a Vector {@code v} of type {@code Vector<E>}, the method invocation {@code
+     * v.copyInto(arr)} is type-safe iff {@code arr} is an array of type {@code T[]}, where {@code
+     * T} is a subtype of {@code E}.
      *
      * <p>In other words, this method checks that the type argument of the receiver method is a
      * subtype of the component type of the passed array argument.
@@ -1163,17 +1168,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedArrayType passedAsArray = (AnnotatedArrayType) passed;
 
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
+        if (vectorType == null) {
+            vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+        }
         AnnotatedDeclaredType receiverAsVector =
                 AnnotatedTypes.asSuper(atypeFactory, receiver, vectorType);
         if (receiverAsVector.getTypeArguments().isEmpty()) {
             return;
         }
 
-        commonAssignmentCheck(
-                passedAsArray.getComponentType(),
-                receiverAsVector.getTypeArguments().get(0),
-                node.getArguments().get(0),
-                "vector.copyinto.type.incompatible");
+        AnnotatedTypeMirror argComponent = passedAsArray.getComponentType();
+        AnnotatedTypeMirror vectorTypeArg = receiverAsVector.getTypeArguments().get(0);
+        Tree errorLocation = node.getArguments().get(0);
+        if (TypesUtils.isErasedSubtype(
+                types, vectorTypeArg.getUnderlyingType(), argComponent.getUnderlyingType())) {
+            commonAssignmentCheck(
+                    argComponent,
+                    vectorTypeArg,
+                    errorLocation,
+                    "vector.copyinto.type.incompatible");
+        } else {
+            checker.report(
+                    Result.failure(
+                            "vector.copyinto.type.incompatible", vectorTypeArg, argComponent),
+                    errorLocation);
+        }
     }
 
     /**
@@ -1387,8 +1406,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 assert meth instanceof AnnotatedExecutableType
                         : "Expected AnnotatedExecutableType as context. Found: " + meth;
                 AnnotatedTypeMirror newctx = ((AnnotatedExecutableType) meth).getReturnType();
-                visitorState.setAssignmentContext(
-                        Pair.<Tree, AnnotatedTypeMirror>of((Tree) null, newctx));
+                visitorState.setAssignmentContext(Pair.of((Tree) null, newctx));
             }
 
             try {
@@ -2302,7 +2320,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * <p>Note this method requires the lists to have the same length, as it does not handle cases
      * like var args.
      *
-     * @see #checkVarargs(AnnotatedExecutableType, Tree)
+     * @see #checkVarargs(AnnotatedTypeMirror.AnnotatedExecutableType, Tree)
      * @param requiredArgs the required types
      * @param passedArgs the expressions passed to the corresponding types
      */
@@ -2320,8 +2338,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         try {
             for (int i = 0; i < requiredArgs.size(); ++i) {
                 visitorState.setAssignmentContext(
-                        Pair.<Tree, AnnotatedTypeMirror>of(
-                                (Tree) null, (AnnotatedTypeMirror) requiredArgs.get(i)));
+                        Pair.of((Tree) null, (AnnotatedTypeMirror) requiredArgs.get(i)));
                 commonAssignmentCheck(
                         requiredArgs.get(i), passedArgs.get(i), "argument.type.incompatible");
                 // Also descend into the argument within the correct assignment
@@ -3252,8 +3269,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return true;
         }
 
-        Name when = AnnotationUtils.getElementValueClassName(unused, "when", false);
-        if (receiver.getAnnotation(when) == null) {
+        String when =
+                AnnotationUtils.getElementValueClassName(unused, "when", false).toString().intern();
+        if (!AnnotationUtils.containsSameByName(receiver.getAnnotations(), when)) {
             return true;
         }
 

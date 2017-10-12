@@ -54,7 +54,7 @@ You can suppress warnings throughout the codebase by using the following mechani
 \item
   the \code{-Alint} command-line option enables/disables optional checks (Section~\ref{alint}), or
 \item
-  not using the \code{-processor} command-line option
+  not running the annotation processor
   (Section~\ref{no-processor}).
 \end{itemize}
 
@@ -595,12 +595,16 @@ options are silently ignored.  In particular, this means that \<-Alint=all
 \code{-Alint=-all,cast:redundant}.
 
 
-\section{No \code{-processor} command-line option\label{no-processor}}
+\section{Don't run the processor\label{no-processor}}
 
-You can also compile parts of your code without use of the
+You can compile parts of your code without use of the
 \code{-processor} switch to \code{javac}.  No checking is done during
 such compilations, so no warnings are issued related to pluggable
 type-checking.
+
+You can direct your build system to avoid compiling certain parts of your
+code.  For example, the \<-Dmaven.test.skip=true> command-line argument
+tells Maven not to compile (or run) the tests.
 
 
 \section{Checker-specific mechanisms\label{checker-specific-suppression}}

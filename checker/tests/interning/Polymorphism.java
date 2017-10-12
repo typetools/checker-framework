@@ -36,6 +36,9 @@ public class Polymorphism {
     // Test assinging interned to PolyInterned
     public @PolyInterned String always(@PolyInterned String s) {
         if (s.equals("n")) {
+            // This code type-checkd when the hierarchy contained just @UnknownInterned and
+            // @Interned, but no longer does because of @InternedDistinct.
+            //:: error: (return.type.incompatible)
             return "m";
         } else {
             //:: error: (return.type.incompatible)

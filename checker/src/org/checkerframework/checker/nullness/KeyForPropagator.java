@@ -1,5 +1,8 @@
 package org.checkerframework.checker.nullness;
 
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -11,8 +14,9 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.TypeArgumentMapper;
+import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
@@ -131,6 +135,41 @@ public class KeyForPropagator {
                     merger.visit(supertypeArg, subtypeArg);
                     break;
             }
+        }
+    }
+
+    /**
+     * Propagate annotations from the type arguments of {@code type} to the assignment context of
+     * {@code newClassTree} if one exists.
+     *
+     * @param newClassTree new class tree
+     * @param type annotated type of {@code newClassTree}
+     * @param atypeFactory factory
+     */
+    public void propagateNewClassTree(
+            NewClassTree newClassTree,
+            AnnotatedTypeMirror type,
+            KeyForAnnotatedTypeFactory atypeFactory) {
+        Pair<Tree, AnnotatedTypeMirror> context =
+                atypeFactory.getVisitorState().getAssignmentContext();
+        if (type.getKind() != TypeKind.DECLARED || context == null || context.first == null) {
+            return;
+        }
+        TreePath path = atypeFactory.getPath(newClassTree);
+        if (path == null) {
+            return;
+        }
+        AnnotatedTypeMirror assignedTo = TypeArgInferenceUtil.assignedTo(atypeFactory, path);
+        if (assignedTo == null) {
+            return;
+        }
+        // array types and boxed primitives etc don't require propagation
+        if (assignedTo.getKind() == TypeKind.DECLARED) {
+            propagate(
+                    (AnnotatedDeclaredType) type,
+                    (AnnotatedDeclaredType) assignedTo,
+                    PropagationDirection.TO_SUBTYPE,
+                    atypeFactory);
         }
     }
 

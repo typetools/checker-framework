@@ -43,6 +43,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -68,24 +69,30 @@ import org.checkerframework.javacutil.TreeUtils;
 public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The canonical @{@link GTENegativeOne} annotation. */
-    public final AnnotationMirror GTEN1 = AnnotationUtils.fromClass(elements, GTENegativeOne.class);
+    public final AnnotationMirror GTEN1 =
+            AnnotationBuilder.fromClass(elements, GTENegativeOne.class);
     /** The canonical @{@link NonNegative} annotation. */
-    public final AnnotationMirror NN = AnnotationUtils.fromClass(elements, NonNegative.class);
+    public final AnnotationMirror NN = AnnotationBuilder.fromClass(elements, NonNegative.class);
     /** The canonical @{@link Positive} annotation. */
-    public final AnnotationMirror POS = AnnotationUtils.fromClass(elements, Positive.class);
+    public final AnnotationMirror POS = AnnotationBuilder.fromClass(elements, Positive.class);
     /** The bottom annotation. */
     public final AnnotationMirror BOTTOM =
-            AnnotationUtils.fromClass(elements, LowerBoundBottom.class);
+            AnnotationBuilder.fromClass(elements, LowerBoundBottom.class);
     /** The canonical @{@link LowerBoundUnknown} annotation. */
     public final AnnotationMirror UNKNOWN =
-            AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);
+            AnnotationBuilder.fromClass(elements, LowerBoundUnknown.class);
     /** The canonical @{@link PolyLowerBound} annotation. */
-    public final AnnotationMirror POLY = AnnotationUtils.fromClass(elements, PolyLowerBound.class);
+    public final AnnotationMirror POLY =
+            AnnotationBuilder.fromClass(elements, PolyLowerBound.class);
 
     private final IndexMethodIdentifier imf;
 
     public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
+        // Any annotations that are aliased to @NonNegative, @Positive,
+        // or @GTENegativeOne must also be aliased in the constructor of
+        // ValueAnnotatedTypeFactory to the appropriate @IntRangeFrom*
+        // annotation.
         addAliasedAnnotation(IndexFor.class, NN);
         addAliasedAnnotation(IndexOrLow.class, GTEN1);
         addAliasedAnnotation(IndexOrHigh.class, NN);

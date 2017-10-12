@@ -145,15 +145,16 @@
               classpath="${javac.lib}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <arg value="-g"/>
-            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
+            <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->
             <arg value="-source"/>
             <arg value="8"/>
             <arg value="-target"/>
             <arg value="8"/>
+            <!-- To not get a warning about missing bootstrap
+                 classpath for Java 8 (once we use Java 9). -->
+            <arg value="-Xlint:-options"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
-            <!-- To not get a warning about bootstrap classpath -->
-            <arg value="-Xlint:-options"/>
             <arg value="-sourcepath"/>
             <arg value="${src}"/>
             <arg value="-d"/>
@@ -257,15 +258,16 @@
               classpath="${javac.lib}:${build}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <arg value="-g"/>
-            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
+            <!-- Make sure we only have Java 8 source code and generate Java 8 bytecode. -->
             <arg value="-source"/>
-            <arg value="7"/>
+            <arg value="8"/>
             <arg value="-target"/>
-            <arg value="7"/>
+            <arg value="8"/>
+            <!-- To not get a warning about missing bootstrap
+                 classpath for Java 8 (once we use Java 9). -->
+            <arg value="-Xlint:-options"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
-            <!-- To not get a warning about bootstrap classpath -->
-            <arg value="-Xlint:-options"/>
             <arg value="-sourcepath"/>
             <arg value="${tests}"/>
             <arg value="-d"/>
@@ -637,6 +639,7 @@
             description="Run jtreg tests">
         <!--As of version 4.2-b02, a NullPointerException is thrown without making this dir-->
         <mkdir dir="${build}/jtreg/all/report/html"/>
+        <mkdir dir="${build}/jtreg/all/report/text"/>
         <jtreg-tool2 name="all" tests="."/>
     </target>
 
@@ -746,10 +749,11 @@
             <arg value="7"/>
             <arg value="-target"/>
             <arg value="7"/>
+            <!-- To not get a warning about missing bootstrap
+                 classpath for Java 7. -->
+            <arg value="-Xlint:-options"/>
             <arg value="-encoding"/>
             <arg value="utf-8"/>
-            <!-- To not get a warning about bootstrap classpath -->
-            <arg value="-Xlint:-options"/>
             <arg value="-sourcepath"/>
             <arg value="${src}:${checker-jdk}"/>
             <arg value="-d"/>

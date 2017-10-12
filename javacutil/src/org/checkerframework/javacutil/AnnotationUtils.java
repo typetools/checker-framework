@@ -1,10 +1,8 @@
 package org.checkerframework.javacutil;
 
 /*>>>
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.checker.interning.qual.*;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.interning.qual.Interned;
 */
 
 import com.sun.source.tree.AnnotationTree;
@@ -28,12 +26,10 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 
@@ -47,9 +43,7 @@ public class AnnotationUtils {
 
     // TODO: hack to clear out static state.
     public static void clear() {
-        annotationsFromNames.clear();
-        annotationMirrorNames.clear();
-        annotationMirrorSimpleNames.clear();
+        AnnotationBuilder.clear();
         annotationClassNames.clear();
     }
 
@@ -57,29 +51,7 @@ public class AnnotationUtils {
     // Factory Methods to create instances of AnnotationMirror
     // **********************************************************************
 
-    /** Caching for annotation creation. */
-    private static final Map<CharSequence, AnnotationMirror> annotationsFromNames =
-            Collections.synchronizedMap(new HashMap<CharSequence, AnnotationMirror>());
-
     private static final int ANNOTATION_CACHE_SIZE = 500;
-
-    /**
-     * Cache names of AnnotationMirrors for faster access. Values in the map are interned Strings,
-     * so they can be compared with ==.
-     */
-    private static final Map<AnnotationMirror, /*@Interned*/ String> annotationMirrorNames =
-            Collections.synchronizedMap(
-                    CollectionUtils.<AnnotationMirror, /*@Interned*/ String>createLRUCache(
-                            ANNOTATION_CACHE_SIZE));
-
-    /**
-     * Cache simple names of AnnotationMirrors for faster access. Values in the map are interned
-     * Strings, so they can be compared with ==.
-     */
-    private static final Map<AnnotationMirror, /*@Interned*/ String> annotationMirrorSimpleNames =
-            Collections.synchronizedMap(
-                    CollectionUtils.<AnnotationMirror, /*@Interned*/ String>createLRUCache(
-                            ANNOTATION_CACHE_SIZE));
 
     /**
      * Cache names of classes representing AnnotationMirrors for faster access. Values in the map
@@ -88,80 +60,7 @@ public class AnnotationUtils {
     private static final Map<Class<? extends Annotation>, /*@Interned*/ String>
             annotationClassNames =
                     Collections.synchronizedMap(
-                            new HashMap<Class<? extends Annotation>, /*@Interned*/ String>());
-
-    /**
-     * Creates an {@link AnnotationMirror} given by a particular fully-qualified name.
-     * getElementValues on the result returns an empty map.
-     *
-     * @param elements the element utilities to use
-     * @param name the name of the annotation to create
-     * @return an {@link AnnotationMirror} of type {@code} name
-     */
-    public static AnnotationMirror fromName(Elements elements, CharSequence name) {
-        AnnotationMirror res = annotationsFromNames.get(name);
-        if (res != null) {
-            return res;
-        }
-        final DeclaredType annoType = typeFromName(elements, name);
-        if (annoType == null) {
-            return null;
-        }
-        if (annoType.asElement().getKind() != ElementKind.ANNOTATION_TYPE) {
-            ErrorReporter.errorAbort(annoType + " is not an annotation");
-            return null; // dead code
-        }
-        AnnotationMirror result =
-                new AnnotationMirror() {
-                    String toString = "@" + annoType;
-
-                    @Override
-                    public DeclaredType getAnnotationType() {
-                        return annoType;
-                    }
-
-                    @Override
-                    public Map<? extends ExecutableElement, ? extends AnnotationValue>
-                            getElementValues() {
-                        return Collections.emptyMap();
-                    }
-                    /*@SideEffectFree*/
-                    @Override
-                    public String toString() {
-                        return toString;
-                    }
-                };
-        annotationsFromNames.put(name, result);
-        return result;
-    }
-
-    /**
-     * Creates an {@link AnnotationMirror} given by a particular annotation class.
-     *
-     * @param elements the element utilities to use
-     * @param clazz the annotation class
-     * @return an {@link AnnotationMirror} of type given type
-     */
-    public static AnnotationMirror fromClass(Elements elements, Class<? extends Annotation> clazz) {
-        return fromName(elements, clazz.getCanonicalName());
-    }
-
-    /**
-     * A utility method that converts a {@link CharSequence} (usually a {@link String}) into a
-     * {@link TypeMirror} named thereby.
-     *
-     * @param elements the element utilities to use
-     * @param name the name of a type
-     * @return the {@link TypeMirror} corresponding to that name
-     */
-    private static DeclaredType typeFromName(Elements elements, CharSequence name) {
-        /*@Nullable*/ TypeElement typeElt = elements.getTypeElement(name);
-        if (typeElt == null) {
-            return null;
-        }
-
-        return (DeclaredType) typeElt.asType();
-    }
+                            CollectionUtils.createLRUCache(ANNOTATION_CACHE_SIZE));
 
     // **********************************************************************
     // Helper methods to handle annotations.  mainly workaround
@@ -171,27 +70,21 @@ public class AnnotationUtils {
 
     /** @return the fully-qualified name of an annotation as a String */
     public static final /*@Interned*/ String annotationName(AnnotationMirror annotation) {
-        String res = annotationMirrorNames.get(annotation);
-        if (res != null) {
-            return res;
+        if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror) {
+            return ((AnnotationBuilder.CheckerFrameworkAnnotationMirror) annotation).annotationName;
         }
         final DeclaredType annoType = annotation.getAnnotationType();
         final TypeElement elm = (TypeElement) annoType.asElement();
         /*@Interned*/ String name = elm.getQualifiedName().toString().intern();
-        annotationMirrorNames.put(annotation, name);
         return name;
     }
 
     /** @return the simple name of an annotation as a String */
+    @Deprecated // Remove after 2.2.1 release
     public static String annotationSimpleName(AnnotationMirror annotation) {
-        String res = annotationMirrorSimpleNames.get(annotation);
-        if (res != null) {
-            return res;
-        }
         final DeclaredType annoType = annotation.getAnnotationType();
         final TypeElement elm = (TypeElement) annoType.asElement();
         /*@Interned*/ String name = elm.getSimpleName().toString().intern();
-        annotationMirrorSimpleNames.put(annotation, name);
         return name;
     }
 
@@ -208,6 +101,9 @@ public class AnnotationUtils {
     public static boolean areSame(
             /*@Nullable*/ AnnotationMirror a1, /*@Nullable*/ AnnotationMirror a2) {
         if (a1 != null && a2 != null) {
+            if (a1 == a2) {
+                return true;
+            }
             if (annotationName(a1) != annotationName(a2)) {
                 return false;
             }
@@ -230,7 +126,7 @@ public class AnnotationUtils {
      */
     public static boolean areSameIgnoringValues(AnnotationMirror a1, AnnotationMirror a2) {
         if (a1 != null && a2 != null) {
-            return annotationName(a1) == annotationName(a2);
+            return a1 == a2 || annotationName(a1) == annotationName(a2);
         }
         return a1 == a2;
     }
@@ -332,6 +228,33 @@ public class AnnotationUtils {
             Collection<? extends AnnotationMirror> c, Class<? extends Annotation> anno) {
         for (AnnotationMirror an : c) {
             if (AnnotationUtils.areSameByClass(an, anno)) {
+                return an;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Checks that the collection contains the annotation. Using Collection.contains does not always
+     * work, because it does not use areSame for comparison.
+     *
+     * @return true iff c contains anno, according to areSameByName
+     */
+    public static boolean containsSameByName(
+            Collection<? extends AnnotationMirror> c, /*@Interned*/ String anno) {
+        return getAnnotationByName(c, anno) != null;
+    }
+
+    /**
+     * Returns the AnnotationMirror in {@code c} that has the same name as {@code anno}.
+     *
+     * @return AnnotationMirror with the same name as {@code anno} iff c contains anno, according to
+     *     areSameByName; otherwise, {@code null}
+     */
+    public static AnnotationMirror getAnnotationByName(
+            Collection<? extends AnnotationMirror> c, /*@Interned*/ String anno) {
+        for (AnnotationMirror an : c) {
+            if (AnnotationUtils.areSameByName(an, anno)) {
                 return an;
             }
         }
@@ -646,5 +569,17 @@ public class AnnotationUtils {
             annotationSet.addAll(InternalUtils.annotationsFromTypeAnnotationTrees(annotationTrees));
         }
         return annotationSet;
+    }
+
+    /** @deprecated use {@link AnnotationBuilder#fromName(Elements,CharSequence)} instead. */
+    @Deprecated // Remove after 2.2.1 release
+    public static AnnotationMirror fromName(Elements elements, CharSequence name) {
+        return AnnotationBuilder.fromName(elements, name);
+    }
+
+    /** @deprecated use {@link AnnotationBuilder#fromClass(Elements,Class)} instead. */
+    @Deprecated // Remove after 2.2.1 release
+    public static AnnotationMirror fromClass(Elements elements, Class<? extends Annotation> clazz) {
+        return AnnotationBuilder.fromClass(elements, clazz);
     }
 }

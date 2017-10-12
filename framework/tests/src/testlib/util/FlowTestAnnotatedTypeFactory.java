@@ -17,6 +17,7 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -24,8 +25,8 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public FlowTestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
-        VALUE = AnnotationUtils.fromClass(elements, Value.class);
-        BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
+        VALUE = AnnotationBuilder.fromClass(elements, Value.class);
+        BOTTOM = AnnotationBuilder.fromClass(elements, Bottom.class);
 
         this.postInit();
 

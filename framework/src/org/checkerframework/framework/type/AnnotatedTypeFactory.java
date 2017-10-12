@@ -106,6 +106,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
 import org.checkerframework.framework.util.typeinference.TypeArgumentInference;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.CollectionUtils;
@@ -340,8 +341,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.loader = new AnnotationClassLoader(checker);
         this.supportedQuals = new HashSet<>();
 
-        this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
-        this.fromStubFile = AnnotationUtils.fromClass(elements, FromStubFile.class);
+        this.fromByteCode = AnnotationBuilder.fromClass(elements, FromByteCode.class);
+        this.fromStubFile = AnnotationBuilder.fromClass(elements, FromStubFile.class);
 
         this.cacheDeclAnnos = new HashMap<Element, Set<AnnotationMirror>>();
 
@@ -464,18 +465,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         addAliasedDeclAnnotation(
                 org.jmlspecs.annotation.Pure.class,
                 org.checkerframework.dataflow.qual.Pure.class,
-                AnnotationUtils.fromClass(elements, org.checkerframework.dataflow.qual.Pure.class));
+                AnnotationBuilder.fromClass(
+                        elements, org.checkerframework.dataflow.qual.Pure.class));
 
         addInheritedAnnotation(
-                AnnotationUtils.fromClass(elements, org.checkerframework.dataflow.qual.Pure.class));
+                AnnotationBuilder.fromClass(
+                        elements, org.checkerframework.dataflow.qual.Pure.class));
         addInheritedAnnotation(
-                AnnotationUtils.fromClass(
+                AnnotationBuilder.fromClass(
                         elements, org.checkerframework.dataflow.qual.SideEffectFree.class));
         addInheritedAnnotation(
-                AnnotationUtils.fromClass(
+                AnnotationBuilder.fromClass(
                         elements, org.checkerframework.dataflow.qual.Deterministic.class));
         addInheritedAnnotation(
-                AnnotationUtils.fromClass(
+                AnnotationBuilder.fromClass(
                         elements, org.checkerframework.dataflow.qual.TerminatesExecution.class));
 
         initializeReflectionResolution();
@@ -580,7 +583,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             MultiGraphFactory factory) {
 
         for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
-            AnnotationMirror typeQualifierAnno = AnnotationUtils.fromClass(elements, typeQualifier);
+            AnnotationMirror typeQualifierAnno =
+                    AnnotationBuilder.fromClass(elements, typeQualifier);
             assert typeQualifierAnno != null
                     : "Loading annotation \"" + typeQualifier + "\" failed!";
             factory.addQualifier(typeQualifierAnno);
@@ -611,7 +615,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (!supportedTypeQualifiers.contains(superQualifier)) {
                     continue;
                 }
-                AnnotationMirror superAnno = AnnotationUtils.fromClass(elements, superQualifier);
+                AnnotationMirror superAnno = AnnotationBuilder.fromClass(elements, superQualifier);
                 factory.addSubtype(typeQualifierAnno, superAnno);
             }
         }
@@ -937,7 +941,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     @Override
     public AnnotationMirror getAnnotationMirror(Tree tree, Class<? extends Annotation> target) {
-        AnnotationMirror mirror = AnnotationUtils.fromClass(elements, target);
+        AnnotationMirror mirror = AnnotationBuilder.fromClass(elements, target);
         if (isSupportedQualifier(mirror)) {
             AnnotatedTypeMirror atm = getAnnotatedType(tree);
             return atm.getAnnotation(target);
@@ -1365,7 +1369,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", true);
         List<AnnotationMirror> qualifiers = new ArrayList<>();
         for (Name name : classes) {
-            qualifiers.add(AnnotationUtils.fromName(elements, name));
+            qualifiers.add(AnnotationBuilder.fromName(elements, name));
         }
         if (fields.size() > qualifiers.size()) {
             int difference = fields.size() - qualifiers.size();
@@ -1419,7 +1423,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /** Returns the set of classes of field invariant annotations. */
     protected Set<Class<? extends Annotation>> getFieldInvariantDeclarationAnnotations() {
-        return Collections.<Class<? extends Annotation>>singleton(FieldInvariant.class);
+        return Collections.singleton(FieldInvariant.class);
     }
 
     /**
@@ -1486,8 +1490,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
 
-        for (int i = 0; i < targs.size(); ++i) {
-            mapping.put(((AnnotatedTypeVariable) tvars.get(i)).getUnderlyingType(), targs.get(i));
+        AnnotatedDeclaredType enclosing = type;
+        while (enclosing != null) {
+            List<AnnotatedTypeMirror> enclosingTArgs = enclosing.getTypeArguments();
+            AnnotatedDeclaredType declaredType =
+                    getAnnotatedType((TypeElement) enclosing.getUnderlyingType().asElement());
+            List<AnnotatedTypeMirror> enclosingTVars = declaredType.getTypeArguments();
+            for (int i = 0; i < enclosingTArgs.size(); i++) {
+                AnnotatedTypeVariable enclosingTVar = (AnnotatedTypeVariable) enclosingTVars.get(i);
+                mapping.put(enclosingTVar.getUnderlyingType(), enclosingTArgs.get(i));
+            }
+            enclosing = enclosing.getEnclosingType();
         }
 
         List<AnnotatedTypeParameterBounds> res = new LinkedList<>();
@@ -2379,7 +2392,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *     operates, false otherwise
      */
     public boolean isSupportedQualifier(/*@Nullable*/ AnnotationMirror a) {
-        if (a == null) return false;
+        if (a == null) {
+            return false;
+        }
         return AnnotationUtils.containsSameIgnoringValues(
                 this.getQualifierHierarchy().getTypeQualifiers(), a);
     }
@@ -3556,6 +3571,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     final AnnotatedTypeMirror newArg;
                     if (types.isSameType(wildcardUbType, correctArgType)) {
                         newArg = wildcardType.getExtendsBound().deepCopy();
+                    } else if (correctArgType.getKind() == TypeKind.TYPEVAR) {
+                        newArg = this.toAnnotatedType(correctArgType, false);
+                        AnnotatedTypeVariable newArgAsTypeVar = (AnnotatedTypeVariable) newArg;
+                        newArgAsTypeVar
+                                .getUpperBound()
+                                .replaceAnnotations(
+                                        wildcardType.getExtendsBound().getAnnotations());
+                        newArgAsTypeVar
+                                .getLowerBound()
+                                .replaceAnnotations(wildcardType.getSuperBound().getAnnotations());
                     } else {
                         newArg = this.toAnnotatedType(correctArgType, false);
                         newArg.replaceAnnotations(wildcardType.getExtendsBound().getAnnotations());

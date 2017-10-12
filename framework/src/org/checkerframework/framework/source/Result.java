@@ -134,12 +134,12 @@ public final class Result {
             msgKeys.add(msg.getMessageKey());
         }
 
-        return Collections.</*@NonNull*/ String>unmodifiableList(msgKeys);
+        return Collections.unmodifiableList(msgKeys);
     }
 
     /** @return an unmodifiable list of the message pairs */
     public List<DiagMessage> getDiagMessages() {
-        return Collections.</*@NonNull*/ DiagMessage>unmodifiableList(messages);
+        return Collections.unmodifiableList(messages);
     }
 
     @SideEffectFree

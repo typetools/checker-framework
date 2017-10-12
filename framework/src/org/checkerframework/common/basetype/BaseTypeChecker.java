@@ -639,7 +639,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                     expandCFOptions(
                             Arrays.asList(this.getClass()), options.toArray(new String[0])));
 
-            supportedOptions = Collections.<String>unmodifiableSet(options);
+            supportedOptions = Collections.unmodifiableSet(options);
         }
         return supportedOptions;
     }

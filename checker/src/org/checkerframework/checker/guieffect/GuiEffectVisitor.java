@@ -24,7 +24,7 @@ import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Require that only UI code invokes code with the UI effect. */
@@ -78,7 +78,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
     @Override
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
-        return Collections.singleton(AnnotationUtils.fromClass(elements, AlwaysSafe.class));
+        return Collections.singleton(AnnotationBuilder.fromClass(elements, AlwaysSafe.class));
     }
 
     @Override

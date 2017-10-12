@@ -26,7 +26,7 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -476,7 +476,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror.AnnotatedDeclaredType receiverType = methType.getReceiverType();
             if (receiverType != null
                     && !receiverType.isAnnotatedInHierarchy(
-                            AnnotationUtils.fromClass(elements, UI.class))) {
+                            AnnotationBuilder.fromClass(elements, UI.class))) {
                 receiverType.addAnnotation(
                         isPolymorphicType(cls)
                                 ? PolyUI.class

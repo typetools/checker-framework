@@ -6,7 +6,11 @@ import org.checkerframework.checker.nullness.qual.*;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseProblemException;
-import com.github.javaparser.ast.*;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.PackageDeclaration;
+import com.github.javaparser.ast.StubUnit;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
@@ -19,16 +23,25 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
+import com.github.javaparser.ast.expr.CharLiteralExpr;
+import com.github.javaparser.ast.expr.ClassExpr;
+import com.github.javaparser.ast.expr.DoubleLiteralExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
+import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
+import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
-import com.github.javaparser.ast.type.*;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.ReferenceType;
+import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.type.TypeParameter;
+import com.github.javaparser.ast.type.WildcardType;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,6 +59,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -59,7 +73,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
-import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -102,8 +116,14 @@ public class StubParser {
      */
     private final Map<String, AnnotationMirror> supportedAnnotations;
 
-    /** A list of imports that are not annotation types. Used for importing enums. */
-    private final List<String> imports;
+    /**
+     * A list of the fully qualified names of enum constants and static fields with constants values
+     * that have been imported
+     */
+    private final List<String> importedConstants;
+
+    /** A map of imported fully-qualified type names to type elements. */
+    private final Map<String, TypeElement> importedTypes;
 
     /**
      * Mapping of a field access expression that has already been encountered to the resolved
@@ -141,7 +161,8 @@ public class StubParser {
         this.atypeFactory = factory;
         this.processingEnv = env;
         this.elements = env.getElementUtils();
-        imports = new ArrayList<String>();
+        this.importedConstants = new ArrayList<>();
+        this.importedTypes = new HashMap<>();
 
         // getSupportedAnnotations uses these for warnings
         Map<String, String> options = env.getOptions();
@@ -170,7 +191,8 @@ public class StubParser {
         }
         this.stubUnit = parsedStubUnit;
 
-        // getSupportedAnnotations also sets imports. This should be refactored to be nicer.
+        // getSupportedAnnotations also modifies importedConstants and importedTypes. This should
+        // be refactored to be nicer.
         supportedAnnotations = getSupportedAnnotations();
         if (supportedAnnotations.isEmpty()) {
             stubWarnIfNotFound(
@@ -181,7 +203,7 @@ public class StubParser {
         faexprcache = new HashMap<FieldAccessExpr, VariableElement>();
         nexprcache = new HashMap<NameExpr, VariableElement>();
 
-        this.fromStubFile = AnnotationUtils.fromClass(elements, FromStubFile.class);
+        this.fromStubFile = AnnotationBuilder.fromClass(elements, FromStubFile.class);
     }
 
     /** All annotations defined in the package. Keys are simple names. */
@@ -202,7 +224,7 @@ public class StubParser {
         for (TypeElement typeElm : typeElements) {
             if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
                 AnnotationMirror anno =
-                        AnnotationUtils.fromName(elements, typeElm.getQualifiedName());
+                        AnnotationBuilder.fromName(elements, typeElm.getQualifiedName());
                 putNew(r, typeElm.getSimpleName().toString(), anno);
             }
         }
@@ -259,14 +281,17 @@ public class StubParser {
                             // Find nested annotations
                             // Find compile time constant fields, or values of an enum
                             putAllNew(result, annosInType(element));
-                            imports.addAll(getImportableMembers(element));
+                            importedConstants.addAll(getImportableMembers(element));
+                            addEnclosingTypesToImportedTypes(element);
                         }
+
                     } else {
                         // Members of a package (according to JLS)
 
                         PackageElement element = findPackage(imported);
                         if (element != null) {
                             putAllNew(result, annosInPackage(element));
+                            addEnclosingTypesToImportedTypes(element);
                         }
                     }
                 } else {
@@ -292,24 +317,28 @@ public class StubParser {
 
                         if (enclType != null) {
                             if (findFieldElement(enclType, fieldName) != null) {
-                                imports.add(imported);
+                                importedConstants.add(imported);
                             }
                         }
 
                     } else if (importType.getKind() == ElementKind.ANNOTATION_TYPE) {
                         // Single annotation or nested annotation
 
-                        AnnotationMirror anno = AnnotationUtils.fromName(elements, imported);
+                        AnnotationMirror anno = AnnotationBuilder.fromName(elements, imported);
                         if (anno != null) {
                             Element annoElt = anno.getAnnotationType().asElement();
                             putNew(result, annoElt.getSimpleName().toString(), anno);
+                            importedTypes.put(
+                                    annoElt.getSimpleName().toString(), (TypeElement) annoElt);
                         } else {
                             stubWarnIfNotFound("Could not load import: " + imported);
                         }
                     } else {
                         // Class or nested class
-
-                        imports.add(imported);
+                        // TODO: Is this needed?
+                        importedConstants.add(imported);
+                        TypeElement element = findType(imported, "Imported type not found");
+                        importedTypes.put(element.getSimpleName().toString(), element);
                     }
                 }
             } catch (AssertionError error) {
@@ -317,6 +346,15 @@ public class StubParser {
             }
         }
         return result;
+    }
+
+    private void addEnclosingTypesToImportedTypes(Element element) {
+        for (Element enclosedEle : element.getEnclosedElements()) {
+            if (enclosedEle.getKind().isClass()) {
+                importedTypes.put(
+                        enclosedEle.getSimpleName().toString(), (TypeElement) enclosedEle);
+            }
+        }
     }
 
     /** The main entry point. Side-effects the arguments. */
@@ -1280,7 +1318,7 @@ public class StubParser {
         }
     }
 
-    private static Set<String> warnings = new HashSet<String>();
+    private static final Set<String> warnings = new HashSet<String>();
 
     /**
      * Issues the given warning about missing elements, only if it has not been previously issued
@@ -1312,7 +1350,8 @@ public class StubParser {
      * Issues a warning even if {@code -AstubWarnIfNotFound} or {@code -AstubDebugs} options are not
      * passed.
      */
-    private void stubAlwaysWarn(String warning) {
+    private void stubAlwaysWarn(String warning, Object... args) {
+        warning = String.format(warning, args);
         ensureSingleLine(warning, "stubAlwaysWarn");
         if (warnings.add(warning)) {
             processingEnv
@@ -1344,6 +1383,10 @@ public class StubParser {
         }
     }
 
+    /**
+     * Convert {@code annotation} into an AnnotationMirror. Returns null if the annotation isn't
+     * supported by the checker or if some error occurred while converting it.
+     */
     private AnnotationMirror getAnnotation(
             AnnotationExpr annotation, Map<String, AnnotationMirror> supportedAnnotations) {
         AnnotationMirror annoMirror;
@@ -1362,9 +1405,15 @@ public class StubParser {
             List<MemberValuePair> pairs = nrmanno.getPairs();
             if (pairs != null) {
                 for (MemberValuePair mvp : pairs) {
-                    String meth = mvp.getNameAsString();
+                    String member = mvp.getNameAsString();
                     Expression exp = mvp.getValue();
-                    handleExpr(builder, meth, exp);
+                    boolean success = handleExpr(builder, member, exp);
+                    if (!success) {
+                        stubAlwaysWarn(
+                                "Annotation expression, %s, could not be processed for annotation: %s. ",
+                                exp, annotation);
+                        return null;
+                    }
                 }
             }
             return builder.build();
@@ -1378,7 +1427,13 @@ public class StubParser {
             }
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoMirror);
             Expression valexpr = sglanno.getMemberValue();
-            handleExpr(builder, "value", valexpr);
+            boolean success = handleExpr(builder, "value", valexpr);
+            if (!success) {
+                stubAlwaysWarn(
+                        "Annotation expression, %s, could not be processed for annotation: %s. ",
+                        valexpr, annotation);
+                return null;
+            }
             return builder.build();
         } else {
             ErrorReporter.errorAbort("StubParser: unknown annotation type: " + annotation);
@@ -1387,148 +1442,179 @@ public class StubParser {
         return annoMirror;
     }
 
-    /*
-     * Handles expressions in annotations.
-     * Supports String, int, and boolean literals, but not other literals
-     * as documented in the stub file limitation section of the manual.
-     */
-    private void handleExpr(AnnotationBuilder builder, String name, Expression expr) {
+    /** Returns the value of {@code expr} or null if some problem occurred getting the value. */
+    private Object getValueOfExpressionInAnnotation(
+            String name, Expression expr, TypeKind valueKind) {
         if (expr instanceof FieldAccessExpr || expr instanceof NameExpr) {
             VariableElement elem;
-            if (expr instanceof FieldAccessExpr) {
-                elem = findVariableElement((FieldAccessExpr) expr);
-            } else {
+            if (expr instanceof NameExpr) {
                 elem = findVariableElement((NameExpr) expr);
+            } else {
+                elem = findVariableElement((FieldAccessExpr) expr);
             }
-
             if (elem == null) {
-                // A warning was already issued by findVariableElement;
-                return;
+                stubAlwaysWarn("Field not found: " + expr);
+                return null;
             }
-
-            ExecutableElement var = builder.findElement(name);
-            TypeMirror expected = var.getReturnType();
-            if (expected.getKind() == TypeKind.DECLARED) {
-                if (elem.getConstantValue() != null) {
-                    builder.setValue(name, (String) elem.getConstantValue());
-                } else {
-                    builder.setValue(name, elem);
-                }
-            } else if (expected.getKind() == TypeKind.ARRAY) {
-                if (elem.getConstantValue() != null) {
-                    String[] arr = {(String) elem.getConstantValue()};
-                    builder.setValue(name, arr);
-                } else {
-                    VariableElement[] arr = {elem};
-                    builder.setValue(name, arr);
-                }
+            Object value = elem.getConstantValue() != null ? elem.getConstantValue() : elem;
+            if (value instanceof Number) {
+                return convert((Number) value, valueKind);
             } else {
-                ErrorReporter.errorAbort(
-                        "StubParser: unhandled annotation attribute type: "
-                                + expr
-                                + " and expected: "
-                                + expected);
-            }
-        } else if (expr instanceof IntegerLiteralExpr) {
-            IntegerLiteralExpr ilexpr = (IntegerLiteralExpr) expr;
-            ExecutableElement var = builder.findElement(name);
-            TypeMirror expected = var.getReturnType();
-            if (expected.getKind() == TypeKind.DECLARED || TypesUtils.isIntegral(expected)) {
-                builder.setValue(name, Integer.valueOf(ilexpr.getValue()));
-            } else if (expected.getKind() == TypeKind.ARRAY) {
-                Integer[] arr = {Integer.valueOf(ilexpr.getValue())};
-                builder.setValue(name, arr);
-            } else {
-                ErrorReporter.errorAbort(
-                        "StubParser: unhandled annotation attribute type: "
-                                + ilexpr
-                                + " and expected: "
-                                + expected);
+                return value;
             }
         } else if (expr instanceof StringLiteralExpr) {
-            StringLiteralExpr slexpr = (StringLiteralExpr) expr;
-            ExecutableElement var = builder.findElement(name);
-            TypeMirror expected = var.getReturnType();
-            if (expected.getKind() == TypeKind.DECLARED) {
-                builder.setValue(name, slexpr.getValue());
-            } else if (expected.getKind() == TypeKind.ARRAY) {
-                String[] arr = {slexpr.getValue()};
-                builder.setValue(name, arr);
-            } else {
-                ErrorReporter.errorAbort(
-                        "StubParser: unhandled annotation attribute type: "
-                                + slexpr
-                                + " and expected: "
-                                + expected);
+            return ((StringLiteralExpr) expr).asString();
+        } else if (expr instanceof BooleanLiteralExpr) {
+            return ((BooleanLiteralExpr) expr).getValue();
+        } else if (expr instanceof CharLiteralExpr) {
+            return convert((int) ((CharLiteralExpr) expr).asChar(), valueKind);
+        } else if (expr instanceof DoubleLiteralExpr) {
+            // No conversion needed if the expression is a double, the annotation value must be a
+            // double, too.
+            return ((DoubleLiteralExpr) expr).asDouble();
+        } else if (expr instanceof IntegerLiteralExpr) {
+            return convert(((IntegerLiteralExpr) expr).asInt(), valueKind);
+        } else if (expr instanceof LongLiteralExpr) {
+            return convert(((LongLiteralExpr) expr).asLong(), valueKind);
+        } else if (expr instanceof ClassExpr) {
+            ClassExpr classExpr = (ClassExpr) expr;
+            String className = classExpr.getType().toString();
+            if (importedTypes.containsKey(className)) {
+                return importedTypes.get(className).asType();
             }
-        } else if (expr instanceof ArrayInitializerExpr) {
-            ExecutableElement var = builder.findElement(name);
-            TypeMirror expected = var.getReturnType();
+            Class<?> clazz;
+            try {
+                clazz = Class.forName(className);
+            } catch (ClassNotFoundException e) {
+                stubAlwaysWarn("StubParser: unknown class name " + className);
+                return null;
+            }
+            // TODO: is it worth putting this value back into importedTypes?
+            return TypesUtils.typeFromClass(
+                    atypeFactory.getContext().getTypeUtils(),
+                    atypeFactory.getElementUtils(),
+                    clazz);
+
+        } else if (expr instanceof NullLiteralExpr) {
+            stubAlwaysWarn(
+                    "Null found as value for %s. Null isn't allowed as an annotation value", name);
+            return null;
+        } else {
+            stubAlwaysWarn("Unexpected annotation expression: " + expr);
+            return null;
+        }
+    }
+
+    /**
+     * Converts {@code number} to {@code expectedKind}.
+     * <p>
+     * {@code @interface Anno { long value();})
+     * {@code @Anno(1)}
+     *
+     * To properly build @Anno, the IntegerLiteralExpr "1" must be converted from an int to a long.
+     * */
+    private Object convert(Number number, TypeKind expectedKind) {
+        switch (expectedKind) {
+            case BYTE:
+                return number.byteValue();
+            case SHORT:
+                return number.shortValue();
+            case INT:
+                return number.intValue();
+            case LONG:
+                return number.longValue();
+            case CHAR:
+                return (char) number.intValue();
+            case FLOAT:
+                return number.floatValue();
+            case DOUBLE:
+                return number.doubleValue();
+            default:
+                ErrorReporter.errorAbort("Unexpected expectedKind: " + expectedKind);
+                return null;
+        }
+    }
+
+    /**
+     * Handles expressions in annotations. Returns false if the expression could not be converted to
+     * a value
+     */
+    private boolean handleExpr(AnnotationBuilder builder, String name, Expression expr) {
+        ExecutableElement var = builder.findElement(name);
+        TypeMirror expected = var.getReturnType();
+        TypeKind valueKind;
+        if (expected.getKind() == TypeKind.ARRAY) {
+            valueKind = ((ArrayType) expected).getComponentType().getKind();
+        } else {
+            valueKind = expected.getKind();
+        }
+        if (expr instanceof ArrayInitializerExpr) {
             if (expected.getKind() != TypeKind.ARRAY) {
-                ErrorReporter.errorAbort(
+                stubAlwaysWarn(
                         "StubParser: unhandled annotation attribute type: "
                                 + expr
                                 + " and expected: "
                                 + expected);
+                return false;
             }
 
-            ArrayInitializerExpr aiexpr = (ArrayInitializerExpr) expr;
-            List<Expression> aiexprvals = aiexpr.getValues();
+            List<Expression> arrayExpressions = ((ArrayInitializerExpr) expr).getValues();
+            Object[] values = new Object[arrayExpressions.size()];
 
-            Object[] elemarr = new Object[aiexprvals.size()];
-
-            Expression anaiexpr;
-            for (int i = 0; i < aiexprvals.size(); ++i) {
-                anaiexpr = aiexprvals.get(i);
-                if (anaiexpr instanceof FieldAccessExpr || anaiexpr instanceof NameExpr) {
-
-                    if (anaiexpr instanceof FieldAccessExpr) {
-                        elemarr[i] = findVariableElement((FieldAccessExpr) anaiexpr);
-                    } else {
-                        elemarr[i] = findVariableElement((NameExpr) anaiexpr);
-                    }
-
-                    if (elemarr[i] == null) {
-                        // A warning was already issued by findVariableElement;
-                        return;
-                    }
-                    String constval = (String) ((VariableElement) elemarr[i]).getConstantValue();
-                    if (constval != null) {
-                        elemarr[i] = constval;
-                    }
-                } else if (anaiexpr instanceof IntegerLiteralExpr) {
-                    elemarr[i] = Integer.valueOf(((IntegerLiteralExpr) anaiexpr).getValue());
-                } else if (anaiexpr instanceof StringLiteralExpr) {
-                    elemarr[i] = ((StringLiteralExpr) anaiexpr).getValue();
-                } else {
-                    ErrorReporter.errorAbort(
-                            "StubParser: unhandled annotation attribute type: " + anaiexpr);
+            for (int i = 0; i < arrayExpressions.size(); ++i) {
+                values[i] =
+                        getValueOfExpressionInAnnotation(name, arrayExpressions.get(i), valueKind);
+                if (values[i] == null) {
+                    return false;
                 }
             }
-
-            builder.setValue(name, elemarr);
-        } else if (expr instanceof BooleanLiteralExpr) {
-            BooleanLiteralExpr blexpr = (BooleanLiteralExpr) expr;
-            ExecutableElement var = builder.findElement(name);
-            TypeMirror expected = var.getReturnType();
-            if (expected.getKind() == TypeKind.BOOLEAN) {
-                builder.setValue(name, blexpr.getValue());
-            } else if (expected.getKind() == TypeKind.ARRAY) {
-                Boolean[] arr = {blexpr.getValue()};
-                builder.setValue(name, arr);
-            } else {
-                ErrorReporter.errorAbort(
-                        "StubParser: unhandled annotation attribute type: "
-                                + blexpr
-                                + " and expected: "
-                                + expected);
-            }
+            builder.setValue(name, values);
         } else {
-            ErrorReporter.errorAbort(
-                    "StubParser: unhandled annotation attribute type: "
-                            + expr
-                            + " class: "
-                            + expr.getClass());
+            Object value = getValueOfExpressionInAnnotation(name, expr, valueKind);
+            if (value == null) {
+                return false;
+            }
+            if (expected.getKind() == TypeKind.ARRAY) {
+                Object[] valueArray = {value};
+                builder.setValue(name, valueArray);
+            } else {
+                builderSetValue(builder, name, value);
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Cast to non-array values so that correct the correct AnnotationBuilder#setValue method is
+     * called. (Different types of values are handled differently.)
+     */
+    private void builderSetValue(AnnotationBuilder builder, String name, Object value) {
+        if (value instanceof Boolean) {
+            builder.setValue(name, (Boolean) value);
+        } else if (value instanceof Character) {
+            builder.setValue(name, (Character) value);
+        } else if (value instanceof Class<?>) {
+            builder.setValue(name, (Class<?>) value);
+        } else if (value instanceof Double) {
+            builder.setValue(name, (Double) value);
+        } else if (value instanceof Enum<?>) {
+            builder.setValue(name, (Enum<?>) value);
+        } else if (value instanceof Float) {
+            builder.setValue(name, (Float) value);
+        } else if (value instanceof Integer) {
+            builder.setValue(name, (Integer) value);
+        } else if (value instanceof Long) {
+            builder.setValue(name, (Long) value);
+        } else if (value instanceof Short) {
+            builder.setValue(name, (Short) value);
+        } else if (value instanceof String) {
+            builder.setValue(name, (String) value);
+        } else if (value instanceof TypeMirror) {
+            builder.setValue(name, (TypeMirror) value);
+        } else if (value instanceof VariableElement) {
+            builder.setValue(name, (VariableElement) value);
+        } else {
+            ErrorReporter.errorAbort("Unexpected builder value: %s", value);
         }
     }
 
@@ -1539,7 +1625,7 @@ public class StubParser {
 
         VariableElement res = null;
         boolean importFound = false;
-        for (String imp : imports) {
+        for (String imp : importedConstants) {
             Pair<String, String> partitionedName = StubUtil.partitionQualifiedName(imp);
             String typeName = partitionedName.first;
             String fieldName = partitionedName.second;
@@ -1576,8 +1662,9 @@ public class StubParser {
         }
         TypeElement rcvElt = elements.getTypeElement(faexpr.getScope().toString());
         if (rcvElt == null) {
-            // Search imports for full annotation name.
-            for (String imp : imports) {
+            // Search importedConstants for full annotation name.
+            for (String imp : importedConstants) {
+                // TODO: should this use StubUtil.partitionQualifiedName?
                 String[] import_delimited = imp.split("\\.");
                 if (import_delimited[import_delimited.length - 1].equals(
                         faexpr.getScope().toString())) {

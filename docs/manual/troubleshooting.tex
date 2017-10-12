@@ -239,7 +239,8 @@ You may be able to solve the problem by running
 to re-generate files \code{checker/jdk/jdk\{8,9\}.jar} and \code{checker/bin/jdk\{8,9\}.jar}.
 
 That usually works, but if not, then you should recompile the Checker
-Framework from source rather than using the pre-compiled distribution.
+Framework from source (Section~\ref{build-source}) rather than using
+the pre-compiled distribution.
 
 
 \item
@@ -267,7 +268,7 @@ correct this by being sure to use \<fork="yes"> (see
 Section~\ref{ant-task}) and/or setting the \<build.compiler> property to
 \<extJavac>.
 
-If you are building from source  (Section~\ref{build-source}),
+If you are building from source (Section~\ref{build-source}),
 you might need to rebuild the Annotation
 File Utilities before recompiling or using the Checker Framework.
 
@@ -797,17 +798,17 @@ cp -p /usr/local/Cellar/hevea/2.28/lib/hevea/hevea.sty $HOME/Library/texmf/tex/l
 \end{Verbatim}
 
 \item[Windows]
-  To building on Windows 10,
+  To build on Windows 10,
   run \<bash> to obtain a version of
   Ubuntu (provided by the Windows Subsystem for Linux) and follow the Ubuntu
   instructions.
 
-To building on other versions of Windows,
-here is an \emph{incomplete} list of needed prerequisites:
-\begin{itemize}
-\item
-  Install MSYS to obtain the \<cp> and \<make> commands.
-\end{itemize}
+% To build on other versions of Windows,
+% here is an \emph{incomplete} list of needed prerequisites:
+% \begin{itemize}
+% \item
+%   Install MSYS to obtain the \<cp> and \<make> commands.
+% \end{itemize}
 
 \end{description}
 
@@ -928,14 +929,11 @@ This is simply done by:
 
 \begin{Verbatim}
   cd $JSR308/stubparser
-  mvn package  -Dmaven.test.skip=true
-  cp -i ./javaparser-core/target/javaparser-core-3.3.4-SNAPSHOT.jar stubparser.jar
+  mvn package -Dmaven.test.skip=true
 \end{Verbatim}
 
 You do not need to add the StubParser to the path, as
 the Checker Framework build finds it using relative paths.
-However, note that you need to copy the generated jar file
-to the stable location \<\$JSR308/stubparser/stubparser.jar>.
 
 
 \subsection{Build the Checker Framework\label{building}}
@@ -1034,8 +1032,11 @@ Run \code{make} in the \code{docs/manual} directory to build both the PDF and HT
 
 \subsection{Enable Travis continuous integration builds\label{building-travis}}
 
+Travis-CI is a continuous integration system:  it runs tests every time you
+push a commit to GitHub.
+
 If you have forked any of the projects rather than just creating a clone,
-then we recommend that you enable Travis-CI continuous integration builds,
+then we recommend that you enable Travis-CI builds,
 so that you learn quickly of any errors that creep into your fork.
 
 Run the
@@ -1059,6 +1060,29 @@ the JDK (some jobs might time out).
 \item Verify that all tests pass.
 \item A Checker Framework developer will review your code and merge your branch.
 \end{enumerate}
+
+
+\subsubsection{Debugging Travis continuous integration builds\label{building-travis-debug}}
+
+If a Travis job is failing, you can reproduce the problem locally.
+The Travis jobs all run within Docker containers.
+Install Docker on your local computer, then perform commands like the
+following to get a shell within Docker:
+
+\begin{Verbatim}
+docker pull mdernst/ubuntu-for-cf-jdk8
+docker run -it mdernst/ubuntu-for-cf-jdk8 /bin/bash
+\end{Verbatim}
+
+Then, you can run arbitrary commands, including those that appear in the
+\<docker run> command in the \<.travis.yml> file.  For example:
+
+\begin{Verbatim}
+export JAVA_HOME=`which javac|xargs readlink -f|xargs dirname|xargs dirname`
+git clone -b $BRANCHNAME --depth 9 https://github.com/$USER/checker-framework.git checker-framework
+cd checker-framework
+./.travis-build.sh all-tests downloadjdk
+\end{Verbatim}
 
 
 \subsection{Code style\label{code-style}}

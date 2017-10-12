@@ -217,6 +217,7 @@ def build_and_locally_deploy_maven(version):
     # Deploy jsr308 and checker-qual jars to maven repo
     mvn_deploy(CHECKER_BINARY, CHECKER_BINARY_POM, MAVEN_DEV_REPO)
     mvn_deploy(CHECKER_QUAL, CHECKER_QUAL_POM, MAVEN_DEV_REPO)
+    mvn_deploy(CHECKER_QUAL7, CHECKER_QUAL7_POM, MAVEN_DEV_REPO)
     mvn_deploy(JAVAC_BINARY, JAVAC_BINARY_POM, MAVEN_DEV_REPO)
     mvn_deploy(JDK8_BINARY, JDK8_BINARY_POM, MAVEN_DEV_REPO)
 
@@ -231,7 +232,6 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
 
     # build stubparser
     execute("mvn package -Dmaven.test.skip=true", True, False, STUBPARSER)
-    execute("cp -i ./javaparser-core/target/javaparser-core-3.3.4-SNAPSHOT.jar stubparser.jar", True, False, STUBPARSER)
 
     # update jsr308_langtools versions
     ant_props = "-Dchecker=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (checker_dir, version, afu_version, afu_build_properties, afu_release_date)

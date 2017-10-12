@@ -9,10 +9,13 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -47,13 +50,13 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -89,13 +92,13 @@ public class LockAnnotatedTypeFactory
     public LockAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
 
-        LOCKHELD = AnnotationUtils.fromClass(elements, LockHeld.class);
-        LOCKPOSSIBLYHELD = AnnotationUtils.fromClass(elements, LockPossiblyHeld.class);
-        SIDEEFFECTFREE = AnnotationUtils.fromClass(elements, SideEffectFree.class);
-        GUARDEDBYUNKNOWN = AnnotationUtils.fromClass(elements, GuardedByUnknown.class);
-        GUARDEDBY = AnnotationUtils.fromClass(elements, GuardedBy.class);
-        GUARDEDBYBOTTOM = AnnotationUtils.fromClass(elements, GuardedByBottom.class);
-        GUARDSATISFIED = AnnotationUtils.fromClass(elements, GuardSatisfied.class);
+        LOCKHELD = AnnotationBuilder.fromClass(elements, LockHeld.class);
+        LOCKPOSSIBLYHELD = AnnotationBuilder.fromClass(elements, LockPossiblyHeld.class);
+        SIDEEFFECTFREE = AnnotationBuilder.fromClass(elements, SideEffectFree.class);
+        GUARDEDBYUNKNOWN = AnnotationBuilder.fromClass(elements, GuardedByUnknown.class);
+        GUARDEDBY = AnnotationBuilder.fromClass(elements, GuardedBy.class);
+        GUARDEDBYBOTTOM = AnnotationBuilder.fromClass(elements, GuardedByBottom.class);
+        GUARDSATISFIED = AnnotationBuilder.fromClass(elements, GuardSatisfied.class);
 
         // This alias is only true for the Lock Checker. All other checkers must
         // ignore the @LockingFree annotation.
@@ -680,8 +683,27 @@ public class LockAnnotatedTypeFactory
             return;
         }
 
-        List<String> lockExpressions =
-                AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+        // The version of javax.annotation.concurrent.GuardedBy included with the Checker Framework
+        // declares the type of value as an array of Strings where as the one included with FindBugs
+        // declares it as a String. So, the code below figures out which type should be used.
+        Map<? extends ExecutableElement, ? extends AnnotationValue> valmap =
+                anno.getElementValues();
+        Object value = null;
+        for (ExecutableElement elem : valmap.keySet()) {
+            if (elem.getSimpleName().contentEquals("value")) {
+                value = valmap.get(elem).getValue();
+                break;
+            }
+        }
+        List<String> lockExpressions;
+        if (value instanceof List) {
+            lockExpressions =
+                    AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+        } else if (value instanceof String) {
+            lockExpressions = Collections.singletonList((String) value);
+        } else {
+            return;
+        }
 
         if (lockExpressions.isEmpty()) {
             atm.addAnnotation(GUARDEDBY);

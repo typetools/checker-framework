@@ -37,6 +37,7 @@ import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -141,7 +142,7 @@ public abstract class AnnotatedTypeMirror {
     // the class name of Annotation instead.
     // Caution: Assumes that a type can have at most one AnnotationMirror for
     // any Annotation type. JSR308 is pushing to have this change.
-    private final Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
+    protected final Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
 
     /** The explicitly written annotations on this type. */
     // TODO: use this to cache the result once computed? For generic types?
@@ -332,7 +333,9 @@ public abstract class AnnotatedTypeMirror {
      * annotationName if one exists, null otherwise.
      *
      * @return the annotation mirror for annotationName
+     * @deprecated use {@link AnnotationUtils#getAnnotationByName(Collection,String)} instead.
      */
+    @Deprecated // Remove after 2.2.1 release
     public AnnotationMirror getAnnotation(Name annotationName) {
         assert annotationName != null : "Null annotationName in getAnnotation";
         return getAnnotation(annotationName.toString().intern());
@@ -343,7 +346,9 @@ public abstract class AnnotatedTypeMirror {
      * argument if one exists, null otherwise.
      *
      * @return the annotation mirror for annotationStr
+     * @deprecated use {@link AnnotationUtils#getAnnotationByName(Collection,String)} instead.
      */
+    @Deprecated // Remove after 2.2.1 release
     public AnnotationMirror getAnnotation(/*@Interned*/ String annotationStr) {
         assert annotationStr != null : "Null annotationName in getAnnotation";
         for (AnnotationMirror anno : getAnnotations()) {
@@ -362,7 +367,7 @@ public abstract class AnnotatedTypeMirror {
      * @return the annotation mirror for anno
      */
     public AnnotationMirror getAnnotation(Class<? extends Annotation> annoClass) {
-        for (AnnotationMirror annoMirror : getAnnotations()) {
+        for (AnnotationMirror annoMirror : annotations) {
             if (AnnotationUtils.areSameByClass(annoMirror, annoClass)) {
                 return annoMirror;
             }
@@ -420,7 +425,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotationRelaxed(AnnotationMirror)
      */
     public boolean hasAnnotation(AnnotationMirror a) {
-        return AnnotationUtils.containsSame(getAnnotations(), a);
+        return AnnotationUtils.containsSame(annotations, a);
     }
 
     /**
@@ -429,7 +434,9 @@ public abstract class AnnotatedTypeMirror {
      * @param a the annotation name to check for
      * @return true iff the type contains the annotation {@code a}
      * @see #hasAnnotationRelaxed(AnnotationMirror)
+     * @deprecated use {@link AnnotationUtils#containsSameByName(Collection,String)} instead.
      */
+    @Deprecated // Remove after 2.2.1 release
     public boolean hasAnnotation(Name a) {
         return getAnnotation(a) != null;
     }
@@ -513,7 +520,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotation(AnnotationMirror)
      */
     public boolean hasAnnotationRelaxed(AnnotationMirror a) {
-        return AnnotationUtils.containsSameIgnoringValues(getAnnotations(), a);
+        return AnnotationUtils.containsSameIgnoringValues(annotations, a);
     }
 
     /**
@@ -597,7 +604,7 @@ public abstract class AnnotatedTypeMirror {
      * @param a the class of the annotation to add
      */
     public void addAnnotation(Class<? extends Annotation> a) {
-        AnnotationMirror anno = AnnotationUtils.fromClass(atypeFactory.elements, a);
+        AnnotationMirror anno = AnnotationBuilder.fromClass(atypeFactory.elements, a);
         addAnnotation(anno);
     }
 
@@ -651,7 +658,8 @@ public abstract class AnnotatedTypeMirror {
         // TODO: however, this also means that if we are annotated with "@I(1)" and
         // remove "@I(2)" it will be removed. Is this what we want?
         // It's currently necessary for the Lock Checker.
-        AnnotationMirror anno = getAnnotation(AnnotationUtils.annotationName(a));
+        AnnotationMirror anno =
+                AnnotationUtils.getAnnotationByName(annotations, AnnotationUtils.annotationName(a));
         if (anno != null) {
             return annotations.remove(anno);
         } else {
@@ -660,7 +668,7 @@ public abstract class AnnotatedTypeMirror {
     }
 
     public boolean removeAnnotation(Class<? extends Annotation> a) {
-        AnnotationMirror anno = AnnotationUtils.fromClass(atypeFactory.elements, a);
+        AnnotationMirror anno = AnnotationBuilder.fromClass(atypeFactory.elements, a);
         if (anno == null || !atypeFactory.isSupportedQualifier(anno)) {
             ErrorReporter.errorAbort(
                     "AnnotatedTypeMirror.removeAnnotation called with un-supported class: " + a);
@@ -925,9 +933,8 @@ public abstract class AnnotatedTypeMirror {
                             (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);
                     AnnotatedWildcardType wct = (AnnotatedWildcardType) typeArgs.get(i);
                     AnnotatedTypeMerger.merge(typeParam.getUpperBound(), wct.getExtendsBound());
-                    wct.getSuperBound()
-                            .replaceAnnotations(typeParam.getLowerBound().getAnnotations());
-                    wct.replaceAnnotations(typeParam.getAnnotations());
+                    wct.getSuperBound().replaceAnnotations(typeParam.getLowerBound().annotations);
+                    wct.replaceAnnotations(typeParam.annotations);
                 }
                 return typeArgs;
             } else if (getUnderlyingType().getTypeArguments().isEmpty()) {
@@ -1017,8 +1024,8 @@ public abstract class AnnotatedTypeMirror {
                                         atypeFactory.types.erasure(actualType),
                                         atypeFactory,
                                         declaration);
-                rType.addAnnotations(getAnnotations());
-                rType.setTypeArguments(Collections.<AnnotatedTypeMirror>emptyList());
+                rType.addAnnotations(annotations);
+                rType.setTypeArguments(Collections.emptyList());
                 return rType.getErased();
 
             } else if ((getEnclosingType() != null)

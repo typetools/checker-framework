@@ -517,8 +517,9 @@ warnings. These cases are:
 
 \section{Implicit qualifiers\label{formatter-implicit}}
 
-As described in Section~\ref{effective-qualifier}, the Format String Checker adds implicit
-qualifiers, reducing the number of annotations that must appear in your code.
+The Format String Checker adds implicit
+qualifiers, reducing the number of annotations that must appear in your code
+(see Section~\ref{effective-qualifier}).
 The checker implicitly adds the \code{@Format} qualifier with the appropriate
 conversion categories to any String literal that is a valid format string.
 
@@ -539,10 +540,10 @@ void log(String format, Object... args) {
 \end{Verbatim}
 
 You should annotate such a method with the
- \refqualclass{checker/formatter/qual}{FormatMethod} annotation.
-This instructs the Format String Checker to check every
-invocation of the method. This check is analogous to the check done on
-every invocation of built-in format methods like \code{String.format}.
+\refqualclass{checker/formatter/qual}{FormatMethod} annotation,
+which indicates that the \<String> argument is a format string for the
+remaining arguments.
+
 
 \section{Testing whether a format string is valid\label{formatter-run-time-tests}}
 

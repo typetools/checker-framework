@@ -100,6 +100,7 @@ import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -406,7 +407,7 @@ public abstract class GenericAnnotatedTypeFactory<
         List<Pair<VariableElement, CFValue>> tmp = new ArrayList<>();
         for (Pair<VariableElement, Value> fieldVal : fieldValues) {
             assert fieldVal.second instanceof CFValue;
-            tmp.add(Pair.<VariableElement, CFValue>of(fieldVal.first, (CFValue) fieldVal.second));
+            tmp.add(Pair.of(fieldVal.first, (CFValue) fieldVal.second));
         }
         return (FlowAnalysis) new CFAnalysis(checker, (GenericAnnotatedTypeFactory) this, tmp);
     }
@@ -566,7 +567,7 @@ public abstract class GenericAnnotatedTypeFactory<
             DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
             if (defaultFor != null) {
                 final TypeUseLocation[] locations = defaultFor.value();
-                defs.addCheckedCodeDefaults(AnnotationUtils.fromClass(elements, qual), locations);
+                defs.addCheckedCodeDefaults(AnnotationBuilder.fromClass(elements, qual), locations);
                 foundOtherwise =
                         foundOtherwise
                                 || Arrays.asList(locations).contains(TypeUseLocation.OTHERWISE);
@@ -574,12 +575,12 @@ public abstract class GenericAnnotatedTypeFactory<
 
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
                 defs.addCheckedCodeDefault(
-                        AnnotationUtils.fromClass(elements, qual), TypeUseLocation.OTHERWISE);
+                        AnnotationBuilder.fromClass(elements, qual), TypeUseLocation.OTHERWISE);
                 foundOtherwise = true;
             }
         }
         // If Unqualified is a supported qualifier, make it the default.
-        AnnotationMirror unqualified = AnnotationUtils.fromClass(elements, Unqualified.class);
+        AnnotationMirror unqualified = AnnotationBuilder.fromClass(elements, Unqualified.class);
         if (!foundOtherwise && this.isSupportedQualifier(unqualified)) {
             defs.addCheckedCodeDefault(unqualified, TypeUseLocation.OTHERWISE);
         }
@@ -626,13 +627,14 @@ public abstract class GenericAnnotatedTypeFactory<
             if (defaultInUncheckedCodeFor != null) {
                 final TypeUseLocation[] locations = defaultInUncheckedCodeFor.value();
                 defs.addUncheckedCodeDefaults(
-                        AnnotationUtils.fromClass(elements, annotation), locations);
+                        AnnotationBuilder.fromClass(elements, annotation), locations);
             }
 
             if (annotation.getAnnotation(DefaultQualifierInHierarchyInUncheckedCode.class)
                     != null) {
                 defs.addUncheckedCodeDefault(
-                        AnnotationUtils.fromClass(elements, annotation), TypeUseLocation.OTHERWISE);
+                        AnnotationBuilder.fromClass(elements, annotation),
+                        TypeUseLocation.OTHERWISE);
             }
         }
     }

@@ -10,6 +10,7 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -33,11 +34,11 @@ import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -55,9 +56,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        UNKNOWN = AnnotationUtils.fromClass(elements, SameLenUnknown.class);
-        BOTTOM = AnnotationUtils.fromClass(elements, SameLenBottom.class);
-        POLY = AnnotationUtils.fromClass(elements, PolySameLen.class);
+        UNKNOWN = AnnotationBuilder.fromClass(elements, SameLenUnknown.class);
+        BOTTOM = AnnotationBuilder.fromClass(elements, SameLenBottom.class);
+        POLY = AnnotationBuilder.fromClass(elements, PolySameLen.class);
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyLength.class, POLY);
 
@@ -116,25 +117,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
         return atm;
-    }
-
-    /**
-     * Checks whether the two string lists contain at least one string that's the same. Not a smart
-     * algorithm; meant to be run over small sets of data.
-     *
-     * @param listA the first string list
-     * @param listB the second string list
-     * @return true if the intersection is non-empty; false otherwise
-     */
-    private boolean overlap(List<String> listA, List<String> listB) {
-        for (String a : listA) {
-            for (String b : listB) {
-                if (a.equals(b)) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     /**
@@ -230,7 +212,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<String> a1Val = getValueOfAnnotationWithStringArgument(a1);
                 List<String> a2Val = getValueOfAnnotationWithStringArgument(a2);
 
-                if (overlap(a1Val, a2Val)) {
+                if (!Collections.disjoint(a1Val, a2Val)) {
                     return getCombinedSameLen(a1Val, a2Val);
                 } else {
                     return BOTTOM;
@@ -255,8 +237,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<String> a1Val = getValueOfAnnotationWithStringArgument(a1);
                 List<String> a2Val = getValueOfAnnotationWithStringArgument(a2);
 
-                if (overlap(a1Val, a2Val)) {
-                    return getCombinedSameLen(a1Val, a2Val);
+                if (!Collections.disjoint(a1Val, a2Val)) {
+                    a1Val.retainAll(a2Val);
+                    return createSameLen(a1Val.toArray(new String[0]));
                 } else {
                     return UNKNOWN;
                 }

@@ -2,7 +2,6 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +15,6 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.nullness.KeyForPropagator.PropagationDirection;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
@@ -25,7 +23,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -34,10 +31,9 @@ import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.visitor.VisitHistory;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
@@ -55,9 +51,9 @@ public class KeyForAnnotatedTypeFactory
     public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
 
-        KEYFOR = AnnotationUtils.fromClass(elements, KeyFor.class);
-        UNKNOWNKEYFOR = AnnotationUtils.fromClass(elements, UnknownKeyFor.class);
-        KEYFORBOTTOM = AnnotationUtils.fromClass(elements, KeyForBottom.class);
+        KEYFOR = AnnotationBuilder.fromClass(elements, KeyFor.class);
+        UNKNOWNKEYFOR = AnnotationBuilder.fromClass(elements, UnknownKeyFor.class);
+        KEYFORBOTTOM = AnnotationBuilder.fromClass(elements, KeyForBottom.class);
         keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
 
         // Add compatibility annotations:
@@ -88,27 +84,7 @@ public class KeyForAnnotatedTypeFactory
             NewClassTree tree) {
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> result =
                 super.constructorFromUse(tree);
-
-        final AnnotatedTypeMirror returnType = result.first.getReturnType();
-
-        // Can we square this with the KeyForPropagationTreeAnnotator
-        Pair<Tree, AnnotatedTypeMirror> context = getVisitorState().getAssignmentContext();
-
-        if (returnType.getKind() == TypeKind.DECLARED && context != null && context.first != null) {
-            AnnotatedTypeMirror assignedTo = TypeArgInferenceUtil.assignedTo(this, getPath(tree));
-
-            if (assignedTo != null) {
-                // array types and boxed primitives etc don't require propagation
-                if (assignedTo.getKind() == TypeKind.DECLARED) {
-                    final AnnotatedDeclaredType newClassType = (AnnotatedDeclaredType) returnType;
-                    keyForPropagator.propagate(
-                            newClassType,
-                            (AnnotatedDeclaredType) assignedTo,
-                            PropagationDirection.TO_SUBTYPE,
-                            this);
-                }
-            }
-        }
+        keyForPropagator.propagateNewClassTree(tree, result.first.getReturnType(), this);
         return result;
     }
 
