@@ -91,9 +91,17 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
                 LiteralTree literal = (LiteralTree) group;
                 int paramGroups = (Integer) literal.getValue();
                 ExpressionTree receiver = TreeUtils.getReceiverTree(node);
+                if (receiver == null) {
+                    // When checking java.util.regex.Matcher, calls to group (and other methods) don't
+                    // have a receiver tree.  So, just do the regular checking.  Verifying Matcher
+                    // or any other subclass of MatcherResult (where group is declared) is out of
+                    // scope for this checker.
+                    return super.visitMethodInvocation(node, p);
+                }
                 int annoGroups = 0;
                 AnnotatedTypeMirror receiverType = atypeFactory.getAnnotatedType(receiver);
-                if (receiverType.hasAnnotation(Regex.class)) {
+
+                if (receiverType != null && receiverType.hasAnnotation(Regex.class)) {
                     annoGroups =
                             atypeFactory.getGroupCount(receiverType.getAnnotation(Regex.class));
                 }
