@@ -2399,8 +2399,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Type checks that a method may override another method. Uses an OverrideChecker subclass as
-     * created by createOverrideChecker().
+     * created by createOverrideChecker(). This version of the method uses the annotated type
+     * factory to get the annotated type of the overriding method, and does NOT expose that type.
      *
+     * @see #checkOverride(MethodTree, AnnotatedExecutableType, AnnotatedDeclaredType,
+     *     AnnotatedExecutableType, AnnotatedDeclaredType, Void)
      * @param overriderTree declaration tree of overriding method
      * @param overridingType type of overriding class
      * @param overridden type of overridden method
@@ -2416,6 +2419,35 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // Get the type of the overriding method.
         AnnotatedExecutableType overrider = atypeFactory.getAnnotatedType(overriderTree);
+
+        // Call the other version of the method, which takes overrider. Both versions
+        // exist to allow checkers to override one or the other depending on their needs.
+        return checkOverride(
+                overriderTree, overrider, overridingType, overridden, overriddenType, p);
+    }
+
+    /**
+     * Type checks that a method may override another method. Uses an OverrideChecker subclass as
+     * created by createOverrideChecker(). This version of the method exposes
+     * AnnotatedExecutableType of the overriding method. Override this version of the method if you
+     * need to access that type.
+     *
+     * @see #checkOverride(MethodTree, AnnotatedDeclaredType, AnnotatedExecutableType,
+     *     AnnotatedDeclaredType, Void)
+     * @param overriderTree declaration tree of overriding method
+     * @param overrider type of the overriding method
+     * @param overridingType type of overriding class
+     * @param overridden type of overridden method
+     * @param overriddenType type of overridden class
+     * @return true if the override is allowed
+     */
+    protected boolean checkOverride(
+            MethodTree overriderTree,
+            AnnotatedExecutableType overrider,
+            AnnotatedDeclaredType overridingType,
+            AnnotatedExecutableType overridden,
+            AnnotatedDeclaredType overriddenType,
+            Void p) {
 
         // This needs to be done before overrider.getReturnType() and overridden.getReturnType()
         if (overrider.getTypeVariables().isEmpty() && !overridden.getTypeVariables().isEmpty()) {
