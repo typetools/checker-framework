@@ -84,7 +84,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             // This is a dependent annotation. If this is a local variable,
             // issue a warning; dependent annotations should not be written on local variables.
             Element elt = TreeUtils.elementFromDeclaration(node);
-            boolean allVariablesFinal = true;
+            boolean allVariablesEffectivelyFinal = true;
 
             UBQualifier qual = UBQualifier.createUBQualifier(anm);
             if (qual.isLessThanLengthQualifier()) {
@@ -92,18 +92,21 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 for (String array : ltl.getSequences()) {
                     Receiver rec = getReceiverForCheckingDependentTypes(array, node);
                     // covers final and effectively final variables
-                    boolean isFinal =
+                    boolean isEffectivelyFinal =
                             rec == null
                                     || rec.isUnmodifiableByOtherCode()
-                                    || rec instanceof FlowExpressions.LocalVariable;
-                    if (!isFinal) {
-                        allVariablesFinal = false;
+                                    || (rec instanceof FlowExpressions.LocalVariable
+                                            && ElementUtils.isEffectivelyFinal(
+                                                    ((FlowExpressions.LocalVariable) rec)
+                                                            .getElement()));
+                    if (!isEffectivelyFinal) {
+                        allVariablesEffectivelyFinal = false;
                         checkIfPermittedInDependentTypeAnno(rec, array, node);
                     }
                 }
             }
 
-            if (elt.getKind() == ElementKind.LOCAL_VARIABLE && !allVariablesFinal) {
+            if (elt.getKind() == ElementKind.LOCAL_VARIABLE && !allVariablesEffectivelyFinal) {
                 checker.report(Result.warning(LOCAL_VAR_ANNO), node);
             }
         }
@@ -111,6 +114,14 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         return super.visitVariable(node, p);
     }
 
+    /**
+     * Find the Receiver associated with the given String, on the current path. Issues a checker
+     * warning if {@code expr} is unparseable.
+     *
+     * @param expr a String containing a Java expression that is currently in scope
+     * @param tree the current tree, for error reporting
+     * @return the Receiver for the Java expression named by {@code expr} in the current scope
+     */
     private Receiver getReceiverForCheckingDependentTypes(String expr, Tree tree) {
         try {
             return atypeFactory.getReceiverFromJavaExpressionString(expr, getCurrentPath());
@@ -123,6 +134,16 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
     }
 
+    /**
+     * Determines whether the Receiver {@code rec} is allowed in a dependent annotation, following
+     * the rules defined by the JavaDoc on {@link #visitVariable(VariableTree, Void)}. Issues an
+     * error if the Receiver does not meet the conditions listed there.
+     *
+     * @param rec the Receiver to check
+     * @param expr the String that Receiver was derived from. Used only for error reporting.
+     * @param tree the current scope. Used for error reporting.
+     * @return true iff the Receiver is permitted in a dependent type
+     */
     private boolean checkIfPermittedInDependentTypeAnno(Receiver rec, String expr, Tree tree) {
 
         if (rec == null) {
@@ -136,8 +157,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         if (rec instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess faRec = (FlowExpressions.FieldAccess) rec;
             if (faRec.getField().getModifiers().contains(Modifier.PRIVATE)
-                    || (faRec.getField().getModifiers().contains(Modifier.PUBLIC)
-                            && faRec.isFinal()
+                    || (faRec.isFinal()
                             && checkIfPermittedInDependentTypeAnno(
                                     faRec.getReceiver(), faRec.getReceiver().toString(), tree))) {
                 return true;
@@ -304,6 +324,12 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
     }
 
+    /**
+     * When non-side-effect-free methods are called, they may invalidate some dependent types. This
+     * method checks if the method being called is side-effecting, and if so, it dispatches to the
+     * code that finds in-scope dependent annotations and then checks whether they might be
+     * invalidated.
+     */
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         ExecutableElement elt = TreeUtils.elementFromUse(node);
@@ -318,6 +344,11 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         return super.visitMethodInvocation(node, p);
     }
 
+    /**
+     * The standard rules for the commonAssignmentCheck continue to apply; this method first calls
+     * {@code super.commonAssignmentCheck} before doing anything else. Afterwards, it checks to see
+     * if the reassignment might invalidate any dependent types in scope.
+     */
     @Override
     protected void commonAssignmentCheck(
             Tree varTree, ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
@@ -353,9 +384,19 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
     }
 
+    /**
+     * Checks whether any annotations in scope are dependent and need to be invalidated by the given
+     * side effect.
+     *
+     * @param elt An element corresponding to the side effect that caused the invalidation.
+     * @param possiblyInvalidatedRec A receiver representing the possibly invalidated expression.
+     * @param tree The tree on which the side effect occurs. Used in error reporting.
+     * @param path The path on which the side effect occurs. Used for parsing.
+     * @param sideEffectKind The type of side effect. See {@link SideEffectKind}.
+     */
     private void checkAnnotationsInClass(
             Element elt,
-            Receiver canonicalTargetName,
+            Receiver possiblyInvalidatedRec,
             Tree tree,
             TreePath path,
             SideEffectKind sideEffectKind) {
@@ -367,7 +408,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                     UpperBoundUtil.getDependentReceivers(atm.getAnnotations(), path, atypeFactory);
             for (Receiver r : rs) {
                 SideEffectError result =
-                        UpperBoundUtil.isSideEffected(r, canonicalTargetName, sideEffectKind);
+                        UpperBoundUtil.isSideEffected(r, possiblyInvalidatedRec, sideEffectKind);
                 if (result != UpperBoundUtil.SideEffectError.NO_ERROR) {
                     checker.report(Result.failure(result.errorKey, atm), tree);
                 }
@@ -375,6 +416,12 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         }
     }
 
+    /**
+     * Finds all the annotated types associated with a list of elements.
+     *
+     * @param enclosedElts the list of elements to find annotated types for
+     * @return a list of annotated types
+     */
     private List<AnnotatedTypeMirror> findEnclosedTypes(List<? extends Element> enclosedElts) {
         List<AnnotatedTypeMirror> enclosedTypes = new ArrayList<>();
         for (Element e : enclosedElts) {
