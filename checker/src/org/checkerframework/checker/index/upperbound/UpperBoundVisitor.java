@@ -10,6 +10,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -34,6 +35,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -47,8 +49,13 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     private static final String UPPER_BOUND_CONST = "array.access.unsafe.high.constant";
     private static final String UPPER_BOUND_RANGE = "array.access.unsafe.high.range";
 
+    private final Map<Element, List<? extends Element>> enclosingElementsCache;
+    private final int ENCLOSING_ELEMENTS_CACHE_SIZE =
+            500; // arbitrary, but based on the size of the annotation cache in AnnotationUtils
+
     public UpperBoundVisitor(BaseTypeChecker checker) {
         super(checker);
+        enclosingElementsCache = CollectionUtils.createLRUCache(ENCLOSING_ELEMENTS_CACHE_SIZE);
     }
 
     /**
@@ -401,7 +408,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             TreePath path,
             SideEffectKind sideEffectKind) {
         List<? extends Element> enclosedElts =
-                ElementUtils.enclosingClass(elt).getEnclosedElements();
+                enclosingElementsCache.containsKey(elt)
+                        ? enclosingElementsCache.get(elt)
+                        : enclosingElementsCache.put(
+                                elt, ElementUtils.enclosingClass(elt).getEnclosedElements());
         List<AnnotatedTypeMirror> enclosedTypes = findEnclosedTypes(enclosedElts);
         for (AnnotatedTypeMirror atm : enclosedTypes) {
             List<Receiver> rs =
