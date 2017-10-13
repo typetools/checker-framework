@@ -31,5 +31,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface IndexFor {
     /** Sequences that the annotated expression is a valid index for. */
-    String[] value() default {};
+    String[] value();
 }

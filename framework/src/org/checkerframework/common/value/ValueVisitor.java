@@ -89,12 +89,17 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     @Override
     protected boolean checkOverride(
             MethodTree overriderTree,
+            AnnotatedTypeMirror.AnnotatedExecutableType overrider,
             AnnotatedTypeMirror.AnnotatedDeclaredType overridingType,
             AnnotatedTypeMirror.AnnotatedExecutableType overridden,
             AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType,
             Void p) {
+
+        replaceSpecialIntRangeAnnotations(overrider);
         replaceSpecialIntRangeAnnotations(overridden);
-        return super.checkOverride(overriderTree, overridingType, overridden, overriddenType, p);
+
+        return super.checkOverride(
+                overriderTree, overrider, overridingType, overridden, overriddenType, p);
     }
 
     /**

@@ -15,5 +15,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface LengthOf {
     /** Sequences that the annotated expression is equal to the lengeth of. */
-    String[] value() default {};
+    String[] value();
 }

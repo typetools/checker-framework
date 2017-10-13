@@ -962,7 +962,7 @@ public abstract class UBQualifier {
     }
 
     private static class PolyQualifier extends UBQualifier {
-        static final UBQualifier POLY = new UpperBoundBottomQualifier();
+        static final UBQualifier POLY = new PolyQualifier();
 
         @Override
         public boolean isPoly() {

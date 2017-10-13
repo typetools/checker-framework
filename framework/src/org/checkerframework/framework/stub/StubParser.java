@@ -1350,7 +1350,8 @@ public class StubParser {
      * Issues a warning even if {@code -AstubWarnIfNotFound} or {@code -AstubDebugs} options are not
      * passed.
      */
-    private void stubAlwaysWarn(String warning) {
+    private void stubAlwaysWarn(String warning, Object... args) {
+        warning = String.format(warning, args);
         ensureSingleLine(warning, "stubAlwaysWarn");
         if (warnings.add(warning)) {
             processingEnv
@@ -1382,6 +1383,10 @@ public class StubParser {
         }
     }
 
+    /**
+     * Convert {@code annotation} into an AnnotationMirror. Returns null if the annotation isn't
+     * supported by the checker or if some error occurred while converting it.
+     */
     private AnnotationMirror getAnnotation(
             AnnotationExpr annotation, Map<String, AnnotationMirror> supportedAnnotations) {
         AnnotationMirror annoMirror;
@@ -1402,7 +1407,13 @@ public class StubParser {
                 for (MemberValuePair mvp : pairs) {
                     String member = mvp.getNameAsString();
                     Expression exp = mvp.getValue();
-                    handleExpr(builder, member, exp);
+                    boolean success = handleExpr(builder, member, exp);
+                    if (!success) {
+                        stubAlwaysWarn(
+                                "Annotation expression, %s, could not be processed for annotation: %s. ",
+                                exp, annotation);
+                        return null;
+                    }
                 }
             }
             return builder.build();
@@ -1416,7 +1427,13 @@ public class StubParser {
             }
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoMirror);
             Expression valexpr = sglanno.getMemberValue();
-            handleExpr(builder, "value", valexpr);
+            boolean success = handleExpr(builder, "value", valexpr);
+            if (!success) {
+                stubAlwaysWarn(
+                        "Annotation expression, %s, could not be processed for annotation: %s. ",
+                        valexpr, annotation);
+                return null;
+            }
             return builder.build();
         } else {
             ErrorReporter.errorAbort("StubParser: unknown annotation type: " + annotation);
@@ -1425,6 +1442,7 @@ public class StubParser {
         return annoMirror;
     }
 
+    /** Returns the value of {@code expr} or null if some problem occurred getting the value. */
     private Object getValueOfExpressionInAnnotation(
             String name, Expression expr, TypeKind valueKind) {
         if (expr instanceof FieldAccessExpr || expr instanceof NameExpr) {
@@ -1435,9 +1453,8 @@ public class StubParser {
                 elem = findVariableElement((FieldAccessExpr) expr);
             }
             if (elem == null) {
-                // TODO: should this be stubAlwaysWarn, as it is an input stub file error?
-                ErrorReporter.errorAbort("Field not found: " + expr);
-                return null; // dead code
+                stubAlwaysWarn("Field not found: " + expr);
+                return null;
             }
             Object value = elem.getConstantValue() != null ? elem.getConstantValue() : elem;
             if (value instanceof Number) {
@@ -1458,8 +1475,7 @@ public class StubParser {
         } else if (expr instanceof IntegerLiteralExpr) {
             return convert(((IntegerLiteralExpr) expr).asInt(), valueKind);
         } else if (expr instanceof LongLiteralExpr) {
-            // No convert if the expression is a long, the annotation value must be a long, too.
-            return ((LongLiteralExpr) expr).asLong();
+            return convert(((LongLiteralExpr) expr).asLong(), valueKind);
         } else if (expr instanceof ClassExpr) {
             ClassExpr classExpr = (ClassExpr) expr;
             String className = classExpr.getType().toString();
@@ -1470,9 +1486,8 @@ public class StubParser {
             try {
                 clazz = Class.forName(className);
             } catch (ClassNotFoundException e) {
-                // TODO: should this be stubAlwaysWarn, as it is an input stub file error?
-                ErrorReporter.errorAbort("StubParser: unknown class name " + className);
-                throw new Error("dead code; this can't happen");
+                stubAlwaysWarn("StubParser: unknown class name " + className);
+                return null;
             }
             // TODO: is it worth putting this value back into importedTypes?
             return TypesUtils.typeFromClass(
@@ -1481,13 +1496,12 @@ public class StubParser {
                     clazz);
 
         } else if (expr instanceof NullLiteralExpr) {
-            // TODO: should this be stubAlwaysWarn, as it is an input stub file error?
-            ErrorReporter.errorAbort(
+            stubAlwaysWarn(
                     "Null found as value for %s. Null isn't allowed as an annotation value", name);
-            return null; // dead code
+            return null;
         } else {
-            ErrorReporter.errorAbort("Unexpected annotation expression: " + expr);
-            return null; // dead code
+            stubAlwaysWarn("Unexpected annotation expression: " + expr);
+            return null;
         }
     }
 
@@ -1521,8 +1535,11 @@ public class StubParser {
         }
     }
 
-    /** Handles expressions in annotations. */
-    private void handleExpr(AnnotationBuilder builder, String name, Expression expr) {
+    /**
+     * Handles expressions in annotations. Returns false if the expression could not be converted to
+     * a value
+     */
+    private boolean handleExpr(AnnotationBuilder builder, String name, Expression expr) {
         ExecutableElement var = builder.findElement(name);
         TypeMirror expected = var.getReturnType();
         TypeKind valueKind;
@@ -1538,6 +1555,7 @@ public class StubParser {
                                 + expr
                                 + " and expected: "
                                 + expected);
+                return false;
             }
 
             List<Expression> arrayExpressions = ((ArrayInitializerExpr) expr).getValues();
@@ -1546,10 +1564,16 @@ public class StubParser {
             for (int i = 0; i < arrayExpressions.size(); ++i) {
                 values[i] =
                         getValueOfExpressionInAnnotation(name, arrayExpressions.get(i), valueKind);
+                if (values[i] == null) {
+                    return false;
+                }
             }
             builder.setValue(name, values);
         } else {
             Object value = getValueOfExpressionInAnnotation(name, expr, valueKind);
+            if (value == null) {
+                return false;
+            }
             if (expected.getKind() == TypeKind.ARRAY) {
                 Object[] valueArray = {value};
                 builder.setValue(name, valueArray);
@@ -1557,6 +1581,7 @@ public class StubParser {
                 builderSetValue(builder, name, value);
             }
         }
+        return true;
     }
 
     /**
