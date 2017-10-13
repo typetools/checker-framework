@@ -3,4 +3,4 @@ dataflow.pdf: dataflow.tex content.tex
 	pdflatex dataflow
 
 clean:
-	\rm -f dataflow.aux dataflow.pdf
+	\rm -f dataflow.aux dataflow.log dataflow.out dataflow.pdf

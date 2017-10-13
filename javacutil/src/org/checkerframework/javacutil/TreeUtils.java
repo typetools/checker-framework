@@ -1,9 +1,5 @@
 package org.checkerframework.javacutil;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.*;
-*/
-
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.BinaryTree;
@@ -33,6 +29,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -45,7 +42,12 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+
+/*>>>
+import org.checkerframework.checker.nullness.qual.*;
+*/
 
 /** A utility class made for helping to analyze a given {@code Tree}. */
 // TODO: This class needs significant restructuring
@@ -701,36 +703,71 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns the ExecutableElement for a method declaration of methodName, in class typeName, with
-     * params parameters.
-     *
-     * <p>TODO: to precisely resolve method overloading, we should use parameter types and not just
-     * the number of parameters!
+     * Returns the ExecutableElement for the method declaration of methodName, in class typeName,
+     * with params formal parameters. Errs if there is not exactly one matching method. If more than
+     * one method takes the same number of formal parameters, then use {@link #getMethod(String,
+     * String, ProcessingEnvironment, String...)}.
      */
     public static ExecutableElement getMethod(
             String typeName, String methodName, int params, ProcessingEnvironment env) {
-        TypeElement typeElt = env.getElementUtils().getTypeElement(typeName);
-        for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
-            if (exec.getSimpleName().contentEquals(methodName)
-                    && exec.getParameters().size() == params) {
-                return exec;
-            }
+        List<ExecutableElement> methods = getMethodList(typeName, methodName, params, env);
+        if (methods.size() == 1) {
+            return methods.get(0);
         }
-        ErrorReporter.errorAbort("TreeUtils.getMethod: shouldn't be here!");
+        ErrorReporter.errorAbort("TreeUtils.getMethod: expected 1 match, found " + methods.size());
         return null; // dead code
     }
 
+    /**
+     * Returns all ExecutableElements for method declarations of methodName, in class typeName, with
+     * params formal parameters.
+     */
     public static List<ExecutableElement> getMethodList(
             String typeName, String methodName, int params, ProcessingEnvironment env) {
-        List<ExecutableElement> methods = new ArrayList<>();
-        TypeElement typeElement = env.getElementUtils().getTypeElement(typeName);
-        for (ExecutableElement exec : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
+        List<ExecutableElement> methods = new ArrayList<>(1);
+        TypeElement typeElt = env.getElementUtils().getTypeElement(typeName);
+        for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
             if (exec.getSimpleName().contentEquals(methodName)
                     && exec.getParameters().size() == params) {
                 methods.add(exec);
             }
         }
         return methods;
+    }
+
+    /**
+     * Returns the ExecutableElement for a method declaration of methodName, in class typeName, with
+     * formal parameters of the given types. Errs if there is no matching method.
+     */
+    public static ExecutableElement getMethod(
+            String typeName, String methodName, ProcessingEnvironment env, String... paramTypes) {
+        TypeElement typeElt = env.getElementUtils().getTypeElement(typeName);
+        for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
+            if (exec.getSimpleName().contentEquals(methodName)
+                    && exec.getParameters().size() == paramTypes.length) {
+                boolean typesMatch = true;
+                List<? extends VariableElement> params = exec.getParameters();
+                for (int i = 0; i < paramTypes.length; i++) {
+                    VariableElement ve = params.get(i);
+                    TypeMirror tm = ve.asType();
+                    if (!tm.toString().equals(paramTypes[i])) {
+                        typesMatch = false;
+                        break;
+                    }
+                }
+                if (typesMatch) {
+                    return exec;
+                }
+            }
+        }
+        ErrorReporter.errorAbort(
+                "TreeUtils.getMethod: found no match for "
+                        + typeName
+                        + "."
+                        + methodName
+                        + "("
+                        + Arrays.toString(paramTypes));
+        return null; // dead code
     }
 
     /**
