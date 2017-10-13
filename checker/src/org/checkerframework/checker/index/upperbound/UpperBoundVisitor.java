@@ -408,10 +408,11 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             TreePath path,
             SideEffectKind sideEffectKind) {
         List<? extends Element> enclosedElts =
-                enclosingElementsCache.containsKey(elt)
-                        ? enclosingElementsCache.get(elt)
-                        : enclosingElementsCache.put(
-                                elt, ElementUtils.enclosingClass(elt).getEnclosedElements());
+                enclosingElementsCache.containsKey(elt) ? enclosingElementsCache.get(elt) : null;
+        if (enclosedElts == null) {
+            enclosedElts = ElementUtils.enclosingClass(elt).getEnclosedElements();
+            enclosingElementsCache.put(elt, enclosedElts);
+        }
         List<AnnotatedTypeMirror> enclosedTypes = findEnclosedTypes(enclosedElts);
         for (AnnotatedTypeMirror atm : enclosedTypes) {
             List<Receiver> rs =
