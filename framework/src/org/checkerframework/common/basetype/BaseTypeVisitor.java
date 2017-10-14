@@ -560,7 +560,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 AnnotatedExecutableType overriddenMethod =
                         AnnotatedTypes.asMemberOf(
                                 types, atypeFactory, overriddenType, pair.getValue());
-                if (!checkOverride(node, enclosingType, overriddenMethod, overriddenType, p)) {
+                if (!checkOverride(node, enclosingType, overriddenMethod, overriddenType)) {
                     // Stop at the first mismatch; this makes a difference only if
                     // -Awarns is passed, in which case multiple warnings might be raised on
                     // the same method, not adding any value. See Issue 373.
@@ -2414,16 +2414,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             MethodTree overriderTree,
             AnnotatedDeclaredType overridingType,
             AnnotatedExecutableType overridden,
-            AnnotatedDeclaredType overriddenType,
-            Void p) {
+            AnnotatedDeclaredType overriddenType) {
 
         // Get the type of the overriding method.
         AnnotatedExecutableType overrider = atypeFactory.getAnnotatedType(overriderTree);
 
         // Call the other version of the method, which takes overrider. Both versions
         // exist to allow checkers to override one or the other depending on their needs.
-        return checkOverride(
-                overriderTree, overrider, overridingType, overridden, overriddenType, p);
+        return checkOverride(overriderTree, overrider, overridingType, overridden, overriddenType);
     }
 
     /**
@@ -2446,8 +2444,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedExecutableType overrider,
             AnnotatedDeclaredType overridingType,
             AnnotatedExecutableType overridden,
-            AnnotatedDeclaredType overriddenType,
-            Void p) {
+            AnnotatedDeclaredType overriddenType) {
 
         // This needs to be done before overrider.getReturnType() and overridden.getReturnType()
         if (overrider.getTypeVariables().isEmpty() && !overridden.getTypeVariables().isEmpty()) {
