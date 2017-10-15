@@ -2403,7 +2403,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * factory to get the annotated type of the overriding method, and does NOT expose that type.
      *
      * @see #checkOverride(MethodTree, AnnotatedExecutableType, AnnotatedDeclaredType,
-     *     AnnotatedExecutableType, AnnotatedDeclaredType, Void)
+     *     AnnotatedExecutableType, AnnotatedDeclaredType)
      * @param overriderTree declaration tree of overriding method
      * @param overridingType type of overriding class
      * @param overridden type of overridden method
@@ -2431,7 +2431,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * need to access that type.
      *
      * @see #checkOverride(MethodTree, AnnotatedDeclaredType, AnnotatedExecutableType,
-     *     AnnotatedDeclaredType, Void)
+     *     AnnotatedDeclaredType)
      * @param overriderTree declaration tree of overriding method
      * @param overrider type of the overriding method
      * @param overridingType type of overriding class
