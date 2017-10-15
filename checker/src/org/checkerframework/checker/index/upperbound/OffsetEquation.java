@@ -74,7 +74,7 @@ public class OffsetEquation {
                 || !that.addedTerms.containsAll(addedTerms)) {
             return false;
         }
-        if (addedTerms.size() != that.addedTerms.size()
+        if (subtractedTerms.size() != that.subtractedTerms.size()
                 || !subtractedTerms.containsAll(that.subtractedTerms)
                 || !that.subtractedTerms.containsAll(subtractedTerms)) {
             return false;
