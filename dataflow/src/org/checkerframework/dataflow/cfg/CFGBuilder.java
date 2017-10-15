@@ -1582,6 +1582,7 @@ public class CFGBuilder {
                 AnnotationProvider annotationProvider) {
             trees = Trees.instance(env);
             TreePath bodyPath = trees.getPath(root, underlyingAST.getCode());
+            assert bodyPath != null;
             return process(
                     bodyPath,
                     env,
