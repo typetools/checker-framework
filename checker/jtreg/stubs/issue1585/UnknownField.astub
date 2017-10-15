@@ -1,0 +1,6 @@
+import org.checkerframework.framework.qual.DefaultQualifier;
+
+package issue1585;
+
+@DefaultQualifier(NonNull)
+class Main {}
