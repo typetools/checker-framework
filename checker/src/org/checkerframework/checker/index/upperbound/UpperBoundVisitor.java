@@ -22,8 +22,8 @@ import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
-import org.checkerframework.checker.index.upperbound.UpperBoundUtil.SideEffectError;
-import org.checkerframework.checker.index.upperbound.UpperBoundUtil.SideEffectKind;
+import org.checkerframework.checker.index.upperbound.UpperBoundUtil.ReassignmentError;
+import org.checkerframework.checker.index.upperbound.UpperBoundUtil.ReassignmentKind;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -342,11 +342,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         ExecutableElement elt = TreeUtils.elementFromUse(node);
         if (!PurityUtils.isSideEffectFree(atypeFactory, elt)) {
             checkAnnotationsInClass(
-                    elt,
-                    null,
-                    node,
-                    getCurrentPath(),
-                    UpperBoundUtil.SideEffectKind.SIDE_EFFECTING_METHOD_CALL);
+                    elt, null, node, getCurrentPath(), ReassignmentKind.SIDE_EFFECTING_METHOD_CALL);
         }
         return super.visitMethodInvocation(node, p);
     }
@@ -373,17 +369,17 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 && !ElementUtils.isEffectivelyFinal(elt)) {
             TypeKind typeKind = InternalUtils.typeOf(varTree).getKind();
             Receiver field = FlowExpressions.internalReprOf(atypeFactory, (ExpressionTree) varTree);
-            SideEffectKind kind;
+            ReassignmentKind kind;
             if (elt.getKind() == ElementKind.FIELD) {
                 if (typeKind == TypeKind.ARRAY) {
-                    kind = UpperBoundUtil.SideEffectKind.ARRAY_FIELD_REASSIGNMENT;
+                    kind = ReassignmentKind.ARRAY_FIELD_REASSIGNMENT;
                 } else if (!typeKind.isPrimitive()) {
-                    kind = UpperBoundUtil.SideEffectKind.NON_ARRAY_FIELD_REASSIGNMENT;
+                    kind = UpperBoundUtil.ReassignmentKind.NON_ARRAY_FIELD_REASSIGNMENT;
                 } else {
                     return;
                 }
             } else if (typeKind == TypeKind.ARRAY) {
-                kind = SideEffectKind.LOCAL_VAR_REASSIGNMENT;
+                kind = UpperBoundUtil.ReassignmentKind.LOCAL_VAR_REASSIGNMENT;
             } else {
                 return;
             }
@@ -399,14 +395,14 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * @param possiblyInvalidatedRec A receiver representing the possibly invalidated expression.
      * @param tree The tree on which the side effect occurs. Used in error reporting.
      * @param path The path on which the side effect occurs. Used for parsing.
-     * @param sideEffectKind The type of side effect. See {@link SideEffectKind}.
+     * @param reassignmentKind The type of side effect. See {@link UpperBoundUtil.ReassignmentKind}.
      */
     private void checkAnnotationsInClass(
             Element elt,
             Receiver possiblyInvalidatedRec,
             Tree tree,
             TreePath path,
-            SideEffectKind sideEffectKind) {
+            UpperBoundUtil.ReassignmentKind reassignmentKind) {
         List<? extends Element> enclosedElts =
                 enclosingElementsCache.containsKey(elt) ? enclosingElementsCache.get(elt) : null;
         if (enclosedElts == null) {
@@ -418,9 +414,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             List<Receiver> rs =
                     UpperBoundUtil.getDependentReceivers(atm.getAnnotations(), path, atypeFactory);
             for (Receiver r : rs) {
-                SideEffectError result =
-                        UpperBoundUtil.isSideEffected(r, possiblyInvalidatedRec, sideEffectKind);
-                if (result != UpperBoundUtil.SideEffectError.NO_ERROR) {
+                ReassignmentError result =
+                        UpperBoundUtil.isSideEffected(r, possiblyInvalidatedRec, reassignmentKind);
+                if (result != ReassignmentError.NO_ERROR) {
                     checker.report(Result.failure(result.errorKey, atm), tree);
                 }
             }

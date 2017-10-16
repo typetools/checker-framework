@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.checker.index.upperbound.UpperBoundUtil.SideEffectKind;
+import org.checkerframework.checker.index.upperbound.UpperBoundUtil.ReassignmentKind;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -80,7 +80,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
 
         if (!isSideEffectFree(factory, elt)) {
             // Should include all method calls and non-array references, but not the name of the method.
-            clearFromStore(null, n, UpperBoundUtil.SideEffectKind.SIDE_EFFECTING_METHOD_CALL);
+            clearFromStore(null, n, ReassignmentKind.SIDE_EFFECTING_METHOD_CALL);
         }
     }
 
@@ -90,17 +90,17 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         super.updateForAssignment(n, val);
 
         // This code determines the list of dependencies in types that are to be invalidated
-        SideEffectKind sideEffectKind;
+        ReassignmentKind reassignmentKind;
         if (n instanceof LocalVariableNode
                 && n.getType().getKind() == TypeKind.ARRAY
                 && !ElementUtils.isEffectivelyFinal(((LocalVariableNode) n).getElement())) {
-            sideEffectKind = UpperBoundUtil.SideEffectKind.LOCAL_VAR_REASSIGNMENT;
+            reassignmentKind = ReassignmentKind.LOCAL_VAR_REASSIGNMENT;
         } else if (n instanceof FieldAccessNode
                 && !ElementUtils.isEffectivelyFinal(((FieldAccessNode) n).getElement())) {
             if (n.getType().getKind() == TypeKind.ARRAY) {
-                sideEffectKind = UpperBoundUtil.SideEffectKind.ARRAY_FIELD_REASSIGNMENT;
+                reassignmentKind = ReassignmentKind.ARRAY_FIELD_REASSIGNMENT;
             } else if (!n.getType().getKind().isPrimitive()) {
-                sideEffectKind = UpperBoundUtil.SideEffectKind.NON_ARRAY_FIELD_REASSIGNMENT;
+                reassignmentKind = ReassignmentKind.NON_ARRAY_FIELD_REASSIGNMENT;
             } else {
                 return; // No side effect to check
             }
@@ -109,7 +109,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         }
 
         FlowExpressions.Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), n);
-        clearFromStore(rec, n, sideEffectKind);
+        clearFromStore(rec, n, reassignmentKind);
     }
 
     /**
@@ -119,7 +119,8 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
      * @param n current node
      * @param sideEffect kind of side effect
      */
-    private void clearFromStore(Receiver reassignedVar, Node n, SideEffectKind sideEffect) {
+    private void clearFromStore(
+            Receiver reassignedVar, Node n, UpperBoundUtil.ReassignmentKind sideEffect) {
         TreePath path = analysis.getTypeFactory().getPath(n.getTree());
         Set<Entry<? extends Receiver, CFValue>> receiverAnnotationEntry = new HashSet<>();
         receiverAnnotationEntry.addAll(localVariableValues.entrySet());
@@ -137,7 +138,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
                                 path,
                                 (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory())) {
                     if (UpperBoundUtil.isSideEffected(dependent, reassignedVar, sideEffect)
-                            != UpperBoundUtil.SideEffectError.NO_ERROR) {
+                            != UpperBoundUtil.ReassignmentError.NO_ERROR) {
                         this.clearValue(r);
                     }
                 }

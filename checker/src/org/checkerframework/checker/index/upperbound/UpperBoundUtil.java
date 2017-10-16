@@ -16,17 +16,18 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class UpperBoundUtil {
 
     /**
-     * This enum is used by {@link #isSideEffected(Receiver, Receiver, SideEffectKind)} to determine
-     * which properties of an annotation to check based on what kind of side-effect has occurred.
+     * This enum is used by {@link #isSideEffected(Receiver, Receiver, ReassignmentKind)} to
+     * determine which properties of an annotation to check based on what kind of side-effect has
+     * occurred.
      */
-    public enum SideEffectKind {
+    public enum ReassignmentKind {
         LOCAL_VAR_REASSIGNMENT,
         ARRAY_FIELD_REASSIGNMENT,
         NON_ARRAY_FIELD_REASSIGNMENT,
         SIDE_EFFECTING_METHOD_CALL
     }
 
-    public enum SideEffectError {
+    public enum ReassignmentError {
         NO_REASSIGN("reassignment.not.permitted"),
         NO_REASSIGN_FIELD("reassignment.field.not.permitted"),
         SIDE_EFFECTING_METHOD("side.effect.invalidation"),
@@ -37,7 +38,7 @@ public class UpperBoundUtil {
 
         @SuppressWarnings("assignment.type.incompatible")
         // suppressed because "" is not a key
-        SideEffectError(String errorKey) {
+        ReassignmentError(String errorKey) {
             this.errorKey = errorKey;
         }
     }
@@ -47,15 +48,15 @@ public class UpperBoundUtil {
      *
      * @param receiver expression to check if the side effect affects it
      * @param reassignedVariable field that is reassigned as the side effect, possible null
-     * @param sideEffectKind {@link SideEffectKind}
+     * @param reassignmentKind {@link ReassignmentKind}
      * @return non-null result
      */
-    public static SideEffectError isSideEffected(
-            Receiver receiver, Receiver reassignedVariable, SideEffectKind sideEffectKind) {
-        if ((sideEffectKind == SideEffectKind.ARRAY_FIELD_REASSIGNMENT
-                        || sideEffectKind == SideEffectKind.LOCAL_VAR_REASSIGNMENT)
+    public static ReassignmentError isSideEffected(
+            Receiver receiver, Receiver reassignedVariable, ReassignmentKind reassignmentKind) {
+        if ((reassignmentKind == ReassignmentKind.ARRAY_FIELD_REASSIGNMENT
+                        || reassignmentKind == ReassignmentKind.LOCAL_VAR_REASSIGNMENT)
                 && receiver.containsSyntacticEqualReceiver(reassignedVariable)) {
-            return SideEffectError.NO_REASSIGN;
+            return ReassignmentError.NO_REASSIGN;
         }
 
         // This while loops cycles through all of the fields being accessed and/or methods
@@ -65,21 +66,21 @@ public class UpperBoundUtil {
             if (receiver instanceof FieldAccess) {
                 FieldAccess fieldAccess = (FieldAccess) receiver;
                 if (!receiver.isUnmodifiableByOtherCode()) {
-                    if (sideEffectKind == SideEffectKind.NON_ARRAY_FIELD_REASSIGNMENT) {
-                        return SideEffectError.NO_REASSIGN_FIELD;
-                    } else if (sideEffectKind == SideEffectKind.SIDE_EFFECTING_METHOD_CALL) {
-                        return SideEffectError.SIDE_EFFECTING_METHOD;
+                    if (reassignmentKind == ReassignmentKind.NON_ARRAY_FIELD_REASSIGNMENT) {
+                        return ReassignmentError.NO_REASSIGN_FIELD;
+                    } else if (reassignmentKind == ReassignmentKind.SIDE_EFFECTING_METHOD_CALL) {
+                        return ReassignmentError.SIDE_EFFECTING_METHOD;
                     }
                 }
                 receiver = fieldAccess.getReceiver();
             } else if (receiver instanceof MethodCall) {
                 MethodCall methodCall = (MethodCall) receiver;
-                switch (sideEffectKind) {
+                switch (reassignmentKind) {
                     case ARRAY_FIELD_REASSIGNMENT:
                     case NON_ARRAY_FIELD_REASSIGNMENT:
-                        return SideEffectError.NO_REASSIGN_FIELD_METHOD;
+                        return ReassignmentError.NO_REASSIGN_FIELD_METHOD;
                     case SIDE_EFFECTING_METHOD_CALL:
-                        return SideEffectError.SIDE_EFFECTING_METHOD;
+                        return ReassignmentError.SIDE_EFFECTING_METHOD;
                     default:
                         receiver = methodCall.getReceiver();
                 }
@@ -87,7 +88,7 @@ public class UpperBoundUtil {
                 break;
             }
         }
-        return SideEffectError.NO_ERROR;
+        return ReassignmentError.NO_ERROR;
     }
 
     /**
@@ -113,12 +114,12 @@ public class UpperBoundUtil {
      *   <li>Does the annotation include any method calls?
      * </ul>
      *
-     * <p>The SideEffectKind is named based on the kind of side-effect that is occurring, which
-     * determines which checks will occur. The SideEffectKind value {@link
-     * SideEffectKind#LOCAL_VAR_REASSIGNMENT} means just the first check is performed. The value
-     * {@link SideEffectKind#ARRAY_FIELD_REASSIGNMENT} indicates that the first and second checks
-     * should be performed. Both {@link SideEffectKind#NON_ARRAY_FIELD_REASSIGNMENT} and {@link
-     * SideEffectKind#SIDE_EFFECTING_METHOD_CALL} indicate that the second and third checks should
+     * <p>The ReassignmentKind is named based on the kind of side-effect that is occurring, which
+     * determines which checks will occur. The ReassignmentKind value {@link
+     * ReassignmentKind#LOCAL_VAR_REASSIGNMENT} means just the first check is performed. The value
+     * {@link ReassignmentKind#ARRAY_FIELD_REASSIGNMENT} indicates that the first and second checks
+     * should be performed. Both {@link ReassignmentKind#NON_ARRAY_FIELD_REASSIGNMENT} and {@link
+     * ReassignmentKind#SIDE_EFFECTING_METHOD_CALL} indicate that the second and third checks should
      * occur, but that different errors should be issued.
      */
     public static List<Receiver> getDependentReceivers(
