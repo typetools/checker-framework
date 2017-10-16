@@ -9,7 +9,7 @@ class Polymorphic3 {
     }
 
     // UpperBound tests
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void ubc_id(
             int[] a,
             int[] b,

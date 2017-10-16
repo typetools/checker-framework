@@ -5,7 +5,7 @@ import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.common.value.qual.MinLen;
 
 public class ArrayLength2 {
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     public static void main(String[] args) {
         int N = 8;
         int @MinLen(8) [] Grid = new int[N];

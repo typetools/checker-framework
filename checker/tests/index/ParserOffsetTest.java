@@ -107,7 +107,7 @@ public class ParserOffsetTest {
         }
     }
 
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     public void multiplication2(String @ArrayLen(5) [] a, @IntVal(-2) int i, @IntVal(20) int j) {
         if ((i * j) < (a.length - 20)) {
             @LTLengthOf("a") int k1 = i;

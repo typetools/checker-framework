@@ -12,7 +12,7 @@ class LTLDivide {
         return arr;
     }
 
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void test2(int[] array) {
         int len = array.length;
         int lenM1 = array.length - 1;

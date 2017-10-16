@@ -2,7 +2,7 @@ import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 
 public class IntroSub {
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void test(int[] arr) {
         //:: error: (assignment.type.incompatible)
         @LTLengthOf({"arr"}) int a = 3;

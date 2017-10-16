@@ -1,7 +1,7 @@
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 
 class ArrayLength {
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void test() {
         int[] arr = {1, 2, 3};
         @LTEqLengthOf({"arr"}) int a = arr.length;

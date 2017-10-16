@@ -36,7 +36,7 @@ class Polymorphic2 {
         return flag ? a : b;
     }
     // UpperBound tests
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void testUpperBound(@LTLengthOf("array1") int a, @LTLengthOf("array2") int b) {
         int x = merge(a, b);
         //:: error: (assignment.type.incompatible)
@@ -47,7 +47,7 @@ class Polymorphic2 {
         @LTLengthOf("array1") int zz = mergeUpperBound(a, b);
     }
 
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void testUpperBound2(@LTLengthOf("array1") int a, @LTEqLengthOf("array1") int b) {
         @LTEqLengthOf("array1") int x = merge(a, b);
         //:: error: (assignment.type.incompatible)

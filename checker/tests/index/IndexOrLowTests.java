@@ -8,7 +8,7 @@ public class IndexOrLowTests {
 
     @IndexOrLow("array") int index = -1;
 
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void test() {
 
         if (index != -1) {
@@ -25,7 +25,7 @@ public class IndexOrLowTests {
         index = array.length;
     }
 
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void test2(@LTLengthOf("array") @GTENegativeOne int param) {
         index = array.length - 1;
         @LTLengthOf("array") @GTENegativeOne int x = index;

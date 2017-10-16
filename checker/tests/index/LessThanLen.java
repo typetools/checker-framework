@@ -24,7 +24,7 @@ public class LessThanLen {
         }
     }
 
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     public static void m4(int[] shorter) {
         int[] longer = new int[shorter.length * 1];
         //:: error: (assignment.type.incompatible)
@@ -32,7 +32,7 @@ public class LessThanLen {
         @LTEqLengthOf("longer") int y = shorter.length;
     }
 
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     public static void m5(int[] shorter) {
         //:: error: (array.length.negative)
         int[] longer = new int[shorter.length * -1];
@@ -42,7 +42,7 @@ public class LessThanLen {
         @LTEqLengthOf("longer") int y = shorter.length;
     }
 
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     public static void m6(int[] shorter) {
         int[] longer = new int[4 * shorter.length];
         @LTLengthOf("longer") int x = shorter.length;

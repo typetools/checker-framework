@@ -1,7 +1,7 @@
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 
-@SuppressWarnings("local.variable.unsafe.dependent.annotation")
+//@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
 class RefineGT {
     final int[] arr = {1};
 

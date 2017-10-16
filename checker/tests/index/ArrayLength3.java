@@ -8,7 +8,7 @@ public class ArrayLength3 {
         return sa[0];
     }
 
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void m() {
         Integer[] a = new Integer[10];
         @LTLengthOf("a") int i = 5;

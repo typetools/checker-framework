@@ -7,7 +7,7 @@ public class UBSubtyping {
     final int[] arr2 = {1};
     final int[] arr3 = {1};
 
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void test(@LTEqLengthOf({"arr", "arr2", "arr3"}) int test) {
         @LTEqLengthOf({"arr"}) int a = 1;
         //:: error: (assignment.type.incompatible)

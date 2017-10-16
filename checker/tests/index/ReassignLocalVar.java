@@ -1,6 +1,6 @@
 import org.checkerframework.checker.index.qual.*;
 
-@SuppressWarnings("local.variable.unsafe.dependent.annotation")
+//@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
 class ReassignLocalVar {
 
     void test0(int x, int[] a) {

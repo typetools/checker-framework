@@ -10,7 +10,7 @@ public class ArrayAssignmentSameLen {
         i_index = index;
     }
 
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void test1(int[] a, int[] b, @LTEqLengthOf("#1") int index) {
         int[] array = a;
 
@@ -22,7 +22,7 @@ public class ArrayAssignmentSameLen {
         int i = index;
     }
 
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void test2(int[] a, int[] b, @LTLengthOf("#1") int i) {
         int[] c = a;
         //:: error: (assignment.type.incompatible)
@@ -30,7 +30,7 @@ public class ArrayAssignmentSameLen {
         @LTLengthOf("c") int y = i;
     }
 
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void test3(int[] a, @LTLengthOf("#1") int i, @NonNegative int x) {
         int[] c1 = a;
         // See useTest3 for an example of why this return should fail.
@@ -42,7 +42,7 @@ public class ArrayAssignmentSameLen {
         int y = i;
     }
 
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void test4(
             int[] a,
             @LTLengthOf(

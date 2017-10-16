@@ -14,7 +14,7 @@ public final class Loops {
         }
     }
 
-    @SuppressWarnings("local.variable.unsafe.dependent.annotation")
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     public void test2(int[] a, int[] array) {
         int offset = array.length - 1;
         int offset2 = array.length - 1;
