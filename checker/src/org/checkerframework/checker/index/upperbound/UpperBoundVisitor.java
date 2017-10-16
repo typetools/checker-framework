@@ -358,7 +358,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      */
     @Override
     protected void commonAssignmentCheck(
-            Tree varTree, ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
+            Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
         if (varTree.getKind() == Kind.VARIABLE) {
             // Not a reassignment, so nothing to check

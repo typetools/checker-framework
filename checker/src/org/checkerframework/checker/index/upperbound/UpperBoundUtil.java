@@ -1,15 +1,12 @@
 package org.checkerframework.checker.index.upperbound;
 
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-*/
-
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -36,9 +33,9 @@ public class UpperBoundUtil {
         NO_REASSIGN_FIELD_METHOD("reassignment.field.not.permitted.method"),
         NO_ERROR("");
 
-        /*@CompilerMessageKey*/ final String errorKey;
+        @CompilerMessageKey final String errorKey;
 
-        /*@SuppressWarnings("assignment.type.incompatible")*/
+        @SuppressWarnings("assignment.type.incompatible")
         // suppressed because "" is not a key
         SideEffectError(String errorKey) {
             this.errorKey = errorKey;
