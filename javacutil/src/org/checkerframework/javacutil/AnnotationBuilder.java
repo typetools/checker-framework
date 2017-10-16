@@ -215,7 +215,7 @@ public class AnnotationBuilder {
         return setValue(elementName, (Object) value);
     }
 
-    private TypeMirror getErasedAndBoxedType(TypeMirror type) {
+    private TypeMirror getErasedOrBoxedType(TypeMirror type) {
         // See com.sun.tools.javac.code.Attribute.Class.makeClassType()
         return type.getKind().isPrimitive()
                 ? types.boxedClass((PrimitiveType) type).asType()
@@ -224,7 +224,7 @@ public class AnnotationBuilder {
 
     public AnnotationBuilder setValue(CharSequence elementName, TypeMirror value) {
         assertNotBuilt();
-        value = getErasedAndBoxedType(value);
+        value = getErasedOrBoxedType(value);
         AnnotationValue val = createValue(value);
         ExecutableElement var = findElement(elementName);
         // Check subtyping
@@ -259,7 +259,7 @@ public class AnnotationBuilder {
 
     public AnnotationBuilder setValue(CharSequence elementName, Class<?> value) {
         TypeMirror type = typeFromClass(value);
-        return setValue(elementName, getErasedAndBoxedType(type));
+        return setValue(elementName, getErasedOrBoxedType(type));
     }
 
     public AnnotationBuilder setValue(CharSequence elementName, Enum<?> value) {
