@@ -92,10 +92,10 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
                 int paramGroups = (Integer) literal.getValue();
                 ExpressionTree receiver = TreeUtils.getReceiverTree(node);
                 if (receiver == null) {
-                    // When checking java.util.regex.Matcher, calls to group (and other methods) don't
-                    // have a receiver tree.  So, just do the regular checking.  Verifying Matcher
-                    // or any other subclass of MatcherResult (where group is declared) is out of
-                    // scope for this checker.
+                    // When checking implementations of java.util.regex.MatcherResult, calls to
+                    // group (and other methods) don't have a receiver tree.  So, just do the
+                    // regular checking. Verifying an implemenation of a subclass of MatcherResult
+                    // is out of the scope of this checker.
                     return super.visitMethodInvocation(node, p);
                 }
                 int annoGroups = 0;
