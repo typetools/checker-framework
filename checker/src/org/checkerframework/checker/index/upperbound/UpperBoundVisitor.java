@@ -445,6 +445,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                     AnnotatedTypeMirror atmP = atypeFactory.getAnnotatedType(param);
                     enclosedTypes.add(atmP);
                 }
+            } else if (e.getKind() == ElementKind.CLASS) {
+                enclosedTypes.addAll(findEnclosedTypes(e.getEnclosedElements()));
             }
         }
         return enclosedTypes;
