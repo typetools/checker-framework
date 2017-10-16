@@ -241,7 +241,7 @@ public class OffsetEquation {
     }
 
     /**
-     * Standardizes and viewpoint adapts the string terms based us the supplied context.
+     * Standardizes and viewpoint-adapts the string terms based us the supplied context.
      *
      * @param context FlowExpressionContext
      * @param scope local scope
