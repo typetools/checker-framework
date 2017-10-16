@@ -1,8 +1,6 @@
 // Test case for Issue 905:
 // https://github.com/typetools/checker-framework/issues/905
 
-// @skip-test
-
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
 public class Issue905 {
