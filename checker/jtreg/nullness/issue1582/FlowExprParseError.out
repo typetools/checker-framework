@@ -1,2 +1,2 @@
-FlowExprParseError.java:8:25: compiler.err.proc.messager: (flowexpr.parse.error)
+FlowExprParseError.java:8:25: compiler.err.proc.messager: (flowexpr.parse.postcondition.error)
 1 error

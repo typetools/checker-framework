@@ -59,7 +59,7 @@ class MetaPostcondition {
         oddF1();
         @Odd String l2 = f1;
 
-        //:: error: (flowexpr.postcondition.parse.error)
+        //:: error: (flowexpr.parse.postcondition.error)
         error();
     }
 
