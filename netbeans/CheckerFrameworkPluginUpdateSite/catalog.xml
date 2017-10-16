@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<module_updates timestamp="53/32/21/29/11/2016">
+<module codenamebase="org.checkerframework.netbeans" distribution="org-checkerframework-netbeans.nbm" downloadsize="8607295" needrestart="false">
+<manifest AutoUpdate-Show-In-Client="true" OpenIDE-Module="org.checkerframework.netbeans" OpenIDE-Module-Implementation-Version="161130" OpenIDE-Module-Java-Dependencies="Java &gt; 1.7" OpenIDE-Module-Module-Dependencies="org.netbeans.modules.autoupdate.services &gt; 1.51.2, org.netbeans.modules.project.ant/1 &gt; 1.64.1, org.netbeans.modules.projectapi/1 &gt; 1.65.2, org.netbeans.modules.projectuiapi/1 &gt; 1.86.1.8, org.openide.filesystems &gt; 9.8.1, org.openide.modules &gt; 7.47.1, org.openide.util &gt; 9.5.1, org.openide.util.lookup &gt; 8.32.1" OpenIDE-Module-Name="Checker Framework Plugin" OpenIDE-Module-Requires="org.openide.modules.ModuleFormat1" OpenIDE-Module-Specification-Version="1.0"/>
+</module>
+</module_updates>
