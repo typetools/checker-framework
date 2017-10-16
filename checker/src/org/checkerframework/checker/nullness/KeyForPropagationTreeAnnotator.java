@@ -3,7 +3,6 @@ package org.checkerframework.checker.nullness;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
@@ -12,8 +11,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -107,27 +104,8 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
     /** Transfers annotations to type if the left hand side is a variable declaration. */
     @Override
     public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror type) {
-        Pair<Tree, AnnotatedTypeMirror> context =
-                atypeFactory.getVisitorState().getAssignmentContext();
-
-        if (type.getKind() == TypeKind.DECLARED && context != null && context.first != null) {
-            AnnotatedTypeMirror assignedTo =
-                    TypeArgInferenceUtil.assignedTo(atypeFactory, atypeFactory.getPath(node));
-
-            if (assignedTo != null) {
-
-                // array types and boxed primitives etc don't require propagation
-                if (assignedTo.getKind() == TypeKind.DECLARED) {
-                    final AnnotatedDeclaredType newClassType = (AnnotatedDeclaredType) type;
-                    keyForPropagator.propagate(
-                            newClassType,
-                            (AnnotatedDeclaredType) assignedTo,
-                            PropagationDirection.TO_SUBTYPE,
-                            atypeFactory);
-                }
-            }
-        }
-
+        keyForPropagator.propagateNewClassTree(
+                node, type, (KeyForAnnotatedTypeFactory) atypeFactory);
         return super.visitNewClass(node, type);
     }
 }
