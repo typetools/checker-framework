@@ -62,8 +62,9 @@ class PermittedDependentTypes {
         // Not permitted
     }
 
+    //:: warning: (dependent.not.permitted)
     void fizz(@IndexFor("other.y") int w) {
-        // Permitted
+        // Not permitted
     }
 
     void buzz(@IndexFor("pother.z") int w) {

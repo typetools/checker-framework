@@ -11,11 +11,11 @@ public class ReassignmentChain {
     }
 
     // Should not issue a warning.
-    void test1(@IndexFor("parent.getParent().parent") int x) {}
+    void test1(@IndexFor("parent.parent") int x) {}
 
     // Should issue a warning.
-    void test2(@IndexFor("parent.getParent().parent") int x) {
-        //:: error: (reassignment.field.not.permitted.method)
+    void test2(@IndexFor("parent.parent") int x) {
+        //:: error: (reassignment.field.not.permitted)
         parent = null;
     }
 }

@@ -109,9 +109,9 @@ public class UpperBoundUtil {
     }
 
     /**
-     * Returns a list of {@code Receiver}s that represent the program elements that
+     * Returns a list of {@code Receiver}s that represent the program elements that @{code anno}
+     * depends on.
      *
-     * @code{anno} depends on.
      * @param anno the annotation whose dependent program elements are returned
      * @param path the current path
      * @param factory the upperbound annotated type factory from which to read types

@@ -133,10 +133,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         try {
             return atypeFactory.getReceiverFromJavaExpressionString(expr, getCurrentPath());
         } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-            // issue warning
-            checker.report(
-                    Result.warning(DEPENDENT_NOT_PERMITTED, expr, "the expression was unparseable"),
-                    tree);
+            // Do not issue a warning directly, because the BaseTypeVisitor will do it instead.
             return null;
         }
     }
@@ -163,10 +160,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
         if (rec instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess faRec = (FlowExpressions.FieldAccess) rec;
-            if (faRec.getField().getModifiers().contains(Modifier.PRIVATE)
-                    || (faRec.isFinal()
-                            && checkIfPermittedInDependentTypeAnno(
-                                    faRec.getReceiver(), faRec.getReceiver().toString(), tree))) {
+            if ((faRec.getField().getModifiers().contains(Modifier.PRIVATE) || faRec.isFinal())
+                    && checkIfPermittedInDependentTypeAnno(
+                            faRec.getReceiver(), faRec.getReceiver().toString(), tree)) {
                 return true;
             } else {
                 // issue warning
