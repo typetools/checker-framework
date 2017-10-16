@@ -348,58 +348,6 @@ checker as an annotation processor directly.
   To obtain artifacts from Maven Central:
 
 \begin{alltt}
-  <properties>
-    ... existing <property> items ...
-    <checkerframework.version>\ReleaseVersion{}</checkerframework.version>
-  </properties>
-
-  ...
-
-  <dependencies>
-    ... existing <dependency> items ...
-
-    <!-- annotations from the Checker Framework: nullness, interning, locking, ... -->
-    <dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>checker-qual</artifactId>
-       <!-- Use checker-qual7 if targeting Java 7 -->
-       <!-- <artifactId>checker-qual7</artifactId> -->
-      <version>\$\{checkerframework.version\}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>checker</artifactId>
-      <version>\$\{checkerframework.version\}</version>
-    </dependency>
-    <!-- The Type Annotations compiler. Uncomment if using annotations in comments. -->
-    <!-- <dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>compiler</artifactId>
-      <version>\$\{checkerframework.version\}</version>
-    </dependency> -->
-    <dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>jdk8</artifactId>
-      <version>\$\{checkerframework.version\}</version>
-    </dependency>
-  </dependencies>
-\end{alltt}
-
-Be sure to update to the most recent version periodically, to obtain the
-latest bug fixes and new features.
-
-\item
-  To use a local version of the Checker Framework (for example,
-  one that you have built from source):
-
-\begin{alltt}
-  <properties>
-    ... existing <property> items ...
-    <checkerframework.version>\ReleaseVersion{}</checkerframework.version>
-  </properties>
-
-  ...
-
   <dependencies>
     ... existing <dependency> items ...
 
@@ -407,14 +355,55 @@ latest bug fixes and new features.
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
-      <version>\$\{checkerframework.version\}</version>
+       <!-- Use checker-qual7 if targeting Java 7 -->
+       <!-- <artifactId>checker-qual7</artifactId> -->
+      <version>\ReleaseVersion{}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>checker</artifactId>
+      <version>\ReleaseVersion{}</version>
+    </dependency>
+    <!-- The Type Annotations compiler. Uncomment if using annotations in comments. -->
+    <!-- <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>compiler</artifactId>
+      <version>\ReleaseVersion{}</version>
+    </dependency> -->
+    <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>jdk8</artifactId>
+      <version>\ReleaseVersion{}</version>
+    </dependency>
+  </dependencies>
+\end{alltt}
+
+Periodically update to the most recent version, to obtain the
+latest bug fixes and new features:
+\begin{Verbatim}
+  mvn versions:use-latest-versions -Dincludes="org.checkerframework:*"
+\end{Verbatim}
+
+\item
+  To use a local version of the Checker Framework (for example,
+  one that you have built from source):
+
+\begin{alltt}
+  <dependencies>
+    ... existing <dependency> items ...
+
+    <!-- Annotations from the Checker Framework: nullness, interning, locking, ... -->
+    <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>checker-qual</artifactId>
+      <version>\ReleaseVersion{}</version>
       <scope>system</scope>
       <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/checker-qual.jar</systemPath>
     </dependency>
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker</artifactId>
-      <version>\$\{checkerframework.version\}</version>
+      <version>\ReleaseVersion{}</version>
       <scope>system</scope>
       <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/checker.jar</systemPath>
     </dependency>
@@ -422,7 +411,7 @@ latest bug fixes and new features.
     <!-- <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>compiler</artifactId>
-      <version>\$\{checkerframework.version\}</version>
+      <version>\ReleaseVersion{}</version>
       <scope>system</scope>
       <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/javac.jar</systemPath>
     </dependency> -->
@@ -430,13 +419,19 @@ latest bug fixes and new features.
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
-      <version>\$\{checkerframework.version\}</version>
+      <version>\ReleaseVersion{}</version>
       <scope>system</scope>
       <systemPath>\$\{env.CHECKERFRAMEWORK\}/checker/dist/jdk8.jar</systemPath>
     </dependency>
   </dependencies>
 \end{alltt}
 \end{enumerate}
+
+Periodically update to the most recent version, to obtain the
+latest bug fixes and new features:
+\begin{Verbatim}
+  mvn versions:use-latest-versions -Dincludes="org.checkerframework:*"
+\end{Verbatim}
 
 
 \item Use Maven properties to hold the locations of the
@@ -504,8 +499,7 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
         <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
         <!-- Uncomment the following line to use the type annotations compiler. -->
         <!-- <arg>-J-Xbootclasspath/p:$\{typeAnnotationsJavac\}</arg> -->
-        <!-- Uncomment the following line to turn type-checking warnings
-        into errors. -->
+        <!-- Uncomment the following line to turn type-checking warnings into errors. -->
         <!-- <arg>-Awarns</arg> -->
       </compilerArgs>
     </configuration>
