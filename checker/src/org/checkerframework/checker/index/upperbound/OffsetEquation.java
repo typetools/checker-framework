@@ -23,7 +23,7 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * An offset equation is 2 sets of Java expression strings, one set of added terms and one set of
  * subtracted terms, and a single integer constant. The Java expression strings have been
- * standardized and viewpoint adapted.
+ * standardized and viewpoint-adapted.
  */
 public class OffsetEquation {
     public static final OffsetEquation ZERO = createOffsetForInt(0);
@@ -74,7 +74,7 @@ public class OffsetEquation {
                 || !that.addedTerms.containsAll(addedTerms)) {
             return false;
         }
-        if (addedTerms.size() != that.addedTerms.size()
+        if (subtractedTerms.size() != that.subtractedTerms.size()
                 || !subtractedTerms.containsAll(that.subtractedTerms)
                 || !that.subtractedTerms.containsAll(subtractedTerms)) {
             return false;

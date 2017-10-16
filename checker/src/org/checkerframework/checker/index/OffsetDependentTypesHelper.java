@@ -36,8 +36,8 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
             return super.standardizeString(expression, context, localScope, useLocalScope);
         }
 
-        // The expression is a sum of several terms. This expression is standardized by splitting it into
-        // individual terms in an OffsetEquation and standardizing each term.
+        // The expression is a sum of several terms. This expression is standardized by splitting it
+        // into individual terms in an OffsetEquation and standardizing each term.
         OffsetEquation equation = OffsetEquation.createOffsetFromJavaExpression(expression);
         if (equation.hasError()) {
             return equation.getError();

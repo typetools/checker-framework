@@ -315,7 +315,8 @@ public abstract class UBQualifier {
         }
 
         /**
-         * Common implementation of convertToAnnotation and convertToSubstringIndexAnnotation.
+         * Helper method called by {@link #convertToAnnotation} and {@link
+         * convertToSubstringIndexAnnotation} that does the real work.
          *
          * @param env a processing environment used to build the returned annotation
          * @param buildSubstringIndexAnnotation if true, act like {@link
