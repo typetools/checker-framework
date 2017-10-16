@@ -1506,6 +1506,14 @@ public class StubParser {
         }
     }
 
+    private TypeElement checkCandidate(String name) {
+        TypeElement typeElement = elements.getTypeElement(name);
+        if (typeElement != null) {
+            importedTypes.put(name, typeElement);
+        }
+        return typeElement;
+    }
+
     /**
      * Returns the TypeElement with the fully qualified name {@code name}, if one exists. Otherwise,
      * checks {@code enclosingClass} and {@code packageName} for such a class with {@code name}.
@@ -1513,46 +1521,27 @@ public class StubParser {
      * @param packageName name of package being parsed
      * @param enclosingClass fully-qualified name of the class being parsed
      * @param name classname (Simple or fully qualified)
-     * @return the TypeElement for {@code name}
+     * @return the TypeElement for {@code name} or null if not found
      */
-    private TypeElement findTypeOfName(String packageName, String enclosingClass, String name) {
-        TypeElement typeElement = elements.getTypeElement(name);
-        if (typeElement != null) {
-            importedTypes.put(name, typeElement);
-            return typeElement;
-        }
-
-        while (!enclosingClass.equals(packageName)) {
-            typeElement = elements.getTypeElement(enclosingClass + "." + name);
-            if (typeElement != null) {
-                importedTypes.put(enclosingClass + "." + name, typeElement);
-                return typeElement;
-            }
-
+    private /*@Nullable*/ TypeElement findTypeOfName(
+            String packageName, String enclosingClass, String name) {
+        TypeElement typeElement = checkCandidate(name);
+        while (typeElement == null && !enclosingClass.equals(packageName)) {
+            typeElement = checkCandidate(enclosingClass + "." + name);
             int lastDot = enclosingClass.lastIndexOf('.');
             if (lastDot == -1) {
-                enclosingClass = "";
+                break;
             } else {
                 enclosingClass = enclosingClass.substring(0, lastDot);
             }
         }
-
-        if (!packageName.isEmpty()) {
-            typeElement = elements.getTypeElement(packageName + "." + name);
-            if (typeElement != null) {
-                importedTypes.put(packageName + "." + name, typeElement);
-                return typeElement;
-            }
+        if (typeElement == null && !packageName.isEmpty()) {
+            typeElement = checkCandidate(packageName + "." + name);
         }
-        if (!packageName.equals("java.lang")) {
-            typeElement = elements.getTypeElement("java.lang." + name);
-            if (typeElement != null) {
-                importedTypes.put("java.lang." + name, typeElement);
-                return typeElement;
-            }
+        if (typeElement == null && !packageName.equals("java.lang")) {
+            typeElement = checkCandidate("java.lang." + name);
         }
-
-        return null;
+        return typeElement;
     }
 
     /**
