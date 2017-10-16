@@ -58,6 +58,8 @@ import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
+import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.source.Result.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -1027,8 +1029,17 @@ public abstract class CFAbstractTransfer<
                     thenStore.insertValue(r, anno);
                 }
             } catch (FlowExpressionParseException e) {
+                Result r = e.getResult();
+                if (r.getDiagMessages().size() == 1) {
+                    DiagMessage msg = r.getDiagMessages().get(0);
+                    if (msg.getMessageKey().equals("flowexpr.parse.error")) {
+                        // Change the key so that the error may be suppressed separately.
+                        r = Result.failure("flowexpr.parse.postcondition.error", msg.getArgs());
+                    }
+                }
+
                 // report errors here
-                analysis.checker.report(e.getResult(), tree);
+                analysis.checker.report(r, tree);
             }
         }
     }
