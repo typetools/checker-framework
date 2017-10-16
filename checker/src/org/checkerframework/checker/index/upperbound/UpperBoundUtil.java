@@ -70,60 +70,42 @@ public class UpperBoundUtil {
     public static ReassignmentError isSideEffected(
             Receiver expression, Receiver reassignedVariable, ReassignmentKind reassignmentKind) {
 
-        while (expression != null) {
-            switch (reassignmentKind) {
-                case LOCAL_VAR_REASSIGNMENT:
-                    if (expression.containsSyntacticEqualReceiver(reassignedVariable)) {
-                        return ReassignmentError.NO_REASSIGN;
-                    }
-                    return ReassignmentError.NO_ERROR;
-                case ARRAY_FIELD_REASSIGNMENT:
-                    if (expression.containsSyntacticEqualReceiver(reassignedVariable)) {
-                        return ReassignmentError.NO_REASSIGN;
-                    } else if (expression.containsOfClass(MethodCall.class)) {
-                        return ReassignmentError.NO_REASSIGN_FIELD_METHOD;
-                    } else {
-                        break;
-                    }
-                case NON_ARRAY_FIELD_REASSIGNMENT:
-                    if (expression.containsOfClass(MethodCall.class)) {
-                        return ReassignmentError.NO_REASSIGN_FIELD_METHOD;
-                    } else if (expression instanceof FieldAccess) {
-                        if (!expression.isUnmodifiableByOtherCode()) {
-                            return ReassignmentError.NO_REASSIGN_FIELD;
-                        }
-                    }
-                    break;
-                case SIDE_EFFECTING_METHOD_CALL:
-                    if (expression.containsOfClass(MethodCall.class)) {
-                        return ReassignmentError.SIDE_EFFECTING_METHOD;
-                    } else if (expression instanceof FieldAccess) {
-                        if (!expression.isUnmodifiableByOtherCode()) {
-                            return ReassignmentError.SIDE_EFFECTING_METHOD;
-                        }
-                    }
-                    break;
-                default:
-                    assert false : "Unexpected SideEffectKind";
-                    return ReassignmentError.NO_ERROR;
-            }
-
-            // If this is a field access or method call, set expression to the receiver (i.e.
-            // the previous object in the chain). Then loop around and process the receiver in
-            // the same way. All calls/field accesses in the chain must be free of errors for
-            // the whole chain to have no errors.
-            if (expression.containsOfClass(MethodCall.class)) {
-                expression = ((MethodCall) expression).getReceiver();
-            } else if (expression instanceof FieldAccess) {
-                expression = ((FieldAccess) expression).getReceiver();
-            } else {
-                // otherwise, there's nothing else to process. Return no_error.
+        switch (reassignmentKind) {
+            case LOCAL_VAR_REASSIGNMENT:
+                if (expression.containsSyntacticEqualReceiver(reassignedVariable)) {
+                    return ReassignmentError.NO_REASSIGN;
+                }
                 return ReassignmentError.NO_ERROR;
-            }
+            case ARRAY_FIELD_REASSIGNMENT:
+                if (expression.containsSyntacticEqualReceiver(reassignedVariable)) {
+                    return ReassignmentError.NO_REASSIGN;
+                } else if (expression.containsOfClass(MethodCall.class)) {
+                    return ReassignmentError.NO_REASSIGN_FIELD_METHOD;
+                } else {
+                    return ReassignmentError.NO_ERROR;
+                }
+            case NON_ARRAY_FIELD_REASSIGNMENT:
+                if (expression.containsOfClass(MethodCall.class)) {
+                    return ReassignmentError.NO_REASSIGN_FIELD_METHOD;
+                } else if (expression instanceof FieldAccess) {
+                    if (!expression.isUnmodifiableByOtherCode()) {
+                        return ReassignmentError.NO_REASSIGN_FIELD;
+                    }
+                }
+                return ReassignmentError.NO_ERROR;
+            case SIDE_EFFECTING_METHOD_CALL:
+                if (expression.containsOfClass(MethodCall.class)) {
+                    return ReassignmentError.SIDE_EFFECTING_METHOD;
+                } else if (expression instanceof FieldAccess) {
+                    if (!expression.isUnmodifiableByOtherCode()) {
+                        return ReassignmentError.SIDE_EFFECTING_METHOD;
+                    }
+                }
+                return ReassignmentError.NO_ERROR;
+            default:
+                assert false : "Unexpected SideEffectKind";
+                return ReassignmentError.NO_ERROR;
         }
-
-        // All elements in a chain have been successfully shown to have no error.
-        return ReassignmentError.NO_ERROR;
     }
 
     /**
