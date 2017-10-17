@@ -5,9 +5,6 @@ public class Issue1579 {
     public int[][] method(int[] array1, int[] array2) {
         // Required for crash
         for (int i = 0; i < array1.length; i++) {}
-
-        //TODO: This shouldn't issue an error.
-        //:: error: (array.initializer.type.incompatible)
         return new int[][] {array1, array2};
     }
 }
