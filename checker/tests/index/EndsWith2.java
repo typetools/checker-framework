@@ -1,7 +1,5 @@
 // Test case for issue #168: https://github.com/kelloggm/checker-framework/issues/168
 
-// @skip-test until the issue is fixed
-
 public class EndsWith2 {
 
     public static String invertBrackets(String classname) {
