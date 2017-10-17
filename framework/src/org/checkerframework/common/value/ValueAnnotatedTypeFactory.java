@@ -1045,27 +1045,31 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotatedTypeMirror componentType = getAnnotatedType(init);
                 int dimension = 0;
                 while (componentType.getKind() == TypeKind.ARRAY) {
-                    if (dimension == arrayLenOfDimensions.size()) {
-                        arrayLenOfDimensions.add(new RangeOrListOfValues());
+                    RangeOrListOfValues rolv = null;
+                    if (dimension < arrayLenOfDimensions.size()) {
+                        rolv = arrayLenOfDimensions.get(dimension);
                     }
-                    RangeOrListOfValues rolv = arrayLenOfDimensions.get(dimension);
                     AnnotationMirror arrayLen = componentType.getAnnotation(ArrayLen.class);
                     if (arrayLen != null) {
                         List<Integer> currentLengths = getArrayLength(arrayLen);
-                        rolv.addAll(currentLengths);
+                        if (rolv != null) {
+                            rolv.addAll(currentLengths);
+                        } else {
+                            arrayLenOfDimensions.add(new RangeOrListOfValues(currentLengths));
+                        }
                     } else {
                         // Check for an arrayLenRange annotation
                         AnnotationMirror arrayLenRangeAnno =
                                 componentType.getAnnotation(ArrayLenRange.class);
                         if (arrayLenRangeAnno != null) {
                             Range range = getRange(arrayLenRangeAnno);
-                            rolv.add(range);
+                            if (rolv != null) {
+                                rolv.add(range);
+                            } else {
+                                arrayLenOfDimensions.add(new RangeOrListOfValues(range));
+                            }
                         }
                     }
-
-                    // replace the current dimension's range with this one.
-                    arrayLenOfDimensions.remove(dimension);
-                    arrayLenOfDimensions.add(dimension, rolv);
 
                     dimension++;
                     componentType = ((AnnotatedArrayType) componentType).getComponentType();
