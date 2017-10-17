@@ -789,6 +789,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return UNKNOWNVAL;
         }
 
+        private AnnotationMirror convertToUnknown(AnnotationMirror anno) {
+            if (AnnotationUtils.areSameByClass(anno, ArrayLenRange.class)) {
+                Range range = getRange(anno);
+                if (range.from == 0 && range.to >= Integer.MAX_VALUE) {
+                    return UNKNOWNVAL;
+                }
+                return anno;
+            } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
+                Range range = getRange(anno);
+                if (range.isLongEverything()) {
+                    return UNKNOWNVAL;
+                }
+                return anno;
+            } else {
+                return anno;
+            }
+        }
+
         /**
          * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
          * annotations are Value. In this case, subAnno is a subtype of superAnno iff superAnno
@@ -801,6 +819,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             subAnno = convertSpecialIntRangeToStandardIntRange(subAnno);
             superAnno = convertSpecialIntRangeToStandardIntRange(superAnno);
+            if (AnnotationUtils.areSameByClass(subAnno, UnknownVal.class)) {
+                superAnno = convertToUnknown(superAnno);
+            }
 
             if (AnnotationUtils.areSameByClass(superAnno, UnknownVal.class)
                     || AnnotationUtils.areSameByClass(subAnno, BottomVal.class)) {
