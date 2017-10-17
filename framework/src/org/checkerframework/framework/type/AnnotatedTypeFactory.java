@@ -1329,7 +1329,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected void addAnnotationFromFieldInvariant(
             AnnotatedTypeMirror type, AnnotatedTypeMirror accessedVia, VariableElement field) {
-        TypeElement typeElement = InternalUtils.getTypeElement(accessedVia.getUnderlyingType());
+        TypeMirror declaringType = accessedVia.getUnderlyingType();
+        while (declaringType.getKind() == TypeKind.WILDCARD
+                || declaringType.getKind() == TypeKind.TYPEVAR) {
+            if (declaringType.getKind() == TypeKind.WILDCARD) {
+                declaringType = ((WildcardType) declaringType).getExtendsBound();
+            } else if (declaringType.getKind() == TypeKind.TYPEVAR) {
+                declaringType = ((TypeVariable) declaringType).getUpperBound();
+            }
+            if (declaringType == null) {
+                return;
+            }
+        }
+        TypeElement typeElement = InternalUtils.getTypeElement(declaringType);
         if (ElementUtils.enclosingClass(field).equals(typeElement)) {
             // If the field is declared in the accessedVia class, then the field in the invariant
             // cannot be this field, even if the field has the same name.
