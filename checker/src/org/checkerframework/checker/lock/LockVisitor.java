@@ -472,8 +472,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             MethodTree overriderTree,
             AnnotatedDeclaredType enclosingType,
             AnnotatedExecutableType overridden,
-            AnnotatedDeclaredType overriddenType,
-            Void p) {
+            AnnotatedDeclaredType overriddenType) {
 
         boolean isValid = true;
 
@@ -495,7 +494,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     null);
         }
 
-        return super.checkOverride(overriderTree, enclosingType, overridden, overriddenType, p)
+        return super.checkOverride(overriderTree, enclosingType, overridden, overriddenType)
                 && isValid;
     }
 
