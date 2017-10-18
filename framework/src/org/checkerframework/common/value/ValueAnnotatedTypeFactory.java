@@ -789,6 +789,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return UNKNOWNVAL;
         }
 
+        private AnnotationMirror convertToUnknown(AnnotationMirror anno) {
+            if (AnnotationUtils.areSameByClass(anno, ArrayLenRange.class)) {
+                Range range = getRange(anno);
+                if (range.from == 0 && range.to >= Integer.MAX_VALUE) {
+                    return UNKNOWNVAL;
+                }
+                return anno;
+            } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
+                Range range = getRange(anno);
+                if (range.isLongEverything()) {
+                    return UNKNOWNVAL;
+                }
+                return anno;
+            } else {
+                return anno;
+            }
+        }
+
         /**
          * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
          * annotations are Value. In this case, subAnno is a subtype of superAnno iff superAnno
@@ -801,6 +819,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             subAnno = convertSpecialIntRangeToStandardIntRange(subAnno);
             superAnno = convertSpecialIntRangeToStandardIntRange(superAnno);
+            if (AnnotationUtils.areSameByClass(subAnno, UnknownVal.class)) {
+                superAnno = convertToUnknown(superAnno);
+            }
 
             if (AnnotationUtils.areSameByClass(superAnno, UnknownVal.class)
                     || AnnotationUtils.areSameByClass(subAnno, BottomVal.class)) {
@@ -1045,27 +1066,31 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotatedTypeMirror componentType = getAnnotatedType(init);
                 int dimension = 0;
                 while (componentType.getKind() == TypeKind.ARRAY) {
-                    if (dimension == arrayLenOfDimensions.size()) {
-                        arrayLenOfDimensions.add(new RangeOrListOfValues());
+                    RangeOrListOfValues rolv = null;
+                    if (dimension < arrayLenOfDimensions.size()) {
+                        rolv = arrayLenOfDimensions.get(dimension);
                     }
-                    RangeOrListOfValues rolv = arrayLenOfDimensions.get(dimension);
                     AnnotationMirror arrayLen = componentType.getAnnotation(ArrayLen.class);
                     if (arrayLen != null) {
                         List<Integer> currentLengths = getArrayLength(arrayLen);
-                        rolv.addAll(currentLengths);
+                        if (rolv != null) {
+                            rolv.addAll(currentLengths);
+                        } else {
+                            arrayLenOfDimensions.add(new RangeOrListOfValues(currentLengths));
+                        }
                     } else {
                         // Check for an arrayLenRange annotation
                         AnnotationMirror arrayLenRangeAnno =
                                 componentType.getAnnotation(ArrayLenRange.class);
                         if (arrayLenRangeAnno != null) {
                             Range range = getRange(arrayLenRangeAnno);
-                            rolv.add(range);
+                            if (rolv != null) {
+                                rolv.add(range);
+                            } else {
+                                arrayLenOfDimensions.add(new RangeOrListOfValues(range));
+                            }
                         }
                     }
-
-                    // replace the current dimension's range with this one.
-                    arrayLenOfDimensions.remove(dimension);
-                    arrayLenOfDimensions.add(dimension, rolv);
 
                     dimension++;
                     componentType = ((AnnotatedArrayType) componentType).getComponentType();
