@@ -183,6 +183,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return !receiver.containsUnknown()
                 && !(receiver instanceof FlowExpressions.ArrayCreation)
                 && !(receiver instanceof FlowExpressions.ClassName)
+                // Literals are handled by the Value Checker
                 && !(receiver instanceof FlowExpressions.ValueLiteral);
     }
 
