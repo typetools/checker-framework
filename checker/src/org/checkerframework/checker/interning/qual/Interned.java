@@ -31,7 +31,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 @SubtypeOf(UnknownInterned.class)
 @ImplicitFor(
-    literals = {LiteralKind.ALL},
+    literals = {LiteralKind.PRIMITIVE, LiteralKind.STRING}, // everyhing but NULL
     types = {
         TypeKind.BOOLEAN,
         TypeKind.BYTE,
