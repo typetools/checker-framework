@@ -1009,15 +1009,13 @@ public abstract class CFAbstractTransfer<
             }
 
             try {
-                FlowExpressions.Receiver r = null;
-
-                r =
+                FlowExpressions.Receiver r =
                         FlowExpressionParseUtil.parse(
                                 expression,
                                 flowExprContext,
                                 analysis.atypeFactory.getPath(tree),
                                 false);
-                if (p instanceof ConditionalPostcondition) {
+                if (p.kind == Contract.Kind.CONDITIONALPOSTCONDTION) {
                     if (((ConditionalPostcondition) p).annoResult) {
                         thenStore.insertValue(r, anno);
                     } else {
