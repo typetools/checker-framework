@@ -13,11 +13,7 @@ public class RegexExample {
         Matcher mat = pat.matcher(content);
 
         if (mat.matches()) {
-            if (mat.groupCount() > 0) {
-                System.out.println("Group 1: " + mat.group(1));
-            } else {
-                System.out.println("Group: ");
-            }
+            System.out.println("Group 1: " + mat.group(1));
         } else {
             System.out.println("No match!");
         }

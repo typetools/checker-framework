@@ -176,7 +176,7 @@ public class ReflectiveEvaluator {
                 method.setAccessible(true);
             }
             return method;
-        } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
+        } catch (ClassNotFoundException | UnsupportedClassVersionError | NoClassDefFoundError e) {
             if (reportWarnings) {
                 checker.report(
                         Result.warning(
@@ -186,7 +186,7 @@ public class ReflectiveEvaluator {
             }
             return null;
 
-        } catch (NoSuchMethodException e) {
+        } catch (Throwable e) {
             // The class we attempted to getMethod from inside the
             // call to getMethodObject.
             Element classElem = TreeUtils.elementFromUse(tree).getEnclosingElement();
@@ -252,12 +252,13 @@ public class ReflectiveEvaluator {
             Field field = recClass.getField(fieldName.toString());
             return field.get(recClass);
 
-        } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
+        } catch (ClassNotFoundException | UnsupportedClassVersionError | NoClassDefFoundError e) {
             if (reportWarnings) {
                 checker.report(Result.warning("class.find.failed", classname), tree);
             }
             return null;
-        } catch (ReflectiveOperationException e) {
+        } catch (Throwable e) {
+            // Catch all exception so that the checker doesn't crash
             if (reportWarnings) {
                 checker.report(Result.warning("field.access.failed", fieldName, classname), tree);
             }
@@ -271,7 +272,7 @@ public class ReflectiveEvaluator {
         try {
             // get the constructor
             constructor = getConstructorObject(tree, typeToCreate);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             // Catch all exception so that the checker doesn't crash
             if (reportWarnings) {
                 checker.report(Result.warning("constructor.invocation.failed"), tree);
@@ -296,7 +297,7 @@ public class ReflectiveEvaluator {
         for (Object[] arguments : listOfArguments) {
             try {
                 results.add(constructor.newInstance(arguments));
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 if (reportWarnings) {
                     checker.report(
                             Result.warning(

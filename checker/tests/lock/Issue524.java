@@ -1,5 +1,3 @@
-// @skip-test
-
 // Test case for Issue 524:
 // https://github.com/typetools/checker-framework/issues/524
 
@@ -26,11 +24,13 @@ class Issue524 {
         @GuardedBy({}) ReentrantLock localLock = new ReentrantLock();
 
         {
+            //:: error: (lock.expression.not.final)
             @GuardedBy("localLock") MyClass q = new MyClass();
             localLock.lock();
             localLock.lock();
             // Without a fix for issue 524 in place, the error lock.not.held
             // (unguarded access to field, variable or parameter 'q' guarded by 'localLock') is issued for the following line.
+            //:: error: (expression.unparsable.type.invalid)
             q.field.toString();
         }
     }

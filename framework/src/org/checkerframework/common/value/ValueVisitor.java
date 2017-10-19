@@ -5,6 +5,7 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
@@ -62,20 +63,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             ExpressionTree valueExp,
             /*@CompilerMessageKey*/ String errorKey) {
 
-        SimpleAnnotatedTypeScanner<Void, Void> replaceSpecialIntRangeAnnotations =
-                new SimpleAnnotatedTypeScanner<Void, Void>() {
-                    @Override
-                    protected Void defaultAction(AnnotatedTypeMirror type, Void p) {
-                        if (type.hasAnnotation(IntRangeFromPositive.class)
-                                || type.hasAnnotation(IntRangeFromNonNegative.class)
-                                || type.hasAnnotation(IntRangeFromGTENegativeOne.class)) {
-                            type.replaceAnnotation(atypeFactory.UNKNOWNVAL);
-                        }
-                        return null;
-                    }
-                };
-
-        replaceSpecialIntRangeAnnotations.visit(varType);
+        replaceSpecialIntRangeAnnotations(varType);
         super.commonAssignmentCheck(varType, valueExp, errorKey);
     }
 
@@ -86,6 +74,41 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             Tree valueTree,
             /*@CompilerMessageKey*/ String errorKey) {
 
+        replaceSpecialIntRangeAnnotations(varType);
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+    }
+
+    /**
+     * Return types for methods that are annotated with {@code @IntRangeFromX} annotations need to
+     * be replaced with {@code @UnknownVal}. See the documentation on {@link
+     * #commonAssignmentCheck(AnnotatedTypeMirror, ExpressionTree, String) commonAssignmentCheck}.
+     *
+     * <p>A separate override is necessary because checkOverride doesn't actually use the
+     * commonAssignmentCheck.
+     */
+    @Override
+    protected boolean checkOverride(
+            MethodTree overriderTree,
+            AnnotatedTypeMirror.AnnotatedExecutableType overrider,
+            AnnotatedTypeMirror.AnnotatedDeclaredType overridingType,
+            AnnotatedTypeMirror.AnnotatedExecutableType overridden,
+            AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType) {
+
+        replaceSpecialIntRangeAnnotations(overrider);
+        replaceSpecialIntRangeAnnotations(overridden);
+
+        return super.checkOverride(
+                overriderTree, overrider, overridingType, overridden, overriddenType);
+    }
+
+    /**
+     * Replaces any {@code IntRangeFromX} annotations with {@code @UnknownVal}. This is used to
+     * prevent these annotations from being required on the left hand side of assignments.
+     *
+     * @param varType an annotated type mirror that may contain IntRangeFromX annotations, which
+     *     will be used on the lhs of an assignment or pseudo-assignment.
+     */
+    private void replaceSpecialIntRangeAnnotations(AnnotatedTypeMirror varType) {
         SimpleAnnotatedTypeScanner<Void, Void> replaceSpecialIntRangeAnnotations =
                 new SimpleAnnotatedTypeScanner<Void, Void>() {
                     @Override
@@ -98,9 +121,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                         return null;
                     }
                 };
-
         replaceSpecialIntRangeAnnotations.visit(varType);
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 
     @Override
