@@ -9,15 +9,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * The annotated expression evaluates to either -1 or a non-negative integer less than the lengths
- * of all the given sequences.
- *
- * <p>This is the return type of {@link java.lang.String#indexOf(String) String.indexOf} and {@link
- * java.lang.String#lastIndexOf(String) String.lastIndexOf} in the JDK. The return type of these
- * methods is annotated {@code @SubstringIndexFor(value="this",offset="#1.length()-1")}, meaning
- * that the returned value is either -1 or it is less than or equal to the length of the receiver
- * sequence minus the length of the sequence passed as the first argument.
- *
- * <p>The annotation {@code @SubstringIndexFor(args)} is like <code>
+ * of all the given sequences. The annotation {@code @SubstringIndexFor(args)} is like <code>
  * {@literal @}{@link NonNegative} {@literal @}{@link LTLengthOf}(args)</code>, except that
  * {@code @SubstringIndexFor(args)} additionally permits the value -1.
  *
@@ -25,6 +17,12 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * {@code @SubstringIndexFor(value={"a", "b"}, offset={"c", "d"})} is equivalent to writing both
  * {@code @SubstringIndexFor(value="a", offset="c")} and {@code @SubstringIndexFor(value="b",
  * offset="d")}.
+ *
+ * <p>The return types of JDK methods {@link java.lang.String#indexOf(String) String.indexOf} and
+ * {@link java.lang.String#lastIndexOf(String) String.lastIndexOf} are annotated
+ * {@code @SubstringIndexFor(value="this",offset="#1.length()-1")}. This means that the returned
+ * value is either -1 or it is less than or equal to the length of the receiver sequence minus the
+ * length of the sequence passed as the first argument.
  *
  * <p>The name of this annotation, "substring index for", is intended to mean that the annotated
  * expression is a index of a substring (returned by {@code indexOf} or similar methods) for the
