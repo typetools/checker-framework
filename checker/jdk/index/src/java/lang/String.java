@@ -3075,6 +3075,6 @@ public final class String
      * @return  a string that has the same contents as this string, but is
      *          guaranteed to be from a pool of unique strings.
      */
-    public native String intern();
+    public native @PolyLength String intern(@PolyLength String this);
 
 }
