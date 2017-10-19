@@ -2402,8 +2402,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * created by createOverrideChecker(). This version of the method uses the annotated type
      * factory to get the annotated type of the overriding method, and does NOT expose that type.
      *
-     * @see #checkOverride(MethodTree, AnnotatedExecutableType, AnnotatedDeclaredType,
-     *     AnnotatedExecutableType, AnnotatedDeclaredType)
+     * @see #checkOverride(MethodTree, AnnotatedTypeMirror.AnnotatedExecutableType,
+     *     AnnotatedTypeMirror.AnnotatedDeclaredType, AnnotatedTypeMirror.AnnotatedExecutableType,
+     *     AnnotatedTypeMirror.AnnotatedDeclaredType)
      * @param overriderTree declaration tree of overriding method
      * @param overridingType type of overriding class
      * @param overridden type of overridden method
@@ -2430,8 +2431,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * AnnotatedExecutableType of the overriding method. Override this version of the method if you
      * need to access that type.
      *
-     * @see #checkOverride(MethodTree, AnnotatedDeclaredType, AnnotatedExecutableType,
-     *     AnnotatedDeclaredType)
+     * @see #checkOverride(MethodTree, AnnotatedTypeMirror.AnnotatedDeclaredType,
+     *     AnnotatedTypeMirror.AnnotatedExecutableType, AnnotatedTypeMirror.AnnotatedDeclaredType)
      * @param overriderTree declaration tree of overriding method
      * @param overrider type of the overriding method
      * @param overridingType type of overriding class
