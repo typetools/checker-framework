@@ -1458,6 +1458,7 @@
 
         <!-- Copy jars to dist. If dist doesn't exist then the copy task creates it.-->
         <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar"/>
+
         
         <!--The implementation version listed in the Manifest is the hash of the commit of-->
         <!--the Checker Framework that created the jdk.jar.  Show it here to help debugging.-->
