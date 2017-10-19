@@ -320,7 +320,6 @@ public class Resolver {
             List<Type> typeargtypes = List.nil();
             boolean allowBoxing = true;
             boolean useVarargs = false;
-            boolean operator = true;
 
             try {
                 // For some reason we have to set our own method context, which is rather ugly.
@@ -337,8 +336,7 @@ public class Resolver {
                                 argtypes,
                                 typeargtypes,
                                 allowBoxing,
-                                useVarargs,
-                                operator);
+                                useVarargs);
                 setField(resolve, "currentResolutionContext", oldContext);
                 return result;
             } catch (Throwable t) {
