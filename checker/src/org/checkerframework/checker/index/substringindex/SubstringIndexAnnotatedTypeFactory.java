@@ -48,9 +48,9 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return new LinkedHashSet<>(
                 Arrays.asList(
-                        SubstringIndexBottom.class,
                         SubstringIndexUnknown.class,
-                        SubstringIndexFor.class));
+                        SubstringIndexFor.class,
+                        SubstringIndexBottom.class));
     }
 
     /** Creates the Substring Index qualifier hierarchy. */
