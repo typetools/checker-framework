@@ -1,6 +1,7 @@
 #!/bin/sh
 
-# This command to counts the number of distinct reasons for warning suppressions.
+# This command counts the frequency of each distinct reason for warning
+# suppressions.
 # Invoke it like this:
 #   count-suppressions nullness
 
