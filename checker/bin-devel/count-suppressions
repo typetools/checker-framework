@@ -39,7 +39,9 @@ echo -n "Total: "
 cat ${tmpfile} | wc -l
 cat ${tmpfile} \
     | sed 's/.*\/\/ //g' \
-    | sed "s/.*@AssumeAssertion(nullness)[ :]*\([^\"]\+\)\"/\1/g" \
+    | sed "s/.*@AssumeAssertion(nullness)[ :]*\([^\"]\+\)\";/\1/g" \
     | sed 's/\([^0-9]\): [^:].*/\1/' \
     | sort | uniq -c | sort -rg
+# For debugging, replace "rm -f" command by this echo statement.
+# echo ${tmpfile}
 rm -f ${tmpfile}
