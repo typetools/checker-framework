@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 /**
  * A conditional postcondition annotation to indicate that a method ensures that certain expressions
  * have a certain qualifier once the method has finished, and if the result is as indicated by
- * {@code result}. The expressions for which the annotation must hold after the methods execution
+ * {@code result}. The expressions for which the annotation must hold after the method's execution
  * are indicated by {@code expression} and are specified using a string. The qualifier is specified
  * by the {@code qualifier} annotation argument.
  *
