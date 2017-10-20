@@ -9,6 +9,8 @@
 # before the colon, under the assumption that the initial text is a
 # category name.
 
+debug=0
+
 if [ "$#" -ne 1 ]; then
   echo "Usage: $0 TYPESYSTEM" >&2
   exit 1
@@ -33,15 +35,18 @@ fi
 
 echo "regex=${regex}"
 
-tmpfile=$(mktemp /tmp/count-suppressions.XXXXXX)
-grep -n --recursive --include='*.java' "\"${regex}\"\|@AssumeAssertion(${regex})" > ${tmpfile}
+greplines=$(mktemp /tmp/count-suppressions.XXXXXX)
+grep -n --recursive --include='*.java' "\"${regex}\"\|@AssumeAssertion(${regex})" > ${greplines}
 echo -n "Total: "
-cat ${tmpfile} | wc -l
-cat ${tmpfile} \
+cat ${greplines} | wc -l
+cat ${greplines} \
     | sed 's/.*\/\/ //g' \
-    | sed "s/.*@AssumeAssertion(nullness)[ :]*\([^\"]\+\)\";/\1/g" \
+    | sed "s/.*@AssumeAssertion([^)])[ :]*\([^\"]\+\)\";/\1/g" \
     | sed 's/\([^0-9]\): [^:].*/\1/' \
+    | sed 's/ \+$//' \
     | sort | uniq -c | sort -rg
-# For debugging, replace "rm -f" command by this echo statement.
-# echo ${tmpfile}
-rm -f ${tmpfile}
+if [ $debug ]; then
+  echo ${greplines}
+else
+  rm -f ${greplines}
+fi
