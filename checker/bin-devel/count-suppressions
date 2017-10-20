@@ -32,8 +32,14 @@ fi
 #  * @AssumeAssertion(key)
 
 echo "regex=${regex}"
-grep -n --recursive --include='*.java' "\"${regex}\"\|@AssumeAssertion(${regex})" \
+
+tmpfile=$(mktemp /tmp/count-suppressions.XXXXXX)
+grep -n --recursive --include='*.java' "\"${regex}\"\|@AssumeAssertion(${regex})" > ${tmpfile}
+echo -n "Total: "
+cat ${tmpfile} | wc -l
+cat ${tmpfile} \
     | sed 's/.*\/\/ //g' \
     | sed "s/.*@AssumeAssertion(nullness)[ :]*\([^\"]\+\)\"/\1/g" \
     | sed 's/\([^0-9]\): [^:].*/\1/' \
     | sort | uniq -c | sort -rg
+rm -f ${tmpfile}
