@@ -79,7 +79,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.TypesUtils;
 
 /** Main entry point is: {@link StubParser#parse(Map, Map)} */
 // Full entry point signature:
@@ -432,6 +431,9 @@ public class StubParser {
         // TODO: Handle atypes???
     }
 
+    /** Fully-qualified name of the type being parsed */
+    private String currentClass;
+
     private void parse(
             TypeDeclaration<?> typeDecl,
             String packageName,
@@ -441,6 +443,7 @@ public class StubParser {
         // Fully-qualified name of the type being parsed
         String typeName =
                 (packageName == null ? "" : packageName + ".") + typeDecl.getNameAsString();
+        currentClass = typeName;
         TypeElement typeElt = elements.getTypeElement(typeName);
         if (typeElt == null) {
             boolean warn = true;
@@ -1483,19 +1486,17 @@ public class StubParser {
             if (importedTypes.containsKey(className)) {
                 return importedTypes.get(className).asType();
             }
-            Class<?> clazz;
-            try {
-                clazz = Class.forName(className);
-            } catch (ClassNotFoundException e) {
+            String packageName = "";
+            if (theCompilationUnit.getPackageDeclaration().isPresent()) {
+                packageName = theCompilationUnit.getPackageDeclaration().get().getNameAsString();
+            }
+            TypeElement typeElement = findTypeOfName(packageName, currentClass, className);
+            if (typeElement == null) {
                 stubAlwaysWarn("StubParser: unknown class name " + className);
                 return null;
             }
-            // TODO: is it worth putting this value back into importedTypes?
-            return TypesUtils.typeFromClass(
-                    atypeFactory.getContext().getTypeUtils(),
-                    atypeFactory.getElementUtils(),
-                    clazz);
 
+            return typeElement.asType();
         } else if (expr instanceof NullLiteralExpr) {
             stubAlwaysWarn(
                     "Null found as value for %s. Null isn't allowed as an annotation value", name);
@@ -1504,6 +1505,44 @@ public class StubParser {
             stubAlwaysWarn("Unexpected annotation expression: " + expr);
             return null;
         }
+    }
+
+    private TypeElement checkCandidate(String name) {
+        TypeElement typeElement = elements.getTypeElement(name);
+        if (typeElement != null) {
+            importedTypes.put(name, typeElement);
+        }
+        return typeElement;
+    }
+
+    /**
+     * Returns the TypeElement with the fully qualified name {@code name}, if one exists. Otherwise,
+     * checks {@code enclosingClass} and {@code packageName} for such a class with {@code name}.
+     *
+     * @param packageName name of package being parsed
+     * @param enclosingClass fully-qualified name of the class being parsed
+     * @param name classname (Simple or fully qualified)
+     * @return the TypeElement for {@code name} or null if not found
+     */
+    private /*@Nullable*/ TypeElement findTypeOfName(
+            String packageName, String enclosingClass, String name) {
+        TypeElement typeElement = checkCandidate(name);
+        while (typeElement == null && !enclosingClass.equals(packageName)) {
+            typeElement = checkCandidate(enclosingClass + "." + name);
+            int lastDot = enclosingClass.lastIndexOf('.');
+            if (lastDot == -1) {
+                break;
+            } else {
+                enclosingClass = enclosingClass.substring(0, lastDot);
+            }
+        }
+        if (typeElement == null && !packageName.isEmpty()) {
+            typeElement = checkCandidate(packageName + "." + name);
+        }
+        if (typeElement == null && !packageName.equals("java.lang")) {
+            typeElement = checkCandidate("java.lang." + name);
+        }
+        return typeElement;
     }
 
     /**
