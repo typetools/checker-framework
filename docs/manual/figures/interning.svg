@@ -1,52 +1,362 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
-<svg width="10.5cm" height="4.5cm" viewBox="639 459 402 165" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <g>
-    <rect style="fill: #ffffff" x="880" y="520" width="160" height="42"/>
-    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="880" y="520" width="160" height="42"/>
-    <text font-size="16" style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal" x="960" y="545.85">
-      <tspan x="960" y="545.85">Date</tspan>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="14.756812cm"
+   height="5.8732452cm"
+   viewBox="639 459 564.97509 215.35233"
+   version="1.1"
+   id="svg74"
+   sodipodi:docname="interning.svg"
+   inkscape:version="0.92.1 r15371">
+  <metadata
+     id="metadata80">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs78" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1176"
+     id="namedview76"
+     showgrid="false"
+     inkscape:zoom="2.5677183"
+     inkscape:cx="241.11424"
+     inkscape:cy="140.9272"
+     inkscape:window-x="0"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg74"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <g
+     id="g10"
+     transform="translate(162.97506,-3.6428527)">
+    <rect
+       style="fill:#ffffff"
+       x="880"
+       y="520"
+       width="160"
+       height="42"
+       id="rect2" />
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       x="880"
+       y="520"
+       width="160"
+       height="42"
+       id="rect4" />
+    <text
+       font-size="16"
+       style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="960"
+       y="545.84998"
+       id="text8">
+      <tspan
+         x="960"
+         y="545.84998"
+         id="tspan6">Date</tspan>
     </text>
   </g>
-  <g>
-    <rect style="fill: #ffffff" x="640" y="520" width="160" height="42"/>
-    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="640" y="520" width="160" height="42"/>
-    <text font-size="16" style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal" x="720" y="545.85">
-      <tspan x="720" y="545.85">@Interned Object</tspan>
+  <g
+     id="g20"
+     transform="translate(162.97506,-3.6428527)">
+    <rect
+       style="fill:#ffffff"
+       x="640"
+       y="520"
+       width="160"
+       height="42"
+       id="rect12" />
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       x="640"
+       y="520"
+       width="160"
+       height="42"
+       id="rect14" />
+    <text
+       font-size="16"
+       style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="720"
+       y="545.84998"
+       id="text18">
+      <tspan
+         x="720"
+         y="545.84998"
+         id="tspan16">@Interned Object</tspan>
     </text>
   </g>
-  <g>
-    <rect style="fill: #ffffff" x="760" y="460" width="160" height="42"/>
-    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="760" y="460" width="160" height="42"/>
-    <text font-size="16" style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal" x="840" y="485.85">
-      <tspan x="840" y="485.85">Object</tspan>
+  <g
+     id="g30"
+     transform="translate(162.97506,-3.6428527)">
+    <rect
+       style="fill:#ffffff"
+       x="760"
+       y="460"
+       width="160"
+       height="42"
+       id="rect22" />
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       x="760"
+       y="460"
+       width="160"
+       height="42"
+       id="rect24" />
+    <text
+       font-size="16"
+       style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="840"
+       y="485.85001"
+       id="text28">
+      <tspan
+         x="840"
+         y="485.85001"
+         id="tspan26">Object</tspan>
     </text>
   </g>
-  <g>
-    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="720" y1="520" x2="825.166" y2="504.225"/>
-    <polygon style="fill: #000000" points="826.204,511.148 839.011,502.148 824.128,497.303 "/>
-    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="826.204,511.148 839.011,502.148 824.128,497.303 "/>
+  <g
+     id="g38"
+     transform="translate(162.97506,-3.6428527)">
+    <line
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       x1="720"
+       y1="520"
+       x2="825.16602"
+       y2="504.22501"
+       id="line32" />
+    <polygon
+       style="fill:#000000"
+       points="824.128,497.303 826.204,511.148 839.011,502.148 "
+       id="polygon34" />
+    <polygon
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       points="824.128,497.303 826.204,511.148 839.011,502.148 "
+       id="polygon36" />
   </g>
-  <g>
-    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="960" y1="520" x2="854.834" y2="504.225"/>
-    <polygon style="fill: #000000" points="855.872,497.303 840.989,502.148 853.796,511.148 "/>
-    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="855.872,497.303 840.989,502.148 853.796,511.148 "/>
+  <g
+     id="g46"
+     transform="translate(162.97506,-3.6428527)">
+    <line
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       x1="960"
+       y1="520"
+       x2="854.83398"
+       y2="504.22501"
+       id="line40" />
+    <polygon
+       style="fill:#000000"
+       points="853.796,511.148 855.872,497.303 840.989,502.148 "
+       id="polygon42" />
+    <polygon
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       points="853.796,511.148 855.872,497.303 840.989,502.148 "
+       id="polygon44" />
   </g>
-  <g>
-    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="840" y1="580" x2="734.834" y2="564.225"/>
-    <polygon style="fill: #000000" points="735.872,557.303 720.989,562.148 733.796,571.148 "/>
-    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="735.872,557.303 720.989,562.148 733.796,571.148 "/>
+  <g
+     id="g54"
+     transform="translate(162.97506,-3.6428527)">
+    <line
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       x1="840"
+       y1="580"
+       x2="734.83398"
+       y2="564.22498"
+       id="line48" />
+    <polygon
+       style="fill:#000000"
+       points="733.796,571.148 735.872,557.303 720.989,562.148 "
+       id="polygon50" />
+    <polygon
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       points="733.796,571.148 735.872,557.303 720.989,562.148 "
+       id="polygon52" />
   </g>
-  <g>
-    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="840" y1="580" x2="945.166" y2="564.225"/>
-    <polygon style="fill: #000000" points="946.204,571.148 959.011,562.148 944.128,557.303 "/>
-    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="946.204,571.148 959.011,562.148 944.128,557.303 "/>
+  <g
+     id="g62"
+     transform="translate(162.97506,-3.6428527)">
+    <line
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       x1="840"
+       y1="580"
+       x2="945.16602"
+       y2="564.22498"
+       id="line56" />
+    <polygon
+       style="fill:#000000"
+       points="944.128,557.303 946.204,571.148 959.011,562.148 "
+       id="polygon58" />
+    <polygon
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       points="944.128,557.303 946.204,571.148 959.011,562.148 "
+       id="polygon60" />
   </g>
-  <g>
-    <rect style="fill: #ffffff" x="760" y="580" width="160" height="42"/>
-    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="760" y="580" width="160" height="42"/>
-    <text font-size="16" style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal" x="840" y="605.85">
-      <tspan x="840" y="605.85">@Interned Date</tspan>
+  <g
+     id="g72"
+     transform="translate(162.97506,-3.6428527)">
+    <rect
+       style="fill:#ffffff"
+       x="760"
+       y="580"
+       width="160"
+       height="42"
+       id="rect64" />
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       x="760"
+       y="580"
+       width="160"
+       height="42"
+       id="rect66" />
+    <text
+       font-size="16"
+       style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="840"
+       y="605.84998"
+       id="text70">
+      <tspan
+         x="840"
+         y="605.84998"
+         id="tspan68">@Interned Date</tspan>
+    </text>
+  </g>
+  <g
+     transform="translate(39.789041,57.218563)"
+     id="g20-0">
+    <rect
+       style="fill:#ffffff"
+       x="640"
+       y="520"
+       width="160"
+       height="42"
+       id="rect12-5" />
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2.44124079"
+       x="600.43158"
+       y="520.11456"
+       width="239.69342"
+       height="41.770958"
+       id="rect14-5" />
+    <text
+       font-size="16"
+       style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="720"
+       y="545.84998"
+       id="text18-2">
+      <tspan
+         x="720"
+         y="545.84998"
+         id="tspan16-9">@InternedDistinct Object</tspan>
+    </text>
+  </g>
+  <g
+     transform="translate(39.789041,57.218563)"
+     id="g38-0">
+    <line
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       x1="720"
+       y1="520"
+       x2="825.16602"
+       y2="504.22501"
+       id="line32-2" />
+    <polygon
+       style="fill:#000000"
+       points="826.204,511.148 839.011,502.148 824.128,497.303 "
+       id="polygon34-8" />
+    <polygon
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       points="826.204,511.148 839.011,502.148 824.128,497.303 "
+       id="polygon36-3" />
+  </g>
+  <g
+     transform="translate(39.789041,57.218563)"
+     id="g54-8">
+    <line
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       x1="840"
+       y1="580"
+       x2="734.83398"
+       y2="564.22498"
+       id="line48-0" />
+    <polygon
+       style="fill:#000000"
+       points="735.872,557.303 720.989,562.148 733.796,571.148 "
+       id="polygon50-4" />
+    <polygon
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       points="735.872,557.303 720.989,562.148 733.796,571.148 "
+       id="polygon52-0" />
+  </g>
+  <g
+     transform="translate(39.789041,57.218563)"
+     id="g62-9">
+    <line
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       x1="840"
+       y1="580"
+       x2="945.16602"
+       y2="564.22498"
+       id="line56-1" />
+    <polygon
+       style="fill:#000000"
+       points="946.204,571.148 959.011,562.148 944.128,557.303 "
+       id="polygon58-9" />
+    <polygon
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       points="946.204,571.148 959.011,562.148 944.128,557.303 "
+       id="polygon60-6" />
+  </g>
+  <g
+     transform="matrix(1.0523765,0,0,1,-1.6771392,57.218563)"
+     id="g72-2">
+    <rect
+       style="fill:#ffffff"
+       x="760"
+       y="580"
+       width="160"
+       height="42"
+       id="rect64-5" />
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2.32170033"
+       x="731.75653"
+       y="580.16083"
+       width="217.27594"
+       height="41.678299"
+       id="rect66-4" />
+    <text
+       font-size="16"
+       style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="840"
+       y="605.84998"
+       id="text70-4">
+      <tspan
+         x="840"
+         y="605.84998"
+         id="tspan68-9">@InternedDistinct Date</tspan>
     </text>
   </g>
 </svg>

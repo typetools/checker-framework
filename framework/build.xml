@@ -639,6 +639,7 @@
             description="Run jtreg tests">
         <!--As of version 4.2-b02, a NullPointerException is thrown without making this dir-->
         <mkdir dir="${build}/jtreg/all/report/html"/>
+        <mkdir dir="${build}/jtreg/all/report/text"/>
         <jtreg-tool2 name="all" tests="."/>
     </target>
 

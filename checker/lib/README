@@ -21,5 +21,7 @@ The annotated source code appears at the following locations:
 
 bcel.jar : from https://github.com/typetools/commons-bcel (version 5.2)
 commons-bcel-6.0.jar : from https://github.com/typetools/commons-bcel
+commons-io-2.5.jar : from https://github.com/typetools/commons-io
+                     to build, see its file README-typetools.md
 guava-19.0.jar : from https://github.com/typetools/guava
 java-getopt-1.0.14.jar : from https://github.com/typetools/java-getopt

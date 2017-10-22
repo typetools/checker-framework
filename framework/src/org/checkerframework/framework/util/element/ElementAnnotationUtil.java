@@ -22,6 +22,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -377,12 +378,16 @@ public class ElementAnnotationUtil {
             return getLocationTypeAAT((AnnotatedArrayType) type, location);
         } else if (type.getKind() == TypeKind.UNION) {
             return getLocationTypeAUT((AnnotatedUnionType) type, location);
+        } else if (type.getKind() == TypeKind.INTERSECTION) {
+            return getLocationTypeAIT((AnnotatedIntersectionType) type, location);
         } else {
             ErrorReporter.errorAbort(
                     "ElementAnnotationUtil.getTypeAtLocation: only declared types, "
                             + "arrays, and null types can have annotations with location; found type: "
                             + type
-                            + " location: "
+                            + " (kind: "
+                            + type.getKind()
+                            + ") location: "
                             + location);
             return null; // dead code
         }
@@ -523,6 +528,26 @@ public class ElementAnnotationUtil {
             AnnotatedUnionType type, List<TypeAnnotationPosition.TypePathEntry> location) {
         AnnotatedTypeMirror comptype = type.getAlternatives().get(0);
         return getTypeAtLocation(comptype, location);
+    }
+
+    /** Intersection types use the TYPE_ARGUMENT index to separate the individual types. */
+    private static AnnotatedTypeMirror getLocationTypeAIT(
+            AnnotatedIntersectionType type, List<TypeAnnotationPosition.TypePathEntry> location) {
+        if (location.size() >= 1
+                && location.get(0)
+                        .tag
+                        .equals(TypeAnnotationPosition.TypePathEntryKind.TYPE_ARGUMENT)) {
+            AnnotatedTypeMirror supertype = type.directSuperTypes().get(location.get(0).arg);
+            return getTypeAtLocation(supertype, tail(location));
+        } else {
+            ErrorReporter.errorAbort(
+                    "ElementAnnotationUtil.getLocatonTypeAIT: "
+                            + "invalid location "
+                            + location
+                            + " for type: "
+                            + type);
+            return null; // dead code
+        }
     }
 
     private static <T> List<T> tail(List<T> list) {

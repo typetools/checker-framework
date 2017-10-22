@@ -420,7 +420,7 @@ public class PrintWriter extends Writer {
      * @param off Offset from which to start writing characters
      * @param len Number of characters to write
      */
-    public void write(char buf[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) {
+    public void write(char buf[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) {
         try {
             synchronized (lock) {
                 ensureOpen();
@@ -450,7 +450,7 @@ public class PrintWriter extends Writer {
      * @param off Offset from which to start writing characters
      * @param len Number of characters to write
      */
-    public void write(String s, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) {
+    public void write(String s, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) {
         try {
             synchronized (lock) {
                 ensureOpen();

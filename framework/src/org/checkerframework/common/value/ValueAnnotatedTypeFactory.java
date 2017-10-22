@@ -35,6 +35,8 @@ import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
 import org.checkerframework.common.value.qual.IntRange;
+import org.checkerframework.common.value.qual.IntRangeFromGTENegativeOne;
+import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.MinLen;
@@ -150,12 +152,32 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // this line just registers the alias. The BottomVal is never used.
         addAliasedAnnotation(MinLen.class, BOTTOMVAL);
 
-        // Only @Positive is aliased here (instead of the related lower bound checker annotations
-        // like @NonNegative, @IndexFor, etc.) because only @Positive provides useful
-        // information about @MinLen annotations. A similar annotation to @IntRangeFromPositive could
-        // be created for @NonNegative in the future.
+        // @Positive is aliased here because @Positive provides useful
+        // information about @MinLen annotations.
+        // @NonNegative and @GTENegativeOne are aliased similarly so
+        // that it's possible to overwrite a function annotated to return
+        // @NonNegative with, for instance, a function that returns an @IntVal(0).
         addAliasedAnnotation(
                 "org.checkerframework.checker.index.qual.Positive", createIntRangeFromPositive());
+        addAliasedAnnotation(
+                "org.checkerframework.checker.index.qual.NonNegative",
+                createIntRangeFromNonNegative());
+        addAliasedAnnotation(
+                "org.checkerframework.checker.index.qual.GTENegativeOne",
+                createIntRangeFromGTENegativeOne());
+        // Must also alias any alias of three annotations above:
+        addAliasedAnnotation(
+                "org.checkerframework.checker.index.qual.LengthOf",
+                createIntRangeFromNonNegative());
+        addAliasedAnnotation(
+                "org.checkerframework.checker.index.qual.IndexFor",
+                createIntRangeFromNonNegative());
+        addAliasedAnnotation(
+                "org.checkerframework.checker.index.qual.IndexOrHigh",
+                createIntRangeFromNonNegative());
+        addAliasedAnnotation(
+                "org.checkerframework.checker.index.qual.IndexOrLow",
+                createIntRangeFromGTENegativeOne());
 
         // PolyLength is syntactic sugar for both @PolySameLen and @PolyValue
         addAliasedAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
@@ -202,6 +224,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         BottomVal.class,
                         UnknownVal.class,
                         IntRangeFromPositive.class,
+                        IntRangeFromNonNegative.class,
+                        IntRangeFromGTENegativeOne.class,
                         PolyValue.class,
                         PolyAll.class));
     }
@@ -541,7 +565,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private Range widenedRange(Range newRange, Range oldRange, Range lubRange) {
-            if (newRange == null || oldRange == null) {
+            if (newRange == null || oldRange == null || lubRange.equals(oldRange)) {
                 return lubRange;
             }
             // If both bounds of the new range are bigger than the old range, then returned range
@@ -586,6 +610,21 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
+        private AnnotationMirror convertSpecialIntRangeToStandardIntRange(AnnotationMirror anm) {
+            if (AnnotationUtils.areSameByClass(anm, IntRangeFromPositive.class)) {
+                return createIntRangeAnnotation(1, Integer.MAX_VALUE);
+            }
+
+            if (AnnotationUtils.areSameByClass(anm, IntRangeFromNonNegative.class)) {
+                return createIntRangeAnnotation(0, Integer.MAX_VALUE);
+            }
+
+            if (AnnotationUtils.areSameByClass(anm, IntRangeFromGTENegativeOne.class)) {
+                return createIntRangeAnnotation(-1, Integer.MAX_VALUE);
+            }
+            return anm;
+        }
+
         /**
          * Determines the least upper bound of a1 and a2, which contains the union of their sets of
          * possible values.
@@ -600,12 +639,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return null;
             }
 
-            if (AnnotationUtils.areSameByClass(a1, IntRangeFromPositive.class)) {
-                a1 = createIntRangeAnnotation(1, Integer.MAX_VALUE);
-            }
-            if (AnnotationUtils.areSameByClass(a2, IntRangeFromPositive.class)) {
-                a2 = createIntRangeAnnotation(1, Integer.MAX_VALUE);
-            }
+            a1 = convertSpecialIntRangeToStandardIntRange(a1);
+            a2 = convertSpecialIntRangeToStandardIntRange(a2);
 
             if (isSubtype(a1, a2)) {
                 return a2;
@@ -754,6 +789,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return UNKNOWNVAL;
         }
 
+        private AnnotationMirror convertToUnknown(AnnotationMirror anno) {
+            if (AnnotationUtils.areSameByClass(anno, ArrayLenRange.class)) {
+                Range range = getRange(anno);
+                if (range.from == 0 && range.to >= Integer.MAX_VALUE) {
+                    return UNKNOWNVAL;
+                }
+                return anno;
+            } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
+                Range range = getRange(anno);
+                if (range.isLongEverything()) {
+                    return UNKNOWNVAL;
+                }
+                return anno;
+            } else {
+                return anno;
+            }
+        }
+
         /**
          * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
          * annotations are Value. In this case, subAnno is a subtype of superAnno iff superAnno
@@ -764,12 +817,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
 
-            if (AnnotationUtils.areSameByClass(subAnno, IntRangeFromPositive.class)) {
-                subAnno = createIntRangeAnnotation(1, Integer.MAX_VALUE);
-            }
-
-            if (AnnotationUtils.areSameByClass(superAnno, IntRangeFromPositive.class)) {
-                superAnno = createIntRangeAnnotation(1, Integer.MAX_VALUE);
+            subAnno = convertSpecialIntRangeToStandardIntRange(subAnno);
+            superAnno = convertSpecialIntRangeToStandardIntRange(superAnno);
+            if (AnnotationUtils.areSameByClass(subAnno, UnknownVal.class)) {
+                superAnno = convertToUnknown(superAnno);
             }
 
             if (AnnotationUtils.areSameByClass(superAnno, UnknownVal.class)
@@ -1015,27 +1066,31 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotatedTypeMirror componentType = getAnnotatedType(init);
                 int dimension = 0;
                 while (componentType.getKind() == TypeKind.ARRAY) {
-                    if (dimension == arrayLenOfDimensions.size()) {
-                        arrayLenOfDimensions.add(new RangeOrListOfValues());
+                    RangeOrListOfValues rolv = null;
+                    if (dimension < arrayLenOfDimensions.size()) {
+                        rolv = arrayLenOfDimensions.get(dimension);
                     }
-                    RangeOrListOfValues rolv = arrayLenOfDimensions.get(dimension);
                     AnnotationMirror arrayLen = componentType.getAnnotation(ArrayLen.class);
                     if (arrayLen != null) {
                         List<Integer> currentLengths = getArrayLength(arrayLen);
-                        rolv.addAll(currentLengths);
+                        if (rolv != null) {
+                            rolv.addAll(currentLengths);
+                        } else {
+                            arrayLenOfDimensions.add(new RangeOrListOfValues(currentLengths));
+                        }
                     } else {
                         // Check for an arrayLenRange annotation
                         AnnotationMirror arrayLenRangeAnno =
                                 componentType.getAnnotation(ArrayLenRange.class);
                         if (arrayLenRangeAnno != null) {
                             Range range = getRange(arrayLenRangeAnno);
-                            rolv.add(range);
+                            if (rolv != null) {
+                                rolv.add(range);
+                            } else {
+                                arrayLenOfDimensions.add(new RangeOrListOfValues(range));
+                            }
                         }
                     }
-
-                    // replace the current dimension's range with this one.
-                    arrayLenOfDimensions.remove(dimension);
-                    arrayLenOfDimensions.add(dimension, rolv);
 
                     dimension++;
                     componentType = ((AnnotatedArrayType) componentType).getComponentType();
@@ -1703,6 +1758,32 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
+     * Creates the special {@link IntRangeFromNonNegative} annotation, which is only used as an
+     * alias for the Index Checker's {@link org.checkerframework.checker.index.qual.NonNegative}
+     * annotation. It is treated everywhere as an IntRange annotation, but is not checked when it
+     * appears as the left hand side of an assignment (because the Lower Bound Checker will check
+     * it).
+     */
+    private AnnotationMirror createIntRangeFromNonNegative() {
+        AnnotationBuilder builder =
+                new AnnotationBuilder(processingEnv, IntRangeFromNonNegative.class);
+        return builder.build();
+    }
+
+    /**
+     * Creates the special {@link IntRangeFromGTENegativeOne} annotation, which is only used as an
+     * alias for the Index Checker's {@link org.checkerframework.checker.index.qual.GTENegativeOne}
+     * annotation. It is treated everywhere as an IntRange annotation, but is not checked when it
+     * appears as the left hand side of an assignment (because the Lower Bound Checker will check
+     * it).
+     */
+    private AnnotationMirror createIntRangeFromGTENegativeOne() {
+        AnnotationBuilder builder =
+                new AnnotationBuilder(processingEnv, IntRangeFromGTENegativeOne.class);
+        return builder.build();
+    }
+
+    /**
      * Create an {@code @ArrayLenRange} annotation from the two (inclusive) bounds. Does not return
      * BOTTOMVAL or UNKNOWNVAL.
      */
@@ -1772,6 +1853,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         if (AnnotationUtils.areSameByClass(rangeAnno, IntRangeFromPositive.class)) {
             return new Range(1, Integer.MAX_VALUE);
+        }
+        if (AnnotationUtils.areSameByClass(rangeAnno, IntRangeFromNonNegative.class)) {
+            return new Range(0, Integer.MAX_VALUE);
+        }
+        if (AnnotationUtils.areSameByClass(rangeAnno, IntRangeFromGTENegativeOne.class)) {
+            return new Range(-1, Integer.MAX_VALUE);
         }
 
         if (AnnotationUtils.areSameByClass(rangeAnno, IntVal.class)) {
@@ -1922,7 +2009,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public boolean isIntRange(AnnotationMirror anm) {
         return AnnotationUtils.areSameByClass(anm, IntRange.class)
-                || AnnotationUtils.areSameByClass(anm, IntRangeFromPositive.class);
+                || AnnotationUtils.areSameByClass(anm, IntRangeFromPositive.class)
+                || AnnotationUtils.areSameByClass(anm, IntRangeFromNonNegative.class)
+                || AnnotationUtils.areSameByClass(anm, IntRangeFromGTENegativeOne.class);
     }
 
     public Integer getMinLenValue(AnnotatedTypeMirror atm) {

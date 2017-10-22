@@ -56,20 +56,20 @@ import org.checkerframework.javacutil.TreeUtils;
  * A class that helps checkers use qualifiers that are represented by annotations with Java
  * expression strings. This class performs four main functions:
  *
- * <p>1. Standardizes/canonicalizes the expressions in the annotations such that two expression
- * strings that are equivalent are made to be equal. For example, an instance field f may appear in
- * an expression string as "f" or "this.f"; this class standardizes both strings to "this.f".
- *
- * <p>2. Viewpoint-adapts annotations on field or method declarations at field accesses or method
- * invocations.
- *
- * <p>3. Changes invalid expression strings to an error string that includes the reason why the
- * expression is invalid. For example, {@code @KeyFor("m")} would be changed to
- * {@code @KeyFor("[error for expression: m error: m: identifier not found]")} if m is not a valid
- * identifier.
- *
- * <p>4. Checks annotated types for error strings that have been added by this class and issues an
- * error if any are found.
+ * <ol>
+ *   <li>Standardizes/canonicalizes the expressions in the annotations such that two expression
+ *       strings that are equivalent are made to be equal. For example, an instance field f may
+ *       appear in an expression string as "f" or "this.f"; this class standardizes both strings to
+ *       "this.f".
+ *   <li>Viewpoint-adapts annotations on field or method declarations at field accesses or method
+ *       invocations.
+ *   <li>Changes invalid expression strings to an error string that includes the reason why the
+ *       expression is invalid. For example, {@code @KeyFor("m")} would be changed to
+ *       {@code @KeyFor("[error for expression: m error: m: identifier not found]")} if m is not a
+ *       valid identifier.
+ *   <li>Checks annotated types for error strings that have been added by this class and issues an
+ *       error if any are found.
+ * </ol>
  *
  * <p>Steps 3 and 4 are separated so that an error is issued only once per invalid expression string
  * rather than every time the expression string is parsed. (The expression string is parsed multiple
@@ -127,7 +127,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Viewpoint adapts the dependent type annotations on the bounds to the use of the type.
+     * Viewpoint-adapts the dependent type annotations on the bounds to the use of the type.
      *
      * @param classDecl class or interface declaration whose type variables should be viewpoint
      *     adapted
@@ -145,7 +145,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Viewpoint adapts the dependent type annotations in the methodDeclType based on the
+     * Viewpoint-adapts the dependent type annotations in the methodDeclType based on the
      * methodInvocationTree.
      *
      * @param methodInvocationTree use of the method
@@ -159,7 +159,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Viewpoint adapts the dependent type annotations in the constructorType based on the
+     * Viewpoint-adapts the dependent type annotations in the constructorType based on the
      * newClassTree.
      *
      * @param newClassTree invocation of the constructor

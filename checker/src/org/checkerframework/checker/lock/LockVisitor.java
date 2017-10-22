@@ -32,6 +32,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
@@ -412,9 +413,13 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     public Void visitMemberSelect(MemberSelectTree tree, Void p) {
         if (atypeFactory.getNodeForTree(tree) instanceof FieldAccessNode) {
             AnnotatedTypeMirror atmOfReceiver = atypeFactory.getAnnotatedType(tree.getExpression());
-            AnnotationMirror gb =
-                    atmOfReceiver.getEffectiveAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
-            checkLock(tree.getExpression(), gb);
+            // The atmOfReceiver for "void.class" is TypeKind.VOID, which isn't annotated so avoid it.
+            if (atmOfReceiver.getKind() != TypeKind.VOID) {
+                AnnotationMirror gb =
+                        atmOfReceiver.getEffectiveAnnotationInHierarchy(
+                                atypeFactory.GUARDEDBYUNKNOWN);
+                checkLock(tree.getExpression(), gb);
+            }
         }
 
         return super.visitMemberSelect(tree, p);
@@ -467,8 +472,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             MethodTree overriderTree,
             AnnotatedDeclaredType enclosingType,
             AnnotatedExecutableType overridden,
-            AnnotatedDeclaredType overriddenType,
-            Void p) {
+            AnnotatedDeclaredType overriddenType) {
 
         boolean isValid = true;
 
@@ -490,7 +494,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     null);
         }
 
-        return super.checkOverride(overriderTree, enclosingType, overridden, overriddenType, p)
+        return super.checkOverride(overriderTree, enclosingType, overridden, overriddenType)
                 && isValid;
     }
 

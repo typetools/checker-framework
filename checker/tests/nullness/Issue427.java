@@ -1,10 +1,7 @@
 // Test case for Issue 427:
 // https://github.com/typetools/checker-framework/issues/427
 
-//We need to add a warning when an @AssumeAssertion is missing
-//its @ symbol (as below)
-
-// @skip-test
+// We need to add a warning when an @AssumeAssertion is missing its @ symbol (as below).
 
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.*;

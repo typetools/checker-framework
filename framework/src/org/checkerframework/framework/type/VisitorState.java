@@ -18,7 +18,7 @@ public class VisitorState {
     /** The enclosing class tree */
     private ClassTree ct;
 
-    /** The receiver type of the enclosing class tree */
+    /** The receiver type of the enclosing method tree */
     private AnnotatedDeclaredType mrt;
     /** The enclosing method tree */
     private MethodTree mt;
@@ -29,12 +29,12 @@ public class VisitorState {
     /** The visitor's current tree path. */
     private TreePath path;
 
-    /** Updates the type of the current class currently visited */
+    /** Updates the type of the class currently visited */
     public void setClassType(AnnotatedDeclaredType act) {
         this.act = act;
     }
 
-    /** Updates the tree of the current class currently visited */
+    /** Updates the tree of the class currently visited */
     public void setClassTree(ClassTree ct) {
         this.ct = ct;
     }
@@ -60,7 +60,9 @@ public class VisitorState {
 
     /** @return the type of the enclosing class */
     public AnnotatedDeclaredType getClassType() {
-        if (act == null) return null;
+        if (act == null) {
+            return null;
+        }
         return act.deepCopy();
     }
 
@@ -71,7 +73,9 @@ public class VisitorState {
 
     /** @return the method receiver type of the enclosing method */
     public AnnotatedDeclaredType getMethodReceiver() {
-        if (mrt == null) return null;
+        if (mrt == null) {
+            return null;
+        }
         return mrt.deepCopy();
     }
 
@@ -93,10 +97,15 @@ public class VisitorState {
     @Override
     public String toString() {
         return String.format(
-                "method %s (%s) / class %s (%s)",
+                "VisitorState: method %s (%s) / class %s (%s)\n"
+                        + "    assignment context %s (%s)\n"
+                        + "    path is non-null: %s",
                 (mt != null ? mt.getName() : "null"),
                 mrt,
                 (ct != null ? ct.getSimpleName() : "null"),
-                act);
+                act,
+                (assignmentcontext != null ? assignmentcontext.first : "null"),
+                (assignmentcontext != null ? assignmentcontext.second : "null"),
+                path != null);
     }
 }
