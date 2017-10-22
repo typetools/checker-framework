@@ -5,7 +5,11 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
  * Indicates that no other value is {@code equals()} to the given value. Therefore, it is correct to
@@ -18,6 +22,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @checker_framework.manual #interning-checker Interning Checker
  */
 @SubtypeOf(Interned.class)
+@DefaultFor(value = {TypeUseLocation.LOWER_BOUND})
+@ImplicitFor(
+    literals = {LiteralKind.NULL},
+    typeNames = {Void.class}
+)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

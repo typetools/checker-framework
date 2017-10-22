@@ -6,11 +6,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
  * Indicates that a variable has been interned, i.e., that the variable refers to the canonical
@@ -33,7 +31,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  */
 @SubtypeOf(UnknownInterned.class)
 @ImplicitFor(
-    literals = {LiteralKind.ALL},
+    literals = {LiteralKind.PRIMITIVE, LiteralKind.STRING}, // everyhing but NULL
     types = {
         TypeKind.BOOLEAN,
         TypeKind.BYTE,
@@ -43,10 +41,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
         TypeKind.INT,
         TypeKind.LONG,
         TypeKind.SHORT
-    },
-    typeNames = {Void.class}
+    }
 )
-@DefaultFor(value = {TypeUseLocation.LOWER_BOUND})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
