@@ -244,17 +244,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final BaseTypeChecker checker;
 
     /**
-     * Map from class names of aliases, to the annotations in the Checker Framework that will be
-     * used in its place.
+     * Map from the fully-qualified names of the aliased annotations, to the annotations in the
+     * Checker Framework that will be used in its place.
      */
     private final Map<String, AnnotationMirror> aliases = new HashMap<String, AnnotationMirror>();
 
-    /** Set contains class names of aliases whose elements need to be copied over. */
+    /**
+     * A set that contains the fully-qualified class names of the aliased annotations whose elements
+     * need to be copied over.
+     */
     private final Set<String> aliasesCopyElements = new HashSet<>();
 
     /**
-     * Map from class names of aliases, to the ignorable elements that the framework can safely drop
-     * when copying over the elements.
+     * Map from the fully-qualified names of aliased class, to the ignorable elements that the
+     * framework can safely drop when copying over the elements.
      */
     private final Map<String, String[]> aliasesIgnorableElements = new HashMap<>();
 
@@ -2407,27 +2410,35 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 this.getQualifierHierarchy().getTypeQualifiers(), a);
     }
 
-    /** Adds the annotation {@code aliasClass} as an alias for the annotation {@code type}. */
+    /**
+     * Adds the annotation {@code aliasClass} as an alias for the canonical annotation {@code type}
+     * that will be used by the Checker Framework in the alias's place.
+     */
     protected void addAliasedAnnotation(Class<?> aliasClass, AnnotationMirror type) {
         addAliasedAnnotation(aliasClass.getCanonicalName(), type);
     }
 
     /**
-     * Adds the annotation whose fully-qualified name is given by {@code aliasName} as an alias for
-     * the annotation {@code type}.
+     * Adds the annotation, whose fully-qualified name is given by {@code aliasName}, as an alias
+     * for the canonical annotation {@code type} that will be used by the Checker Framework in the
+     * alias's place.
      *
      * <p>This overload provides a workaround when the alias class cannot be referenced directly. In
      * general, it is nicer and less error-prone to use the {@link #addAliasedAnnotation(Class,
      * AnnotationMirror)} version instead.
+     *
+     * @param aliasName the fully-qualified name of the aliased annotation
+     * @param type the canonical annotation
      */
     protected void addAliasedAnnotation(String aliasName, AnnotationMirror type) {
         aliases.put(aliasName, type);
     }
 
     /**
-     * Adds the annotation {@code aliasClass} as an alias for the annotation {@code type}.
+     * Adds the annotation {@code aliasClass} as an alias for the canonical annotation {@code type}
+     * that will be used by the Checker Framework in the alias's place.
      *
-     * @param aliasClass the alias class
+     * @param aliasClass the class of the aliased annotation
      * @param type the canonical annotation
      * @param copyElements a flag that indicates whether we want to copy the elements over when
      *     getting the alias from the canonical annotation
@@ -2443,18 +2454,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Adds the annotation whose fully-qualified name is given by {@code aliasName} as an alias for
-     * the annotation {@code type}.
+     * Adds the annotation, whose fully-qualified name is given by {@code aliasName}, as an alias
+     * for the canonical annotation {@code type} that will be used by the Checker Framework in the
+     * alias's place.
      *
      * <p>This overload provides a workaround when the alias class cannot be referenced directly. In
      * general, it is nicer and less error-prone to use the {@link #addAliasedAnnotation(Class,
      * AnnotationMirror)} version instead.
      *
-     * @param aliasName the string name of the alias class
+     * @param aliasName the fully-qualified name of the aliased class
      * @param type the canonical annotation
      * @param copyElements a flag that indicates whether we want to copy the elements over when
      *     getting the alias from the canonical annotation
-     * @param ignorableElements a list of elemtns that can be safely dropped when the elements are
+     * @param ignorableElements a list of elements that can be safely dropped when the elements are
      *     being copied over
      */
     protected void addAliasedAnnotation(
@@ -2472,6 +2484,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Returns the canonical annotation for the passed annotation if it is an alias of a canonical
      * one in the framework. If it is not an alias, the method returns null.
+     *
+     * <p>A canonical annotation is the internal annotation that will be used by the Checker
+     * Framework in the aliased annotation's place.
      *
      * @param a the qualifier to check for an alias
      * @return the canonical annotation or null if none exists

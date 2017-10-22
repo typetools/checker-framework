@@ -90,8 +90,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(SearchIndexFor.class, createLTLengthOfAnnotation(), true);
         addAliasedAnnotation(NegativeIndexFor.class, createLTLengthOfAnnotation(), true);
         addAliasedAnnotation(LengthOf.class, createLTEqLengthOfAnnotation(), true);
-        addAliasedAnnotation(PolyAll.class, POLY, true);
-        addAliasedAnnotation(PolyIndex.class, POLY, true);
+        addAliasedAnnotation(PolyAll.class, POLY);
+        addAliasedAnnotation(PolyIndex.class, POLY);
 
         imf = new IndexMethodIdentifier(processingEnv);
 
