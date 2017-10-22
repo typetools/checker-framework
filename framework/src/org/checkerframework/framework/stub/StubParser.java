@@ -181,6 +181,8 @@ public class StubParser {
                     new StringBuilder(
                             "exception from StubParser.parse for file "
                                     + filename
+                                    + "; current class: "
+                                    + currentClass
                                     + ". Encountered problems: ");
             // Manually build up the message, because e.getMessage() would include a stack trace.
             for (Problem p : e.getProblems()) {
@@ -195,6 +197,8 @@ public class StubParser {
                             + e.getClass()
                             + " from StubParser.parse for file "
                             + filename
+                            + "; current class: "
+                            + currentClass
                             + ". Encountered problems: "
                             + e.getMessage());
             parsedStubUnit = null;
