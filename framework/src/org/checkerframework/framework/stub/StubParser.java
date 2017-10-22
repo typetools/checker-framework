@@ -1328,7 +1328,6 @@ public class StubParser {
      * and the -AstubWarnIfNotFound command-line argument was passed.
      */
     private void stubWarnIfNotFound(String warning) {
-        ensureSingleLine(warning, "stubWarnIfNotFound");
         if (warnings.add(warning) && (warnIfNotFound || debugStubParser)) {
             processingEnv
                     .getMessager()
@@ -1341,7 +1340,6 @@ public class StubParser {
      * issued and the -AstubWarnIfOverwritesBytecode command-line argument was passed.
      */
     private void stubWarnIfOverwritesBytecode(String warning) {
-        ensureSingleLine(warning, "stubWarnIfOverwritesBytecode");
         if (warnings.add(warning) && (warnIfStubOverwritesBytecode || debugStubParser)) {
             processingEnv
                     .getMessager()
@@ -1355,7 +1353,6 @@ public class StubParser {
      */
     private void stubAlwaysWarn(String warning, Object... args) {
         warning = String.format(warning, args);
-        ensureSingleLine(warning, "stubAlwaysWarn");
         if (warnings.add(warning)) {
             processingEnv
                     .getMessager()
@@ -1364,25 +1361,10 @@ public class StubParser {
     }
 
     private void stubDebug(String warning) {
-        ensureSingleLine(warning, "stubDebug");
         if (warnings.add(warning) && debugStubParser) {
             processingEnv
                     .getMessager()
                     .printMessage(javax.tools.Diagnostic.Kind.NOTE, "StubParser: " + warning);
-        }
-    }
-
-    /**
-     * Throw an error if the message contains line separator characters. (Any characters after a
-     * line separator are silently discarded and not shown to the user.)
-     */
-    private void ensureSingleLine(String message, String methodName) {
-        if (message.contains(LINE_SEPARATOR)) {
-            throw new Error(
-                    "Don't pass multi-line strings to "
-                            + methodName
-                            + ": "
-                            + message.replace(LINE_SEPARATOR, "%n"));
         }
     }
 
