@@ -705,7 +705,7 @@ public class FlowExpressionParseUtil {
 
     // TODO: this returns true for "(a)+(b)" where the parens are not matching.
     private static boolean isParentheses(String s, FlowExpressionContext contex) {
-        return s.charAt(0) == '(' && s.charAt(s.length() - 1) == ')';
+        return s.length() > 2 && s.charAt(0) == '(' && s.charAt(s.length() - 1) == ')';
     }
 
     private static Receiver parseParentheses(String s, FlowExpressionContext context, TreePath path)
