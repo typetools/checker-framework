@@ -65,8 +65,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * that there are no local variables with qualifiers that are not in the store, this method
      * forbids programmers from writing such qualifiers. This may introduce false positives if the
      * programmer would like to write a non-primary annotation on a local variable. Note that final
-     * or effectively final are always permitted in dependent annotations, even in local variables,
-     * and will not trigger this warning (as no side-effect can effect them).
+     * or effectively final variables are always permitted in dependent annotations, even on local
+     * variables, and will not trigger this warning (as no side-effect can effect them).
      *
      * <p>Also issues warnings if the expression in a dependent annotation is not permitted.
      * Permitted expressions in dependent annotations must be at least one of the following:
