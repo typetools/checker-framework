@@ -41,4 +41,12 @@ class Reassignment {
     public void method2(int a, String[] array) {
         array = new String[] {""};
     }
+
+    public void method3(@IndexFor("#2") int a, String[] array) {}
+
+    public void method4(int a, String[] b) {
+        b = new String[] {""};
+        int[] array = {1};
+        array = new int[0]; // error here
+    }
 }
