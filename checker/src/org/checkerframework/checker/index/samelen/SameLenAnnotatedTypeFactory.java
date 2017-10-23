@@ -168,7 +168,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         for (int i = 0; i < receivers.size(); i++) {
             Receiver rec = receivers.get(i);
             AnnotationMirror anno = annos.get(i);
-            if (isReceiverToStringParsable(rec)) {
+            if (shouldUseInAnnotation(rec)) {
                 values.add(rec.toString());
             }
             if (AnnotationUtils.areSameByClass(anno, SameLen.class)) {
@@ -179,10 +179,12 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return res;
     }
 
-    public static boolean isReceiverToStringParsable(Receiver receiver) {
+    public static boolean shouldUseInAnnotation(Receiver receiver) {
         return !receiver.containsUnknown()
                 && !(receiver instanceof FlowExpressions.ArrayCreation)
-                && !(receiver instanceof FlowExpressions.ClassName);
+                && !(receiver instanceof FlowExpressions.ClassName)
+                // Literals are handled by the Value Checker
+                && !(receiver instanceof FlowExpressions.ValueLiteral);
     }
 
     /**
@@ -310,7 +312,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             getAnnotatedType(sequenceTree).getAnnotationInHierarchy(UNKNOWN);
 
                     Receiver rec = FlowExpressions.internalReprOf(this.atypeFactory, sequenceTree);
-                    if (isReceiverToStringParsable(rec)) {
+                    if (shouldUseInAnnotation(rec)) {
                         if (AnnotationUtils.areSameByClass(sequenceAnno, SameLenUnknown.class)) {
                             sequenceAnno = createSameLen(rec.toString());
                         } else if (AnnotationUtils.areSameByClass(sequenceAnno, SameLen.class)) {
