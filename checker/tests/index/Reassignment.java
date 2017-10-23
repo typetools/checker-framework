@@ -35,4 +35,10 @@ class Reassignment {
             test(b, 0, b.length - 1);
         }
     }
+
+    public void method(@IndexFor("#2") int a, String[] array) {}
+
+    public void method2(int a, String[] array) {
+        array = new String[] {""};
+    }
 }
