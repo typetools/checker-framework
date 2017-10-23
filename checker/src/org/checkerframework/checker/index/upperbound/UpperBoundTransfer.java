@@ -10,6 +10,7 @@ import org.checkerframework.checker.index.IndexRefinementInfo;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
@@ -32,6 +33,7 @@ import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 
 public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, UpperBoundTransfer> {
@@ -393,10 +395,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
         // T = minusOffset(type(leftNode), rightNode) and
         // S = minusOffset(type(rightNode), leftNode)
 
-        UBQualifier left = getUBQualifier(n.getLeftOperand(), in);
+        UBQualifier left = getUBQualifierForAddition(n.getLeftOperand(), in);
         UBQualifier T = left.minusOffset(n.getRightOperand(), atypeFactory);
 
-        UBQualifier right = getUBQualifier(n.getRightOperand(), in);
+        UBQualifier right = getUBQualifierForAddition(n.getRightOperand(), in);
         UBQualifier S = right.minusOffset(n.getLeftOperand(), atypeFactory);
 
         UBQualifier glb = T.glb(S);
@@ -548,6 +550,41 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
             }
         }
         return super.visitMethodInvocation(n, in);
+    }
+
+    /**
+     * Returns the UBQualifier for a node, with additional refinement useful specifically for
+     * integer addition, based on the information from subcheckers of the Index Checker.
+     *
+     * @param n the node
+     * @param in dataflow analysis transfer input
+     * @return the UBQualifier for {@code node}
+     */
+    private UBQualifier getUBQualifierForAddition(Node n, TransferInput<CFValue, CFStore> in) {
+
+        // The method takes the greatest lower bound of the qualifier returned by
+        // getUBQualifier and a qualifier created from a SubstringIndexFor annotation, if such
+        // annotation is present and the index is known to be non-negative.
+
+        UBQualifier ubQualifier = getUBQualifier(n, in);
+        Tree nodeTree = n.getTree();
+        // Annotation from the Substring Index hierarchy
+        AnnotatedTypeMirror substringIndexType =
+                atypeFactory.getSubstringIndexAnnotatedTypeFactory().getAnnotatedType(nodeTree);
+        AnnotationMirror substringIndexAnno =
+                substringIndexType.getAnnotation(SubstringIndexFor.class);
+        // Annotation from the Lower bound hierarchy
+        AnnotatedTypeMirror lowerBoundType =
+                atypeFactory.getLowerBoundAnnotatedTypeFactory().getAnnotatedType(nodeTree);
+        // If the index has an SubstringIndexFor annotation and at the same time is non-negative,
+        // convert the SubstringIndexFor annotation to a upper bound qualifier.
+        if (substringIndexAnno != null
+                && (lowerBoundType.hasAnnotation(NonNegative.class)
+                        || lowerBoundType.hasAnnotation(Positive.class))) {
+            UBQualifier substringIndexQualifier = UBQualifier.createUBQualifier(substringIndexAnno);
+            ubQualifier = ubQualifier.glb(substringIndexQualifier);
+        }
+        return ubQualifier;
     }
 
     /**

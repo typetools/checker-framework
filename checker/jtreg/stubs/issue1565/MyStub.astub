@@ -1,0 +1,12 @@
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import java.util.*;
+
+package java.util;
+class AbstractList<T>
+{
+    void clear(@UnknownInitialization(AbstractList.class) AbstractList<T> this);
+}
+class BitSet
+{
+    void clear(@UnknownInitialization(BitSet.class) BitSet this);
+}

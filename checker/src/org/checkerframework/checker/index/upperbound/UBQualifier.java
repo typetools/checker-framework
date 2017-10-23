@@ -14,6 +14,7 @@ import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.PolyUpperBound;
+import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -39,7 +40,8 @@ public abstract class UBQualifier {
             return UpperBoundUnknownQualifier.UNKNOWN;
         } else if (AnnotationUtils.areSameByClass(am, UpperBoundBottom.class)) {
             return UpperBoundBottomQualifier.BOTTOM;
-        } else if (AnnotationUtils.areSameByClass(am, LTLengthOf.class)) {
+        } else if (AnnotationUtils.areSameByClass(am, LTLengthOf.class)
+                || AnnotationUtils.areSameByClass(am, SubstringIndexFor.class)) {
             return parseLTLengthOf(am);
         } else if (AnnotationUtils.areSameByClass(am, LTEqLengthOf.class)) {
             return parseLTEqLengthOf(am);
@@ -216,7 +218,7 @@ public abstract class UBQualifier {
         return false;
     }
 
-    static class LessThanLengthOf extends UBQualifier {
+    public static class LessThanLengthOf extends UBQualifier {
         private final Map<String, Set<OffsetEquation>> map;
 
         private LessThanLengthOf(Map<String, Set<OffsetEquation>> map) {
@@ -287,14 +289,43 @@ public abstract class UBQualifier {
          * AnnotationMirrors using @{@link LTEqLengthOf} or @{@link LTOMLengthOf} are returned.
          * Otherwise, @{@link LTLengthOf} is used.
          *
-         * <p>The annotation is sorted by sequence and then offset. This is so that {@link
-         * AnnotationUtils#areSame(AnnotationMirror, AnnotationMirror)} returns true for equivalent
-         * annotations.
+         * <p>The returned annotation is canonicalized by sorting its arguments by sequence and then
+         * offset. This is so that {@link AnnotationUtils#areSame(AnnotationMirror,
+         * AnnotationMirror)} returns true for equivalent annotations.
          *
-         * @param env ProcessingEnvironment
+         * @param env a processing environment used to build the returned annotation
          * @return the AnnotationMirror that represents this qualifier
          */
-        public AnnotationMirror convertToAnnotationMirror(ProcessingEnvironment env) {
+        public AnnotationMirror convertToAnnotation(ProcessingEnvironment env) {
+            return convertToAnnotation(env, false);
+        }
+
+        /**
+         * Returns the @{@link SubstringIndexFor} AnnotationMirror from the Substring Index
+         * hierarchy that imposes the same upper bounds on the annotated expression as this
+         * qualifier. However, the upper bounds represented by this qualifier do not apply to the
+         * value -1 which is always allowed by the returned annotation.
+         *
+         * @param env a processing environment used to build the returned annotation
+         * @return the AnnotationMirror from the Substring Index hierarchy that represents the same
+         *     upper bounds as this qualifier
+         */
+        public AnnotationMirror convertToSubstringIndexAnnotation(ProcessingEnvironment env) {
+            return convertToAnnotation(env, true);
+        }
+
+        /**
+         * Helper method called by {@link #convertToAnnotation} and {@link
+         * convertToSubstringIndexAnnotation} that does the real work.
+         *
+         * @param env a processing environment used to build the returned annotation
+         * @param buildSubstringIndexAnnotation if true, act like {@link
+         *     #convertToSubstringIndexAnnotation} and return a @{@link SubstringIndexFor}
+         *     annotation; if false, act like {@link #convertToAnnotation}
+         * @return the AnnotationMirror that represents the same upper bounds as this qualifier
+         */
+        private AnnotationMirror convertToAnnotation(
+                ProcessingEnvironment env, boolean buildSubstringIndexAnnotation) {
             List<String> sortedSequences = new ArrayList<>(map.keySet());
             Collections.sort(sortedSequences);
             List<String> sequences = new ArrayList<>();
@@ -315,7 +346,11 @@ public abstract class UBQualifier {
                 }
             }
             AnnotationBuilder builder;
-            if (isLTEq) {
+            if (buildSubstringIndexAnnotation) {
+                builder = new AnnotationBuilder(env, SubstringIndexFor.class);
+                builder.setValue("value", sequences);
+                builder.setValue("offset", offsets);
+            } else if (isLTEq) {
                 builder = new AnnotationBuilder(env, LTEqLengthOf.class);
                 builder.setValue("value", sequences);
             } else if (isLTOM) {
