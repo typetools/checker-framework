@@ -59,7 +59,7 @@ class MetaPostcondition {
         oddF1();
         @Odd String l2 = f1;
 
-        //:: error: (flowexpr.parse.postcondition.error)
+        //:: error: (flowexpr.parse.error.postcondition)
         error();
     }
 
@@ -93,7 +93,7 @@ class MetaPostcondition {
         //:: error: (assignment.type.incompatible)
         @Value String l2 = f2;
 
-        //:: error: (flowexpr.parse.postcondition.error)
+        //:: error: (flowexpr.parse.error.postcondition)
         error2(p1, p2);
     }
 

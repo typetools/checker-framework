@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util;
 
 /*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
@@ -479,7 +480,7 @@ public class FlowExpressionParseUtil {
         }
         if (idx > context.arguments.size()) {
             throw new FlowExpressionParseException(
-                    Result.failure("flowexpr.parse.index.too.big", Integer.toString(idx)));
+                    "flowexpr.parse.index.too.big", Integer.toString(idx));
         }
         return context.arguments.get(idx - 1);
     }
@@ -1307,21 +1308,28 @@ public class FlowExpressionParseUtil {
      * error reporting.
      */
     public static class FlowExpressionParseException extends Exception {
-        private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 2L;
+        private /*@CompilerMessageKey*/ String errorKey;
+        public final Object[] args;
 
-        protected final Result result;
-
-        public FlowExpressionParseException(Result result) {
-            this(result, null);
+        public FlowExpressionParseException(
+                /*@CompilerMessageKey*/ String errorKey, Object... args) {
+            this(null, errorKey, args);
         }
 
-        public FlowExpressionParseException(Result result, Throwable cause) {
+        public FlowExpressionParseException(
+                Throwable cause, /*@CompilerMessageKey*/ String errorKey, Object... args) {
             super(cause);
-            this.result = result;
+            this.errorKey = errorKey;
+            this.args = args;
         }
 
         public Result getResult() {
-            return result;
+            return Result.failure(errorKey, args);
+        }
+
+        public boolean isFlowParseError() {
+            return errorKey.endsWith("flowexpr.parse.error");
         }
     }
 
@@ -1353,7 +1361,6 @@ public class FlowExpressionParseUtil {
                 expr
                         + ((explanation == null) ? "" : (": " + explanation))
                         + ((cause == null) ? "" : (": " + cause.getMessage()));
-        return new FlowExpressionParseException(
-                Result.failure("flowexpr.parse.error", message), cause);
+        return new FlowExpressionParseException(cause, "flowexpr.parse.error", message);
     }
 }

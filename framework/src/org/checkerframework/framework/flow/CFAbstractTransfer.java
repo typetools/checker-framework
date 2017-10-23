@@ -59,7 +59,6 @@ import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.framework.source.Result;
-import org.checkerframework.framework.source.Result.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -1027,17 +1026,21 @@ public abstract class CFAbstractTransfer<
                     thenStore.insertValue(r, anno);
                 }
             } catch (FlowExpressionParseException e) {
-                Result r = e.getResult();
-                if (r.getDiagMessages().size() == 1) {
-                    DiagMessage msg = r.getDiagMessages().get(0);
-                    if (msg.getMessageKey().equals("flowexpr.parse.error")) {
-                        // Change the key so that the error may be suppressed separately.
-                        r = Result.failure("flowexpr.parse.postcondition.error", msg.getArgs());
+                Result result;
+                if (e.isFlowParseError()) {
+                    Object[] args = new Object[e.args.length + 1];
+                    args[0] = ElementUtils.getVerboseName(TreeUtils.elementFromUse(n.getTree()));
+                    for (int i = 0; i < e.args.length; i++) {
+                        args[i + 1] = e.args[i];
                     }
+
+                    result = Result.failure("flowexpr.parse.error.postcondition", args);
+                } else {
+                    result = e.getResult();
                 }
 
                 // report errors here
-                analysis.checker.report(r, tree);
+                analysis.checker.report(result, tree);
             }
         }
     }
