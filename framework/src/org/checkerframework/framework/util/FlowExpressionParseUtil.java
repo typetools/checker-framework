@@ -660,14 +660,11 @@ public class FlowExpressionParseUtil {
             char ch = s.charAt(i++);
             if (ch == '"') {
                 i--;
-                Pattern stringPattern = anchored("(" + stringRegex + ").*");
-                Matcher m = stringPattern.matcher(s.substring(i));
-                //                 Matcher m = initialStringPattern.matcher(s.substring(i));
+                Matcher m = initialStringPattern.matcher(s.substring(i));
                 if (!m.matches()) {
                     break;
                 }
-                i += m.group(1).length();
-                // i += m.group(0).length();
+                i += m.group(0).length();
             } else if (ch == open) {
                 depth++;
             } else if (ch == close) {
