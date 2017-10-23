@@ -89,13 +89,6 @@ public class FlowExpressionParseUtil {
     // Each of the below patterns is anchored with ^...$.
     /** Matches a parameter */
     protected static final Pattern parameterPattern = anchored(parameterRegex);
-    /**
-     * Matches 'this', the self reference. Does not allow "#0" because people reading the code might
-     * assume the numbering starts at 0 and assume that #0 is the first formal parameter.
-     */
-    protected static final Pattern thisPattern = anchored("this");
-    /** Matches 'super' */
-    protected static final Pattern superPattern = anchored("super");
     /** Matches an identifier */
     protected static final Pattern identifierPattern = anchored(identifierRegex);
     /** Matches integer literals */
@@ -104,10 +97,8 @@ public class FlowExpressionParseUtil {
     protected static final Pattern longPattern = anchored("[-+]?[0-9]+[Ll]");
     /** Matches string literals */
     protected static final Pattern stringPattern = anchored(stringRegex);
-    /** Matches the null literal */
-    protected static final Pattern nullPattern = anchored("null");
-    /** Matches an expression contained in matching start and end parentheses */
-    protected static final Pattern parenthesesPattern = anchored("\\((.*)\\)");
+    /** Matches a string that starts with a string literal */
+    protected static final Pattern initialStringPattern = Pattern.compile("^" + stringRegex);
 
     /**
      * Parse a string and return its representation as a {@link Receiver}, or throw an {@link
@@ -200,7 +191,7 @@ public class FlowExpressionParseUtil {
             return Pair.of(m.group(1), m.group(2));
         }
 
-        int nextRParenPos = nextClosedParen(s, 0, '(', ')');
+        int nextRParenPos = matchingCloseParen(s, 0, '(', ')');
         if (nextRParenPos != -1) {
             if (nextRParenPos + 1 < s.length() && s.charAt(nextRParenPos + 1) == '.') {
                 String reciever = s.substring(0, nextRParenPos + 1);
@@ -268,8 +259,7 @@ public class FlowExpressionParseUtil {
         if (context.parsingMember) {
             return false;
         }
-        Matcher nullMatcher = nullPattern.matcher(s);
-        return nullMatcher.matches();
+        return s.equals("null");
     }
 
     private static Receiver parseNullLiteral(String expression, Types types) {
@@ -304,6 +294,7 @@ public class FlowExpressionParseUtil {
         return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), val);
     }
 
+    /** Return true iff s is a string literal. */
     private static boolean isStringLiteral(String s, FlowExpressionContext context) {
         if (context.parsingMember) {
             return false;
@@ -324,8 +315,9 @@ public class FlowExpressionParseUtil {
             // Outer.this
             return false;
         }
-        Matcher thisMatcher = thisPattern.matcher(s);
-        return thisMatcher.matches();
+        // Do not allow "#0" because it's ambiguous:  a reader might assume that #0 is the first
+        // formal parameter.
+        return s.equals("this");
     }
 
     private static Receiver parseThis(String s, FlowExpressionContext context) {
@@ -341,8 +333,7 @@ public class FlowExpressionParseUtil {
         if (context.parsingMember) {
             return false;
         }
-        Matcher superMatcher = superPattern.matcher(s);
-        return superMatcher.matches();
+        return s.equals("super");
     }
 
     private static Receiver parseSuper(String s, Types types, FlowExpressionContext context)
@@ -492,16 +483,16 @@ public class FlowExpressionParseUtil {
      * @return pair of pair of method name and arguments and remaining
      */
     private static Pair<Pair<String, String>, String> parseMethod(String s) {
-        // Parse Identifier
-        Pattern identParser = Pattern.compile("^(" + identifierRegex + ").*$");
+        // Parse initial identifier
+        Pattern identParser = Pattern.compile("^" + identifierRegex + "");
         Matcher m = identParser.matcher(s);
         if (!m.matches()) {
             return null;
         }
-        String ident = m.group(1);
+        String ident = m.group(0);
         int i = ident.length();
 
-        int rparenPos = nextClosedParen(s, i, '(', ')');
+        int rparenPos = matchingCloseParen(s, i, '(', ')');
         if (rparenPos == -1) {
             return null;
         }
@@ -619,7 +610,8 @@ public class FlowExpressionParseUtil {
      * index. Second of returned pair is a remaining string.
      *
      * @param s expression string
-     * @return pair of pair of an array to be accessed and an index. and remaining.
+     * @return pair of (pair of an array to be accessed and an index) and remaining. Returns null if
+     *     parsing fails.
      */
     private static Pair<Pair<String, String>, String> parseArray(String s) {
         int i = 0;
@@ -630,7 +622,7 @@ public class FlowExpressionParseUtil {
         }
 
         while (true) {
-            int nextRBracketPos = nextClosedParen(s, i, '[', ']');
+            int nextRBracketPos = matchingCloseParen(s, i, '[', ']');
             if (nextRBracketPos == -1) {
                 return null;
             }
@@ -647,7 +639,13 @@ public class FlowExpressionParseUtil {
         }
     }
 
-    private static int nextClosedParen(String s, int openPos, char open, char close) {
+    /**
+     * Find occurrence of {@code close} that matches the occurrence of {@code open} at {@code
+     * openPos}. Handles nested occurrences of "{@code open} ... {@code close}".
+     *
+     * @return matching occurrence of {@code close}, or -1 if not found
+     */
+    private static int matchingCloseParen(String s, int openPos, char open, char close) {
         // expect `open` at `openPos` in `s`
         if (s.length() <= openPos || s.charAt(openPos) != open) {
             return -1;
@@ -659,12 +657,11 @@ public class FlowExpressionParseUtil {
             char ch = s.charAt(i++);
             if (ch == '"') {
                 i--;
-                Pattern stringPattern = anchored("(" + stringRegex + ").*");
-                Matcher m = stringPattern.matcher(s.substring(i));
+                Matcher m = initialStringPattern.matcher(s.substring(i));
                 if (!m.matches()) {
                     break;
                 }
-                i += m.group(1).length();
+                i += m.group(0).length();
             } else if (ch == open) {
                 depth++;
             } else if (ch == close) {
@@ -706,18 +703,18 @@ public class FlowExpressionParseUtil {
         return result;
     }
 
+    // TODO: this returns true for "(a)+(b)" where the parens are not matching.
     private static boolean isParentheses(String s, FlowExpressionContext contex) {
-        Matcher parenthesesMatcher = parenthesesPattern.matcher(s);
-        return parenthesesMatcher.matches();
+        return s.charAt(0) == '(' && s.charAt(s.length() - 1) == ')';
     }
 
     private static Receiver parseParentheses(String s, FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
-        Matcher parenthesesMatcher = parenthesesPattern.matcher(s);
-        if (!parenthesesMatcher.matches()) {
+        if (!isParentheses(s, context)) {
             return null;
         }
-        String expressionString = parenthesesMatcher.group(1);
+        // TODO: this is the wrong thing for an expression like "(a)+(b)".
+        String expressionString = s.substring(1, s.length() - 1);
         // Do not modify the value of recursiveCall, since a parenthesis match is essentially
         // a match to a no-op and should not semantically affect the parsing.
         return parseHelper(expressionString, context, path);
@@ -1031,9 +1028,9 @@ public class FlowExpressionParseUtil {
         public final List<Receiver> arguments;
         public final Receiver outerReceiver;
         public final BaseContext checkerContext;
-        /* Whether or not the FlowExpressionParser is parsing the "member" part of a member select*/
+        /* Whether or not the FlowExpressionParser is parsing the "member" part of a member select. */
         public final boolean parsingMember;
-        /* Whether the TreePath should be used to find identifiers.*/
+        /* Whether the TreePath should be used to find identifiers. */
         public boolean useLocalScope;
 
         /**
