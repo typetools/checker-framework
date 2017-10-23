@@ -157,7 +157,7 @@ public class FlowExpressionParseUtil {
         } else if (isParentheses(expression, context)) {
             return parseParentheses(expression, context, path);
         } else {
-            throw constructParserException(expression, "could not parse string");
+            throw constructParserException(expression);
         }
     }
 
@@ -296,14 +296,17 @@ public class FlowExpressionParseUtil {
 
     /** Return true iff s is a string literal. */
     private static boolean isStringLiteral(String s, FlowExpressionContext context) {
+        System.out.println("isStringLiteral: <<<" + s + ">>>");
         if (context.parsingMember) {
             return false;
         }
         Matcher stringMatcher = stringPattern.matcher(s);
+        System.out.println("isStringLiteral: <<<" + s + ">>> => " + stringMatcher.matches());
         return stringMatcher.matches();
     }
 
     private static Receiver parseStringLiteral(String s, Types types, Elements elements) {
+        System.out.println("parseStringLiteral: <<<" + s + ">>>");
         TypeElement stringTypeElem = elements.getTypeElement("java.lang.String");
         return new ValueLiteral(
                 types.getDeclaredType(stringTypeElem), s.substring(1, s.length() - 1));
@@ -459,7 +462,7 @@ public class FlowExpressionParseUtil {
             return null;
         }
         if (context.arguments == null) {
-            throw constructParserException(s, "No parameter found.");
+            throw constructParserException(s, "no parameter found");
         }
         int idx = -1;
         try {
@@ -480,7 +483,7 @@ public class FlowExpressionParseUtil {
      * returned pair is a remaining string.
      *
      * @param s expression string
-     * @return pair of pair of method name and arguments and remaining
+     * @return pair of (pair of method name and arguments) and remaining
      */
     private static Pair<Pair<String, String>, String> parseMethod(String s) {
         // Parse initial identifier
@@ -1323,6 +1326,14 @@ public class FlowExpressionParseUtil {
     }
 
     /**
+     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} with no
+     * further explanation.
+     */
+    private static FlowExpressionParseException constructParserException(String expr) {
+        return constructParserException(expr, null, null);
+    }
+
+    /**
      * Returns a {@link FlowExpressionParseException} for the expression {@code expr} with
      * explanation {@code explanation}.
      */
@@ -1346,11 +1357,26 @@ public class FlowExpressionParseUtil {
      */
     private static FlowExpressionParseException constructParserException(
             String expr, String explanation, Throwable cause) {
-        String message =
-                expr
-                        + ((explanation == null) ? "" : (": " + explanation))
-                        + ((cause == null) ? "" : (": " + cause.getMessage()));
+        String detail = null;
+        if (explanation != null) {
+            detail = explanation;
+        }
+        if (cause != null) {
+            String causeMessage = cause.getMessage();
+            if (causeMessage != null) {
+                if (detail == null) {
+                    detail = causeMessage;
+                } else {
+                    detail = detail + ", " + causeMessage;
+                }
+            }
+        }
+        if (detail != null) {
+            detail = " because " + detail;
+        } else {
+            detail = "";
+        }
         return new FlowExpressionParseException(
-                Result.failure("flowexpr.parse.error", message), cause);
+                Result.failure("flowexpr.parse.error", "'" + expr + "'" + detail), cause);
     }
 }
