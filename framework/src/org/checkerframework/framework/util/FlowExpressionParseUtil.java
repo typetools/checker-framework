@@ -483,16 +483,13 @@ public class FlowExpressionParseUtil {
      * @return pair of pair of method name and arguments and remaining
      */
     private static Pair<Pair<String, String>, String> parseMethod(String s) {
-        // Parse Identifier
-        Pattern identParser = Pattern.compile("^(" + identifierRegex + ").*$");
-        // // Parse initial identifier
-        // Pattern identParser = Pattern.compile("^" + identifierRegex + "");
+        // Parse initial identifier
+        Pattern identParser = Pattern.compile("^" + identifierRegex);
         Matcher m = identParser.matcher(s);
-        if (!m.matches()) {
+        if (!m.find()) {
             return null;
         }
-        // String ident = m.group(0);
-        String ident = m.group(1);
+        String ident = m.group(0);
         int i = ident.length();
 
         int rparenPos = matchingCloseParen(s, i, '(', ')');
