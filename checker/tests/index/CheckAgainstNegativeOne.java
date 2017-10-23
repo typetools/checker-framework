@@ -1,7 +1,4 @@
-// Test for https://github.com/panacekcz/checker-framework/issues/4
-
-// @skip-test The upper bound checker does not handle offsets precisely
-// enough to prove that lastend is @IndexOrHigh("target").
+import org.checkerframework.checker.index.qual.IndexOrHigh;
 
 class CheckAgainstNegativeOne {
 
@@ -11,7 +8,7 @@ class CheckAgainstNegativeOne {
         }
 
         StringBuffer result = new StringBuffer();
-        int lastend = 0;
+        @IndexOrHigh("target") int lastend = 0;
         int pos;
         while ((pos = target.indexOf(oldStr, lastend)) != -1) {
             result.append(target.substring(lastend, pos));
