@@ -483,13 +483,16 @@ public class FlowExpressionParseUtil {
      * @return pair of pair of method name and arguments and remaining
      */
     private static Pair<Pair<String, String>, String> parseMethod(String s) {
-        // Parse initial identifier
-        Pattern identParser = Pattern.compile("^" + identifierRegex + "");
+        // Parse Identifier
+        Pattern identParser = Pattern.compile("^(" + identifierRegex + ").*$");
+        // // Parse initial identifier
+        // Pattern identParser = Pattern.compile("^" + identifierRegex + "");
         Matcher m = identParser.matcher(s);
         if (!m.matches()) {
             return null;
         }
-        String ident = m.group(0);
+        // String ident = m.group(0);
+        String ident = m.group(1);
         int i = ident.length();
 
         int rparenPos = matchingCloseParen(s, i, '(', ')');
@@ -657,11 +660,14 @@ public class FlowExpressionParseUtil {
             char ch = s.charAt(i++);
             if (ch == '"') {
                 i--;
-                Matcher m = initialStringPattern.matcher(s.substring(i));
+                Pattern stringPattern = anchored("(" + stringRegex + ").*");
+                Matcher m = stringPattern.matcher(s.substring(i));
+                //                 Matcher m = initialStringPattern.matcher(s.substring(i));
                 if (!m.matches()) {
                     break;
                 }
-                i += m.group(0).length();
+                i += m.group(1).length();
+                // i += m.group(0).length();
             } else if (ch == open) {
                 depth++;
             } else if (ch == close) {
