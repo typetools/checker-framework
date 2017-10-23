@@ -5,11 +5,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Foo {
 
-    //  @Nullable Object theObject;
-
-    Foo(@Nullable Object theObject) {
-        //   this.theObject = theObject;
-    }
+    Foo(@Nullable Object theObject) {}
 
     @SuppressWarnings("contracts.conditional.postcondition.not.satisfied")
     @EnsuresNonNullIf(
@@ -17,12 +13,10 @@ public class Foo {
         result = true
     )
     public boolean hasTheObject() {
-        //return theObject != null;
         return false;
     }
 
     @Nullable public Object getTheObject() {
-        // return theObject;
         return null;
     }
 }
