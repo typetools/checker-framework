@@ -97,8 +97,8 @@ public class FlowExpressionParseUtil {
     protected static final Pattern longPattern = anchored("[-+]?[0-9]+[Ll]");
     /** Matches string literals */
     protected static final Pattern stringPattern = anchored(stringRegex);
-    /** Matches a string that starts with a string literal */
-    protected static final Pattern initialStringPattern = Pattern.compile("^" + stringRegex);
+    /** Matches an expression contained in matching start and end parentheses */
+    protected static final Pattern parenthesesPattern = anchored("\\((.*)\\)");
 
     /**
      * Parse a string and return its representation as a {@link Receiver}, or throw an {@link
@@ -296,17 +296,14 @@ public class FlowExpressionParseUtil {
 
     /** Return true iff s is a string literal. */
     private static boolean isStringLiteral(String s, FlowExpressionContext context) {
-        System.out.println("isStringLiteral: <<<" + s + ">>>");
         if (context.parsingMember) {
             return false;
         }
         Matcher stringMatcher = stringPattern.matcher(s);
-        System.out.println("isStringLiteral: <<<" + s + ">>> => " + stringMatcher.matches());
         return stringMatcher.matches();
     }
 
     private static Receiver parseStringLiteral(String s, Types types, Elements elements) {
-        System.out.println("parseStringLiteral: <<<" + s + ">>>");
         TypeElement stringTypeElem = elements.getTypeElement("java.lang.String");
         return new ValueLiteral(
                 types.getDeclaredType(stringTypeElem), s.substring(1, s.length() - 1));
@@ -486,13 +483,13 @@ public class FlowExpressionParseUtil {
      * @return pair of (pair of method name and arguments) and remaining
      */
     private static Pair<Pair<String, String>, String> parseMethod(String s) {
-        // Parse initial identifier
-        Pattern identParser = Pattern.compile("^" + identifierRegex);
+        // Parse Identifier
+        Pattern identParser = Pattern.compile("^(" + identifierRegex + ").*$");
         Matcher m = identParser.matcher(s);
-        if (!m.find()) {
+        if (!m.matches()) {
             return null;
         }
-        String ident = m.group(0);
+        String ident = m.group(1);
         int i = ident.length();
 
         int rparenPos = matchingCloseParen(s, i, '(', ')');
@@ -660,11 +657,13 @@ public class FlowExpressionParseUtil {
             char ch = s.charAt(i++);
             if (ch == '"') {
                 i--;
-                Matcher m = initialStringPattern.matcher(s.substring(i));
+                // TODO: inefficient to re-compute this on every iteration, should be static
+                Pattern stringPattern = anchored("(" + stringRegex + ").*");
+                Matcher m = stringPattern.matcher(s.substring(i));
                 if (!m.matches()) {
                     break;
                 }
-                i += m.group(0).length();
+                i += m.group(1).length();
             } else if (ch == open) {
                 depth++;
             } else if (ch == close) {
