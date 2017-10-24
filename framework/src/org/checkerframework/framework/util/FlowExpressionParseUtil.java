@@ -1024,16 +1024,18 @@ public class FlowExpressionParseUtil {
 
     /**
      * Context used to parse a flow expression. When parsing flow expression E in annotation
-     * {@code @A(E)}, The context is the program element that is annotated by {@code @A(E)}.
+     * {@code @A(E)}, the context is the program element that is annotated by {@code @A(E)}.
      */
     public static class FlowExpressionContext {
         public final Receiver receiver;
         public final List<Receiver> arguments;
         public final Receiver outerReceiver;
         public final BaseContext checkerContext;
-        /* Whether or not the FlowExpressionParser is parsing the "member" part of a member select. */
+        /**
+         * Whether or not the FlowExpressionParser is parsing the "member" part of a member select.
+         */
         public final boolean parsingMember;
-        /* Whether the TreePath should be used to find identifiers. */
+        /** Whether the TreePath should be used to find identifiers. */
         public boolean useLocalScope;
 
         /**
