@@ -37,7 +37,8 @@ public enum LiteralKind {
     PRIMITIVE;
 
     /**
-     * Returns all LiteralKinds except for ALL and PRIMITIVE
+     * Returns all LiteralKinds except for ALL and PRIMITIVE (which are shorthands for groups of
+     * other LiteralKinds).
      *
      * @return list of LiteralKinds except for ALL and PRIMITIVE
      */
@@ -49,9 +50,11 @@ public enum LiteralKind {
     }
 
     /**
-     * Returns the primitive {@code LiteralKind}s: INT, LONG, FLOAT, DOUBLE, BOOLEAN, CHAR
+     * Returns the primitive {@code LiteralKind}s: INT, LONG, FLOAT, DOUBLE, BOOLEAN, CHAR. This is
+     * all LiteralKinds except for NULL, STRING, and ones that are shorthands for groups of other
+     * LiteralKinds.
      *
-     * @return list of LiteralKinds except for ALL
+     * @return list of LiteralKinds except for NULL and STRING
      */
     public static List<LiteralKind> primitiveLiteralKinds() {
         return new ArrayList<>(Arrays.asList(INT, LONG, FLOAT, DOUBLE, BOOLEAN, CHAR));
