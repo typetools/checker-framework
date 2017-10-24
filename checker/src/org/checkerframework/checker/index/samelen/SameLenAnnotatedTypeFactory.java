@@ -183,8 +183,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return !receiver.containsUnknown()
                 && !(receiver instanceof FlowExpressions.ArrayCreation)
                 && !(receiver instanceof FlowExpressions.ClassName)
-                // Literals are handled by the Value Checker
-                && !(receiver instanceof FlowExpressions.ValueLiteral);
+                // Big expressions cause a stack overflow in FlowExpressionParseUtil.
+                // So limit them to an arbitrary length of 999.
+                && receiver.toString().length() < 1000;
     }
 
     /**
