@@ -1030,10 +1030,7 @@ public abstract class CFAbstractTransfer<
                 if (e.isFlowParseError()) {
                     Object[] args = new Object[e.args.length + 1];
                     args[0] = ElementUtils.getVerboseName(TreeUtils.elementFromUse(n.getTree()));
-                    for (int i = 0; i < e.args.length; i++) {
-                        args[i + 1] = e.args[i];
-                    }
-
+                    System.arraycopy(e.args, 0, args, 1, e.args.length);
                     result = Result.failure("flowexpr.parse.error.postcondition", args);
                 } else {
                     result = e.getResult();
