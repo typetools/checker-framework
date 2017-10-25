@@ -258,8 +258,10 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         store.insertValue(leftRec, newLBType);
     }
 
-    /** Inserts the type below oldAnm in the hierarchy into the store as the value of rec. */
-    private AnnotationMirror demoteType(AnnotationMirror oldAnm) {
+    /**
+     * Returns an annotation mirror representing the result of subtracting one from {@code oldAnm}.
+     */
+    private AnnotationMirror anmAfterSubtractingOne(AnnotationMirror oldAnm) {
         if (isPositive(oldAnm)) {
             return NN;
         } else if (isNonNegative(oldAnm)) {
@@ -269,8 +271,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         }
     }
 
-    /** Inserts the type above oldAnm in the hierarchy into the store as the value of rec. */
-    private AnnotationMirror promoteType(AnnotationMirror oldAnm) {
+    /** Returns an annotation mirror representing the result of adding one to {@code oldAnm}. */
+    private AnnotationMirror anmAfterAddingOne(AnnotationMirror oldAnm) {
         if (isNonNegative(oldAnm)) {
             return POS;
         } else if (isGTEN1(oldAnm)) {
@@ -292,11 +294,11 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
                 return GTEN1;
             }
         } else if (val == -1) {
-            return demoteType(nonLiteralType);
+            return anmAfterSubtractingOne(nonLiteralType);
         } else if (val == 0) {
             return nonLiteralType;
         } else if (val == 1) {
-            return promoteType(nonLiteralType);
+            return anmAfterAddingOne(nonLiteralType);
         } else if (val >= 2) {
             if (isGTEN1(nonLiteralType)) {
                 // 2 + a positive, or a non-negative, or a non-negative-1 is a positive
