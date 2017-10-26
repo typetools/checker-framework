@@ -560,7 +560,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer<UpperBoundStore, U
      * @param in dataflow analysis transfer input
      * @return the UBQualifier for {@code node}
      */
-    private UBQualifier getUBQualifierForAddition(Node n, TransferInput<CFValue, CFStore> in) {
+    private UBQualifier getUBQualifierForAddition(
+            Node n, TransferInput<CFValue, UpperBoundStore> in) {
 
         // The method takes the greatest lower bound of the qualifier returned by
         // getUBQualifier and a qualifier created from a SubstringIndexFor annotation, if such
