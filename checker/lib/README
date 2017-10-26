@@ -32,5 +32,5 @@ guava-19.0.jar : from https://github.com/typetools/guava
 java-getopt-1.0.14.jar : from https://github.com/typetools/java-getopt
 
 javadoc.astub models the JavaDoc classes in the JDK's com.sun.javadoc package,
-which are not exposedby ct.sym and therefore cannot be part of an
+which are not exposed by ct.sym and therefore cannot be part of an
 annotated JDK. These are annotated for the Index and Nullness checkers.
