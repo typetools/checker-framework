@@ -122,6 +122,7 @@ public class UpperBoundUtil {
         if (!AnnotationUtils.hasElementValue(anno, "value")) {
             return Collections.emptyList();
         }
+
         List<Receiver> receivers = new ArrayList<>();
         UBQualifier.LessThanLengthOf qual =
                 (UBQualifier.LessThanLengthOf) UBQualifier.createUBQualifier(anno);

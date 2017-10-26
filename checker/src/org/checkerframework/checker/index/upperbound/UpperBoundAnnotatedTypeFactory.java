@@ -1,6 +1,7 @@
 package org.checkerframework.checker.index.upperbound;
 
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -11,11 +12,14 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
@@ -49,6 +53,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.BottomVal;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.PolyAll;
@@ -62,6 +67,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -76,6 +82,16 @@ public class UpperBoundAnnotatedTypeFactory
     public final AnnotationMirror UNKNOWN, BOTTOM, POLY;
 
     private final IndexMethodIdentifier imf;
+
+    /**
+     * A map that relates an element representing a class to all the receivers of elements of the
+     * class that are dependend on by user-written annotations.
+     */
+    private final HashMap<Element, List<FlowExpressions.Receiver>> dependentReceiversByClass;
+
+    /** A map that relates receivers to the annotation they depend on. */
+    private final HashMap<FlowExpressions.Receiver, AnnotatedTypeMirror>
+            dependentAnnotationByReceiver;
 
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -92,6 +108,8 @@ public class UpperBoundAnnotatedTypeFactory
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyIndex.class, POLY);
 
+        dependentReceiversByClass = new HashMap<>();
+        dependentAnnotationByReceiver = new HashMap<>();
         imf = new IndexMethodIdentifier(processingEnv);
 
         this.postInit();
@@ -177,6 +195,74 @@ public class UpperBoundAnnotatedTypeFactory
             AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
             addUpperBoundTypeFromValueType(valueType, type);
         }
+    }
+
+    @Override
+    public void preProcessClassTree(ClassTree classTree) {
+        super.preProcessClassTree(classTree);
+        Element elt = TreeUtils.elementFromDeclaration(classTree);
+        List<? extends Element> enclosedElts =
+                ElementUtils.enclosingClass(elt).getEnclosedElements();
+        List<FlowExpressions.Receiver> rs = new ArrayList<>();
+        for (Element e : enclosedElts) {
+            if (!ElementUtils.isEffectivelyFinal(e)) {
+                List<AnnotatedTypeMirror> enclosedTypes = findEnclosedTypes(e);
+                for (AnnotatedTypeMirror atm : enclosedTypes) {
+                    List<FlowExpressions.Receiver> atmRs =
+                            UpperBoundUtil.getDependentReceivers(
+                                    atm.getAnnotations(), getPath(declarationFromElement(e)), this);
+                    rs.addAll(atmRs);
+                    for (FlowExpressions.Receiver rec : atmRs) {
+                        dependentAnnotationByReceiver.put(rec, atm);
+                    }
+                }
+            }
+        }
+        dependentReceiversByClass.put(elt, rs);
+    }
+
+    public List<FlowExpressions.Receiver> getDependedReceiversByClass(Element elt) {
+        return dependentReceiversByClass.get(elt);
+    }
+
+    public AnnotatedTypeMirror getDependentAnnotationFromReceiver(FlowExpressions.Receiver rec) {
+        return dependentAnnotationByReceiver.get(rec);
+    }
+
+    /**
+     * Finds all the annotated types associated with a list of elements.
+     *
+     * @param enclosedElts the list of elements to find annotated types for
+     * @return a list of annotated types
+     */
+    private List<AnnotatedTypeMirror> findEnclosedTypes(List<? extends Element> enclosedElts) {
+        List<AnnotatedTypeMirror> enclosedTypes = new ArrayList<>();
+        for (Element e : enclosedElts) {
+            findEnclosedTypes(e, enclosedTypes);
+        }
+        return enclosedTypes;
+    }
+
+    private List<AnnotatedTypeMirror> findEnclosedTypes(Element e) {
+        return findEnclosedTypes(e, new ArrayList<>());
+    }
+
+    private List<AnnotatedTypeMirror> findEnclosedTypes(
+            Element e, List<AnnotatedTypeMirror> enclosedTypes) {
+        AnnotatedTypeMirror atm = getAnnotatedType(e);
+        enclosedTypes.add(atm);
+        if (e.getKind() == ElementKind.METHOD) {
+            ExecutableElement ee = (ExecutableElement) e;
+            List<? extends Element> rgparam = ee.getParameters();
+            for (Element param : rgparam) {
+                AnnotatedTypeMirror atmP = getAnnotatedType(param);
+                enclosedTypes.add(atmP);
+            }
+        } else if (e.getKind() == ElementKind.CLASS) {
+            enclosedTypes.addAll(findEnclosedTypes(e.getEnclosedElements()));
+        }
+
+        return enclosedTypes;
     }
 
     /**

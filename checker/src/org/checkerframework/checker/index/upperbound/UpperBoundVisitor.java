@@ -7,10 +7,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreePath;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -35,7 +32,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -49,13 +45,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     private static final String UPPER_BOUND_CONST = "array.access.unsafe.high.constant";
     private static final String UPPER_BOUND_RANGE = "array.access.unsafe.high.range";
 
-    private final Map<Element, List<? extends Element>> enclosingElementsCache;
-    private final int ENCLOSING_ELEMENTS_CACHE_SIZE =
-            500; // arbitrary, but based on the size of the annotation cache in AnnotationUtils
-
     public UpperBoundVisitor(BaseTypeChecker checker) {
         super(checker);
-        enclosingElementsCache = CollectionUtils.createLRUCache(ENCLOSING_ELEMENTS_CACHE_SIZE);
     }
 
     /**
@@ -337,8 +328,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         ExecutableElement elt = TreeUtils.elementFromUse(node);
         if (!PurityUtils.isSideEffectFree(atypeFactory, elt)) {
-            checkAnnotationsInClass(
-                    elt, null, node, getCurrentPath(), ReassignmentKind.SIDE_EFFECTING_METHOD_CALL);
+            checkAnnotationsInClass(elt, null, node, ReassignmentKind.SIDE_EFFECTING_METHOD_CALL);
         }
         return super.visitMethodInvocation(node, p);
     }
@@ -379,7 +369,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             } else {
                 return;
             }
-            checkAnnotationsInClass(elt, field, varTree, getCurrentPath(), kind);
+            checkAnnotationsInClass(elt, field, varTree, kind);
         }
     }
 
@@ -390,58 +380,31 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * @param elt An element corresponding to the side effect that caused the invalidation.
      * @param possiblyInvalidatedRec A receiver representing the possibly invalidated expression.
      * @param tree The tree on which the side effect occurs. Used in error reporting.
-     * @param path The path on which the side effect occurs. Used for parsing.
      * @param reassignmentKind The type of side effect. See {@link UpperBoundUtil.ReassignmentKind}.
      */
     private void checkAnnotationsInClass(
             Element elt,
             Receiver possiblyInvalidatedRec,
             Tree tree,
-            TreePath path,
             UpperBoundUtil.ReassignmentKind reassignmentKind) {
-        List<? extends Element> enclosedElts =
-                enclosingElementsCache.containsKey(elt) ? enclosingElementsCache.get(elt) : null;
-        if (enclosedElts == null) {
-            enclosedElts = ElementUtils.enclosingClass(elt).getEnclosedElements();
-            enclosingElementsCache.put(elt, enclosedElts);
-        }
-        List<AnnotatedTypeMirror> enclosedTypes = findEnclosedTypes(enclosedElts);
-        for (AnnotatedTypeMirror atm : enclosedTypes) {
-            List<Receiver> rs =
-                    UpperBoundUtil.getDependentReceivers(atm.getAnnotations(), path, atypeFactory);
-            for (Receiver r : rs) {
-                ReassignmentError result =
-                        UpperBoundUtil.isSideEffected(r, possiblyInvalidatedRec, reassignmentKind);
-                if (result != ReassignmentError.NO_ERROR) {
-                    checker.report(Result.failure(result.errorKey, atm), tree);
-                }
-            }
-        }
-    }
 
-    /**
-     * Finds all the annotated types associated with a list of elements.
-     *
-     * @param enclosedElts the list of elements to find annotated types for
-     * @return a list of annotated types
-     */
-    private List<AnnotatedTypeMirror> findEnclosedTypes(List<? extends Element> enclosedElts) {
-        List<AnnotatedTypeMirror> enclosedTypes = new ArrayList<>();
-        for (Element e : enclosedElts) {
-            AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(e);
-            enclosedTypes.add(atm);
-            if (e.getKind() == ElementKind.METHOD) {
-                ExecutableElement ee = (ExecutableElement) e;
-                List<? extends Element> rgparam = ee.getParameters();
-                for (Element param : rgparam) {
-                    AnnotatedTypeMirror atmP = atypeFactory.getAnnotatedType(param);
-                    enclosedTypes.add(atmP);
-                }
-            } else if (e.getKind() == ElementKind.CLASS) {
-                enclosedTypes.addAll(findEnclosedTypes(e.getEnclosedElements()));
+        List<Receiver> rs =
+                atypeFactory.getDependedReceiversByClass(ElementUtils.enclosingClass(elt));
+        if (rs == null) {
+            return;
+        }
+
+        for (Receiver r : rs) {
+            ReassignmentError result =
+                    UpperBoundUtil.isSideEffected(r, possiblyInvalidatedRec, reassignmentKind);
+            if (result != ReassignmentError.NO_ERROR) {
+                checker.report(
+                        Result.failure(
+                                result.errorKey,
+                                atypeFactory.getDependentAnnotationFromReceiver(r)),
+                        tree);
             }
         }
-        return enclosedTypes;
     }
 
     @Override
