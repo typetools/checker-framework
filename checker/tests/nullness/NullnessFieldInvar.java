@@ -64,6 +64,20 @@ public class NullnessFieldInvar {
             @NonNull Object x6 = subSub1.subO;
             @NonNull Object x7 = subSub2.subO;
         }
+
+        <SP extends Super, SB extends Sub, SS1 extends SubSub1, SS2 extends SubSub2> void test2(
+                SP superO, SB sub, SS1 subSub1, SS2 subSub2) {
+            //:: error: (assignment.type.incompatible)
+            @NonNull Object x1 = superO.o;
+            @NonNull Object x2 = sub.o;
+            @NonNull Object x3 = subSub1.o;
+
+            //:: error: (assignment.type.incompatible)
+            @NonNull Object x5 = sub.subO;
+            //:: error: (assignment.type.incompatible)
+            @NonNull Object x6 = subSub1.subO;
+            @NonNull Object x7 = subSub2.subO;
+        }
     }
 
     class SuperWithNonFinal {

@@ -97,8 +97,8 @@ public class FlowExpressionParseUtil {
     protected static final Pattern longPattern = anchored("[-+]?[0-9]+[Ll]");
     /** Matches string literals */
     protected static final Pattern stringPattern = anchored(stringRegex);
-    /** Matches a string that starts with a string literal */
-    protected static final Pattern initialStringPattern = Pattern.compile("^" + stringRegex);
+    /** Matches an expression contained in matching start and end parentheses */
+    protected static final Pattern parenthesesPattern = anchored("\\((.*)\\)");
 
     /**
      * Parse a string and return its representation as a {@link Receiver}, or throw an {@link
@@ -157,7 +157,7 @@ public class FlowExpressionParseUtil {
         } else if (isParentheses(expression, context)) {
             return parseParentheses(expression, context, path);
         } else {
-            throw constructParserException(expression, "could not parse string");
+            throw constructParserException(expression);
         }
     }
 
@@ -459,7 +459,7 @@ public class FlowExpressionParseUtil {
             return null;
         }
         if (context.arguments == null) {
-            throw constructParserException(s, "No parameter found.");
+            throw constructParserException(s, "no parameter found");
         }
         int idx = -1;
         try {
@@ -480,16 +480,16 @@ public class FlowExpressionParseUtil {
      * returned pair is a remaining string.
      *
      * @param s expression string
-     * @return pair of pair of method name and arguments and remaining
+     * @return pair of (pair of method name and arguments) and remaining
      */
     private static Pair<Pair<String, String>, String> parseMethod(String s) {
-        // Parse initial identifier
-        Pattern identParser = Pattern.compile("^" + identifierRegex);
+        // Parse Identifier
+        Pattern identParser = Pattern.compile("^(" + identifierRegex + ").*$");
         Matcher m = identParser.matcher(s);
-        if (!m.find()) {
+        if (!m.matches()) {
             return null;
         }
-        String ident = m.group(0);
+        String ident = m.group(1);
         int i = ident.length();
 
         int rparenPos = matchingCloseParen(s, i, '(', ')');
@@ -657,11 +657,13 @@ public class FlowExpressionParseUtil {
             char ch = s.charAt(i++);
             if (ch == '"') {
                 i--;
-                Matcher m = initialStringPattern.matcher(s.substring(i));
+                // TODO: inefficient to re-compute this on every iteration, should be static
+                Pattern stringPattern = anchored("(" + stringRegex + ").*");
+                Matcher m = stringPattern.matcher(s.substring(i));
                 if (!m.matches()) {
                     break;
                 }
-                i += m.group(0).length();
+                i += m.group(1).length();
             } else if (ch == open) {
                 depth++;
             } else if (ch == close) {
@@ -1021,16 +1023,18 @@ public class FlowExpressionParseUtil {
 
     /**
      * Context used to parse a flow expression. When parsing flow expression E in annotation
-     * {@code @A(E)}, The context is the program element that is annotated by {@code @A(E)}.
+     * {@code @A(E)}, the context is the program element that is annotated by {@code @A(E)}.
      */
     public static class FlowExpressionContext {
         public final Receiver receiver;
         public final List<Receiver> arguments;
         public final Receiver outerReceiver;
         public final BaseContext checkerContext;
-        /* Whether or not the FlowExpressionParser is parsing the "member" part of a member select. */
+        /**
+         * Whether or not the FlowExpressionParser is parsing the "member" part of a member select.
+         */
         public final boolean parsingMember;
-        /* Whether the TreePath should be used to find identifiers. */
+        /** Whether the TreePath should be used to find identifiers. */
         public boolean useLocalScope;
 
         /**
@@ -1323,6 +1327,14 @@ public class FlowExpressionParseUtil {
     }
 
     /**
+     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} with no
+     * further explanation.
+     */
+    private static FlowExpressionParseException constructParserException(String expr) {
+        return constructParserException(expr, null, null);
+    }
+
+    /**
      * Returns a {@link FlowExpressionParseException} for the expression {@code expr} with
      * explanation {@code explanation}.
      */
@@ -1346,11 +1358,26 @@ public class FlowExpressionParseUtil {
      */
     private static FlowExpressionParseException constructParserException(
             String expr, String explanation, Throwable cause) {
-        String message =
-                expr
-                        + ((explanation == null) ? "" : (": " + explanation))
-                        + ((cause == null) ? "" : (": " + cause.getMessage()));
+        String detail = null;
+        if (explanation != null) {
+            detail = explanation;
+        }
+        if (cause != null) {
+            String causeMessage = cause.getMessage();
+            if (causeMessage != null) {
+                if (detail == null) {
+                    detail = causeMessage;
+                } else {
+                    detail = detail + ", " + causeMessage;
+                }
+            }
+        }
+        if (detail != null) {
+            detail = " because " + detail;
+        } else {
+            detail = "";
+        }
         return new FlowExpressionParseException(
-                Result.failure("flowexpr.parse.error", message), cause);
+                Result.failure("flowexpr.parse.error", "'" + expr + "'" + detail), cause);
     }
 }
