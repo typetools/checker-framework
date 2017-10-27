@@ -32,7 +32,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 
@@ -138,9 +137,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
             case 0:
                 break;
             case 1:
-                // the first call to result.getUpperBound will appropriately initialize the bound
-                // rather than replace it, copy the bounds from bounds.get(0) to the initialized bound
-                AnnotatedTypeMerger.merge(bounds.get(0), result.getUpperBound());
+                result.setUpperBound(bounds.get(0));
                 break;
             default:
                 AnnotatedIntersectionType upperBound =

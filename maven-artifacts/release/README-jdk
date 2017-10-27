@@ -1,4 +1,4 @@
-This jar is a standin for either source/Javadoc for one of the
+This .jar file is a standin for either source/Javadoc for one of the
 annotated JDKs bundled with the Checker Framework.  The annotated
 JDKs contain source code annotations used in type checking by
 the Checker Framework.
