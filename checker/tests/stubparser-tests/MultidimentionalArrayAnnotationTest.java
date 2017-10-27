@@ -18,6 +18,12 @@ import org.checkerframework.checker.nullness.qual.*;
  * Errors are expected if one or more array levels in a declaration are annotated with @NonNull, but
  * in assignment are annotated with @Nullable.
  */
+//warning: StubParser: Type not found: com.sun.javadoc.ClassDoc
+//warning: StubParser: Type not found: com.sun.javadoc.Doc
+//warning: StubParser: Type not found: com.sun.javadoc.FieldDoc
+//warning: StubParser: Type not found: com.sun.javadoc.MemberDoc
+//warning: StubParser: Type not found: com.sun.javadoc.ProgramElementDoc
+//warning: StubParser: Type not found: com.sun.javadoc.RootDoc
 public class MultidimentionalArrayAnnotationTest {
 
     int numb = 1;
