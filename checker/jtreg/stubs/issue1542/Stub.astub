@@ -34,5 +34,13 @@ public class Stub {
 
     @ClassExample(ClassExample.class) int x17;
     @ClassArrayExample(ClassExample.class) int x18;
-    @ClassArrayExample({ClassExample.class, java.lang.String.class}) int x19;
+    @ClassArrayExample({ClassExample.class, java.lang.String.class, String.class}) int x19;
+    @ClassArrayExample({InnerStub.class, Stub.class, Stub.InnerStub.class}) int x20;
+
+    class InnerStub {
+        @ClassArrayExample({InnerStub.class, Stub.class, InnerStub2.class}) int x20;
+        class InnerInnerStub {
+            @ClassArrayExample({InnerStub.class, Stub.class, InnerStub2.class}) int x20;
+        }
+    }
 }
