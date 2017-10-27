@@ -1,17 +1,8 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.dataflow.qual.Pure;
 
 package com.sun.javadoc;
-
-// Index annotations
-
-interface RootDoc {
-    String @MinLen(1) [][] options();
-}
-
-// Nullness annotations
 
 public interface ClassDoc extends ProgramElementDoc, Type {
     @Pure boolean isAbstract();

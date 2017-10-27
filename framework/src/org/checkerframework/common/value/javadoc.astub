@@ -1,0 +1,7 @@
+import org.checkerframework.common.value.qual.MinLen;
+
+package com.sun.javadoc;
+
+interface RootDoc {
+    String @MinLen(1) [][] options();
+}

@@ -19,7 +19,7 @@ import org.checkerframework.framework.source.SupportedOptions;
  * @author plvines
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
-@StubFiles("statically-executable.astub")
+@StubFiles({"statically-executable.astub", "javadoc.astub"})
 @SupportedOptions({ValueChecker.REPORT_EVAL_WARNS, ValueChecker.IGNORE_RANGE_OVERFLOW})
 public class ValueChecker extends BaseTypeChecker {
     public static final String REPORT_EVAL_WARNS = "reportEvalWarns";
