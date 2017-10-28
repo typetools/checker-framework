@@ -1,6 +1,7 @@
 import java.util.Arrays;
 import org.checkerframework.checker.index.qual.*;
 
+//@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
 class SearchIndexTests {
     public void test(short[] a, short instant) {
         int i = Arrays.binarySearch(a, instant);

@@ -3,11 +3,11 @@ import org.checkerframework.checker.index.qual.Positive;
 
 class MinMax {
     // They call me a power gamer. I stole the test cases from issue 26.
-    void mathmax() {
-        @Positive int i = Math.max(-15, 2);
+    @Positive int mathmax() {
+        return Math.max(-15, 2);
     }
 
-    void mathmin() {
-        @GTENegativeOne int i = Math.min(-1, 2);
+    @GTENegativeOne int mathmin() {
+        return Math.min(-1, 2);
     }
 }

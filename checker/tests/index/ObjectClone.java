@@ -12,6 +12,7 @@ class ObjectClone {
         int @SameLen("f") [] f = b;
     }
 
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     public static void main(String[] args) {
         String @SameLen("args") [] args2 = args;
         String @SameLen({"args", "args_sorted"}) [] args_sorted = args.clone();

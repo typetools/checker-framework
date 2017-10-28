@@ -3,7 +3,7 @@ import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.common.value.qual.MinLen;
 
 public class MinLenIndexFor {
-    int @MinLen(2) [] arrayLen2 = {0, 1, 2};
+    final int @MinLen(2) [] arrayLen2 = {0, 1, 2};
 
     void test(@IndexFor("this.arrayLen2") int i) {
         int j = arrayLen2[i];
@@ -20,7 +20,7 @@ public class MinLenIndexFor {
         test(arrayLen2.length - 1);
     }
 
-    int @MinLen(4) [] arrayLen4 = {0, 1, 2, 4, 5};
+    final int @MinLen(4) [] arrayLen4 = {0, 1, 2, 4, 5};
 
     void test2(@IndexOrHigh("this.arrayLen4") int i) {
         if (i > 0) {

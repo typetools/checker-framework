@@ -3,12 +3,12 @@ import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 
 public class UBSubtyping {
-    int[] arr = {1};
-    int[] arr2 = {1};
-    int[] arr3 = {1};
+    final int[] arr = {1};
+    final int[] arr2 = {1};
+    final int[] arr3 = {1};
 
+    //@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
     void test(@LTEqLengthOf({"arr", "arr2", "arr3"}) int test) {
-        //:: error: (assignment.type.incompatible)
         @LTEqLengthOf({"arr"}) int a = 1;
         //:: error: (assignment.type.incompatible)
         @LTLengthOf({"arr"}) int a1 = 1;

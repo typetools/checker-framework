@@ -11,13 +11,14 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 
 /**
  * The transfer function for the SearchIndexFor checker. Allows {@link SearchIndexFor} to be refined
  * to {@link NegativeIndexFor}.
  */
-public class SearchIndexTransfer extends IndexAbstractTransfer {
+public class SearchIndexTransfer extends IndexAbstractTransfer<CFStore, CFTransfer> {
 
     // The ATF (Annotated Type Factory).
     private SearchIndexAnnotatedTypeFactory aTypeFactory;

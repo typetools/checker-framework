@@ -7,10 +7,13 @@ import org.checkerframework.common.value.qual.MinLen;
 @SuppressWarnings("lowerbound")
 public class RefineLTE2 {
 
-    protected int @MinLen(1) [] values;
+    private int @MinLen(1) [] values;
 
     @LTEqLengthOf("values") int num_values;
 
+    // This suppress warnings is necessary because this code violates the
+    // invariant when values is set to null, and the checker warns.
+    @SuppressWarnings("reassignment.not.permitted")
     public void add(int elt) {
         if (num_values == values.length) {
             values = null;

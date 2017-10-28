@@ -3,8 +3,13 @@ import org.checkerframework.common.value.qual.MinLen;
 
 public class ZeroMinLen {
 
-    int @MinLen(1) [] nums;
-    int[] nums2;
+    final int @MinLen(1) [] nums;
+    final int[] nums2;
+
+    public ZeroMinLen() {
+        nums = new int[1];
+        nums2 = new int[0];
+    }
 
     @IndexFor("nums") int current_index;
 

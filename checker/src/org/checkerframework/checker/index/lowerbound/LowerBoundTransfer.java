@@ -30,6 +30,7 @@ import org.checkerframework.dataflow.cfg.node.SignedRightShiftNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -107,7 +108,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  *
  * </pre>
  */
-public class LowerBoundTransfer extends IndexAbstractTransfer {
+public class LowerBoundTransfer extends IndexAbstractTransfer<CFStore, CFTransfer> {
 
     /** The canonical {@link GTENegativeOne} annotation. */
     public final AnnotationMirror GTEN1;
@@ -181,7 +182,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
                 super.strengthenAnnotationOfEqualTo(
                         result, firstNode, secondNode, firstValue, secondValue, notEqualTo);
 
-        IndexRefinementInfo rfi = new IndexRefinementInfo(result, analysis, secondNode, firstNode);
+        IndexRefinementInfo<CFStore> rfi =
+                new IndexRefinementInfo<>(result, analysis, secondNode, firstNode);
         if (rfi.leftAnno == null || rfi.rightAnno == null) {
             return result;
         }

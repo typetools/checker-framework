@@ -7,7 +7,7 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
-import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -18,7 +18,7 @@ import org.checkerframework.javacutil.ErrorReporter;
  * to the refinement function in whatever order is appropriate for that node. Its constructor
  * contains all of its logic.
  */
-public class IndexRefinementInfo {
+public class IndexRefinementInfo<Store extends CFAbstractStore<CFValue, Store>> {
 
     public Node left, right;
 
@@ -28,12 +28,12 @@ public class IndexRefinementInfo {
      */
     public AnnotationMirror leftAnno, rightAnno;
 
-    public CFStore thenStore, elseStore;
-    public ConditionalTransferResult<CFValue, CFStore> newResult;
+    public Store thenStore, elseStore;
+    public ConditionalTransferResult<CFValue, Store> newResult;
 
     public IndexRefinementInfo(
-            TransferResult<CFValue, CFStore> result,
-            CFAbstractAnalysis<?, ?, ?> analysis,
+            TransferResult<CFValue, Store> result,
+            CFAbstractAnalysis<CFValue, Store, ?> analysis,
             Node r,
             Node l) {
         right = r;
@@ -58,8 +58,8 @@ public class IndexRefinementInfo {
     }
 
     public IndexRefinementInfo(
-            TransferResult<CFValue, CFStore> result,
-            CFAbstractAnalysis<?, ?, ?> analysis,
+            TransferResult<CFValue, Store> result,
+            CFAbstractAnalysis<CFValue, Store, ?> analysis,
             BinaryOperationNode node) {
         this(result, analysis, node.getRightOperand(), node.getLeftOperand());
     }

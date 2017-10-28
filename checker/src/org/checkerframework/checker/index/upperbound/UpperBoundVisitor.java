@@ -2,34 +2,211 @@ package org.checkerframework.checker.index.upperbound;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
+import org.checkerframework.checker.index.upperbound.UpperBoundUtil.ReassignmentError;
+import org.checkerframework.checker.index.upperbound.UpperBoundUtil.ReassignmentKind;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /** Warns about array accesses that could be too high. */
 public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFactory> {
 
     private static final String UPPER_BOUND = "array.access.unsafe.high";
+    private static final String LOCAL_VAR_ANNO = "local.variable.unsafe.dependent.annotation";
+    private static final String DEPENDENT_NOT_PERMITTED = "dependent.not.permitted";
     private static final String UPPER_BOUND_CONST = "array.access.unsafe.high.constant";
     private static final String UPPER_BOUND_RANGE = "array.access.unsafe.high.range";
 
     public UpperBoundVisitor(BaseTypeChecker checker) {
         super(checker);
+    }
+
+    /**
+     * This visits all local variable declarations and issues a warning if a dependent annotation is
+     * written on a local variable. This is necessary for the soundness of the reassignment code,
+     * which must unrefine all qualifiers, but which cannot collect all in-scope local variables. So
+     * that there are no local variables with qualifiers that are not in the store, this method
+     * forbids programmers from writing such qualifiers. This may introduce false positives if the
+     * programmer would like to write a non-primary annotation on a local variable. Note that final
+     * or effectively final variables are always permitted in dependent annotations, even on local
+     * variables, and will not trigger this warning (as no side-effect can effect them).
+     *
+     * <p>Also issues warnings if the expression in a dependent annotation is not permitted.
+     * Permitted expressions in dependent annotations must be at least one of the following:
+     *
+     * <ul>
+     *   <li>final or effectively final variables
+     *   <li>local variables
+     *   <li>private fields
+     *   <li>pure method calls all of whose arguments (including the receiver expression) are
+     *       composed only of expressions in this list
+     *   <li>accesses of a public final field whose access expression (sometimes called the
+     *       receiver) is composed only of expressions in this list
+     * </ul>
+     *
+     * <p>Any other expression results in a warning.
+     */
+    @Override
+    public Void visitVariable(VariableTree node, Void p) {
+        AnnotatedTypeMirror atm = atypeFactory.getAnnotatedTypeLhs(node);
+        AnnotationMirror anm = atm.getAnnotationInHierarchy(atypeFactory.UNKNOWN);
+        if (anm != null && AnnotationUtils.hasElementValue(anm, "value")) {
+            // This is a dependent annotation. If this is a local variable,
+            // issue a warning; dependent annotations should not be written on local variables.
+            Element elt = TreeUtils.elementFromDeclaration(node);
+            boolean allVariablesEffectivelyFinal = true;
+
+            UBQualifier qual = UBQualifier.createUBQualifier(anm);
+            if (qual.isLessThanLengthQualifier()) {
+                LessThanLengthOf ltl = (LessThanLengthOf) qual;
+                for (String array : ltl.getSequences()) {
+                    Receiver rec = getReceiverForCheckingDependentTypes(array, node);
+                    // covers final and effectively final variables
+                    boolean isEffectivelyFinal =
+                            rec == null
+                                    || rec.isUnmodifiableByOtherCode()
+                                    || (rec instanceof FlowExpressions.LocalVariable
+                                            && ElementUtils.isEffectivelyFinal(
+                                                    ((FlowExpressions.LocalVariable) rec)
+                                                            .getElement()));
+                    if (!isEffectivelyFinal) {
+                        allVariablesEffectivelyFinal = false;
+                        checkIfPermittedInDependentTypeAnno(rec, array, node);
+                    }
+                }
+            }
+
+            if (elt.getKind() == ElementKind.LOCAL_VARIABLE && !allVariablesEffectivelyFinal) {
+                checker.report(Result.warning(LOCAL_VAR_ANNO), node);
+            }
+        }
+
+        return super.visitVariable(node, p);
+    }
+
+    /**
+     * Find the Receiver associated with the given String, on the current path. Issues a checker
+     * warning if {@code expr} is unparseable.
+     *
+     * @param expr a String containing a Java expression that is currently in scope
+     * @param tree the current tree, for error reporting
+     * @return the Receiver for the Java expression named by {@code expr} in the current scope
+     */
+    private Receiver getReceiverForCheckingDependentTypes(String expr, Tree tree) {
+        try {
+            return atypeFactory.getReceiverFromJavaExpressionString(expr, getCurrentPath());
+        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+            // Do not issue a warning directly, because the BaseTypeVisitor will do it instead.
+            return null;
+        }
+    }
+
+    /**
+     * Determines whether the Receiver {@code rec} is allowed in a dependent annotation, following
+     * the rules defined by the JavaDoc on {@link #visitVariable(VariableTree, Void)}. Issues an
+     * error if the Receiver does not meet the conditions listed there.
+     *
+     * @param rec the Receiver to check
+     * @param expr the String that Receiver was derived from. Used only for error reporting.
+     * @param tree the current scope. Used for error reporting.
+     * @return true iff the Receiver is permitted in a dependent type
+     */
+    private boolean checkIfPermittedInDependentTypeAnno(Receiver rec, String expr, Tree tree) {
+
+        if (rec == null) {
+            return false;
+        }
+
+        if (rec.isUnmodifiableByOtherCode() || rec instanceof FlowExpressions.LocalVariable) {
+            return true;
+        }
+
+        if (rec instanceof FlowExpressions.FieldAccess) {
+            FlowExpressions.FieldAccess faRec = (FlowExpressions.FieldAccess) rec;
+            if ((faRec.getField().getModifiers().contains(Modifier.PRIVATE) || faRec.isFinal())
+                    && checkIfPermittedInDependentTypeAnno(
+                            faRec.getReceiver(), faRec.getReceiver().toString(), tree)) {
+                return true;
+            } else {
+                // issue warning
+                checker.report(
+                        Result.warning(
+                                DEPENDENT_NOT_PERMITTED,
+                                expr,
+                                "fields in a dependent type must either be private or both public and final. The receiver "
+                                        + "object must be one of: a local variable; a private field; or a public, final field"),
+                        tree);
+                return false;
+            }
+        }
+        if (rec instanceof FlowExpressions.MethodCall) {
+            FlowExpressions.MethodCall mcRec = (FlowExpressions.MethodCall) rec;
+            boolean parametersArePermittedInDependentTypeAnno = true;
+            for (FlowExpressions.Receiver r : mcRec.getParameters()) {
+                parametersArePermittedInDependentTypeAnno =
+                        parametersArePermittedInDependentTypeAnno
+                                && checkIfPermittedInDependentTypeAnno(r, r.toString(), tree);
+            }
+            if (!PurityUtils.isSideEffectFree(atypeFactory, mcRec.getElement())) {
+                // issue warning
+                checker.report(
+                        Result.warning(
+                                DEPENDENT_NOT_PERMITTED,
+                                expr,
+                                "all method calls in dependent types must be pure"),
+                        tree);
+                return false;
+            }
+            if (parametersArePermittedInDependentTypeAnno
+                    && checkIfPermittedInDependentTypeAnno(
+                            mcRec.getReceiver(), mcRec.getReceiver().toString(), tree)) {
+                return true;
+            } else {
+                // warning will already have been issued in this case.
+                return false;
+            }
+        }
+        checker.report(
+                Result.warning(
+                        DEPENDENT_NOT_PERMITTED,
+                        expr,
+                        "the expression did not fit one of the categories of permitted expression in dependent types. Those categories are: \n           1. final or effectively final variables\n"
+                                + "           2. local variables\n"
+                                + "           3. private fields\n"
+                                + "           4. pure method calls all of whose arguments (including the receiver expression)\n"
+                                + "           are composed only of expressions in this list\n"
+                                + "           5. accesses of a public final field whose access expression (sometimes called the\n"
+                                + "           receiver) is composed only of expressions in this list"),
+                tree);
+        return false;
     }
 
     /**
@@ -138,6 +315,95 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             checker.report(
                     Result.failure(UPPER_BOUND, indexType.toString(), arrName, arrName, arrName),
                     indexTree);
+        }
+    }
+
+    /**
+     * When non-side-effect-free methods are called, they may invalidate some dependent types. This
+     * method checks if the method being called is side-effecting, and if so, it dispatches to the
+     * code that finds in-scope dependent annotations and then checks whether they might be
+     * invalidated.
+     */
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+        ExecutableElement elt = TreeUtils.elementFromUse(node);
+        if (!PurityUtils.isSideEffectFree(atypeFactory, elt)) {
+            checkAnnotationsInClass(elt, null, node, ReassignmentKind.SIDE_EFFECTING_METHOD_CALL);
+        }
+        return super.visitMethodInvocation(node, p);
+    }
+
+    /**
+     * The standard rules for the commonAssignmentCheck continue to apply; this method first calls
+     * {@code super.commonAssignmentCheck} before doing anything else. Afterwards, it checks to see
+     * if the reassignment might invalidate any dependent types in scope.
+     */
+    @Override
+    protected void commonAssignmentCheck(
+            Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
+        super.commonAssignmentCheck(varTree, valueExp, errorKey);
+        if (varTree.getKind() == Kind.VARIABLE) {
+            // Not a reassignment, so nothing to check
+            return;
+        }
+        Element elt = InternalUtils.symbol(varTree);
+
+        if (elt != null
+                && (elt.getKind() == ElementKind.FIELD
+                        || elt.getKind() == ElementKind.PARAMETER
+                        || elt.getKind() == ElementKind.LOCAL_VARIABLE)
+                && !ElementUtils.isEffectivelyFinal(elt)) {
+            TypeKind typeKind = InternalUtils.typeOf(varTree).getKind();
+            Receiver field = FlowExpressions.internalReprOf(atypeFactory, (ExpressionTree) varTree);
+            ReassignmentKind kind;
+            if (elt.getKind() == ElementKind.FIELD) {
+                if (typeKind == TypeKind.ARRAY) {
+                    kind = ReassignmentKind.ARRAY_FIELD_REASSIGNMENT;
+                } else if (!typeKind.isPrimitive()) {
+                    kind = UpperBoundUtil.ReassignmentKind.NON_ARRAY_FIELD_REASSIGNMENT;
+                } else {
+                    return;
+                }
+            } else if (typeKind == TypeKind.ARRAY) {
+                kind = UpperBoundUtil.ReassignmentKind.LOCAL_VAR_REASSIGNMENT;
+            } else {
+                return;
+            }
+            checkAnnotationsInClass(elt, field, varTree, kind);
+        }
+    }
+
+    /**
+     * Checks whether any annotations in scope are dependent and need to be invalidated by the given
+     * side effect.
+     *
+     * @param elt An element corresponding to the side effect that caused the invalidation.
+     * @param possiblyInvalidatedRec A receiver representing the possibly invalidated expression.
+     * @param tree The tree on which the side effect occurs. Used in error reporting.
+     * @param reassignmentKind The type of side effect. See {@link UpperBoundUtil.ReassignmentKind}.
+     */
+    private void checkAnnotationsInClass(
+            Element elt,
+            Receiver possiblyInvalidatedRec,
+            Tree tree,
+            UpperBoundUtil.ReassignmentKind reassignmentKind) {
+
+        List<Receiver> rs =
+                atypeFactory.getDependedReceiversByClass(ElementUtils.enclosingClass(elt));
+        if (rs == null) {
+            return;
+        }
+
+        for (Receiver r : rs) {
+            ReassignmentError result =
+                    UpperBoundUtil.isSideEffected(r, possiblyInvalidatedRec, reassignmentKind);
+            if (result != ReassignmentError.NO_ERROR) {
+                checker.report(
+                        Result.failure(
+                                result.errorKey,
+                                atypeFactory.getDependentAnnotationFromReceiver(r)),
+                        tree);
+            }
         }
     }
 

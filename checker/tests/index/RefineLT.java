@@ -1,8 +1,9 @@
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 
+//@ SuppressWarnings("local.variable.unsafe.dependent.annotation")
 class RefineLT {
-    int[] arr = {1};
+    final int[] arr = {1};
 
     void testLTL(@LTLengthOf("arr") int test, @LTLengthOf("arr") int a, @LTLengthOf("arr") int a3) {
         int b = 2;
@@ -20,10 +21,7 @@ class RefineLT {
         }
     }
 
-    void testLTEL(@LTLengthOf("arr") int test) {
-        //:: error: (assignment.type.incompatible)
-        @LTEqLengthOf("arr") int a = Integer.parseInt("1");
-
+    void testLTEL(@LTLengthOf("arr") int test, int a) {
         //:: error: (assignment.type.incompatible)
         @LTEqLengthOf("arr") int a3 = Integer.parseInt("3");
 
