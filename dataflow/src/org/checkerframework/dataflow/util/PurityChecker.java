@@ -60,13 +60,17 @@ public class PurityChecker {
      */
     public static class PurityResult {
 
-        protected final List<Pair<Tree, String>> notSeFreeReasons;
+        protected final List<Pair<Tree, String>> notSEFreeReasons;
         protected final List<Pair<Tree, String>> notDetReasons;
         protected final List<Pair<Tree, String>> notBothReasons;
+        /**
+         * Contains all the varieties of purity that the expression has. Starts out with all
+         * varieties, and elements are removed from it as violations are found.
+         */
         protected EnumSet<Pure.Kind> types;
 
         public PurityResult() {
-            notSeFreeReasons = new ArrayList<>();
+            notSEFreeReasons = new ArrayList<>();
             notDetReasons = new ArrayList<>();
             notBothReasons = new ArrayList<>();
             types = EnumSet.allOf(Pure.Kind.class);
@@ -76,19 +80,24 @@ public class PurityChecker {
             return types;
         }
 
-        /** Is the method pure w.r.t. a given set of types? */
+        /**
+         * Is the method pure w.r.t. a given set of types?
+         *
+         * @param kinds the varieties of purity to check
+         * @return true if the method is pure with respect to all the given kinds
+         */
         public boolean isPure(Collection<Kind> kinds) {
             return types.containsAll(kinds);
         }
 
         /** Get the {@code reason}s why the method is not side-effect-free. */
-        public List<Pair<Tree, String>> getNotSeFreeReasons() {
-            return notSeFreeReasons;
+        public List<Pair<Tree, String>> getNotSEFreeReasons() {
+            return notSEFreeReasons;
         }
 
         /** Add {@code reason} as a reason why the method is not side-effect free. */
-        public void addNotSeFreeReason(Tree t, String msgId) {
-            notSeFreeReasons.add(Pair.of(t, msgId));
+        public void addNotSEFreeReason(Tree t, String msgId) {
+            notSEFreeReasons.add(Pair.of(t, msgId));
             types.remove(Kind.SIDE_EFFECT_FREE);
         }
 
@@ -172,7 +181,7 @@ public class PurityChecker {
                 } else if (!det) {
                     presult.addNotDetReason(node, reason);
                 } else if (!seFree) {
-                    presult.addNotSeFreeReason(node, reason);
+                    presult.addNotSEFreeReason(node, reason);
                 }
             }
             return super.visitMethodInvocation(node, ignore);
