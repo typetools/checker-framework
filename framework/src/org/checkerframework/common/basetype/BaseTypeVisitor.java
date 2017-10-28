@@ -605,7 +605,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(Result.failure(msg), r.first);
             }
             if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-                for (Pair<Tree, String> r : result.getNotSeFreeReasons()) {
+                for (Pair<Tree, String> r : result.getNotSEFreeReasons()) {
                     @SuppressWarnings("CompilerMessages")
                     /*@CompilerMessageKey*/ String msg = "purity.not.sideeffectfree." + r.second;
                     checker.report(Result.failure(msg), r.first);
