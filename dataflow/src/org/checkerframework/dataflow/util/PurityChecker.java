@@ -116,7 +116,7 @@ public class PurityChecker {
          * Is the method pure w.r.t. a given set of types?
          *
          * @param kinds the varieties of purity to check
-         * @returns true if the method is pure with respect to all the given kinds
+         * @return true if the method is pure with respect to all the given kinds
          */
         public boolean isPure(Collection<Kind> kinds) {
             return types.containsAll(kinds);
