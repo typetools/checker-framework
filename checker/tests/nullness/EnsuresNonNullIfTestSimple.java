@@ -31,11 +31,11 @@ public class EnsuresNonNullIfTestSimple {
          * The assumption that "values" is NN is added above.
          * However, as repNulled is not pure, it should be removed again here.
         if (s.repNulled()) {
-            // :: (dereference.of.nullable)
+            // : : (dereference.of.nullable)
             values.hashCode();
         } else {
             // we called on "s", so we don't know anything about "values".
-            // :: (assignment.type.incompatible)
+            // : : (assignment.type.incompatible)
             @NonNull Object y = values;
         }
         */
