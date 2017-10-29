@@ -58,7 +58,7 @@ public class TransferSub {
         // transferred to SimpleTransferSub.java
         // this section is failing due to CF bug
         // int k2 = 0;
-        // //:: error: (assignment.type.incompatible)
+        // // :: error: (assignment.type.incompatible)
         // @Positive int s2 = k2--;
 
         k1 = 1;

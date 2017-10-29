@@ -51,7 +51,7 @@ class PptTopLevel {
 
     //    static void testFalseIfBody(PptTopLevel ppt) {
     //        if (!ppt.has_splitters()) {
-    //            //:: error: (dereference.of.nullable)
+    //            // :: error: (dereference.of.nullable)
     //            ppt.splitters.toString();   // error
     //        }
     //    }

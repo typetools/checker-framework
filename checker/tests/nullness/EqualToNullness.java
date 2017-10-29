@@ -6,7 +6,7 @@ public class EqualToNullness {
     //    @Nullable String f;
     //
     //    void t1(@Nullable String g) {
-    //        //:: error: (dereference.of.nullable)
+    //        // :: error: (dereference.of.nullable)
     //        g.toLowerCase();
     //        if (g != null) {
     //            g.toLowerCase();
@@ -14,7 +14,7 @@ public class EqualToNullness {
     //    }
     //
     //    void t2() {
-    //        //:: error: (dereference.of.nullable)
+    //        // :: error: (dereference.of.nullable)
     //        f.toLowerCase();
     //        if (f == null) {} else {
     //            f.toLowerCase();
@@ -22,7 +22,7 @@ public class EqualToNullness {
     //    }
     //
     //    void t1b(@Nullable String g) {
-    //        //:: error: (dereference.of.nullable)
+    //        // :: error: (dereference.of.nullable)
     //        g.toLowerCase();
     //        if (null != g) {
     //            g.toLowerCase();
@@ -30,7 +30,7 @@ public class EqualToNullness {
     //    }
     //
     //    void t2b() {
-    //        //:: error: (dereference.of.nullable)
+    //        // :: error: (dereference.of.nullable)
     //        f.toLowerCase();
     //        if (null == f) {} else {
     //            f.toLowerCase();

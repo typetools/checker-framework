@@ -24,7 +24,7 @@ class LambdaParam {
     // Initializer blocks with annotations don't work yet because of javac compiler bug.
     // https://bugs.openjdk.java.net/browse/JDK-8056970
     //    {
-    //          //:: error: (lambda.param.type.incompatible)
+    //          // :: error: (lambda.param.type.incompatible)
     //        NullConsumer fn1 = (@NonNull String i) -> {};
     //        NullConsumer fn2 = (@Nullable String i) -> {};
     //        NullConsumer fn3 = (String i) -> {};
@@ -34,7 +34,7 @@ class LambdaParam {
     //    }
     //
     //    static {
-    //          //:: error: (lambda.param.type.incompatible)
+    //          // :: error: (lambda.param.type.incompatible)
     //        NullConsumer fn1 = (@NonNull String i) -> {};
     //        NullConsumer fn2 = (@Nullable String i) -> {};
     //        NullConsumer fn3 = (String i) -> {};

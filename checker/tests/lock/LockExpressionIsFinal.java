@@ -258,7 +258,7 @@ public class LockExpressionIsFinal {
 
         boolean b = c1 instanceof @GuardedBy("o1") Object;
         // instanceof expression have not effect on the type.
-        // //:: error: (lock.expression.not.final)
+        // // :: error: (lock.expression.not.final)
         b = c1 instanceof @GuardedBy("o2") Object;
 
         // Additional tests just outside of this method below:

@@ -168,10 +168,10 @@ class LambdaInit {
             s -> {
 
                 // This is an issue with static initializers in general
-                // //:: error: (dereference.of.nullable)
+                // // :: error: (dereference.of.nullable)
                 sf1.toString();
                 // This is an issue with static initializers in general
-                // //:: error: (dereference.of.nullable)
+                // // :: error: (dereference.of.nullable)
                 sf1b.toString();
                 sf2.toString();
                 // :: error: (dereference.of.nullable)
@@ -190,7 +190,7 @@ class LambdaInit {
                 s -> {
 
                     // This is an issue with static initializers in general
-                    // //:: error: (dereference.of.nullable)
+                    // // :: error: (dereference.of.nullable)
                     sf1.toString();
                     sf2.toString();
                     // :: error: (dereference.of.nullable)

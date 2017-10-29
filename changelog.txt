@@ -1430,7 +1430,7 @@ Implementation details:
   https://github.com/typetools/checker-framework/source/detail?r=8381a213a4
 
 - Testing framework:
-  Support for multiple expected errors using the "//:: A :: B :: C" syntax.
+  Support for multiple expected errors using the "// :: A :: B :: C" syntax.
 
 Many small updates and fixes.
 

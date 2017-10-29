@@ -100,15 +100,15 @@ public class SimpleRegex {
     //        @Regex Pattern p;
     //        @Regex Matcher m;
     //
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex Object o;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex List<String> l;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        ArrayList<@Regex Double> al;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex int i;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex boolean b;   // error
     //    }
 
@@ -121,19 +121,19 @@ public class SimpleRegex {
     //        @Regex Segment s21;
     //        @Regex char c;
     //
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex Object o;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex List<String> l;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        ArrayList<@Regex Double> al;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex int i;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex boolean b;   // error
     //
     //        @Regex String regex = "a";
-    //        //:: error: (argument.type.incompatible)
+    //        // :: error: (argument.type.incompatible)
     //        regex += "(";
     //
     //        String nonRegex = "a";
@@ -166,13 +166,13 @@ public class SimpleRegex {
     //        @Regex char @Regex [] ca3;
     //        @Regex String[] s1;
     //
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex double[] da1;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        double @Regex [] da2;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex double @Regex [] da3;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        String @Regex [] s2;    // error
     //    }
 
@@ -184,9 +184,9 @@ public class SimpleRegex {
     //        char @Regex [] c2 = {'(', 'r', 'e', 'g', 'e', 'x', ')', '.', '*'};
     //        char @Regex [] c3 = {r, 'e', 'g', 'e', 'x'};
     //
-    //        //:: error: (assignment.type.incompatible)
+    //        // :: error: (assignment.type.incompatible)
     //        char @Regex [] c4 = {'(', 'r', 'e', 'g', 'e', 'x'};   // error
-    //        //:: error: (assignment.type.incompatible)
+    //        // :: error: (assignment.type.incompatible)
     //        char @Regex [] c5 = {c, '.', '*'};   // error
     //    }
 }

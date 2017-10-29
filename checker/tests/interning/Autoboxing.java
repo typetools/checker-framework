@@ -60,11 +60,11 @@ class Autoboxing {
         //     Short s2interned = 32;
         //     Short s3interned = Short.valueOf((short) 32);
         //     System.out.println(s1interned==s2interned);
-        //     //:: warning: (unnecessary.equals)
+        //     // :: warning: (unnecessary.equals)
         //     System.out.println(s1interned.equals(s2interned));
-        //     //:: warning: (unnecessary.equals)
+        //     // :: warning: (unnecessary.equals)
         //     System.out.println(s3interned.equals(s2interned));
-        //     //:: warning: (unnecessary.equals)
+        //     // :: warning: (unnecessary.equals)
         //     System.out.println(sInterned.equals(s2interned));
 
         System.out.println();
@@ -85,16 +85,16 @@ class Autoboxing {
         // TODO:
         // Would be legal to use ==, but Interning Checker does not check the
         // actual int value when deciding whether to warn for unnecessary.equals.
-        //     //:: warning: (unnecessary.equals)
+        //     // :: warning: (unnecessary.equals)
         //     System.out.println(i1interned==i2interned);
-        //     //:: warning: (unnecessary.equals)
+        //     // :: warning: (unnecessary.equals)
         //     System.out.println(i1interned.equals(i2interned));
-        //     //:: warning: (unnecessary.equals)
+        //     // :: warning: (unnecessary.equals)
         //     System.out.println(i3interned.equals(i2interned));
-        //     //:: warning: (unnecessary.equals)
+        //     // :: warning: (unnecessary.equals)
         //     System.out.println(iInterned.equals(i2interned));
         //     System.out.println(i1interned==123); // ok
-        //     //:: warning: (unnecessary.equals)
+        //     // :: warning: (unnecessary.equals)
         //     System.out.println(i1interned.equals(123));
 
         System.out.println();
@@ -160,11 +160,11 @@ class Autoboxing {
         //     Character c2interned = 65;
         //     Character c3interned = Character.valueOf((char) 65);
         //     System.out.println(c1interned==c2interned);
-        //     //:: warning: (unnecessary.equals)
+        //     // :: warning: (unnecessary.equals)
         //     System.out.println(c1interned.equals(c2interned));
-        //     //:: warning: (unnecessary.equals)
+        //     // :: warning: (unnecessary.equals)
         //     System.out.println(c3interned.equals(c2interned));
-        //     //:: warning: (unnecessary.equals)
+        //     // :: warning: (unnecessary.equals)
         //     System.out.println(cInterned.equals(c2interned));
     }
 }
