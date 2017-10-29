@@ -501,11 +501,9 @@ public class WholeProgramInferenceScenesHelper {
             }
         } else if (curATM.getKind() == TypeKind.TYPEVAR) {
             // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
-            // annotated.
-            // So instead, only insert the annotation if there is not primary annotation of the same
-            // hierarchy.
-            // #shouldIgnore prevent annotations that are subtypes of type vars upper bound from
-            // being inserted.
+            // annotated.  So instead, only insert the annotation if there is not primary annotation
+            // of the same hierarchy.  #shouldIgnore prevent annotations that are subtypes of type
+            // vars upper bound from being inserted.
             for (AnnotationMirror am : newATM.getAnnotations()) {
                 if (curATM.getAnnotationInHierarchy(am) != null) {
                     // Don't insert if the type is already has a primary annotation

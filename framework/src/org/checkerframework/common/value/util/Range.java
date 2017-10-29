@@ -531,9 +531,9 @@ public class Range {
 
         // Shifting operations in Java are depending on the type of the left-hand operand:
         // If the left-hand operand is int  type, only the 5 lowest-order bits of the right-hand
-        // operand are used
+        // operand are used.
         // If the left-hand operand is long type, only the 6 lowest-order bits of the right-hand
-        // operand are used
+        // operand are used.
         // For example, while 1 << -1== 1 << 31, 1L << -1 == 1L << 63.
         // For ths reason, we restrict the shift-bits to analyze in [0. 31] and give up the analysis
         // when out of this range.

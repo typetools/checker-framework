@@ -3401,8 +3401,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         }
                     }
                     // We should never reach here: assertFunctionalInterface performs the same check
-                    // and
-                    // would have raised an error already.
+                    // and would have raised an error already.
                     ErrorReporter.errorAbort(
                             String.format(
                                     "Expected the type of a cast tree in an assignment context to contain a functional interface bound. "

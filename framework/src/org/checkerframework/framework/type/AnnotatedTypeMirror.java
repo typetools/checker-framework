@@ -1583,10 +1583,8 @@ public abstract class AnnotatedTypeMirror {
         private void fixupBoundAnnotations() {
 
             // We allow the above replacement first because primary annotations might not have
-            // annotations for
-            // all hierarchies, so we don't want to avoid placing bottom on the lower bound for
-            // those hierarchies that
-            // don't have a qualifier in primaryAnnotations
+            // annotations for all hierarchies, so we don't want to avoid placing bottom on the
+            // lower bound for those hierarchies that don't have a qualifier in primaryAnnotations.
             if (!this.getAnnotationsField().isEmpty()) {
                 if (upperBound != null) {
                     replaceUpperBoundAnnotations();

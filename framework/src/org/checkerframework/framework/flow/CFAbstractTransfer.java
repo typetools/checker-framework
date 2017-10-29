@@ -479,8 +479,7 @@ public abstract class CFAbstractTransfer<
             if (enclosingMethodOfVariableDeclaration != null) {
 
                 // Now find all the enclosing methods of the code we are analyzing. If any one of
-                // them matches the above,
-                // then the final local variable value applies.
+                // them matches the above, then the final local variable value applies.
                 Element enclosingMethodOfCurrentMethod = enclosingElement;
 
                 while (enclosingMethodOfCurrentMethod != null) {

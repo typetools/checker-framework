@@ -45,10 +45,10 @@ import org.checkerframework.javacutil.TypesUtils;
  * circular references, will be created.
  */
 public class BoundsInitializer {
-    // ==================================================================================================================
+    // ============================================================================================
     // Static helper methods called from AnnotatedTypeMirror to initialize bounds of wildcards or
     // type variables
-    // ==================================================================================================================
+    // ============================================================================================
 
     /**
      * Initializes the type arguments of {@code declaredType}. The upper bound of unbound wildcards
@@ -252,9 +252,9 @@ public class BoundsInitializer {
         restoreAnnotations(wildcard, annos);
     }
 
-    // ==================================================================================================================
+    // ============================================================================================
     // Classes and methods used to make the above static helper methods work
-    // ==================================================================================================================
+    // ============================================================================================
 
     /**
      * Creates the AnnotatedTypeMirrors (without annotations) for the bounds of all type variables

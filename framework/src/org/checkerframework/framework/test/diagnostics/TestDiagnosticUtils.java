@@ -96,8 +96,9 @@ public class TestDiagnosticUtils {
                 trimmed.first);
     }
 
+    /** Returns a pair of {@code <wereThereParentheses, textWithoutParentheses>}. */
     static Pair<Boolean, String> dropParentheses(final String str) {
-        if (str.charAt(0) == '(' && str.charAt(str.length() - 1) == ')') {
+        if (!str.equals("") && str.charAt(0) == '(' && str.charAt(str.length() - 1) == ')') {
             return Pair.of(true, str.substring(1, str.length() - 1));
         }
         return Pair.of(false, str);
@@ -216,14 +217,11 @@ public class TestDiagnosticUtils {
     /** Convert a line in a JavaSource file to a (possibly empty) TestDiagnosticLine */
     public static TestDiagnosticLine fromJavaSourceLine(
             String filename, String originalLine, long lineNumber) {
-        String trimmedLine = originalLine.trim();
+        final String trimmedLine = originalLine.trim();
         long errorLine = lineNumber + 1;
 
-        if (trimmedLine.startsWith("//::")) {
-            trimmedLine = "// ::" + trimmedLine.substring(4);
-        }
         if (trimmedLine.startsWith("// ::")) {
-            String restOfLine = trimmedLine.substring(5); // drop the // ::
+            String restOfLine = trimmedLine.substring(5); // drop the "// ::"
             String[] diagnosticStrs = restOfLine.split("::");
             List<TestDiagnostic> diagnostics = new ArrayList<>(diagnosticStrs.length);
             for (String diagnostic : diagnosticStrs) {

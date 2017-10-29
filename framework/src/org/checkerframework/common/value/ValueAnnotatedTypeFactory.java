@@ -528,9 +528,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return a2;
             } else {
 
-                // Implementation of GLB where one of the annotations is StringVal is needed
-                // for length-based refinement of constant string values. Other cases of
-                // length-based
+                // Implementation of GLB where one of the annotations is StringVal is needed for
+                // length-based refinement of constant string values. Other cases of length-based
                 // refinement are handled by subtype check.
                 if (AnnotationUtils.areSameByClass(a1, StringVal.class)) {
                     return glbOfStringVal(a1, a2);
@@ -1187,9 +1186,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (anno == null) {
                 // If type is an AnnotatedTypeVariable (or other type without a primary annotation)
                 // then anno will be null. It would be safe to use the annotation on the upper
-                // bound;
-                // however, unless the upper bound was explicitly annotated, it will be unknown.
-                // AnnotatedTypes.findEffectiveAnnotationInHierarchy(, toSearch, top)
+                // bound; however, unless the upper bound was explicitly annotated, it will be
+                // unknown.  AnnotatedTypes.findEffectiveAnnotationInHierarchy(, toSearch, top)
                 return null;
             }
             return ValueCheckerUtils.getValuesCastedToType(anno, castTo);

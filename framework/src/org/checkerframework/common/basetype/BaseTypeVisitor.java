@@ -1603,8 +1603,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             } else if (castType.getKind() == TypeKind.TYPEVAR
                     && exprType.getKind() == TypeKind.TYPEVAR) {
                 // If both the cast type and the casted expression are type variables, then check
-                // the
-                // bounds.
+                // the bounds.
                 Set<AnnotationMirror> lowerBoundAnnotationsCast =
                         AnnotatedTypes.findEffectiveLowerBoundAnnotations(
                                 qualifierHierarchy, castType);
@@ -2282,12 +2281,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             NewClassTree newClassTree) {
         AnnotatedDeclaredType returnType = (AnnotatedDeclaredType) constructor.getReturnType();
         // When an interface is used as the identifier in an anonymous class (e.g. new Comparable()
-        // {})
-        // the constructor method will be Object.init() {} which has an Object return type
-        // When TypeHierarchy attempts to convert it to the supertype (e.g. Comparable) it will
-        // return
+        // {}) the constructor method will be Object.init() {} which has an Object return type When
+        // TypeHierarchy attempts to convert it to the supertype (e.g. Comparable) it will return
         // null from asSuper and return false for the check.  Instead, copy the primary annotations
-        // to the declared type and then do a subtyping check
+        // to the declared type and then do a subtyping check.
         if (invocation.getUnderlyingType().asElement().getKind().isInterface()
                 && TypesUtils.isObject(returnType.getUnderlyingType())) {
             final AnnotatedDeclaredType retAsDt = invocation.deepCopy();
@@ -3025,18 +3022,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 success = typeHierarchy.isSubtype(overridingReturnType, overriddenReturnType);
 
                 // If both the overridden method have type variables as return types and both types
-                // were
-                // defined in their respective methods then, they can be covariant or invariant
+                // were defined in their respective methods then, they can be covariant or invariant
                 // use super/subtypes for the overrides locations
                 if (!success) {
                     success = testTypevarContainment(overridingReturnType, overriddenReturnType);
 
                     // sometimes when using a Java 8 compiler (not JSR308) the overridden return
-                    // type of a method reference
-                    // becomes a captured type.  This leads to defaulting that often makes the
-                    // overriding return type
-                    // invalid.  We ignore these.  This happens in Issue403/Issue404 when running
-                    // without JSR308 Langtools
+                    // type of a method reference becomes a captured type.  This leads to defaulting
+                    // that often makes the overriding return type invalid.  We ignore these.  This
+                    // happens in Issue403/Issue404 when running without JSR308 Langtools.
                     if (!success && methodReference) {
 
                         boolean isCaptureConverted =
@@ -3531,9 +3525,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 // the parameter.
 
                 // TODO: doing types.typeAnnotationOf(m.getParameters().get(0).asType(),
-                // Nullable.class)
-                // or types.typeAnnotationsOf(m.asType())
-                // does not work any more. It should.
+                // Nullable.class) or types.typeAnnotationsOf(m.asType()) does not work any more. It
+                // should.
 
                 boolean foundNN = false;
                 for (com.sun.tools.javac.code.Attribute.TypeCompound tc :
