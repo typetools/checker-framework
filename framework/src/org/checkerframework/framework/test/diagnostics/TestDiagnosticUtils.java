@@ -216,7 +216,7 @@ public class TestDiagnosticUtils {
     /** Convert a line in a JavaSource file to a (possibly empty) TestDiagnosticLine */
     public static TestDiagnosticLine fromJavaSourceLine(
             String filename, String originalLine, long lineNumber) {
-        final String trimmedLine = originalLine.trim();
+        String trimmedLine = originalLine.trim();
         long errorLine = lineNumber + 1;
 
         if (trimmedLine.startsWith("//::")) {
