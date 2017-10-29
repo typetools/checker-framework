@@ -93,7 +93,7 @@ class Static {
     }
 }
 
-/// ** Expr # instMethod */
+/** Expr # instMethod */
 // BOUND(ReferenceMode.INVOKE, false),
 class Bound {
     <T> T func1(T o) {
