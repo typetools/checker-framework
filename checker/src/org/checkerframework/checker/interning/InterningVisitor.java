@@ -378,17 +378,14 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             parentPath = parentPath.getParentPath();
         }
 
-        assert ifStatementTree
-                != null; // The call to Heuristics.matchParents already ensured there is an
-                         // enclosing if statement
-        assert methodTree
-                != null; // The call to Heuristics.matchParents already ensured there is an
-                         // enclosing method
+        // The call to Heuristics.matchParents already ensured there is an enclosing if statement
+        assert ifStatementTree != null;
+        // The call to Heuristics.matchParents already ensured there is an enclosing method
+        assert methodTree != null;
 
         StatementTree stmnt = methodTree.getBody().getStatements().get(0);
-        assert stmnt
-                != null; // The call to Heuristics.matchParents already ensured the enclosing method
-                         // has at least one statement (an if statement) in the body
+        // The call to Heuristics.matchParents already ensured the enclosing method has at least one statement (an if statement) in the body
+        assert stmnt != null;
 
         if (stmnt != ifStatementTree) {
             return false; // The if statement is not the first statement in the method.
@@ -659,9 +656,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                     public Boolean visitBinary(BinaryTree tree, Void p) {
                         if (tree.getKind() == Tree.Kind.EQUAL_TO) { // a.compareTo(b) == 0
                             ExpressionTree leftTree =
-                                    tree
-                                            .getLeftOperand(); // looking for a.compareTo(b) or
-                                                               // b.compareTo(a)
+                                    tree.getLeftOperand(); // looking for a.compareTo(b) or
+                            // b.compareTo(a)
                             ExpressionTree rightTree = tree.getRightOperand(); // looking for 0
 
                             if (rightTree.getKind() != Tree.Kind.INT_LITERAL) {
@@ -677,9 +673,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                             // a == b || a.compareTo(b) == 0
                             ExpressionTree leftTree = tree.getLeftOperand(); // looking for a==b
                             ExpressionTree rightTree =
-                                    tree
-                                            .getRightOperand(); // looking for a.compareTo(b) == 0
-                                                                // or b.compareTo(a) == 0
+                                    tree.getRightOperand(); // looking for a.compareTo(b) == 0
+                            // or b.compareTo(a) == 0
                             if (leftTree != node) {
                                 return false;
                             }

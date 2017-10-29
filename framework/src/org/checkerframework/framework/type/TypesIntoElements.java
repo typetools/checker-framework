@@ -228,7 +228,7 @@ public class TypesIntoElements {
             }
 
             { // This block is essentially direct annotations, perhaps we should refactor that
-              // method out
+                // method out
                 List<Attribute.TypeCompound> res = List.nil();
                 for (AnnotationMirror am : typeVar.getLowerBound().getAnnotations()) {
                     Attribute.TypeCompound tc =

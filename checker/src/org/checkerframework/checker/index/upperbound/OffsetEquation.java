@@ -4,6 +4,7 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -21,17 +22,18 @@ import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * An offset equation is 2 sets of Java expression strings, one set of added terms and one set of
- * subtracted terms, and a single int value. The Java expression strings have been standardized and
- * viewpoint adapted.
+ * subtracted terms, and a single integer constant. The Java expression strings have been
+ * standardized and viewpoint-adapted.
  */
 public class OffsetEquation {
     public static final OffsetEquation ZERO = createOffsetForInt(0);
     public static final OffsetEquation NEG_1 = createOffsetForInt(-1);
     public static final OffsetEquation ONE = createOffsetForInt(1);
+
     private final List<String> addedTerms;
     private final List<String> subtractedTerms;
-    private String error = null;
     private int intValue = 0;
+    private String error = null;
 
     private OffsetEquation() {
         addedTerms = new ArrayList<>();
@@ -67,10 +69,13 @@ public class OffsetEquation {
         if (intValue != that.intValue) {
             return false;
         }
-        if (!addedTerms.containsAll(that.addedTerms) || !that.addedTerms.containsAll(addedTerms)) {
+        if (addedTerms.size() != that.addedTerms.size()
+                || !addedTerms.containsAll(that.addedTerms)
+                || !that.addedTerms.containsAll(addedTerms)) {
             return false;
         }
-        if (!subtractedTerms.containsAll(that.subtractedTerms)
+        if (subtractedTerms.size() != that.subtractedTerms.size()
+                || !subtractedTerms.containsAll(that.subtractedTerms)
                 || !that.subtractedTerms.containsAll(subtractedTerms)) {
             return false;
         }
@@ -81,8 +86,8 @@ public class OffsetEquation {
     public int hashCode() {
         int result = addedTerms.hashCode();
         result = 31 * result + subtractedTerms.hashCode();
-        result = 31 * result + (error != null ? error.hashCode() : 0);
         result = 31 * result + intValue;
+        result = 31 * result + Objects.hashCode(error);
         return result;
     }
 
@@ -241,7 +246,7 @@ public class OffsetEquation {
     }
 
     /**
-     * Standardizes and viewpoint adapts the string terms based us the supplied context.
+     * Standardizes and viewpoint-adapts the string terms based us the supplied context.
      *
      * @param context FlowExpressionContext
      * @param scope local scope

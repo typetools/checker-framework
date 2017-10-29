@@ -13,32 +13,32 @@ class Issue1218 {
     }
 
     class ForString {
-        ForString(String @MinLen(2)... strs) {}
+        ForString(String @MinLen(2) ... strs) {}
     }
 
     class ForInt {
-        ForInt(@IntVal({1, 2, 3}) int @MinLen(2)... strs) {}
+        ForInt(@IntVal({1, 2, 3}) int @MinLen(2) ... strs) {}
     }
 
     class ForEnum<E extends Enum<E>> {
         @SafeVarargs
-        ForEnum(E @MinLen(2)... enums) {}
+        ForEnum(E @MinLen(2) ... enums) {}
     }
 
     class ForAny<T> {
         @SafeVarargs
-        ForAny(T @MinLen(3)... anys) {}
+        ForAny(T @MinLen(3) ... anys) {}
     }
 
-    void strs(String @MinLen(2)... strs) {}
+    void strs(String @MinLen(2) ... strs) {}
 
-    void ints(@IntVal({1, 2, 3}) int @MinLen(2)... ints) {}
-
-    @SafeVarargs
-    final <E extends Enum<E>> void enums(E @MinLen(2)... enums) {}
+    void ints(@IntVal({1, 2, 3}) int @MinLen(2) ... ints) {}
 
     @SafeVarargs
-    final <T> void anys(T @MinLen(3)... anys) {}
+    final <E extends Enum<E>> void enums(E @MinLen(2) ... enums) {}
+
+    @SafeVarargs
+    final <T> void anys(T @MinLen(3) ... anys) {}
 
     void testMethodCall() {
         // :: error: (varargs.type.incompatible)

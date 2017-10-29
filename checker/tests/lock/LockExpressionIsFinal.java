@@ -16,7 +16,7 @@ public class LockExpressionIsFinal {
     class C1 {
         final C1 field =
                 new C1(); // Infinite loop. This code is not meant to be executed, only type
-                          // checked.
+        // checked.
         C1 field2;
 
         @Deterministic
@@ -92,7 +92,7 @@ public class LockExpressionIsFinal {
     class C2 extends ReentrantLock {
         final C2 field =
                 new C2(); // Infinite loop. This code is not meant to be executed, only type
-                          // checked.
+        // checked.
         C2 field2;
 
         @Deterministic
@@ -129,9 +129,8 @@ public class LockExpressionIsFinal {
         // :: error: (lock.expression.not.final)
         rl2.unlock();
 
-        rl2 =
-                new ReentrantLock(); // Reassignment that makes rl2 not have been effectively final
-                                     // earlier.
+        rl2 = new ReentrantLock(); // Reassignment that makes rl2 not have been effectively final
+        // earlier.
 
         // Test a tree that is not supported by LockVisitor.ensureExpressionIsEffectivelyFinal
         // :: error: (lock.expression.possibly.not.final)

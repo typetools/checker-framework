@@ -60,7 +60,7 @@ class ThrowCatchTest {
             // :: error: (type.argument.type.incompatible)
             List<? extends @UI PolyUIException>
                     ui, // Default type of List's type parameter is below @UI so this is
-                        // type.argument.incompatible
+            // type.argument.incompatible
             List<? extends @AlwaysSafe PolyUIException> alwaysSafe)
             throws PolyUIException {
         if (flag) {

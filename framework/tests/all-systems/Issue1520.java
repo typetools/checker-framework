@@ -11,7 +11,7 @@ public class Issue1520 {
                     _run();
                 } finally {
                     signal(); // Evaluating this node type as member of implicit `this` will throw
-                              // NPE
+                    // NPE
                 }
             }
         };

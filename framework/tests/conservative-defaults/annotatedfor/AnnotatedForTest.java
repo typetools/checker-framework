@@ -89,10 +89,9 @@ class AnnotatedForTest {
     }
 
     @SuppressWarnings("nullness")
-    @AnnotatedFor(
-            "subtyping") // Similar to method1. The @SuppressWarnings does not override the
-                         // @AnnotatedFor because it suppressing warnings for a different
-                         // typesystem.
+    @AnnotatedFor("subtyping") // Similar to method1. The @SuppressWarnings does not override the
+    // @AnnotatedFor because it suppressing warnings for a different
+    // typesystem.
     void method3() {
         // When calling annotatedMethod, we expect the usual (non-conservative) defaults, since
         // @SuperQual is annotated with @DefaultQualifierInHierarchy.
@@ -211,7 +210,7 @@ class AnnotatedForTest {
     @SuppressWarnings("all")
     @AnnotatedFor("subtyping")
     class annotatedAndWarningsSuppressedClass { // The @SuppressWarnings("all") overrides the
-                                                // @AnnotatedFor.
+        // @AnnotatedFor.
         // Test annotated class initializer whose warnings are suppressed.
         @SuperQual Object o1 = annotatedMethod(new Object());
         @SubQual Object o2 = annotatedMethod(new Object());

@@ -56,9 +56,8 @@ public class LockEffectAnnotations {
             myMethod5();
             x3.field = new Object(); // OK: the lock is still held since myMethod is locking-free
             mySideEffectFreeMethod();
-            x3.field =
-                    new Object(); // OK: the lock is still held since mySideEffectFreeMethod is
-                                  // side-effect-free
+            x3.field = new Object(); // OK: the lock is still held since mySideEffectFreeMethod is
+            // side-effect-free
             myUnlockingMethod();
             // :: error: (lock.not.held)
             x3.field = new Object(); // ILLEGAL: myLockingMethod is not locking-free

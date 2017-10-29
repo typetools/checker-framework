@@ -127,9 +127,8 @@ class ChapterExamples {
     void testMultipleSideEffectAnnotations() {}
 
     void guardedByItselfOnReceiver(@GuardedBy("<self>") ChapterExamples this) {
-        synchronized (
-                this) { // Tests translation of '<self>' to 'this' by the LockVisitor for this
-                        // scenario.
+        synchronized (this) { // Tests translation of '<self>' to 'this' by the LockVisitor for this
+            // scenario.
             // myField = new MyClass();
             myField.toString();
             this.myField = new MyClass();

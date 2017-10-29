@@ -59,7 +59,7 @@ class MetaPostcondition {
         oddF1();
         @Odd String l2 = f1;
 
-        // :: error: (flowexpr.parse.error)
+        // :: error: (flowexpr.parse.error.postcondition)
         error();
     }
 
@@ -93,11 +93,11 @@ class MetaPostcondition {
         // :: error: (assignment.type.incompatible)
         @Value String l2 = f2;
 
-        // :: error: (flowexpr.parse.error)
+        // :: error: (flowexpr.parse.error.postcondition)
         error2(p1, p2);
     }
 
-    /** *** conditional postcondition ***** */
+    /** conditional postcondition */
     @EnsuresOddIf(result = true, expression = "f1")
     boolean condOddF1(boolean b) {
         if (b) {

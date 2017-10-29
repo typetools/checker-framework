@@ -319,9 +319,9 @@ public class ContractsUtils {
             ExecutableElement methodElement) {
         Set<ConditionalPostcondition> result = new LinkedHashSet<ConditionalPostcondition>();
         // Check for a single contract.
-        AnnotationMirror ensuresAnnotationIf =
+        AnnotationMirror ensuresQualifierIf =
                 factory.getDeclAnnotation(methodElement, EnsuresQualifierIf.class);
-        result.addAll(getConditionalPostcondition(ensuresAnnotationIf));
+        result.addAll(getConditionalPostcondition(ensuresQualifierIf));
 
         // Check for multiple contracts.
         AnnotationMirror ensuresAnnotationsIf =
@@ -359,25 +359,24 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns a set of triples {@code (expr, (result, annotation))} of conditional postconditions
+     * Returns a set of triples {@code (expr, result, annotation)} of conditional postconditions
      * according to the given {@link EnsuresQualifierIf}.
      */
     private Set<ConditionalPostcondition> getConditionalPostcondition(
-            AnnotationMirror ensuresAnnotationIf) {
-        if (ensuresAnnotationIf == null) {
+            AnnotationMirror ensuresQualifierIf) {
+        if (ensuresQualifierIf == null) {
             return Collections.emptySet();
         }
         Set<ConditionalPostcondition> result = new LinkedHashSet<>();
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
-                        ensuresAnnotationIf, "expression", String.class, false);
-        AnnotationMirror postcondAnno = getAnnotationMirrorOfQualifier(ensuresAnnotationIf);
+                        ensuresQualifierIf, "expression", String.class, false);
+        AnnotationMirror postcondAnno = getAnnotationMirrorOfQualifier(ensuresQualifierIf);
         if (postcondAnno == null) {
             return result;
         }
         boolean annoResult =
-                AnnotationUtils.getElementValue(
-                        ensuresAnnotationIf, "result", Boolean.class, false);
+                AnnotationUtils.getElementValue(ensuresQualifierIf, "result", Boolean.class, false);
         for (String expr : expressions) {
             result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno));
         }

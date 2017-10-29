@@ -256,7 +256,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             } else {
                 // otherwise, display each supertype in its own row
                 for (Iterator<AnnotationMirror> iterator = supertypes.iterator();
-                        iterator.hasNext(); ) {
+                        iterator.hasNext();
+                        ) {
                     // new line and tabbing
                     sb.append("\n\t\t");
                     // display the supertype

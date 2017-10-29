@@ -81,7 +81,7 @@ class Postcondition {
         oddF1();
         @Odd String l2 = f1;
 
-        // :: error: (flowexpr.parse.error)
+        // :: error: (flowexpr.parse.error.postcondition)
         error();
     }
 
@@ -149,7 +149,7 @@ class Postcondition {
         @Odd String l3 = f1;
         @Value String l4 = f2;
 
-        // :: error: (flowexpr.parse.error)
+        // :: error: (flowexpr.parse.error.postcondition)
         error2();
     }
 

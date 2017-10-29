@@ -195,13 +195,13 @@ public class QualifierPolymorphism {
         if (TreeUtils.isEnumSuper(tree)) {
             return;
         }
-        List<AnnotatedTypeMirror> requiredArgs =
+        List<AnnotatedTypeMirror> parameters =
                 AnnotatedTypes.expandVarArgs(atypeFactory, type, tree.getArguments());
         List<AnnotatedTypeMirror> arguments =
-                AnnotatedTypes.getAnnotatedTypes(atypeFactory, requiredArgs, tree.getArguments());
+                AnnotatedTypes.getAnnotatedTypes(atypeFactory, parameters, tree.getArguments());
 
         Map<AnnotationMirror, Set<? extends AnnotationMirror>> matchingMapping =
-                collector.visit(arguments, requiredArgs);
+                collector.visit(arguments, parameters);
 
         // for super() and this() method calls, getReceiverType(tree) does not return the correct
         // type. So, just skip those.  This is consistent with skipping receivers of constructors

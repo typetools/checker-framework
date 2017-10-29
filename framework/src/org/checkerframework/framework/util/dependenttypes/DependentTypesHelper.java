@@ -127,7 +127,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Viewpoint adapts the dependent type annotations on the bounds to the use of the type.
+     * Viewpoint-adapts the dependent type annotations on the bounds to the use of the type.
      *
      * @param classDecl class or interface declaration whose type variables should be viewpoint
      *     adapted
@@ -145,7 +145,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Viewpoint adapts the dependent type annotations in the methodDeclType based on the
+     * Viewpoint-adapts the dependent type annotations in the methodDeclType based on the
      * methodInvocationTree.
      *
      * @param methodInvocationTree use of the method
@@ -159,7 +159,7 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Viewpoint adapts the dependent type annotations in the constructorType based on the
+     * Viewpoint-adapts the dependent type annotations in the constructorType based on the
      * newClassTree.
      *
      * @param newClassTree invocation of the constructor

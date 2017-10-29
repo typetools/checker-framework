@@ -6,7 +6,6 @@
  * This class has auxiliar methods to compile a class and return its classfile. It is used by
  * defaultPersists/Driver and inheritDeclAnnoPersist/Driver.
  */
-
 import com.sun.tools.classfile.ClassFile;
 import java.io.BufferedWriter;
 import java.io.File;

@@ -12,7 +12,7 @@ public class Issue759 {
         lowercase3(enumType.getEnumConstants());
     }
 
-    <T extends Enum<T>> void lowercase(final T @Nullable... items) {}
+    <T extends Enum<T>> void lowercase(final T @Nullable ... items) {}
 
     <T extends Enum<T>> void lowercase2(final T @Nullable [] items) {}
 

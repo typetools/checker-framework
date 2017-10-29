@@ -436,7 +436,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             AnnotatedTypeMirror castedInside = castedAsSuper(inside, outsideWcUB);
             return checkAndSubtype(castedInside, outsideWcUB, visited);
         } else { // TODO: IF WE NEED TO COMPARE A WILDCARD TO A CAPTURE OF A WILDCARD WE FAIL IN
-                 // ARE_EQUAL -> DO CAPTURE CONVERSION
+            // ARE_EQUAL -> DO CAPTURE CONVERSION
             return areEqualInHierarchy(inside, outside, currentTop);
         }
     }

@@ -453,7 +453,7 @@ public class FormatterTreeUtil {
                                                             e.getQualifiedName().toString());
                                                 } catch (ClassNotFoundException e1) {
                                                     return null; // the lookup should work for all
-                                                                 // the classes we care about
+                                                    // the classes we care about
                                                 }
                                             }
                                         },

@@ -70,8 +70,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             MethodTree overriderTree,
             AnnotatedTypeMirror.AnnotatedDeclaredType enclosingType,
             AnnotatedTypeMirror.AnnotatedExecutableType overridden,
-            AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType,
-            Void p) {
+            AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType) {
         // Method override validity is checked manually by the type factory during visitation
         return true;
     }

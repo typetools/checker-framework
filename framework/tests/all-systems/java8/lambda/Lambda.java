@@ -1,7 +1,6 @@
 // see also the test for Issue450
 // Test file for lambda syntax
 
-
 interface Supplier<R> {
     R supply();
 }

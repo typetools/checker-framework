@@ -58,6 +58,7 @@ import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
+import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -66,6 +67,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.ContractsUtils.ConditionalPostcondition;
+import org.checkerframework.framework.util.ContractsUtils.Contract;
 import org.checkerframework.framework.util.ContractsUtils.Postcondition;
 import org.checkerframework.framework.util.ContractsUtils.Precondition;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
@@ -971,32 +973,7 @@ public abstract class CFAbstractTransfer<
             MethodInvocationNode n, S store, ExecutableElement methodElement, Tree tree) {
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
         Set<Postcondition> postconditions = contracts.getPostconditions(methodElement);
-
-        FlowExpressionContext flowExprContext = null;
-
-        for (Postcondition p : postconditions) {
-            String expression = p.expression.trim();
-            AnnotationMirror anno = p.annotation;
-
-            if (flowExprContext == null) {
-                flowExprContext =
-                        FlowExpressionContext.buildContextForMethodUse(
-                                n, analysis.checker.getContext());
-            }
-
-            try {
-                FlowExpressions.Receiver r =
-                        FlowExpressionParseUtil.parse(
-                                expression,
-                                flowExprContext,
-                                analysis.atypeFactory.getPath(tree),
-                                false);
-                store.insertValue(r, anno);
-            } catch (FlowExpressionParseException e) {
-                // report errors here
-                analysis.checker.report(e.getResult(), tree);
-            }
-        }
+        processPostconditionsAndConditionalPostconditions(n, tree, store, null, postconditions);
     }
 
     /**
@@ -1012,13 +989,21 @@ public abstract class CFAbstractTransfer<
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
         Set<ConditionalPostcondition> conditionalPostconditions =
                 contracts.getConditionalPostconditions(methodElement);
+        processPostconditionsAndConditionalPostconditions(
+                n, tree, thenStore, elseStore, conditionalPostconditions);
+    }
 
+    private void processPostconditionsAndConditionalPostconditions(
+            MethodInvocationNode n,
+            Tree tree,
+            S thenStore,
+            S elseStore,
+            Set<? extends Contract> postconditions) {
         FlowExpressionContext flowExprContext = null;
 
-        for (ConditionalPostcondition p : conditionalPostconditions) {
+        for (Contract p : postconditions) {
             String expression = p.expression;
             AnnotationMirror anno = p.annotation;
-            boolean result = p.annoResult;
 
             if (flowExprContext == null) {
                 flowExprContext =
@@ -1027,26 +1012,37 @@ public abstract class CFAbstractTransfer<
             }
 
             try {
-                FlowExpressions.Receiver r = null;
-
-                r =
+                FlowExpressions.Receiver r =
                         FlowExpressionParseUtil.parse(
                                 expression,
                                 flowExprContext,
                                 analysis.atypeFactory.getPath(tree),
                                 false);
-                if (result) {
-                    thenStore.insertValue(r, anno);
+                if (p.kind == Contract.Kind.CONDITIONALPOSTCONDTION) {
+                    if (((ConditionalPostcondition) p).annoResult) {
+                        thenStore.insertValue(r, anno);
+                    } else {
+                        elseStore.insertValue(r, anno);
+                    }
                 } else {
-                    elseStore.insertValue(r, anno);
+                    thenStore.insertValue(r, anno);
                 }
             } catch (FlowExpressionParseException e) {
+                Result result;
+                if (e.isFlowParseError()) {
+                    Object[] args = new Object[e.args.length + 1];
+                    args[0] = ElementUtils.getVerboseName(TreeUtils.elementFromUse(n.getTree()));
+                    System.arraycopy(e.args, 0, args, 1, e.args.length);
+                    result = Result.failure("flowexpr.parse.error.postcondition", args);
+                } else {
+                    result = e.getResult();
+                }
+
                 // report errors here
-                analysis.checker.report(e.getResult(), tree);
+                analysis.checker.report(result, tree);
             }
         }
     }
-
     /**
      * A case produces no value, but it may imply some facts about the argument to the switch
      * statement.

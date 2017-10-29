@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class VarargsNullness {
 
-    public void test(@NonNull Object @NonNull... o) {
+    public void test(@NonNull Object @NonNull ... o) {
         for (@NonNull Object p : o) {
             System.out.println(p);
         }
@@ -32,7 +32,7 @@ public class VarargsNullness {
         System.out.println(p);
     }
 
-    public void format2(java.lang.String a1, java.lang.Object @Nullable... a2) {
+    public void format2(java.lang.String a1, java.lang.Object @Nullable ... a2) {
         // :: error: (dereference.of.nullable)
         int x = a2.length; // warning
         for (@NonNull Object p : a2) // no warning
