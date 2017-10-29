@@ -552,12 +552,11 @@ public class LockAnnotatedTypeFactory
             return mfuPair;
         }
 
-        // If a method's formal return type is annotated with @GuardSatisfied(index),
-        // look for the first instance of @GuardSatisfied(index) in the method definition's receiver
-        // type or
+        // If a method's formal return type is annotated with @GuardSatisfied(index), look for the
+        // first instance of @GuardSatisfied(index) in the method definition's receiver type or
         // formal parameters, retrieve the corresponding type of the actual parameter / receiver at
-        // the call site
-        // (e.g. @GuardedBy("someLock") and replace the return type at the call site with this type.
+        // the call site (e.g. @GuardedBy("someLock") and replace the return type at the call site
+        // with this type.
 
         AnnotatedExecutableType invokedMethod = mfuPair.first;
 
