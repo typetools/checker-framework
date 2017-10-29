@@ -91,8 +91,7 @@ public class LockExpressionIsFinal {
 
     class C2 extends ReentrantLock {
         final C2 field =
-                new C2(); // Infinite loop. This code is not meant to be executed, only type
-        // checked.
+                new C2(); // Infinite loop. The code is not meant to be executed, only type-checked.
         C2 field2;
 
         @Deterministic
@@ -267,8 +266,7 @@ public class LockExpressionIsFinal {
     // Test that @GuardedBy annotations on various tree kinds outside a method are visited
 
     // Test that @GuardedBy annotations on method return types are visited. No need to test method
-    // receivers and parameters
-    // as they are covered by tests above that visit VariableTree.
+    // receivers and parameters as they are covered by tests above that visit VariableTree.
 
     final Object finalField = new Object();
     Object nonFinalField = new Object();
@@ -313,13 +311,11 @@ public class LockExpressionIsFinal {
         // :: error: (lock.not.held)
         m.field = new Object();
         // Ignore this error: it is expected that an error will be issued for dereferencing 'm' in
-        // order to take the 'm.finalLock' lock.
-        // Typically, the Lock Checker does not support an object being guarded by one of its
-        // fields, but this is sometimes done in user code
-        // with a ReentrantLock field guarding its containing object. This unfortunately makes it a
-        // bit difficult for users since they have
-        // to add a @SuppressWarnings for this call while still making sure that warnings for other
-        // dereferences are not suppressed.
+        // order to take the 'm.finalLock' lock.  Typically, the Lock Checker does not support an
+        // object being guarded by one of its fields, but this is sometimes done in user code with a
+        // ReentrantLock field guarding its containing object. This unfortunately makes it a bit
+        // difficult for users since they have to add a @SuppressWarnings for this call while still
+        // making sure that warnings for other dereferences are not suppressed.
         // :: error: (lock.not.held)
         m.finalLock.lock();
         m.field = new Object();

@@ -127,8 +127,7 @@ class ChapterExamples {
     void testMultipleSideEffectAnnotations() {}
 
     void guardedByItselfOnReceiver(@GuardedBy("<self>") ChapterExamples this) {
-        synchronized (this) { // Tests translation of '<self>' to 'this' by the LockVisitor for this
-            // scenario.
+        synchronized (this) { // Tests translation of '<self>' to 'this'
             // myField = new MyClass();
             myField.toString();
             this.myField = new MyClass();
@@ -176,12 +175,10 @@ class ChapterExamples {
         // :: error: (lock.not.held)
         m.field.toString();
         // The following error is due to the fact that you cannot access "this.lock" without first
-        // having acquired "lock".
-        // The right fix in a user scenario would be to not guard "this" with "this.lock". The
-        // current object could instead
-        // be guarded by "<self>" or by some other lock expression that is not one of its fields. We
-        // are keeping this test
-        // case here to make sure this scenario issues a warning.
+        // having acquired "lock".  The right fix in a user scenario would be to not guard "this"
+        // with "this.lock". The current object could instead be guarded by "<self>" or by some
+        // other lock expression that is not one of its fields. We are keeping this test case here
+        // to make sure this scenario issues a warning.
         // :: error: (lock.not.held)
         synchronized (lock) {
             myField = new MyClass();

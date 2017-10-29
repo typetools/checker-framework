@@ -89,8 +89,7 @@ public class SimpleRegex {
         @Regex String s7 = 'r' + "ege("; // error
     }
 
-    //    TODO: Uncomment this once isValidUse works better. See RegexChecker.isValidUse for
-    // details.
+    // TODO: Uncomment this once isValidUse works better. See RegexChecker.isValidUse for details.
     //    class TestAllowedTypes {
     //        @Regex CharSequence cs;
     //        @Regex String s11;

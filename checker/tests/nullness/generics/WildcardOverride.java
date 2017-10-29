@@ -21,9 +21,8 @@ class WildcardOverride implements ToOverride<Object> {
 }
 
 interface ToOverride2<T> {
-    // For nullness this should be typed as @NonNull List<? [ extends @NonNull Object
-    //                                                         super T [ extends @Nullable super
-    // @NonNull ]>
+    // For nullness this should be typed as
+    // @NonNull List<? [ extends @NonNull Object super T [ extends @Nullable super @NonNull ]>
     // :: error: (bound.type.incompatible)
     public abstract int transform(List<@NonNull ? super T> function);
 }

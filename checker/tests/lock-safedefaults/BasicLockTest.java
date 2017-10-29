@@ -37,8 +37,7 @@ public class BasicLockTest {
         // :: error: (lock.not.held)
         myUnannotatedMethod(o1).field = new Object();
         // The second way is less durable because the default for fields is currently @GuardedBy({})
-        // but
-        // could be changed to @GuardedByUnknown.
+        // but could be changed to @GuardedByUnknown.
         // :: error: (assignment.type.incompatible)
         p1 = myUnannotatedMethod(o1);
 

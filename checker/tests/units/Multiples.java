@@ -103,10 +103,9 @@ public class Multiples {
 
         // s * s * mPERs2 = m
         // TODO: fix checker so it is insensitive to order of operations as long as final results'
-        // unit makes sense
-        // currently due to left associativity, and the lack of an s2 annotation
-        // this tries to evaluate (s * s) * mPERs2 which causes the type assignment incompatible
-        // error
+        // unit makes sense.
+        // Currently due to left associativity, and the lack of an s2 annotation, this tries to
+        // evaluate (s * s) * mPERs2 which causes the type assignment incompatible error.
         // :: error: (assignment.type.incompatible)
         @m int distance = s * s * accelm;
         // if we bracket for order of operations, it works fine

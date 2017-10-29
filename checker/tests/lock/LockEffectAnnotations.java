@@ -69,8 +69,7 @@ public class LockEffectAnnotations {
             x3.field =
                     new Object(); // ILLEGAL: even though myUnannotatedEmptyMethod is empty, since
             // myReleaseLocksEmptyMethod() is annotated with @MayReleaseLocks and the Lock Checker
-            // no longer knows
-            // the state of the lock.
+            // no longer knows the state of the lock.
             if (myLock2.isHeldByCurrentThread()) {
                 x3.field = new Object(); // OK: the lock is known to be held
             }
@@ -146,8 +145,7 @@ public class LockEffectAnnotations {
     @GuardedBy("lock") class MyClass3 {}
 
     @GuardedBy({}) class MyClass4 {}
-    // :: error: (class.declaration.guardedby.annotation.invalid) :: error:
-    // (guardsatisfied.location.disallowed)
+    // :: error: (class.declaration.guardedby.annotation.invalid) :: error: (guardsatisfied.location.disallowed)
     @GuardSatisfied class MyClass5 {}
     // :: error: (class.declaration.guardedby.annotation.invalid)
     @GuardedByBottom class MyClass6 {}

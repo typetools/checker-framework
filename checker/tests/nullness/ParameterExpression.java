@@ -46,8 +46,7 @@ public class ParameterExpression {
     }
 
     @EnsuresNonNull("param")
-    // :: error: (flowexpr.parse.error) :: warning:
-    // (contracts.postcondition.expression.parameter.name)
+    // :: error: (flowexpr.parse.error) :: warning: (contracts.postcondition.expression.parameter.name)
     public void m6(Object param) {
         param = new Object();
     }
@@ -57,8 +56,7 @@ public class ParameterExpression {
     @EnsuresNonNull("field")
     // The user can write "#1" if they meant the formal parameter, and "this.field" if they meant
     // the field.
-    // :: error: (contracts.postcondition.not.satisfied) :: warning:
-    // (contracts.postcondition.expression.parameter.name)
+    // :: error: (contracts.postcondition.not.satisfied) :: warning: (contracts.postcondition.expression.parameter.name)
     public void m7(Object field) {
         field = new Object();
     }
@@ -68,8 +66,7 @@ public class ParameterExpression {
     public void m8() {}
 
     @RequiresNonNull("param")
-    // :: error: (flowexpr.parse.error) :: warning:
-    // (contracts.precondition.expression.parameter.name)
+    // :: error: (flowexpr.parse.error) :: warning: (contracts.precondition.expression.parameter.name)
     public void m9(Object param) {}
 
     // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a
@@ -88,8 +85,7 @@ public class ParameterExpression {
     }
 
     @EnsuresNonNullIf(result = true, expression = "param")
-    // :: error: (flowexpr.parse.error) :: warning:
-    // (contracts.conditional.postcondition.expression.parameter.name)
+    // :: error: (flowexpr.parse.error) :: warning: (contracts.conditional.postcondition.expression.parameter.name)
     public boolean m12(Object param) {
         param = new Object();
         return true;

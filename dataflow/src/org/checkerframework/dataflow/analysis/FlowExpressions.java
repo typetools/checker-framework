@@ -683,9 +683,8 @@ public class FlowExpressions {
             VarSymbol vs = (VarSymbol) element;
             VarSymbol vsother = (VarSymbol) other.element;
             // Use TypeAnnotationUtils.unannotatedType(type).toString().equals(...) instead of
-            // Types.isSameType(...)
-            // because Types requires a processing environment, and FlowExpressions is
-            // designed to be independent of processing environment.  See also
+            // Types.isSameType(...)  because Types requires a processing environment, and
+            // FlowExpressions is designed to be independent of processing environment.  See also
             // calls to getType().toString() in FlowExpressions.
             return vsother.name.contentEquals(vs.name)
                     && TypeAnnotationUtils.unannotatedType(vsother.type)

@@ -5,7 +5,7 @@ class WildcardSuper {
 
     void testWithSuper(Cell<? super @NonNull String> cell) {
         // TODO: Address comments.  Since ? is explicitly lower bounded, I have made a judgment that
-        // it should be implicitly upper bounded
+        // it should be implicitly upper bounded.
         // This is valid because the default upper bound is NonNull
         // :: error: (dereference.of.nullable)
         cell.get().toString();
