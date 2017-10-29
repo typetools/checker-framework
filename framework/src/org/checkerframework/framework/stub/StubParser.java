@@ -6,6 +6,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseProblemException;
+import com.github.javaparser.Problem;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.NodeList;
@@ -176,24 +177,38 @@ public class StubParser {
         try {
             parsedStubUnit = JavaParser.parseStubUnit(inputStream);
         } catch (ParseProblemException e) {
-            ErrorReporter.errorAbort(
-                    "StubParser: exception from StubParser.parse for file "
-                            + filename
-                            + "\n"
-                            + "Problem message with problems encountered: "
-                            + e.getMessage());
-            parsedStubUnit = null; // dead code, but needed for definite assignment checks
+            StringBuilder message =
+                    new StringBuilder(
+                            "exception from StubParser.parse for file "
+                                    + filename
+                                    + "; current class: "
+                                    + currentClass
+                                    + ". Encountered problems: ");
+            // Manually build up the message, because e.getMessage() would include a stack trace.
+            for (Problem p : e.getProblems()) {
+                message.append(p.getVerboseMessage());
+                message.append('\n');
+            }
+            stubAlwaysWarn(message.toString());
+            parsedStubUnit = null;
         } catch (Exception e) {
-            ErrorReporter.errorAbort(
-                    "StubParser: exception from StubParser.parse for file " + filename, e);
-            parsedStubUnit = null; // dead code, but needed for definite assignment checks
+            stubAlwaysWarn(
+                    "unexpected exception "
+                            + e.getClass()
+                            + " from StubParser.parse for file "
+                            + filename
+                            + "; current class: "
+                            + currentClass
+                            + ". Encountered problems: "
+                            + e.getMessage());
+            parsedStubUnit = null;
         }
         this.stubUnit = parsedStubUnit;
 
         // getSupportedAnnotations also modifies importedConstants and importedTypes. This should
         // be refactored to be nicer.
         supportedAnnotations = getSupportedAnnotations();
-        if (supportedAnnotations.isEmpty()) {
+        if (parsedStubUnit != null && supportedAnnotations.isEmpty()) {
             stubWarnIfNotFound(
                     String.format(
                             "No supported annotations found! This likely means stub file %s doesn't import them correctly.",
@@ -257,6 +272,10 @@ public class StubParser {
 
     /** @see #supportedAnnotations */
     private Map<String, AnnotationMirror> getSupportedAnnotations() {
+        if (stubUnit == null) {
+            // stubUnit is null if there was a problem parsing the astub file
+            return null;
+        }
         assert !stubUnit.getCompilationUnits().isEmpty();
         CompilationUnit cu = stubUnit.getCompilationUnits().get(0);
 
@@ -360,6 +379,10 @@ public class StubParser {
     public void parse(
             Map<Element, AnnotatedTypeMirror> atypes,
             Map<String, Set<AnnotationMirror>> declAnnos) {
+        if (stubUnit == null) {
+            // stubUnit is null if there was a problem parsing the astub file
+            return;
+        }
         parse(this.stubUnit, atypes, declAnnos);
     }
 
@@ -545,7 +568,7 @@ public class StubParser {
         for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
             if (typeV.getKind() != TypeKind.TYPEVAR) {
                 stubAlwaysWarn(
-                        "Expected an AnnotatedTypeVariable but found type kind "
+                        "expected an AnnotatedTypeVariable but found type kind "
                                 + typeV.getKind()
                                 + ": "
                                 + typeV);
@@ -581,7 +604,7 @@ public class StubParser {
         for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
             if (typeV.getKind() != TypeKind.TYPEVAR) {
                 stubAlwaysWarn(
-                        "Expected an AnnotatedTypeVariable but found type kind "
+                        "expected an AnnotatedTypeVariable but found type kind "
                                 + typeV.getKind()
                                 + ": "
                                 + typeV);
@@ -981,7 +1004,7 @@ public class StubParser {
         if (typeParameters.size() != typeArguments.size()) {
             stubAlwaysWarn(
                     String.format(
-                            "annotateTypeParameters: mismatched sizes:  typeParameters (size %d)=%s;  typeArguments (size %d)=%s;  decl=%s;  elt=%s (%s).  For more details, run with -AstubDebug",
+                            "annotateTypeParameters: mismatched sizes:  typeParameters (size %d)=%s;  typeArguments (size %d)=%s;  decl=%s;  elt=%s (%s).%n  For more details, run with -AstubDebug",
                             typeParameters.size(),
                             typeParameters,
                             typeArguments.size(),
@@ -1572,7 +1595,7 @@ public class StubParser {
         if (expr instanceof ArrayInitializerExpr) {
             if (expected.getKind() != TypeKind.ARRAY) {
                 stubAlwaysWarn(
-                        "StubParser: unhandled annotation attribute type: "
+                        "unhandled annotation attribute type: "
                                 + expr
                                 + " and expected: "
                                 + expected);
