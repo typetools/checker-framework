@@ -217,5 +217,5 @@ To see the exact javac commands that the Checker Framework test framework
 runs, use
   -Demit.test.debug=true
 For example:
-  ant stubfile-tests -Demit.test.debug=true
+  ant nullness-stubfile-tests -Demit.test.debug=true
 This may be helpful during debugging.
