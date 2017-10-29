@@ -50,11 +50,9 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
         OUTER_SCOPE_TV osNaked1 = methodD(os1, os1, os2);
 
         // So for the next failure we correctly infer that for methodD to take both os1 and os2 as
-        // arguments
-        // D must be @H1Top @H2Top OUTER_SCOPE_TV.
-        // However, the UPPER_BOUND of D is <@H1Bottom @H2Bottom OUTER_SCOPE_TV extends @H1Top
-        // @H2Top Object>
-        // notice that our inferred type for D is above this bound.
+        // arguments D must be @H1Top @H2Top OUTER_SCOPE_TV.  However, the UPPER_BOUND of D is
+        // <@H1Bottom @H2Bottom OUTER_SCOPE_TV extends @H1Top @H2Top Object> notice that our
+        // inferred type for D is above this bound.
         //
         // A similar, more useful example in the Nullness type system would be:
         /*

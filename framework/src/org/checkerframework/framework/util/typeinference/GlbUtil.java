@@ -47,10 +47,8 @@ public class GlbUtil {
 
             for (AnnotationMirror top : typeAnnoHierarchies) {
                 // TODO: When all of the typeMirrors are either wildcards or type variables than the
-                // greatest lower bound
-                // TODO: should involve handling the bounds individually rather than using the
-                // effective annotation
-                // TODO: We are doing this for expediency
+                // greatest lower bound should involve handling the bounds individually rather than
+                // using the effective annotation.  We are doing this for expediency.
                 final AnnotationMirror typeAnno = type.getEffectiveAnnotationInHierarchy(top);
                 final AnnotationMirror currentAnno = glbPrimaries.get(top);
                 if (typeAnno != null && currentAnno != null) {

@@ -670,9 +670,9 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 } else {
                     // TODO: in a type system with a single qualifier this check will fail.
                     // ErrorReporter.errorAbort("MultiGraphQualifierHierarchy.addPolyRelations: " +
-                    //        "incorrect top qualifier given in polymorphic qualifier: " +
-                    // polyQualifier +
-                    //        " could not find bottom for: " + polyTop);
+                    //        "incorrect top qualifier given in polymorphic qualifier: "
+                    //
+                    //        + polyQualifier + " could not find bottom for: " + polyTop);
                 }
             }
         }
@@ -756,9 +756,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         }
         if (outset.size() > 1) {
             // outset is created by climbing the supertypes of the left type, which can go higher in
-            // the lattice than needed
-            // findSmallestTypes will remove the unnecessary supertypes of supertypes, retaining
-            // only the least upper bound(s)
+            // the lattice than needed findSmallestTypes will remove the unnecessary supertypes of
+            // supertypes, retaining only the least upper bound(s)
             outset = findSmallestTypes(outset);
 
             // picks the first qualifier that isn't a polymorphic qualifier

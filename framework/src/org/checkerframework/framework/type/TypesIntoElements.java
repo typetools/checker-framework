@@ -346,8 +346,8 @@ public class TypesIntoElements {
 
             for (AnnotationMirror am : type.getAnnotations()) {
                 // TODO: I BELIEVE THIS ISN'T TRUE BECAUSE PARAMETERS MAY HAVE ANNOTATIONS THAT CAME
-                // FROM THE ELEMENT OF THE CLASS
-                // WHICH PREVIOUSLY WAS WRITTEN OUT BY TYPESINTOELEMENT
+                // FROM THE ELEMENT OF THE CLASS WHICH PREVIOUSLY WAS WRITTEN OUT BY
+                // TYPESINTOELEMENT
                 //                if (am instanceof Attribute.TypeCompound) {
                 //                    // If it is a TypeCompound it was already present in source
                 // (right?),
@@ -381,8 +381,8 @@ public class TypesIntoElements {
             res = directAnnotations(type, tapos);
 
             // we sometimes fix-up raw types with wildcards, do not write these into the bytecode as
-            // there are
-            // no corresponding type arguments and therefore no location to actually add them to
+            // there are no corresponding type arguments and therefore no location to actually add
+            // them to
             if (!type.wasRaw()) {
                 int arg = 0;
                 for (AnnotatedTypeMirror ta : type.getTypeArguments()) {
@@ -495,8 +495,7 @@ public class TypesIntoElements {
                 return List.nil();
             }
             // Hack for termination, otherwise we'll visit one type too far (the same recursive
-            // wildcard twice
-            // and generate extra type annos)
+            // wildcard twice and generate extra type annos)
             visitedNodes.put(type, List.nil());
             List<Attribute.TypeCompound> res;
 

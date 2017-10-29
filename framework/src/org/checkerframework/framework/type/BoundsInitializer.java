@@ -293,10 +293,10 @@ public class BoundsInitializer {
             }
         }
 
-        // --------------------------------------------------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------
         // Visit methods that keep track of the path traversed through type variable bounds, and the
         // wildcards/intersections that have been encountered.
-        // --------------------------------------------------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------
 
         @Override
         public Void visit(AnnotatedTypeMirror type) {
@@ -455,7 +455,7 @@ public class BoundsInitializer {
             return type;
         }
 
-        // --------------------------------------------------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------
         //
         public void initializeUpperBound(final AnnotatedTypeVariable typeVar) {
             final AnnotatedTypeMirror upperBound = createAndSetUpperBound(typeVar);

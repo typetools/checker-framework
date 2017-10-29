@@ -806,9 +806,8 @@ public class FlowExpressionParseUtil {
         Pair<String, String> select = parseMemberSelect(expression);
 
         // To proceed past this point, at the minimum the expression must be composed of
-        // packageName.className .
-        // Do not remove the call to matches(), otherwise the dotMatcher groups will not be filled
-        // in.
+        // packageName.className .  Do not remove the call to matches(), otherwise the dotMatcher
+        // groups will not be filled in.
         if (select == null) {
             return null;
         }
@@ -819,12 +818,11 @@ public class FlowExpressionParseUtil {
         PackageSymbol result = null; // the result of this method call
 
         while (true) {
-            // At this point, packageName is one component longer than result,
-            // and that extra component appears in remainingString but not in
-            // remainingStringIfPackageMatched.
-            // In other words, result and remainingStringIfPackageMatched are consistent,
-            // and packageName and remainingString are consistent.
-            // Try to set result to account for the extra component in packageName.
+            // At this point, packageName is one component longer than result, and that extra
+            // component appears in remainingString but not in remainingStringIfPackageMatched.  In
+            // other words, result and remainingStringIfPackageMatched are consistent, and
+            // packageName and remainingString are consistent.  Try to set result to account for the
+            // extra component in packageName.
             PackageSymbol longerResult;
             try {
                 longerResult = resolver.findPackage(packageName, path);

@@ -268,10 +268,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         final List<? extends AnnotatedTypeMirror> type1Args = type1.getTypeArguments();
         final List<? extends AnnotatedTypeMirror> type2Args = type2.getTypeArguments();
 
-        // TODO: IN THE ORIGINAL TYPE_HIERARCHY WE ALWAYS RETURN TRUE IF ONE OF THE LISTS IS EMPTY
-        // TODO: WE SHOULD NEVER GET HERE UNLESS type's declared class and type2's declared class
-        // are equal
-        // TODO: but potentially this would return true if say we compared (Object, List<String>)
+        // TODO: IN THE ORIGINAL TYPE_HIERARCHY WE ALWAYS RETURN TRUE IF ONE OF THE LISTS IS EMPTY.
+        // WE SHOULD NEVER GET HERE UNLESS type's declared class and type2's declared class are
+        // equal but potentially this would return true if say we compared (Object, List<String>).
         if (type1Args.isEmpty() || type2Args.isEmpty()) {
             return true;
         }
@@ -491,7 +490,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     }
 
     // The following methods are because we use WILDCARDS instead of TYPEVARS for capture converted
-    // wildcards
+    // wildcards.
     // TODO: REMOVE THE METHOD BELOW WHEN CAPTURE CONVERSION IS IMPLEMENTED
     /**
      * Since the Checker Framework doesn't engage in capture conversion, and since sometimes type

@@ -298,17 +298,14 @@ public class EqualitiesSolver {
         missingAnnos.removeAll(head.getValue());
 
         // 1. if there are multiple equality constraints in a ConstraintMap then the types better
-        // have
-        // the same underlying type or Javac will complain and we won't be here.  When building
-        // ConstraintMaps
-        // constraints involving AnnotatedTypeMirrors that are exactly equal are combined so there
-        // must be some
-        // difference between two types being merged here.
+        // have the same underlying type or Javac will complain and we won't be here.  When building
+        // ConstraintMaps constraints involving AnnotatedTypeMirrors that are exactly equal are
+        // combined so there must be some difference between two types being merged here.
+        //
         // 2. Otherwise, we might have the same underlying type but conflicting annotations, then we
-        // take
-        // the first set of annotations and show an error for the argument/return type that caused
-        // the second
-        // differing constraint
+        // take the first set of annotations and show an error for the argument/return type that
+        // caused the second differing constraint.
+        //
         // 3. Finally, we expect the following types to be involved in equality constraints:
         // AnnotatedDeclaredTypes, AnnotatedTypeVariables, and AnnotatedArrayTypes
         while (entryIterator.hasNext() && !missingAnnos.isEmpty()) {
@@ -392,7 +389,7 @@ public class EqualitiesSolver {
         // We did not have enough information to infer an annotation in all hierarchies for one
         // concrete type.
         // However, we have a "partial solution", one in which we know the type in some but not all
-        // qualifier hierarchies
+        // qualifier hierarchies.
         // Update our set of constraints with this information
         dirty |= updateTargetsWithPartiallyInferredType(equalities, constraintMap, typeFactory);
         inferred = findEqualTarget(equalities, tops);

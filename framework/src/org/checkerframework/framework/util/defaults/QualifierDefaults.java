@@ -130,10 +130,8 @@ public class QualifierDefaults {
 
     /** Standard unchecked default locations that should be top */
     // Fields are defaulted to top so that warnings are issued at field reads, which we believe are
-    // more common
-    // than field writes. Future work is to specify different defaults for field reads and field
-    // writes.
-    // (When a field is written to, its type should be bottom.)
+    // more common than field writes. Future work is to specify different defaults for field reads
+    // and field writes.  (When a field is written to, its type should be bottom.)
     public static final TypeUseLocation[] standardUncheckedDefaultsTop = {
         TypeUseLocation.RETURN, TypeUseLocation.FIELD, TypeUseLocation.UPPER_BOUND
     };
@@ -414,10 +412,9 @@ public class QualifierDefaults {
                     }
                     if (prev != null && prev.getKind() == Tree.Kind.MODIFIERS) {
                         // Annotations are modifiers. We do not want to apply the local variable
-                        // default to
-                        // annotations. Without this, test fenum/TestSwitch failed, because the
-                        // default for
-                        // an argument became incompatible with the declared type.
+                        // default to annotations. Without this, test fenum/TestSwitch failed,
+                        // because the default for an argument became incompatible with the declared
+                        // type.
                         break;
                     }
                     return TreeUtils.elementFromDeclaration((VariableTree) t);

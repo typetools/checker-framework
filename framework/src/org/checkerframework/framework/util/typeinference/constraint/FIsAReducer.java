@@ -232,8 +232,7 @@ public class FIsAReducer implements AFReducer {
                 AnnotatedDeclaredType argument,
                 Set<AFConstraint> constraints) {
             // we may be able to eliminate this case, since I believe the corresponding constraint
-            // will just be discarded
-            // as the parameter must be a boxed primitive
+            // will just be discarded as the parameter must be a boxed primitive
             constraints.add(new FIsA(typeFactory.getBoxedType(parameter), argument));
             return null;
         }
@@ -252,9 +251,8 @@ public class FIsAReducer implements AFReducer {
                 AnnotatedTypeVariable argument,
                 Set<AFConstraint> constraints) {
             // if we've reached this point and the two are corresponding type variables, then they
-            // are NOT ones that
-            // may have a type variable we are inferring types for and therefore we can discard this
-            // constraint
+            // are NOT ones that may have a type variable we are inferring types for and therefore
+            // we can discard this constraint
             return null;
         }
 

@@ -608,8 +608,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             final TypeVariable target = typeParam.getUnderlyingType();
             final AnnotatedTypeMirror inferredType = inferredArgs.get(target);
             // for all inferred types Ti:  Ti >> Bi where Bi is upper bound and Ti << Li where Li is
-            // the lower bound
-            // for all uninferred types Tu: Tu >> Bi and Lu >> Tu
+            // the lower bound for all uninferred types Tu: Tu >> Bi and Lu >> Tu
             if (inferredType != null) {
                 assignmentAfs.add(new A2F(inferredType, typeParam.getUpperBound()));
                 assignmentAfs.add(new F2A(typeParam.getLowerBound(), inferredType));

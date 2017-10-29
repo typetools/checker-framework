@@ -157,8 +157,7 @@ public class TypeArgInferenceUtil {
                             methodInvocation.getArguments());
         } else if (assignmentContext instanceof NewArrayTree) {
             // TODO: I left the previous implementation below, it definitely caused infinite loops
-            // if you
-            // TODO: called it from places like the TreeAnnotator
+            // TODO: if you called it from places like the TreeAnnotator.
             res = null;
 
             // FIXME: This may cause infinite loop

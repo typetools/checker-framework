@@ -296,8 +296,7 @@ public class AnnotatedTypes {
         // Basic Algorithm:
         // 1. Find the enclosingClassOfMember of the element
         // 2. Find the base type of enclosingClassOfMember (e.g. type of enclosingClassOfMember as
-        // supertype
-        //      of passed type)
+        //      supertype of passed type)
         // 3. Substitute for type variables if any exist
         TypeElement enclosingClassOfMember = ElementUtils.enclosingClass(member);
         final Map<TypeVariable, AnnotatedTypeMirror> mappings = new HashMap<>();
@@ -567,8 +566,7 @@ public class AnnotatedTypes {
                 AnnotatedTypeMirror typeArg =
                         atypeFactory.getAnnotatedTypeFromTypeTree(targs.get(i));
                 // TODO: the call to getTypeParameterDeclaration shouldn't be necessary - typeVar
-                // already
-                // should be a declaration.
+                // already should be a declaration.
                 typeArguments.put(typeVar.getUnderlyingType(), typeArg);
             }
             return typeArguments;
@@ -687,9 +685,8 @@ public class AnnotatedTypes {
             if (lastArg.getKind() == TypeKind.ARRAY
                     && (getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType) lastArg)
                             // If the array depths don't match, but the component type of the vararg
-                            // is a
-                            // type variable, then that type variable might later be substituted for
-                            // an array.
+                            // is a type variable, then that type variable might later be
+                            // substituted for an array.
                             || varargs.getComponentType().getKind() == TypeKind.TYPEVAR)) {
                 return parameters;
             }

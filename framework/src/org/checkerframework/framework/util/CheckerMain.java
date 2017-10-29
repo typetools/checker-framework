@@ -444,12 +444,10 @@ public class CheckerMain {
 
                     // We would like to include the filename of the argfile instead of its contents.
                     // The problem is that the file will sometimes disappear by the time the user
-                    // can
-                    // look at or run the resulting script. Maven deletes the argfile very shortly
-                    // after it has been handed off to javac, for example. Ideally we would print
-                    // the argfile filename as a comment but the resulting file couldn't then be run
-                    // as
-                    // a script on Unix or Windows.
+                    // can look at or run the resulting script. Maven deletes the argfile very
+                    // shortly after it has been handed off to javac, for example. Ideally we would
+                    // print the argfile filename as a comment but the resulting file couldn't then
+                    // be run as a script on Unix or Windows.
                     if (arg.startsWith("@")) {
                         // Read argfile and include its parameters in the output file.
                         String inputFilename = arg.substring(1);

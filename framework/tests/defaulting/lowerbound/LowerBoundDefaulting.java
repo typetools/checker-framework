@@ -1,7 +1,7 @@
 package defaulting.lowerbound;
 
-// this tests sole purpose is to check that implicit and explicit LOWER_BOUND defaulting work as
-// expected
+// This test's sole purpose is to check that implicit and explicit LOWER_BOUND defaulting work as
+// expected.
 
 import testlib.defaulting.LowerBoundQual.*;
 

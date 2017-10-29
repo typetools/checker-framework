@@ -66,75 +66,62 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
     // TODO: Incorporate feedback from David/Suzanne
     // IMPORTANT_NOTE:
+
     // For MultigraphQualifierHierarchies, we check the subtyping relationship of each annotation
-    // hierarchy individually.
-    // This is done because when comparing a pair of type variables, sometimes you need to traverse
-    // and
-    // compare the bounds of two type variables.  Other times it is incorrect to compare the bounds.
-    //  These
-    // two cases can occur simultaneously when comparing two hierarchies at once.  In this case,
-    // comparing both hierarchies simultaneously will leadd ot an error.  More detail is given
-    // below.
+    // hierarchy individually.  This is done because when comparing a pair of type variables,
+    // sometimes you need to traverse and compare the bounds of two type variables.  Other times it
+    // is incorrect to compare the bounds.  These two cases can occur simultaneously when comparing
+    // two hierarchies at once.  In this case, comparing both hierarchies simultaneously will leadd
+    // ot an error.  More detail is given below.
     //
     // Recall, type variables may or may not have a primary annotation for each individual
     // hierarchy.  When comparing
     // two type variables for a specific hierarchy we have five possible cases:
     //      case 1:  only one of the type variables has a primary annotation
     //      case 2a: both type variables have primary annotations and they are uses of the same type
-    // parameter
+    //               parameter
     //      case 2b: both type variables have primary annotations and they are uses of different
-    // type parameters
+    //               type parameters
     //      case 3a: neither type variable has a primary annotation and they are uses of the same
-    // type parameter
+    //               type parameter
     //      case 3b: neither type variable has a primary annotation and they are uses of different
-    // type parameters
+    //               type parameters
     //
     // Case 1, 2b, and 3b require us to traverse both type variables bounds to ensure that the
-    // subtype's upper bound
-    // is a subtype of the supertype's lower bound. Cases 2a requires only that we check that the
-    // primary annotation on
-    // the subtype is a subtype of the primary annotation on the supertype.  In case 3a, we can just
-    // return true,
-    // since two non-primary-annotated uses of the same type parameter are equivalent.  In this case
-    // it would be an
-    // error to check the bounds because the check would only return true when the bounds are exact
-    // but it should
-    // always return true.
+    // subtype's upper bound is a subtype of the supertype's lower bound. Cases 2a requires only
+    // that we check that the primary annotation on the subtype is a subtype of the primary
+    // annotation on the supertype.  In case 3a, we can just return true, since two
+    // non-primary-annotated uses of the same type parameter are equivalent.  In this case it would
+    // be an error to check the bounds because the check would only return true when the bounds are
+    // exact but it should always return true.
     //
     // A problem occurs when, one hierarchy matches cases 1, 2b, or 3b and the other matches 3a.  In
-    // the first set of
-    // cases we MUST check the type variables' bounds.  In case 3a we MUST NOT check the bounds.
-    // e.g.
+    // the first set of cases we MUST check the type variables' bounds.  In case 3a we MUST NOT
+    // check the bounds.  e.g.
     //
     // Suppose I have a hierarchy with two tops @A1 and @B1.  Let @A0 <: @A1 and @B0 <: @B1.
     //  @A1 T t1;  T t2;
     //  t1 = t2;
     //
     // To typecheck "t1 = t2;" in the hierarchy topped by @A1, we need to descend into the bounds of
-    // t1 and t2 (where
-    // t1's bounds will be overridden by @A1).  However, for hierarchy B we need only recognize that
-    // since neither variable has a primary annotation, the types are equivalent and no traversal is
-    // needed.
-    // If we tried to do these two actions simultaneously, in every visit and isSubtype call, we
-    // would have to
-    // check to see that the @B hierarchy has been handled and ignore those annotations.
+    // t1 and t2 (where t1's bounds will be overridden by @A1).  However, for hierarchy B we need
+    // only recognize that since neither variable has a primary annotation, the types are equivalent
+    // and no traversal is needed.  If we tried to do these two actions simultaneously, in every
+    // visit and isSubtype call, we would have to check to see that the @B hierarchy has been
+    // handled and ignore those annotations.
     //
     // Solutions:
     // We could handle this problem by keeping track of which hierarchies have already been taken
-    // care of.  We could
-    // then check each hierarchy before making comparisons.  But this would lead to complicated
-    // plumbing that would be
-    // hard to understand.
+    // care of.  We could then check each hierarchy before making comparisons.  But this would lead
+    // to complicated plumbing that would be hard to understand.
     // The chosen solution is to only check one hierarchy at a time.  One trade-off to this approach
-    // is that we have
-    // to re-traverse the types for each hierarchy being checked.
+    // is that we have to re-traverse the types for each hierarchy being checked.
     //
     // The field currentTop identifies the hierarchy for which the types are currently being
     // checked.
     // Final note: all annotation comparisons are done via isPrimarySubtype, isBottom, and
-    // isAnnoSubtype
-    // in order to ensure that we first get the annotations in the hierarchy of currentTop before
-    // passing annotations to qualifierHierarchy.
+    // isAnnoSubtype in order to ensure that we first get the annotations in the hierarchy of
+    // currentTop before passing annotations to qualifierHierarchy.
     protected AnnotationMirror currentTop;
 
     public DefaultTypeHierarchy(
@@ -543,11 +530,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
                     supertype.getTypeArguments();
 
             // TODO: IN THE ORIGINAL TYPE_HIERARCHY WE ALWAYS RETURN TRUE IF ONE OF THE LISTS IS
-            // EMPTY
-            // TODO: THIS SEEMS LIKE WE SHOULD ONLY RETURN TRUE HERE IF ignoreRawTypes == TRUE OR IF
-            // BOTH ARE EMPTY
-            // TODO: ARE WE MORE STRICT THAN JAVAC OR DO WE WANT TO FOLLOW JAVAC RAW TYPES
-            // SEMANTICS?
+            // EMPTY.  THIS SEEMS LIKE WE SHOULD ONLY RETURN TRUE HERE IF ignoreRawTypes == TRUE OR
+            // IF BOTH ARE EMPTY.  ARE WE MORE STRICT THAN JAVAC OR DO WE WANT TO FOLLOW JAVAC RAW
+            // TYPES SEMANTICS?
             if (subtypeTypeArgs.isEmpty() || supertypeTypeArgs.isEmpty()) {
                 return true;
             }
@@ -842,9 +827,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             return true;
         }
         // this can occur when passing a primitive to a method on a raw type (see test
-        // checker/tests/nullness/RawAndPrimitive.java)
-        // this can also occur because we don't box primitives when we should and don't capture
-        // convert
+        // checker/tests/nullness/RawAndPrimitive.java).  This can also occur because we don't box
+        // primitives when we should and don't capture convert.
         return isPrimarySubtype(subtype, supertype.getSuperBound());
     }
 
@@ -995,8 +979,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
                 // For example, if the wildcard is ? extends @Nullable Object and the supertype is
                 // @Nullable String, then it is safe to return true. However if the supertype is
                 // @NullableList<@NonNull String> then it's not possible to decide if it is a
-                // subtype of
-                // the wildcard.
+                // subtype of the wildcard.
                 AnnotationMirror subtypeAnno =
                         subtype.getEffectiveAnnotationInHierarchy(currentTop);
                 AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
@@ -1162,8 +1145,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         // if we have a type for enum MyEnum {...}
         // When the supertype is the declaration of java.lang.Enum<E>, MyEnum values become
         // Enum<MyEnum>.  Where really, we would like an Enum<E> with the annotations from
-        // Enum<MyEnum>
-        // are transferred to Enum<E>.  That is, if we have a type:
+        // Enum<MyEnum> are transferred to Enum<E>.  That is, if we have a type:
         // @1 Enum<@2 MyEnum>
         // asSuper should return:
         // @1 Enum<@2 E>

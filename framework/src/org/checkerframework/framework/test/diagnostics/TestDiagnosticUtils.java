@@ -230,7 +230,7 @@ public class TestDiagnosticUtils {
             return new TestDiagnosticLine(
                     filename, errorLine, originalLine, Collections.unmodifiableList(diagnostics));
 
-        } else if (trimmedLine.startsWith("//warning:")) {
+        } else if (trimmedLine.startsWith("// warning:")) {
             // This special diagnostic does not expect a line number nor a file name
             String diagnosticString = trimmedLine.substring(2);
             TestDiagnostic diagnostic = fromJavaFileComment("", 0, diagnosticString);

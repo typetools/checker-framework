@@ -114,8 +114,7 @@ public class DefaultInferredTypesApplier {
             AnnotationMirror previousAnnotation) {
         if (inferredTypeMirror.getKind() == TypeKind.WILDCARD) {
             // Dataflow might infer a wildcard that extends a type variable for types that are
-            // actually
-            // type variables.  Use the type variable instead.
+            // actually type variables.  Use the type variable instead.
             while (inferredTypeMirror.getKind() == TypeKind.WILDCARD) {
                 inferredTypeMirror = ((WildcardType) inferredTypeMirror).getExtendsBound();
             }

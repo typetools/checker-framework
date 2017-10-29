@@ -167,7 +167,7 @@ public class QualifierPolymorphism {
         AnnotationMirror poly = getPolymorphicQualifier(qual);
 
         // System.out.println("poly: " + poly + " pq: " +
-        // PolymorphicQualifier.class.getCanonicalName());
+        //     PolymorphicQualifier.class.getCanonicalName());
         if (poly == null) {
             return null;
         }
@@ -619,11 +619,10 @@ public class QualifierPolymorphism {
 
             } else {
                 // When using the polyCollector we compare the formal parameters to the actual
-                // arguments but, when the formal parameters are uses of method type parameters
-                // then the declared formal parameters may not actually be supertypes of their
-                // arguments
+                // arguments but, when the formal parameters are uses of method type parameters then
+                // the declared formal parameters may not actually be supertypes of their arguments
                 // (though they should be if we substituted them for the method call's type
-                // arguments)
+                // arguments).
                 // For an example of this see framework/tests/all-system/PolyCollectorTypeVars.java
                 return visit(type.getUpperBound(), actualType);
             }
@@ -651,8 +650,7 @@ public class QualifierPolymorphism {
             if (actualType.getKind() != TypeKind.WILDCARD
                     && actualType.getKind() != TypeKind.TYPEVAR) {
                 // currently because the default action of inferTypeArgs is to use a wildcard when
-                // we fail
-                // to infer a type, the actualType might not be a wildcard
+                // we fail to infer a type, the actualType might not be a wildcard
                 return Collections.emptyMap();
             }
 
