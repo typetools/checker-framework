@@ -26,17 +26,17 @@ public class LessThanLen {
 
     public static void m4(int[] shorter) {
         int[] longer = new int[shorter.length * 1];
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @LTLengthOf("longer") int x = shorter.length;
         @LTEqLengthOf("longer") int y = shorter.length;
     }
 
     public static void m5(int[] shorter) {
-        //:: error: (array.length.negative)
+        // :: error: (array.length.negative)
         int[] longer = new int[shorter.length * -1];
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @LTLengthOf("longer") int x = shorter.length;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @LTEqLengthOf("longer") int y = shorter.length;
     }
 

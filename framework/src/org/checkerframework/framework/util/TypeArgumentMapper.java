@@ -168,8 +168,8 @@ public class TypeArgumentMapper {
 
             List<? extends TypeParameterElement> supertypeParams = supertype.getTypeParameters();
 
-            // You can think of the map above as a set of links from SubtypeParameter -> Supertype Parameter
-            // e.g. in Map(Y1 -
+            // You can think of the map above as a set of links from SubtypeParameter -> Supertype
+            // Parameter
             for (TypeParameterElement subtypeParam : subtype.getTypeParameters()) {
                 Set<TypeParameterElement> subtypePath =
                         flattenPath(intermediate.get(subtypeParam), intermediate);

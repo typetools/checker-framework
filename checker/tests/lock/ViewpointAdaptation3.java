@@ -1,5 +1,6 @@
 // Test case for Issue #770
 // https://github.com/typetools/checker-framework/issues/770
+
 import org.checkerframework.checker.lock.qual.GuardedBy;
 
 public class ViewpointAdaptation3 {
@@ -37,12 +38,12 @@ public class ViewpointAdaptation3 {
             final LockExampleSubclass les3 = les2;
             LockExample le1 = new LockExample();
 
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             les1.locked = le1.locked;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             les1.locked = le1.locked2;
 
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             les1.locked = les2.locked;
         }
     }
@@ -62,18 +63,18 @@ public class ViewpointAdaptation3 {
             final Object lock = new Object();
             @GuardedBy("lock") MyClass local = new MyClass();
 
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             local = m;
 
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             local.field = new Object();
 
             synchronized (lock) {
-                //:: error: (lock.not.held)
+                // :: error: (lock.not.held)
                 a.m.field = new Object();
             }
             synchronized (this.lock) {
-                //:: error: (lock.not.held)
+                // :: error: (lock.not.held)
                 a.m.field = new Object();
             }
             synchronized (a.lock) {
@@ -84,18 +85,18 @@ public class ViewpointAdaptation3 {
                 local.field = new Object();
             }
             synchronized (this.lock) {
-                //:: error: (lock.not.held)
+                // :: error: (lock.not.held)
                 local.field = new Object();
             }
             synchronized (a.lock) {
-                //:: error: (lock.not.held)
+                // :: error: (lock.not.held)
                 local.field = new Object();
             }
 
             synchronized (lock) {
-                //:: error: (lock.not.held)
+                // :: error: (lock.not.held)
                 this.m.field = new Object();
-                //:: error: (lock.not.held)
+                // :: error: (lock.not.held)
                 m.field = new Object();
             }
             synchronized (this.lock) {
@@ -103,9 +104,9 @@ public class ViewpointAdaptation3 {
                 m.field = new Object();
             }
             synchronized (a.lock) {
-                //:: error: (lock.not.held)
+                // :: error: (lock.not.held)
                 this.m.field = new Object();
-                //:: error: (lock.not.held)
+                // :: error: (lock.not.held)
                 m.field = new Object();
             }
         }

@@ -6,12 +6,12 @@ import org.checkerframework.checker.nullness.qual.*;
  */
 public class MethodTypeVars {
     void m() {
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         Object a = A.badMethod(null);
         Object b = A.badMethod(new Object());
 
         // TODO: false negative. See #979
-        ////:: error: (type.argument.type.incompatible)
+        //// :: error: (type.argument.type.incompatible)
         A.goodMethod(null);
         A.goodMethod(new Object());
     }
@@ -19,7 +19,7 @@ public class MethodTypeVars {
 
 class A {
     public static <T extends @NonNull Object> T badMethod(T t) {
-        //:: warning: [unchecked] unchecked cast
+        // :: warning: [unchecked] unchecked cast
         return (T) new Object();
     }
 

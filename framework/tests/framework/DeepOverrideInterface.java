@@ -13,7 +13,7 @@ public class DeepOverrideInterface {
     public abstract static class B extends A implements I {}
 
     public static class C extends B {
-        //:: error: (override.return.invalid)
+        // :: error: (override.return.invalid)
         public String interfaceMethod() {
             return "";
         }

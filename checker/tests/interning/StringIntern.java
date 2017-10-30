@@ -36,14 +36,14 @@ public class StringIntern {
         String notInternedStr = new String("foo");
         @Interned String internedStr = notInternedStr.intern();
         internedStr = finalStringInitializedToInterned; // OK
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         internedStr = finalString2; // error
         @Interned Foo internedFoo = finalFooInitializedToInterned; // OK
         if (arg == finalStringStatic1) {} // OK
-        //:: error: (not.interned)
+        // :: error: (not.interned)
         if (arg == finalStringStatic2) {} // error
         if (arg == HasFields.finalStringStatic3) {} // OK
-        //:: error: (not.interned)
+        // :: error: (not.interned)
         if (arg == HasFields.finalStringStatic4) {} // error
     }
 

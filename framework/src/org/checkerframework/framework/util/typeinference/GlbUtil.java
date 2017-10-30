@@ -46,9 +46,9 @@ public class GlbUtil {
             final AnnotatedTypeMirror type = tmEntry.getKey();
 
             for (AnnotationMirror top : typeAnnoHierarchies) {
-                //TODO: When all of the typeMirrors are either wildcards or type variables than the greatest lower bound
-                //TODO: should involve handling the bounds individually rather than using the effective annotation
-                //TODO: We are doing this for expediency
+                // TODO: When all of the typeMirrors are either wildcards or type variables than the
+                // greatest lower bound should involve handling the bounds individually rather than
+                // using the effective annotation.  We are doing this for expediency.
                 final AnnotationMirror typeAnno = type.getEffectiveAnnotationInHierarchy(top);
                 final AnnotationMirror currentAnno = glbPrimaries.get(top);
                 if (typeAnno != null && currentAnno != null) {
@@ -88,7 +88,8 @@ public class GlbUtil {
         AnnotatedTypeMirror glbType = glbTypes.get(0);
         int index = 1;
         while (index < glbTypes.size()) {
-            // avoid using null if possible, since constraints form the lower bound will often have NULL types
+            // avoid using null if possible, since constraints form the lower bound will often have
+            // NULL types
             if (glbType.getKind() != TypeKind.NULL) {
                 glbType = glbTypes.get(index);
             }
@@ -96,7 +97,8 @@ public class GlbUtil {
         }
 
         // if the lowest type is a subtype of all glbTypes then it is the GLB, otherwise
-        // there are two types  in glbTypes that are incomparable and we need to use bottom (AnnotatedNullType)
+        // there are two types  in glbTypes that are incomparable and we need to use bottom
+        // (AnnotatedNullType)
         boolean incomparable = false;
         for (final AnnotatedTypeMirror type : glbTypes) {
             if (!incomparable

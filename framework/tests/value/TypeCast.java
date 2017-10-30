@@ -13,17 +13,17 @@ class TypeCast {
 
         @IntVal({'b'}) char h = (char) a;
         h = (char) b;
-        //:: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe)
         h = (char) c;
-        //:: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe)
         h = (char) d;
         h = (char) f;
         h = (char) g;
 
         @IntVal({98}) int i = (int) b;
-        //:: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe)
         i = (int) c;
-        //:: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe)
         i = (int) d;
         i = (int) e;
         i = (int) f;
@@ -45,12 +45,12 @@ class TypeCast {
 
     void rangeCast(@IntRange(from = 127, to = 128) int a, @IntRange(from = 128, to = 129) int b) {
         @IntRange(from = 0, to = 128)
-        //:: error: (assignment.type.incompatible) :: warning: (cast.unsafe)
+        // :: error: (assignment.type.incompatible) :: warning: (cast.unsafe)
         byte c = (byte) a;
         // (byte) a is @IntRange(from = -128, to = 127) because of casting
 
         @IntRange(from = -128, to = -127)
-        //:: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe)
         byte d = (byte) b;
     }
 }

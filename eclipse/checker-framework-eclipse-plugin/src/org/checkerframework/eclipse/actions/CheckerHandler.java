@@ -69,7 +69,7 @@ public abstract class CheckerHandler extends AbstractHandler {
         return javaElements;
     }
 
-    //TODO: There must be a better way to do this
+    // TODO: There must be a better way to do this
     protected boolean projectsEqual(final IJavaProject project1, final IJavaProject project2) {
         return project1.getPath().equals(project2);
     }

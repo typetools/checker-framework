@@ -1,5 +1,6 @@
 // Testcase for Issue 60
 // https://github.com/kelloggm/checker-framework/issues/60
+
 import org.checkerframework.checker.index.qual.IndexFor;
 
 class Issue60 {

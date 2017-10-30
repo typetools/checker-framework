@@ -9,11 +9,11 @@ public class PublicFieldTest {
     }
 
     void testPublicInference() {
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         expectsSibling2(field2);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         expectsParent(field1);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         expectsParent(field2);
     }
 
@@ -43,7 +43,7 @@ class AnotherClass {
     }
 
     void innerFieldTest() {
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         expectsSibling2(innerField);
     }
 

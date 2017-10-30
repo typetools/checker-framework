@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 class Raw2 {
     private @NonNull Object field;
-    //:: error: (initialization.fields.uninitialized)
+    // :: error: (initialization.fields.uninitialized)
     public Raw2(int i) {
         this.method(this);
     }
@@ -19,9 +19,9 @@ class Raw2 {
 
     private void method(
             @Raw @UnknownInitialization Raw2 this, @Raw @UnknownInitialization Raw2 arg) {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         arg.field.hashCode();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         this.field.hashCode();
     }
 

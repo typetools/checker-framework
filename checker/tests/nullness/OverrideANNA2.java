@@ -22,7 +22,7 @@ class OverrideANNA2 {
         @EnsuresNonNull("f")
         // We cannot ensure that Super.f is non-null since it is
         // shadowed by Sub.f, hence we get an error.
-        //:: error: (contracts.postcondition.override.invalid)
+        // :: error: (contracts.postcondition.override.invalid)
         void setf(@Raw @UnknownInitialization Sub this) {
             f = new Object();
         }

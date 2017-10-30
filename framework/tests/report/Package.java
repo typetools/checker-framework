@@ -3,28 +3,28 @@ import java.util.regex.*;
 // File reporttest.astub contains an annotation on
 // the java.util.regex package.
 
-//:: error: (usage)
+// :: error: (usage)
 class Package extends PatternSyntaxException {
     public Package(String desc, String regex, int index) {
-        //:: error: (usage)
+        // :: error: (usage)
         super(desc, regex, index);
     }
 
     @Override
     @org.checkerframework.dataflow.qual.Pure
     public String getPattern() {
-        //:: error: (usage)
+        // :: error: (usage)
         return super.getPattern();
     }
 
-    //:: error: (usage)
+    // :: error: (usage)
     void m(Pattern p) {
         // Access to a constant.
-        //:: error: (usage)
+        // :: error: (usage)
         int i = Pattern.CANON_EQ;
 
         // Use of inherited method.
-        //:: error: (usage)
+        // :: error: (usage)
         String msg = getMessage();
 
         // No report for use of overridden method -
@@ -34,13 +34,13 @@ class Package extends PatternSyntaxException {
         String pat = this.getPattern();
 
         try {
-            //:: error: (usage)
+            // :: error: (usage)
             p.compile("test(((");
         } catch (Package pe) {
             // We don't look at supertypes of the types we analyze.
             // TODO: Should we?
             System.out.println("OK!");
-            //:: error: (usage)
+            // :: error: (usage)
         } catch (PatternSyntaxException pse) {
             // We do get a report for direct uses.
             System.out.println("Ha!");

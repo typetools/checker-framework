@@ -15,7 +15,7 @@ class Defaulting {
     class TestLocal {
         void m(@H1S1 Object p1, @H1S2 Object p2) {
             Object l1 = p1;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             Object l2 = p2;
         }
     }
@@ -36,11 +36,11 @@ class Defaulting {
     })
     // Type of x is <@H1S2 X extends @H1S1 Object>, these annotations are siblings
     // and should not be in the same bound
-    //:: error: (bound.type.incompatible)
+    // :: error: (bound.type.incompatible)
     class TestUpperBound<X extends Object> {
         void m(X p) {
             @H1S1 Object l1 = p;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @H1S2 Object l2 = p;
             Object l3 = p;
         }
@@ -63,16 +63,16 @@ class Defaulting {
     class TestParameter {
         void m(Object p) {
             @H1S1 Object l1 = p;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @H1S2 Object l2 = p;
             Object l3 = p;
         }
 
         void call() {
             m(new @H1S1 Object());
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             m(new @H1S2 Object());
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             m(new Object());
         }
     }
@@ -95,16 +95,16 @@ class Defaulting {
 
         TestConstructorParameter(Object p) {
             @H1S1 Object l1 = p;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @H1S2 Object l2 = p;
             Object l3 = p;
         }
 
         void call() {
             new TestConstructorParameter(new @H1S1 Object());
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             new TestConstructorParameter(new @H1S2 Object());
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             new TestConstructorParameter(new Object());
         }
     }
@@ -130,18 +130,18 @@ class Defaulting {
 
         void m() {
             @H1S1 Object l1 = res();
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @H1S2 Object l2 = res();
             Object l3 = res();
         }
 
         Object res2() {
-            //:: error: (return.type.incompatible)
+            // :: error: (return.type.incompatible)
             return new @H1S2 Object();
         }
 
         Object res3() {
-            //:: error: (return.type.incompatible)
+            // :: error: (return.type.incompatible)
             return new Object();
         }
     }
@@ -176,9 +176,9 @@ class Defaulting {
             ReceiverDefaulting r = new ReceiverDefaulting();
 
             r2.m();
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             r3.m();
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             r.m();
         }
     }

@@ -13,12 +13,12 @@ class MultiConstructorInit {
         this(true);
     }
 
-    //:: error: (initialization.fields.uninitialized)
+    // :: error: (initialization.fields.uninitialized)
     public MultiConstructorInit(int t) {
         new MultiConstructorInit();
     }
 
-    //:: error: (initialization.fields.uninitialized)
+    // :: error: (initialization.fields.uninitialized)
     public MultiConstructorInit(float t) {}
 
     public static void main(String[] args) {

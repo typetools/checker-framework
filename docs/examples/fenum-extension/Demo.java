@@ -50,18 +50,18 @@ class FenumDemo {
             // ok
         }
 
-        //:: error: (binary.type.incompatible)
+        // :: error: (binary.type.incompatible)
         if (TestStatic.ACONST1 < TestStatic.BCONST2) {}
-        //:: error: (binary.type.incompatible)
+        // :: error: (binary.type.incompatible)
         if (TestStatic.ACONST1 == TestStatic.BCONST2) {}
-        //:: error: (binary.type.incompatible)
+        // :: error: (binary.type.incompatible)
         if (TestStatic.ACONST1 >= TestStatic.CCONST2) {}
 
-        //:: error: (binary.type.incompatible)
+        // :: error: (binary.type.incompatible)
         if (TestStatic.ACONST1 < 5) {}
-        //:: error: (binary.type.incompatible)
+        // :: error: (binary.type.incompatible)
         if (TestStatic.BCONST1 > 5) {}
-        //:: error: (binary.type.incompatible)
+        // :: error: (binary.type.incompatible)
         if (TestStatic.CCONST1 == 5) {}
     }
 }

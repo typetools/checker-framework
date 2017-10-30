@@ -13,7 +13,7 @@ class Switch {
                 break;
             case 2:
                 @IntVal({2}) int w = x;
-                //:: error: (assignment.type.incompatible)
+                // :: error: (assignment.type.incompatible)
                 @IntVal({1}) int z = x;
                 break;
             default:
@@ -31,15 +31,15 @@ class Switch {
             case 2:
             case 3:
                 @IntVal({1, 2, 3}) int w = x;
-                //:: error: (assignment.type.incompatible)
+                // :: error: (assignment.type.incompatible)
                 @IntVal({2, 3}) int z = x;
-                //:: error: (assignment.type.incompatible)
+                // :: error: (assignment.type.incompatible)
                 @IntVal({3}) int z1 = x;
                 break;
             default:
                 @IntVal({4, 5}) int q = x;
 
-                //:: error: (assignment.type.incompatible)
+                // :: error: (assignment.type.incompatible)
                 @IntVal(5) int q2 = x;
                 break;
         }
@@ -54,16 +54,16 @@ class Switch {
             case 2:
             case 3:
                 @IntVal({1, 2, 3}) int w = x;
-                //:: error: (assignment.type.incompatible)
+                // :: error: (assignment.type.incompatible)
                 @IntVal({2, 3}) int z = x;
-                //:: error: (assignment.type.incompatible)
+                // :: error: (assignment.type.incompatible)
                 @IntVal({3}) int z1 = x;
                 break;
             case 4:
             default:
                 @IntVal({4, 5}) int q = x;
 
-                //:: error: (assignment.type.incompatible)
+                // :: error: (assignment.type.incompatible)
                 @IntVal(5) int q2 = x;
                 break;
         }
@@ -83,7 +83,7 @@ class Switch {
                 return;
         }
         @IntVal({1, 2, 3}) int y = x;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntVal(4) int y2 = x;
     }
 
@@ -92,16 +92,16 @@ class Switch {
         switch (y = y + 1) {
             case 1:
                 @IntVal({1}) int a = y;
-                //:: error: (assignment.type.incompatible)
+                // :: error: (assignment.type.incompatible)
                 @IntVal({2}) int b = y;
             case 2:
             case 3:
                 @IntVal({1, 2, 3}) int c = y;
                 break;
             default:
-                //:: error: (assignment.type.incompatible)
+                // :: error: (assignment.type.incompatible)
                 @IntVal({4}) int d = y;
-                //:: error: (assignment.type.incompatible)
+                // :: error: (assignment.type.incompatible)
                 @IntVal({5}) int e = y;
                 @IntVal({4, 5}) int f = y;
                 break;

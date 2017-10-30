@@ -402,7 +402,8 @@ public class FormatterLubGlbChecker extends FormatterChecker {
                         FormatTwoConvCat3)
                 : "GLB of @Format([CHAR_AND_INT,FLOAT]) and @Format([INT,CHAR]) is not @Format([INT,GENERAL])!";
 
-        // Test that the GLB of two ConversionCategory arrays of different sizes is an array of the smallest size of the two:
+        // Test that the GLB of two ConversionCategory arrays of different sizes is an array of the
+        // smallest size of the two:
 
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(FormatGeneralAnno, FormatTwoConvCat1),
@@ -437,8 +438,10 @@ public class FormatterLubGlbChecker extends FormatterChecker {
 
         assert AnnotationUtils.areSame(qh.greatestLowerBound(FORMAT, UNKNOWNFORMAT), FORMAT)
                 : "GLB of @Format(null) and @UnknownFormat is not @Format(null)!";
-        // Computing the GLB of @Format(null) and @Format(null) should never occur in practice. Skipping this case as it causes an expected crash.
-        // Computing the GLB of @Format(null) and @Format with a value should never occur in practice. Skipping this case as it causes an expected crash.
+        // Computing the GLB of @Format(null) and @Format(null) should never occur in practice.
+        // Skipping this case as it causes an expected crash.
+        // Computing the GLB of @Format(null) and @Format with a value should never occur in
+        // practice. Skipping this case as it causes an expected crash.
         assert AnnotationUtils.areSame(qh.greatestLowerBound(FORMAT, INVALIDFORMAT), FORMATBOTTOM)
                 : "GLB of @Format(null) and @InvalidFormat(null) is not @FormatBottom!";
         assert AnnotationUtils.areSame(
@@ -452,7 +455,8 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(FormatUnusedAnno, UNKNOWNFORMAT), FormatUnusedAnno)
                 : "GLB of @Format(UNUSED) and @UnknownFormat is not @Format(UNUSED)!";
-        // Computing the GLB of @Format with a value and @Format(null) should never occur in practice. Skipping this case as it causes an expected crash.
+        // Computing the GLB of @Format with a value and @Format(null) should never occur in
+        // practice. Skipping this case as it causes an expected crash.
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(FormatUnusedAnno, FormatUnusedAnno), FormatUnusedAnno)
                 : "GLB of @Format(UNUSED) and @Format(UNUSED) is not @Format(UNUSED)!";
@@ -831,7 +835,8 @@ public class FormatterLubGlbChecker extends FormatterChecker {
                         qh.leastUpperBound(FormatTwoConvCat1, FormatTwoConvCat2), FormatTwoConvCat4)
                 : "LUB of @Format([CHAR_AND_INT,FLOAT]) and @Format([INT,CHAR]) is not @Format([CHAR_AND_INT,NULL])!";
 
-        // Test that the LUB of two ConversionCategory arrays of different sizes is an array of the largest size of the two:
+        // Test that the LUB of two ConversionCategory arrays of different sizes is an array of the
+        // largest size of the two:
 
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(FormatGeneralAnno, FormatTwoConvCat1), FormatTwoConvCat1)
@@ -864,8 +869,10 @@ public class FormatterLubGlbChecker extends FormatterChecker {
 
         assert AnnotationUtils.areSame(qh.leastUpperBound(FORMAT, UNKNOWNFORMAT), UNKNOWNFORMAT)
                 : "LUB of @Format(null) and @UnknownFormat is not @UnknownFormat!";
-        // Computing the LUB of @Format(null) and @Format(null) should never occur in practice. Skipping this case as it causes an expected crash.
-        // Computing the LUB of @Format(null) and @Format with a value should never occur in practice. Skipping this case as it causes an expected crash.
+        // Computing the LUB of @Format(null) and @Format(null) should never occur in practice.
+        // Skipping this case as it causes an expected crash.
+        // Computing the LUB of @Format(null) and @Format with a value should never occur in
+        // practice. Skipping this case as it causes an expected crash.
         assert AnnotationUtils.areSame(qh.leastUpperBound(FORMAT, INVALIDFORMAT), UNKNOWNFORMAT)
                 : "LUB of @Format(null) and @InvalidFormat(null) is not @UnknownFormat!";
         assert AnnotationUtils.areSame(
@@ -879,7 +886,8 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(FormatUnusedAnno, UNKNOWNFORMAT), UNKNOWNFORMAT)
                 : "LUB of @Format(UNUSED) and @UnknownFormat is not @UnknownFormat!";
-        // Computing the LUB of @Format with a value and @Format(null) should never occur in practice. Skipping this case as it causes an expected crash.
+        // Computing the LUB of @Format with a value and @Format(null) should never occur in
+        // practice. Skipping this case as it causes an expected crash.
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(FormatUnusedAnno, FormatUnusedAnno), FormatUnusedAnno)
                 : "LUB of @Format(UNUSED) and @Format(UNUSED) is not @Format(UNUSED)!";

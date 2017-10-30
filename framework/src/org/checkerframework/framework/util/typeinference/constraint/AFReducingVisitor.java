@@ -108,12 +108,13 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
                 + "\n]";
     }
 
-    //------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
     // Arrays as arguments
-    // From the JLS
-    //    If F = U[], where the type U involves Tj, then if A is an array type V[], or a type variable with an
-    //    upper bound that is an array type V[], where V is a reference type, this algorithm is applied recursively
-    //    to the constraint V << U or U << V (depending on the constraint type).
+    // From the JLS:
+    //    If F = U[], where the type U involves Tj, then if A is an array type V[], or a type
+    //    variable with an upper bound that is an array type V[], where V is a reference type, this
+    //    algorithm is applied recursively to the constraint V << U or U << V (depending on the
+    //    constraint type).
 
     @Override
     public Void visitArray_Array(
@@ -149,16 +150,18 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
         return null;
     }
 
-    // despite the above the comment at the beginning of the "array as arguments" section, a type variable cannot
+    // despite the above the comment at the beginning of the "array as arguments" section, a type
+    // variable cannot
     // actually have an array type as its upper bound (e.g. <T extends Integer[]> is not allowed).
     // so the only cases in which we visitArray_Typevar would be cases in which either:
-    //   1) Typevar is a type parameter for which we are inferring an argument, in which case the combination is
-    //   already irreducible and we would not pass it to this class
-    //   2) Typevar is an outer scope type variable, in which case it could NOT reference any of the type parameters
-    //   for which we are inferring arguments and therefore will not lead to any meaningful AFConstraints
+    //   1) Typevar is a type parameter for which we are inferring an argument, in which case the
+    //      combination is already irreducible and we would not pass it to this class.
+    //   2) Typevar is an outer scope type variable, in which case it could NOT reference any of the
+    //      type parameters for which we are inferring arguments and therefore will not lead to any
+    //      meaningful AFConstraints.
     // public void visitArray_Typevar
 
-    //------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
     // Declared as argument
 
     /**
@@ -221,7 +224,8 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
                 }
 
             } else {
-                // if F has the form G<..., Yk-1, U, Yk+1, ...>, where U is a type expression that involves Tj
+                // if F has the form G<..., Yk-1, U, Yk+1, ...>, where U is a type expression that
+                // involves Tj
                 addEqualityConstraint(subTypeArg, superTypeArg, constraints);
             }
         }
@@ -235,8 +239,9 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedIntersectionType supertype,
             Set<AFConstraint> constraints) {
 
-        // Note: AnnotatedIntersectionTypes cannot have a type variable as one of the direct parameters but
-        // a type variable may be the type subtype to an intersection bound <e.g.   <T extends Serializable & Iterable<T>>
+        // Note: AnnotatedIntersectionTypes cannot have a type variable as one of the direct
+        // parameters but a type variable may be the type subtype to an intersection bound <e.g.  <T
+        // extends Serializable & Iterable<T>>
         for (final AnnotatedTypeMirror intersectionBound : supertype.directSuperTypes()) {
             if (intersectionBound instanceof AnnotatedDeclaredType
                     && ((AnnotatedDeclaredType) intersectionBound).getTypeArguments().size() > 0) {
@@ -256,7 +261,8 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
         return null;
     }
 
-    // a primitive supertype provides us no information on the type of any type parameters for that method
+    // a primitive supertype provides us no information on the type of any type parameters for that
+    // method
     @Override
     public Void visitDeclared_Primitive(
             AnnotatedDeclaredType subtype,
@@ -270,8 +276,8 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedDeclaredType subtype,
             AnnotatedTypeVariable supertype,
             Set<AFConstraint> constraints) {
-        // Note: We expect the A2F constraints where F == a targeted type supertype to already be removed
-        // Note: Therefore, supertype should NOT be a target
+        // Note: We expect the A2F constraints where F == a targeted type supertype to already be
+        // removed.  Therefore, supertype should NOT be a target.
         addConstraint(subtype, supertype, constraints);
         return null;
     }
@@ -281,7 +287,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedDeclaredType subtype,
             AnnotatedUnionType supertype,
             Set<AFConstraint> constraints) {
-        return null; //TODO: NOT SUPPORTED AT THE MOMENT
+        return null; // TODO: NOT SUPPORTED AT THE MOMENT
     }
 
     @Override
@@ -293,7 +299,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
         return null;
     }
 
-    //------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
     // Intersection as subtype
     @Override
     public Void visitIntersection_Declared(
@@ -316,7 +322,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedIntersectionType argument,
             AnnotatedIntersectionType parameter,
             Set<AFConstraint> constraints) {
-        return null; //TODO: NOT SUPPORTED AT THE MOMENT
+        return null; // TODO: NOT SUPPORTED AT THE MOMENT
     }
 
     // provides no information as the AnnotatedNullType cannot refer to a type parameter
@@ -328,7 +334,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
         return null;
     }
 
-    //------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
     // Null as argument
 
     /**
@@ -367,8 +373,8 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedNullType subtype,
             AnnotatedTypeVariable supertype,
             Set<AFConstraint> constraints) {
-        // Note: We would expect that parameter is not one of the targets or else it would already be removed
-        // NOTE: Therefore we compare NULL against its bound
+        // Note: We would expect that parameter is not one of the targets or else it would already
+        // be removed. Therefore we compare NULL against its bound.
         addConstraint(subtype, supertype.getLowerBound(), constraints);
         return null;
     }
@@ -397,12 +403,13 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedNullType argument,
             AnnotatedUnionType parameter,
             Set<AFConstraint> constraints) {
-        return null; //TODO: UNIONS ARE NOT YET SUPPORTED
+        return null; // TODO: UNIONS ARE NOT YET SUPPORTED
     }
 
-    // Despite the fact that intersections are not yet supported, this is the right impelementation.  NULL types
-    // only have primary annotations.  Since type parameters cannot be a member of the intersection's bounds
-    //(though they can be component types), we do not need to do anything further
+    // Despite the fact that intersections are not yet supported, this is the right impelementation.
+    // NULL types only have primary annotations.  Since type parameters cannot be a member of the
+    // intersection's bounds (though they can be component types), we do not need to do anything
+    // further.
     @Override
     public Void visitNull_Intersection(
             AnnotatedNullType argument,
@@ -420,7 +427,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
         return null;
     }
 
-    //------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
     // Primitive as argument
 
     @Override
@@ -428,8 +435,8 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedPrimitiveType subtype,
             AnnotatedDeclaredType supertype,
             Set<AFConstraint> constraints) {
-        // we may be able to eliminate this case, since I believe the corresponding constraint will just be discarded
-        // as the parameter must be a boxed primitive
+        // we may be able to eliminate this case, since I believe the corresponding constraint will
+        // just be discarded as the parameter must be a boxed primitive
         addConstraint(typeFactory.getBoxedType(subtype), supertype, constraints);
         return null;
     }
@@ -452,17 +459,17 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
         return null;
     }
 
-    //------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
     // Union as argument
     @Override
     public Void visitUnion_Declared(
             AnnotatedUnionType argument,
             AnnotatedDeclaredType parameter,
             Set<AFConstraint> constraints) {
-        return null; //TODO: UNIONS ARE NOT CURRENTLY SUPPORTED
+        return null; // TODO: UNIONS ARE NOT CURRENTLY SUPPORTED
     }
 
-    //------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
     // typevar as argument
     // If we've reached this point, the typevar is NOT one of the types we are inferring.
 
@@ -480,8 +487,9 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedTypeVariable subtype,
             AnnotatedTypeVariable supertype,
             Set<AFConstraint> constraints) {
-        // if we've reached this point and the two are corresponding type variables, then they are NOT ones that
-        // may have a type variable we are inferring types for and therefore we can discard this constraint
+        // if we've reached this point and the two are corresponding type variables, then they are
+        // NOT ones that may have a type variable we are inferring types for and therefore we can
+        // discard this constraint
         if (!AnnotatedTypes.areCorrespondingTypeVariables(
                 typeFactory.getElementUtils(), subtype, supertype)) {
             addConstraint(subtype.getUpperBound(), supertype.getLowerBound(), constraints);
@@ -517,7 +525,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
         return null;
     }
 
-    //------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
     // wildcard as subtype
     @Override
     public Void visitWildcard_Array(
@@ -573,9 +581,9 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedWildcardType supertype,
             Set<AFConstraint> constraints) {
         TypeArgInferenceUtil.checkForUninferredTypes(subtype);
-        // since wildcards are handled in visitDeclared_Declared this could only occur if two wildcards
-        // were passed to type subtype inference at the top level.  This can only occur because we do not implement
-        // capture conversion
+        // since wildcards are handled in visitDeclared_Declared this could only occur if two
+        // wildcards were passed to type subtype inference at the top level.  This can only occur
+        // because we do not implement capture conversion.
         visitWildcardAsSuperType(subtype.getExtendsBound(), supertype, constraints);
         return null;
     }
@@ -586,8 +594,8 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedWildcardType supertype,
             Set<AFConstraint> constraints) {
         TypeArgInferenceUtil.checkForUninferredTypes(supertype);
-        // this case occur only when supertype should actually be capture converted (which we don't do)
-        // because all other wildcard cases would be handled via Declared_Declared
+        // this case occur only when supertype should actually be capture converted (which we don't
+        // do) because all other wildcard cases would be handled via Declared_Declared
         addConstraint(subtype, supertype.getSuperBound(), constraints);
 
         // if type1 is below the superbound then it is necessarily below the extends bound

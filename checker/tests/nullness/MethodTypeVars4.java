@@ -23,7 +23,7 @@ class MethodTypeVars4 {
     void f2(I i) {
         @NonNull String s = i.doit();
         s = i.doit3();
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         List<@Nullable String> ls = i.doit2();
     }
 }

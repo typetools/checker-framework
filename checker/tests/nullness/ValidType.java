@@ -4,9 +4,9 @@ import org.checkerframework.checker.nullness.qual.*;
 class ValidType {
 
     void t1() {
-        //:: error: (type.invalid)
+        // :: error: (type.invalid)
         @NonNull @Nullable String l1;
-        //:: error: (type.invalid)
+        // :: error: (type.invalid)
         @NonRaw @Raw @UnderInitialization @UnknownInitialization String f;
     }
 }

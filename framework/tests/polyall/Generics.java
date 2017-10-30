@@ -6,7 +6,7 @@ class Generics {
 
         T m(@H1S2 @H2S2 T p) {
             T l = p;
-            //:: error: (return.type.incompatible)
+            // :: error: (return.type.incompatible)
             return l;
         }
 
@@ -19,7 +19,7 @@ class Generics {
 
         T m(@H1S2 T p) {
             T l = p;
-            //:: error: (return.type.incompatible)
+            // :: error: (return.type.incompatible)
             return l;
         }
 
@@ -33,7 +33,7 @@ class Generics {
         // See comments in BaseTypeVisitor about type variable checks.
         // The currently desired behavior is that the annotation on the
         // type variable overrides the bound.
-        //TODO?:: error: (type.invalid)
+        // TODO?:: error: (type.invalid)
         void m(@H1S2 T p) {}
     }
 }

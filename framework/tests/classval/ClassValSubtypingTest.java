@@ -20,25 +20,25 @@ public class ClassValSubtypingTest {
     }
 
     void assignUnknown() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         a = unknown;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         ab = unknown;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         c = unknown;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         cd = unknown;
     }
 
     void assignments() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         a = ab;
         ab = a;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         a = c;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         ab = c;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         ab = cd;
     }
 }
@@ -62,25 +62,25 @@ class ClassBoundSubtypingTest {
     }
 
     void assignUnknown() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         a = unknown;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         ab = unknown;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         c = unknown;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         cd = unknown;
     }
 
     void assignments() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         a = ab;
         ab = a;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         a = c;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         ab = c;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         ab = cd;
     }
 }
@@ -95,19 +95,19 @@ class ClassValClassBoundSubtypingTest {
     @ClassBound({"a", "b"}) Object abBound = null;
 
     void assignments1() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         a = aBound;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         ab = aBound;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         a = abBound;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         ab = abBound;
     }
 
     void assignments2() {
         aBound = a;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         aBound = ab;
 
         abBound = a;

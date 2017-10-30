@@ -61,7 +61,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
     public void resolveChainedTargets() {
         final Map<TypeVariable, InferredValue> inferredTypes = new LinkedHashMap<>(this.size());
 
-        //TODO: we can probably make this a bit more efficient
+        // TODO: we can probably make this a bit more efficient
         boolean grew = true;
         while (grew == true) {
             grew = false;

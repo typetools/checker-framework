@@ -5,7 +5,7 @@ public class SameLenFormalParameter2 {
     void lib(Object @SameLen({"#1", "#2"}) [] valsArg, int @SameLen({"#1", "#2"}) [] modsArg) {}
 
     void client(Object[] myvals, int[] mymods) {
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         lib(myvals, mymods);
     }
 }

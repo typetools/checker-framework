@@ -17,7 +17,7 @@ class Methods {
         }
         @IntVal({'e', 'l', 'o', 'r'}) char g = e.charAt(f);
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntVal({'l'}) char h = e.charAt(i);
 
         @IntVal({'l'}) char j = e.charAt(k);
@@ -40,7 +40,7 @@ class Methods {
     public static void Character() {
         @IntVal({'c'}) char a = Character.toLowerCase('C');
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @BoolVal({false}) boolean b = Character.isWhitespace('\t');
     }
 
@@ -78,7 +78,7 @@ class Methods {
     public static void String() {
 
         @StringVal({"herro"}) String a = "hello".replace('l', 'r');
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @StringVal({"hello"}) String b = "hello".replace('l', 'r');
     }
 }

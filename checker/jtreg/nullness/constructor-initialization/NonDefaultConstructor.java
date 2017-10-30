@@ -1,9 +1,9 @@
-
 /*
  * @test
  * @summary Test that the stub files get invoked
  * @compile/fail/ref=NonDefaultConstructor.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Alint NonDefaultConstructor.java
  */
+
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 class NonDefaultConstructor {

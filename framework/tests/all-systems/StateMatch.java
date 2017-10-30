@@ -1,4 +1,3 @@
-
 @SuppressWarnings("array.access.unsafe.high") // The Index Checker correctly issues a warning.
 public class StateMatch {
     private int num_elts = 0;

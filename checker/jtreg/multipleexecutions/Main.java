@@ -10,6 +10,7 @@
  * Test based on message by Daniil Ovchinnikov:
  * https://groups.google.com/d/msg/checker-framework-dev/FvWmCxB8OpE/Cgp1DsPwnWwJ
  */
+
 import java.io.File;
 import java.util.Arrays;
 import javax.tools.JavaCompiler;

@@ -11,9 +11,9 @@ public class InnerGenerics {
     }
 
     void testInner2() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Odd ListOuter<String> o = new ListOuter<String>();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Odd ListInner<String> i = new ListInner<String>();
     }
 
@@ -23,9 +23,9 @@ public class InnerGenerics {
     }
 
     void testInner4() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         ListOuter<@Odd String> o = new ListOuter<String>();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         ListInner<@Odd String> i = new ListInner<String>();
     }
 

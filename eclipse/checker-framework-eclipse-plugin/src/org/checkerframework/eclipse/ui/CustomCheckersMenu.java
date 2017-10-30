@@ -88,7 +88,8 @@ public class CustomCheckersMenu extends ContributionItem {
 
                                     handlerService.executeCommand(pCmd, null);
 
-                                    // handlerService.executeCommand("checkers.eclipse.runnullness", new Event() );
+                                    // handlerService.executeCommand("checkers.eclipse.runnullness",
+                                    // new Event() );
                                 } catch (Exception e1) {
                                     throw new RuntimeException(e1);
                                 }

@@ -38,7 +38,7 @@ public class Issue556b {
             // call occurs, the static initializers of Child have not yet
             // finished executing and therefore CHILD and OBJ are not
             // necessarily initialized and are not necessarily non-null.
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             super(OBJ);
         }
     }
@@ -57,7 +57,7 @@ public class Issue556b {
             // call occurs, the static initializers of Child have not yet
             // finished executing and therefore CHILD and OBJ are not
             // necessarily initialized and are not necessarily non-null.
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             super(OBJ);
         }
     }

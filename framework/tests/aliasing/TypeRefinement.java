@@ -29,9 +29,9 @@ class TypeRefinement {
 
         String notUnique = unique; // unique loses its refinement.
 
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         isUnique(unique);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         isUnique(notUnique);
     }
 
@@ -43,7 +43,7 @@ class TypeRefinement {
         isUnique(unique);
 
         leaked(unique);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         isUnique(unique);
     }
 
@@ -54,7 +54,7 @@ class TypeRefinement {
         isUnique(unique);
 
         String notUnique = leakedToResult(unique);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         isUnique(unique);
     }
 

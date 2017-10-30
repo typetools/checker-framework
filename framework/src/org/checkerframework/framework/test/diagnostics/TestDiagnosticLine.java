@@ -43,7 +43,7 @@ public class TestDiagnosticLine {
      *     extraneous whitespace.
      */
     public String asSourceString() {
-        return "//:: "
+        return "// :: "
                 + PluginUtil.join(" :: ", TestDiagnosticUtils.diagnosticsToString(diagnostics));
     }
 
