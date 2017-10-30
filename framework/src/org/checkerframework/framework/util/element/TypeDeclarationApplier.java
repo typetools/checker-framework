@@ -110,7 +110,8 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
     /** Adds extends/implements and class annotations to type. Annotates type parameters. */
     @Override
     public void extractAndApply() {
-        // ensures that we check that there only valid target types on this class, there are no "targeted" locations
+        // ensures that we check that there only valid target types on this class, there are no
+        // "targeted" locations
         super.extractAndApply();
 
         // Annotate raw types //TODO: ASK WERNER WHAT THIS MIGHT MEAN?  WHAT ACTUALLY GOES HERE?

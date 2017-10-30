@@ -105,7 +105,8 @@ public class EqualitiesSolver {
         final TargetConstraints targetRecord = constraints.getConstraints(target);
         final Map<TypeVariable, AnnotationMirrorSet> equivalentTargets =
                 targetRecord.equalities.targets;
-        // each target that was equivalent to this one needs to be equivalent in the same hierarchies as the inferred type
+        // each target that was equivalent to this one needs to be equivalent in the same
+        // hierarchies as the inferred type
         for (final Entry<TypeVariable, AnnotationMirrorSet> eqEntry :
                 equivalentTargets.entrySet()) {
             constraints.addTypeEqualities(eqEntry.getKey(), type, eqEntry.getValue());
@@ -115,14 +116,16 @@ public class EqualitiesSolver {
             if (otherTarget != target) {
                 final TargetConstraints record = constraints.getConstraints(otherTarget);
 
-                // each target that was equivalent to this one needs to be equivalent in the same hierarchies as the inferred type
+                // each target that was equivalent to this one needs to be equivalent in the same
+                // hierarchies as the inferred type
                 final AnnotationMirrorSet hierarchies = record.equalities.targets.get(target);
                 if (hierarchies != null) {
                     record.equalities.targets.remove(target);
                     constraints.addTypeEqualities(otherTarget, type, hierarchies);
                 }
 
-                // otherTypes may have AnnotatedTypeVariables of type target, run substitution on these with type
+                // otherTypes may have AnnotatedTypeVariables of type target, run substitution on
+                // these with type
                 Map<AnnotatedTypeMirror, AnnotationMirrorSet> toIterate =
                         new LinkedHashMap<>(record.equalities.types);
                 record.equalities.types.clear();
@@ -139,14 +142,16 @@ public class EqualitiesSolver {
             if (otherTarget != target) {
                 final TargetConstraints record = constraints.getConstraints(otherTarget);
 
-                // each target that was equivalent to this one needs to be equivalent in the same hierarchies as the inferred type
+                // each target that was equivalent to this one needs to be equivalent in the same
+                // hierarchies as the inferred type
                 final AnnotationMirrorSet hierarchies = record.supertypes.targets.get(target);
                 if (hierarchies != null) {
                     record.supertypes.targets.remove(target);
                     constraints.addTypeEqualities(otherTarget, type, hierarchies);
                 }
 
-                // otherTypes may have AnnotatedTypeVariables of type target, run substitution on these with type
+                // otherTypes may have AnnotatedTypeVariables of type target, run substitution on
+                // these with type
                 Map<AnnotatedTypeMirror, AnnotationMirrorSet> toIterate =
                         new LinkedHashMap<>(record.supertypes.types);
                 record.supertypes.types.clear();
@@ -192,7 +197,8 @@ public class EqualitiesSolver {
         final Map<AnnotatedTypeMirror, AnnotationMirrorSet> supertypes =
                 targetRecord.supertypes.types;
 
-        // each type that was equivalent to this one needs to be equivalent in the same hierarchies to the inferred target
+        // each type that was equivalent to this one needs to be equivalent in the same hierarchies
+        // to the inferred target
         for (final Entry<AnnotatedTypeMirror, AnnotationMirrorSet> eqEntry :
                 equivalentTypes.entrySet()) {
             constraints.addTypeEqualities(inferredTarget, eqEntry.getKey(), eqEntry.getValue());
@@ -208,14 +214,16 @@ public class EqualitiesSolver {
             if (otherTarget != target && otherTarget != inferredTarget) {
                 final TargetConstraints record = constraints.getConstraints(otherTarget);
 
-                // each target that was equivalent to this one needs to be equivalent in the same hierarchies as the inferred target
+                // each target that was equivalent to this one needs to be equivalent in the same
+                // hierarchies as the inferred target
                 final AnnotationMirrorSet hierarchies = record.equalities.targets.get(target);
                 if (hierarchies != null) {
                     record.equalities.targets.remove(target);
                     constraints.addTargetEquality(otherTarget, inferredTarget, hierarchies);
                 }
 
-                // otherTypes may have AnnotatedTypeVariables of type target, run substitution on these with type
+                // otherTypes may have AnnotatedTypeVariables of type target, run substitution on
+                // these with type
                 Map<AnnotatedTypeMirror, AnnotationMirrorSet> toIterate =
                         new LinkedHashMap<>(record.equalities.types);
                 record.equalities.types.clear();
@@ -239,7 +247,8 @@ public class EqualitiesSolver {
                     constraints.addTargetSupertype(otherTarget, inferredTarget, hierarchies);
                 }
 
-                // otherTypes may have AnnotatedTypeVariables of type target, run substitution on these with type
+                // otherTypes may have AnnotatedTypeVariables of type target, run substitution on
+                // these with type
                 Map<AnnotatedTypeMirror, AnnotationMirrorSet> toIterate =
                         new LinkedHashMap<>(record.supertypes.types);
                 record.supertypes.types.clear();
@@ -288,14 +297,16 @@ public class EqualitiesSolver {
         AnnotatedTypeMirror mergedType = head.getKey();
         missingAnnos.removeAll(head.getValue());
 
-        //1. if there are multiple equality constraints in a ConstraintMap then the types better have
-        // the same underlying type or Javac will complain and we won't be here.  When building ConstraintMaps
-        // constraints involving AnnotatedTypeMirrors that are exactly equal are combined so there must be some
-        // difference between two types being merged here.
-        //2. Otherwise, we might have the same underlying type but conflicting annotations, then we take
-        // the first set of annotations and show an error for the argument/return type that caused the second
-        // differing constraint
-        //3. Finally, we expect the following types to be involved in equality constraints:
+        // 1. if there are multiple equality constraints in a ConstraintMap then the types better
+        // have the same underlying type or Javac will complain and we won't be here.  When building
+        // ConstraintMaps constraints involving AnnotatedTypeMirrors that are exactly equal are
+        // combined so there must be some difference between two types being merged here.
+        //
+        // 2. Otherwise, we might have the same underlying type but conflicting annotations, then we
+        // take the first set of annotations and show an error for the argument/return type that
+        // caused the second differing constraint.
+        //
+        // 3. Finally, we expect the following types to be involved in equality constraints:
         // AnnotatedDeclaredTypes, AnnotatedTypeVariables, and AnnotatedArrayTypes
         while (entryIterator.hasNext() && !missingAnnos.isEmpty()) {
             final Entry<AnnotatedTypeMirror, AnnotationMirrorSet> current = entryIterator.next();
@@ -349,8 +360,8 @@ public class EqualitiesSolver {
             return new InferredType(mergedType);
         }
 
-        //TODO: we probably can do more with this information than just putting it back into the
-        //TODO: ConstraintMap (which is what's happening here)
+        // TODO: we probably can do more with this information than just putting it back into the
+        // TODO: ConstraintMap (which is what's happening here)
         final AnnotationMirrorSet hierarchies = new AnnotationMirrorSet(tops);
         hierarchies.removeAll(missingAnnos);
         typesToHierarchies.put(mergedType, hierarchies);
@@ -375,8 +386,10 @@ public class EqualitiesSolver {
             return inferred;
         } // else
 
-        // We did not have enough information to infer an annotation in all hierarchies for one concrete type.
-        // However, we have a "partial solution", one in which we know the type in some but not all qualifier hierarchies
+        // We did not have enough information to infer an annotation in all hierarchies for one
+        // concrete type.
+        // However, we have a "partial solution", one in which we know the type in some but not all
+        // qualifier hierarchies.
         // Update our set of constraints with this information
         dirty |= updateTargetsWithPartiallyInferredType(equalities, constraintMap, typeFactory);
         inferred = findEqualTarget(equalities, tops);
@@ -391,7 +404,8 @@ public class EqualitiesSolver {
     }
 
     // If we determined that this target T1 is equal to a type ATM in hierarchies @A,@B,@C
-    // for each of those hierarchies, if a target is equal to T1 in that hierarchy it is also equal to ATM
+    // for each of those hierarchies, if a target is equal to T1 in that hierarchy it is also equal
+    // to ATM
     // e.g.
     //   if : T1 == @A @B @C ATM in only the A,B hierarchies
     //    and T1 == T2 only in @A hierarchy

@@ -14,11 +14,12 @@ class FlowExpressions {
     }
 
     public void method() {
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         getm().field = new Object();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         m.field = new Object();
-        // TODO: fix the Lock Checker code so that a flowexpr.parse.error is issued (due to the guard of "nonexistentfield" on m2)
+        // TODO: fix the Lock Checker code so that a flowexpr.parse.error is issued (due to the
+        // guard of "nonexistentfield" on m2)
         // m2.field = new Object();
         synchronized (m) {
             m.field = new Object();

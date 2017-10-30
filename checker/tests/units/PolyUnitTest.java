@@ -15,7 +15,7 @@ public class PolyUnitTest {
         @s int sec1 = 7 * UnitsTools.s;
         @s int sec2 = triplePolyUnit(sec1);
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @s int sec3 = triplePolyUnit(m1);
     }
 
@@ -30,7 +30,7 @@ public class PolyUnitTest {
         @s int sec1 = 7 * UnitsTools.s;
         @s int sec2 = triplePolyAll(sec1);
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @s int sec3 = triplePolyAll(m1);
     }
 }

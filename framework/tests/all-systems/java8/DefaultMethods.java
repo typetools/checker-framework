@@ -1,4 +1,3 @@
-
 interface DefaultMethods {
 
     // Test that abstract methods are still ignored.

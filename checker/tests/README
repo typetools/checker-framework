@@ -98,13 +98,13 @@ the source code) for org.checkerframework.checker.nullness.NullnessVisitor,
 or by creating the test and observing the failure.
 
 To indicate the expected failure, insert the line
-  //:: error: (<error-message-key>)
+  // :: error: (<error-message-key>)
 directly preceding the expected error line.
 If multiple errors are expected on a single line, duplicate everthing
 except the "//" comment characters, as in
-  //:: error: (<error-message-key1>) :: error: (<error-message-key2>)
+  // :: error: (<error-message-key1>) :: error: (<error-message-key2>)
 If a warning rather than an error is expected, insert the line
-  //:: warning: (<warning-message-key>)
+  // :: warning: (<warning-message-key>)
 If a stub parser warning is expected, insert the line
 //warning: StubParser: <stub parser warning>
 
@@ -113,7 +113,7 @@ So the final test case would be:
 class MyNullnessTest {
   void method() {
     Object nullable = null;
-    //:: error: (dereference.of.nullable)
+    // :: error: (dereference.of.nullable)
     nullable.toString();   // should emit error
   }
 }
@@ -128,15 +128,15 @@ checker-framework/checker/tests/regex/, etc.
 You can indicate an expected warning (as opposed to error) by using
 "warning:" instead of "error:", as in
 
-  //:: warning: (known.nonnull)
+  // :: warning: (known.nonnull)
   assert val != null;
 
 Multiple expected messages can be given on the same line using the
-"//:: A :: B :: C" syntax.  This example expects both an error and
+"// :: A :: B :: C" syntax.  This example expects both an error and
 a warning from the same line of code:
 
   @Regex String s1 = null;
-  //:: error: (assignment.type.incompatible) :: warning: (cast.unsafe)
+  // :: error: (assignment.type.incompatible) :: warning: (cast.unsafe)
   @Regex(3) String s2 = (@Regex(2) String) s;
 
 As a alternative, expected errors can be specified in a separate file
@@ -217,5 +217,5 @@ To see the exact javac commands that the Checker Framework test framework
 runs, use
   -Demit.test.debug=true
 For example:
-  ant stubfile-tests -Demit.test.debug=true
+  ant nullness-stubfile-tests -Demit.test.debug=true
 This may be helpful during debugging.

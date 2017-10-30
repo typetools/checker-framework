@@ -11,4 +11,4 @@ public class ArrayLengthLBC {
         return (new_dates_cast);
     }
 }
-//a comment
+// a comment

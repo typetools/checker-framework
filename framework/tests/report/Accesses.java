@@ -12,51 +12,51 @@ class Accesses {
         }
 
         void implicitRead() {
-            //:: error: (fieldreadwrite)
+            // :: error: (fieldreadwrite)
             Object o = read;
             // A read counts as access
-            //:: error: (fieldreadwrite)
+            // :: error: (fieldreadwrite)
             read = null;
-            //:: error: (fieldreadwrite)
+            // :: error: (fieldreadwrite)
             read.toString();
         }
 
         void implicitWrite() {
             Object o = write;
-            //:: error: (fieldwrite)
+            // :: error: (fieldwrite)
             write = null;
             write.toString();
         }
 
         void implicitMethod() {
-            //:: error: (methodcall)
+            // :: error: (methodcall)
             foo(null);
-            //:: error: (methodcall)
+            // :: error: (methodcall)
             equals(foo(null));
         }
     }
 
     void accessesRead(Demo d) {
-        //:: error: (fieldreadwrite)
+        // :: error: (fieldreadwrite)
         Object o = d.read;
         // A read counts as access
-        //:: error: (fieldreadwrite)
+        // :: error: (fieldreadwrite)
         d.read = null;
-        //:: error: (fieldreadwrite)
+        // :: error: (fieldreadwrite)
         d.read.toString();
     }
 
     void accessesWrite(Demo d) {
         Object o = d.write;
-        //:: error: (fieldwrite)
+        // :: error: (fieldwrite)
         d.write = null;
         d.write.toString();
     }
 
     void accessesMethod(Demo d) {
-        //:: error: (methodcall)
+        // :: error: (methodcall)
         d.foo(null);
-        //:: error: (methodcall)
+        // :: error: (methodcall)
         d.equals(d.foo(null));
     }
 }

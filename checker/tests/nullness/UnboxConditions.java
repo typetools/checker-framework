@@ -5,18 +5,18 @@ public class UnboxConditions {
         Boolean b2 = null;
         Boolean b3 = null;
         Boolean b4 = null;
-        //:: error: (condition.nullable)
+        // :: error: (condition.nullable)
         if (b) {;
         }
-        //:: error: (condition.nullable)
+        // :: error: (condition.nullable)
         b = b1 ? b : b;
-        //:: error: (condition.nullable)
+        // :: error: (condition.nullable)
         while (b2) {;
         }
         do {;
-            //:: error: (condition.nullable)
+            // :: error: (condition.nullable)
         } while (b3);
-        //:: error: (condition.nullable)
+        // :: error: (condition.nullable)
         for (; b4; ) {;
         }
         // legal!

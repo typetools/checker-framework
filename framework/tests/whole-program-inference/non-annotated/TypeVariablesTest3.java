@@ -8,7 +8,7 @@ class Generic<@Sibling1 T extends /*@Sibling1*/ Object> {
     public T tField;
 
     void foo(T param) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         param = sibling2;
     }
 
@@ -17,7 +17,7 @@ class Generic<@Sibling1 T extends /*@Sibling1*/ Object> {
     }
 
     void bar(@Sibling2 T param) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         tField = param;
     }
 }

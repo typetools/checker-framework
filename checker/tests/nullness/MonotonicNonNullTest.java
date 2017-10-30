@@ -1,4 +1,3 @@
-
 import org.checkerframework.checker.nullness.qual.*;
 
 public final class MonotonicNonNullTest {

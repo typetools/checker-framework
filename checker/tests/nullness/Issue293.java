@@ -46,7 +46,7 @@ class Issue293 {
                 s = null;
             }
         } finally {
-            //:: error: argument.type.incompatible
+            // :: error: argument.type.incompatible
             write(s);
         }
     }

@@ -9,14 +9,14 @@ class ForEach {
 
     @H1S2 Object arrayAccessBad1(@H1S1 Object[] constants) {
         Object constant = constants[0];
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return constant;
     }
 
     // Return type defaults to H1Top
     @H2S1 Object arrayAccessBad2(@H1S1 @H2S2 Object[] constants) {
         Object constant = constants[0];
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return constant;
     }
 
@@ -37,7 +37,7 @@ class ForEach {
 
     @H2S2 Object iterateForEachBad(@H2S1 Object[] constants) {
         for (Object constant : constants) {
-            //:: error: (return.type.incompatible)
+            // :: error: (return.type.incompatible)
             return constant;
         }
         return null;
@@ -56,14 +56,14 @@ class ForEach {
 
     <T extends Object> @H1S2 T garrayAccessBad1(@H1S1 T[] constants) {
         T constant = constants[0];
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return constant;
     }
 
     // Return type defaults to H1Top
     <T extends Object> @H2S1 T garrayAccessBad2(@H1S1 @H2S2 T[] constants) {
         T constant = constants[0];
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return constant;
     }
 
@@ -84,7 +84,7 @@ class ForEach {
 
     <T extends Object> @H2S2 T giterateForEachBad(@H2S1 T[] constants) {
         for (T constant : constants) {
-            //:: error: (return.type.incompatible)
+            // :: error: (return.type.incompatible)
             return constant;
         }
         return null;

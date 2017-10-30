@@ -1,4 +1,3 @@
-
 import lib.Lib;
 
 class Issue348 {

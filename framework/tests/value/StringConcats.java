@@ -8,7 +8,7 @@ class Test {
 
         @StringVal("true") String bool = "" + true;
         @StringVal("null") String nullV = "" + null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @BottomVal String bottom = "" + null;
         @StringVal("1") String intL = "" + 1;
         @StringVal("$") String charL = "" + '$';
@@ -32,9 +32,9 @@ class Test {
         s += null;
         s += 0x1a;
         s += 0b11010;
-        //TODO: this should pass
+        // TODO: this should pass
         // compound assignments have not been implemented.
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @StringVal("helloa11.01.020truenull2626") String all = s;
     }
 

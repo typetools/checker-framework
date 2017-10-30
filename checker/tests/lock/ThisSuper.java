@@ -2,6 +2,7 @@
 // https://github.com/typetools/checker-framework/issues/152
 
 // @skip-test
+
 import org.checkerframework.checker.lock.qual.GuardedBy;
 
 public class ThisSuper {
@@ -42,31 +43,31 @@ public class ThisSuper {
             synchronized (super.myLock) {
                 super.locked.toString();
                 super.locked2.toString();
-                //:: error: (contracts.precondition.not.satisfied)
+                // :: error: (contracts.precondition.not.satisfied)
                 locked.toString();
             }
             synchronized (myLock) {
-                //:: error: (contracts.precondition.not.satisfied)
+                // :: error: (contracts.precondition.not.satisfied)
                 super.locked.toString();
-                //:: error: (contracts.precondition.not.satisfied)
+                // :: error: (contracts.precondition.not.satisfied)
                 super.locked2.toString();
                 locked.toString();
             }
 
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             les1.locked = le1.locked;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             les1.locked = le1.locked2;
 
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             les1.locked = les2.locked;
 
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             this.locked = super.locked;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             this.locked = super.locked2;
 
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             m1 = m2;
         }
 
@@ -74,13 +75,13 @@ public class ThisSuper {
         public void accessLock() {
             synchronized (myLock) {
                 this.locked.field = new Object();
-                //:: error: (lock.not.held)
+                // :: error: (lock.not.held)
                 super.locked.field = new Object();
                 System.out.println(
                         this.locked.field
                                 + " "
                                 +
-                                //:: error: (lock.not.held)
+                                // :: error: (lock.not.held)
                                 super.locked.field);
                 System.out.println(
                         "Are locks equal? " + (super.locked == this.locked ? "yes" : "no"));

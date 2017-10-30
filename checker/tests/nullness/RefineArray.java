@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-//TODO: Add as test
+// TODO: Add as test
 class RefineArray {
     public static <T> T[] concat(T @Nullable [] a, T @Nullable [] b) {
         if (a == null) {

@@ -6,7 +6,7 @@ public class ConstructorTest {
 
     void test() {
         @Top int top = (@Top int) 0;
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         new ConstructorTest(top);
     }
 }

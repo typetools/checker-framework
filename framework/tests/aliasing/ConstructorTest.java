@@ -17,7 +17,7 @@ public class ConstructorTest {
         new ConstructorTest(o2, 1);
         ConstructorTest ct = new ConstructorTest(o2, 1);
         @Unique Object o3 = new Object();
-        //::error: (unique.leaked)
+        // ::error: (unique.leaked)
         new ConstructorTest(o3, "someString");
     }
 }

@@ -1,5 +1,6 @@
 // Test case for Issue panacekcz#16:
 // https://github.com/panacekcz/checker-framework/issues/16
+
 import java.util.StringTokenizer;
 
 class StringTokenizerMinLen {

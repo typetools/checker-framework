@@ -17,7 +17,7 @@ public class Overriding {
 
         @ReleasesNoLocks
         void rnlMethod() {
-            //:: error: (method.guarantee.violated)
+            // :: error: (method.guarantee.violated)
             mrlMethod();
             rnlMethod();
             implicitRnlMethod();
@@ -25,7 +25,7 @@ public class Overriding {
         }
 
         void implicitRnlMethod() {
-            //:: error: (method.guarantee.violated)
+            // :: error: (method.guarantee.violated)
             mrlMethod();
             rnlMethod();
             implicitRnlMethod();
@@ -34,11 +34,11 @@ public class Overriding {
 
         @LockingFree
         void lfMethod() {
-            //:: error: (method.guarantee.violated)
+            // :: error: (method.guarantee.violated)
             mrlMethod();
-            //:: error: (method.guarantee.violated)
+            // :: error: (method.guarantee.violated)
             rnlMethod();
-            //:: error: (method.guarantee.violated)
+            // :: error: (method.guarantee.violated)
             implicitRnlMethod();
             lfMethod();
         }
@@ -74,7 +74,7 @@ public class Overriding {
     class SubClass extends SuperClass {
         @Holding({"a", "b"}) // error
         @Override
-        //:: error: (contracts.precondition.override.invalid)
+        // :: error: (contracts.precondition.override.invalid)
         void guardedByOne() {}
 
         @Holding({"a", "b"})
@@ -87,17 +87,17 @@ public class Overriding {
 
         @MayReleaseLocks
         @Override
-        //:: error: (override.sideeffect.invalid)
+        // :: error: (override.sideeffect.invalid)
         void rnlMethod() {}
 
         @MayReleaseLocks
         @Override
-        //:: error: (override.sideeffect.invalid)
+        // :: error: (override.sideeffect.invalid)
         void implicitRnlMethod() {}
 
         @ReleasesNoLocks
         @Override
-        //:: error: (override.sideeffect.invalid)
+        // :: error: (override.sideeffect.invalid)
         void lfMethod() {}
 
         @MayReleaseLocks
@@ -135,7 +135,7 @@ public class Overriding {
     // Test overriding @Holding with JCIP @GuardedBy.
     class SubClassJcip extends SuperClass {
         @net.jcip.annotations.GuardedBy({"a", "b"}) @Override
-        //:: error: (contracts.precondition.override.invalid)
+        // :: error: (contracts.precondition.override.invalid)
         void guardedByOne() {}
 
         @net.jcip.annotations.GuardedBy({"a", "b"}) @Override
@@ -148,7 +148,7 @@ public class Overriding {
     // Test overriding @Holding with Javax @GuardedBy.
     class SubClassJavax extends SuperClass {
         @javax.annotation.concurrent.GuardedBy({"a", "b"}) @Override
-        //:: error: (contracts.precondition.override.invalid)
+        // :: error: (contracts.precondition.override.invalid)
         void guardedByOne() {}
 
         @javax.annotation.concurrent.GuardedBy({"a", "b"}) @Override

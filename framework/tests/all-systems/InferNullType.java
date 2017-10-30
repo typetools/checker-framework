@@ -1,4 +1,5 @@
-// See checker/tests/nullness/InferNullType.java for test that verifies correct Nullness Checker errors
+// See checker/tests/nullness/InferNullType.java for test that verifies correct Nullness Checker
+// errors
 class InferNullType {
 
     <T extends Object> T toInfer(T input) {

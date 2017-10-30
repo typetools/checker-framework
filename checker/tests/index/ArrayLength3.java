@@ -1,5 +1,6 @@
 // Test case for issue #14:
 // https://github.com/kelloggm/checker-framework/issues/14
+
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.common.value.qual.ArrayLen;
 

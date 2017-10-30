@@ -1,4 +1,4 @@
-TwoCheckers.java:21: error: [argument.type.incompatible] incompatible types in argument.
+TwoCheckers.java:28: error: [argument.type.incompatible] incompatible types in argument.
         requiresUntainted(a);
                           ^
   found   : @Tainted String

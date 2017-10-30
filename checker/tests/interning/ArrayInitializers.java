@@ -1,4 +1,3 @@
-
 import org.checkerframework.checker.interning.qual.Interned;
 
 class ArrayInitializers {

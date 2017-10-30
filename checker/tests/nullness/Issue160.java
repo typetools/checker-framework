@@ -1,4 +1,3 @@
-
 public class Issue160 {
     public static void t1() {
         String s = null;
@@ -33,7 +32,7 @@ public class Issue160 {
         } else {
             return;
         }
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         System.out.println(s.toString());
     }
 
@@ -43,7 +42,7 @@ public class Issue160 {
         } else {
             throw new RuntimeException();
         }
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         System.out.println(s.toString());
     }
 
@@ -53,7 +52,7 @@ public class Issue160 {
         } else {
             System.exit(0);
         }
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         System.out.println(s.toString());
     }
 }

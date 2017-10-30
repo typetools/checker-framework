@@ -4,7 +4,7 @@ class GenericsBounds5 {
     class Collection1<E extends @Nullable Object> {
         public void add(E elt) {
             // This call is forbidden, because elt might be null.
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             elt.hashCode();
         }
     }
@@ -28,19 +28,19 @@ class GenericsBounds5 {
         l.add(p);
     }
 
-    //:: error: (assignment.type.incompatible)
+    // :: error: (assignment.type.incompatible)
     Collection1<@Nullable ? extends @Nullable Integer> f = new Collection1<@NonNull Integer>();
 
     void bad(Collection1<@NonNull Integer> nnarg) {
         // These have to be forbidden, because f1 might refer to a
         // collection that has NonNull as type argument.
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         addNull1(nnarg);
 
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         addNull2(nnarg);
 
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         addNull3(nnarg, new Integer(4));
     }
 }

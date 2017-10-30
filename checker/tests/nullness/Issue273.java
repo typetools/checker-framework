@@ -13,7 +13,7 @@ class Issue273 {
         @KeyFor("m0") String k = "key";
         m0.put(k, 1);
 
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         getMap2(m0, m1, k).toString();
     }
 

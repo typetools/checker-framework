@@ -17,7 +17,7 @@ public class Issue752 {
 
     // A package name without a class name is not a valid flow expression string.
     @RequiresNonNull("java.lang")
-    //:: error: (flowexpr.parse.error)
+    // :: error: (flowexpr.parse.error)
     void method1() {}
 
     @RequiresNonNull("java.lang.String.class")
@@ -25,12 +25,12 @@ public class Issue752 {
 
     // A package name without a class name is not a valid flow expression string.
     @RequiresNonNull("a.b.c")
-    //:: error: (flowexpr.parse.error)
+    // :: error: (flowexpr.parse.error)
     void method3() {}
 
     // notaclass does not exist.
     @RequiresNonNull("a.b.c.notaclass")
-    //:: error: (flowexpr.parse.error)
+    // :: error: (flowexpr.parse.error)
     void method4() {}
 
     @RequiresNonNull("a.b.c.Issue752.class")
@@ -44,12 +44,12 @@ public class Issue752 {
 
     // field is an instance field, and Issue752 is a class.
     @RequiresNonNull("a.b.c.Issue752.field")
-    //:: error: (flowexpr.parse.error)
+    // :: error: (flowexpr.parse.error)
     void method8() {}
 
     // field is an instance field, and Issue752 is a class.
     @RequiresNonNull("a.b.c.Issue752.field.field")
-    //:: error: (flowexpr.parse.error)
+    // :: error: (flowexpr.parse.error)
     void method9() {}
 
     @RequiresNonNull("a.b.c.Issue752.staticMethod()")
@@ -60,11 +60,11 @@ public class Issue752 {
 
     // method() is an instance method, and Issue752 is a class.
     @RequiresNonNull("a.b.c.Issue752.method()")
-    //:: error: (flowexpr.parse.error)
+    // :: error: (flowexpr.parse.error)
     void method12() {}
 
     // method() is an instance method, and Issue752 is a class.
     @RequiresNonNull("a.b.c.Issue752.method().field")
-    //:: error: (flowexpr.parse.error)
+    // :: error: (flowexpr.parse.error)
     void method13() {}
 }

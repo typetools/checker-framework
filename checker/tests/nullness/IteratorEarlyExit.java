@@ -11,7 +11,7 @@ public class IteratorEarlyExit {
             local = str;
             break;
         }
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         System.out.println(local.length());
     }
 
@@ -21,7 +21,7 @@ public class IteratorEarlyExit {
         for (String str : array) {
             local = str;
         }
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         System.out.println(local.length());
     }
 
@@ -29,7 +29,7 @@ public class IteratorEarlyExit {
         List<String> array = new ArrayList<String>();
         Object local = new Object();
         for (String str : array) {
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             System.out.println(local.toString());
             // The next iteration might throw a NPE
             local = null;

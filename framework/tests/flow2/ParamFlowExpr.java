@@ -10,7 +10,7 @@ class ParamFlowExpr {
     }
 
     @RequiresQualifier(expression = "#1", qualifier = Odd.class)
-    //:: error: (flowexpr.parameter.not.final)
+    // :: error: (flowexpr.parameter.not.final)
     void t2(String p1) {
         p1 = "";
     }

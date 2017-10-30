@@ -8,18 +8,18 @@ public class FindBugs {
     }
 
     @NonNull MyList<@org.checkerframework.checker.nullness.qual.Nullable Object> getListOfNulls() {
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return null; // error
     }
 
     void test() {
         Object o = getNull();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         o.toString(); // error
 
         MyList<@org.checkerframework.checker.nullness.qual.Nullable Object> l = getListOfNulls();
         l.toString();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         l.get().toString(); // error
     }
 }

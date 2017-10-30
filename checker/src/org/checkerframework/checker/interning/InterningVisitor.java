@@ -135,7 +135,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         // in order to assume this).
 
         // Now suppose the user passes -AcheckClass=A on the command-line.
-        // I is not a subtype or supertype of A, so shouldCheckExpression will not return true for I.
+        // I is not a subtype or supertype of A, so shouldCheckExpression will not return true for
+        // I.
         // But the interning check must be performed, given the argument above.  Therefore if
         // shouldCheckExpression returns true for either the LHS or the RHS, this method proceeds
         // with the interning check.
@@ -168,9 +169,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             rightElt = ((DeclaredType) right.getUnderlyingType()).asElement();
         }
 
-        //TODO: CODE REVIEW
-        //TODO: WOULD IT BE CLEARER TO USE A METHOD usesReferenceEquality(AnnotatedTypeMirror type)
-        //TODO: RATHER THAN leftElt.getAnnotation(UsesObjectEquals.class) != null)
+        // TODO: CODE REVIEW
+        // TODO: WOULD IT BE CLEARER TO USE A METHOD usesReferenceEquality(AnnotatedTypeMirror type)
+        // TODO: RATHER THAN leftElt.getAnnotation(UsesObjectEquals.class) != null)
         // if neither @Interned or @UsesObjectEquals, report error
         if (!(left.hasEffectiveAnnotation(INTERNED)
                 || (leftElt != null && leftElt.getAnnotation(UsesObjectEquals.class) != null))) {
@@ -253,7 +254,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                 checker.report(Result.failure("superclass.notannotated"), node);
             }
         } else {
-            // The class is not annotated with @UsesObjectEquals -> make sure its superclass isn't either.
+            // The class is not annotated with @UsesObjectEquals -> make sure its superclass isn't
+            // either.
             // TODO: is this impossible after the design change making @UsesObjectEquals inherited?
             // This check is left behind in case of a future design change back to non-inherited.
             if (superClass != null
@@ -297,7 +299,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      */
     private boolean isInvocationOfEquals(MethodInvocationTree node) {
         ExecutableElement method = TreeUtils.elementFromUse(node);
-        //TODO: CODE REVIEW NEITHER OF THE TWO
+        // TODO: CODE REVIEW NEITHER OF THE TWO
         return (method.getParameters().size() == 1
                 && method.getReturnType().getKind() == TypeKind.BOOLEAN
                 // method symbols only have simple names
@@ -541,7 +543,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                         if (tree.getKind() == Tree.Kind.CONDITIONAL_OR) {
                             if (sameTree(leftTree, node)) {
                                 // left is "a==b"
-                                // check right, which should be a.equals(b) or b.equals(a) or similar
+                                // check right, which should be a.equals(b) or b.equals(a) or
+                                // similar
                                 return visit(rightTree, p);
                             } else {
                                 return false;
@@ -653,8 +656,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                     public Boolean visitBinary(BinaryTree tree, Void p) {
                         if (tree.getKind() == Tree.Kind.EQUAL_TO) { // a.compareTo(b) == 0
                             ExpressionTree leftTree =
-                                    tree
-                                            .getLeftOperand(); // looking for a.compareTo(b) or b.compareTo(a)
+                                    tree.getLeftOperand(); // looking for a.compareTo(b) or
+                            // b.compareTo(a)
                             ExpressionTree rightTree = tree.getRightOperand(); // looking for 0
 
                             if (rightTree.getKind() != Tree.Kind.INT_LITERAL) {
@@ -670,8 +673,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                             // a == b || a.compareTo(b) == 0
                             ExpressionTree leftTree = tree.getLeftOperand(); // looking for a==b
                             ExpressionTree rightTree =
-                                    tree
-                                            .getRightOperand(); // looking for a.compareTo(b) == 0 or b.compareTo(a) == 0
+                                    tree.getRightOperand(); // looking for a.compareTo(b) == 0
+                            // or b.compareTo(a) == 0
                             if (leftTree != node) {
                                 return false;
                             }

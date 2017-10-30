@@ -214,7 +214,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                 ((AnnotatedTypeVariable) result).setDeclaration(false);
                 return result;
             } else {
-                // ErrorReporter.errorAbort("TypeFromTree.forTypeVariable: did not find source for: " + elt);
+                // ErrorReporter.errorAbort("TypeFromTree.forTypeVariable: did not find source for:
+                // " + elt);
                 return type;
             }
         } else {

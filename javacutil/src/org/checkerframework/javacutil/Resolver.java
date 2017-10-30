@@ -103,13 +103,15 @@ public class Resolver {
         } catch (ClassNotFoundException e) {
             ErrorReporter.errorAbort(
                     "Compiler 'Resolve$AccessError' class could not be retrieved.", e);
-            // Unreachable code - needed so the compiler does not warn about a possibly uninitialized final field.
+            // Unreachable code - needed so the compiler does not warn about a possibly
+            // uninitialized final field.
             throw new AssertionError();
         } catch (NoSuchMethodException e) {
             ErrorReporter.errorAbort(
                     "Compiler 'Resolve$AccessError' class doesn't contain required 'access' method",
                     e);
-            // Unreachable code - needed so the compiler does not warn about a possibly uninitialized final field.
+            // Unreachable code - needed so the compiler does not warn about a possibly
+            // uninitialized final field.
             throw new AssertionError();
         }
     }

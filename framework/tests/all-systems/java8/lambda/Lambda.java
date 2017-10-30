@@ -1,9 +1,5 @@
-
 // see also the test for Issue450
 // Test file for lambda syntax
-
-import java.lang.String;
-import java.lang.Thread;
 
 interface Supplier<R> {
     R supply();

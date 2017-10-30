@@ -8,13 +8,13 @@ public class AnnotationWithFieldTest {
 
     void testAnnotationWithFields() {
         fields = getSiblingWithFields();
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         expectsSiblingWithFields(fields);
     }
 
     void testAnnotationWithEmptyFields() {
         emptyFields = getSiblingWithFieldsEmpty();
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         expectsSiblingWithEmptyFields(emptyFields);
     }
 
@@ -33,7 +33,7 @@ public class AnnotationWithFieldTest {
                     String s) {}
 
     String getSiblingWithFields() {
-        //:: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe)
         return (@SiblingWithFields(
                     value = {"test", "test2"},
                     value2 = "test3"
@@ -43,7 +43,7 @@ public class AnnotationWithFieldTest {
     }
 
     String getSiblingWithFieldsEmpty() {
-        //:: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe)
         return (@SiblingWithFields(
                     value = {},
                     value2 = ""

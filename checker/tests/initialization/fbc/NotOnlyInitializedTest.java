@@ -14,7 +14,7 @@ public class NotOnlyInitializedTest {
     public NotOnlyInitializedTest(char i) {
         // we can store something that is under initialization (like this) in f, but not in g
         f = this;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         g = this;
     }
 
@@ -26,9 +26,9 @@ public class NotOnlyInitializedTest {
 
     static void testDeref2(@UnderInitialization NotOnlyInitializedTest o) {
         // o is not fully iniatlized, so we cannot dereference its fields
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         o.f.toString();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         o.g.toString();
     }
 }

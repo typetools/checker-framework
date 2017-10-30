@@ -11,9 +11,9 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jface.viewers.ISelection;
 
 /** RunCheckerAction is an action handler that determines what */
-//TODO: Rename to RunCheckerHandler
-//TODO: Remove all subclasses and just parameterize RunCheckerAction (perhaps take a list of checkers,
-//TODO: or if no checkers are specified use custom checkers)
+// TODO: Rename to RunCheckerHandler
+// TODO: Remove all subclasses and just parameterize RunCheckerAction (perhaps take a list of
+// TODO: checkers, or if no checkers are specified use custom checkers)
 public abstract class RunCheckerAction extends CheckerHandler {
     private final String checkerName;
     protected boolean usePrefs;

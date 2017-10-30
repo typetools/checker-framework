@@ -20,19 +20,19 @@ interface SupplierRe {
 
 class MetaReturn {
 
-    //:: error: (dereference.of.nullable)
+    // :: error: (dereference.of.nullable)
     ConsumerSupplier t1 = () -> (s) -> s.toString();
     ConsumerSupplier t2 =
             () -> {
                 return (String s) -> {
-                    //:: error: (dereference.of.nullable)
+                    // :: error: (dereference.of.nullable)
                     s.toString();
                 };
             };
 
     SupplierSupplier t3 =
             () -> {
-                //:: error: (return.type.incompatible)
+                // :: error: (return.type.incompatible)
                 return () -> null;
             };
 

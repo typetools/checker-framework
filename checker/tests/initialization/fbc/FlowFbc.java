@@ -9,15 +9,15 @@ public class FlowFbc {
     @NotOnlyInitialized @NonNull String g;
 
     public FlowFbc(String arg) {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         f.toLowerCase();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         g.toLowerCase();
         f = arg;
         g = arg;
         foo();
         f.toLowerCase();
-        //:: error: (method.invocation.invalid)
+        // :: error: (method.invocation.invalid)
         g.toLowerCase();
         f = arg;
     }

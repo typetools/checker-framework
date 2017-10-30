@@ -7,12 +7,12 @@ class MyClass<@Nullable T> {
 
     void testPositive() {
         MyClass<@Nullable String> l = new MyClass<@Nullable String>();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         l.get().toString();
     }
 
     void testInvalidParam() {
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         MyClass<@NonNull String> l;
     }
 }

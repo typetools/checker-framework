@@ -92,13 +92,13 @@ class Arrays {
 
     void test3() {
         @Odd Object o1 = new @Odd Object @Odd [] @Odd [] {};
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Odd Object o2 = new @Odd Object[] @Odd [] {}; // ERROR
 
         @Odd Object @Odd [] o3 = (new @Odd Object[] @Odd [] {})[0];
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Odd Object @Odd [] o4 = (new Object @Odd [][] {})[0]; // ERROR
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Odd Object @Odd [] o5 = (new @Odd Object[][] {})[0]; // ERROR
 
         Object @Odd [] o6 = (new Object[] @Odd [] {})[0];
@@ -120,7 +120,7 @@ class Arrays {
 
         //         //xx:: error: (assignment.type.incompatible)
         //        @Odd String [] arb1 = { null, "m" };
-        //:: error: (array.initializer.type.incompatible)
+        // :: error: (array.initializer.type.incompatible)
         @Odd String[] arb2 = new @Odd String[] {null, "m"};
     }
 }

@@ -10,7 +10,7 @@ class SuperConstructorInit {
 
     public static class B extends SuperConstructorInit {
         String b;
-        //:: error: (initialization.fields.uninitialized)
+        // :: error: (initialization.fields.uninitialized)
         public B() {
             super();
             a.toString();

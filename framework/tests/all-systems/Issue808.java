@@ -1,5 +1,6 @@
 // Test case for Issue 808
 // https://github.com/typetools/checker-framework/issues/808
+
 import java.util.Arrays;
 
 class Issue808 {

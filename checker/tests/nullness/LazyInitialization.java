@@ -16,17 +16,17 @@ public class LazyInitialization {
 
     void testAssignment() {
         lazy = "m";
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         lazy = null; // null
     }
 
     void testLazyBeingNull() {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         nullable.toString(); // error
         nonnull.toString();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         lazy.toString(); // error
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         lazy3.toString(); // error
     }
 
@@ -40,7 +40,7 @@ public class LazyInitialization {
 
         randomMethod();
 
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         nullable.toString(); // error
         nonnull.toString();
         lazy.toString();
@@ -79,15 +79,15 @@ public class LazyInitialization {
         public @MonotonicNonNull Object equality_view2;
 
         public void init_hierarchy_new(PptRelation2 pr1, PptRelation2 pr2, Object eq) {
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             pr1.equality_view2.toString();
 
             pr1.equality_view2 = eq;
             pr1.equality_view2.toString();
 
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             pr2.equality_view2.toString();
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             this.equality_view2.toString();
 
             pr2.equality_view2 = eq;

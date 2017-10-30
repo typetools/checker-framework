@@ -11,17 +11,17 @@ class OverriddenMethodsTestParent {
 class OverriddenMethodsTestChild extends OverriddenMethodsTestParent {
     @Override
     public void foo(Object obj, Object obj2) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Sibling1 Object o = obj;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Sibling2 Object o2 = obj2;
     }
 
     @Override
     public void bar(Object obj) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Sibling1 OverriddenMethodsTestChild child = this;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Sibling2 Object o = obj;
     }
 

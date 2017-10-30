@@ -1,4 +1,3 @@
-import java.lang.SuppressWarnings;
 import org.checkerframework.checker.nullness.qual.*;
 
 class SuppressWarningsTest {

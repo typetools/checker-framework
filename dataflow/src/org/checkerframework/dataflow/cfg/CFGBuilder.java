@@ -4268,7 +4268,7 @@ public class CFGBuilder {
 
                 // if (hasExceptionalPath(exceptionalFinallyLabel)) {  // #293
                 // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
-                // and scan copied 'finallyBlock' for 'finallyLabel'(a successful path). If there
+                // and scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there
                 // is no successful path, it will be removed in later phase.
                 // addLabelForNextNode(exceptionalFinallyLabel);
                 addLabelForNextNode(finallyLabel);
@@ -4290,8 +4290,8 @@ public class CFGBuilder {
                                       new MarkerNode(tree, "end of finally block", env.getTypeUtils()));
                               extendWithExtendedNode(new UnconditionalJump(doneLabel));
                        } else {
-                              // Scan 'finallyBlock' for only 'finallyLabel'(a successful path) because there
-                              // is no path to 'exceptionalFinallyLabel'.
+                              // Scan 'finallyBlock' for only 'finallyLabel' (a successful path)
+                              // because there is no path to 'exceptionalFinallyLabel'.
                               addLabelForNextNode(finallyLabel);
                               scan(finallyBlock, p);
 

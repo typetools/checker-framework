@@ -9,7 +9,7 @@ public class ToArrayNullness {
 
     void listToArrayObject() {
         for (@Nullable Object o : nullableList.toArray()) ;
-        //:: error: (enhancedfor.type.incompatible)
+        // :: error: (enhancedfor.type.incompatible)
         for (@NonNull Object o : nullableList.toArray()) ; // error
 
         for (@Nullable Object o : nonnullList.toArray()) ;
@@ -18,12 +18,12 @@ public class ToArrayNullness {
 
     void listToArrayE() {
         for (@Nullable String o : nullableList.toArray(new @Nullable String[0])) ;
-        //:: error: (enhancedfor.type.incompatible)
+        // :: error: (enhancedfor.type.incompatible)
         for (@NonNull String o : nullableList.toArray(new @Nullable String[0])) ; // error
-        //TODOINVARR:: error: (argument.type.incompatible)
+        // TODOINVARR:: error: (argument.type.incompatible)
         for (@Nullable String o : nullableList.toArray(new @NonNull String[0])) ;
-        //TODOINVARR:: error: (argument.type.incompatible)
-        //:: error: (enhancedfor.type.incompatible)
+        // TODOINVARR:: error: (argument.type.incompatible)
+        // :: error: (enhancedfor.type.incompatible)
         for (@NonNull String o : nullableList.toArray(new @NonNull String[0])) ;
 
         for (@Nullable String o : nonnullList.toArray(new String[0])) ;
@@ -39,7 +39,7 @@ public class ToArrayNullness {
 
     void colToArrayObject() {
         for (@Nullable Object o : nullableCol.toArray()) ;
-        //:: error: (enhancedfor.type.incompatible)
+        // :: error: (enhancedfor.type.incompatible)
         for (@NonNull Object o : nullableCol.toArray()) ; // error
 
         for (@Nullable Object o : nonnullCol.toArray()) ;
@@ -48,12 +48,12 @@ public class ToArrayNullness {
 
     void colToArrayE() {
         for (@Nullable String o : nullableCol.toArray(new @Nullable String[0])) ;
-        //:: error: (enhancedfor.type.incompatible)
+        // :: error: (enhancedfor.type.incompatible)
         for (@NonNull String o : nullableCol.toArray(new @Nullable String[0])) ; // error
-        //TODOINVARR:: error: (argument.type.incompatible)
+        // TODOINVARR:: error: (argument.type.incompatible)
         for (@Nullable String o : nullableCol.toArray(new @NonNull String[0])) ;
-        //TODOINVARR:: error: (argument.type.incompatible)
-        //:: error: (enhancedfor.type.incompatible)
+        // TODOINVARR:: error: (argument.type.incompatible)
+        // :: error: (enhancedfor.type.incompatible)
         for (@NonNull String o : nullableCol.toArray(new @NonNull String[0])) ; // error
 
         for (@Nullable String o : nonnullCol.toArray(new String[0])) ;
@@ -73,26 +73,27 @@ public class ToArrayNullness {
         for (@NonNull String o : nonnullCol.toArray(new String[nonnullCol.size()])) ;
 
         for (@Nullable String o : nonnullCol.toArray(new @Nullable String[] {null})) ;
-        //:: error: (enhancedfor.type.incompatible)
+        // :: error: (enhancedfor.type.incompatible)
         for (@NonNull String o : nonnullCol.toArray(new @Nullable String[] {null})) ; // error
         // Size 1 is too big for an empty array. Complain. TODO: Could allow as result is Nullable.
-        //:: error: (new.array.type.invalid)
+        // :: error: (new.array.type.invalid)
         for (@Nullable String o : nonnullCol.toArray(new String[1])) ;
-        //:: error: (enhancedfor.type.incompatible) :: error: (new.array.type.invalid)
+        // :: error: (enhancedfor.type.incompatible) :: error: (new.array.type.invalid)
         for (@NonNull String o : nonnullCol.toArray(new String[1])) ; // error
         // Array too big -> complain. TODO: Could allow as result is Nullable.
-        //:: error: (new.array.type.invalid)
+        // :: error: (new.array.type.invalid)
         for (@Nullable String o : nonnullCol.toArray(new String[nonnullCol.size() + 1])) ;
         // Array too big -> complain.
-        //:: error: (enhancedfor.type.incompatible) :: error: (new.array.type.invalid)
+        // :: error: (enhancedfor.type.incompatible) :: error: (new.array.type.invalid)
         for (@NonNull String o : nonnullCol.toArray(new String[nonnullCol.size() + 1])) ; // error
 
         // cannot handle the following cases for now
-        // new array not size 0 or .size -> complain about cration. TODO: Could allow as result is Nullable.
-        //:: error: (new.array.type.invalid)
+        // new array not size 0 or .size -> complain about cration. TODO: Could allow as result is
+        // Nullable.
+        // :: error: (new.array.type.invalid)
         for (@Nullable String o : nonnullCol.toArray(new String[nonnullCol.size() - 1])) ;
         // New array not size 0 or .size -> complain about creation.
-        //:: error: (enhancedfor.type.incompatible) :: error: (new.array.type.invalid)
+        // :: error: (enhancedfor.type.incompatible) :: error: (new.array.type.invalid)
         for (@NonNull String o : nonnullCol.toArray(new String[nonnullCol.size() - 1])) ; // error
     }
 }
