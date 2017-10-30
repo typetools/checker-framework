@@ -121,7 +121,8 @@ public class UnitsRelationsTools {
             return null;
         }
 
-        // if the Annotation has a value, then detect and match the string name of the prefix, and return the matching Prefix
+        // if the Annotation has a value, then detect and match the string name of the prefix, and
+        // return the matching Prefix
         String prefixString = annotationValue.getValue().toString();
         for (Prefix prefix : Prefix.values()) {
             if (prefixString.equals(prefix.toString())) {
@@ -217,7 +218,8 @@ public class UnitsRelationsTools {
             return unitsAnnotation;
         } else {
             // the only value is the prefix value in Units Checker
-            // TODO: refine sensitivity of removal for extension units, in case extension Annotations have more than just Prefix in its values.
+            // TODO: refine sensitivity of removal for extension units, in case extension
+            // Annotations have more than just Prefix in its values.
             return AnnotationBuilder.fromName(
                     elements, unitsAnnotation.getAnnotationType().toString());
         }
@@ -240,7 +242,8 @@ public class UnitsRelationsTools {
         // get all of the original Annotations in the Annotated Type
         Set<AnnotationMirror> annos = annoType.getAnnotations();
 
-        // loop through all the Annotations to see if they use Prefix.one, remove Prefix.one if it does
+        // loop through all the Annotations to see if they use Prefix.one, remove Prefix.one if it
+        // does
         for (AnnotationMirror anno : annos) {
             // try to clean the Annotation Mirror of the Prefix
             AnnotationMirror cleanedMirror = removePrefix(elements, anno);

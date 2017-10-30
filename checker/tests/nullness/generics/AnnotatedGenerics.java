@@ -3,7 +3,7 @@ import org.checkerframework.dataflow.qual.*;
 
 class AnnotatedGenerics {
     public static void testNullableTypeVariable() {
-        //:: error: (initialization.fields.uninitialized)
+        // :: error: (initialization.fields.uninitialized)
         class Test<T extends @Nullable Object> {
             T f;
 
@@ -12,7 +12,7 @@ class AnnotatedGenerics {
             }
         }
         Test<Iterable<String>> l = new Test<Iterable<String>>();
-        //:: error: (iterating.over.nullable)
+        // :: error: (iterating.over.nullable)
         for (String s : l.get()) ;
     }
 
@@ -43,7 +43,7 @@ class AnnotatedGenerics {
             MyClass<String> c = new MyClass<String>();
             String c1 = c.next();
             @Nullable String c2 = c.next();
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @NonNull String c3 = c.next();
         }
     }
@@ -58,7 +58,7 @@ class AnnotatedGenerics {
         }
 
         public void compare3(T a1, @Nullable T a2) {
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             a1.compareTo(a2);
         }
     }

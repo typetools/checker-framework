@@ -54,7 +54,7 @@ class ArrayInit {
             @IntRange(from = 1, to = 20) int longLength,
             @BottomVal int bottom) {
         int @ArrayLen({1, 2}) [] a = new int[shortLength];
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         int @ArrayLen({1, 2}) [] b = new int[longLength];
         int @ArrayLenRange(from = 1, to = 20) [] d = new int[longLength];
         int @ArrayLen({0}) [] c = new int[bottom];
@@ -105,20 +105,20 @@ class ArrayInit {
 
     public void subtyping1(int @ArrayLen({1, 5}) [] a) {
         int @ArrayLenRange(from = 1, to = 5) [] b = a;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         int @ArrayLenRange(from = 2, to = 5) [] c = a;
     }
 
     public void subtyping2(int @ArrayLenRange(from = 1, to = 5) [] a) {
         int @ArrayLen({1, 2, 3, 4, 5}) [] b = a;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         int @ArrayLen({1, 5}) [] c = a;
     }
 
     public void subtyping3(int @ArrayLenRange(from = 1, to = 17) [] a) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         int @ArrayLenRange(from = 1, to = 12) [] b = a;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         int @ArrayLenRange(from = 5, to = 18) [] c = a;
         int @ArrayLenRange(from = 0, to = 20) [] d = a;
     }
@@ -170,19 +170,19 @@ class ArrayInit {
     }
 
     // The argument is an arraylen with too many values.
-    //:: warning: (too.many.values.given)
+    // :: warning: (too.many.values.given)
     public void coerce(int @ArrayLen({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 36}) [] a) {
         int @ArrayLenRange(from = 1, to = 36) [] b = a;
         if (a.length < 15) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             int @ArrayLen({1, 2, 3, 4, 5, 6, 7, 8, 9, 10}) [] c = a;
         }
     }
 
     public void warnings() {
-        //:: warning: (negative.arraylen)
+        // :: warning: (negative.arraylen)
         int @ArrayLenRange(from = -1, to = 5) [] a;
-        //:: error: (from.greater.than.to)
+        // :: error: (from.greater.than.to)
         int @ArrayLenRange(from = 10, to = 3) [] b;
     }
 }

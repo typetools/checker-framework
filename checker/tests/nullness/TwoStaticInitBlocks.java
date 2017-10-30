@@ -1,6 +1,7 @@
 import java.util.regex.*;
 
-// this is a test-case for initialization that covers multiple initializer blocks, field initializers and a few other things
+// this is a test-case for initialization that covers multiple initializer blocks, field
+// initializers and a few other things
 class TwoStaticInitBlocks {
 
     String f2;
@@ -19,7 +20,7 @@ class TwoStaticInitBlocks {
     {
         ws_regexp = "hello";
         t.toString();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         s.toString();
     }
 }

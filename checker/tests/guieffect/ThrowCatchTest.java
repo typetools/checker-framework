@@ -6,10 +6,10 @@ import org.checkerframework.checker.guieffect.qual.UI;
 class ThrowCatchTest {
     // Default type of List's type parameter is below @UI so these
     // fields are type.argument.incompatible
-    //:: error: (type.argument.type.incompatible)
+    // :: error: (type.argument.type.incompatible)
     List<? extends @UI Object> ooo;
 
-    //:: error: (type.argument.type.incompatible) :: error: (type.invalid)
+    // :: error: (type.argument.type.incompatible) :: error: (type.invalid)
     List<? extends @UI Inner> iii;
 
     class Inner {}
@@ -18,15 +18,15 @@ class ThrowCatchTest {
     // Type var test
     <E extends @UI PolyUIException> void throwTypeVarUI1(E ex1, @UI E ex2) throws PolyUIException {
         if (flag) {
-            //:: error: (throw.type.invalid)
+            // :: error: (throw.type.invalid)
             throw ex1;
         }
-        //:: error: (throw.type.invalid)
+        // :: error: (throw.type.invalid)
         throw ex2;
     }
 
     <@UI E extends @UI PolyUIException> void throwTypeVarUI2(E ex1) throws PolyUIException {
-        //:: error: (throw.type.invalid)
+        // :: error: (throw.type.invalid)
         throw ex1;
     }
 
@@ -49,7 +49,7 @@ class ThrowCatchTest {
     <@AlwaysSafe E extends @UI PolyUIException> void throwTypeVarMixed(E ex1, @AlwaysSafe E ex2)
             throws PolyUIException {
         if (flag) {
-            //:: error: (throw.type.invalid)
+            // :: error: (throw.type.invalid)
             throw ex1;
         }
         throw ex2;
@@ -57,13 +57,14 @@ class ThrowCatchTest {
 
     // Wildcards
     void throwWildcard(
-            //:: error: (type.argument.type.incompatible)
+            // :: error: (type.argument.type.incompatible)
             List<? extends @UI PolyUIException>
-                    ui, // Default type of List's type parameter is below @UI so this is type.argument.incompatible
+                    ui, // Default type of List's type parameter is below @UI so this is
+            // type.argument.incompatible
             List<? extends @AlwaysSafe PolyUIException> alwaysSafe)
             throws PolyUIException {
         if (flag) {
-            //:: error: (throw.type.invalid)
+            // :: error: (throw.type.invalid)
             throw ui.get(0);
         }
         throw alwaysSafe.get(0);
@@ -79,7 +80,7 @@ class ThrowCatchTest {
 
     void throwDeclared() {
         try {
-            //:: error: (throw.type.invalid)
+            // :: error: (throw.type.invalid)
             throw ui;
         } catch (@UI PolyUIException UIParam) {
 

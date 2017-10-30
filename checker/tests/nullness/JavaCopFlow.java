@@ -12,7 +12,7 @@ class JavaCopFlow {
         }
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -25,7 +25,7 @@ class JavaCopFlow {
         }
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -40,7 +40,7 @@ class JavaCopFlow {
         }
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -55,7 +55,7 @@ class JavaCopFlow {
         }
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -70,7 +70,7 @@ class JavaCopFlow {
         @NonNull String a = str;
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -86,7 +86,7 @@ class JavaCopFlow {
         @NonNull String a = str;
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -101,7 +101,7 @@ class JavaCopFlow {
         @NonNull String a = str;
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -117,7 +117,7 @@ class JavaCopFlow {
         @NonNull String a = str;
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -128,7 +128,7 @@ class JavaCopFlow {
         @NonNull String a = str;
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -141,7 +141,7 @@ class JavaCopFlow {
         }
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -154,7 +154,7 @@ class JavaCopFlow {
         }
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -164,7 +164,7 @@ class JavaCopFlow {
         @NonNull String a = str;
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -191,7 +191,7 @@ class JavaCopFlow {
 
         int i = 0;
         while (true) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @NonNull String a = str;
             str = null;
             i++;
@@ -201,17 +201,17 @@ class JavaCopFlow {
         str = null;
         @NonNull String b = "hi";
         try {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             b = str;
             methodThatThrowsRuntime();
             str = "bar";
         } finally {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             b = str;
         }
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         b = str;
 
         str = "hi";

@@ -30,9 +30,10 @@ class GenericsExampleMin {
             nble = this.get(0);
         }
 
-        // When the assignment to nn is added, the assignments to t and nble also fail, which is unexpected.
+        // When the assignment to nn is added, the assignments to t and nble also fail, which is
+        // unexpected.
         void m2() {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             nn = null;
             t = this.get(0);
             nble = this.get(0);
@@ -49,9 +50,9 @@ class GenericsExampleMin {
         @Nullable T nble;
 
         public MyList2(T t, @Nullable T nble) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             this.t = this.nble; // error
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             this.t = nble; // error
         }
     }
@@ -62,12 +63,12 @@ class GenericsExampleMin {
         @NonNull T nn;
 
         public MyList3(T t, @Nullable T nble, @NonNull T nn) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             this.t = nble;
             this.t = nn;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             this.nn = t;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             this.nn = nble;
             this.nn = nn;
         }
@@ -79,11 +80,11 @@ class GenericsExampleMin {
         @NonNull T nn;
 
         public MyList4(T t, @Nullable T nble, @NonNull T nn) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             this.t = nble;
             this.t = nn;
             this.nn = t;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             this.nn = nble;
             this.nn = nn;
             this.nn = t;

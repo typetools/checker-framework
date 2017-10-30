@@ -1,4 +1,3 @@
-
 class One {
     abstract static class B<A extends B<A, C>, C extends One> {
         abstract C build();

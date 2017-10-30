@@ -6,28 +6,28 @@ public class Comparisons {
 
         boolean testRes;
 
-        //:: error: (comparison.unsignedlhs)
+        // :: error: (comparison.unsignedlhs)
         testRes = unsigned < unknown;
 
-        //:: error: (comparison.unsignedrhs)
+        // :: error: (comparison.unsignedrhs)
         testRes = unknown < unsigned;
 
-        //:: error: (comparison.unsignedlhs)
+        // :: error: (comparison.unsignedlhs)
         testRes = unsigned <= unknown;
 
-        //:: error: (comparison.unsignedrhs)
+        // :: error: (comparison.unsignedrhs)
         testRes = unknown <= unsigned;
 
-        //:: error: (comparison.unsignedlhs)
+        // :: error: (comparison.unsignedlhs)
         testRes = unsigned > unknown;
 
-        //:: error: (comparison.unsignedrhs)
+        // :: error: (comparison.unsignedrhs)
         testRes = unknown > unsigned;
 
-        //:: error: (comparison.unsignedlhs)
+        // :: error: (comparison.unsignedlhs)
         testRes = unsigned >= unknown;
 
-        //:: error: (comparison.unsignedrhs)
+        // :: error: (comparison.unsignedrhs)
         testRes = unknown >= unsigned;
     }
 
@@ -35,16 +35,16 @@ public class Comparisons {
 
         boolean testRes;
 
-        //:: error: (comparison.mixed.unsignedlhs)
+        // :: error: (comparison.mixed.unsignedlhs)
         testRes = unsigned == signed;
 
-        //:: error: (comparison.mixed.unsignedrhs)
+        // :: error: (comparison.mixed.unsignedrhs)
         testRes = signed == unsigned;
 
-        //:: error: (comparison.mixed.unsignedlhs)
+        // :: error: (comparison.mixed.unsignedlhs)
         testRes = unsigned != signed;
 
-        //:: error: (comparison.mixed.unsignedrhs)
+        // :: error: (comparison.mixed.unsignedrhs)
         testRes = signed != unsigned;
     }
 }

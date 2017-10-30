@@ -6,11 +6,11 @@ public class ThisLiteral {
         new Object() {
             void test() {
                 @UnderInitialization @Raw ThisLiteral l1 = ThisLiteral.this;
-                //:: error: (assignment.type.incompatible)
+                // :: error: (assignment.type.incompatible)
                 @Initialized @NonRaw ThisLiteral l2 = ThisLiteral.this;
 
                 ThisLiteral.this.foo();
-                //:: error: (method.invocation.invalid)
+                // :: error: (method.invocation.invalid)
                 foo();
             }
         };

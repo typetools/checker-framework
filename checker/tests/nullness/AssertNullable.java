@@ -5,7 +5,7 @@ public class AssertNullable {
             // This will result in an NPE, not an AssertionError:
             // Exception in thread "main" java.lang.NullPointerException
             // Therefore, the Nullness Checker warns about this.
-            //:: error: (condition.nullable)
+            // :: error: (condition.nullable)
             assert b;
         } else {
             String s = null;
@@ -17,7 +17,7 @@ public class AssertNullable {
 
     void foo() {
         String s = 3 > 2 ? null : "ba";
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         assert s.hashCode() > 4;
     }
 }

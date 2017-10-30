@@ -16,7 +16,7 @@ class Purity {
     // class with a pure constructor
     private static class PureClass {
         @Pure
-        //:: warning: (purity.deterministic.constructor)
+        // :: warning: (purity.deterministic.constructor)
         public PureClass() {}
     }
 
@@ -35,14 +35,14 @@ class Purity {
     }
 
     @Pure
-    //:: warning: (purity.deterministic.void.method)
+    // :: warning: (purity.deterministic.void.method)
     void t1() {}
 
     @SideEffectFree
     void t1b() {}
 
     @Deterministic
-    //:: warning: (purity.deterministic.void.method)
+    // :: warning: (purity.deterministic.void.method)
     void t1c() {}
 
     @Pure
@@ -52,11 +52,11 @@ class Purity {
 
     @Pure
     String t3() {
-        //:: error: (purity.not.deterministic.not.sideeffectfree.call)
+        // :: error: (purity.not.deterministic.not.sideeffectfree.call)
         nonpure();
-        //:: error: (purity.not.deterministic.call)
+        // :: error: (purity.not.deterministic.call)
         t16b(); // Calling a @SideEffectFree method
-        //:: error: (purity.not.sideeffectfree.call)
+        // :: error: (purity.not.sideeffectfree.call)
         t16c(); // Calling a @Deterministic method
         return "";
     }
@@ -102,30 +102,30 @@ class Purity {
 
     @Pure
     String t10() {
-        //:: error: (purity.not.deterministic.not.sideeffectfree.assign.field)
+        // :: error: (purity.not.deterministic.not.sideeffectfree.assign.field)
         f1 = "";
-        //:: error: (purity.not.deterministic.not.sideeffectfree.assign.field)
+        // :: error: (purity.not.deterministic.not.sideeffectfree.assign.field)
         f2 = "";
         return "";
     }
 
     @Pure
     String t11(Purity l) {
-        //:: error: (purity.not.deterministic.not.sideeffectfree.assign.array)
+        // :: error: (purity.not.deterministic.not.sideeffectfree.assign.array)
         l.a[0] = "";
         return "";
     }
 
     @Pure
     String t12(String[] s) {
-        //:: error: (purity.not.deterministic.not.sideeffectfree.assign.array)
+        // :: error: (purity.not.deterministic.not.sideeffectfree.assign.array)
         s[0] = "";
         return "";
     }
 
     @Pure
     String t13() {
-        //:: error: (purity.not.deterministic.object.creation)
+        // :: error: (purity.not.deterministic.object.creation)
         PureClass p = new PureClass();
         return "";
     }
@@ -144,7 +144,7 @@ class Purity {
 
     @Deterministic
     String t13c() {
-        //:: error: (purity.not.deterministic.object.creation)
+        // :: error: (purity.not.deterministic.object.creation)
         PureClass p = new PureClass();
         return "";
     }
@@ -166,7 +166,7 @@ class Purity {
     String t16() {
         try {
             int i = 1 / 0;
-            //:: error: (purity.not.deterministic.catch)
+            // :: error: (purity.not.deterministic.catch)
         } catch (Throwable t) {
             // ..
         }
@@ -187,7 +187,7 @@ class Purity {
     String t16c() {
         try {
             int i = 1 / 0;
-            //:: error: (purity.not.deterministic.catch)
+            // :: error: (purity.not.deterministic.catch)
         } catch (Throwable t) {
             // ..
         }
@@ -196,30 +196,30 @@ class Purity {
 
     @Pure
     String t12() {
-        //:: error: (purity.not.deterministic.not.sideeffectfree.object.creation)
+        // :: error: (purity.not.deterministic.not.sideeffectfree.object.creation)
         NonPureClass p = new NonPureClass();
         return "";
     }
 
     @Deterministic
     String t17a(Purity l) {
-        //:: error: (purity.not.deterministic.assign.field)
+        // :: error: (purity.not.deterministic.assign.field)
         f1 = "";
-        //:: error: (purity.not.deterministic.assign.array)
+        // :: error: (purity.not.deterministic.assign.array)
         l.a[0] = "";
-        //:: error: (purity.not.deterministic.call)
+        // :: error: (purity.not.deterministic.call)
         nonpure();
-        //:: error: (purity.not.deterministic.call)
+        // :: error: (purity.not.deterministic.call)
         return t16b(); // Calling a @SideEffectFree method
     }
 
     @SideEffectFree
     String t17b() {
-        //:: error: (purity.not.sideeffectfree.object.creation)
+        // :: error: (purity.not.sideeffectfree.object.creation)
         NonPureClass p = new NonPureClass();
-        //:: error: (purity.not.sideeffectfree.call)
+        // :: error: (purity.not.sideeffectfree.call)
         nonpure();
-        //:: error: (purity.not.sideeffectfree.call)
+        // :: error: (purity.not.sideeffectfree.call)
         return t16c(); // Calling a @Deterministic method
     }
 

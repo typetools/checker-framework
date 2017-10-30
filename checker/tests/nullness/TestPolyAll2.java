@@ -7,7 +7,7 @@ class TestPolyAll2 {
     public static boolean noDuplicates1(@PolyAll @NonNull @UnknownKeyFor String[] a) {
         // non-null
         a[0].hashCode();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         a[0] = null;
         return true;
     }
@@ -15,7 +15,7 @@ class TestPolyAll2 {
     public static boolean noDuplicates2(@PolyAll @Nullable String[] a) {
         // nullable
         a[0] = null;
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         a[0].hashCode();
         return true;
     }
@@ -26,7 +26,7 @@ class TestPolyAll2 {
     }
 
     // Real duplicate forbidden.
-    //:: error: (type.invalid)
+    // :: error: (type.invalid)
     public static boolean noDuplicates4(@NonNull @PolyAll @Nullable String[] a) {
         return true;
     }

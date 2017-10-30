@@ -128,11 +128,11 @@ public class RefineOverride {
         // The new permissible types are not supertypes of the old types,
         // but they still expand the set of permitted invocations.
 
-        //:: error: (override.param.invalid)
+        // :: error: (override.param.invalid)
         @Override
         void m21(@NonNull String[] a) {}
 
-        //:: error: Changing incompatibly to forbid old invocations is not permitted.
+        // :: error: Changing incompatibly to forbid old invocations is not permitted.
         @Override
         void m22(@Nullable String[] a) {}
 
@@ -146,11 +146,11 @@ public class RefineOverride {
         @Override
         void m25(@PolyNull T[] a) {}
 
-        //:: error: (override.param.invalid)
+        // :: error: (override.param.invalid)
         @Override
         void m26(@NonNull T[] a) {}
 
-        //:: error: Changing incompatibly to forbid old invocations is not permitted.
+        // :: error: Changing incompatibly to forbid old invocations is not permitted.
         @Override
         void m27(@Nullable T[] a) {}
 
@@ -191,7 +191,7 @@ public class RefineOverride {
         @Override
         void t2(@Nullable String s) {}
 
-        //:: error: (override.param.invalid)
+        // :: error: (override.param.invalid)
         @Override
         void t3(String s) {}
 

@@ -9,7 +9,7 @@ public class Issue904 {
             new Runnable() {
                 @Override
                 public void run() {
-                    //:: error: (dereference.of.nullable)
+                    // :: error: (dereference.of.nullable)
                     mBar.toString();
                 }
             };

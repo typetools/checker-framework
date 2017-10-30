@@ -1,5 +1,3 @@
-
-
 public class PrimitivesNullness {
 
     public static void main(String[] args) {

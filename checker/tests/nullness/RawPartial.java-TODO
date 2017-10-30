@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.*;
 public class RawPartial {
 
   public RawPartial() {
-    //:: error: (uninitialized)
+    // :: error: (uninitialized)
     foo1();
     foo2();
     foo3();
@@ -32,20 +32,20 @@ public class SubRP extends RawPartial {
   }
 
   @Override
-  //:: error: (overriding)
+  // :: error: (overriding)
   public void foo2() {
     f.toLowerCase();
   }
 
   @Override
   public void foo3() @NonRaw(RawPartial.class) {
-    //:: error: (uninitialized)
+    // :: error: (uninitialized)
     f.toLowerCase();
   }
 
   @Override
   public void foo4() @Raw {
-    //:: error: (uninitialized)
+    // :: error: (uninitialized)
     f.toLowerCase();
   }
 }

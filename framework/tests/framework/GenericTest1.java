@@ -12,7 +12,7 @@ public class GenericTest1 {
                 foo instanceof Bar<?, ?, ?>
                         // TODO flow: support instanceof / cast flow.
                         // Warning only with -AcheckCastElementType.
-                        //TODO:: warning: (cast.unsafe)
+                        // TODO:: warning: (cast.unsafe)
                         ? (Bar<?, ?, ?>) foo
                         : null;
     }

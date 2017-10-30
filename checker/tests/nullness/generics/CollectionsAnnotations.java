@@ -36,7 +36,7 @@ class PriorityQueue3<E extends @NonNull Object> implements Collection2<E> {
 class Methods {
     static void addNull1(Collection1 l) {
         // Allowed, because upper bound of Collection1 is Nullable.
-        //:: warning: [unchecked] unchecked call to add(E) as a member of the raw type Collection1
+        // :: warning: [unchecked] unchecked call to add(E) as a member of the raw type Collection1
         l.add(null);
     }
 
@@ -50,7 +50,7 @@ class Methods {
     }
 
     static void bad2() {
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         addNull2(new PriorityQueue1<@NonNull Object>());
     }
 
@@ -59,11 +59,11 @@ class Methods {
     }
 
     static void bad3() {
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         addNull2(new PriorityQueue2<@NonNull Object>());
     }
 
-    //:: error: (type.argument.type.incompatible)
+    // :: error: (type.argument.type.incompatible)
     static <@Nullable E> void addNull3(Collection2<E> l) {
         l.add(null);
     }

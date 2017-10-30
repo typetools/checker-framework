@@ -11,7 +11,7 @@ class Overrides {
     }
 
     class C extends B {
-        //:: error: (override)
+        // :: error: (override)
         void m() {}
     }
 

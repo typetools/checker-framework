@@ -7,7 +7,7 @@ public class TypeFrames2 {
         @NonNull String a;
 
         public A() {
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             this.foo();
             a = "";
             this.foo();
@@ -22,7 +22,7 @@ public class TypeFrames2 {
         public B() {
             super();
             this.foo();
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             this.bar();
             b = "";
             this.bar();

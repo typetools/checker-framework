@@ -10,7 +10,7 @@ class TryWithResources {
 
     void m2() {
         try (BufferedReader in = null) {
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             in.toString();
         } catch (Exception e) {
         }

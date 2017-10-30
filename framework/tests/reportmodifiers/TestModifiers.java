@@ -5,7 +5,7 @@
 class TestModifiers {
     void test() {
         class Inner {
-            //:: error: (Modifier.native)
+            // :: error: (Modifier.native)
             native void bad();
         }
     }

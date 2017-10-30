@@ -37,41 +37,41 @@ class TestBounded {
 
     void useBoundedWildCard() {
         BoundedGeneric rawLocal = new BoundedGeneric<String>();
-        //:: warning: [unchecked] unchecked conversion
+        // :: warning: [unchecked] unchecked conversion
         BoundedGeneric<? extends Object> generic1 = rawReturn();
-        //:: warning: [unchecked] unchecked conversion
+        // :: warning: [unchecked] unchecked conversion
         BoundedGeneric<? extends Object> generic2 = rawField;
-        //:: warning: [unchecked] unchecked conversion
+        // :: warning: [unchecked] unchecked conversion
         BoundedGeneric<? extends Object> generic3 = rawLocal;
     }
 
     void useBoundedWildCard2() {
         BoundedGeneric rawLocal = new BoundedGeneric<String>();
-        //:: warning: [unchecked] unchecked conversion
+        // :: warning: [unchecked] unchecked conversion
         BoundedGeneric<? extends CharSequence> generic1 = rawReturn();
-        //:: warning: [unchecked] unchecked conversion
+        // :: warning: [unchecked] unchecked conversion
         BoundedGeneric<? extends CharSequence> generic2 = rawField;
-        //:: warning: [unchecked] unchecked conversion
+        // :: warning: [unchecked] unchecked conversion
         BoundedGeneric<? extends CharSequence> generic3 = rawLocal;
     }
 
     void useTypeArg() {
         BoundedGeneric rawLocal = new BoundedGeneric<String>();
-        //:: warning: [unchecked] unchecked conversion
+        // :: warning: [unchecked] unchecked conversion
         BoundedGeneric<String> generic1 = rawReturn();
-        //:: warning: [unchecked] unchecked conversion
+        // :: warning: [unchecked] unchecked conversion
         BoundedGeneric<String> generic2 = rawField;
-        //:: warning: [unchecked] unchecked conversion
+        // :: warning: [unchecked] unchecked conversion
         BoundedGeneric<String> generic3 = rawLocal;
     }
 
     void useAnnotatedTypeArg() {
         BoundedGeneric rawLocal = new BoundedGeneric<String>();
-        //:: warning: [unchecked] unchecked conversion
+        // :: warning: [unchecked] unchecked conversion
         BoundedGeneric<@Nullable String> generic1 = rawReturn();
-        //:: warning: [unchecked] unchecked conversion
+        // :: warning: [unchecked] unchecked conversion
         BoundedGeneric<@Nullable String> generic2 = rawField;
-        //:: warning: [unchecked] unchecked conversion
+        // :: warning: [unchecked] unchecked conversion
         BoundedGeneric<@Nullable String> generic3 = rawLocal;
     }
 }

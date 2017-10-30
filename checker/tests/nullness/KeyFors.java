@@ -14,7 +14,7 @@ public class KeyFors {
         Map<String, String> map = new HashMap<String, String>();
         String key = "key";
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String value = map.get(key);
     }
 
@@ -69,12 +69,12 @@ public class KeyFors {
 
     public void testStaticKeyFor(@KeyFor("Otherclass.map") String s1, String s2) {
         Otherclass.map.get(s1).toString();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         Otherclass.map.get(s2).toString();
 
         Otherclass o = new Otherclass();
         o.map.get(s1).toString();
-        //TODO:: error: (dereference.of.nullable)
+        // TODO:: error: (dereference.of.nullable)
         o.map.get(s2).toString();
     }
 

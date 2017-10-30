@@ -14,7 +14,7 @@ class Issue58Minimization {
             @NonNegative int y = z;
         }
         if ((z = x) != 1) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @NonNegative int y = z;
         }
     }

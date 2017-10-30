@@ -10,7 +10,9 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
@@ -146,7 +148,8 @@ public abstract class AnnotatedTypeMirror {
 
     /** The explicitly written annotations on this type. */
     // TODO: use this to cache the result once computed? For generic types?
-    // protected final Set<AnnotationMirror> explicitannotations = AnnotationUtils.createAnnotationSet();
+    // protected final Set<AnnotationMirror> explicitannotations =
+    // AnnotationUtils.createAnnotationSet();
 
     /**
      * Constructor for AnnotatedTypeMirror.
@@ -928,11 +931,25 @@ public abstract class AnnotatedTypeMirror {
                 // Copy annotations from the declaration to the wildcards.
                 AnnotatedDeclaredType declaration =
                         atypeFactory.fromElement((TypeElement) getUnderlyingType().asElement());
+                Map<TypeVariable, AnnotatedTypeMirror> map = new HashMap<>();
                 for (int i = 0; i < typeArgs.size(); i++) {
                     AnnotatedTypeVariable typeParam =
                             (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);
+                    map.put(typeParam.getUnderlyingType(), typeArgs.get(i));
+                }
+
+                for (int i = 0; i < typeArgs.size(); i++) {
+                    AnnotatedTypeVariable typeParam =
+                            (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);
+                    TypeVariableSubstitutor varSubstitutor = atypeFactory.getTypeVarSubstitutor();
+                    // The upper bound of a type parameter may refer to other type parameters.
+                    // Substitute those references with the type argument.
+                    AnnotatedTypeMirror typeParamUpperBound =
+                            varSubstitutor.substitute(map, typeParam.getUpperBound());
+
                     AnnotatedWildcardType wct = (AnnotatedWildcardType) typeArgs.get(i);
-                    AnnotatedTypeMerger.merge(typeParam.getUpperBound(), wct.getExtendsBound());
+                    AnnotatedTypeMerger.merge(typeParamUpperBound, wct.getExtendsBound());
+
                     wct.getSuperBound().replaceAnnotations(typeParam.getLowerBound().annotations);
                     wct.replaceAnnotations(typeParam.annotations);
                 }
@@ -1221,7 +1238,8 @@ public abstract class AnnotatedTypeMirror {
             if (receiverType == null
                     // Static methods don't have a receiver
                     && !ElementUtils.isStatic(getElement())
-                    // Array constructors should also not have a receiver. Array members have a getEnclosingElement().getEnclosingElement() of NONE
+                    // Array constructors should also not have a receiver. Array members have a
+                    // getEnclosingElement().getEnclosingElement() of NONE
                     && (!(getElement().getKind() == ElementKind.CONSTRUCTOR
                             && getElement()
                                     .getEnclosingElement()
@@ -1564,9 +1582,9 @@ public abstract class AnnotatedTypeMirror {
         // because otherwise the annotations are inconsistent.
         private void fixupBoundAnnotations() {
 
-            // We allow the above replacement first because primary annotations might not have annotations for
-            // all hierarchies, so we don't want to avoid placing bottom on the lower bound for those hierarchies that
-            // don't have a qualifier in primaryAnnotations
+            // We allow the above replacement first because primary annotations might not have
+            // annotations for all hierarchies, so we don't want to avoid placing bottom on the
+            // lower bound for those hierarchies that don't have a qualifier in primaryAnnotations.
             if (!this.getAnnotationsField().isEmpty()) {
                 if (upperBound != null) {
                     replaceUpperBoundAnnotations();

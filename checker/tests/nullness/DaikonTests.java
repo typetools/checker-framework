@@ -113,7 +113,8 @@ public class DaikonTests {
             // The problem is:
             // In the "then" branch, we have in "nnExpr" that "clazz" is non-null.
             // In the "else" branch, we have in "annos" that the variable is non-null.
-            // However, as these are facts in two different representations, the merge keeps neither!
+            // However, as these are facts in two different representations, the merge keeps
+            // neither!
             //
             // no error message expected
             b.clazz.hashCode();
@@ -126,7 +127,7 @@ public class DaikonTests {
         protected @Nullable T @Nullable [] values;
 
         public Bug6() {
-            //:: warning: [unchecked] unchecked cast
+            // :: warning: [unchecked] unchecked cast
             @Nullable T[] new_values_array = (@Nullable T[]) new @Nullable Object[4];
             values = new_values_array;
         }

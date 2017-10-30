@@ -10,7 +10,7 @@ public class ConversionCategoryTest {
         @I18nFormat({I18nConversionCategory.NUMBER}) String s3 = "{0, number}";
 
         @I18nFormat({I18nConversionCategory.NUMBER, I18nConversionCategory.NUMBER}) String s4 = "{1} {0, date}";
-        //:: warning: (i18nformat.missing.arguments)
+        // :: warning: (i18nformat.missing.arguments)
         s4 = "{0}";
 
         @I18nFormat({I18nConversionCategory.GENERAL, I18nConversionCategory.NUMBER}) String s5 = "{0} and {1, number}";
@@ -48,22 +48,22 @@ public class ConversionCategoryTest {
 
         @I18nFormat({I18nConversionCategory.DATE}) String s13 = "{0, date} {0, date}";
 
-        //:: error: (i18nformat.excess.arguments) :: error: (assignment.type.incompatible)
+        // :: error: (i18nformat.excess.arguments) :: error: (assignment.type.incompatible)
         @I18nFormat({I18nConversionCategory.GENERAL}) String b1 = "{1}";
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @I18nFormat({I18nConversionCategory.DATE}) String b2 = "{0, number}";
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @I18nFormat({I18nConversionCategory.GENERAL}) String b3 = "{0, number}";
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @I18nFormat({I18nConversionCategory.GENERAL}) String b4 = "{0, date}";
 
-        //:: error: (i18nformat.excess.arguments) :: error: (assignment.type.incompatible)
+        // :: error: (i18nformat.excess.arguments) :: error: (assignment.type.incompatible)
         @I18nFormat({I18nConversionCategory.DATE}) String b5 = "{0, date} {1, date}";
 
-        //:: warning: (i18nformat.missing.arguments)
+        // :: warning: (i18nformat.missing.arguments)
         @I18nFormat({I18nConversionCategory.DATE, I18nConversionCategory.DATE}) String b6 = "{0, date}";
     }
 }

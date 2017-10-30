@@ -8,9 +8,9 @@ public class TypeInference {
 
     void test() {
         Collection<@Odd String> lst1 = Collections.<@Odd String>emptyList();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         Collection<@Odd String> lst2 = Collections.<String>emptyList(); // should emit error
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         Collection<String> lst3 = Collections.<@Odd String>emptyList(); // should emit error
         Collection<@Odd String> lst4 = Collections.emptyList();
         Map<Integer, @Odd String> lst5 = Collections.emptyMap();
@@ -26,7 +26,7 @@ public class TypeInference {
     void testSuper() {
         MyMap<@Odd String> m1 = TypeInference.<@Odd String>getMap();
         MyMap<@Odd String> m2 = getMap();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         MyMap<String> m3 = TypeInference.<@Odd String>getMap(); // should emit error
         MyMap<String> m4 = getMap();
 

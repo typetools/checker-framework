@@ -186,7 +186,7 @@ public class JavacRunner implements CheckersRunner {
         for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics) {
             if (diagnostic.getSource() != null) {
                 javacErrors.add(new JavacError(diagnostic));
-            } else { //TODO: TEST PRINTING THIS TO THE CONSOLE
+            } else { // TODO: TEST PRINTING THIS TO THE CONSOLE
                 System.out.println(
                         "No source for diagnostic at: "
                                 + diagnostic.getLineNumber()

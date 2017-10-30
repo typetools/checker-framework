@@ -1,12 +1,13 @@
-//warning: StubParser: Method thisMethodIsNotReal(String) not found in type java.lang.String
-//warning: StubParser: Type not found: java.lang.NotARealClass
-//warning: StubParser: Type not found: not.real.NotARealClassInNotRealPackage
-//warning: StubParser: Type not found: com.sun.javadoc.ClassDoc
-//warning: StubParser: Type not found: com.sun.javadoc.Doc
-//warning: StubParser: Type not found: com.sun.javadoc.FieldDoc
-//warning: StubParser: Type not found: com.sun.javadoc.MemberDoc
-//warning: StubParser: Type not found: com.sun.javadoc.ProgramElementDoc
-//warning: StubParser: Type not found: com.sun.javadoc.RootDoc
+// warning: StubParser: Method thisMethodIsNotReal(String) not found in type java.lang.String
+// warning: StubParser: Type not found: java.lang.NotARealClass
+// warning: StubParser: Type not found: not.real.NotARealClassInNotRealPackage
+// warning: StubParser: Type not found: com.sun.javadoc.ClassDoc
+// warning: StubParser: Type not found: com.sun.javadoc.Doc
+// warning: StubParser: Type not found: com.sun.javadoc.FieldDoc
+// warning: StubParser: Type not found: com.sun.javadoc.MemberDoc
+// warning: StubParser: Type not found: com.sun.javadoc.ProgramElementDoc
+// warning: StubParser: Type not found: com.sun.javadoc.RootDoc
+
 import org.checkerframework.checker.nullness.qual.*;
 
 /*
@@ -30,10 +31,10 @@ public class NullnessStubfileMerge {
 
     void method() {
         // below fails because of stub file overruling annotated JDK
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         java.util.List<@NonNull String> l;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String error1 = nonNull.intern();
 
         nonNull.substring('!');
@@ -44,7 +45,7 @@ public class NullnessStubfileMerge {
         char[] nullChars = null;
         nonNull.getChars(1, 1, nonNullChars, 1);
 
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         nonNull.getChars(1, 1, nullChars, 1);
     }
 }

@@ -9,7 +9,7 @@ class Options {
         String arg = ""; // interned here
         @Interned String arg2 = arg;
         arg += s; // no longer interned
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         arg2 = arg;
     }
 
@@ -17,7 +17,7 @@ class Options {
         String arg = ""; // interned here
         @Interned String arg2 = arg;
         arg += c; // no longer interned
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         arg2 = arg;
     }
 
@@ -35,9 +35,9 @@ class Options {
 
         // if ((ch == '\'') || (ch == '"')) {
         arg += ch;
-        //}
-        //}
-        //:: error: (assignment.type.incompatible)
+        // }
+        // }
+        // :: error: (assignment.type.incompatible)
         @Interned String arg2 = arg;
 
         if (!arg.equals("")) {
@@ -79,7 +79,7 @@ class Options {
                 arg += ch;
             }
         }
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Interned String arg2 = arg;
 
         if (!arg.equals("")) {

@@ -9,7 +9,7 @@ class MinLenLTTransfer {
 
     void lt_bad_check(int[] a) {
         if (0 < a.length) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             int @MinLen(2) [] b = a;
         }
     }

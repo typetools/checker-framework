@@ -138,11 +138,10 @@ public class StubGenerator {
 
         String className =
                 fullClassName.substring(
-                        fullClassName
-                                        //+1 because currentPackage doesn't include
-                                        // the . between the package name and the classname
-                                        .indexOf(currentPackage)
+                        fullClassName.indexOf(currentPackage)
                                 + currentPackage.length()
+                                // +1 because currentPackage doesn't include
+                                // the . between the package name and the classname
                                 + 1);
 
         int index = className.lastIndexOf('.');

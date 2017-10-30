@@ -25,7 +25,10 @@ public class StringPatternsUsage {
         String e = "";
 
         // This should produce the following diagnostic:
-        // :-1: other: error: Bug in @ImplicitFor(stringpatterns=...) in type hierarchy definition: inferred type for "A" is [@PatternBottomPartial] which is a subtype of [@PatternBC] but its pattern does not match the string.  matches = [[@PatternAC], [@PatternAB]]; nonMatches = [[@PatternBC]]
+        // :-1: other: error: Bug in @ImplicitFor(stringpatterns=...) in type hierarchy definition:
+        // inferred type for "A" is [@PatternBottomPartial] which is a subtype of [@PatternBC] but
+        // its pattern does not match the string.  matches = [[@PatternAC], [@PatternAB]];
+        // nonMatches = [[@PatternBC]]
 
         requiresA(a);
     }

@@ -7,7 +7,7 @@ class FlowSelf {
         if (s == null) {
             return;
         }
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         assert s != null;
 
         s = s.substring(1);
