@@ -10,7 +10,7 @@ to obtain more precise type-checking with fewer false positive warnings.
 Instructions for people creating a new annotated library:
 
 If you annotate a new library, please inform the Checker Framework developers
- so that they can include it in the Checker Framework distribution.
+so that they can include it in the Checker Framework distribution.
 
 When adding a .jar file to this directory, update the below list.
 In general, old files need not be removed; that way, we accommodate users
