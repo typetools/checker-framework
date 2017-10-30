@@ -10,7 +10,7 @@ import org.checkerframework.common.reflection.qual.MethodVal;
  */
 public class NullnessReflectionExampleTest {
     @NonNull Location getCurrentLocation() {
-        //...
+        // ...
         return new Location();
     }
 

@@ -235,7 +235,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 typeDst.replaceAnnotation(POS);
             } else if (typeSrc.hasAnnotation(GTEN1)) {
                 typeDst.replaceAnnotation(NN);
-            } else { //Only unknown is left.
+            } else { // Only unknown is left.
                 typeDst.replaceAnnotation(UNKNOWN);
             }
         }

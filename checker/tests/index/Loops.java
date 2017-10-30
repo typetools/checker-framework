@@ -5,11 +5,11 @@ public final class Loops {
 
     public void test1(int[] a, @LTLengthOf("#1") int offset, @LTLengthOf("#1") int offset2) {
         while (flag) {
-            //:: error: (compound.assignment.type.incompatible)
+            // :: error: (compound.assignment.type.incompatible)
             offset++;
-            //:: error: (compound.assignment.type.incompatible)
+            // :: error: (compound.assignment.type.incompatible)
             offset += 1;
-            //:: error: (compound.assignment.type.incompatible)
+            // :: error: (compound.assignment.type.incompatible)
             offset2 += offset;
         }
     }
@@ -22,27 +22,27 @@ public final class Loops {
             offset++;
             offset2 += offset;
         }
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @LTLengthOf("array") int x = offset;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @LTLengthOf("array") int y = offset2;
     }
 
     public void test3(int[] a, @LTLengthOf("#1") int offset, @LTLengthOf("#1") int offset2) {
         while (flag) {
             offset--;
-            //:: error: (compound.assignment.type.incompatible)
+            // :: error: (compound.assignment.type.incompatible)
             offset2 -= offset;
         }
     }
 
     public void test4(int[] a, @LTLengthOf("#1") int offset, @LTLengthOf("#1") int offset2) {
         while (flag) {
-            //:: error: (compound.assignment.type.incompatible)
+            // :: error: (compound.assignment.type.incompatible)
             offset++;
-            //:: error: (compound.assignment.type.incompatible)
+            // :: error: (compound.assignment.type.incompatible)
             offset += 1;
-            //:: error: (compound.assignment.type.incompatible)
+            // :: error: (compound.assignment.type.incompatible)
             offset2 += offset;
         }
     }
@@ -60,14 +60,14 @@ public final class Loops {
         int otherOffset = offset;
         while (flag) {
             otherOffset += 1;
-            //:: error: (compound.assignment.type.incompatible)
+            // :: error: (compound.assignment.type.incompatible)
             offset++;
-            //:: error: (compound.assignment.type.incompatible)
+            // :: error: (compound.assignment.type.incompatible)
             offset += 1;
-            //:: error: (compound.assignment.type.incompatible)
+            // :: error: (compound.assignment.type.incompatible)
             offset2 += offset;
         }
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @LTLengthOf(value = "#1", offset = "-1000") int x = otherOffset;
     }
 }

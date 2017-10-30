@@ -11,7 +11,7 @@ public class EnsuresNonNullIfTestSimple {
 
     @EnsuresNonNullIf(result = true, expression = "values")
     public boolean repNulledBAD() {
-        //:: error: (contracts.conditional.postcondition.not.satisfied)
+        // :: error: (contracts.conditional.postcondition.not.satisfied)
         return values == null;
     }
 
@@ -31,17 +31,17 @@ public class EnsuresNonNullIfTestSimple {
          * The assumption that "values" is NN is added above.
          * However, as repNulled is not pure, it should be removed again here.
         if (s.repNulled()) {
-            // :: (dereference.of.nullable)
+            // : : (dereference.of.nullable)
             values.hashCode();
         } else {
             // we called on "s", so we don't know anything about "values".
-            // :: (assignment.type.incompatible)
+            // : : (assignment.type.incompatible)
             @NonNull Object y = values;
         }
         */
 
         if (s.repNulled()) {
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             s.values.hashCode();
         } else {
             @NonNull Object y = s.values;

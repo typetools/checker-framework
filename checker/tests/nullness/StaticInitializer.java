@@ -6,7 +6,7 @@ class StaticInitializer {
     public static String a;
     public static String b;
 
-    //:: error: (initialization.fields.uninitialized)
+    // :: error: (initialization.fields.uninitialized)
     static {
         a = "";
     }
@@ -14,7 +14,7 @@ class StaticInitializer {
     public StaticInitializer() {}
 }
 
-//:: error: (initialization.fields.uninitialized)
+// :: error: (initialization.fields.uninitialized)
 class StaticInitializer2 {
     public static String a;
     public static String b;

@@ -22,27 +22,27 @@ public class DependentNull {
 
     static void fieldAccess() {
         DependentNull t1 = new DependentNull();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         t1.dep = null; // error
         t1.dep = "m";
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         t1.indep = null; // error
         t1.indep = "m";
 
         @Prototype DependentNull t2 = new DependentNull();
         t2.dep = null;
         t2.dep = "m";
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         t2.indep = null; // error
         t2.indep = "m";
     }
 
     void receiverNonProto() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         dep = null; // error
         dep = "m";
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         indep = null; // error
         indep = "m";
     }
@@ -51,7 +51,7 @@ public class DependentNull {
         dep = null;
         dep = "m";
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         indep = null; // error
         indep = "m";
     }
@@ -61,7 +61,7 @@ public class DependentNull {
 
         void use() {
             new @Prototype Parameter(null);
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             new Parameter(null); // error
 
             new @Prototype Parameter("m");

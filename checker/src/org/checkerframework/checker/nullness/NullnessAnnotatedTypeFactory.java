@@ -106,7 +106,7 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(
                 org.checkerframework.checker.nullness.qual.LazyNonNull.class, MONOTONIC_NONNULL);
 
-        // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex .
+        // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex
         // Aliases for @Nonnull:
         addAliasedAnnotation(com.sun.istack.internal.NotNull.class, NONNULL);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.NonNull.class, NONNULL);
@@ -173,7 +173,8 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        // NullnessATF is used by both NullnessChecker and NullnessRawnessChecker, load the correct set of qualifiers here
+        // NullnessATF is used by both NullnessChecker and NullnessRawnessChecker, load the correct
+        // set of qualifiers here
         AbstractNullnessChecker ckr = (AbstractNullnessChecker) checker;
         // if useFbc is true, then it is the NullnessChecker
         if (ckr.useFbc) {
@@ -350,7 +351,8 @@ public class NullnessAnnotatedTypeFactory
         implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_CLASS, NONNULL);
         implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_ARRAY, NONNULL);
 
-        return new ListTreeAnnotator( // DebugListTreeAnnotator(new Tree.Kind[] {Tree.Kind.CONDITIONAL_EXPRESSION},
+        return new ListTreeAnnotator(
+                // DebugListTreeAnnotator(new Tree.Kind[] {Tree.Kind.CONDITIONAL_EXPRESSION},
                 new NullnessPropagationAnnotator(this),
                 implicitsTreeAnnotator,
                 new NullnessTreeAnnotator(this),

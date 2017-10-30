@@ -1,12 +1,11 @@
-
 interface DefaultMethods {
 
     default void method(String param) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         param = null;
 
         String s = null;
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         s.toString();
 
         // Ensure dataflow is running

@@ -1,4 +1,5 @@
-// @skip-test Change error key to one with a clearer message that explicitly mentions the superclass constructor
+// @skip-test Change error key to one with a clearer message that explicitly mentions the superclass
+// constructor
 
 import org.checkerframework.dataflow.qual.*;
 
@@ -11,7 +12,8 @@ class SuperClass {
 }
 
 // The error message is very confusing:
-//   EmptyConstructor.java:22: error: call to non-side-effect-free method not allowed in side-effect-free method
+//   EmptyConstructor.java:22: error: call to non-side-effect-free method not allowed in
+// side-effect-free method
 //     public EmptyConstructor() { }
 //                               ^
 // because there's no obvious call.  The message key should be changed to

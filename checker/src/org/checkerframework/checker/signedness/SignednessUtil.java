@@ -437,7 +437,8 @@ public final class SignednessUtil {
      */
     @SuppressWarnings("signedness")
     public static int compareUnsigned(@Unsigned short x, @Unsigned short y) {
-        // Java 8 version: return Integer.compareUnsigned(Short.toUnsignedInt(x), Short.toUnsignedInt(y));
+        // Java 8 version: return Integer.compareUnsigned(Short.toUnsignedInt(x),
+        // Short.toUnsignedInt(y));
         return compareUnsigned(toUnsignedInt(x), toUnsignedInt(y));
     }
 
@@ -449,7 +450,8 @@ public final class SignednessUtil {
      */
     @SuppressWarnings("signedness")
     public static int compareUnsigned(@Unsigned byte x, @Unsigned byte y) {
-        // Java 8 version: return Integer.compareUnsigned(Byte.toUnsignedInt(x), Byte.toUnsignedInt(y));
+        // Java 8 version: return Integer.compareUnsigned(Byte.toUnsignedInt(x),
+        // Byte.toUnsignedInt(y));
         return compareUnsigned(toUnsignedInt(x), toUnsignedInt(y));
     }
 

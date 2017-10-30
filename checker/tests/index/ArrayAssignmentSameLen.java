@@ -16,13 +16,13 @@ public class ArrayAssignmentSameLen {
             value = {"array", "b"},
             offset = {"0", "-3"}
         )
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         int i = index;
     }
 
     void test2(int[] a, int[] b, @LTLengthOf("#1") int i) {
         int[] c = a;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @LTLengthOf(value = {"c", "b"}) int x = i;
         @LTLengthOf("c") int y = i;
     }
@@ -34,7 +34,7 @@ public class ArrayAssignmentSameLen {
             value = {"c1", "c1"},
             offset = {"0", "x"}
         )
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         int z = i;
     }
 

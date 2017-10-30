@@ -144,39 +144,39 @@ public class Addition {
 
         // Dimensions
         // Acceleration
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Acceleration int sAcceleration = aAcceleration + bMass;
 
         // Area
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Luminance int sLuminance = aArea + bArea;
 
         // Current
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Current int sCurrent = aMass + bCurrent;
 
         // Length
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Length int sLength = aLength + bSubstance;
 
         // Luminance
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Temperature int sTemperature = aLuminance + bLuminance;
 
         // Mass
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Mass int sMass = aTemperature + bMass;
 
         // Substance
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Substance int sSubstance = aSubstance + bCurrent;
 
         // Temperature
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Area int sArea = aTemperature + bTemperature;
 
         // Time
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Time int sTime = aArea + bTime;
 
         // Units
@@ -258,79 +258,79 @@ public class Addition {
 
         // Units
         // Amperes
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @g int sGram = aAmpere + bAmpere;
 
         // Candela
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @cd int sCandela = aTemperature + bCandela;
 
         // Celsius
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @C int sCelsius = aCelsius + bMillimeter;
 
         // Gram
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @kg int sKilogram = aGram + bGram;
 
         // Hour
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @h int sHour = aSquareMeter + bHour;
 
         // Kelvin
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @K int sKelvin = aKelvin + bSecond;
 
         // Kilogram
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @kmPERh int sKilometerPerHour = aKilogram + bKilogram;
 
         // Kilometer
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @km int sKilometer = aCandela + bKilometer;
 
         // Square kilometer
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @km2 int sSquareKilometer = aSquareKilometer + bAmpere;
 
         // Kilometer per hour
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @mPERs int sMeterPerSecond = aKilometerPerHour + bKilometerPerHour;
 
         // Meter
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @m int sMeter = aHour + bMeter;
 
         // Square meter
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @m2 int sSquareMeter = aSquareMeter + bGram;
 
         // Meter per second
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @mm2 int sSquareMillimeter = aMeterPerSecond + bMeterPerSecond;
 
         // Meter per second square
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @mPERs2 int sMeterPerSecondSquare = aMeterPerSecondSquare + bMeter;
 
         // Minute
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @min int sMinute = aMole + bMinute;
 
         // Millimeter
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @mm int sMillimeter = aMillimeter + bHour;
 
         // Square millimeter
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @A int sAmpere = aSquareMillimeter + bSquareMillimeter;
 
         // Mole
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @mol int sMole = aCandela + bMole;
 
         // Second
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @s int sSecond = aSecond + bSquareKilometer;
     }
 }

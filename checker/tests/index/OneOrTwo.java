@@ -7,7 +7,7 @@ class OneOrTwo {
 
     void test(@BottomVal int x) {
         int[] a = new int[Integer.valueOf(getOneOrTwo())];
-        //:: error: (array.length.negative)
+        // :: error: (array.length.negative)
         int[] b = new int[Integer.valueOf(x)];
     }
 

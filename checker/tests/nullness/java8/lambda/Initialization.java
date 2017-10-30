@@ -1,4 +1,3 @@
-
 // Test field initialization
 // fields, initializers, static initializers, constructors.
 
@@ -22,12 +21,12 @@ class LambdaInit {
     String f1b;
     FunctionInit<String, String> ff0 =
             s -> {
-                //:: error: (dereference.of.nullable)
+                // :: error: (dereference.of.nullable)
                 f1.toString();
-                //:: error: (dereference.of.nullable)
+                // :: error: (dereference.of.nullable)
                 f1b.toString();
                 f2.toString();
-                //:: error: (dereference.of.nullable)
+                // :: error: (dereference.of.nullable)
                 f3.toString();
                 return "";
             };
@@ -41,10 +40,10 @@ class LambdaInit {
         f4 = "";
         FunctionInit<String, String> ff0 =
                 s -> {
-                    //:: error: (dereference.of.nullable)
+                    // :: error: (dereference.of.nullable)
                     f1.toString();
                     f2.toString();
-                    //:: error: (dereference.of.nullable)
+                    // :: error: (dereference.of.nullable)
                     f3.toString();
                     f4.toString();
                     return "";
@@ -57,10 +56,10 @@ class LambdaInit {
         f5 = "";
         FunctionInit<String, String> ff0 =
                 s -> {
-                    //:: error: (dereference.of.nullable)
+                    // :: error: (dereference.of.nullable)
                     f1.toString();
                     f2.toString();
-                    //:: error: (dereference.of.nullable)
+                    // :: error: (dereference.of.nullable)
                     f3.toString();
                     f5.toString();
                     return "";
@@ -87,7 +86,7 @@ class LambdaInit {
                 s -> {
                     f1.toString();
                     f2.toString();
-                    //:: error: (dereference.of.nullable)
+                    // :: error: (dereference.of.nullable)
                     f3.toString();
                     return "";
                 };
@@ -99,7 +98,7 @@ class LambdaInit {
                 s -> {
                     f1.toString();
                     f2.toString();
-                    //:: error: (dereference.of.nullable)
+                    // :: error: (dereference.of.nullable)
                     f3.toString();
                     return "";
                 };
@@ -113,7 +112,7 @@ class LambdaInit {
                     s -> {
                         f1.toString();
                         f2.toString();
-                        //:: error: (dereference.of.nullable)
+                        // :: error: (dereference.of.nullable)
                         f3.toString();
                         f4.toString();
                         return "";
@@ -128,7 +127,7 @@ class LambdaInit {
                     s -> {
                         f1.toString();
                         f2.toString();
-                        //:: error: (dereference.of.nullable)
+                        // :: error: (dereference.of.nullable)
                         f3.toString();
                         f5.toString();
                         return "";
@@ -140,7 +139,7 @@ class LambdaInit {
                     s -> {
                         f1.toString();
                         f2.toString();
-                        //:: error: (dereference.of.nullable)
+                        // :: error: (dereference.of.nullable)
                         f3.toString();
                         return "";
                     };
@@ -152,10 +151,10 @@ class LambdaInit {
             s -> {
                 Consumer<String> ff0 =
                         s2 -> {
-                            //:: error: (dereference.of.nullable)
+                            // :: error: (dereference.of.nullable)
                             f1.toString();
                             f2.toString();
-                            //:: error: (dereference.of.nullable)
+                            // :: error: (dereference.of.nullable)
                             f3.toString();
                         };
             };
@@ -169,13 +168,13 @@ class LambdaInit {
             s -> {
 
                 // This is an issue with static initializers in general
-                // //:: error: (dereference.of.nullable)
+                // // :: error: (dereference.of.nullable)
                 sf1.toString();
                 // This is an issue with static initializers in general
-                // //:: error: (dereference.of.nullable)
+                // // :: error: (dereference.of.nullable)
                 sf1b.toString();
                 sf2.toString();
-                //:: error: (dereference.of.nullable)
+                // :: error: (dereference.of.nullable)
                 sf3.toString();
                 return "";
             };
@@ -191,10 +190,10 @@ class LambdaInit {
                 s -> {
 
                     // This is an issue with static initializers in general
-                    // //:: error: (dereference.of.nullable)
+                    // // :: error: (dereference.of.nullable)
                     sf1.toString();
                     sf2.toString();
-                    //:: error: (dereference.of.nullable)
+                    // :: error: (dereference.of.nullable)
                     sf3.toString();
                     sf4.toString();
                     return "";

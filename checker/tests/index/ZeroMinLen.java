@@ -12,7 +12,7 @@ public class ZeroMinLen {
 
     void test() {
         current_index = 0;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         current_index2 = 0;
     }
 }

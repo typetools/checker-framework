@@ -11,9 +11,9 @@ import org.checkerframework.dataflow.qual.*;
 public final class Issue415 {
 
     Map<String, Integer> mymap = new HashMap<String, Integer>();
-    //:: error: (expression.unparsable.type.invalid)
+    // :: error: (expression.unparsable.type.invalid)
     public static void usesField(Set<@KeyFor("this.mymap") String> keySet) {
-        //:: error: (expression.unparsable.type.invalid) :: error: (argument.type.incompatible)
+        // :: error: (expression.unparsable.type.invalid) :: error: (argument.type.incompatible)
         new ArrayList<@KeyFor("this.mymap") String>(keySet);
     }
 

@@ -356,7 +356,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         // Keep in sync with visitWildcard
         Set<AnnotationMirror> onVar = type.getAnnotations();
         if (!onVar.isEmpty()) {
-            // System.out.printf("BaseTypeVisitor.TypeValidator.visitTypeVariable(type: %s, tree: %s)%n",
+            // System.out.printf("BaseTypeVisitor.TypeValidator.visitTypeVariable(type: %s, tree:
+            // %s)%n",
             // type, tree);
 
             // TODO: the following check should not be necessary, once we are

@@ -1,4 +1,3 @@
-
 // Tet case for Issue 1526.
 // https://github.com/typetools/checker-framework/issues/1526
 public class Issue1526 {

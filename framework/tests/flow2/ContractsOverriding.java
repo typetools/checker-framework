@@ -29,18 +29,18 @@ class ContractsOverriding {
 
         @Override
         @RequiresOdd("f")
-        //:: error: (contracts.precondition.override.invalid)
+        // :: error: (contracts.precondition.override.invalid)
         void m1() {}
 
         @Override
         @RequiresQualifier(expression = "f", qualifier = Odd.class)
-        //:: error: (contracts.precondition.override.invalid)
+        // :: error: (contracts.precondition.override.invalid)
         void m2() {}
 
         @Override
         // g is a different field than in the supertype
         @RequiresOdd("g")
-        //:: error: (contracts.precondition.override.invalid)
+        // :: error: (contracts.precondition.override.invalid)
         void m3() {}
 
         @Override
@@ -58,16 +58,16 @@ class ContractsOverriding {
         String g;
 
         @Override
-        //:: error: (contracts.postcondition.not.satisfied)
+        // :: error: (contracts.postcondition.not.satisfied)
         void m1() {}
 
         @Override
-        //:: error: (contracts.postcondition.not.satisfied)
+        // :: error: (contracts.postcondition.not.satisfied)
         void m2() {}
 
         @Override
         @EnsuresOdd("g")
-        //:: error: (contracts.postcondition.override.invalid)
+        // :: error: (contracts.postcondition.override.invalid)
         void m3() {
             g = odd;
         }
@@ -109,19 +109,19 @@ class ContractsOverriding {
 
         @Override
         boolean m1() {
-            //:: error: (contracts.conditional.postcondition.not.satisfied)
+            // :: error: (contracts.conditional.postcondition.not.satisfied)
             return true;
         }
 
         @Override
         boolean m2() {
-            //:: error: (contracts.conditional.postcondition.not.satisfied)
+            // :: error: (contracts.conditional.postcondition.not.satisfied)
             return true;
         }
 
         @Override
         @EnsuresOddIf(expression = "g", result = true)
-        //:: error: (contracts.conditional.postcondition.true.override.invalid)
+        // :: error: (contracts.conditional.postcondition.true.override.invalid)
         boolean m3() {
             g = odd;
             return true;

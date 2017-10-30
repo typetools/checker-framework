@@ -64,7 +64,7 @@ class RawPartial2 {
     }
     void test_nroO() {
 // DONE
-      //:: error
+      // :: error
       nroO = rO;
       nroO = o;
       nroO = rA;
@@ -79,34 +79,34 @@ class RawPartial2 {
     }
     void test_o() {
 // DONE
-      //:: error
+      // :: error
       o = rO;
-      //:: error
+      // :: error
       o = nroO;
-      //:: error
+      // :: error
       o = rA;
-      //:: error
+      // :: error
       o = nroA;
-      //:: error
+      // :: error
       o = nraA;
       o = a;
-      //:: error
+      // :: error
       o = nroB;
-      //:: error
+      // :: error
       o = rB;
-      //:: error
+      // :: error
       o = nraB;
-      //:: error
+      // :: error
       o = nrbB;
       o = b;
     }
     void test_rA() {
 // DONE
-      //:: error
+      // :: error
       rA = rO;
-      //:: error
+      // :: error
       rA = nroO;
-      //:: error
+      // :: error
       rA = o;
       rA = nroA;
       rA = nraA;
@@ -119,11 +119,11 @@ class RawPartial2 {
     }
     void test_nroA() {
 // DONE
-      //:: error
+      // :: error
       nroA = rO;
-      //:: error
+      // :: error
       nroA = nroO;
-      //:: error
+      // :: error
       nroA = o;
       nroA = rA;
       nroA = nraA;
@@ -136,18 +136,18 @@ class RawPartial2 {
     }
     void test_nraA() {
 // DONE
-      //:: error
+      // :: error
       nraA = rO;
-      //:: error
+      // :: error
       nraA = nroO;
-      //:: error
+      // :: error
       nraA = o;
-      //:: error
+      // :: error
       nraA = rA;
-      //:: error
+      // :: error
       nraA = nroA;
       nraA = a;
-      //:: error
+      // :: error
       nraA = nroB;
       nraA = rB;
       nraA = nraB;
@@ -156,42 +156,42 @@ class RawPartial2 {
     }
     void test_a() {
 // DONE
-      //:: error
+      // :: error
       a = rO;
-      //:: error
+      // :: error
       a = nroO;
-      //:: error
+      // :: error
       a = o;
-      //:: error
+      // :: error
       a = rA;
-      //:: error
+      // :: error
       a = nroA;
-      //:: error
+      // :: error
       a = nraA;
-      //:: error
+      // :: error
       a = nroB;
-      //:: error
+      // :: error
       a = rB;
-      //:: error
+      // :: error
       a = nraB;
-      //:: error
+      // :: error
       a = nrbB;
       a = b;
     }
     void test_nroB() {
-      //:: error
+      // :: error
       nroB = rO;
-      //:: error
+      // :: error
       nroB = nroO;
-      //:: error
+      // :: error
       nroB = o;
-      //:: error
+      // :: error
       nroB = rA;
-      //:: error
+      // :: error
       nroB = nroA;
-      //:: error
+      // :: error
       nroB = nraA;
-      //:: error
+      // :: error
       nroB = a;
       nroB = rB;
       nroB = nraB;
@@ -199,93 +199,93 @@ class RawPartial2 {
       nroB = b;
     }
     void test_rB() {
-      //:: error
+      // :: error
       rB = rO;
-      //:: error
+      // :: error
       rB = nroO;
-      //:: error
+      // :: error
       rB = o;
-      //:: error
+      // :: error
       rB = rA;
-      //:: error
+      // :: error
       rB = nroA;
-      //:: error
+      // :: error
       rB = nraA;
-      //:: error
+      // :: error
       rB = a;
-      //:: error
+      // :: error
       rB = nroB;
       rB = nraB;
       rB = nrbB;
       rB = b;
     }
     void test_nraB() {
-      //:: error
+      // :: error
       nraB = rO;
-      //:: error
+      // :: error
       nraB = nroO;
-      //:: error
+      // :: error
       nraB = o;
-      //:: error
+      // :: error
       nraB = rA;
-      //:: error
+      // :: error
       nraB = nroA;
-      //:: error
+      // :: error
       nraB = nraA;
-      //:: error
+      // :: error
       nraB = a;
-      //:: error
+      // :: error
       nraB = nroB;
       nraB = rB;
       nraB = nrbB;
       nraB = b;
     }
     void test_nrbB() {
-      //:: error
+      // :: error
       nrbB = rO;
-      //:: error
+      // :: error
       nrbB = nroO;
-      //:: error
+      // :: error
       nrbB = o;
-      //:: error
+      // :: error
       nrbB = rA;
-      //:: error
+      // :: error
       nrbB = nroA;
-      //:: error
+      // :: error
       nrbB = nraA;
-      //:: error
+      // :: error
       nrbB = a;
-      //:: error
+      // :: error
       nrbB = nroB;
-      //:: error
+      // :: error
       nrbB = rB;
-      //:: error
+      // :: error
       nrbB = nraB;
       nrbB = b;
     }
     void test_b() {
 // DONE
-      //:: error
+      // :: error
       b = rO;
-      //:: error
+      // :: error
       b = nroO;
-      //:: error
+      // :: error
       b = o;
-      //:: error
+      // :: error
       b = rA;
-      //:: error
+      // :: error
       b = nroA;
-      //:: error
+      // :: error
       b = nraA;
-      //:: error
+      // :: error
       b = a;
-      //:: error
+      // :: error
       b = nroB;
-      //:: error
+      // :: error
       b = rB;
-      //:: error
+      // :: error
       b = nraB;
-      //:: error
+      // :: error
       b = nrbB;
     }
   }

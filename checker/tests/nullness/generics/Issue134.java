@@ -21,7 +21,7 @@ class Bug {
     }
 
     void baz(Wrap<@Nullable Integer> w, Integer f) {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         w.get().of(f).toString();
     }
 }

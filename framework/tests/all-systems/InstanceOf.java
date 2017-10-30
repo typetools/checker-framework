@@ -1,4 +1,3 @@
-
 /* This example causes an error when computing the GLB of two types
  * because the GLB is empty. */
 

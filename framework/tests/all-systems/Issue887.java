@@ -1,6 +1,7 @@
 // Test case for Issue 887
 // https://github.com/typetools/checker-framework/issues/887
 // Additional test case in checker/tests/nullness/Issue887.java
+
 import java.util.List;
 
 @SuppressWarnings(

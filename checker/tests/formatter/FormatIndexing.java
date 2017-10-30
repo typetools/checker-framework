@@ -18,18 +18,18 @@ public class FormatIndexing {
         @Format({ConversionCategory.CHAR_AND_INT}) String ici = "%1$d %1$c";
         f.format("%1$c %1$d", (int) 42);
         f.format("%1$c %1$d %1$d", (int) 42);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         f.format("%1$c %1$d", (long) 42);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         f.format("%1$c %1$d", 'c');
 
         // test INT_AND_TIME
         @Format({ConversionCategory.INT_AND_TIME}) String iit = "%1$tT %1$d";
         f.format("%1$tT %1$d", (long) 42);
         f.format("%1$d %1$tT %1$d", (long) 42);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         f.format("%1$tT %1$d", (int) 42);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         f.format("%1$tT %1$d", new Date());
 
         // test NULL
@@ -43,30 +43,30 @@ public class FormatIndexing {
         @Format({ConversionCategory.NULL, ConversionCategory.INT}) String tf = "%TT %<f %2$d";
         @Format({ConversionCategory.NULL}) String icf = "%d %<c %<f";
         @Format({ConversionCategory.NULL}) String itc = "%d %<TT %<c";
-        //:: error: (format.specifier.null)
+        // :: error: (format.specifier.null)
         f.format(tf, null, 0);
-        //:: warning: (format.indirect.arguments) :: error: (format.specifier.null)
+        // :: warning: (format.indirect.arguments) :: error: (format.specifier.null)
         f.format(tf, (Object[]) null);
-        //:: error: (format.specifier.null)
+        // :: error: (format.specifier.null)
         f.format(tf, 'c', 0);
-        //:: error: (format.specifier.null)
+        // :: error: (format.specifier.null)
         f.format(tf, (Object) null, 0);
 
         // test UNUSED
-        //:: warning: (format.argument.unused)
+        // :: warning: (format.argument.unused)
         f.format("%1$s %3$s", "Hello", "Missing", "World");
-        //:: warning: (format.argument.unused) :: warning: (format.indirect.arguments)
+        // :: warning: (format.argument.unused) :: warning: (format.indirect.arguments)
         f.format("%1$s %3$s", new Object[5]);
-        //:: warning: (format.argument.unused) :: warning: (format.indirect.arguments)
+        // :: warning: (format.argument.unused) :: warning: (format.indirect.arguments)
         f.format("%5$s", (Object[]) null);
-        //:: warning: (format.argument.unused)
+        // :: warning: (format.argument.unused)
         f.format("%3$s", null, null, null);
-        //:: warning: (format.argument.unused)
+        // :: warning: (format.argument.unused)
         f.format("%7$s %2$s %4$s %<s %7$s", 0, 0, 0, 0, 0, 0, 0);
         f.close();
 
         // test UNUSED and NULL
-        //:: warning: (format.argument.unused) :: error: (format.specifier.null)
+        // :: warning: (format.argument.unused) :: error: (format.specifier.null)
         f.format("%1$s %3$d %3$f", "Hello", "Missing", "World");
     }
 }

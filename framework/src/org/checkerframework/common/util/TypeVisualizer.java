@@ -558,7 +558,7 @@ public class TypeVisualizer {
             public String getAnnoStr(final AnnotatedTypeMirror atm) {
                 List<String> annoNames = new ArrayList<>();
                 for (final AnnotationMirror anno : atm.getAnnotations()) {
-                    //TODO: More comprehensive escaping
+                    // TODO: More comprehensive escaping
                     annoNames.add(annoFormatter.formatAnnotationMirror(anno).replace("\"", "\\"));
                 }
                 return PluginUtil.join(" ", annoNames);

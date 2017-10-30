@@ -1070,7 +1070,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // Because of a bug in Java 8, annotations on type parameters are not stored in elements,
         // so get explicit annotations from the tree. (This bug has been fixed in Java 9.)
         // Also, since annotations computed by the AnnotatedTypeFactory are stored in the element,
-        // the annotations have to be retrived from the tree so that only explicit annotations are returned.
+        // the annotations have to be retrived from the tree so that only explicit annotations are
+        // returned.
         Tree decl = declarationFromElement(elt);
 
         if (decl == null && typesFromStubFiles != null && typesFromStubFiles.containsKey(elt)) {
@@ -2248,7 +2249,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 break;
             default:
                 if (ctxtype.getKind().isPrimitive()) {
-                    // See Issue 438. Ignore primitive types for diamond inference - a primitive type
+                    // See Issue 438. Ignore primitive types for diamond inference - a primitive
+                    // type
                     // is never a suitable context anyways.
                 } else {
                     ErrorReporter.errorAbort(
@@ -3398,8 +3400,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             return (AnnotatedDeclaredType) t;
                         }
                     }
-                    // We should never reach here: assertFunctionalInterface performs the same check and
-                    // would have raised an error already.
+                    // We should never reach here: assertFunctionalInterface performs the same check
+                    // and would have raised an error already.
                     ErrorReporter.errorAbort(
                             String.format(
                                     "Expected the type of a cast tree in an assignment context to contain a functional interface bound. "

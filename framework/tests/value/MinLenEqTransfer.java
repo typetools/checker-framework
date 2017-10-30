@@ -12,7 +12,7 @@ class MinLenEqTransfer {
 
     void eq_bad_check(int[] a) {
         if (1 == a.length) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             int @MinLen(2) [] b = a;
         }
     }
@@ -23,7 +23,7 @@ class MinLenEqTransfer {
             return a;
         } else if (a.length == 0 || a.length == 1) {
             int x = a.length;
-            //:: error: (return.type.incompatible)
+            // :: error: (return.type.incompatible)
             return a;
         }
         return new int[] {1, 2};

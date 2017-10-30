@@ -14,14 +14,14 @@ class BytecodeDefaultsTest {
 @AnnotatedFor("nullness")
 class HasErrors {
     Object f() {
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return null;
     }
 }
 
 class HasErrors2 {
     Object f() {
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return null;
     }
 }

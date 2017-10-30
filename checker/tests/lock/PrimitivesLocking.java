@@ -1,20 +1,21 @@
 // @skip-test
-// TODO: Reenable this test after a @GuardedByName annotation is implemented that can guard primitives,
+// TODO: Reenable this test after a @GuardedByName annotation is implemented that can guard
+// primitives,
 // and uncomment all the @GuardedByName annotations below.
 
 // Note that testing of the immutable.type.guardedby error message is done in TestTreeKinds.java
 
 class PrimitivesLocking {
-    //@GuardedByName("lock")
+    // @GuardedByName("lock")
     int primitive = 1;
 
-    //@GuardedByName("lock")
+    // @GuardedByName("lock")
     boolean primitiveBoolean;
 
     public void testOperationsWithPrimitives() {
-        //@GuardedByName("lock")
+        // @GuardedByName("lock")
         int i = 0;
-        //@GuardedByName("lock")
+        // @GuardedByName("lock")
         boolean b;
 
         // TODO reenable this error: (lock.not.held)

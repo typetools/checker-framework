@@ -11,16 +11,16 @@ class RawTypesInit {
         @NonNull String field;
 
         public Bad() {
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             this.init(); // error
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             init(); // error
 
             this.field = "field"; // valid
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             this.field = null; // error
             field = "field"; // valid
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             field = null; // error
         }
 
@@ -40,22 +40,22 @@ class RawTypesInit {
         }
 
         public void init(@Raw @UnknownInitialization A this) {
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             output(this.field.length());
         }
 
         public void initExpl2(@Raw @UnknownInitialization A this) {
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             output(this.field);
         }
 
         public void initImpl1(@Raw @UnknownInitialization A this) {
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             output(field.length());
         }
 
         public void initImpl2(@Raw @UnknownInitialization A this) {
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             output(field);
         }
     }
@@ -65,30 +65,30 @@ class RawTypesInit {
 
         public B() {
             super();
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             this.otherField = null; // error
             this.otherField = "otherField"; // valid
         }
 
         @Override
         public void init(@Raw @UnknownInitialization B this) {
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             output(this.field.length()); // error (TODO: substitution)
             super.init(); // valid
         }
 
         public void initImpl1(@Raw @UnknownInitialization B this) {
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             output(field.length()); // error (TODO: substitution)
         }
 
         public void initExpl2(@Raw @UnknownInitialization B this) {
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             output(this.otherField.length()); // error
         }
 
         public void initImpl2(@Raw @UnknownInitialization B this) {
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             output(otherField.length()); // error
         }
 
@@ -103,14 +103,14 @@ class RawTypesInit {
         }
     }
 
-    //:: error: (initialization.fields.uninitialized)
+    // :: error: (initialization.fields.uninitialized)
     class C extends B {
 
         @NonNull String[] strings;
 
         @Override
         public void init(@Raw @UnknownInitialization C this) {
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             output(this.strings.length); // error
             System.out.println(); // valid
         }
@@ -135,7 +135,7 @@ class RawTypesInit {
         }
 
         void myTest(@Raw @UnknownInitialization MyTest this) {
-            //:: error: (unboxing.of.nullable)
+            // :: error: (unboxing.of.nullable)
             i = i + 1;
         }
     }
@@ -145,14 +145,14 @@ class RawTypesInit {
         Integer startTime = 0;
 
         public AllFieldsInitialized() {
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             nonRawMethod();
         }
 
         public void nonRawMethod() {}
     }
 
-    //:: error: (initialization.fields.uninitialized)
+    // :: error: (initialization.fields.uninitialized)
     class AFSIICell {
         AllFieldsSetInInitializer afsii;
     }
@@ -163,18 +163,18 @@ class RawTypesInit {
 
         public AllFieldsSetInInitializer() {
             elapsedMillis = 0;
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             nonRawMethod(); // error
             startTime = 0;
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             nonRawMethod(); // error
-            //:: error: (initialization.invalid.field.write.initialized)
+            // :: error: (initialization.invalid.field.write.initialized)
             new AFSIICell().afsii = this;
         }
 
-        //:: error: (initialization.fields.uninitialized)
+        // :: error: (initialization.fields.uninitialized)
         public AllFieldsSetInInitializer(boolean b) {
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             nonRawMethod(); // error
         }
 
@@ -190,7 +190,7 @@ class RawTypesInit {
 
         public ConstructorInvocations() {
             this(0);
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             nonRawMethod(); // invalid
         }
 
@@ -210,7 +210,7 @@ class RawTypesInit {
     void cast(@Raw @UnknownInitialization Object... args) {
 
         @SuppressWarnings("rawtypes")
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         Object[] argsNonRaw1 = args;
 
         @SuppressWarnings("cast")
@@ -219,7 +219,7 @@ class RawTypesInit {
 
     class RawAfterConstructorBad {
         Object o;
-        //:: error: (initialization.fields.uninitialized)
+        // :: error: (initialization.fields.uninitialized)
         RawAfterConstructorBad() {}
     }
 
@@ -231,7 +231,7 @@ class RawTypesInit {
 
     class RawAfterConstructorOK2 {
         Integer a;
-        //:: error: (initialization.fields.uninitialized)
+        // :: error: (initialization.fields.uninitialized)
         RawAfterConstructorOK2() {}
     }
 
@@ -244,14 +244,14 @@ class RawTypesInit {
         InitInHelperMethod(short constructor_inits_ab) {
             a = 1;
             b = 1;
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             nonRawMethod();
         }
 
         InitInHelperMethod(boolean constructor_inits_a) {
             a = 1;
             init_b();
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             nonRawMethod();
         }
 
@@ -259,13 +259,13 @@ class RawTypesInit {
         @EnsuresNonNull("b")
         void init_b(@Raw @UnknownInitialization InitInHelperMethod this) {
             b = 2;
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             nonRawMethod();
         }
 
         InitInHelperMethod(int constructor_inits_none) {
             init_ab();
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             nonRawMethod();
         }
 
@@ -273,7 +273,7 @@ class RawTypesInit {
         void init_ab(@Raw @UnknownInitialization InitInHelperMethod this) {
             a = 1;
             b = 2;
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             nonRawMethod();
         }
 

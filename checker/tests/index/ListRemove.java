@@ -13,12 +13,12 @@ class ListRemove {
             @LTLengthOf("#3") int index, @LTEqLengthOf("#3") int notIndex, List<Integer> list) {
         list.remove(index);
 
-        //:: error: (list.access.unsafe.high)
+        // :: error: (list.access.unsafe.high)
         list.remove(notIndex);
     }
 
     void ListRemoveWrongName(@LTLengthOf("arr") int index, List<Integer> list) {
-        //:: error: (list.access.unsafe.high)
+        // :: error: (list.access.unsafe.high)
         list.remove(index);
     }
 
@@ -28,13 +28,13 @@ class ListRemove {
         this.listField.remove(listField.size() - 1);
         this.listField.remove(this.listField.size() - 1);
 
-        //:: error: (list.access.unsafe.high)
+        // :: error: (list.access.unsafe.high)
         listField.remove(listField.size());
-        //:: error: (list.access.unsafe.high)
+        // :: error: (list.access.unsafe.high)
         listField.remove(this.listField.size());
-        //:: error: (list.access.unsafe.high)
+        // :: error: (list.access.unsafe.high)
         this.listField.remove(listField.size());
-        //:: error: (list.access.unsafe.high)
+        // :: error: (list.access.unsafe.high)
         this.listField.remove(this.listField.size());
     }
 
@@ -42,18 +42,18 @@ class ListRemove {
         listField.remove(i);
         this.listField.remove(i);
 
-        //:: error: (list.access.unsafe.high)
+        // :: error: (list.access.unsafe.high)
         listField.remove(i + 1);
-        //:: error: (list.access.unsafe.high)
+        // :: error: (list.access.unsafe.high)
         this.listField.remove(i + 1);
     }
 
     void ListRemoveUserAnnotation(@IndexFor("list") int i, List<Integer> list) {
         list.remove(i);
 
-        //:: error: (list.access.unsafe.high)
+        // :: error: (list.access.unsafe.high)
         list.remove(i + 1);
-        //:: error: (list.access.unsafe.high)
+        // :: error: (list.access.unsafe.high)
         list.remove(i);
     }
 
@@ -72,7 +72,7 @@ class ListRemove {
         int m = list.size() - 1;
         list.get(m);
         list.remove(m);
-        //:: error: (list.access.unsafe.high)
+        // :: error: (list.access.unsafe.high)
         list.get(m);
     }
 }

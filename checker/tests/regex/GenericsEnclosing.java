@@ -18,11 +18,11 @@ class ExtMyG extends MyG<@Regex String> {
             void bar() {
                 String s = f;
                 f = "hi";
-                //:: error: (assignment.type.incompatible)
+                // :: error: (assignment.type.incompatible)
                 f = "\\ no regex(";
 
                 m("hi!");
-                //:: error: (argument.type.incompatible)
+                // :: error: (argument.type.incompatible)
                 m("\\ no regex(");
             }
         }

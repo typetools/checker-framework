@@ -9,7 +9,7 @@ public class Issue905 {
     Issue905() {
         // this should be @UnderInitialization(Object.class), so this call
         // should be forbidden.
-        //:: error: (method.invocation.invalid)
+        // :: error: (method.invocation.invalid)
         baz();
         mBar = "";
     }

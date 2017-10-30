@@ -597,12 +597,14 @@ public abstract class InitializationAnnotatedTypeFactory<
                 // anything can be assigned to this field.
                 type.replaceAnnotation(UNCLASSIFIED);
             } else if (computingAnnotatedTypeMirrorOfLHS) {
-                // The receiver is not initialized for this frame, but the type of a lhs is being computed.
+                // The receiver is not initialized for this frame, but the type of a lhs is being
+                // computed.
                 // Change the type of the field to @UnknownInitialization or @Raw so that
                 // anything can be assigned to this field.
                 type.replaceAnnotation(UNCLASSIFIED);
             } else {
-                // The receiver is not initialized for this frame and the type being computed is not a LHS.
+                // The receiver is not initialized for this frame and the type being computed is not
+                // a LHS.
                 // Replace all annotations with the top annotation for that hierarchy.
                 type.clearAnnotations();
                 type.addAnnotations(qualHierarchy.getTopAnnotations());
@@ -751,7 +753,8 @@ public abstract class InitializationAnnotatedTypeFactory<
                 return false;
             }
             // Now, either both annotations are @UnderInitialization, both annotations are
-            // @UnknownInitialization or anno1 is @UnderInitialization and anno2 is @UnknownInitialization.
+            // @UnknownInitialization or anno1 is @UnderInitialization and anno2 is
+            // @UnknownInitialization.
             assert (free1 && free2) || (unc1 && unc2) || (free1 && unc2);
             // Thus, we only need to look at the type frame.
             TypeMirror frame1 = getTypeFrameFromAnnotation(rhs);

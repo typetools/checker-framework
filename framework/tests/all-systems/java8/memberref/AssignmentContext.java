@@ -1,4 +1,3 @@
-
 interface FunctionAC {
     String apply(String s);
 }

@@ -148,7 +148,8 @@ public abstract class AnnotatedTypeMirror {
 
     /** The explicitly written annotations on this type. */
     // TODO: use this to cache the result once computed? For generic types?
-    // protected final Set<AnnotationMirror> explicitannotations = AnnotationUtils.createAnnotationSet();
+    // protected final Set<AnnotationMirror> explicitannotations =
+    // AnnotationUtils.createAnnotationSet();
 
     /**
      * Constructor for AnnotatedTypeMirror.
@@ -1237,7 +1238,8 @@ public abstract class AnnotatedTypeMirror {
             if (receiverType == null
                     // Static methods don't have a receiver
                     && !ElementUtils.isStatic(getElement())
-                    // Array constructors should also not have a receiver. Array members have a getEnclosingElement().getEnclosingElement() of NONE
+                    // Array constructors should also not have a receiver. Array members have a
+                    // getEnclosingElement().getEnclosingElement() of NONE
                     && (!(getElement().getKind() == ElementKind.CONSTRUCTOR
                             && getElement()
                                     .getEnclosingElement()
@@ -1580,9 +1582,9 @@ public abstract class AnnotatedTypeMirror {
         // because otherwise the annotations are inconsistent.
         private void fixupBoundAnnotations() {
 
-            // We allow the above replacement first because primary annotations might not have annotations for
-            // all hierarchies, so we don't want to avoid placing bottom on the lower bound for those hierarchies that
-            // don't have a qualifier in primaryAnnotations
+            // We allow the above replacement first because primary annotations might not have
+            // annotations for all hierarchies, so we don't want to avoid placing bottom on the
+            // lower bound for those hierarchies that don't have a qualifier in primaryAnnotations.
             if (!this.getAnnotationsField().isEmpty()) {
                 if (upperBound != null) {
                     replaceUpperBoundAnnotations();

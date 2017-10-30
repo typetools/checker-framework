@@ -31,10 +31,10 @@ class Issue289 {
 
     void complex() {
         Upper<@Nullable String> uns = new Lower1<>();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         Upper<String> us = new Lower1<>();
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         uns = new Lower2<>();
         us = new Lower2<>();
     }

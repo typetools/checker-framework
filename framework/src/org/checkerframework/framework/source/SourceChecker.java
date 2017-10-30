@@ -223,8 +223,8 @@ import org.checkerframework.javacutil.TreeUtils;
 
     // Whether to print [] around a set of type parameters in order to clearly see where they end
     // e.g.  <E extends F, F extends Object>
-    // without this option the E is printed as:   E extends F extends Object
-    // with this option:                          E [ extends F [ extends Object super Void ] super Void ]
+    // without this option the E is printed: E extends F extends Object
+    // with this option:                    E [ extends F [ extends Object super Void ] super Void ]
     // when multiple type variables are used this becomes useful very quickly
     "printVerboseGenerics",
 
@@ -1017,15 +1017,28 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     // public void dumpState() {
     //     System.out.printf("SourceChecker = %s%n", this);
     //     System.out.printf("  env = %s%n", env);
-    //     System.out.printf("    env.elementUtils = %s%n", ((JavacProcessingEnvironment) env).elementUtils);
-    //     System.out.printf("      env.elementUtils.types = %s%n", ((JavacProcessingEnvironment) env).elementUtils.types);
-    //     System.out.printf("      env.elementUtils.enter = %s%n", ((JavacProcessingEnvironment) env).elementUtils.enter);
-    //     System.out.printf("    env.typeUtils = %s%n", ((JavacProcessingEnvironment) env).typeUtils);
+    //     System.out.printf(
+    //             "    env.elementUtils = %s%n", ((JavacProcessingEnvironment) env).elementUtils);
+    //     System.out.printf(
+    //             "      env.elementUtils.types = %s%n",
+    //             ((JavacProcessingEnvironment) env).elementUtils.types);
+    //     System.out.printf(
+    //             "      env.elementUtils.enter = %s%n",
+    //             ((JavacProcessingEnvironment) env).elementUtils.enter);
+    //     System.out.printf(
+    //             "    env.typeUtils = %s%n", ((JavacProcessingEnvironment) env).typeUtils);
     //     System.out.printf("  trees = %s%n", trees);
-    //     System.out.printf("    trees.enter = %s%n", ((com.sun.tools.javac.api.JavacTrees) trees).enter);
-    //     System.out.printf("    trees.elements = %s%n", ((com.sun.tools.javac.api.JavacTrees) trees).elements);
-    //     System.out.printf("      trees.elements.types = %s%n", ((com.sun.tools.javac.api.JavacTrees) trees).elements.types);
-    //     System.out.printf("      trees.elements.enter = %s%n", ((com.sun.tools.javac.api.JavacTrees) trees).elements.enter);
+    //     System.out.printf(
+    //             "    trees.enter = %s%n", ((com.sun.tools.javac.api.JavacTrees) trees).enter);
+    //     System.out.printf(
+    //             "    trees.elements = %s%n",
+    //             ((com.sun.tools.javac.api.JavacTrees) trees).elements);
+    //     System.out.printf(
+    //             "      trees.elements.types = %s%n",
+    //             ((com.sun.tools.javac.api.JavacTrees) trees).elements.types);
+    //     System.out.printf(
+    //             "      trees.elements.enter = %s%n",
+    //             ((com.sun.tools.javac.api.JavacTrees) trees).elements.enter);
     // }
 
     /**
@@ -1329,6 +1342,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return false;
         }
 
+        // trees.getPath might be slow, but this is only used in error reporting
+        // TODO: #1586 this might return null within a cloned finally block and
+        // then a warning that should be suppressed isn't. Fix this when fixing #1586.
         /*@Nullable*/ TreePath path = trees.getPath(this.currentRoot, tree);
         if (path == null) {
             return false;
