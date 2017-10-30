@@ -7,6 +7,9 @@ indicates that the value is not equals() to any other value.
 
 An annotated version of the Commons IO library appears in checker/lib/ .
 
+Closed issue 1586, which required re-opening issues 293 and 341 until
+proper fixes for those are implemented.
+
 ---------------------------------------------------------------------------
 
 Version 2.2.1, September 29, 2017

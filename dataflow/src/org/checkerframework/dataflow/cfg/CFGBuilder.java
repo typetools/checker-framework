@@ -1582,6 +1582,7 @@ public class CFGBuilder {
                 AnnotationProvider annotationProvider) {
             trees = Trees.instance(env);
             TreePath bodyPath = trees.getPath(root, underlyingAST.getCode());
+            assert bodyPath != null;
             return process(
                     bodyPath,
                     env,
@@ -4236,11 +4237,12 @@ public class CFGBuilder {
             }
 
             Label finallyLabel = null;
-            Label exceptionalFinallyLabel = null;
+            // Label exceptionalFinallyLabel = null; // #293
             if (finallyBlock != null) {
                 finallyLabel = new Label();
-                exceptionalFinallyLabel = new Label();
-                tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
+                // exceptionalFinallyLabel = new Label(); // #293
+                // tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
+                tryStack.pushFrame(new TryFinallyFrame(finallyLabel));
             }
 
             Label doneLabel = new Label();
@@ -4264,40 +4266,39 @@ public class CFGBuilder {
             if (finallyLabel != null) {
                 tryStack.popFrame();
 
-                if (hasExceptionalPath(exceptionalFinallyLabel)) {
-                    // If an exceptional path exists, scan 'finallyBlock' for
-                    // 'exceptionalFinallyLabel', and scan copied 'finallyBlock' for
-                    // 'finallyLabel'(a successful path). If there is no successful path, it will be
-                    // removed in later phase.
-                    addLabelForNextNode(exceptionalFinallyLabel);
-                    scan(finallyBlock, p);
+                // if (hasExceptionalPath(exceptionalFinallyLabel)) {  // #293
+                // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
+                // and scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there
+                // is no successful path, it will be removed in later phase.
+                // addLabelForNextNode(exceptionalFinallyLabel);
+                addLabelForNextNode(finallyLabel);
+                scan(finallyBlock, p);
 
-                    TypeMirror throwableType =
-                            elements.getTypeElement("java.lang.Throwable").asType();
-                    NodeWithExceptionsHolder throwing =
-                            extendWithNodeWithException(
-                                    new MarkerNode(
-                                            tree, "end of finally block", env.getTypeUtils()),
-                                    throwableType);
-                    throwing.setTerminatesExecution(true);
+                TypeMirror throwableType = elements.getTypeElement("java.lang.Throwable").asType();
+                NodeWithExceptionsHolder throwing =
+                        extendWithNodeWithException(
+                                new MarkerNode(tree, "end of finally block", env.getTypeUtils()),
+                                throwableType);
+                /* #293
+                              throwing.setTerminatesExecution(true);
 
-                    addLabelForNextNode(finallyLabel);
-                    BlockTree successfulFinallyBlock = treeBuilder.copy(finallyBlock);
-                    addToGeneratedTreesLookupMap(finallyBlock, successfulFinallyBlock);
-                    scan(successfulFinallyBlock, p);
-                    extendWithNode(
-                            new MarkerNode(tree, "end of finally block", env.getTypeUtils()));
-                    extendWithExtendedNode(new UnconditionalJump(doneLabel));
-                } else {
-                    // Scan 'finallyBlock' for only 'finallyLabel'(a successful path) because there
-                    // is no path to 'exceptionalFinallyLabel'.
-                    addLabelForNextNode(finallyLabel);
-                    scan(finallyBlock, p);
+                              addLabelForNextNode(finallyLabel);
+                              BlockTree successfulFinallyBlock = treeBuilder.copy(finallyBlock);
+                              addToGeneratedTreesLookupMap(finallyBlock, successfulFinallyBlock);
+                              scan(successfulFinallyBlock, p);
+                              extendWithNode(
+                                      new MarkerNode(tree, "end of finally block", env.getTypeUtils()));
+                              extendWithExtendedNode(new UnconditionalJump(doneLabel));
+                       } else {
+                              // Scan 'finallyBlock' for only 'finallyLabel' (a successful path)
+                              // because there is no path to 'exceptionalFinallyLabel'.
+                              addLabelForNextNode(finallyLabel);
+                              scan(finallyBlock, p);
 
-                    extendWithNode(
-                            new MarkerNode(tree, "end of finally block", env.getTypeUtils()));
-                    extendWithExtendedNode(new UnconditionalJump(doneLabel));
-                }
+                              extendWithNode(
+                                      new MarkerNode(tree, "end of finally block", env.getTypeUtils()));
+                              extendWithExtendedNode(new UnconditionalJump(doneLabel));
+                }*/
             }
 
             addLabelForNextNode(doneLabel);
