@@ -1,0 +1,3 @@
+warning: StubParser: Field not found: NonNull
+warning: StubParser: Annotation expression, NonNull, could not be processed for annotation: @DefaultQualifier(NonNull).
+2 warnings
