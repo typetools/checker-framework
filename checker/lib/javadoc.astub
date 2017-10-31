@@ -1,6 +1,5 @@
 import org.checkerframework.common.value.MinLen;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 
@@ -28,7 +27,7 @@ public interface ClassDoc extends ProgramElementDoc, Type {
     Type[] interfaceTypes();
     TypeVariable[] typeParameters();
     ParamTag[] typeParamTags();
-    @NonNull FieldDoc @NonNull [] fields();
+    FieldDoc [] fields();
     FieldDoc[] fields(boolean filter);
     FieldDoc[] enumConstants();
     MethodDoc[] methods();
@@ -101,7 +100,7 @@ public interface RootDoc extends Doc, DocErrorReporter {
     String[][] options();
     PackageDoc[] specifiedPackages();
     ClassDoc[] specifiedClasses();
-    @NonNull ClassDoc @NonNull [] classes();
+    ClassDoc [] classes();
     PackageDoc packageNamed(String name);
     ClassDoc classNamed(String qualifiedName);
 }
