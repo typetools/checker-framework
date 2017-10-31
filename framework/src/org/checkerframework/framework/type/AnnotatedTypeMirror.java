@@ -943,10 +943,9 @@ public abstract class AnnotatedTypeMirror {
                             (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);
                     TypeVariableSubstitutor varSubstitutor = atypeFactory.getTypeVarSubstitutor();
                     // The upper bound of a type parameter may refer to other type parameters.
-                    // Substitute those references with the type argument, but make a copy so that
-                    // the merge happens without a concurrent modification exception.
+                    // Substitute those references with the type argument.
                     AnnotatedTypeMirror typeParamUpperBound =
-                            varSubstitutor.substitute(map, typeParam.getUpperBound()).deepCopy();
+                            varSubstitutor.substitute(map, typeParam.getUpperBound());
 
                     AnnotatedWildcardType wct = (AnnotatedWildcardType) typeArgs.get(i);
                     AnnotatedTypeMerger.merge(typeParamUpperBound, wct.getExtendsBound());
