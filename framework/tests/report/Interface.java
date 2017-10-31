@@ -20,11 +20,11 @@ class Interface {
     interface C extends A {}
 
     void foo(A a, B b, C c, Object o) {
-        //:: error: (methodcall)
+        // :: error: (methodcall)
         if (a.equals(o)) {}
-        //:: error: (methodcall)
+        // :: error: (methodcall)
         if (b.equals(o)) {}
-        //:: error: (methodcall)
+        // :: error: (methodcall)
         if (c.equals(o)) {}
 
         // Don't report this call.
@@ -32,11 +32,11 @@ class Interface {
     }
 
     void bar(A a, B b, C c, Object o) {
-        //:: error: (methodcall)
+        // :: error: (methodcall)
         a.mine();
-        //:: error: (methodcall)
+        // :: error: (methodcall)
         b.mine();
-        //:: error: (methodcall)
+        // :: error: (methodcall)
         c.mine();
     }
 }

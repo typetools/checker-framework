@@ -59,7 +59,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
         this.TOP = AnnotationBuilder.fromClass(elements, UnknownInterned.class);
 
-        // If you update the following, also update ../../../../../docs/manual/interning-checker.tex .
+        // If you update the following, also update ../../../../../docs/manual/interning-checker.tex
         addAliasedAnnotation(com.sun.istack.internal.Interned.class, INTERNED);
 
         this.postInit();
@@ -140,12 +140,11 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (elt.getKind() == ElementKind.ENUM) {
                 t.replaceAnnotation(INTERNED);
 
-                //TODO: CODE REVIEW:
-                //TODO: I am not sure this makes sense.  An element for a declared type doesn't always have
-                //TODO: to be a class declaration.  AND I would assume if the class declaration has
-                //TODO: @Interned then the type would already receive an @Interned from the framework without
-                //TODO: this case (I think from InheritFromClass)
-                //TODO: IF this is true, perhaps remove item 6 I added to the class comment
+                // TODO: CODE REVIEW:  I am not sure this makes sense.  An element for a declared
+                // type doesn't always have to be a class declaration.  AND I would assume if the
+                // class declaration has @Interned then the type would already receive an @Interned
+                // from the framework without this case (I think from InheritFromClass) IF this is
+                // true, perhaps remove item 6 I added to the class comment.
             } else if (typeFactory.fromElement(elt).hasAnnotation(INTERNED)) {
                 // If the class/interface has an @Interned annotation, use it.
                 t.replaceAnnotation(INTERNED);

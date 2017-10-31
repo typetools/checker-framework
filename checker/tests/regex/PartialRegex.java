@@ -11,11 +11,11 @@ public class PartialRegex {
         @Regex String test4 = l + l + r + r;
         @Regex String test5 = l + l + re + r + r;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex String fail1 = r + l;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex String fail2 = r + non + l;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex String fail3 = l + r + r;
     }
 }

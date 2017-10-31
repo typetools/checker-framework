@@ -6,6 +6,7 @@
  * @compile/fail/ref=Class1MinClass2Min-err.out -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Anomsgtext Class2Min.java Class1Min.java
  *
  */
+
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 
 public class Class1Min {

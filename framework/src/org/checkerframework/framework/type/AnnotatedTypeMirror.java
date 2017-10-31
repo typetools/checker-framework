@@ -10,7 +10,9 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
@@ -142,11 +144,12 @@ public abstract class AnnotatedTypeMirror {
     // the class name of Annotation instead.
     // Caution: Assumes that a type can have at most one AnnotationMirror for
     // any Annotation type. JSR308 is pushing to have this change.
-    private final Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
+    protected final Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
 
     /** The explicitly written annotations on this type. */
     // TODO: use this to cache the result once computed? For generic types?
-    // protected final Set<AnnotationMirror> explicitannotations = AnnotationUtils.createAnnotationSet();
+    // protected final Set<AnnotationMirror> explicitannotations =
+    // AnnotationUtils.createAnnotationSet();
 
     /**
      * Constructor for AnnotatedTypeMirror.
@@ -333,7 +336,9 @@ public abstract class AnnotatedTypeMirror {
      * annotationName if one exists, null otherwise.
      *
      * @return the annotation mirror for annotationName
+     * @deprecated use {@link AnnotationUtils#getAnnotationByName(Collection,String)} instead.
      */
+    @Deprecated // Remove after 2.2.1 release
     public AnnotationMirror getAnnotation(Name annotationName) {
         assert annotationName != null : "Null annotationName in getAnnotation";
         return getAnnotation(annotationName.toString().intern());
@@ -344,7 +349,9 @@ public abstract class AnnotatedTypeMirror {
      * argument if one exists, null otherwise.
      *
      * @return the annotation mirror for annotationStr
+     * @deprecated use {@link AnnotationUtils#getAnnotationByName(Collection,String)} instead.
      */
+    @Deprecated // Remove after 2.2.1 release
     public AnnotationMirror getAnnotation(/*@Interned*/ String annotationStr) {
         assert annotationStr != null : "Null annotationName in getAnnotation";
         for (AnnotationMirror anno : getAnnotations()) {
@@ -363,7 +370,7 @@ public abstract class AnnotatedTypeMirror {
      * @return the annotation mirror for anno
      */
     public AnnotationMirror getAnnotation(Class<? extends Annotation> annoClass) {
-        for (AnnotationMirror annoMirror : getAnnotations()) {
+        for (AnnotationMirror annoMirror : annotations) {
             if (AnnotationUtils.areSameByClass(annoMirror, annoClass)) {
                 return annoMirror;
             }
@@ -421,7 +428,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotationRelaxed(AnnotationMirror)
      */
     public boolean hasAnnotation(AnnotationMirror a) {
-        return AnnotationUtils.containsSame(getAnnotations(), a);
+        return AnnotationUtils.containsSame(annotations, a);
     }
 
     /**
@@ -430,7 +437,9 @@ public abstract class AnnotatedTypeMirror {
      * @param a the annotation name to check for
      * @return true iff the type contains the annotation {@code a}
      * @see #hasAnnotationRelaxed(AnnotationMirror)
+     * @deprecated use {@link AnnotationUtils#containsSameByName(Collection,String)} instead.
      */
+    @Deprecated // Remove after 2.2.1 release
     public boolean hasAnnotation(Name a) {
         return getAnnotation(a) != null;
     }
@@ -514,7 +523,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotation(AnnotationMirror)
      */
     public boolean hasAnnotationRelaxed(AnnotationMirror a) {
-        return AnnotationUtils.containsSameIgnoringValues(getAnnotations(), a);
+        return AnnotationUtils.containsSameIgnoringValues(annotations, a);
     }
 
     /**
@@ -652,7 +661,8 @@ public abstract class AnnotatedTypeMirror {
         // TODO: however, this also means that if we are annotated with "@I(1)" and
         // remove "@I(2)" it will be removed. Is this what we want?
         // It's currently necessary for the Lock Checker.
-        AnnotationMirror anno = getAnnotation(AnnotationUtils.annotationName(a));
+        AnnotationMirror anno =
+                AnnotationUtils.getAnnotationByName(annotations, AnnotationUtils.annotationName(a));
         if (anno != null) {
             return annotations.remove(anno);
         } else {
@@ -921,14 +931,27 @@ public abstract class AnnotatedTypeMirror {
                 // Copy annotations from the declaration to the wildcards.
                 AnnotatedDeclaredType declaration =
                         atypeFactory.fromElement((TypeElement) getUnderlyingType().asElement());
+                Map<TypeVariable, AnnotatedTypeMirror> map = new HashMap<>();
                 for (int i = 0; i < typeArgs.size(); i++) {
                     AnnotatedTypeVariable typeParam =
                             (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);
+                    map.put(typeParam.getUnderlyingType(), typeArgs.get(i));
+                }
+
+                for (int i = 0; i < typeArgs.size(); i++) {
+                    AnnotatedTypeVariable typeParam =
+                            (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);
+                    TypeVariableSubstitutor varSubstitutor = atypeFactory.getTypeVarSubstitutor();
+                    // The upper bound of a type parameter may refer to other type parameters.
+                    // Substitute those references with the type argument.
+                    AnnotatedTypeMirror typeParamUpperBound =
+                            varSubstitutor.substitute(map, typeParam.getUpperBound());
+
                     AnnotatedWildcardType wct = (AnnotatedWildcardType) typeArgs.get(i);
-                    AnnotatedTypeMerger.merge(typeParam.getUpperBound(), wct.getExtendsBound());
-                    wct.getSuperBound()
-                            .replaceAnnotations(typeParam.getLowerBound().getAnnotations());
-                    wct.replaceAnnotations(typeParam.getAnnotations());
+                    AnnotatedTypeMerger.merge(typeParamUpperBound, wct.getExtendsBound());
+
+                    wct.getSuperBound().replaceAnnotations(typeParam.getLowerBound().annotations);
+                    wct.replaceAnnotations(typeParam.annotations);
                 }
                 return typeArgs;
             } else if (getUnderlyingType().getTypeArguments().isEmpty()) {
@@ -1018,8 +1041,8 @@ public abstract class AnnotatedTypeMirror {
                                         atypeFactory.types.erasure(actualType),
                                         atypeFactory,
                                         declaration);
-                rType.addAnnotations(getAnnotations());
-                rType.setTypeArguments(Collections.<AnnotatedTypeMirror>emptyList());
+                rType.addAnnotations(annotations);
+                rType.setTypeArguments(Collections.emptyList());
                 return rType.getErased();
 
             } else if ((getEnclosingType() != null)
@@ -1215,7 +1238,8 @@ public abstract class AnnotatedTypeMirror {
             if (receiverType == null
                     // Static methods don't have a receiver
                     && !ElementUtils.isStatic(getElement())
-                    // Array constructors should also not have a receiver. Array members have a getEnclosingElement().getEnclosingElement() of NONE
+                    // Array constructors should also not have a receiver. Array members have a
+                    // getEnclosingElement().getEnclosingElement() of NONE
                     && (!(getElement().getKind() == ElementKind.CONSTRUCTOR
                             && getElement()
                                     .getEnclosingElement()
@@ -1558,9 +1582,9 @@ public abstract class AnnotatedTypeMirror {
         // because otherwise the annotations are inconsistent.
         private void fixupBoundAnnotations() {
 
-            // We allow the above replacement first because primary annotations might not have annotations for
-            // all hierarchies, so we don't want to avoid placing bottom on the lower bound for those hierarchies that
-            // don't have a qualifier in primaryAnnotations
+            // We allow the above replacement first because primary annotations might not have
+            // annotations for all hierarchies, so we don't want to avoid placing bottom on the
+            // lower bound for those hierarchies that don't have a qualifier in primaryAnnotations.
             if (!this.getAnnotationsField().isEmpty()) {
                 if (upperBound != null) {
                     replaceUpperBoundAnnotations();

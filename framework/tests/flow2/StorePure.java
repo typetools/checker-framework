@@ -48,10 +48,10 @@ class StorePure {
             @Odd String l1 = pure1();
             l0 = "a"; // does not remove information
             @Odd String l1b = pure1();
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Odd String l2 = pure1b();
             nonpure(); // non-pure method call might change the return value of pure1
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Odd String l3 = pure1();
         }
     }
@@ -69,10 +69,10 @@ class StorePure {
             @Odd String l1 = pure1();
             l0 = "a"; // does not remove information
             @Odd String l1b = pure1();
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Odd String l2 = pure1b();
             f1 = ""; // field update might change the return value of pure1
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Odd String l3 = pure1();
         }
     }
@@ -80,13 +80,13 @@ class StorePure {
     void t3(@Odd String p1, String p2, boolean b1) {
         String l0 = "";
         if (pure2(1) == p1) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Odd String l4 = pure2(0);
             @Odd String l1 = pure2(1);
             l0 = "a"; // does not remove information
             @Odd String l1b = pure2(1);
             nonpure(); // non-pure method call might change the return value of pure2
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Odd String l3 = pure2(1);
         }
     }
@@ -94,13 +94,13 @@ class StorePure {
     void t4(@Odd String p1, String p2, boolean b1) {
         String l0 = "";
         if (pure2(1) == p1) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Odd String l4 = pure2(0);
             @Odd String l1 = pure2(1);
             l0 = "a"; // does not remove information
             @Odd String l1b = pure2(1);
             f1 = ""; // field update might change the return value of pure2
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Odd String l3 = pure2(1);
         }
     }
@@ -108,13 +108,13 @@ class StorePure {
     void t5(@Odd String p1, String p2, boolean b1) {
         String l0 = "";
         if (pure3(true) == p1) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Odd String l4 = pure3(false);
             @Odd String l1 = pure3(true);
             l0 = "a"; // does not remove information
             @Odd String l1b = pure3(true);
             nonpure(); // non-pure method call might change the return value of pure2
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Odd String l3 = pure3(true);
         }
     }
@@ -122,13 +122,13 @@ class StorePure {
     void t6(@Odd String p1, String p2, boolean b1) {
         String l0 = "";
         if (pure3(true) == p1) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Odd String l4 = pure3(false);
             @Odd String l1 = pure3(true);
             l0 = "a"; // does not remove information
             @Odd String l1b = pure3(true);
             f1 = ""; // field update might change the return value of pure2
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Odd String l3 = pure3(true);
         }
     }
@@ -137,11 +137,11 @@ class StorePure {
     void t7(@Odd String p1, String p2, boolean b1) {
         String l0 = "";
         if (pure4(l0) == p1) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Odd String l4 = pure4("jk");
             @Odd String l1 = pure4(l0);
             l0 = "a"; // remove information (!)
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Odd String l1b = pure4(l0);
         }
     }

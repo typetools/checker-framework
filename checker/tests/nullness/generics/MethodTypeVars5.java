@@ -44,12 +44,12 @@ class MethodTypeVars5 {
     }
 
     String doit3c() {
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return doit3(new B<@Nullable String>("Hi"));
     }
 
     void doit3d() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String s = doit3(new B<@Nullable String>("Hi"));
     }
 
@@ -71,7 +71,7 @@ class MethodTypeVars5 {
     String doit4() {
         // Passing the null argument has an impact on the inferred type argument:
         // the type variable appears as the top-level type.
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return doit4("Ha!", null);
     }
 

@@ -70,9 +70,10 @@ public class I18nFormatterTransfer extends CFTransfer {
             return newResult;
         }
 
-        // @I18nMakeFormat that will be used to annotate ResourceBundle.getString()
-        // so that when the getString() method is called, this will check if the given key exist in the translation file
-        // and annotate the result string with the correct format annotation according to the corresponding key's value
+        // @I18nMakeFormat that will be used to annotate ResourceBundle.getString() so that when the
+        // getString() method is called, this will check if the given key exist in the translation
+        // file and annotate the result string with the correct format annotation according to the
+        // corresponding key's value
         if (tu.isMakeFormatCall(node, atypeFactory)) {
             Result<I18nConversionCategory[]> cats = tu.makeFormatCallCategories(node, atypeFactory);
             if (cats.value() == null) {

@@ -233,8 +233,8 @@ public class FlowExpressions {
                 receiver =
                         new ArrayCreation(
                                 InternalUtils.typeOf(receiverTree),
-                                Collections.<Node>emptyList(),
-                                Collections.<Node>emptyList());
+                                Collections.emptyList(),
+                                Collections.emptyList());
                 break;
             case METHOD_INVOCATION:
                 MethodInvocationTree mn = (MethodInvocationTree) receiverTree;
@@ -682,9 +682,9 @@ public class FlowExpressions {
             LocalVariable other = (LocalVariable) obj;
             VarSymbol vs = (VarSymbol) element;
             VarSymbol vsother = (VarSymbol) other.element;
-            // Use TypeAnnotationUtils.unannotatedType(type).toString().equals(...) instead of Types.isSameType(...)
-            // because Types requires a processing environment, and FlowExpressions is
-            // designed to be independent of processing environment.  See also
+            // Use TypeAnnotationUtils.unannotatedType(type).toString().equals(...) instead of
+            // Types.isSameType(...)  because Types requires a processing environment, and
+            // FlowExpressions is designed to be independent of processing environment.  See also
             // calls to getType().toString() in FlowExpressions.
             return vsother.name.contentEquals(vs.name)
                     && TypeAnnotationUtils.unannotatedType(vsother.type)

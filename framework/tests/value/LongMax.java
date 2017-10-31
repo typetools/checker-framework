@@ -1,4 +1,5 @@
 import org.checkerframework.common.value.qual.IntRange;
+
 // Test for PR 1370: https://github.com/typetools/checker-framework/pull/1370
 // This test contains range annotations with both bounds equal to Long.MAX_VALUE
 // The Value checker tried to extract a list of values from that range by looping

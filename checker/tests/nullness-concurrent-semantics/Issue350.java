@@ -10,7 +10,7 @@ class Test1 {
     public void test2() {
         y = "";
         // Sanity check that -AconcurrentSemantics is set
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         y.toString();
     }
 

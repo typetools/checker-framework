@@ -140,7 +140,8 @@ public class AnnotationClassLoader {
             resourceURL = applicationClassloader.getResource(packageNameWithSlashes);
 
             // thread based application classloader, if needed in the future:
-            // resourceURL = Thread.currentThread().getContextClassLoader().getResource(packageNameWithSlashes);
+            // resourceURL =
+            // Thread.currentThread().getContextClassLoader().getResource(packageNameWithSlashes);
         } else {
             // if the application classloader is not accessible (which means the
             // checker class was loaded using the bootstrap classloader)

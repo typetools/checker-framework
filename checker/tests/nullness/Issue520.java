@@ -2,7 +2,8 @@
 
 // Test case for issue #520: https://github.com/typetools/checker-framework/issues/520
 
-// compile with: $CHECKERFRAMEWORK/checker/bin-devel/javac -g Issue520.java -processor nullness -AprintAllQualifiers
+// compile with: $CHECKERFRAMEWORK/checker/bin-devel/javac -g Issue520.java -processor nullness
+// -AprintAllQualifiers
 
 import java.util.ArrayList;
 import java.util.List;

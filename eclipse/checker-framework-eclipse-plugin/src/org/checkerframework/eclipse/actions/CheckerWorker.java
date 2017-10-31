@@ -25,7 +25,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
-//TODO: RENAME THIS TO CHECKER JOB
+// TODO: RENAME THIS TO CHECKER JOB
 public class CheckerWorker extends Job {
     private final IJavaProject project;
     private final String checkerNames;
@@ -71,7 +71,7 @@ public class CheckerWorker extends Job {
     private boolean shouldUseJavacRunner() {
         // int expectedLength = "1.x.x".length();
         // final String jreVersion =
-        //     System.getProperties().getProperty("java.runtime.version").substring(0, expectedLength);
+        //  System.getProperties().getProperty("java.runtime.version").substring(0, expectedLength);
         // return jreVersion.equals(javacJreVersion);
         return false;
     }

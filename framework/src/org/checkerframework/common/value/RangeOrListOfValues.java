@@ -27,11 +27,6 @@ class RangeOrListOfValues {
     private List<Integer> values;
     private boolean isRange;
 
-    public RangeOrListOfValues() {
-        this.values = new ArrayList<>();
-        isRange = false;
-    }
-
     public RangeOrListOfValues(List<Integer> values) {
         this.values = new ArrayList<>();
         isRange = false;

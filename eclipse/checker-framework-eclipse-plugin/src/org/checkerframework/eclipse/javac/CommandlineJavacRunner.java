@@ -61,7 +61,8 @@ public class CommandlineJavacRunner implements CheckersRunner {
         this.fileNames = Arrays.asList(fileNames);
         this.processors = processors;
 
-        //TODO: SEEMS THAT WHEN WE ARE USING @ ARGS THE CLASSPATH FROM THE JAR IS OVERRIDDEN - FIX THIS
+        // TODO: SEEMS THAT WHEN WE ARE USING @ ARGS THE CLASSPATH FROM THE JAR IS OVERRIDDEN - FIX
+        // THIS
         this.checkerJar = locatePluginFile(CHECKERS_JAR_LOCATION);
         this.classpath = checkerJar.getAbsolutePath() + File.pathSeparator + classpath;
         this.bootClasspath = bootClasspath;

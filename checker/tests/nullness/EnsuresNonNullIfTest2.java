@@ -1,49 +1,67 @@
-import java.util.ArrayList;
-import java.util.List;
-import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.dataflow.qual.*;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 
-// Test case for a mysterious error.
-abstract class EnsuresNonNullIfTest2a {
-    @EnsuresNonNullIf(result = true, expression = "xxx")
-    //:: error: (flowexpr.parse.error)
-    abstract boolean isFoo();
+/** Test case for issue 53: https://github.com/typetools/checker-framework/issues/53 */
+public class EnsuresNonNullIfTest2 {
 
-    boolean foobar() {
-        List<String> list = new ArrayList<String>();
+    private @Nullable Long id;
 
-        // Remove the label and the error goes away,
-        // see version ...2b below.
-        aloop:
-        for (; ; ) {
-            //:: error: (flowexpr.parse.error)
-            isFoo();
-
-            // One error for dereferencing possibly-null list
-            return list.size() != 5;
-        }
+    public @org.checkerframework.dataflow.qual.Pure @Nullable Long getId() {
+        return id;
     }
-}
 
-abstract class EnsuresNonNullIfTest2b {
-    @EnsuresNonNullIf(result = true, expression = "xxx")
-    //:: error: (flowexpr.parse.error)
-    abstract boolean isFoo();
+    @EnsuresNonNullIf(result = true, expression = "getId()")
+    public boolean hasId2() {
+        return getId() != null;
+    }
 
-    boolean foobar() {
-        List<String> list = new ArrayList<String>();
+    @EnsuresNonNullIf(result = true, expression = "id")
+    public boolean hasId11() {
+        return id != null;
+    }
 
-        // Remove the label and the error goes away
-        // aloop:
-        for (; ; ) {
-            //:: error: (flowexpr.parse.error)
-            isFoo();
+    @EnsuresNonNullIf(result = true, expression = "id")
+    public boolean hasId12() {
+        return this.id != null;
+    }
 
-            // assert list != null : "@AssumeAssertion(nullness)";
+    @EnsuresNonNullIf(result = true, expression = "this.id")
+    public boolean hasId13() {
+        return id != null;
+    }
 
-            // One error for dereferencing possibly-null split_children
-            return list.size() != 5;
+    @EnsuresNonNullIf(result = true, expression = "this.id")
+    public boolean hasId14() {
+        return this.id != null;
+    }
+
+    void client() {
+        if (hasId11()) {
+            id.toString();
+        }
+        if (hasId12()) {
+            id.toString();
+        }
+        if (hasId13()) {
+            id.toString();
+        }
+        if (hasId14()) {
+            id.toString();
+        }
+        // :: error: (dereference.of.nullable)
+        id.toString();
+    }
+
+    // Expressions referring to enclosing classes should be resolved.
+    class Inner {
+        @EnsuresNonNullIf(result = true, expression = "getId()")
+        public boolean innerHasGetIdMethod() {
+            return getId() != null;
+        }
+
+        @EnsuresNonNullIf(result = true, expression = "id")
+        public boolean innerHasIdField() {
+            return id != null;
         }
     }
 }

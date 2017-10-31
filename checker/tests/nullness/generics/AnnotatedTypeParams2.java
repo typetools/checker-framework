@@ -10,12 +10,12 @@ class AnnotatedTypeParams {
 
     void testPositive() {
         SomeClass<@Nullable String> l = new SomeClass<@Nullable String>();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         l.get().toString();
     }
 
     void testInvalidParam() {
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         SomeClass<@NonNull String> l;
     }
 }

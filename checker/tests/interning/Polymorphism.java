@@ -15,7 +15,7 @@ public class Polymorphism {
         @Interned String interned = "interned";
 
         interned = identity(interned);
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         interned = identity(notInterned); // invalid
     }
 
@@ -29,16 +29,19 @@ public class Polymorphism {
         @Interned Polymorphism interned = null;
 
         interned = interned.getSelf();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         interned = notInterned.getSelf(); // invalid
     }
 
     // Test assinging interned to PolyInterned
     public @PolyInterned String always(@PolyInterned String s) {
         if (s.equals("n")) {
+            // This code type-checkd when the hierarchy contained just @UnknownInterned and
+            // @Interned, but no longer does because of @InternedDistinct.
+            // :: error: (return.type.incompatible)
             return "m";
         } else {
-            //:: error: (return.type.incompatible)
+            // :: error: (return.type.incompatible)
             return new String("m"); // invalid
         }
     }
@@ -67,8 +70,9 @@ public class Polymorphism {
 
     void testRaw() {
         Map m = null;
-        //TODO: RAW TYPES WILL EVENTUALLY REQUIRE THAT THERE BOUNDS BE EXACTLY THE QUALIFIER EXPECTED
-        //:: warning: [unchecked] unchecked method invocation: method processMap in class Polymorphism is applied to given types :: warning: [unchecked] unchecked conversion
+        // TODO: RAW TYPES WILL EVENTUALLY REQUIRE THAT THERE BOUNDS BE EXACTLY THE QUALIFIER
+        // EXPECTED
+        // :: warning: [unchecked] unchecked method invocation: method processMap in class Polymorphism is applied to given types :: warning: [unchecked] unchecked conversion
         processMap(m);
     }
 

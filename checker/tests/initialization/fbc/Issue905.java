@@ -1,8 +1,6 @@
 // Test case for Issue 905:
 // https://github.com/typetools/checker-framework/issues/905
 
-// @skip-test
-
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
 public class Issue905 {
@@ -11,7 +9,7 @@ public class Issue905 {
     Issue905() {
         // this should be @UnderInitialization(Object.class), so this call
         // should be forbidden.
-        //:: error: (method.invocation.invalid)
+        // :: error: (method.invocation.invalid)
         baz();
         mBar = "";
     }

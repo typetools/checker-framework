@@ -17,13 +17,13 @@ public abstract class MethodOverrides {
     public static class SubclassA extends MethodOverrides {
 
         public @Odd String method() {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Odd String s = "";
             return s;
         }
 
         public @Odd String methodSub() {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Odd String s = "";
             return s;
         }
@@ -53,7 +53,7 @@ public abstract class MethodOverrides {
     static class Z extends X {
         @Override
         // return type is an incorrect override, as it's a supertype
-        //:: error: (override.return.invalid)
+        // :: error: (override.return.invalid)
         <A> A[] method(A[] s) {
             return null;
         }
@@ -61,7 +61,7 @@ public abstract class MethodOverrides {
 
     static class Z2 extends X {
         @Override
-        //:: error: (override.return.invalid) :: error: (override.param.invalid)
+        // :: error: (override.return.invalid) :: error: (override.param.invalid)
         <A> @Odd A[] method(@Odd A[] s) {
             return null;
         }
@@ -82,7 +82,7 @@ public abstract class MethodOverrides {
 
     static class ClZ<S> extends ClX<S> {
         @Override
-        //:: error: (override.return.invalid) :: error: (override.param.invalid)
+        // :: error: (override.return.invalid) :: error: (override.param.invalid)
         @Odd S[] method(@Odd S[] s) {
             return null;
         }

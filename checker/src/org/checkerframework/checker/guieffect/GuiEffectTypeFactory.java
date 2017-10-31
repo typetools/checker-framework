@@ -257,7 +257,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         ExecutableElement safe_override = null;
         ExecutableElement poly_override = null;
 
-        // We must account for explicit annotation, type declaration annotations, and package annotations
+        // We must account for explicit annotation, type declaration annotations, and package
+        // annotations
         boolean isUI =
                 (getDeclAnnotation(overridingMethod, UIEffect.class) != null
                                 || isUIType(declaringType))
@@ -307,14 +308,21 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     // using that utility method that returns a set of
                     // annodecl-method pairs given a method that overrides stuff
                     // if (isUI && issueConflictWarning) {
-                    //    AnnotatedTypeMirror.AnnotatedDeclaredType supdecl = fromElement((TypeElement)(((DeclaredType)superclass).asElement()));//((DeclaredType)superclass).asElement());
-                    //    // Need to special case an anonymous class with @UI on the decl, because "new @UI Runnable {...}" parses as @UI on an anon class decl extending Runnable
-                    //    boolean isAnonInstantiation = TypesUtils.isAnonymousType(ElementUtils.getType(declaringType)) && getDeclAnnotation(declaringType, UI.class) != null;
+                    //    AnnotatedTypeMirror.AnnotatedDeclaredType supdecl =
+                    // fromElement((TypeElement)(((DeclaredType)superclass).asElement()));//((DeclaredType)superclass).asElement());
+                    //    // Need to special case an anonymous class with @UI on the decl, because
+                    // "new @UI Runnable {...}" parses as @UI on an anon class decl extending
+                    // Runnable
+                    //    boolean isAnonInstantiation =
+                    // TypesUtils.isAnonymousType(ElementUtils.getType(declaringType)) &&
+                    // getDeclAnnotation(declaringType, UI.class) != null;
                     //    if (!isAnonInstantiation && !hasAnnotationByName(supdecl, UI.class)) {
-                    //        checker.report(Result.failure("override.effect.invalid", "non-UI instantiation of "+supdecl), errorNode);
-                    //        If uncommenting this, change the above line to match other calls of Result.failure("override.effect.invalid", ...)
+                    //        checker.report(Result.failure("override.effect.invalid",
+                    //            "non-UI instantiation of "+supdecl), errorNode);
+                    //        If uncommenting this, change the above line to match other calls of
+                    //            Result.failure("override.effect.invalid", ...)
                     //    }
-                    //}
+                    // }
                 }
             }
             DeclaredType decl = (DeclaredType) superclass;

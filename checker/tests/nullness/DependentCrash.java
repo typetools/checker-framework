@@ -12,7 +12,7 @@ abstract class Precondition {
     }
 
     int method(Map<Object, Foo> map, Object key) {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         return checkNotNull(map.get(key)).x;
     }
 

@@ -12,7 +12,7 @@ class Precondition {
 
     @RequiresQualifier(expression = "f1", qualifier = Odd.class)
     void requiresF1() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Value String l1 = f1;
         @Odd String l2 = f1;
     }
@@ -20,7 +20,7 @@ class Precondition {
     @Pure
     @RequiresQualifier(expression = "f1", qualifier = Odd.class)
     int requiresF1AndPure() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Value String l1 = f1;
         @Odd String l2 = f1;
         return 1;
@@ -28,23 +28,23 @@ class Precondition {
 
     @RequiresQualifier(expression = "f1", qualifier = Value.class)
     void requiresF1Value() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Odd String l1 = f1;
         @Value String l2 = f1;
     }
 
     @RequiresQualifier(expression = "---", qualifier = Odd.class)
-    //:: error: (flowexpr.parse.error)
+    // :: error: (flowexpr.parse.error)
     void error() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Value String l1 = f1;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Odd String l2 = f1;
     }
 
     @RequiresQualifier(expression = "#1", qualifier = Odd.class)
     void requiresParam(String p) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Value String l1 = p;
         @Odd String l2 = p;
     }
@@ -54,35 +54,35 @@ class Precondition {
         qualifier = Odd.class
     )
     void requiresParams(String p1, String p2) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Value String l1 = p1;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Value String l2 = p2;
         @Odd String l3 = p1;
         @Odd String l4 = p2;
     }
 
     @RequiresQualifier(expression = "#1", qualifier = Odd.class)
-    //:: error: (flowexpr.parse.index.too.big)
+    // :: error: (flowexpr.parse.index.too.big)
     void param3() {}
 
     void t1(@Odd String p1, String p2) {
-        //:: error: (contracts.precondition.not.satisfied)
+        // :: error: (contracts.precondition.not.satisfied)
         requiresF1();
-        //:: error: (contracts.precondition.not.satisfied)
+        // :: error: (contracts.precondition.not.satisfied)
         requiresF1Value();
-        //:: error: (contracts.precondition.not.satisfied)
+        // :: error: (contracts.precondition.not.satisfied)
         requiresParam(p2);
-        //:: error: (contracts.precondition.not.satisfied)
+        // :: error: (contracts.precondition.not.satisfied)
         requiresParams(p1, p2);
     }
 
     void t2(@Odd String p1, String p2) {
         f1 = p1;
         requiresF1();
-        //:: error: (contracts.precondition.not.satisfied)
+        // :: error: (contracts.precondition.not.satisfied)
         requiresF1();
-        //:: error: (contracts.precondition.not.satisfied)
+        // :: error: (contracts.precondition.not.satisfied)
         requiresF1Value();
     }
 
@@ -92,7 +92,7 @@ class Precondition {
         requiresF1AndPure();
         requiresF1AndPure();
         requiresF1();
-        //:: error: (contracts.precondition.not.satisfied)
+        // :: error: (contracts.precondition.not.satisfied)
         requiresF1();
     }
 
@@ -127,27 +127,27 @@ class Precondition {
     void multi() {
         @Value String l1 = f1;
         @Odd String l2 = f2;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Value String l3 = f2;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Odd String l4 = f1;
     }
 
     @RequiresQualifiers({@RequiresQualifier(expression = "--", qualifier = Value.class)})
-    //:: error: (flowexpr.parse.error)
+    // :: error: (flowexpr.parse.error)
     void error2() {}
 
     void t5(@Odd String p1, String p2, @Value String p3) {
-        //:: error: (contracts.precondition.not.satisfied)
+        // :: error: (contracts.precondition.not.satisfied)
         multi();
         f1 = p3;
-        //:: error: (contracts.precondition.not.satisfied)
+        // :: error: (contracts.precondition.not.satisfied)
         multi();
         f1 = p3;
         f2 = p1;
         multi();
 
-        //:: error: (flowexpr.parse.error)
+        // :: error: (flowexpr.parse.error)
         error2();
     }
 }

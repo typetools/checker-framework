@@ -10,6 +10,7 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -119,25 +120,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Checks whether the two string lists contain at least one string that's the same. Not a smart
-     * algorithm; meant to be run over small sets of data.
-     *
-     * @param listA the first string list
-     * @param listB the second string list
-     * @return true if the intersection is non-empty; false otherwise
-     */
-    private boolean overlap(List<String> listA, List<String> listB) {
-        for (String a : listA) {
-            for (String b : listB) {
-                if (a.equals(b)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * This function finds the union of the values of two annotations. Both annotations must have a
      * value field; otherwise the function will fail.
      *
@@ -186,7 +168,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         for (int i = 0; i < receivers.size(); i++) {
             Receiver rec = receivers.get(i);
             AnnotationMirror anno = annos.get(i);
-            if (isReceiverToStringParsable(rec)) {
+            if (shouldUseInAnnotation(rec)) {
                 values.add(rec.toString());
             }
             if (AnnotationUtils.areSameByClass(anno, SameLen.class)) {
@@ -197,10 +179,13 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return res;
     }
 
-    public static boolean isReceiverToStringParsable(Receiver receiver) {
+    public static boolean shouldUseInAnnotation(Receiver receiver) {
         return !receiver.containsUnknown()
                 && !(receiver instanceof FlowExpressions.ArrayCreation)
-                && !(receiver instanceof FlowExpressions.ClassName);
+                && !(receiver instanceof FlowExpressions.ClassName)
+                // Big expressions cause a stack overflow in FlowExpressionParseUtil.
+                // So limit them to an arbitrary length of 999.
+                && receiver.toString().length() < 1000;
     }
 
     /**
@@ -230,7 +215,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<String> a1Val = getValueOfAnnotationWithStringArgument(a1);
                 List<String> a2Val = getValueOfAnnotationWithStringArgument(a2);
 
-                if (overlap(a1Val, a2Val)) {
+                if (!Collections.disjoint(a1Val, a2Val)) {
                     return getCombinedSameLen(a1Val, a2Val);
                 } else {
                     return BOTTOM;
@@ -255,8 +240,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<String> a1Val = getValueOfAnnotationWithStringArgument(a1);
                 List<String> a2Val = getValueOfAnnotationWithStringArgument(a2);
 
-                if (overlap(a1Val, a2Val)) {
-                    return getCombinedSameLen(a1Val, a2Val);
+                if (!Collections.disjoint(a1Val, a2Val)) {
+                    a1Val.retainAll(a2Val);
+                    return createSameLen(a1Val.toArray(new String[0]));
                 } else {
                     return UNKNOWN;
                 }
@@ -327,12 +313,12 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             getAnnotatedType(sequenceTree).getAnnotationInHierarchy(UNKNOWN);
 
                     Receiver rec = FlowExpressions.internalReprOf(this.atypeFactory, sequenceTree);
-                    if (isReceiverToStringParsable(rec)) {
+                    if (shouldUseInAnnotation(rec)) {
                         if (AnnotationUtils.areSameByClass(sequenceAnno, SameLenUnknown.class)) {
                             sequenceAnno = createSameLen(rec.toString());
                         } else if (AnnotationUtils.areSameByClass(sequenceAnno, SameLen.class)) {
-                            // Ensure that the sequence whose length is actually being used is part of the
-                            // annotation. If not, add it.
+                            // Ensure that the sequence whose length is actually being used is part
+                            // of the annotation. If not, add it.
                             List<String> sequenceAnnoSequences =
                                     getValueOfAnnotationWithStringArgument(sequenceAnno);
                             if (!sequenceAnnoSequences.contains(rec.toString())) {

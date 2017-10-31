@@ -28,6 +28,7 @@ import javax.lang.model.util.Types;
 
 /*>>>
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.checker.interning.qual.Interned;
 */
 
 /**
@@ -214,8 +215,16 @@ public class AnnotationBuilder {
         return setValue(elementName, (Object) value);
     }
 
+    private TypeMirror getErasedOrBoxedType(TypeMirror type) {
+        // See com.sun.tools.javac.code.Attribute.Class.makeClassType()
+        return type.getKind().isPrimitive()
+                ? types.boxedClass((PrimitiveType) type).asType()
+                : types.erasure(type);
+    }
+
     public AnnotationBuilder setValue(CharSequence elementName, TypeMirror value) {
         assertNotBuilt();
+        value = getErasedOrBoxedType(value);
         AnnotationValue val = createValue(value);
         ExecutableElement var = findElement(elementName);
         // Check subtyping
@@ -249,7 +258,8 @@ public class AnnotationBuilder {
     }
 
     public AnnotationBuilder setValue(CharSequence elementName, Class<?> value) {
-        return setValue(elementName, typeFromClass(value));
+        TypeMirror type = typeFromClass(value);
+        return setValue(elementName, getErasedOrBoxedType(type));
     }
 
     public AnnotationBuilder setValue(CharSequence elementName, Enum<?> value) {
@@ -458,15 +468,21 @@ public class AnnotationBuilder {
     }
 
     /** Implementation of AnnotationMirror used by the Checker Framework. */
-    private static class CheckerFrameworkAnnotationMirror implements AnnotationMirror {
+    /* default visibility to allow access from within package. */
+    static class CheckerFrameworkAnnotationMirror implements AnnotationMirror {
 
-        private String toStringVal;
+        private /*@Interned*/ String toStringVal;
         private final DeclaredType annotationType;
         private final Map<ExecutableElement, AnnotationValue> elementValues;
+
+        // default visibility to allow access from within package.
+        final /*@Interned*/ String annotationName;
 
         CheckerFrameworkAnnotationMirror(
                 DeclaredType at, Map<ExecutableElement, AnnotationValue> ev) {
             this.annotationType = at;
+            final TypeElement elm = (TypeElement) at.asElement();
+            this.annotationName = elm.getQualifiedName().toString().intern();
             this.elementValues = ev;
         }
 
@@ -483,32 +499,33 @@ public class AnnotationBuilder {
         /*@SideEffectFree*/
         @Override
         public String toString() {
-            if (toStringVal == null) {
-                StringBuilder buf = new StringBuilder();
-                buf.append("@");
-                buf.append(annotationType);
-                int len = elementValues.size();
-                if (len > 0) {
-                    buf.append('(');
-                    boolean first = true;
-                    for (Map.Entry<ExecutableElement, AnnotationValue> pair :
-                            elementValues.entrySet()) {
-                        if (!first) {
-                            buf.append(", ");
-                        }
-                        first = false;
-
-                        String name = pair.getKey().getSimpleName().toString();
-                        if (len > 1 || !name.equals("value")) {
-                            buf.append(name);
-                            buf.append('=');
-                        }
-                        buf.append(pair.getValue());
-                    }
-                    buf.append(')');
-                }
-                toStringVal = buf.toString();
+            if (toStringVal != null) {
+                return toStringVal;
             }
+            StringBuilder buf = new StringBuilder();
+            buf.append("@");
+            buf.append(annotationName);
+            int len = elementValues.size();
+            if (len > 0) {
+                buf.append('(');
+                boolean first = true;
+                for (Map.Entry<ExecutableElement, AnnotationValue> pair :
+                        elementValues.entrySet()) {
+                    if (!first) {
+                        buf.append(", ");
+                    }
+                    first = false;
+
+                    String name = pair.getKey().getSimpleName().toString();
+                    if (len > 1 || !name.equals("value")) {
+                        buf.append(name);
+                        buf.append('=');
+                    }
+                    buf.append(pair.getValue());
+                }
+                buf.append(')');
+            }
+            toStringVal = buf.toString().intern();
             return toStringVal;
 
             // return "@" + annotationType + "(" + elementValues + ")";
@@ -516,7 +533,8 @@ public class AnnotationBuilder {
     }
 
     private static class CheckerFrameworkAnnotationValue implements AnnotationValue {
-        final Object value;
+        private final Object value;
+        private /*@Interned*/ String toStringVal;
 
         CheckerFrameworkAnnotationValue(Object obj) {
             this.value = obj;
@@ -530,10 +548,13 @@ public class AnnotationBuilder {
         /*@SideEffectFree*/
         @Override
         public String toString() {
+            if (toStringVal != null) {
+                return toStringVal;
+            }
             if (value instanceof String) {
-                return "\"" + value.toString() + "\"";
+                toStringVal = "\"" + value.toString() + "\"";
             } else if (value instanceof Character) {
-                return "\'" + value.toString() + "\'";
+                toStringVal = "\'" + value.toString() + "\'";
             } else if (value instanceof List<?>) {
                 StringBuilder sb = new StringBuilder();
                 List<?> list = (List<?>) value;
@@ -547,7 +568,7 @@ public class AnnotationBuilder {
                     sb.append(o.toString());
                 }
                 sb.append('}');
-                return sb.toString();
+                toStringVal = sb.toString();
             } else if (value instanceof VariableElement) {
                 // for Enums
                 VariableElement var = (VariableElement) value;
@@ -555,13 +576,15 @@ public class AnnotationBuilder {
                 if (!encl.isEmpty()) {
                     encl = encl + '.';
                 }
-                return encl + var.toString();
+                toStringVal = encl + var.toString();
             } else if (value instanceof TypeMirror
                     && InternalUtils.isClassType((TypeMirror) value)) {
-                return value.toString() + ".class";
+                toStringVal = value.toString() + ".class";
             } else {
-                return value.toString();
+                toStringVal = value.toString();
             }
+            toStringVal = toStringVal.intern();
+            return toStringVal;
         }
 
         @SuppressWarnings("unchecked")

@@ -80,7 +80,7 @@ public class Standardize {
         Object field = new Object();
         // "field" is  local variable, but list.get(1) type is @FlowExp("this.field")
         @FlowExp("field")
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         Object o1 = list.get(1);
         @FlowExp("this.field") Object o2 = list.get(1);
     }

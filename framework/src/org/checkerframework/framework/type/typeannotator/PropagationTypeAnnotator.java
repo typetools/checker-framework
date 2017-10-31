@@ -29,7 +29,8 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class PropagationTypeAnnotator extends TypeAnnotator {
 
-    // The PropagationTypeAnnotator is called recursively via TypeAnnotatorUtil.eraseBoundsThenAnnotate.
+    // The PropagationTypeAnnotator is called recursively via
+    // TypeAnnotatorUtil.eraseBoundsThenAnnotate.
     // This flag prevents infinite recursion.
     private boolean pause = false;
     private Stack<AnnotatedDeclaredType> parents = new Stack<>();

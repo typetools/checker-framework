@@ -1,4 +1,4 @@
-Test.java:6: error: [assignment.type.incompatible] incompatible types in assignment.
+CompatTest.java:6: error: [assignment.type.incompatible] incompatible types in assignment.
         @NonNull Object o = Lib.maybeGetObject();
                                               ^
   found   : @Initialized @Nullable Object

@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-//:: error: (initialization.fields.uninitialized)
+// :: error: (initialization.fields.uninitialized)
 public class NonNullInitialization {
     private String test;
 

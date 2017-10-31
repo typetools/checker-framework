@@ -7,7 +7,7 @@ class FieldsImplicits {
     void test() {
         boolean a = finalField == "asdf";
         boolean b = finalStaticField == "asdf";
-        //:: error: (not.interned)
+        // :: error: (not.interned)
         boolean c = nonFinalField == "asdf";
     }
 }

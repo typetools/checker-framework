@@ -4,7 +4,7 @@ public class Varargs {
     public void testVarargsInvocation() {
         @Odd String s = null;
         aVarargsMethod(s);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         aVarargsMethod(s, "");
         aVarargsMethod(s, s);
 
@@ -14,12 +14,12 @@ public class Varargs {
         // type is a subtype.
         moreVarargs(new String @Odd [1]);
         moreVarargs(new @Odd String(), new @Odd String());
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         moreVarargs(new String(), new @Odd String());
         moreVarargs(
-                //:: error: (argument.type.incompatible)
+                // :: error: (argument.type.incompatible)
                 new String(),
-                //:: error: (argument.type.incompatible)
+                // :: error: (argument.type.incompatible)
                 new String());
     }
 

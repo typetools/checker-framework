@@ -18,9 +18,9 @@ public class LUBAssignmentTest {
     // LUB between @Sibling1 and @Sibling2 is @Parent, therefore the assignments
     // above refine the type of privateField to @Parent.
     void testFields() {
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         expectsParent(privateField);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         expectsParent(publicField);
     }
 
@@ -36,11 +36,11 @@ public class LUBAssignmentTest {
 
     String lubTest2() {
         if (Math.random() > 0.5) {
-            //:: warning: (cast.unsafe)
+            // :: warning: (cast.unsafe)
             @Sibling1 String s = (@Sibling1 String) "";
             return s;
         } else {
-            //:: warning: (cast.unsafe)
+            // :: warning: (cast.unsafe)
             @Sibling2 String s = (@Sibling2 String) "";
             return s;
         }

@@ -49,13 +49,13 @@ public class NonNullMapValue {
 
     void testMyMap(String key) {
         @NonNull String value;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         value = myMap.get(key); // should issue warning
         if (myMap.containsKey(key)) {
             value = myMap.get(key);
         }
         for (String keyInMap : myMap.keySet()) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             value = myMap.get(key); // should issue warning
         }
         for (String keyInMap : myMap.keySet()) {
@@ -156,7 +156,7 @@ public class NonNullMapValue {
     public void withinElseInvalid(Map<Object, Object> map, Object key) {
         if (map.containsKey(key)) {
         } else {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @NonNull Object v = map.get(key); // should issue warning
         }
     }
@@ -167,7 +167,7 @@ public class NonNullMapValue {
     }
 
     interface MyMap<K, V> extends Map<K, V> {
-        //TODO: @AssertGenericNullnessIfTrue("get(#1)")
+        // TODO: @AssertGenericNullnessIfTrue("get(#1)")
         @org.checkerframework.dataflow.qual.Pure
         public abstract boolean containsKey(@Nullable Object a1);
 
@@ -185,9 +185,9 @@ public class NonNullMapValue {
         if (map.containsKey(KEY)) {
             map.get(KEY).toString();
         }
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         if (map.containsKey(KEY2) && map.get(KEY2).toString() != null) {}
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         if (map2.containsKey(KEY2) && map2.get(KEY2).toString() != null) {}
     }
 
@@ -195,7 +195,7 @@ public class NonNullMapValue {
         if (map.containsKey(KEY)) {
             map.get(KEY).toString();
         }
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         if (map.containsKey(KEY2) && map.get(KEY2).toString() != null) {
             // do nothing
         }
@@ -220,7 +220,7 @@ public class NonNullMapValue {
         @EnsuresNonNullIf(result = true, expression = "get(#1)")
         // The following error is issued because, unlike in interface MyMap2,
         // this interface has no get() method.
-        //:: error: (flowexpr.parse.error)
+        // :: error: (flowexpr.parse.error)
         boolean containsKey(@Nullable Object a1);
     }
 }

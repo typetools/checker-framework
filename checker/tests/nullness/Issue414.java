@@ -1,5 +1,6 @@
 // Test case for Issue 414.
 // https://github.com/typetools/checker-framework/issues/414
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

@@ -71,7 +71,7 @@ public final class NullnessUtil {
      * @return the argument, casted to have the type qualifier @NonNull
      */
     public static @EnsuresNonNull("#1") <T extends /*@Nullable*/ Object> /*@NonNull*/ T castNonNull(
-            T ref) {
+            /*@Nullable*/ T ref) {
         assert ref != null : "Misuse of castNonNull: called with a null argument";
         return (/*@NonNull*/ T) ref;
     }

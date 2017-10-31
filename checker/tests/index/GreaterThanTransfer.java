@@ -9,7 +9,7 @@ class GreaterThanTransfer {
 
     void gt_bad_check(int[] a) {
         if (a.length > 0) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             int @MinLen(2) [] b = a;
         }
     }

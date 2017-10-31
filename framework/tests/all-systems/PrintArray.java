@@ -1,4 +1,3 @@
-
 public class PrintArray {
     // the I18n checker correctly issues an error and Nullness org.checkerframework.checker
     // correctly issue a warning below, but we would like to keep this

@@ -12,6 +12,7 @@ import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -177,12 +178,17 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
 
         // If we are visiting a pseudo-assignment, visitorLeafKind is either
         // Kind.NEW_CLASS or Kind.METHOD_INVOCATION.
-        Kind visitorLeafKind = visitorState.getPath().getLeaf().getKind();
-        Kind parentKind = visitorState.getPath().getParentPath().getLeaf().getKind();
+        TreePath path = visitorState.getPath();
+        if (path == null) {
+            return;
+        }
+        Kind visitorLeafKind = path.getLeaf().getKind();
 
         if (visitorLeafKind == Kind.NEW_CLASS || visitorLeafKind == Kind.METHOD_INVOCATION) {
             // Handling pseudo-assignments
             if (canBeLeaked(valueTree)) {
+                Kind parentKind = visitorState.getPath().getParentPath().getLeaf().getKind();
+
                 if (!varType.hasAnnotation(NonLeaked.class)
                         && !(varType.hasAnnotation(LeakedToResult.class)
                                 && parentKind == Kind.EXPRESSION_STATEMENT)) {

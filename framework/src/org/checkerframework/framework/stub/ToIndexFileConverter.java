@@ -13,7 +13,6 @@ import annotations.el.BoundLocation;
 import annotations.el.DefException;
 import annotations.el.InnerTypeLocation;
 import annotations.el.LocalLocation;
-import annotations.field.AnnotationFieldType;
 import annotations.io.IndexFileParser;
 import annotations.io.IndexFileWriter;
 import com.github.javaparser.JavaParser;
@@ -220,8 +219,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             return null;
         }
         AnnotationDef def = new AnnotationDef(exprName);
-        def.setFieldTypes(Collections.<String, AnnotationFieldType>emptyMap());
-        return new Annotation(def, Collections.<String, Object>emptyMap());
+        def.setFieldTypes(Collections.emptyMap());
+        return new Annotation(def, Collections.emptyMap());
     }
 
     @Override
@@ -232,7 +231,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     @Override
     public Void visit(BlockStmt stmt, AElement elem) {
         return null;
-        //super.visit(stmt, elem);
+        // super.visit(stmt, elem);
     }
 
     @Override
@@ -275,7 +274,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             }
         }
         return body == null ? null : body.accept(this, method);
-        //return super.visit(decl, elem);
+        // return super.visit(decl, elem);
     }
 
     @Override

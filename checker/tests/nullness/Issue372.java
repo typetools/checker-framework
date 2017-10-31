@@ -2,6 +2,7 @@
 // https://github.com/typetools/checker-framework/issues/372
 
 // @skip-test
+
 import java.util.HashMap;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;

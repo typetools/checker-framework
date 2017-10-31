@@ -1,13 +1,14 @@
-//@skip-test
+// @skip-test
 // TODO: Enable this test when whole-program inference is working correctly for cases
 // involving inheritance.
+
 import testlib.wholeprograminference.qual.*;
 
 class IParent {
     int field;
 
     void expectsBotNoSignature(int t) {
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         expectsBot(t);
     }
 

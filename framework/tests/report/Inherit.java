@@ -6,9 +6,9 @@ class Inherit {
 
     class B {}
 
-    //:: error: (inherit)
+    // :: error: (inherit)
     class C extends B implements A {}
 
-    //:: error: (inherit)
+    // :: error: (inherit)
     class D extends C {}
 }

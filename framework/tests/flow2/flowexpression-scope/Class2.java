@@ -17,7 +17,7 @@ public class Class2 {
     }
 
     void illegalUse() {
-        //:: error: (contracts.precondition.not.satisfied)
+        // :: error: (contracts.precondition.not.satisfied)
         requiresOdd();
     }
 

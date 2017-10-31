@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util;
 
 /*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
@@ -89,13 +90,6 @@ public class FlowExpressionParseUtil {
     // Each of the below patterns is anchored with ^...$.
     /** Matches a parameter */
     protected static final Pattern parameterPattern = anchored(parameterRegex);
-    /**
-     * Matches 'this', the self reference. Does not allow "#0" because people reading the code might
-     * assume the numbering starts at 0 and assume that #0 is the first formal parameter.
-     */
-    protected static final Pattern thisPattern = anchored("this");
-    /** Matches 'super' */
-    protected static final Pattern superPattern = anchored("super");
     /** Matches an identifier */
     protected static final Pattern identifierPattern = anchored(identifierRegex);
     /** Matches integer literals */
@@ -104,8 +98,6 @@ public class FlowExpressionParseUtil {
     protected static final Pattern longPattern = anchored("[-+]?[0-9]+[Ll]");
     /** Matches string literals */
     protected static final Pattern stringPattern = anchored(stringRegex);
-    /** Matches the null literal */
-    protected static final Pattern nullPattern = anchored("null");
     /** Matches an expression contained in matching start and end parentheses */
     protected static final Pattern parenthesesPattern = anchored("\\((.*)\\)");
 
@@ -166,7 +158,7 @@ public class FlowExpressionParseUtil {
         } else if (isParentheses(expression, context)) {
             return parseParentheses(expression, context, path);
         } else {
-            throw constructParserException(expression, "could not parse string");
+            throw constructParserException(expression);
         }
     }
 
@@ -200,7 +192,7 @@ public class FlowExpressionParseUtil {
             return Pair.of(m.group(1), m.group(2));
         }
 
-        int nextRParenPos = nextClosedParen(s, 0, '(', ')');
+        int nextRParenPos = matchingCloseParen(s, 0, '(', ')');
         if (nextRParenPos != -1) {
             if (nextRParenPos + 1 < s.length() && s.charAt(nextRParenPos + 1) == '.') {
                 String reciever = s.substring(0, nextRParenPos + 1);
@@ -262,14 +254,13 @@ public class FlowExpressionParseUtil {
         return parseHelper(memberSelected, newContext, path);
     }
 
-    //########
+    // ########
 
     private static boolean isNullLiteral(String s, FlowExpressionContext context) {
         if (context.parsingMember) {
             return false;
         }
-        Matcher nullMatcher = nullPattern.matcher(s);
-        return nullMatcher.matches();
+        return s.equals("null");
     }
 
     private static Receiver parseNullLiteral(String expression, Types types) {
@@ -298,12 +289,13 @@ public class FlowExpressionParseUtil {
     }
 
     private static Receiver parseLongLiteral(String s, Types types) {
-        //Remove L or l at the end of a long literal
+        // Remove L or l at the end of a long literal
         s = s.substring(0, s.length() - 1);
         long val = Long.parseLong(s);
         return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), val);
     }
 
+    /** Return true iff s is a string literal. */
     private static boolean isStringLiteral(String s, FlowExpressionContext context) {
         if (context.parsingMember) {
             return false;
@@ -324,8 +316,9 @@ public class FlowExpressionParseUtil {
             // Outer.this
             return false;
         }
-        Matcher thisMatcher = thisPattern.matcher(s);
-        return thisMatcher.matches();
+        // Do not allow "#0" because it's ambiguous:  a reader might assume that #0 is the first
+        // formal parameter.
+        return s.equals("this");
     }
 
     private static Receiver parseThis(String s, FlowExpressionContext context) {
@@ -341,8 +334,7 @@ public class FlowExpressionParseUtil {
         if (context.parsingMember) {
             return false;
         }
-        Matcher superMatcher = superPattern.matcher(s);
-        return superMatcher.matches();
+        return s.equals("super");
     }
 
     private static Receiver parseSuper(String s, Types types, FlowExpressionContext context)
@@ -468,7 +460,7 @@ public class FlowExpressionParseUtil {
             return null;
         }
         if (context.arguments == null) {
-            throw constructParserException(s, "No parameter found.");
+            throw constructParserException(s, "no parameter found");
         }
         int idx = -1;
         try {
@@ -479,7 +471,7 @@ public class FlowExpressionParseUtil {
         }
         if (idx > context.arguments.size()) {
             throw new FlowExpressionParseException(
-                    Result.failure("flowexpr.parse.index.too.big", Integer.toString(idx)));
+                    "flowexpr.parse.index.too.big", Integer.toString(idx));
         }
         return context.arguments.get(idx - 1);
     }
@@ -489,7 +481,7 @@ public class FlowExpressionParseUtil {
      * returned pair is a remaining string.
      *
      * @param s expression string
-     * @return pair of pair of method name and arguments and remaining
+     * @return pair of (pair of method name and arguments) and remaining
      */
     private static Pair<Pair<String, String>, String> parseMethod(String s) {
         // Parse Identifier
@@ -501,7 +493,7 @@ public class FlowExpressionParseUtil {
         String ident = m.group(1);
         int i = ident.length();
 
-        int rparenPos = nextClosedParen(s, i, '(', ')');
+        int rparenPos = matchingCloseParen(s, i, '(', ')');
         if (rparenPos == -1) {
             return null;
         }
@@ -619,7 +611,8 @@ public class FlowExpressionParseUtil {
      * index. Second of returned pair is a remaining string.
      *
      * @param s expression string
-     * @return pair of pair of an array to be accessed and an index. and remaining.
+     * @return pair of (pair of an array to be accessed and an index) and remaining. Returns null if
+     *     parsing fails.
      */
     private static Pair<Pair<String, String>, String> parseArray(String s) {
         int i = 0;
@@ -630,7 +623,7 @@ public class FlowExpressionParseUtil {
         }
 
         while (true) {
-            int nextRBracketPos = nextClosedParen(s, i, '[', ']');
+            int nextRBracketPos = matchingCloseParen(s, i, '[', ']');
             if (nextRBracketPos == -1) {
                 return null;
             }
@@ -647,7 +640,13 @@ public class FlowExpressionParseUtil {
         }
     }
 
-    private static int nextClosedParen(String s, int openPos, char open, char close) {
+    /**
+     * Find occurrence of {@code close} that matches the occurrence of {@code open} at {@code
+     * openPos}. Handles nested occurrences of "{@code open} ... {@code close}".
+     *
+     * @return matching occurrence of {@code close}, or -1 if not found
+     */
+    private static int matchingCloseParen(String s, int openPos, char open, char close) {
         // expect `open` at `openPos` in `s`
         if (s.length() <= openPos || s.charAt(openPos) != open) {
             return -1;
@@ -659,6 +658,7 @@ public class FlowExpressionParseUtil {
             char ch = s.charAt(i++);
             if (ch == '"') {
                 i--;
+                // TODO: inefficient to re-compute this on every iteration, should be static
                 Pattern stringPattern = anchored("(" + stringRegex + ").*");
                 Matcher m = stringPattern.matcher(s.substring(i));
                 if (!m.matches()) {
@@ -706,18 +706,18 @@ public class FlowExpressionParseUtil {
         return result;
     }
 
+    // TODO: this returns true for "(a)+(b)" where the inital and final parens do not match.
     private static boolean isParentheses(String s, FlowExpressionContext contex) {
-        Matcher parenthesesMatcher = parenthesesPattern.matcher(s);
-        return parenthesesMatcher.matches();
+        return s.length() > 2 && s.charAt(0) == '(' && s.charAt(s.length() - 1) == ')';
     }
 
     private static Receiver parseParentheses(String s, FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
-        Matcher parenthesesMatcher = parenthesesPattern.matcher(s);
-        if (!parenthesesMatcher.matches()) {
+        if (!isParentheses(s, context)) {
             return null;
         }
-        String expressionString = parenthesesMatcher.group(1);
+        // TODO: this is the wrong thing for an expression like "(a)+(b)".
+        String expressionString = s.substring(1, s.length() - 1);
         // Do not modify the value of recursiveCall, since a parenthesis match is essentially
         // a match to a no-op and should not semantically affect the parsing.
         return parseHelper(expressionString, context, path);
@@ -805,8 +805,9 @@ public class FlowExpressionParseUtil {
             throws FlowExpressionParseException {
         Pair<String, String> select = parseMemberSelect(expression);
 
-        // To proceed past this point, at the minimum the expression must be composed of packageName.className .
-        // Do not remove the call to matches(), otherwise the dotMatcher groups will not be filled in.
+        // To proceed past this point, at the minimum the expression must be composed of
+        // packageName.className .  Do not remove the call to matches(), otherwise the dotMatcher
+        // groups will not be filled in.
         if (select == null) {
             return null;
         }
@@ -817,11 +818,11 @@ public class FlowExpressionParseUtil {
         PackageSymbol result = null; // the result of this method call
 
         while (true) {
-            // At this point, packageName is one component longer than result,
-            // and that extra component appears in remainingString but not in remainingStringIfPackageMatched.
-            // In other words, result and remainingStringIfPackageMatched are consistent,
-            // and packageName and remainingString are consistent.
-            // Try to set result to account for the extra component in packageName.
+            // At this point, packageName is one component longer than result, and that extra
+            // component appears in remainingString but not in remainingStringIfPackageMatched.  In
+            // other words, result and remainingStringIfPackageMatched are consistent, and
+            // packageName and remainingString are consistent.  Try to set result to account for the
+            // extra component in packageName.
             PackageSymbol longerResult;
             try {
                 longerResult = resolver.findPackage(packageName, path);
@@ -1024,16 +1025,18 @@ public class FlowExpressionParseUtil {
 
     /**
      * Context used to parse a flow expression. When parsing flow expression E in annotation
-     * {@code @A(E)}, The context is the program element that is annotated by {@code @A(E)}.
+     * {@code @A(E)}, the context is the program element that is annotated by {@code @A(E)}.
      */
     public static class FlowExpressionContext {
         public final Receiver receiver;
         public final List<Receiver> arguments;
         public final Receiver outerReceiver;
         public final BaseContext checkerContext;
-        /* Whether or not the FlowExpressionParser is parsing the "member" part of a member select*/
+        /**
+         * Whether or not the FlowExpressionParser is parsing the "member" part of a member select.
+         */
         public final boolean parsingMember;
-        /* Whether the TreePath should be used to find identifiers.*/
+        /** Whether the TreePath should be used to find identifiers. */
         public boolean useLocalScope;
 
         /**
@@ -1307,22 +1310,37 @@ public class FlowExpressionParseUtil {
      * error reporting.
      */
     public static class FlowExpressionParseException extends Exception {
-        private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 2L;
+        private /*@CompilerMessageKey*/ String errorKey;
+        public final Object[] args;
 
-        protected final Result result;
-
-        public FlowExpressionParseException(Result result) {
-            this(result, null);
+        public FlowExpressionParseException(
+                /*@CompilerMessageKey*/ String errorKey, Object... args) {
+            this(null, errorKey, args);
         }
 
-        public FlowExpressionParseException(Result result, Throwable cause) {
+        public FlowExpressionParseException(
+                Throwable cause, /*@CompilerMessageKey*/ String errorKey, Object... args) {
             super(cause);
-            this.result = result;
+            this.errorKey = errorKey;
+            this.args = args;
         }
 
         public Result getResult() {
-            return result;
+            return Result.failure(errorKey, args);
         }
+
+        public boolean isFlowParseError() {
+            return errorKey.endsWith("flowexpr.parse.error");
+        }
+    }
+
+    /**
+     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} with no
+     * further explanation.
+     */
+    private static FlowExpressionParseException constructParserException(String expr) {
+        return constructParserException(expr, null, null);
     }
 
     /**
@@ -1349,11 +1367,26 @@ public class FlowExpressionParseUtil {
      */
     private static FlowExpressionParseException constructParserException(
             String expr, String explanation, Throwable cause) {
-        String message =
-                expr
-                        + ((explanation == null) ? "" : (": " + explanation))
-                        + ((cause == null) ? "" : (": " + cause.getMessage()));
+        String detail = null;
+        if (explanation != null) {
+            detail = explanation;
+        }
+        if (cause != null) {
+            String causeMessage = cause.getMessage();
+            if (causeMessage != null) {
+                if (detail == null) {
+                    detail = causeMessage;
+                } else {
+                    detail = detail + ", " + causeMessage;
+                }
+            }
+        }
+        if (detail != null) {
+            detail = " because " + detail;
+        } else {
+            detail = "";
+        }
         return new FlowExpressionParseException(
-                Result.failure("flowexpr.parse.error", message), cause);
+                cause, "flowexpr.parse.error", "'" + expr + "'" + detail);
     }
 }

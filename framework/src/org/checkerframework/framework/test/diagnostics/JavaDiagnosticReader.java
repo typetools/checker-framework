@@ -24,7 +24,8 @@ import javax.tools.JavaFileObject;
  */
 public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
 
-    // This class begins with the most common static helper methods that are used to read diagnostics
+    // This class begins with the most common static helper methods that are used to read
+    // diagnostics
 
     /**
      * Reads the entire input file using the given codec and returns the resulting line.

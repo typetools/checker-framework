@@ -6,16 +6,16 @@ public class Operations {
 
         @UnknownSignedness int testRes;
 
-        //:: error: (operation.unsignedlhs)
+        // :: error: (operation.unsignedlhs)
         testRes = unsigned / 1;
 
-        //:: error: (operation.unsignedrhs)
+        // :: error: (operation.unsignedrhs)
         testRes = 1 / unsigned;
 
-        //:: error: (operation.unsignedlhs)
+        // :: error: (operation.unsignedlhs)
         testRes = unsigned % 1;
 
-        //:: error: (operation.unsignedrhs)
+        // :: error: (operation.unsignedrhs)
         testRes = 1 % unsigned;
     }
 
@@ -23,7 +23,7 @@ public class Operations {
 
         @UnknownSignedness int testRes;
 
-        //:: error: (shift.signed)
+        // :: error: (shift.signed)
         testRes = unsigned >> 1;
     }
 
@@ -31,7 +31,7 @@ public class Operations {
 
         @UnknownSignedness int testRes;
 
-        //:: error: (shift.unsigned)
+        // :: error: (shift.unsigned)
         testRes = signed >>> 1;
     }
 
@@ -39,40 +39,40 @@ public class Operations {
 
         @UnknownSignedness int testRes;
 
-        //:: error: (operation.mixed.unsignedlhs)
+        // :: error: (operation.mixed.unsignedlhs)
         testRes = unsigned * signed;
 
-        //:: error: (operation.mixed.unsignedrhs)
+        // :: error: (operation.mixed.unsignedrhs)
         testRes = signed * unsigned;
 
-        //:: error: (operation.mixed.unsignedlhs)
+        // :: error: (operation.mixed.unsignedlhs)
         testRes = unsigned + signed;
 
-        //:: error: (operation.mixed.unsignedrhs)
+        // :: error: (operation.mixed.unsignedrhs)
         testRes = signed + unsigned;
 
-        //:: error: (operation.mixed.unsignedlhs)
+        // :: error: (operation.mixed.unsignedlhs)
         testRes = unsigned - signed;
 
-        //:: error: (operation.mixed.unsignedrhs)
+        // :: error: (operation.mixed.unsignedrhs)
         testRes = signed - unsigned;
 
-        //:: error: (operation.mixed.unsignedlhs)
+        // :: error: (operation.mixed.unsignedlhs)
         testRes = unsigned & signed;
 
-        //:: error: (operation.mixed.unsignedrhs)
+        // :: error: (operation.mixed.unsignedrhs)
         testRes = signed & unsigned;
 
-        //:: error: (operation.mixed.unsignedlhs)
+        // :: error: (operation.mixed.unsignedlhs)
         testRes = unsigned ^ signed;
 
-        //:: error: (operation.mixed.unsignedrhs)
+        // :: error: (operation.mixed.unsignedrhs)
         testRes = signed ^ unsigned;
 
-        //:: error: (operation.mixed.unsignedlhs)
+        // :: error: (operation.mixed.unsignedlhs)
         testRes = unsigned | signed;
 
-        //:: error: (operation.mixed.unsignedrhs)
+        // :: error: (operation.mixed.unsignedrhs)
         testRes = signed | unsigned;
     }
 }

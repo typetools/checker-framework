@@ -1,0 +1,5 @@
+import org.checkerframework.common.value.qual.IntRange;
+package issue1542;
+class NeedsIntRange {
+    @IntRange(from = 3, to = 20000L) int range(boolean big);
+}

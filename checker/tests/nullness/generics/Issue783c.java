@@ -1,4 +1,4 @@
-//:: error: (initialization.fields.uninitialized)
+// :: error: (initialization.fields.uninitialized)
 public class Issue783c<T> {
     private T val;
 

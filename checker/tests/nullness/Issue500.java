@@ -1,5 +1,6 @@
 // Test case for Issue 500:
 // https://github.com/typetools/checker-framework/issues/500
+
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;

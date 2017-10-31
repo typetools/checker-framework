@@ -11,16 +11,17 @@ public class GuardSatisfiedTest {
             @GuardSatisfied Object q) {
         methodToCall1(o, o);
         methodToCall1(p, p);
-        //:: error: (guardsatisfied.parameters.must.match)
+        // :: error: (guardsatisfied.parameters.must.match)
         methodToCall1(o, p);
-        //:: error: (guardsatisfied.parameters.must.match)
+        // :: error: (guardsatisfied.parameters.must.match)
         methodToCall1(p, o);
     }
 
     // Test defaulting of parameters - they must default to @GuardedBy({}), not @GuardSatisfied
     void testDefaulting(Object mustDefaultToGuardedByNothing, @GuardSatisfied Object p) {
-        // Must assign in this direction to test the defaulting because assigning a RHS of @GuardedBy({}) to a LHS @GuardSatisfied is legal.
-        //:: error: (assignment.type.incompatible)
+        // Must assign in this direction to test the defaulting because assigning a RHS of
+        // @GuardedBy({}) to a LHS @GuardSatisfied is legal.
+        // :: error: (assignment.type.incompatible)
         mustDefaultToGuardedByNothing = p;
         @GuardedBy({}) Object q = mustDefaultToGuardedByNothing;
     }
@@ -32,21 +33,21 @@ public class GuardSatisfiedTest {
             @GuardSatisfied Object q) {
         // Test matching parameters
 
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         methodToCall1(o, o);
-        //:: error: (lock.not.held) :: error: (guardsatisfied.parameters.must.match)
+        // :: error: (lock.not.held) :: error: (guardsatisfied.parameters.must.match)
         methodToCall1(o, p);
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         methodToCall1(p, p);
         synchronized (lock2) {
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             methodToCall1(o, o);
-            //:: error: (guardsatisfied.parameters.must.match) :: error: (lock.not.held)
+            // :: error: (guardsatisfied.parameters.must.match) :: error: (lock.not.held)
             methodToCall1(o, p);
             methodToCall1(p, p);
             synchronized (lock1) {
                 methodToCall1(o, o);
-                //:: error: (guardsatisfied.parameters.must.match)
+                // :: error: (guardsatisfied.parameters.must.match)
                 methodToCall1(o, p);
                 methodToCall1(p, p);
             }
@@ -54,51 +55,52 @@ public class GuardSatisfiedTest {
 
         // Test a return type matching a parameter.
 
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         o = methodToCall2(o);
-        //:: error: (lock.not.held) :: error: (assignment.type.incompatible)
+        // :: error: (lock.not.held) :: error: (assignment.type.incompatible)
         p = methodToCall2(o);
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         methodToCall2(o);
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         methodToCall2(p);
         synchronized (lock2) {
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             o = methodToCall2(o);
-            //:: error: (lock.not.held) :: error: (assignment.type.incompatible)
+            // :: error: (lock.not.held) :: error: (assignment.type.incompatible)
             p = methodToCall2(o);
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             methodToCall2(o);
             methodToCall2(p);
         }
         synchronized (lock1) {
             o = methodToCall2(o);
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             p = methodToCall2(o);
             methodToCall2(o);
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             methodToCall2(p);
         }
 
         // Test the receiver type matching a parameter
 
         // Two @GS parameters with no index are incomparable (as is the case for 'this' and 'q')
-        //:: error: (guardsatisfied.parameters.must.match)
+        // :: error: (guardsatisfied.parameters.must.match)
         methodToCall3(q);
 
-        //:: error: (guardsatisfied.parameters.must.match) :: error: (lock.not.held)
+        // :: error: (guardsatisfied.parameters.must.match) :: error: (lock.not.held)
         methodToCall3(p);
         synchronized (lock1) {
             // Two @GS parameters with no index are incomparable (as is the case for 'this' and 'q')
-            //:: error: (guardsatisfied.parameters.must.match)
+            // :: error: (guardsatisfied.parameters.must.match)
             methodToCall3(q);
-            //:: error: (guardsatisfied.parameters.must.match) :: error: (lock.not.held)
+            // :: error: (guardsatisfied.parameters.must.match) :: error: (lock.not.held)
             methodToCall3(p);
             synchronized (lock2) {
-                // Two @GS parameters with no index are incomparable (as is the case for 'this' and 'q')
-                //:: error: (guardsatisfied.parameters.must.match)
+                // Two @GS parameters with no index are incomparable (as is the case for 'this' and
+                // 'q')
+                // :: error: (guardsatisfied.parameters.must.match)
                 methodToCall3(q);
-                //:: error: (guardsatisfied.parameters.must.match)
+                // :: error: (guardsatisfied.parameters.must.match)
                 methodToCall3(p);
             }
         }
@@ -111,31 +113,32 @@ public class GuardSatisfiedTest {
     // Test the return type NOT matching the receiver type
     void testMethodCall(@GuardedBy("lock1") GuardSatisfiedTest this) {
         @GuardedBy("lock2") Object g;
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         methodToCall4();
         // TODO: lock.not.held is getting swallowed below
         //  error (assignment.type.incompatible) error (lock.not.held)
         // g = methodToCall4();
 
         // Separate the above test case into two for now
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         methodToCall4();
 
-        // The following error is due to the fact that you cannot access "this.lock1" without first having acquired "lock1".
-        // The right fix in a user scenario would be to not guard "this" with "this.lock1". The current object could instead
-        // be guarded by "<self>" or by some other lock expression that is not one of its fields. We are keeping this test
-        // case here to make sure this scenario issues a warning.
-        //:: error: (lock.not.held)
+        // The following error is due to the fact that you cannot access "this.lock1" without first
+        // having acquired "lock1".  The right fix in a user scenario would be to not guard "this"
+        // with "this.lock1". The current object could instead be guarded by "<self>" or by some
+        // other lock expression that is not one of its fields. We are keeping this test case here
+        // to make sure this scenario issues a warning.
+        // :: error: (lock.not.held)
         synchronized (lock1) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             g = methodToCall4();
         }
     }
 
-    //:: error: (guardsatisfied.return.must.have.index)
+    // :: error: (guardsatisfied.return.must.have.index)
     @GuardSatisfied Object testReturnTypesMustMatchAndMustHaveAnIndex1(@GuardSatisfied Object o) {
         // If the two @GuardSatisfied had an index, this error would not be issued:
-        //:: error: (guardsatisfied.assignment.disallowed)
+        // :: error: (guardsatisfied.assignment.disallowed)
         return o;
     }
 
@@ -148,26 +151,26 @@ public class GuardSatisfiedTest {
     }
 
     // @GuardSatisfied is equivalent to @GuardSatisfied(-1).
-    //:: error: (guardsatisfied.return.must.have.index)
+    // :: error: (guardsatisfied.return.must.have.index)
     @GuardSatisfied Object testReturnTypesMustMatchAndMustHaveAnIndex4(@GuardSatisfied(-1) Object o) {
         // If the two @GuardSatisfied had an index, this error would not be issued:
-        //:: error: (guardsatisfied.assignment.disallowed)
+        // :: error: (guardsatisfied.assignment.disallowed)
         return o;
     }
 
     @GuardSatisfied(1) Object testReturnTypesMustMatchAndMustHaveAnIndex5(@GuardSatisfied(2) Object o) {
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return o;
     }
 
-    //:: error: (guardsatisfied.return.must.have.index)
+    // :: error: (guardsatisfied.return.must.have.index)
     @GuardSatisfied Object testReturnTypesMustMatchAndMustHaveAnIndex6(@GuardSatisfied(2) Object o) {
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return o;
     }
 
     void testParamsMustMatch(@GuardSatisfied(1) Object o, @GuardSatisfied(2) Object p) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         o = p;
     }
 
@@ -190,10 +193,10 @@ public class GuardSatisfiedTest {
 
     void testAssignment(@GuardSatisfied Object o) {
         @GuardedBy({"lock1", "lock2"}) Object p = new Object();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         o = p;
         synchronized (lock1) {
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             o = p;
             synchronized (lock2) {
                 o = p;
@@ -210,15 +213,15 @@ public class GuardSatisfiedTest {
     // in one of these locations on a method declaration, but other
     // locations can be.
 
-    //:: error: (guardsatisfied.location.disallowed)
+    // :: error: (guardsatisfied.location.disallowed)
     @GuardSatisfied Object field;
-    //:: error: (guardsatisfied.location.disallowed)
+    // :: error: (guardsatisfied.location.disallowed)
     void testGuardSatisfiedOnArrayElementAndLocalVariable(@GuardSatisfied Object[] array) {
-        //:: error: (guardsatisfied.location.disallowed)
+        // :: error: (guardsatisfied.location.disallowed)
         @GuardSatisfied Object local;
     }
 
-    //:: error: (guardsatisfied.location.disallowed)
+    // :: error: (guardsatisfied.location.disallowed)
     <T extends @GuardSatisfied Object> T testGuardSatisfiedOnBound(T t) {
         return t;
     }
@@ -231,7 +234,7 @@ public class GuardSatisfiedTest {
                 MyParameterizedClass1<T> @GuardSatisfied [] array) {}
 
         void testGuardSatisfiedOnArrayComponentOfParameterizedType(
-                //:: error: (guardsatisfied.location.disallowed)
+                // :: error: (guardsatisfied.location.disallowed)
                 @GuardSatisfied MyParameterizedClass1<T>[] array) {}
     };
 
@@ -252,11 +255,11 @@ public class GuardSatisfiedTest {
     }
 
     void testGuardSatisfiedOnArray1(Object @GuardSatisfied [][][] array) {}
-    //:: error: (guardsatisfied.location.disallowed)
+    // :: error: (guardsatisfied.location.disallowed)
     void testGuardSatisfiedOnArray2(@GuardSatisfied Object[][][] array) {}
-    //:: error: (guardsatisfied.location.disallowed)
+    // :: error: (guardsatisfied.location.disallowed)
     void testGuardSatisfiedOnArray3(Object[] @GuardSatisfied [][] array) {}
-    //:: error: (guardsatisfied.location.disallowed)
+    // :: error: (guardsatisfied.location.disallowed)
     void testGuardSatisfiedOnArray4(Object[][] @GuardSatisfied [] array) {}
 }
 
@@ -265,9 +268,9 @@ class Foo {
     void m1() {}
 
     @MayReleaseLocks
-    //:: error: (guardsatisfied.with.mayreleaselocks)
+    // :: error: (guardsatisfied.with.mayreleaselocks)
     void m2(@GuardSatisfied Foo f) {
-        //:: error: (method.invocation.invalid)
+        // :: error: (method.invocation.invalid)
         f.m1();
     }
 
@@ -277,7 +280,7 @@ class Foo {
     }
 
     void m3(@GuardSatisfied Foo f) {
-        //:: error: (method.guarantee.violated) :: error: (method.invocation.invalid)
+        // :: error: (method.guarantee.violated) :: error: (method.invocation.invalid)
         f.m1();
     }
 

@@ -55,7 +55,8 @@ import org.checkerframework.javacutil.TypesUtils;
 public class NullnessVisitor
         extends InitializationVisitor<NullnessAnnotatedTypeFactory, NullnessValue, NullnessStore> {
     // Error message keys
-    // private static final @CompilerMessageKey String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
+    // private static final @CompilerMessageKey String ASSIGNMENT_TYPE_INCOMPATIBLE =
+    // "assignment.type.incompatible";
     private static final @CompilerMessageKey String UNBOXING_OF_NULLABLE = "unboxing.of.nullable";
     private static final @CompilerMessageKey String KNOWN_NONNULL = "known.nonnull";
     private static final @CompilerMessageKey String LOCKING_NULLABLE = "locking.nullable";
@@ -340,9 +341,10 @@ public class NullnessVisitor
     public Void visitAssert(AssertTree node, Void p) {
         // See also org.checkerframework.dataflow.cfg.CFGBuilder.CFGTranslationPhaseOne.visitAssert
 
-        // In cases where neither assumeAssertionsAreEnabled nor assumeAssertionsAreDisabled are turned on
-        // and @AssumeAssertions is not used, checkForNullability is still called since the CFGBuilder will have
-        // generated one branch for which asserts are assumed to be enabled.
+        // In cases where neither assumeAssertionsAreEnabled nor assumeAssertionsAreDisabled are
+        // turned on and @AssumeAssertions is not used, checkForNullability is still called since
+        // the CFGBuilder will have generated one branch for which asserts are assumed to be
+        // enabled.
 
         boolean doVisitAssert = true;
 
