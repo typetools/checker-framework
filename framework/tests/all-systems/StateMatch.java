@@ -1,19 +1,19 @@
-import org.checkerframework.common.value.qual.MinLen;
-
 public class StateMatch {
     private int num_elts = 0;
 
     @SuppressWarnings("nullness")
-    private double @MinLen(1) [][] elts = null;
+    private double[][] elts = null;
 
-    @SuppressWarnings("Interning")
+    @SuppressWarnings({
+        "Interning",
+        "index"
+    }) // This code is inherently unsafe for the index checker, but adding index annotations produces warnings for other checkers (fenum)
     public boolean state_match(Object state) {
         if (!(state instanceof double[][])) {
             System.out.println("");
         }
 
-        @SuppressWarnings("value") // This cast is inherently unsafe
-        double @MinLen(1) [][] e = (double[][]) state;
+        double[][] e = (double[][]) state;
         boolean match = false;
         if (elts[0] == e[0]) {
             // When analyzing this statement, we get an exception about taking
