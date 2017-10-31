@@ -280,15 +280,16 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
      * <p>In general, this can lead to unsoundness, if a method attempts to use PolyUI to both: (1)
      * make the method's effect depend on the receiver's qualifier, and (2) constrain the qualifier
      * of a method parameter to match the qualifier on the receiver then we effectively permit
-     * unsound covariant subtyping on a generic parameter. At a call to a method <code>
-     * @PolyUIEffect void m(@PolyUI arg)</code> on a <code>@AlwaysSafe</code> instance, the receiver
-     * may be implicitly coerced to <code>@UI</code>, allowing the framework to choose <code>@UI
-     * </code> as the polymorphic qualifier instantiation, and thereby passing a <code>@UI</code>
-     * argument where the receiver expects a <code>@AlwaysSafe</code> instance.
+     * unsound covariant subtyping on a generic parameter.
+     *
+     * <p>At a call to a method <code>@PolyUIEffect void m(@PolyUI arg)</code> on a safe instance,
+     * the receiver may be implicitly coerced to UI, allowing the framework to choose UI as the
+     * polymorphic qualifier instantiation, and thereby passing a @UI argument where the receiver
+     * expects a safe instance.
      *
      * <p>In general, the correct place to fix this is in checkOverride above, but as a stop-gap
-     * we'll simply reject methods that try to mix method-bound with class-bound uses of <code>
-     * @PolyUI</code>
+     * we'll simply reject methods that try to mix method-bound with class-bound uses of polymorphic
+     * qualifiers.
      */
     protected void checkSaveCovariantReceiver(MethodTree node, ExecutableElement methElt) {
         AnnotatedTypeMirror.AnnotatedExecutableType matm = atypeFactory.getAnnotatedType(node);
