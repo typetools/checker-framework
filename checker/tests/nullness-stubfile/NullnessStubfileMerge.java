@@ -1,12 +1,6 @@
 // warning: StubParser: Method thisMethodIsNotReal(String) not found in type java.lang.String
 // warning: StubParser: Type not found: java.lang.NotARealClass
 // warning: StubParser: Type not found: not.real.NotARealClassInNotRealPackage
-// warning: StubParser: Type not found: com.sun.javadoc.ClassDoc
-// warning: StubParser: Type not found: com.sun.javadoc.Doc
-// warning: StubParser: Type not found: com.sun.javadoc.FieldDoc
-// warning: StubParser: Type not found: com.sun.javadoc.MemberDoc
-// warning: StubParser: Type not found: com.sun.javadoc.ProgramElementDoc
-// warning: StubParser: Type not found: com.sun.javadoc.RootDoc
 
 import org.checkerframework.checker.nullness.qual.*;
 
