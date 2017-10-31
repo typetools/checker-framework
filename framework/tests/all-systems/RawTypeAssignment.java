@@ -9,8 +9,6 @@ class Components extends ArrayList {}
 // is no error below.
 // class Components extends ArrayList<Component> {}
 
-@SuppressWarnings(
-        "list.access.unsafe.high") // The Index Checker correctly issues this warning here.
 public class RawTypeAssignment {
     static Components getComponents() {
         return new Components();
@@ -19,7 +17,7 @@ public class RawTypeAssignment {
     static void addTimes(Calendar calendar) {
         // Type systems may issue an error below because of a mismatch between the type arguments.
         @SuppressWarnings("assignment.type.incompatible")
-        //:: warning: [unchecked] unchecked conversion
+        // :: warning: [unchecked] unchecked conversion
         ArrayList<Component> clist = getComponents();
         clist.get(0);
     }

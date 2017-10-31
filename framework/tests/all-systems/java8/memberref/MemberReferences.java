@@ -1,4 +1,3 @@
-
 interface Supplier<R> {
     R supply();
 }
@@ -94,7 +93,7 @@ class Static {
     }
 }
 
-///** Expr # instMethod */
+/** Expr # instMethod */
 // BOUND(ReferenceMode.INVOKE, false),
 class Bound {
     <T> T func1(T o) {
@@ -174,7 +173,7 @@ class TopLevelWithArg<T> {
 
 class ArrayType {
     void context() {
-        //TODO: Signedness Checker does not default boxed primitives correctly
+        // TODO: Signedness Checker does not default boxed primitives correctly
         // See Issue #797
         // https://github.com/typetools/checker-framework/issues/797
         @SuppressWarnings({"signedness"})

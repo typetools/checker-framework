@@ -1,4 +1,3 @@
-
 import org.checkerframework.checker.interning.qual.*;
 
 public final class SequenceAndIndices<T extends @Interned Object> {

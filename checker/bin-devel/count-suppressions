@@ -45,8 +45,8 @@ cat ${greplines} \
     | sed 's/\([^0-9]\): [^:].*/\1/' \
     | sed 's/ \+$//' \
     | sort | uniq -c | sort -rg
-if [ $debug ]; then
-  echo ${greplines}
-else
+if [ "$debug" -eq "0" ]; then
   rm -f ${greplines}
+else
+  echo ${greplines}
 fi

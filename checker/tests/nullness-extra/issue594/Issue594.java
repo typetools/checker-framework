@@ -13,7 +13,7 @@ public class Issue594<T> {
 
     // Should return @Nullable T
     private T getResult() {
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return result;
     }
 }

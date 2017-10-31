@@ -1,5 +1,6 @@
 // Test for Issue 293:
 // https://github.com/typetools/checker-framework/issues/293
+// @skip-test until issue is fixed
 
 class Issue293 {
     void test1() {
@@ -45,7 +46,7 @@ class Issue293 {
                 s = null;
             }
         } finally {
-            //:: error: argument.type.incompatible
+            // :: error: argument.type.incompatible
             write(s);
         }
     }

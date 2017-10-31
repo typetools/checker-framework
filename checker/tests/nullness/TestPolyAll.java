@@ -25,7 +25,7 @@ class TestPolyAll {
                 retval[i] = "ok";
             } else {
                 retval[i] = seq[i].getClass().toString();
-                //:: error: (assignment.type.incompatible)
+                // :: error: (assignment.type.incompatible)
                 retval[i] = null;
             }
         }

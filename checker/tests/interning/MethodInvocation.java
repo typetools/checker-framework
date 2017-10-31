@@ -6,18 +6,18 @@ public class MethodInvocation {
 
     void nonInternedMethod() {
         nonInternedMethod();
-        //:: error: (method.invocation.invalid)
+        // :: error: (method.invocation.invalid)
         internedMethod(); // should emit error
 
         this.nonInternedMethod();
-        //:: error: (method.invocation.invalid)
+        // :: error: (method.invocation.invalid)
         this.internedMethod(); // should emit error
 
         interned.nonInternedMethod();
         interned.internedMethod();
 
         nonInterned.nonInternedMethod();
-        //:: error: (method.invocation.invalid)
+        // :: error: (method.invocation.invalid)
         nonInterned.internedMethod(); // should emit error
     }
 
@@ -32,7 +32,7 @@ public class MethodInvocation {
         interned.internedMethod();
 
         nonInterned.nonInternedMethod();
-        //:: error: (method.invocation.invalid)
+        // :: error: (method.invocation.invalid)
         nonInterned.internedMethod(); // should emit error
     }
 
@@ -41,13 +41,13 @@ public class MethodInvocation {
 
     // See https://github.com/typetools/checker-framework/issues/84
     void internedCharacterParametersClient() {
-        // TODO: autoboxing from char to Character //:: error: (argument.type.incompatible)
+        // TODO: autoboxing from char to Character // :: error: (argument.type.incompatible)
         internedCharacterParameter('\u00E4'); // lowercase a with umlaut
-        // TODO: autoboxing from char to Character //:: error: (argument.type.incompatible)
+        // TODO: autoboxing from char to Character // :: error: (argument.type.incompatible)
         internedCharacterParameter('a');
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         internedCharacterParameter(new Character('a'));
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         internedCharacterParameter(Character.valueOf('a'));
     }
 }

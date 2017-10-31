@@ -159,7 +159,8 @@ public class ValueTransfer extends CFTransfer {
             return Collections.singletonList(1);
         } else if (isIntRange(subNode, p)) {
             // Try to get a list of lengths from a range of integer values converted to string
-            // @IntVal is not checked for, because if it is present, we would already have the actual string values
+            // @IntVal is not checked for, because if it is present, we would already have the
+            // actual string values
             Range lengthRange = getIntRangeStringLengthRange(subNode, p);
             return ValueCheckerUtils.getValuesFromRange(lengthRange, Integer.class);
         } else if (subNodeTypeKind == TypeKind.BYTE) {
@@ -429,7 +430,8 @@ public class ValueTransfer extends CFTransfer {
     private void refineAtLengthAccess(Node lengthNode, Node receiverNode, CFStore store) {
         Receiver lengthRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), lengthNode);
 
-        // If the expression is not representable (for example if String.length() for some reason is not marked @Pure, then do not refine.
+        // If the expression is not representable (for example if String.length() for some reason is
+        // not marked @Pure, then do not refine.
         if (lengthRec instanceof FlowExpressions.Unknown) {
             return;
         }
@@ -682,7 +684,8 @@ public class ValueTransfer extends CFTransfer {
                     ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
                     throw new RuntimeException("this can't happen");
             }
-            // Any integral type with less than 32 bits would be promoted to 32-bit int type during operations.
+            // Any integral type with less than 32 bits would be promoted to 32-bit int type during
+            // operations.
             return leftNode.getType().getKind() == TypeKind.LONG
                             || rightNode.getType().getKind() == TypeKind.LONG
                     ? resultRange
@@ -940,7 +943,8 @@ public class ValueTransfer extends CFTransfer {
                     ErrorReporter.errorAbort("ValueTransfer: unsupported operation: " + op);
                     throw new RuntimeException("this can't happen");
             }
-            // Any integral type with less than 32 bits would be promoted to 32-bit int type during operations.
+            // Any integral type with less than 32 bits would be promoted to 32-bit int type during
+            // operations.
             return operand.getType().getKind() == TypeKind.LONG
                     ? resultRange
                     : resultRange.intRange();
@@ -1049,7 +1053,8 @@ public class ValueTransfer extends CFTransfer {
             return null;
         }
 
-        // These lists are used to refine the values in the store based on the results of the comparison.
+        // These lists are used to refine the values in the store based on the results of the
+        // comparison.
         List<Number> thenLeftVals = new ArrayList<>();
         List<Number> elseLeftVals = new ArrayList<>();
         List<Number> thenRightVals = new ArrayList<>();
@@ -1201,7 +1206,8 @@ public class ValueTransfer extends CFTransfer {
                             .getAnnotatedType(internal.getTree())
                             .getAnnotationInHierarchy(atypefactory.BOTTOMVAL);
             Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), internal);
-            // Combine the new annotations based on the results of the comparison with the existing type.
+            // Combine the new annotations based on the results of the comparison with the existing
+            // type.
             store.insertValue(
                     rec,
                     atypefactory.getQualifierHierarchy().greatestLowerBound(anno, currentAnno));

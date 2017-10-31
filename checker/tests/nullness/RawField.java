@@ -1,4 +1,3 @@
-
 import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 
@@ -9,17 +8,17 @@ class RawField {
     public @Raw @UnknownInitialization RawField a;
 
     public RawField() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         a = null;
         this.a = this;
         a = this;
     }
 
-    //:: error: (initialization.fields.uninitialized)
+    // :: error: (initialization.fields.uninitialized)
     public RawField(boolean foo) {}
 
     void t1() {
-        //:: error: (method.invocation.invalid)
+        // :: error: (method.invocation.invalid)
         a.t1();
     }
 
@@ -50,9 +49,9 @@ class MultiVersionControl {
     }
 }
 
-//TODO: This checks that forbidden field assignments do not occur.  (The
-//FBC type system permits arbitrary assignments in a constructor, but it
-//also makes assumptions that our implementation does not currently check.)
+// TODO: This checks that forbidden field assignments do not occur.  (The
+// FBC type system permits arbitrary assignments in a constructor, but it
+// also makes assumptions that our implementation does not currently check.)
 // class HasStaticUnknownInitializationField {
 //     static @UnknownInitialization @Raw Object f;
 // }
@@ -62,7 +61,7 @@ class MultiVersionControl {
 //     Object f;
 //
 //     public UseUnknownInitializationField() {
-//         //:: (initialization.invalid.field.write.in.constructor)
+//         // :: (initialization.invalid.field.write.in.constructor)
 //         f = HasStaticUnknownInitializationField.f;
 //     }
 //

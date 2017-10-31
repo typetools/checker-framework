@@ -48,7 +48,7 @@ public class ExpressionsInterning {
     // reference to @Interned -- I can see whether there are places that it
     // is compared with .equals, which I might need to examine.
     public boolean dontUseEqualsMethod(@Interned Foo f1, @Interned Foo f2) {
-        //:: warning: (unnecessary.equals)
+        // :: warning: (unnecessary.equals)
         return f1.equals(f2);
     }
 }

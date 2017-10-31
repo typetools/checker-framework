@@ -1,5 +1,3 @@
-
-@SuppressWarnings("array.access.unsafe.high")
 public class ExampleUsage {
     /**
      * this class contains a set of test methods that are supposed to show how the lowerbound
@@ -27,9 +25,9 @@ public class ExampleUsage {
         int[] arr = new int[5];
         int k;
         for (int i = -1; i < 5; i++) {
-            //:: error: (array.access.unsafe.low)
+            // :: error: (array.access.unsafe.low)
             k = arr[i];
         }
     }
 }
-//a comment
+// a comment

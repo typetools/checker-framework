@@ -22,9 +22,9 @@ class StringLen {
         @ArrayLenRange(from = 5, to = 5) String rng5 = constant;
         @ArrayLenRange(from = 1, to = 12) String rng1_12 = values;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @ArrayLen(4) String len4 = constant;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @ArrayLenRange(from = 1, to = 11) String rng1_10 = values;
     }
 
@@ -53,9 +53,9 @@ class StringLen {
         @StringVal("") String emptyLen = len0;
         @StringVal("") String emptyRng = rng0;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @StringVal("") String emptyError = nonEmpty;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @StringVal("a") String nonEmptyError = nonEmpty;
     }
 
@@ -69,7 +69,7 @@ class StringLen {
         @IntVal(5) int len5 = constant.length();
         @IntVal({1, 12}) int len1_12 = values.length();
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntVal({1, 11}) int len1_11 = values.length();
     }
 
@@ -83,7 +83,7 @@ class StringLen {
         @IntVal(5) int len5 = constant.length();
         @IntVal({1, 12}) int len1_12 = values.length();
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntVal({1, 11}) int len1_11 = values.length();
     }
 
@@ -97,7 +97,7 @@ class StringLen {
         @IntRange(from = 5, to = 5) int len5 = constant.length();
         @IntRange(from = 1, to = 12) int len1_12 = values.length();
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntRange(from = 1, to = 11) int len1_11 = values.length();
     }
 

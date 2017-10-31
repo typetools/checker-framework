@@ -64,7 +64,7 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
         return result;
     }
 
-    //TODO: GENERAL CASE IF THE OTHERS HAVEN"T OCCURED SUCH AS DECLARED_DECLARED
+    // TODO: GENERAL CASE IF THE OTHERS HAVEN"T OCCURED SUCH AS DECLARED_DECLARED
     protected boolean arePrimaryAnnotationsEqual(
             final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype) {
         if (currentTop != null) {

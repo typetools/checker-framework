@@ -16,7 +16,7 @@ public class Uninit11 {
     // parameter disambiguate_overloads is just to distinguish the overloaded constructors
     public @DoesNotUseF Uninit11(int disambiguate_overloads) {}
 
-    //:: error: (initialization.fields.uninitialized)
+    // :: error: (initialization.fields.uninitialized)
     public Uninit11(boolean disambiguate_overloads) {}
 
     public Uninit11(long x) {

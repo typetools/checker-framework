@@ -1,4 +1,3 @@
-
 import java.util.Comparator;
 
 class MyGen<K0> {}

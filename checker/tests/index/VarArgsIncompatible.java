@@ -1,5 +1,3 @@
-
-
 public class VarArgsIncompatible {
 
     public static void test(int[] arr) {

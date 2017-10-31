@@ -23,22 +23,22 @@ class ChainAssignment {
     }
 
     void n1() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         x = y = null;
     }
 
     void n2() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         this.x = this.y = null;
     }
 
     void n3() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         x = this.y = null;
     }
 
     void n4() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         this.x = y = null;
     }
 }

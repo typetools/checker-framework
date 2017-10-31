@@ -1,3 +1,5 @@
+import org.checkerframework.common.value.qual.MinLen;
+
 @SuppressWarnings("nullness") // Don't want to depend on @Nullable
 class AssignmentContext {
 
@@ -20,10 +22,8 @@ class AssignmentContext {
         s = b ? new String[] {""} : null;
     }
 
-    @SuppressWarnings(
-            "array.access.unsafe.high") // This access is obviously unsafe, but it's in test code so whatever.
-    void assignToCast(String[][] currentSample) {
+    void assignToCast(String @MinLen(4) [] @MinLen(5) [] currentSample) {
         // This statement used to cause a null pointer exception.
-        ((String[]) currentSample[3])[4] = currentSample[3][4];
+        ((String @MinLen(5) []) currentSample[3])[4] = currentSample[3][4];
     }
 }

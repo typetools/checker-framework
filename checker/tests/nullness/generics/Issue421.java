@@ -1,4 +1,3 @@
-
 class Issue421<IE> {
     abstract static class C<CE> {
         abstract X<? extends CE> getX();

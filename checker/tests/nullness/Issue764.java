@@ -16,7 +16,7 @@ public class Issue764 {
         }
 
         public void otherMethod2() {
-            //:: error: (contracts.precondition.not.satisfied)
+            // :: error: (contracts.precondition.not.satisfied)
             method();
         }
     }

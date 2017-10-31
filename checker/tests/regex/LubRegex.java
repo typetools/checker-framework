@@ -9,7 +9,7 @@ public class LubRegex {
         }
         @Regex(4) String test = s;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex(5) String test2 = s;
     }
 
@@ -20,7 +20,7 @@ public class LubRegex {
         }
         @Regex(2) String test = s;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex(3) String test2 = s;
     }
 
@@ -33,7 +33,7 @@ public class LubRegex {
         }
         @Regex(6) String test = s;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex(7) String test2 = s;
     }
 
@@ -46,7 +46,7 @@ public class LubRegex {
         }
         @Regex(8) String test = s;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex(9) String test2 = s;
     }
 
@@ -61,7 +61,7 @@ public class LubRegex {
         // TODO: s is a @Regex(10) here, but shouldn't it be a @Regex(11)?
         // @Regex(11) String test = s;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex(12) String test2 = s;
     }
 }

@@ -1,6 +1,7 @@
 // Test case for Issue1111
 // https://github.com/typetools/checker-framework/issues/1111
 // Additional test case in checker/tests/tainting/Issue1111.java
+
 import java.util.List;
 
 @SuppressWarnings("") // just check for crash

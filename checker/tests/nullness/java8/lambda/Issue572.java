@@ -11,7 +11,7 @@ class ParenthesizedLambda {
     }
 
     public <A, B> A konst(@NonNull A a, @Nullable B b) {
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         return biApply(((first, second) -> first), a, b);
     }
 }

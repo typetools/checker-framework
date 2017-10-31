@@ -156,8 +156,8 @@ public class TypeArgInferenceUtil {
                             receiver,
                             methodInvocation.getArguments());
         } else if (assignmentContext instanceof NewArrayTree) {
-            //TODO: I left the previous implementation below, it definitely caused infinite loops if you
-            //TODO: called it from places like the TreeAnnotator
+            // TODO: I left the previous implementation below, it definitely caused infinite loops
+            // TODO: if you called it from places like the TreeAnnotator.
             res = null;
 
             // FIXME: This may cause infinite loop
@@ -429,7 +429,8 @@ public class TypeArgInferenceUtil {
      */
     private static final TypeVariableSubstitutor substitutor = new TypeVariableSubstitutor();
 
-    // Substituter requires an input map that the substitute methods build.  We just reuse the same map rather than
+    // Substituter requires an input map that the substitute methods build.  We just reuse the same
+    // map rather than
     // recreate it each time.
     private static final Map<TypeVariable, AnnotatedTypeMirror> substituteMap = new HashMap<>(5);
 

@@ -29,8 +29,8 @@ public class AnonymousClassTest {
         try {
             Class<?> c = Class.forName("AnonymousClassTest$1");
             Method m = c.getMethod("getSib1", new Class[] {});
-            //TODO: Can we resolve anonymous classes?
-            //:: error: (assignment.type.incompatible)
+            // TODO: Can we resolve anonymous classes?
+            // :: error: (assignment.type.incompatible)
             @Sibling1 Object a = m.invoke(anonymous, (@ReflectBottom Object[]) null);
         } catch (Exception ignore) {
             ignore.printStackTrace();
@@ -44,11 +44,11 @@ public class AnonymousClassTest {
         try {
             Class<?> c = Class.forName("AnonymousClassTest$1");
             Method m = c.getMethod(str, new Class[] {int.class});
-            //TODO: Can we resolve anonymous classes?
-            //:: error: (argument.type.incompatible)
+            // TODO: Can we resolve anonymous classes?
+            // :: error: (argument.type.incompatible)
             m.invoke(anonymous, val1);
-            //TODO: Can we resolve anonymous classes?
-            //:: error: (argument.type.incompatible)
+            // TODO: Can we resolve anonymous classes?
+            // :: error: (argument.type.incompatible)
             m.invoke(anonymous, val2);
         } catch (Exception ignore) {
             ignore.printStackTrace();
@@ -62,9 +62,9 @@ public class AnonymousClassTest {
         try {
             Class<?> c = Class.forName("AnonymousClassTest$1");
             Method m = c.getMethod(str, new Class[] {int.class});
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             m.invoke(anonymous, val1);
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             m.invoke(anonymous, val2);
         } catch (Exception ignore) {
             ignore.printStackTrace();
@@ -75,7 +75,7 @@ public class AnonymousClassTest {
         try {
             Class<?> c = Class.forName("AnonymousClassTest$1");
             Method m = c.getMethod("getSib2", new Class[] {});
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Sibling1 Object a = m.invoke(anonymous, (@ReflectBottom Object[]) null);
         } catch (Exception ignore) {
             ignore.printStackTrace();

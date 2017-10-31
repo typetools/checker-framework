@@ -9,7 +9,7 @@ class ClassNotFound {
 
     public void bar() {
         int a = 0;
-        //:: warning: (class.find.failed)
+        // :: warning: (class.find.failed)
         foo(a);
     }
 }

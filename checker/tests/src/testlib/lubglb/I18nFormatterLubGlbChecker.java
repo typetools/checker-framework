@@ -178,7 +178,8 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
                         FormatTwoConvCat3)
                 : "GLB of @I18nFormat([DATE,DATE]) and @I18nFormat([UNUSED,NUMBER]) is not @I18nFormat([UNUSED,DATE])!";
 
-        // Test that the GLB of two I18nConversionCategory arrays of different sizes is an array of the smallest size of the two:
+        // Test that the GLB of two I18nConversionCategory arrays of different sizes is an array of
+        // the smallest size of the two:
 
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(I18nFormatGeneralAnno, FormatTwoConvCat1),
@@ -234,8 +235,10 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(I18NFORMAT, I18NUNKNOWNFORMAT), I18NFORMAT)
                 : "GLB of @I18nFormat(null) and @I18nUnknownFormat is not @I18nFormat(null)!";
-        // Computing the GLB of @I18nFormat(null) and @I18nFormat(null) should never occur in practice. Skipping this case as it causes an expected crash.
-        // Computing the GLB of @I18nFormat(null) and @I18nFormat with a value should never occur in practice. Skipping this case as it causes an expected crash.
+        // Computing the GLB of @I18nFormat(null) and @I18nFormat(null) should never occur in
+        // practice. Skipping this case as it causes an expected crash.
+        // Computing the GLB of @I18nFormat(null) and @I18nFormat with a value should never occur in
+        // practice. Skipping this case as it causes an expected crash.
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(I18NFORMAT, I18NINVALIDFORMAT), I18NFORMATBOTTOM)
                 : "GLB of @I18nFormat(null) and @I18nInvalidFormat(null) is not @I18nFormatBottom!";
@@ -260,7 +263,8 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
                         qh.greatestLowerBound(I18nFormatUnusedAnno, I18NUNKNOWNFORMAT),
                         I18nFormatUnusedAnno)
                 : "GLB of @I18nFormat(UNUSED) and @I18nUnknownFormat is not @I18nFormat(UNUSED)!";
-        // Computing the GLB of @I18nFormat with a value and @I18nFormat(null) should never occur in practice. Skipping this case as it causes an expected crash.
+        // Computing the GLB of @I18nFormat with a value and @I18nFormat(null) should never occur in
+        // practice. Skipping this case as it causes an expected crash.
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(I18nFormatUnusedAnno, I18nFormatUnusedAnno),
                         I18nFormatUnusedAnno)
@@ -535,7 +539,8 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
                         qh.leastUpperBound(FormatTwoConvCat1, FormatTwoConvCat2), FormatTwoConvCat4)
                 : "LUB of @I18nFormat([DATE,DATE]) and @I18nFormat([UNUSED,NUMBER]) is not @I18nFormat([DATE,NUMBER])!";
 
-        // Test that the LUB of two I18nConversionCategory arrays of different sizes is an array of the largest size of the two:
+        // Test that the LUB of two I18nConversionCategory arrays of different sizes is an array of
+        // the largest size of the two:
 
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(I18nFormatGeneralAnno, FormatTwoConvCat1),
@@ -588,8 +593,10 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(I18NFORMAT, I18NUNKNOWNFORMAT), I18NUNKNOWNFORMAT)
                 : "LUB of @I18nFormat(null) and @I18nUnknownFormat is not @I18nUnknownFormat!";
-        // Computing the LUB of @I18nFormat(null) and @I18nFormat(null) should never occur in practice. Skipping this case as it causes an expected crash.
-        // Computing the LUB of @I18nFormat(null) and @I18nFormat with a value should never occur in practice. Skipping this case as it causes an expected crash.
+        // Computing the LUB of @I18nFormat(null) and @I18nFormat(null) should never occur in
+        // practice. Skipping this case as it causes an expected crash.
+        // Computing the LUB of @I18nFormat(null) and @I18nFormat with a value should never occur in
+        // practice. Skipping this case as it causes an expected crash.
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(I18NFORMAT, I18NINVALIDFORMAT), I18NUNKNOWNFORMAT)
                 : "LUB of @I18nFormat(null) and @I18nInvalidFormat(null) is not @I18nUnknownFormat!";
@@ -612,7 +619,8 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
                         qh.leastUpperBound(I18nFormatUnusedAnno, I18NUNKNOWNFORMAT),
                         I18NUNKNOWNFORMAT)
                 : "LUB of @I18nFormat(UNUSED) and @I18nUnknownFormat is not @I18nUnknownFormat!";
-        // Computing the LUB of @I18nFormat with a value and @I18nFormat(null) should never occur in practice. Skipping this case as it causes an expected crash.
+        // Computing the LUB of @I18nFormat with a value and @I18nFormat(null) should never occur in
+        // practice. Skipping this case as it causes an expected crash.
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(I18nFormatUnusedAnno, I18nFormatUnusedAnno),
                         I18nFormatUnusedAnno)

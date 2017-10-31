@@ -1,7 +1,7 @@
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 
-//@non-308-skip-test
+// @non-308-skip-test
 public class RegexUtilTest {
     void fullyQualifiedRegexUtil(String s) {
         if (org.checkerframework.checker.regex.RegexUtil.isRegex(s, 2)) {
@@ -37,19 +37,19 @@ public class RegexUtilTest {
 
     void illegalName(String s) {
         if (IllegalName.isRegex(s, 2)) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Regex(2) String s2 = s;
         }
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex(2) String s2 = IllegalName.asRegex(s, 2);
     }
 
     void illegalNameRegexUtil(String s) {
         if (IllegalNameRegexUtil.isRegex(s, 2)) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Regex(2) String s2 = s;
         }
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex(2) String s2 = IllegalNameRegexUtil.asRegex(s, 2);
     }
 }

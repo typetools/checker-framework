@@ -6,13 +6,13 @@ public class FlowNullness {
 
         String str = "foo";
         @NonNull String a;
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         if (str != null) {
             a = str;
         }
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -20,13 +20,13 @@ public class FlowNullness {
 
         String str = "foo";
         @NonNull String a;
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         if (str != null) {
             a = str;
         }
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -34,7 +34,7 @@ public class FlowNullness {
 
         String str = "foo";
         @NonNull String a;
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         if (str == null) {
             testAssert();
         } else {
@@ -42,7 +42,7 @@ public class FlowNullness {
         }
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -50,7 +50,7 @@ public class FlowNullness {
 
         String str = "foo";
         @NonNull String a;
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         if (str == null) {
             testAssert();
         } else {
@@ -58,14 +58,14 @@ public class FlowNullness {
         }
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
     public void testReturnIf() {
 
         String str = "foo";
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         if (str == null) {
             testAssert();
             return;
@@ -74,14 +74,14 @@ public class FlowNullness {
         @NonNull String a = str;
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
     public void testReturnElse() {
 
         String str = "foo";
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         if (str != null) {
             testAssert();
         } else {
@@ -91,14 +91,14 @@ public class FlowNullness {
         @NonNull String a = str;
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
     public void testThrowIf() {
 
         String str = "foo";
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         if (str == null) {
             testAssert();
             throw new RuntimeException("foo");
@@ -107,14 +107,14 @@ public class FlowNullness {
         @NonNull String a = str;
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
     public void testThrowElse() {
 
         String str = "foo";
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         if (str != null) {
             testAssert();
         } else {
@@ -124,34 +124,34 @@ public class FlowNullness {
         @NonNull String a = str;
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
     public void testAssert() {
 
         String str = "foo";
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         assert str != null;
 
         @NonNull String a = str;
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
     public void testWhile() {
 
         String str = "foo";
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         while (str != null) {
             @NonNull String a = str;
             break;
         }
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -164,7 +164,7 @@ public class FlowNullness {
         }
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -174,7 +174,7 @@ public class FlowNullness {
         @NonNull String a = str;
 
         str = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String b = str;
 
         String s2 = new String();
@@ -184,7 +184,7 @@ public class FlowNullness {
     public void testExit() {
 
         String str = "foo";
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         if (str == null) {
             System.exit(0);
         }
@@ -210,11 +210,11 @@ public class FlowNullness {
         m.equals(m = null);
 
         MyClass n = new MyClass();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         n.test(n = null, n.toString()); // error
 
         MyClass o = null;
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         o.equals(o == new MyClass()); // error
     }
 
@@ -224,7 +224,7 @@ public class FlowNullness {
             o.toString();
             return;
         }
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         o.toString(); // error
     }
 
@@ -298,7 +298,7 @@ public class FlowNullness {
 
     void testNullableCall() {
         if (returnNullable() != null) {
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             returnNullable().toString(); // error
         }
     }
@@ -308,14 +308,14 @@ public class FlowNullness {
     }
 
     void testNonNullArg(@Nullable Object arg) {
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         nonNullArg(arg); // error
         nonNullArg(arg); // no error
     }
 
     void test() {
         String[] s = null;
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         for (int i = 0; i < s.length; ++i) { // error
             String m = s[i]; // fine.. s cannot be null
         }
@@ -326,7 +326,7 @@ public class FlowNullness {
 
     public void add_modified(double[] a, int count) {
         // System.out.println ("common: " + ArraysMDE.toString (a));
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         if (a == null) {
             return;
         } else if (intersect == null) {
