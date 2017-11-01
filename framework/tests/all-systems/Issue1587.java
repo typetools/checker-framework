@@ -14,4 +14,15 @@ abstract class Issue1587 {
     }
 
     abstract Iterable<MyObject> g(Iterable<MyObject> r);
+
+    interface Class2<C, D extends Class2<C, D>> {}
+
+    static class Class1<A, B extends Class2<A, B>> {
+
+        static void test() {}
+
+        void use() {
+            Class1.test();
+        }
+    }
 }
