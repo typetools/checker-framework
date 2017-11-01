@@ -42,11 +42,11 @@ public class TypeVariableSubstitutor {
      *
      * @param argument the argument to declaration (this will be a value in typeParamToArg)
      * @param use the use that is being replaced
-     * @return a shallow copy of argument with the appropriate annotations applied
+     * @return a deep copy of argument with the appropriate annotations applied
      */
     protected AnnotatedTypeMirror substituteTypeVariable(
             final AnnotatedTypeMirror argument, final AnnotatedTypeVariable use) {
-        final AnnotatedTypeMirror substitute = argument.shallowCopy(false);
+        final AnnotatedTypeMirror substitute = argument.deepCopy(true);
         substitute.addAnnotations(argument.getAnnotationsField());
 
         if (!use.getAnnotationsField().isEmpty()) {
