@@ -2413,6 +2413,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Adds the annotation {@code aliasClass} as an alias for the canonical annotation {@code type}
      * that will be used by the Checker Framework in the alias's place.
+     *
+     * <p>By specifying the alias/canonical relationship using this method, the elements of the
+     * alias are not preserved when the canonical annotation to use is constructed from the alias.
+     * If you want the elements to be copied over as well, please refer to {@link
+     * #addAliasedAnnotation(Class, AnnotationMirror, boolean, String...)}.
+     *
+     * @param aliasClass the class of the aliased annotation
+     * @param type the canonical annotation
      */
     protected void addAliasedAnnotation(Class<?> aliasClass, AnnotationMirror type) {
         addAliasedAnnotation(aliasClass.getCanonicalName(), type);
@@ -2438,9 +2446,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Adds the annotation {@code aliasClass} as an alias for the canonical annotation {@code type}
      * that will be used by the Checker Framework in the alias's place.
      *
+     * <p>You may specify the copyElements flag to indicate whether you want the elements of the
+     * alias to be copied over when the canonical annotation is constructed. Be careful that the
+     * framework will try to copy the elements by name matching, so make sure that names and types
+     * of the elements to be copied over are exactly the same as the ones in the canonical
+     * annotation. Otherwise, an 'Couldn't find element in annotation' error is raised.
+     *
+     * <p>To facilitate the cases where some of the elements is ignored on purpose when constructing
+     * the canonical annotation, this method also provides a varargs {@code ignorableElements} for
+     * you to explicitly specify the ignoring rules. For example, {@link
+     * org.checkerframework.checker.index.qual.IndexFor @IndexFor} is an alias of {@link
+     * org.checkerframework.checker.index.qual.NonNegative @NonNegative}, but the element "value" of
+     * {@code @IndexFor} should be ignored when constructing {@code @NonNegative}. In the cases
+     * where all elements are ignored, we can simply use {@link #addAliasedAnnotation(Class,
+     * AnnotationMirror)} instead.
+     *
      * @param aliasClass the class of the aliased annotation
      * @param type the canonical annotation
-     * @param copyElements a flag that indicates whether we want to copy the elements over when
+     * @param copyElements a flag that indicates whether you want to copy the elements over when
      *     getting the alias from the canonical annotation
      * @param ignorableElements a list of elements that can be safely dropped when the elements are
      *     being copied over
@@ -2477,8 +2500,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         addAliasedAnnotation(aliasName, type);
         if (copyElements) {
             aliasesCopyElements.add(aliasName);
+            aliasesIgnorableElements.put(aliasName, ignorableElements);
         }
-        aliasesIgnorableElements.put(aliasName, ignorableElements);
     }
 
     /**
