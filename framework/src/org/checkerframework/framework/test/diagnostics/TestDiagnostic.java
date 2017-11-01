@@ -2,7 +2,7 @@ package org.checkerframework.framework.test.diagnostics;
 
 /**
  * Represents an expected error/warning message in a Java test file or an error/warning reported by
- * the Javac compiler See JavaFileDiagnosticReader and TestDiagnosticLine
+ * the Javac compiler. See {@link JavaDiagnosticReader} and {@link TestDiagnosticLine}.
  */
 public class TestDiagnostic {
 
