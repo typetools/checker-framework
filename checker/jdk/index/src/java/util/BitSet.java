@@ -771,7 +771,7 @@ public class BitSet implements Cloneable, java.io.Serializable {
      *         than {@code -1}
      * @since  1.7
      */
-    public @GTENegativeOne int previousSetBit(@NonNegative int fromIndex) {
+    public @GTENegativeOne int previousSetBit(@GTENegativeOne int fromIndex) {
         if (fromIndex < 0) {
             if (fromIndex == -1)
                 return -1;
@@ -809,7 +809,7 @@ public class BitSet implements Cloneable, java.io.Serializable {
      *         than {@code -1}
      * @since  1.7
      */
-    public @GTENegativeOne int previousClearBit(@NonNegative int fromIndex) {
+    public @GTENegativeOne int previousClearBit(@GTENegativeOne int fromIndex) {
         if (fromIndex < 0) {
             if (fromIndex == -1)
                 return -1;
