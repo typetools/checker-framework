@@ -100,14 +100,6 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 // The *only* extra leeway we want to permit is overriding @PolyUI receiver to @AlwaysSafe.  But with generics, the tentative check below is inadequate.
                 boolean safeReceiverOverride =
                         overrider.getReceiverType().getAnnotation(AlwaysSafe.class) != null;
-                System.err.println(
-                        "safeParent: "
-                                + safeParent
-                                + ", polyParentDecl: "
-                                + polyParentDecl
-                                + ", safeReceiverOverride: "
-                                + safeReceiverOverride);
-                System.err.println("receiverType: " + overrider.getReceiverType());
                 if (safeParent && polyParentDecl && safeReceiverOverride) {
                     return true;
                 }
