@@ -7,7 +7,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Issue868 {
     <E extends @Nullable Object & @Nullable List> void test2(E e) {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         e.toString();
     }
 

@@ -19,7 +19,7 @@ public class UpperBoundRefinement {
             f2[j] = j;
         }
         for (int i = 0; i < f2.length - f1.length; i++) {
-            //fill up f1 with elements of f2
+            // fill up f1 with elements of f2
             for (int j = 0; j < f1.length; j++) {
                 f1[j] = f2[i + j];
             }
@@ -32,7 +32,8 @@ public class UpperBoundRefinement {
 
         for (int i = 0; i <= a_index_max; i++) { // i has the same type as a_index_max
             for (int j = 0; j < sub.length; j++) { // j is @LTL("sub")
-                // i + j is safe here. Because j is LTL("sub"), it should count as ("-1 + sub.length")
+                // i + j is safe here. Because j is LTL("sub"), it should count as ("-1 +
+                // sub.length")
                 double d = a[i + j];
             }
         }

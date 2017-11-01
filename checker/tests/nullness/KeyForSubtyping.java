@@ -16,17 +16,17 @@ public class KeyForSubtyping {
         // effect on a subsequent line of code. We want each of these tests to
         // be independent.
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         ab = a;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         ab = b;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         a = b;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         a = not_a_key;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         b = not_a_key;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         ab = not_a_key;
 
         // Now try the success cases
@@ -45,13 +45,13 @@ public class KeyForSubtyping {
         // Test that when a valid assignment is made, dataflow transfers the
         // KeyFor type qualifier from the right hand side to the left hand side.
 
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         method1(not_yet_a_key);
         not_yet_a_key = a;
         method1(not_yet_a_key);
 
         method1(a);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         method1(b);
         method1(ab);
 
@@ -67,7 +67,7 @@ public class KeyForSubtyping {
 
         // Try the error case first - see the note in method testSubtypeAssignments
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         abc = ac;
 
         ac = abc;
@@ -78,11 +78,14 @@ public class KeyForSubtyping {
             @KeyFor({"this.mapA", "this.mapB"}) String ab,
             @KeyFor({"this.mapA", "this.mapB", "this.mapC"}) String abc) {
         ab = abc;
-        // At this point, dataflow should have refined the type of ab to @KeyFor({"this.mapA","this.mapB","this.mapC"})
+        // At this point, dataflow should have refined the type of ab to
+        // @KeyFor({"this.mapA","this.mapB","this.mapC"})
         a = ab;
-        // At this point, dataflow should have refined the type of a to @KeyFor({"this.mapA","this.mapB","this.mapC"})
+        // At this point, dataflow should have refined the type of a to
+        // @KeyFor({"this.mapA","this.mapB","this.mapC"})
 
-        // This would not succeed without the previous two assignments, but should now because of dataflow.
+        // This would not succeed without the previous two assignments, but should now because of
+        // dataflow.
         abc = a;
     }
 
@@ -95,11 +98,11 @@ public class KeyForSubtyping {
             @Nullable @KeyFor({"this.mapA", "this.mapB"}) String ab) {
         // These fail only because a @Nullable RHS cannot be assigned to a @NonNull LHS.
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         a = ab;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         b = ab;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         not_a_key = ab;
 
         not_a_key = a; // Succeeds because both sides are @NonNull
@@ -121,7 +124,7 @@ public class KeyForSubtyping {
         void method1(@KeyFor("this.map1") String s) {}
 
         @Override
-        //:: error: (override.param.invalid)
+        // :: error: (override.param.invalid)
         void method2(@KeyFor({"this.map1", "this.map2"}) String s) {}
     }
 }

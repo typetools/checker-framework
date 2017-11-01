@@ -9,7 +9,7 @@ public class TestUncheckedByteCode {
         field = param.getInteger(i);
         field = param.getObject(new Object());
         // Strings are relevant and must be annotated in bytecode
-        //::error: (argument.type.incompatible)
+        // ::error: (argument.type.incompatible)
         field = param.getString("hello");
         field = param.identity("hello");
     }

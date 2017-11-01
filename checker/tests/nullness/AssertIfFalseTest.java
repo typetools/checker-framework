@@ -11,18 +11,18 @@ public class AssertIfFalseTest {
     @EnsuresNonNullIf(result = false, expression = "get()")
     boolean isGettable() {
         // don't bother with the implementation
-        //:: error: (contracts.conditional.postcondition.not.satisfied)
+        // :: error: (contracts.conditional.postcondition.not.satisfied)
         return false;
     }
 
     void simple() {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         get().toString();
     }
 
     void checkWrongly() {
         if (isGettable()) {
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             get().toString();
         }
     }

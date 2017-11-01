@@ -1,2 +1,2 @@
-//:: error: cannot find symbol
+// :: error: cannot find symbol
 class UnimportedExtends1 extends UnimportedClass {}

@@ -15,13 +15,13 @@ public class FlowConstructor {
     public FlowConstructor(int p) {
         a = "m";
         b = "n";
-        //:: error: (method.invocation.invalid)
+        // :: error: (method.invocation.invalid)
         nonRawMethod();
     }
 
     public FlowConstructor(double p) {
         a = "m";
-        //:: error: (method.invocation.invalid)
+        // :: error: (method.invocation.invalid)
         nonRawMethod(); // error
         b = "n";
     }

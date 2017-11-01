@@ -129,9 +129,9 @@ public class QualifierDefaults {
     };
 
     /** Standard unchecked default locations that should be top */
-    // Fields are defaulted to top so that warnings are issued at field reads, which we believe are more common
-    // than field writes. Future work is to specify different defaults for field reads and field writes.
-    // (When a field is written to, its type should be bottom.)
+    // Fields are defaulted to top so that warnings are issued at field reads, which we believe are
+    // more common than field writes. Future work is to specify different defaults for field reads
+    // and field writes.  (When a field is written to, its type should be bottom.)
     public static final TypeUseLocation[] standardUncheckedDefaultsTop = {
         TypeUseLocation.RETURN, TypeUseLocation.FIELD, TypeUseLocation.UPPER_BOUND
     };
@@ -243,7 +243,8 @@ public class QualifierDefaults {
         for (TypeUseLocation loc : standardClimbDefaultsTop) {
             for (AnnotationMirror top : tops) {
                 if (!conflictsWithExistingDefaults(checkedCodeDefaults, top, loc)) {
-                    // Only add standard defaults in locations where a default has not been specified
+                    // Only add standard defaults in locations where a default has not been
+                    // specified
                     addCheckedCodeDefault(top, loc);
                 }
             }
@@ -252,7 +253,8 @@ public class QualifierDefaults {
         for (TypeUseLocation loc : standardClimbDefaultsBottom) {
             for (AnnotationMirror bottom : bottoms) {
                 if (!conflictsWithExistingDefaults(checkedCodeDefaults, bottom, loc)) {
-                    // Only add standard defaults in locations where a default has not been specified
+                    // Only add standard defaults in locations where a default has not been
+                    // specified
                     addCheckedCodeDefault(bottom, loc);
                 }
             }
@@ -409,9 +411,10 @@ public class QualifierDefaults {
                         }
                     }
                     if (prev != null && prev.getKind() == Tree.Kind.MODIFIERS) {
-                        // Annotations are modifiers. We do not want to apply the local variable default to
-                        // annotations. Without this, test fenum/TestSwitch failed, because the default for
-                        // an argument became incompatible with the declared type.
+                        // Annotations are modifiers. We do not want to apply the local variable
+                        // default to annotations. Without this, test fenum/TestSwitch failed,
+                        // because the default for an argument became incompatible with the declared
+                        // type.
                         break;
                     }
                     return TreeUtils.elementFromDeclaration((VariableTree) t);
@@ -665,11 +668,12 @@ public class QualifierDefaults {
             if (isBytecode) {
                 return useUncheckedCodeDefaultsBytecode;
             } else if (isFromStubFile) {
-                //TODO: Types in stub files not annotated for a particular checker should be
+                // TODO: Types in stub files not annotated for a particular checker should be
                 // treated as unchecked bytecode.   For now, all types in stub files are treated as
                 // checked code. Eventually, @AnnotateFor(checker) will be programmatically added
                 // to methods in stub files supplied via the @Stubfile annotation.  Stub files will
-                // be treated like unchecked code except for methods in the scope for an @AnnotatedFor.
+                // be treated like unchecked code except for methods in the scope for an
+                // @AnnotatedFor.
                 return false;
             } else if (useUncheckedCodeDefaultsSource) {
                 return !isElementAnnotatedForThisChecker(annotationScope);
@@ -834,7 +838,8 @@ public class QualifierDefaults {
                             if (scope != null
                                     && scope.getKind() == ElementKind.LOCAL_VARIABLE
                                     && t == type) {
-                                // TODO: how do we determine that we are in a cast or instanceof type?
+                                // TODO: how do we determine that we are in a cast or instanceof
+                                // type?
                                 addAnnotation(t, qual);
                             }
                             break;
@@ -1189,7 +1194,8 @@ public class QualifierDefaults {
                             (TypeParameterElement) wildcard.bound.asElement(), typeFactory);
 
         } else {
-            // note: isSuperBound will be true for unbounded and lowers, but the unbounded case is already handled
+            // note: isSuperBound will be true for unbounded and lowers, but the unbounded case is
+            // already handled
             boundType = wildcard.isSuperBound() ? BoundType.LOWER : BoundType.UPPER;
         }
 

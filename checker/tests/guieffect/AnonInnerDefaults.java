@@ -32,7 +32,7 @@ public class AnonInnerDefaults {
                 new SafeIface() {
                     @Override
                     public void doStuff() {
-                        //:: error: (call.invalid.ui)
+                        // :: error: (call.invalid.ui)
                         e.dangerous();
                     }
                 };
@@ -61,7 +61,7 @@ public class AnonInnerDefaults {
                 new PolyIface() {
                     @Override
                     public void doStuff() {
-                        //:: error: (call.invalid.ui)
+                        // :: error: (call.invalid.ui)
                         e.dangerous(); // should be okay
                     }
                 };

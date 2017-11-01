@@ -13,7 +13,7 @@ class ExtendsDefault {
     class MyNonOddDefault<T> {}
 
     void testNonOdd() {
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         MyOddDefault<String> s1;
         MyNonOddDefault<String> s2;
     }

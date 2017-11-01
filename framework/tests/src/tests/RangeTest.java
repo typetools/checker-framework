@@ -251,7 +251,8 @@ public class RangeTest {
                         && value > range.to - shortWidth
                         && (Math.abs(range.from) - 1) / Short.MIN_VALUE
                                 == (Math.abs(range.to) - 1) / Short.MIN_VALUE) {
-                    // filter out test data that would cause Range.shortRange to return SHORT_EVERYTHING
+                    // filter out test data that would cause Range.shortRange to return
+                    // SHORT_EVERYTHING
                     short shortValue = (short) value;
                     assert range.contains(value) && result.contains(shortValue)
                                     || !range.contains(value) && !result.contains(shortValue)
@@ -272,7 +273,8 @@ public class RangeTest {
                         && value > range.to - byteWidth
                         && (Math.abs(range.from) - 1) / Byte.MIN_VALUE
                                 == (Math.abs(range.to) - 1) / Byte.MIN_VALUE) {
-                    // filter out test data that would cause Range.ByteRange to return BYTE_EVERYTHING
+                    // filter out test data that would cause Range.ByteRange to return
+                    // BYTE_EVERYTHING
                     byte byteValue = (byte) value;
                     assert range.contains(value) && result.contains(byteValue)
                                     || !range.contains(value) && !result.contains(byteValue)

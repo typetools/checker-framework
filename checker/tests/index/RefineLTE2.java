@@ -14,7 +14,7 @@ public class RefineLTE2 {
     public void add(int elt) {
         if (num_values == values.length) {
             values = null;
-            //:: error: (compound.assignment.type.incompatible)
+            // :: error: (compound.assignment.type.incompatible)
             num_values++;
             return;
         }

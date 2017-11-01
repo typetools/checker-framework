@@ -8,13 +8,13 @@ class Underflows {
 
     static void bytes() {
         byte max = Byte.MIN_VALUE;
-        //:: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe)
         @IntVal(127) byte maxPlus1 = (byte) (max - 1);
     }
 
     static void shorts() {
         short max = Short.MIN_VALUE;
-        //:: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe)
         @IntVal(32767) short maxPlus1 = (short) (max - 1);
     }
 

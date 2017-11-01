@@ -29,9 +29,9 @@ public class ConversionBasic {
         f.format("%c", new Byte((byte) 67));
         f.format("%c", new Short((short) 67));
         f.format("%C", new Integer(67));
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         f.format("%c", 7.5);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         f.format("%C", "Value");
 
         // test INT
@@ -42,9 +42,9 @@ public class ConversionBasic {
         f.format("%X", (long) 67);
         f.format("%d", new Long(67));
         f.format("%d", BigInteger.ONE);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         f.format("%d", 'c');
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         f.format("%d", BigDecimal.ONE);
 
         // test FLOAT
@@ -55,9 +55,9 @@ public class ConversionBasic {
         f.format("%g", new Double(42.5));
         f.format("%G", 67.87);
         f.format("%a", BigDecimal.ONE);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         f.format("%A", 1325);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         f.format("%a", BigInteger.ONE);
 
         // test TIME
@@ -65,9 +65,9 @@ public class ConversionBasic {
         f.format("%tD", new Date());
         f.format("%TM", (long) 32165456);
         f.format("%TD", Calendar.getInstance());
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         f.format("%tD", 1321543512);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         f.format("%tD", new Object());
 
         System.out.println(f.toString());

@@ -106,10 +106,11 @@ public class ConstraintMapBuilder {
                         }
                     }
 
-                    // If we have a case where Ti = @NonNull Tj  we know that for the @Initialization
-                    // hierarchy Ti = TJ and we know that for the @Nullable hierarchy Ti = @NonNull <some other type>
-                    // this step saves @NonNull annotation.
-                    // This case also covers the case where i = j
+                    // If we have a case where Ti = @NonNull Tj we know that for the @Initialization
+                    // hierarchy Ti = TJ and we know that for the @Nullable hierarchy Ti = @NonNull
+                    // <some other type>.
+                    // This step saves @NonNull annotation.
+                    // This case also covers the case where i = j.
                     if (!tAnnos.isEmpty()) {
                         addToPrimaryRelationship(
                                 (TypeVariable)
@@ -133,7 +134,8 @@ public class ConstraintMapBuilder {
                     }
                 }
 
-                // This is the case where we have a relationship between two different targets (Ti <?> Tj and i != j)
+                // This is the case where we have a relationship between two different targets (Ti
+                // <?> Tj and i != j)
                 if (!TypeAnnotationUtils.unannotatedType(typeT.getUnderlyingType())
                         .equals(TypeAnnotationUtils.unannotatedType(typeU.getUnderlyingType()))) {
                     addToTargetRelationship(

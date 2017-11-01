@@ -1081,7 +1081,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // Because of a bug in Java 8, annotations on type parameters are not stored in elements,
         // so get explicit annotations from the tree. (This bug has been fixed in Java 9.)
         // Also, since annotations computed by the AnnotatedTypeFactory are stored in the element,
-        // the annotations have to be retrived from the tree so that only explicit annotations are returned.
+        // the annotations have to be retrived from the tree so that only explicit annotations are
+        // returned.
         Tree decl = declarationFromElement(elt);
 
         if (decl == null && typesFromStubFiles != null && typesFromStubFiles.containsKey(elt)) {
@@ -1340,7 +1341,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected void addAnnotationFromFieldInvariant(
             AnnotatedTypeMirror type, AnnotatedTypeMirror accessedVia, VariableElement field) {
-        TypeElement typeElement = InternalUtils.getTypeElement(accessedVia.getUnderlyingType());
+        TypeMirror declaringType = accessedVia.getUnderlyingType();
+        // Find the first upper bound that isn't a wildcard or type variable
+        while (declaringType.getKind() == TypeKind.WILDCARD
+                || declaringType.getKind() == TypeKind.TYPEVAR) {
+            if (declaringType.getKind() == TypeKind.WILDCARD) {
+                declaringType = ((WildcardType) declaringType).getExtendsBound();
+            } else if (declaringType.getKind() == TypeKind.TYPEVAR) {
+                declaringType = ((TypeVariable) declaringType).getUpperBound();
+            }
+        }
+        TypeElement typeElement = InternalUtils.getTypeElement(declaringType);
         if (ElementUtils.enclosingClass(field).equals(typeElement)) {
             // If the field is declared in the accessedVia class, then the field in the invariant
             // cannot be this field, even if the field has the same name.
@@ -2249,7 +2260,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 break;
             default:
                 if (ctxtype.getKind().isPrimitive()) {
-                    // See Issue 438. Ignore primitive types for diamond inference - a primitive type
+                    // See Issue 438. Ignore primitive types for diamond inference - a primitive
+                    // type
                     // is never a suitable context anyways.
                 } else {
                     ErrorReporter.errorAbort(
@@ -3490,8 +3502,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             return (AnnotatedDeclaredType) t;
                         }
                     }
-                    // We should never reach here: assertFunctionalInterface performs the same check and
-                    // would have raised an error already.
+                    // We should never reach here: assertFunctionalInterface performs the same check
+                    // and would have raised an error already.
                     ErrorReporter.errorAbort(
                             String.format(
                                     "Expected the type of a cast tree in an assignment context to contain a functional interface bound. "

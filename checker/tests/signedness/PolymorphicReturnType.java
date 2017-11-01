@@ -7,7 +7,7 @@ import org.checkerframework.checker.signedness.qual.PolySignedness;
 
 public class PolymorphicReturnType {
 
-    //:: error: (some.error.goes.here)
+    // :: error: (some.error.goes.here)
     public @PolySignedness byte get() {
         return 0;
     }

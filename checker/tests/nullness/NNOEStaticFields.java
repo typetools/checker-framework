@@ -41,29 +41,29 @@ class NNOEStaticFields {
     }
 
     @RequiresNonNull("NoClueWhatThisShouldBe")
-    //:: error: (flowexpr.parse.error)
+    // :: error: (flowexpr.parse.error)
     void testF5() {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         NNOEStaticFields.nullable.toString();
     }
 
     void trueNegative() {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         nullable.toString();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         otherNullable.toString();
     }
 
     @RequiresNonNull("nullable")
     void test1() {
         nullable.toString();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         otherNullable.toString();
     }
 
     @RequiresNonNull("otherNullable")
     void test2() {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         nullable.toString();
         otherNullable.toString();
     }
@@ -94,7 +94,7 @@ class NNOEStaticFields {
         // this postcondition cannot be proved with the Checker Framework, as the relation
         // between doPurity and pureMethods is not explicit
         public static boolean shouldDoPurity() {
-            //:: error: (contracts.conditional.postcondition.not.satisfied)
+            // :: error: (contracts.conditional.postcondition.not.satisfied)
             return doPurity;
         }
 

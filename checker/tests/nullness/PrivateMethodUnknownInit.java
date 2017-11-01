@@ -8,7 +8,7 @@ public class PrivateMethodUnknownInit {
     public PrivateMethodUnknownInit() {
         x = 1;
         m1();
-        //:: error: (method.invocation.invalid)
+        // :: error: (method.invocation.invalid)
         m2();
     }
 

@@ -3,7 +3,7 @@ Demo.java:14: error: [assignment.type.incompatible] incompatible types in assign
               ^
   found   : @UnknownUnits int
   required: @Hz int
-Demo.java:65: error: [assignment.type.incompatible] incompatible types in assignment.
+Demo.java:67: error: [assignment.type.incompatible] incompatible types in assignment.
         @Hz int badTernaryAssign = seconds > 10 ? hertz : kilohertz;
                                                 ^
   found   : @Frequency int

@@ -22,9 +22,9 @@ public class AssertParameterNullness {
             boolean b1 = seq3[0];
             boolean b2 = seq4[0];
         } else {
-            //:: error: (accessing.nullable)
+            // :: error: (accessing.nullable)
             boolean b1 = seq3[0];
-            //:: error: (accessing.nullable)
+            // :: error: (accessing.nullable)
             boolean b2 = seq4[0];
         }
         return true;

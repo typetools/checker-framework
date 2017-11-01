@@ -11,7 +11,7 @@ class RawSuper {
         A() {
             super();
             mRA(this);
-            //:: error: (type.incompatible)
+            // :: error: (type.incompatible)
             mA(this);
             afield = new Object();
             mRA(this);
@@ -35,7 +35,7 @@ class RawSuper {
             mRA(this);
             mA(this);
             mRB(this);
-            //:: error: (type.incompatible)
+            // :: error: (type.incompatible)
             mB(this);
             bfield = new Object();
             mRA(this);
@@ -45,7 +45,7 @@ class RawSuper {
         }
         // "@Raw" means "@Raw B @NonRaw A", but method overrides take precedence.
         void raw(@Raw B this) {
-            //:: error: (type.incompatible)
+            // :: error: (type.incompatible)
             super.nonRaw();
         }
     }
@@ -59,7 +59,7 @@ class RawSuper {
             mRB(this);
             mB(this);
             mRC(this);
-            //:: error: (type.incompatible)
+            // :: error: (type.incompatible)
             mC(this);
             cfield = new Object();
             mRA(this);

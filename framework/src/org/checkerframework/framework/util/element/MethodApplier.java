@@ -134,7 +134,8 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
                     params.get(i), methodSymbol.getParameters().get(i).getAnnotationMirrors());
         }
 
-        // ensures that we check that there are only valid target types on this class, there are no "invalid" locations
+        // ensures that we check that there are only valid target types on this class, there are no
+        // "invalid" locations
         super.extractAndApply();
 
         applyAllElementAnnotations(

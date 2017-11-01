@@ -1,6 +1,6 @@
 // Test case for issue #341:
 // https://github.com/typetools/checker-framework/issues/341
-
+// @skip-test until issue is fixed
 class Test {
 
     static class Provider {

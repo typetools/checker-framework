@@ -1,4 +1,3 @@
-
 import org.checkerframework.checker.nullness.qual.*;
 
 // Test shadowing of parameters
@@ -15,7 +14,7 @@ class Shadowed {
 
     ConsumerS c =
             s -> {
-                //:: error: (dereference.of.nullable)
+                // :: error: (dereference.of.nullable)
                 s.toString();
 
                 class Inner {
