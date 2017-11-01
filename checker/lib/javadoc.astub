@@ -9,6 +9,7 @@ package com.sun.javadoc;
 
 interface RootDoc {
     String [] @MinLen(1) [] options();
+    ClassDoc @MinLen(1) [] classes();
 }
 
 // Nullness Checker annotations
