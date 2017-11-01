@@ -92,7 +92,7 @@ public interface RootDoc extends Doc, DocErrorReporter {
     String [] @MinLen(1) [] options();
     PackageDoc[] specifiedPackages();
     ClassDoc[] specifiedClasses();
-    ClassDoc [] classes();
+    ClassDoc @MinLen(1) [] classes();
     PackageDoc packageNamed(String name);
     ClassDoc classNamed(String qualifiedName);
 }
