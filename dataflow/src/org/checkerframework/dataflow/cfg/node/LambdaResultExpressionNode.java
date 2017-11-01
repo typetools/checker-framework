@@ -21,20 +21,23 @@ public class LambdaResultExpressionNode extends Node {
     protected ExpressionTree tree;
     protected /*@Nullable*/ Node result;
 
-    public LambdaResultExpressionNode(
-            ExpressionTree t, /*@Nullable*/ Node result, Types types /*,
-            LambdaExpressionTree lambda,
-            Symbol.MethodSymbol methodSymbol*/) {
+    public LambdaResultExpressionNode(ExpressionTree t, /*@Nullable*/ Node result, Types types) {
         super(InternalUtils.typeOf(t));
         this.result = result;
         tree = t;
-        //result.setAssignmentContext(new AssignmentContext.LambdaReturnContext(methodSymbol));
     }
 
+    /**
+     * Returns the final node of the CFG corresponding to the lambda expression body (see {@link
+     * LambdaResultExpressionNode.getTree()}).
+     */
     public Node getResult() {
         return result;
     }
-
+    /**
+     * Returns the {@link ExpressionTree} corresponding to the body of a lambda expression with an
+     * expression body (e.g. X for (o -> X) where X is an expression and not a {...} block).
+     */
     @Override
     public ExpressionTree getTree() {
         return tree;
@@ -55,6 +58,8 @@ public class LambdaResultExpressionNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
+        // No need to compare tree, since in a well-formed LambdaResultExpressionNode, result will be the same only
+        // when tree is the same (this is similar to ReturnNode).
         if (obj == null || !(obj instanceof LambdaResultExpressionNode)) {
             return false;
         }
@@ -67,6 +72,8 @@ public class LambdaResultExpressionNode extends Node {
 
     @Override
     public int hashCode() {
+        // No need to incorporate tree, since in a well-formed LambdaResultExpressionNode, result will be the same only
+        // when tree is the same (this is similar to ReturnNode).
         return HashCodeUtils.hash(result);
     }
 
