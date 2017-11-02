@@ -1,4 +1,3 @@
-
 import java.lang.reflect.Constructor;
 import testlib.reflection.qual.Sibling1;
 import testlib.reflection.qual.Sibling2;
@@ -37,7 +36,7 @@ class ConstructorTest {
         try {
             Class<?> c = ConstructorTest.class;
             Constructor<?> init = c.getConstructor(new Class<?>[] {Integer.class});
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             Object o = init.newInstance(sibling2);
         } catch (Exception ignore) {
         }
@@ -47,8 +46,7 @@ class ConstructorTest {
         try {
             Class<?> c = ConstructorTest.class;
             Constructor<?> init = c.getConstructor(new Class<?>[] {Integer.class});
-            // The error should be//:: error: (argument.type.incompatible)s
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @Sibling1 Object o = init.newInstance(new Object[] {sibling2});
         } catch (Exception ignore) {
         }
@@ -60,7 +58,7 @@ class ConstructorTest {
             Constructor<?> init = c.getConstructor(new Class<?>[] {Integer.class, Integer.class});
             @Sibling2 int a = sibling2;
             @Sibling1 int b = sibling1;
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             @Sibling2 Object inst = init.newInstance(a, b);
         } catch (Exception ignore) {
         }

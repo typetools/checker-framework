@@ -12,7 +12,7 @@ public class ArrayAsList {
     }
 
     public static void toList2(int @MinLen(10) [] arg2) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @MinLen(10) List list = Arrays.asList(arg2);
         System.out.println("int: " + list.size());
 

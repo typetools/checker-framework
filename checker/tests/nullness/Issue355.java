@@ -41,7 +41,7 @@ class Issue355d {
     }
 
     void m(List<String> xs) {
-        //:: error: (iterating.over.nullable)
+        // :: error: (iterating.over.nullable)
         for (Object x : checkNotNull(xs)) {}
     }
 }
@@ -52,7 +52,7 @@ class Issue355e {
     }
 
     void m(@Nullable List<String> xs) {
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         for (Object x : checkNotNull(xs)) {}
     }
 }

@@ -12,7 +12,7 @@ class A {
 
 class B extends A {
     public @Unique B() {
-        //:: error: (unique.leaked)
+        // :: error: (unique.leaked)
         super(); // "this" is aliased to A.lastA.
     }
 

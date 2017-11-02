@@ -11,13 +11,13 @@ public class DivideByZero {
         @DoubleVal(Double.POSITIVE_INFINITY) double c = i / 0.0;
         @DoubleVal(Float.POSITIVE_INFINITY) float e = i / 0.0f;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @BottomVal float a2 = f / 0;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @BottomVal double b2 = d / 0L;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @BottomVal double c2 = i / 0.0;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @BottomVal float e2 = i / 0.0f;
     }
 
@@ -27,13 +27,13 @@ public class DivideByZero {
         @DoubleVal(Double.NaN) double c = i % 0.0;
         @DoubleVal(Float.NaN) float e = i % 0.0f;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @BottomVal float a2 = f % 0;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @BottomVal double b2 = d % 0l;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @BottomVal double c2 = i % 0.0;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @BottomVal float e2 = i % 0.0f;
     }
 

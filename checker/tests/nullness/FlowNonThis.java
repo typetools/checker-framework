@@ -11,7 +11,7 @@ public class FlowNonThis {
         t.setup();
         System.out.println(t.c.length());
         t.erase();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         System.out.println(t.c.length());
     }
 
@@ -19,15 +19,15 @@ public class FlowNonThis {
         setup();
         System.out.println(c.length());
         erase();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         System.out.println(c.length());
     }
 
     public void justErase() {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         System.out.println(c.length());
         erase();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         System.out.println(c.length());
     }
 

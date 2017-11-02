@@ -37,13 +37,14 @@ class Utils {
         // C1: X <: upper bound of (? super C)
         // C2: lower bound of (? super C) <: X
         //
-        // we can simplify these constraints by substituting out the lower and upper bound of ? super C
+        // we can simplify these constraints by substituting out the lower and upper bound of
+        // ? super C.
         // C1: X <: @Nullable Object
         // C2: C <: X
         //
-        // we can simplify the constraints again by substituting X with the actual type argument to nullConsumer
-        // and in C2, we can substitute C with its upper bound, since for the constraint to hold X must be above
-        // C's upper bound.  This yields:
+        // we can simplify the constraints again by substituting X with the actual type argument to
+        // nullConsumer and in C2, we can substitute C with its upper bound, since for the
+        // constraint to hold X must be above C's upper bound.  This yields:
         //
         // C1: @Nullable Object <: @Nullable Object
         // C2: @Nullable Object <: @Nullable Object

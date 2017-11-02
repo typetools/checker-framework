@@ -27,7 +27,7 @@ class AssertionTest {
 
     void context() {
         AssertFunc f = AssertionTest::override;
-        //:: error: (methodref.receiver.postcondition)
+        // :: error: (methodref.receiver.postcondition)
         AssertFunc2 f2 = AssertionTest::overrideAssertFunc2;
     }
 }

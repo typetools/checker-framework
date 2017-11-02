@@ -8,19 +8,19 @@ class Initializer {
     public String a;
     public String b = "abc";
 
-    //:: error: (assignment.type.incompatible)
+    // :: error: (assignment.type.incompatible)
     public String c = null;
 
     public String d = ("");
 
     public Initializer() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         a = null;
         a = "";
         c = "";
     }
 
-    //:: error: (initialization.fields.uninitialized)
+    // :: error: (initialization.fields.uninitialized)
     public Initializer(boolean foo) {}
 
     public Initializer(int foo) {
@@ -40,7 +40,7 @@ class Initializer {
         c = "";
     }
 
-    //:: error: (initialization.fields.uninitialized)
+    // :: error: (initialization.fields.uninitialized)
     public Initializer(double foo, boolean t) {
         if (!setFieldMaybe()) {
             // on this path, 'a' is not initialized
@@ -62,7 +62,7 @@ class Initializer {
     String f = "";
 
     void t1(@UnknownInitialization @Raw Initializer this) {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         this.f.toString();
     }
 
@@ -77,16 +77,16 @@ class SubInitializer extends Initializer {
             @UnknownInitialization(Initializer.class) @Raw(Initializer.class) SubInitializer this) {
         fieldF.toString();
         super.f.toString();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         this.f.toString();
     }
 
     void subt2(@UnknownInitialization @Raw SubInitializer this) {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         fieldF.toString();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         super.f.toString();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         this.f.toString();
     }
 }

@@ -82,13 +82,15 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new UnitsAnnotatedTypeFormatter(checker);
     }
 
-    // Converts all metric-prefixed units' alias annotations (eg @kg) into base unit annotations with prefix values (eg @g(Prefix.kilo))
+    // Converts all metric-prefixed units' alias annotations (eg @kg) into base unit annotations
+    // with prefix values (eg @g(Prefix.kilo))
     @Override
     public AnnotationMirror aliasedAnnotation(AnnotationMirror anno) {
         // Get the name of the aliased annotation
         String aname = anno.getAnnotationType().toString();
 
-        // See if we already have a map from this aliased annotation to its corresponding base unit annotation
+        // See if we already have a map from this aliased annotation to its corresponding base unit
+        // annotation
         if (aliasMap.containsKey(aname)) {
             // if so return it
             return aliasMap.get(aname);
@@ -115,8 +117,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         UnitsRelationsTools.buildAnnoMirrorWithSpecificPrefix(
                                 processingEnv, baseUnitAnnoClass, prefix);
 
-                // TODO: assert that this annotation is a prefix multiple of a Unit that's in the supported type qualifiers list
-                // currently this breaks for externally loaded annotations if the order was an alias before a base annotation
+                // TODO: assert that this annotation is a prefix multiple of a Unit that's in the
+                // supported type qualifiers list currently this breaks for externally loaded
+                // annotations if the order was an alias before a base annotation.
                 // assert isSupportedQualifier(result);
 
                 built = true;
@@ -226,10 +229,12 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
 
                 // then add the aliased annotation to the alias map
-                // TODO: refactor so we can directly add to alias map, skipping the assert check in aliasedAnnotation
+                // TODO: refactor so we can directly add to alias map, skipping the assert check in
+                // aliasedAnnotation.
                 aliasedAnnotation(mirror);
             } else {
-                // error: somehow the aliased annotation has @UnitsMultiple meta annotation, but no base class defined in that meta annotation
+                // error: somehow the aliased annotation has @UnitsMultiple meta annotation, but no
+                // base class defined in that meta annotation
                 // TODO: error abort
             }
         }
@@ -249,7 +254,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        // if we are unable to find UnitsMultiple meta annotation, then this is not an Aliased Annotation
+        // if we are unable to find UnitsMultiple meta annotation, then this is not an Aliased
+        // Annotation
         return false;
     }
 
@@ -332,7 +338,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        // Don't call super.createTreeAnnotator because it includes PropagationTreeAnnotator which is incorrect.
+        // Don't call super.createTreeAnnotator because it includes PropagationTreeAnnotator which
+        // is incorrect.
         return new ListTreeAnnotator(
                 new UnitsPropagationTreeAnnotator(this),
                 new ImplicitsTreeAnnotator(this),
@@ -401,7 +408,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (bestres != null) {
                 type.replaceAnnotation(bestres);
             } else {
-                // If none of the units relations classes could resolve the units, then apply default rules
+                // If none of the units relations classes could resolve the units, then apply
+                // default rules
 
                 switch (kind) {
                     case MINUS:
@@ -425,7 +433,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             // scalar divided by any unit returns mixed
                             type.replaceAnnotation(mixedUnits);
                         } else {
-                            // else it is a division of two units that have no defined relations from a relations class
+                            // else it is a division of two units that have no defined relations
+                            // from a relations class
                             // return mixed
                             type.replaceAnnotation(mixedUnits);
                         }
@@ -438,13 +447,15 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             // any scalar multiplied by a unit becomes the unit
                             type.replaceAnnotations(lht.getAnnotations());
                         } else {
-                            // else it is a multiplication of two units that have no defined relations from a relations class
+                            // else it is a multiplication of two units that have no defined
+                            // relations from a relations class
                             // return mixed
                             type.replaceAnnotation(mixedUnits);
                         }
                         break;
                     case REMAINDER:
-                        // in modulo operation, it always returns the left unit regardless of what it is (unknown, or some unit)
+                        // in modulo operation, it always returns the left unit regardless of what
+                        // it is (unknown, or some unit)
                         type.replaceAnnotations(lht.getAnnotations());
                         break;
                     default:
@@ -532,7 +543,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             // if the two units have the same base SI unit
-            // TODO: it is possible to rewrite these two lines to use UnitsRelationsTools, will it have worse performance?
+            // TODO: it is possible to rewrite these two lines to use UnitsRelationsTools, will it
+            // have worse performance?
             if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
                 // and if they have the same Prefix, it means it is the same unit
                 if (AnnotationUtils.areSame(a1, a2)) {
@@ -547,8 +559,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     // check if a2 is a prefixed multiple of a base unit
                     boolean a2Prefixed = !UnitsRelationsTools.hasNoPrefix(a2);
 
-                    // when calling findLub(), the left AnnoMirror has to be a type within the supertypes Map
-                    // this means it has to be one of the base SI units, so always strip the left unit or ensure it has no prefix
+                    // when calling findLub(), the left AnnoMirror has to be a type within the
+                    // supertypes Map this means it has to be one of the base SI units, so always
+                    // strip the left unit or ensure it has no prefix
                     if (a1Prefixed && a2Prefixed) {
                         // if both are prefixed, strip the left and find LUB
                         result = this.findLub(removePrefix(a1), a2);

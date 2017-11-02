@@ -1,6 +1,7 @@
 import java.lang.reflect.Field;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 import testlib.wholeprograminference.qual.*;
+
 /**
  * This file contains expected errors that should exist even after the jaif type inference occurs.
  */
@@ -18,9 +19,9 @@ public class ExpectedErrors {
     }
 
     void testFields() {
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         expectsSibling1(privateDeclaredField);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         expectsSibling1(publicDeclaredField);
     }
 
@@ -30,9 +31,9 @@ public class ExpectedErrors {
 
     // The refinement cannot happen and an assignemnt type incompatible error occurs.
     void assignFieldsToTop() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         privateDeclaredField2 = getTop();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         publicDeclaredField2 = getTop();
     }
 
@@ -72,16 +73,16 @@ public class ExpectedErrors {
     //    }
 
     void testLUBFields1() {
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         expectsSibling1(lubPrivateField);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         expectsSibling1(lubPublicField);
     }
 
     void testLUBFields2() {
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         expectsSibling2(lubPrivateField);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         expectsSibling2(lubPublicField);
     }
 
@@ -97,13 +98,13 @@ public class ExpectedErrors {
 
     public @Sibling1 int getSibling1Wrong() {
         int x = lubTest();
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return x;
     }
 
     public @Sibling2 int getSibling2Wrong() {
         int x = lubTest();
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return x;
     }
 
@@ -142,7 +143,7 @@ public class ExpectedErrors {
     }
 
     void setBoolean(Object o, boolean b) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @WholeProgramInferenceBottom Object bot = o;
     }
 
@@ -163,15 +164,15 @@ public class ExpectedErrors {
         }
 
         public void suppressWarningsValidation() {
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             expectsSibling1(i);
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             expectsSibling1(i2);
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             expectsSibling1(SuppressWarningsInner.i);
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             expectsSibling1(SuppressWarningsInner.i2);
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             expectsSibling1(suppressWarningsMethodReturn());
 
             suppressWarningsMethodParams(getSibling1());
@@ -213,9 +214,9 @@ public class ExpectedErrors {
 
         // Testing the refinement above.
         void testFields() {
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             expectsBottom(privateField);
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             expectsBottom(publicField);
         }
     }
@@ -230,9 +231,9 @@ public class ExpectedErrors {
         }
 
         void test() {
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             expectsSibling1(field);
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             expectsSibling1(field2);
         }
     }

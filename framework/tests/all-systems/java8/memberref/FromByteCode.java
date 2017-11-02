@@ -1,4 +1,3 @@
-
 interface FunctionFromByteCode<T, R> {
     R apply(T t);
 }

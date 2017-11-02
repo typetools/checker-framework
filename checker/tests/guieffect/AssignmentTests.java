@@ -5,7 +5,8 @@ import org.checkerframework.checker.guieffect.qual.UI;
 
 public class AssignmentTests {
     public static @PolyUIType class P {}
-    // We must separate these tests, otherwise the flow sensitivity kicks in and confounds the test results
+    // We must separate these tests, otherwise the flow sensitivity kicks in and confounds the test
+    // results
     public void testBody1(@UI P ui, @AlwaysSafe P safe, @PolyUI P poly) {
         ui = safe;
     }
@@ -23,12 +24,12 @@ public class AssignmentTests {
     }
 
     public void testBody5(@UI P ui, @AlwaysSafe P safe, @PolyUI P poly) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         safe = ui;
     }
 
     public void testBody6(@UI P ui, @AlwaysSafe P safe, @PolyUI P poly) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         safe = poly;
     }
 
@@ -41,7 +42,7 @@ public class AssignmentTests {
     }
 
     public void testBody9(@UI P ui, @AlwaysSafe P safe, @PolyUI P poly) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         poly = ui;
     }
 }

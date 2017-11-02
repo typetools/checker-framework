@@ -96,8 +96,9 @@ public class TestDiagnosticUtils {
                 trimmed.first);
     }
 
+    /** Returns a pair of {@code <wereThereParentheses, textWithoutParentheses>}. */
     static Pair<Boolean, String> dropParentheses(final String str) {
-        if (str.charAt(0) == '(' && str.charAt(str.length() - 1) == ')') {
+        if (!str.equals("") && str.charAt(0) == '(' && str.charAt(str.length() - 1) == ')') {
             return Pair.of(true, str.substring(1, str.length() - 1));
         }
         return Pair.of(false, str);
@@ -219,8 +220,8 @@ public class TestDiagnosticUtils {
         final String trimmedLine = originalLine.trim();
         long errorLine = lineNumber + 1;
 
-        if (trimmedLine.startsWith("//::")) {
-            String restOfLine = trimmedLine.substring(4); // drop the //::
+        if (trimmedLine.startsWith("// ::")) {
+            String restOfLine = trimmedLine.substring(5); // drop the "// ::"
             String[] diagnosticStrs = restOfLine.split("::");
             List<TestDiagnostic> diagnostics = new ArrayList<>(diagnosticStrs.length);
             for (String diagnostic : diagnosticStrs) {
@@ -229,7 +230,7 @@ public class TestDiagnosticUtils {
             return new TestDiagnosticLine(
                     filename, errorLine, originalLine, Collections.unmodifiableList(diagnostics));
 
-        } else if (trimmedLine.startsWith("//warning:")) {
+        } else if (trimmedLine.startsWith("// warning:")) {
             // This special diagnostic does not expect a line number nor a file name
             String diagnosticString = trimmedLine.substring(2);
             TestDiagnostic diagnostic = fromJavaFileComment("", 0, diagnosticString);

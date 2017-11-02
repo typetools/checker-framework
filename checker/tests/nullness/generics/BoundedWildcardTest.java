@@ -1,4 +1,5 @@
-// Test case from http://stackoverflow.com/questions/38339332/in-a-bounded-wildcard-where-does-the-annotation-belong
+// Test case from
+// http://stackoverflow.com/questions/38339332/in-a-bounded-wildcard-where-does-the-annotation-belong
 
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -17,26 +18,26 @@ class BoundedWildcardTest {
         }
     }
 
-    //:: error: (bound.type.incompatible)
+    // :: error: (bound.type.incompatible)
     public void initLoc1(@Nullable List<@Nullable ? extends Styleable> s) {
-        //:: error: (iterating.over.nullable)
+        // :: error: (iterating.over.nullable)
         for (Styleable c : s) {
             locChildren(c);
         }
     }
 
     public void initLoc2(@Nullable List<@Nullable ? extends @Nullable Styleable> s) {
-        //:: error: (iterating.over.nullable)
+        // :: error: (iterating.over.nullable)
         for (Styleable c : s) {
-            //:: error: argument.type.incompatible
+            // :: error: argument.type.incompatible
             locChildren(c);
         }
     }
 
     public void initLoc3(@Nullable List<? extends @Nullable Styleable> s) {
-        //:: error: (iterating.over.nullable)
+        // :: error: (iterating.over.nullable)
         for (Styleable c : s) {
-            //:: error: argument.type.incompatible
+            // :: error: argument.type.incompatible
             locChildren(c);
         }
     }

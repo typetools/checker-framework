@@ -360,9 +360,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     protected boolean isMonotonicUpdate(FieldAccess fieldAcc, V value) {
         boolean isMonotonic = false;
-        // TODO: this check for !sequentialSemantics is an optimization that breaks the contract of the method,
-        // since the method name and documentation say nothing about sequential semantics.
-        // This check should be performed by callers of this method when needed.
+        // TODO: This check for !sequentialSemantics is an optimization that breaks the contract of
+        // the method, since the method name and documentation say nothing about sequential
+        // semantics.  This check should be performed by callers of this method when needed.
         // TODO: Update the javadoc of this method when the above to-do item is addressed.
         if (!sequentialSemantics) { // only compute if necessary
             AnnotatedTypeFactory atypeFactory = this.analysis.atypeFactory;

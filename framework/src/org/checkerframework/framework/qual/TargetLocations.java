@@ -20,7 +20,8 @@ import java.lang.annotation.Target;
  * enable that. A {@link org.checkerframework.common.basetype.TypeValidator} must be implemented if
  * finer-grained control is necessary.
  */
-// TODO: Verify this meta-annotation (step 3 in https://github.com/typetools/checker-framework/issues/515).
+// TODO: Verify this meta-annotation (step 3 in
+// https://github.com/typetools/checker-framework/issues/515).
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)

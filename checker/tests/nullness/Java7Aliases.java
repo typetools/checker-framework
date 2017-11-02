@@ -6,9 +6,9 @@ class Java7Aliases {
     @Nullable Object g;
 
     void foo() {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         f.toString();
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         g.toString();
     }
 }

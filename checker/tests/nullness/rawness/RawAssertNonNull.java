@@ -29,7 +29,7 @@ class RawAssertNonNull {
         }
 
         @EnsuresNonNull({"f", "g"})
-        //:: error: (contracts.postcondition.not.satisfied)
+        // :: error: (contracts.postcondition.not.satisfied)
         private void m(@Raw @UnknownInitialization Test1b this) {
             this.f = new Object();
         }
@@ -39,7 +39,7 @@ class RawAssertNonNull {
         private Object f;
         private Object g;
 
-        //:: error: (initialization.fields.uninitialized)
+        // :: error: (initialization.fields.uninitialized)
         Test1c() {
             m();
         }
@@ -124,7 +124,7 @@ class RawAssertNonNull {
         }
 
         private void nonpure(@Raw @UnknownInitialization Test2c this) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             this.f = null;
         }
     }

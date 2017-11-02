@@ -1,4 +1,3 @@
-
 public class Fields {
 
     // Not final field

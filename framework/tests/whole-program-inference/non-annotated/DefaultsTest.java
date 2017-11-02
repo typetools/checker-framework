@@ -1,4 +1,5 @@
 import testlib.wholeprograminference.qual.*;
+
 // The @DefaultType annotation, which is the default for every location, is forbidden
 // to be written anywhere. This class attempts to infer @DefaultType in several
 // locations, and the annotated version of this class (in the annotated folder)
@@ -19,7 +20,7 @@ public class DefaultsTest {
         if (Math.random() > 0.5) {
             return ""; // @DefaultType
         } else {
-            //:: warning: (cast.unsafe)
+            // :: warning: (cast.unsafe)
             @WholeProgramInferenceBottom String s = (@WholeProgramInferenceBottom String) "";
             return s;
         }

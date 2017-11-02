@@ -53,16 +53,16 @@ public class MultidimentionalArrayAnnotationTest {
      */
     void callTomethod2() {
         obj1 = method2();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj2 = method2();
         obj3 = method2();
         obj4 = method2();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj5 = method2();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj6 = method2();
         obj7 = method2();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj8 = method2();
     }
 
@@ -72,15 +72,15 @@ public class MultidimentionalArrayAnnotationTest {
     void callTomethod3() {
         obj1 = method3();
         obj2 = method3();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj3 = method3();
         obj4 = method3();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj5 = method3();
         obj6 = method3();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj7 = method3();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj8 = method3();
     }
 
@@ -91,14 +91,14 @@ public class MultidimentionalArrayAnnotationTest {
         obj1 = method4();
         obj2 = method4();
         obj3 = method4();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj4 = method4();
         obj5 = method4();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj6 = method4();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj7 = method4();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj8 = method4();
     }
 
@@ -107,18 +107,18 @@ public class MultidimentionalArrayAnnotationTest {
      */
     void callTomethod5() {
         obj1 = method5();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj2 = method5();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj3 = method5();
         obj4 = method5();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj5 = method5();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj6 = method5();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj7 = method5();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj8 = method5();
     }
 
@@ -127,18 +127,18 @@ public class MultidimentionalArrayAnnotationTest {
      */
     void callTomethod6() {
         obj1 = method6();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj2 = method6();
         obj3 = method6();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj4 = method6();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj5 = method6();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj6 = method6();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj7 = method6();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj8 = method6();
     }
 
@@ -148,17 +148,17 @@ public class MultidimentionalArrayAnnotationTest {
     void callTomethod7() {
         obj1 = method7();
         obj2 = method7();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj3 = method7();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj4 = method7();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj5 = method7();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj6 = method7();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj7 = method7();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj8 = method7();
     }
 
@@ -167,19 +167,19 @@ public class MultidimentionalArrayAnnotationTest {
      */
     void callTomethod8() {
         obj1 = method8();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj2 = method8();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj3 = method8();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj4 = method8();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj5 = method8();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj6 = method8();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj7 = method8();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         obj8 = method8();
     }
 

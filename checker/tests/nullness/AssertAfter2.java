@@ -25,20 +25,20 @@ public class AssertAfter2 {
         }
 
         public void addEdgeBad1(T parent, T child) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @NonNull List<@KeyFor("childMap") T> l = childMap.get(parent);
         }
 
         public void addEdgeBad2(T parent, T child) {
             addNode(parent);
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @NonNull List<@KeyFor("childMap") T> l = childMap.get(child);
         }
 
         public void addEdgeBad3(T parent, T child) {
             addNode(parent);
             parent = child;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @NonNull List<@KeyFor("childMap") T> l = childMap.get(parent);
         }
 
@@ -77,28 +77,28 @@ public class AssertAfter2 {
         }
 
         void addBad1() {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @NonNull Object nn = get(f1, f2, f3);
         }
 
         void addBad2() {
             thing.add(f1, f2, f3);
             f1 = new Object();
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @NonNull Object nn = thing.get(f1, f2, f3);
         }
 
         void addBad3() {
             thing.add(f1, f2, f3);
             f2 = new Object();
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @NonNull Object nn = thing.get(f1, f2, f3);
         }
 
         void addBad4() {
             thing.add(f1, f2, f3);
             f3 = new Object();
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @NonNull Object nn = thing.get(f1, f2, f3);
         }
     }

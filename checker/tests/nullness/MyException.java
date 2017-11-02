@@ -6,9 +6,9 @@ public class MyException extends Exception {
 
     public final String getTotalTrace() {
         final StringBuilder sb = new StringBuilder();
-        //:: error: (iterating.over.nullable)
+        // :: error: (iterating.over.nullable)
         for (StackTraceElement st : getStackTrace()) {
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             sb.append(st.toString());
             sb.append("\n");
         }

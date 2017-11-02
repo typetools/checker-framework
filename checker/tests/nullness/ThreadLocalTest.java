@@ -12,9 +12,9 @@ public class ThreadLocalTest {
     }
 
     void foo() {
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         new ThreadLocal<@NonNull Object>();
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         new InheritableThreadLocal<@NonNull Object>();
         new ThreadLocal<@Nullable Object>();
         new InheritableThreadLocal<@Nullable Object>();

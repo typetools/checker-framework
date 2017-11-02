@@ -8,7 +8,7 @@ public class ArrayRefs {
 
         String[] s = null;
 
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         if (s.length > 0) {
             System.out.println("s.length > 0");
         }
@@ -19,7 +19,7 @@ public class ArrayRefs {
         takeNNList(Arrays.<Object>asList(new Object[] {a}));
         takeNNList(Arrays.asList(new Object[] {a}));
         takeNNList(Arrays.asList(a, a, a));
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         takeNNList(Arrays.asList(a, a, null));
     }
 

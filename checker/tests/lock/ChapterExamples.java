@@ -85,16 +85,16 @@ class ChapterExamples {
         T m;
 
         void test() {
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             m.method();
 
             @GuardedByUnknown MyClass local = new @GuardedByUnknown MyClass();
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             local.field = new Object();
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             local.method();
 
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             m.field = new Object();
         }
     }
@@ -116,7 +116,7 @@ class ChapterExamples {
         final Object myLock = new Object();
 
         void testCallToMethod(@GuardedBy("myLock") MyClass this) {
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             this.method(); // method()'s receiver is annotated as @GuardSatisfied
         }
     }
@@ -127,31 +127,30 @@ class ChapterExamples {
     void testMultipleSideEffectAnnotations() {}
 
     void guardedByItselfOnReceiver(@GuardedBy("<self>") ChapterExamples this) {
-        synchronized (
-                this) { // Tests translation of '<self>' to 'this' by the LockVisitor for this scenario.
+        synchronized (this) { // Tests translation of '<self>' to 'this'
             // myField = new MyClass();
             myField.toString();
             this.myField = new MyClass();
             this.myField.toString();
         }
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         myField = new MyClass();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         myField.toString();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         this.myField = new MyClass();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         this.myField.toString();
     }
 
     void guardedByThisOnReceiver(@GuardedBy("this") ChapterExamples this) {
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         myField = new MyClass();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         myField.toString();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         this.myField = new MyClass();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         this.myField.toString();
         synchronized (this) {
             myField = new MyClass();
@@ -163,23 +162,24 @@ class ChapterExamples {
 
     void testDereferenceOfReceiverAndParameter(
             @GuardedBy("lock") ChapterExamples this, @GuardedBy("lock") MyClass m) {
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         myField = new MyClass();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         myField.toString();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         this.myField = new MyClass();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         this.myField.toString();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         m.field = new Object();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         m.field.toString();
-        // The following error is due to the fact that you cannot access "this.lock" without first having acquired "lock".
-        // The right fix in a user scenario would be to not guard "this" with "this.lock". The current object could instead
-        // be guarded by "<self>" or by some other lock expression that is not one of its fields. We are keeping this test
-        // case here to make sure this scenario issues a warning.
-        //:: error: (lock.not.held)
+        // The following error is due to the fact that you cannot access "this.lock" without first
+        // having acquired "lock".  The right fix in a user scenario would be to not guard "this"
+        // with "this.lock". The current object could instead be guarded by "<self>" or by some
+        // other lock expression that is not one of its fields. We are keeping this test case here
+        // to make sure this scenario issues a warning.
+        // :: error: (lock.not.held)
         synchronized (lock) {
             myField = new MyClass();
             myField.toString();
@@ -202,18 +202,18 @@ class ChapterExamples {
     }
 
     void myMethod8() {
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         boolean b4 = compare(p1, myMethod());
 
         // An error is issued indicating that p2 might be dereferenced without
         // "lock" being held. The method call need not be modified, since
         // @GuardedBy({}) <: @GuardedByUnknown and @GuardedBy("lock") <: @GuardedByUnknown,
         // but the lock must be acquired prior to the method call.
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         boolean b2 = compare(p1, p2);
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         boolean b3 = compare(p1, this.p2);
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         boolean b5 = compare(p1, this.myMethod());
         synchronized (lock) {
             boolean b6 = compare(p1, p2); // OK
@@ -231,13 +231,13 @@ class ChapterExamples {
     // myMethod().method()
 
     void myMethod7() {
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         Object f = myObj.field;
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         Object f2 = myMethodReturningMyObj().field;
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         myObj.method(); // method()'s receiver is annotated as @GuardSatisfied
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         myMethodReturningMyObj().method(); // method()'s receiver is annotated as @GuardSatisfied
 
         synchronized (lock) {
@@ -247,9 +247,9 @@ class ChapterExamples {
             myMethodReturningMyObj().method();
         }
 
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         myMethodReturningMyObj().field = new Object();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         x.field = new Object();
         synchronized (lock) {
             myMethod().field = new Object();
@@ -266,7 +266,7 @@ class ChapterExamples {
     @GuardedBy("lock") MyClass x = new MyClass();
 
     @GuardedBy("lock") MyClass y = x; // OK, because dereferences of y will require "lock" to be held.
-    //:: error: (assignment.type.incompatible)
+    // :: error: (assignment.type.incompatible)
     @GuardedBy({}) MyClass z = x; // ILLEGAL because dereferences of z do not require "lock" to be held.
 
     @LockingFree
@@ -275,11 +275,11 @@ class ChapterExamples {
     }
 
     void exampleMethod() {
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         x.field = new Object(); // ILLEGAL because the lock is not known to be held
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         y.field = new Object(); // ILLEGAL because the lock is not known to be held
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         myMethod().field = new Object(); // ILLEGAL because the lock is not known to be held
         synchronized (lock) {
             x.field = new Object(); // OK: the lock is known to be held
@@ -296,11 +296,11 @@ class ChapterExamples {
     @GuardedBy({"a", "b"}) MyClass y5 = new MyClass();
 
     void myMethod2() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         y5 = x5; // ILLEGAL
     }
 
-    //:: error: (immutable.type.guardedby)
+    // :: error: (immutable.type.guardedby)
     @GuardedBy("a") String s = "string";
 
     @GuardedBy({}) MyClass o1;
@@ -312,9 +312,9 @@ class ChapterExamples {
     void someMethod() {
         o3 = o2; // OK, since o2 and o3 are guarded by exactly the same lock set.
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         o1 = o2; // Assignment type incompatible errors are issued for both assignments, since
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         o2 = o1; // {"lock"} and {} are not identical sets.
     }
 
@@ -337,7 +337,7 @@ class ChapterExamples {
     @GuardedBy("ChapterExamples.myLock") MyClass y2 = x2;
 
     void myMethod4() {
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         x2.field = new Object(); // ILLEGAL because the lock is not held
         synchronized (ChapterExamples.myLock) {
             y2.field = new Object(); // OK: the lock is held
@@ -345,7 +345,7 @@ class ChapterExamples {
     }
 
     void myMethod5(@GuardedBy("ChapterExamples.myLock") MyClass a) {
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         a.field = new Object(); // ILLEGAL: the lock is not held
         synchronized (ChapterExamples.myLock) {
             a.field = new Object(); // OK: the lock is held
@@ -366,15 +366,18 @@ class ChapterExamples {
         synchronized (lock) {
             boolean b1 = compare(p1, p2); // OK. No error issued.
         }
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         p2.field = new Object();
-        // An error is issued indicating that p2 might be dereferenced without "lock" being held. The method call need not be modified, since @GuardedBy({}) <: @GuardedByUnknown and @GuardedBy("lock") <: @GuardedByUnknown, but the lock must be acquired prior to the method call.
-        //:: error: (lock.not.held)
+        // An error is issued indicating that p2 might be dereferenced without "lock" being held.
+        // The method call need not be modified, since @GuardedBy({}) <: @GuardedByUnknown and
+        // @GuardedBy("lock") <: @GuardedByUnknown, but the lock must be acquired prior to the
+        // method call.
+        // :: error: (lock.not.held)
         boolean b2 = compare(p1, p2);
     }
 
     void helper1(@GuardedBy("ChapterExamples.myLock") MyClass a) {
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         a.field = new Object(); // ILLEGAL: the lock is not held
         synchronized (ChapterExamples.myLock) {
             a.field = new Object(); // OK: the lock is held
@@ -394,7 +397,7 @@ class ChapterExamples {
 
     @LockingFree
     void helper4(@GuardedBy("ChapterExamples.myLock") MyClass d) {
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         d.field = new Object(); // ILLEGAL: the lock is not held
     }
 
@@ -405,11 +408,11 @@ class ChapterExamples {
 
     void myMethod2(@GuardedBy("ChapterExamples.myLock") MyClass e) {
         helper1(e); // OK to pass to another routine without holding the lock.
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         e.field = new Object(); // ILLEGAL: the lock is not held
-        //:: error: (contracts.precondition.not.satisfied)
+        // :: error: (contracts.precondition.not.satisfied)
         helper2(e);
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         helper3(e);
         synchronized (ChapterExamples.myLock) {
             helper2(e);
@@ -426,40 +429,40 @@ class ChapterExamples {
     // TODO: For now, boxed types are treated as primitive types. This may change in the future.
     void unboxing() {
         int a = 1;
-        //:: error: (immutable.type.guardedby)
+        // :: error: (immutable.type.guardedby)
         @GuardedBy("lock") Integer c;
         synchronized (lock) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             c = a;
         }
 
-        //:: error: (immutable.type.guardedby)
+        // :: error: (immutable.type.guardedby)
         @GuardedBy("lock") Integer b = 1;
         int d;
         synchronized (lock) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             d = b;
 
             // Expected, since b cannot be @GuardedBy("lock") since it is a boxed primitive.
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             d = b.intValue(); // The de-sugared version does not issue an error.
         }
 
         c = c + b; // Syntactic sugar for c = new Integer(c.intValue() + b.intValue()).
 
         // Expected, since b and c cannot be @GuardedBy("lock") since they are boxed primitives.
-        //:: error: (method.invocation.invalid)
+        // :: error: (method.invocation.invalid)
         c = new Integer(c.intValue() + b.intValue()); // The de-sugared version
 
         synchronized (lock) {
             c = c + b; // Syntactic sugar for c = new Integer(c.intValue() + b.intValue()).
 
             // Expected, since b and c cannot be @GuardedBy("lock") since they are boxed primitives.
-            //:: error: (method.invocation.invalid)
+            // :: error: (method.invocation.invalid)
             c = new Integer(c.intValue() + b.intValue()); // The de-sugared version
         }
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         a = b;
         b = c; // OK
     }
@@ -502,19 +505,19 @@ class ChapterExamples {
     @GuardedBy("lock2") MyClass extension;
 
     void method0() {
-        //:: error: (lock.not.held) :: error: (lock.not.held)
+        // :: error: (lock.not.held) :: error: (lock.not.held)
         filename = filename.append(extension);
     }
 
     void method1() {
         lock1.lock();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         filename = filename.append(extension);
     }
 
     void method2() {
         lock2.lock();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         filename = filename.append(extension);
     }
 
@@ -523,9 +526,9 @@ class ChapterExamples {
         lock2.lock();
         filename = filename.append(extension);
         filename = filename.append(null);
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         filename = extension.append(extension);
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         filename = extension.append(filename);
     }
 
@@ -558,7 +561,8 @@ class ChapterExamples {
             return false;
         }
         return true;
-        //    found   : (@org.checkerframework.checker.lock.qual.GuardedBy({}) :: T)[ extends @GuardedByUnknown @LockPossiblyHeld Object super @GuardedBy({}) @LockHeld Void]
+        //    found   : (@org.checkerframework.checker.lock.qual.GuardedBy({}) :: T)[ extends
+        // @GuardedByUnknown @LockPossiblyHeld Object super @GuardedBy({}) @LockHeld Void]
         //        required: @GuardedBy @LockPossiblyHeld Object
     }
 
@@ -570,7 +574,7 @@ class ChapterExamples {
     }
 
     public void assignmentOfGSWithNoIndex(@GuardSatisfied Object a, @GuardSatisfied Object b) {
-        //:: error: (guardsatisfied.assignment.disallowed)
+        // :: error: (guardsatisfied.assignment.disallowed)
         a = b;
     }
 

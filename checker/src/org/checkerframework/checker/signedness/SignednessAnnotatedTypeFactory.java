@@ -4,10 +4,6 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
-import java.lang.Byte;
-import java.lang.Integer;
-import java.lang.Long;
-import java.lang.Short;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -182,9 +178,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
-        // Refines the type of an integer primitive to @Constant if it is within the signed positive range
-        // (i.e. its MSB is zero). Note that boxed primitives are not handled because they are not yet
-        // handled by the Signedness Checker (Issue #797).
+        // Refines the type of an integer primitive to @Constant if it is within the signed positive
+        // range (i.e. its MSB is zero). Note that boxed primitives are not handled because they are
+        // not yet handled by the Signedness Checker (Issue #797).
         @Override
         public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
             TypeMirror javaType = type.getUnderlyingType();

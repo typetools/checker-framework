@@ -7,7 +7,8 @@ public class MinLenFourShenanigans {
             return true;
         } else if (value instanceof String) {
             // Used to issue the below error.
-            // MinLenFourShenanigans.java:7: warning: [cast.unsafe] "@MinLen(0) Object" may not be casted to the type "@MinLen(4) String"
+            // MinLenFourShenanigans.java:7: warning: [cast.unsafe] "@MinLen(0) Object" may not be
+            // casted to the type "@MinLen(4) String"
             return (value == ((String) value).intern());
         }
         return false;

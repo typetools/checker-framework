@@ -173,12 +173,6 @@ public abstract class CFAbstractTransfer<
         Tree preTree = analysis.getCurrentTree();
         Pair<Tree, AnnotatedTypeMirror> preCtxt = factory.getVisitorState().getAssignmentContext();
         analysis.setCurrentTree(tree);
-        TreePath previousTreePath = factory.getVisitorState().getPath();
-        if (node instanceof MethodInvocationNode) {
-            // This is a work around for issue #1520.
-            // MethodInvocationNode is the only node that save's the TreePath.
-            factory.getVisitorState().setPath(((MethodInvocationNode) node).getTreePath());
-        }
         // is there an assignment context node available?
         if (node != null && node.getAssignmentContext() != null) {
             // get the declared type of the assignment context by looking up the
@@ -210,7 +204,6 @@ public abstract class CFAbstractTransfer<
         AnnotatedTypeMirror at = factory.getAnnotatedType(tree);
         analysis.setCurrentTree(preTree);
         factory.getVisitorState().setAssignmentContext(preCtxt);
-        factory.getVisitorState().setPath(previousTreePath);
         return analysis.createAbstractValue(at);
     }
 
@@ -340,7 +333,8 @@ public abstract class CFAbstractTransfer<
                 // Try to find an enclosing initializer block
                 // Would love to know if there was a better way
                 // Find any enclosing element of the lambda (using trees)
-                // Then go up the elements to find an initializer element (which can't be found with the tree).
+                // Then go up the elements to find an initializer element (which can't be found with
+                // the tree).
                 TreePath loopTree = factory.getPath(lambda.getLambdaTree()).getParentPath();
                 Element anEnclosingElement = null;
                 while (loopTree.getLeaf() != enclosingTree) {
@@ -477,8 +471,8 @@ public abstract class CFAbstractTransfer<
 
             if (enclosingMethodOfVariableDeclaration != null) {
 
-                // Now find all the enclosing methods of the code we are analyzing. If any one of them matches the above,
-                // then the final local variable value applies.
+                // Now find all the enclosing methods of the code we are analyzing. If any one of
+                // them matches the above, then the final local variable value applies.
                 Element enclosingMethodOfCurrentMethod = enclosingElement;
 
                 while (enclosingMethodOfCurrentMethod != null) {

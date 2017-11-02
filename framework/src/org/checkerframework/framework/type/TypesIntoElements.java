@@ -227,7 +227,8 @@ public class TypesIntoElements {
                 tapos = TypeAnnotationUtils.methodTypeParameterTAPosition(tpidx, ((JCTree) tp).pos);
             }
 
-            { // This block is essentially direct annotations, perhaps we should refactor that method out
+            { // This block is essentially direct annotations, perhaps we should refactor that
+                // method out
                 List<Attribute.TypeCompound> res = List.nil();
                 for (AnnotationMirror am : typeVar.getLowerBound().getAnnotations()) {
                     Attribute.TypeCompound tc =
@@ -344,14 +345,17 @@ public class TypesIntoElements {
             List<Attribute.TypeCompound> res = List.nil();
 
             for (AnnotationMirror am : type.getAnnotations()) {
-                //TODO: I BELIEVE THIS ISN'T TRUE BECAUSE PARAMETERS MAY HAVE ANNOTATIONS THAT CAME FROM THE ELEMENT OF THE CLASS
-                // WHICH PREVIOUSLY WAS WRITTEN OUT BY TYPESINTOELEMENT
+                // TODO: I BELIEVE THIS ISN'T TRUE BECAUSE PARAMETERS MAY HAVE ANNOTATIONS THAT CAME
+                // FROM THE ELEMENT OF THE CLASS WHICH PREVIOUSLY WAS WRITTEN OUT BY
+                // TYPESINTOELEMENT
                 //                if (am instanceof Attribute.TypeCompound) {
-                //                    // If it is a TypeCompound it was already present in source (right?),
+                //                    // If it is a TypeCompound it was already present in source
+                // (right?),
                 //                    // so there is nothing to do.
-                //                    // System.out.println("  found TypeComound: " + am + " pos: " + ((Attribute.TypeCompound)am).position);
+                //                    // System.out.println("  found TypeComound: " + am + " pos: "
+                // + ((Attribute.TypeCompound)am).position);
                 //                } else {
-                //TODO: DOES THIS LEAD TO DOUBLING UP ON THE SAME ANNOTATION IN THE ELEMENT?
+                // TODO: DOES THIS LEAD TO DOUBLING UP ON THE SAME ANNOTATION IN THE ELEMENT?
                 Attribute.TypeCompound tc =
                         TypeAnnotationUtils.createTypeCompoundFromAnnotationMirror(
                                 processingEnv, am, tapos);
@@ -376,8 +380,9 @@ public class TypesIntoElements {
 
             res = directAnnotations(type, tapos);
 
-            // we sometimes fix-up raw types with wildcards, do not write these into the bytecode as there are
-            // no corresponding type arguments and therefore no location to actually add them to
+            // we sometimes fix-up raw types with wildcards, do not write these into the bytecode as
+            // there are no corresponding type arguments and therefore no location to actually add
+            // them to
             if (!type.wasRaw()) {
                 int arg = 0;
                 for (AnnotatedTypeMirror ta : type.getTypeArguments()) {
@@ -489,12 +494,13 @@ public class TypesIntoElements {
             if (this.visitedNodes.containsKey(type)) {
                 return List.nil();
             }
-            // Hack for termination, otherwise we'll visit one type too far (the same recursive wildcard twice
-            // and generate extra type annos)
+            // Hack for termination, otherwise we'll visit one type too far (the same recursive
+            // wildcard twice and generate extra type annos)
             visitedNodes.put(type, List.nil());
             List<Attribute.TypeCompound> res;
 
-            // Note: By default, an Unbound wildcard will return true for both isExtendsBound and isSuperBound
+            // Note: By default, an Unbound wildcard will return true for both isExtendsBound and
+            // isSuperBound
             if (((Type.WildcardType) type.getUnderlyingType()).isExtendsBound()) {
                 res = directAnnotations(type.getSuperBound(), tapos);
 

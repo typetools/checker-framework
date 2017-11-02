@@ -11,15 +11,15 @@ class Poly {
         String t = "foo";
 
         @Encrypted String x1 = id(s); // valid
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Encrypted String x2 = id(t); // error
         String x3 = id(s); // valid
         String x4 = id(t); // valid
 
         @Encrypted String y01 = combine(s, s); // valid
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Encrypted String y02 = combine(s, t); // error
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Encrypted String y03 = combine(t, t); // error
 
         String y11 = combine(s, s); // valid
@@ -32,7 +32,7 @@ class Poly {
     }
 
     @PolyEncrypted String combine(@PolyEncrypted String s, @PolyEncrypted String t) {
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         sendOverNet(s); // error
         return s;
     }
@@ -62,11 +62,11 @@ class Poly {
     }
 
     void test3() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Encrypted String s = substitute(new HashMap<String, String>());
         @Encrypted String t = substitute(new HashMap<String, @Encrypted String>());
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Encrypted String q = substituteSuper(new HashMap<String, String>());
         @Encrypted String r = substituteSuper(new HashMap<String, @Encrypted String>());
     }
@@ -76,7 +76,7 @@ class Poly {
         if (s == null) {
             return encrypt(null); // valid
         } else {
-            //:: error: (return.type.incompatible)
+            // :: error: (return.type.incompatible)
             return "m"; // invalid
         }
     }

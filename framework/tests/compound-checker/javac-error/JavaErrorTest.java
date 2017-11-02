@@ -6,7 +6,7 @@ class Test {
     // (See AnnotatedTypeFactory.setRoot(CompilationUnitTree) )
     void foo() {
         Object a;
-        //:: error: variable a is already defined in method foo()
+        // :: error: variable a is already defined in method foo()
         Object a;
     }
 }

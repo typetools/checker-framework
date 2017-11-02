@@ -12,7 +12,7 @@ class Monotonic {
     void nonpure() {}
 
     void t1(@Odd String p1) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Odd String l1 = f2;
         if (f2 == p1) {
             @Odd String l2 = f2;
@@ -22,14 +22,14 @@ class Monotonic {
     }
 
     void t2(@Odd String p1) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         f2 = f1;
-        //:: error: (monotonic.type.incompatible)
+        // :: error: (monotonic.type.incompatible)
         f2 = f2b; // assigning @MonotonicOdd to @MonotonicOdd is not allowed
     }
 
     void t3(@Odd String p1) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Odd String l1 = f2;
         f2 = p1;
         @Odd String l2 = f2;
@@ -38,7 +38,7 @@ class Monotonic {
     }
 
     void t4(@Odd String p1) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Odd String l1 = f2;
         f2 = p1;
         @Odd String l2 = f2;
