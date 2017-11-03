@@ -45,6 +45,7 @@ public class AnnotationUtils {
     public static void clear() {
         AnnotationBuilder.clear();
         annotationClassNames.clear();
+        annotationNames.clear();
     }
 
     // **********************************************************************
@@ -62,6 +63,13 @@ public class AnnotationUtils {
                     Collections.synchronizedMap(
                             CollectionUtils.createLRUCache(ANNOTATION_CACHE_SIZE));
 
+    /**
+     * Cache names of classes representing AnnotationMirrors for faster access. Values in the map
+     * are interned Strings, so they can be compared with ==.
+     */
+    private static final Map<DeclaredType, /*@Interned*/ String> annotationNames =
+            Collections.synchronizedMap(CollectionUtils.createLRUCache(ANNOTATION_CACHE_SIZE));
+
     // **********************************************************************
     // Helper methods to handle annotations.  mainly workaround
     // AnnotationMirror.equals undesired property
@@ -73,9 +81,14 @@ public class AnnotationUtils {
         if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror) {
             return ((AnnotationBuilder.CheckerFrameworkAnnotationMirror) annotation).annotationName;
         }
+
         final DeclaredType annoType = annotation.getAnnotationType();
+        if (annotationNames.containsKey(annoType)) {
+            return annotationNames.get(annoType);
+        }
         final TypeElement elm = (TypeElement) annoType.asElement();
         /*@Interned*/ String name = elm.getQualifiedName().toString().intern();
+        annotationNames.put(annoType, name);
         return name;
     }
 
