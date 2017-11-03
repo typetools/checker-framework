@@ -64,8 +64,8 @@ public class AnnotationUtils {
                             CollectionUtils.createLRUCache(ANNOTATION_CACHE_SIZE));
 
     /**
-     * Cache names of classes representing AnnotationMirrors for faster access. Values in the map
-     * are interned Strings, so they can be compared with ==.
+     * Cache names of DeclaredTypes of AnnotationMirrors for faster access. Values in the map are
+     * interned Strings, so they can be compared with ==.
      */
     private static final Map<DeclaredType, /*@Interned*/ String> annotationNames =
             Collections.synchronizedMap(CollectionUtils.createLRUCache(ANNOTATION_CACHE_SIZE));
