@@ -6,6 +6,8 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Types;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -291,8 +293,11 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         if (this.type(lambdaTree).getAnnotation(UI.class) != null) {
             return new Effect(UIEffect.class);
         }
+        JavacProcessingEnvironment javacEnv =
+                (JavacProcessingEnvironment) checker.getProcessingEnvironment();
+        Types types = Types.instance(javacEnv.getContext());
         ExecutableElement functionalInterfaceMethodElt =
-                TreeUtils.getFunctionalInterfaceMethod(lambdaTree);
+                TreeUtils.getFunctionalInterfaceMethod(lambdaTree, types);
         if (debugSpew) {
             System.err.println("functionalInterfaceMethodElt found for lambda");
         }
@@ -302,7 +307,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotatedTypeMirror getInferedTypeForLambdaExpression(LambdaExpressionTree lambdaTree) {
         AnnotatedTypeMirror typeMirror = getAnnotatedType(lambdaTree);
         if (uiLambdas.contains(lambdaTree) && !typeMirror.hasAnnotation(UI.class)) {
-            typeMirror.replaceAnnotation(AnnotationUtils.fromClass(elements, UI.class));
+            typeMirror.replaceAnnotation(AnnotationBuilder.fromClass(elements, UI.class));
         }
         return typeMirror;
     }
@@ -313,7 +318,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         if (tree.getKind() == Tree.Kind.LAMBDA_EXPRESSION
                 && uiLambdas.contains((LambdaExpressionTree) tree)
                 && !typeMirror.hasAnnotation(UI.class)) {
-            typeMirror.replaceAnnotation(AnnotationUtils.fromClass(elements, UI.class));
+            typeMirror.replaceAnnotation(AnnotationBuilder.fromClass(elements, UI.class));
         }
         return typeMirror;
     }

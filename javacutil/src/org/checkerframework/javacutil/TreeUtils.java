@@ -1300,34 +1300,9 @@ public final class TreeUtils {
      * @param tree the lambda expression
      * @return the functional interface method
      */
-    public static Symbol.MethodSymbol getFunctionalInterfaceMethod(LambdaExpressionTree tree) {
+    public static Symbol.MethodSymbol getFunctionalInterfaceMethod(
+            LambdaExpressionTree tree, Types types) {
         Type funcInterfaceType = ((JCTree.JCLambda) tree).type;
-        // we want the method symbol for the single function inside the interface...hrm
-        List<Symbol> enclosedElements = funcInterfaceType.tsym.getEnclosedElements();
-
-        Symbol.MethodSymbol result = null;
-        for (Symbol s : enclosedElements) {
-            Symbol.MethodSymbol elem = (Symbol.MethodSymbol) s;
-            if (elem.isDefault() || elem.isStatic()) {
-                continue;
-            }
-            String name = elem.getSimpleName().toString();
-            // any methods overridding java.lang.Object methods don't count;
-            // see https://docs.oracle.com/javase/8/docs/api/java/lang/FunctionalInterface.html
-            // we should really be checking method signatures here; hack for now
-            if (OBJECT_METHOD_NAMES.contains(name)) {
-                continue;
-            }
-            if (result != null) {
-                throw new RuntimeException(
-                        "already found an answer! " + result + " " + elem + " " + enclosedElements);
-            }
-            result = elem;
-        }
-        if (result == null) {
-            throw new RuntimeException(
-                    "could not find functional interface method in " + enclosedElements);
-        }
-        return result;
+        return (Symbol.MethodSymbol) types.findDescriptorSymbol(funcInterfaceType.tsym);
     }
 }
