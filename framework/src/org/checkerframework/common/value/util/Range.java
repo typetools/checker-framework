@@ -593,21 +593,93 @@ public class Range {
 
     /** We give up the analysis for unsigned shift right operation */
     public Range unsignedShiftRight(Range right) {
+        if (this.isNothing() || right.isNothing()) {
+            return NOTHING;
+        }
+
         return EVERYTHING;
     }
 
-    /** We give up the analysis for bitwise AND operation */
+    /**
+     * Returns a range that includes all possible values resulting from performing the bitwise and
+     * operation on an arbitrary value in this range by an arbitrary mask in the specified range. We
+     * call this the bitwise and operation of a range.
+     *
+     * <p>In the current implementation, the result might not be the smallest range that includes
+     * all the possible values. Specifically, we only refine the cases where the range of mask
+     * represents a constant due to computational complexity. In other cases, we simply give up on
+     * the refinement and return {@code EVERYTHING} instead.
+     *
+     * @param right the range of mask of the bitwise and operation
+     * @return the range resulting from the bitwise and operation of this range and the specified
+     *     range of mask
+     */
     public Range bitwiseAnd(Range right) {
+        if (this.isNothing() || right.isNothing()) {
+            return NOTHING;
+        }
+
+        // We only refine the cases where the range of mask represent a constant
+        if (right.isConstant()) {
+            long mask = right.from;
+            if (mask >= 0) {
+                // Sign bit of mask is 0.
+                if (this.from >= 0) {
+                    // Case 1.1: The elements in the result range must be positive and is upper
+                    // bounded by the mask and the upper bound of this range.
+                    return new Range(0, Math.min(mask, this.to));
+                } else if (this.to < 0) {
+                    // Case 1.2: The elements in the result range must be positive and is upper
+                    // bounded by the mask and the upper bound of this range after ignoring the
+                    // sign bit.
+                    return new Range(0, Math.min(mask, this.to & -1L >>> 1));
+                } else {
+                    // Case 1.3: The elements in the result range must be positive and is upper
+                    // bounded by the mask. Since this range must contain -1, the upper bound of
+                    // this range after ignoring the sign bit is Long.MAX_VALUE and thus doesn't
+                    // contribute to further refinement.
+                    return new Range(0, mask);
+                }
+            } else {
+                // Sign bit of mask is 1.
+                if (this.from >= 0) {
+                    // Case 2.1: Similar to case 1.1 except that the sign bit of the mask can be
+                    // ignored.
+                    return new Range(0, Math.min(mask & -1L >>> 1, this.to));
+                } else if (this.to < 0) {
+                    // Case 2.2: The sign bit of the elements in the result range must be 1.
+                    // Therefore the lower bound of the result range is Long.MIN_VALUE (when all
+                    // 1-bits are mismatched between the mask and the element in this range). The
+                    // result range is also upper bounded by this mask itself and the upper bound
+                    // of this range.
+                    return new Range(Long.MIN_VALUE, Math.min(mask, this.to));
+                } else {
+                    // Case 2.3: Similar to case 2.2 except that the elements in this range could
+                    // be positive, and thus the result range is upper bounded by the upper bound
+                    // of this range and the mask after ignoring the sign bit.
+                    return new Range(Long.MIN_VALUE, Math.min(mask & -1L >>> 1, this.to));
+                }
+            }
+        }
+
         return EVERYTHING;
     }
 
     /** We give up the analysis for bitwise OR operation */
     public Range bitwiseOr(Range right) {
+        if (this.isNothing() || right.isNothing()) {
+            return NOTHING;
+        }
+
         return EVERYTHING;
     }
 
     /** We give up the analysis for bitwise XOR operation */
     public Range bitwiseXor(Range right) {
+        if (this.isNothing() || right.isNothing()) {
+            return NOTHING;
+        }
+
         return EVERYTHING;
     }
 
@@ -843,7 +915,7 @@ public class Range {
      * @return the refined {@code Range}
      */
     public Range refineNotEqualTo(Range right) {
-        if (right.to == right.from) {
+        if (right.isConstant()) {
             if (this.to == right.to) {
                 return new Range(this.from, this.to - 1);
             } else if (this.from == right.from) {
@@ -873,6 +945,11 @@ public class Range {
                             .compareTo(BigInteger.valueOf(value))
                     == 1;
         }
+    }
+
+    /** Determines if this range represents a constant value */
+    public boolean isConstant() {
+        return from == to;
     }
 
     /**
