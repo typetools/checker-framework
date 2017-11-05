@@ -668,7 +668,7 @@ public class Range {
     }
 
     /** Return the argument, with its sign bit zeroed out. */
-    private noSignBit(Long mask) {
+    private long noSignBit(Long mask) {
         return mask & (-1L >>> 1);
     }
 
