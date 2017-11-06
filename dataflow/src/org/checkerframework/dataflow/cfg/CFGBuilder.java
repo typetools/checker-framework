@@ -1575,6 +1575,7 @@ public class CFGBuilder {
             // just generate a degenerated control graph case that will be
             // removed in a later phase.
             nodeList.add(new UnconditionalJump(regularExitLabel));
+
             return new PhaseOneResult(
                     underlyingAST,
                     treeLookupMap,
