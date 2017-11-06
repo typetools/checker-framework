@@ -272,6 +272,11 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
     };
 
     @Override
+    public R visitLambdaResultExpression(LambdaResultExpressionNode n, P p) {
+        return visitNode(n, p);
+    };
+
+    @Override
     public R visitStringConversion(StringConversionNode n, P p) {
         return visitNode(n, p);
     };
