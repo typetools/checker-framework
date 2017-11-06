@@ -3307,8 +3307,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return true;
         }
 
-        String when =
-                AnnotationUtils.getElementValueClassName(unused, "when", false).toString().intern();
+        String when = AnnotationUtils.getElementValueClassName(unused, "when", false).toString();
         if (!AnnotationUtils.containsSameByName(receiver.getAnnotations(), when)) {
             return true;
         }

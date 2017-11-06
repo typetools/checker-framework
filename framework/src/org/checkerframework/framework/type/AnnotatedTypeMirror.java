@@ -352,7 +352,7 @@ public abstract class AnnotatedTypeMirror {
      * @deprecated use {@link AnnotationUtils#getAnnotationByName(Collection,String)} instead.
      */
     @Deprecated // Remove after 2.2.1 release
-    public AnnotationMirror getAnnotation(/*@Interned*/ String annotationStr) {
+    public AnnotationMirror getAnnotation(String annotationStr) {
         assert annotationStr != null : "Null annotationName in getAnnotation";
         for (AnnotationMirror anno : getAnnotations()) {
             if (AnnotationUtils.areSameByName(anno, annotationStr)) {
