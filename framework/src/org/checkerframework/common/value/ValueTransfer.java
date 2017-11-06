@@ -322,16 +322,25 @@ public class ValueTransfer extends CFTransfer {
         return NumberUtils.castRange(node.getType(), range);
     }
 
-    /** a helper function to determine if this node is annotated with @IntRange */
+    /** a helper function to determine if this node is annotated with {@code @IntRange} */
     private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         return atypefactory.isIntRange(value.getAnnotations());
     }
 
-    /** a helper function to determine if this node is annotated with @UnknownVal */
+    /** a helper function to determine if this node is annotated with {@code @UnknownVal} */
     private boolean isIntegralUnknownVal(Node node, AnnotationMirror anno) {
         return AnnotationUtils.areSameByClass(anno, UnknownVal.class)
                 && TypesUtils.isIntegral(node.getType());
+    }
+
+    /**
+     * a helper function to determine if this node is annotated with {@code @IntRange} or
+     * {@code @UnknownVal}
+     */
+    private boolean isIntRangeOrIntegralUnknownVal(Node node, TransferInput<CFValue, CFStore> p) {
+        AnnotationMirror anno = getValueAnnotation(p.getValueOfSubNode(node));
+        return isIntRange(node, p) || isIntegralUnknownVal(node, anno);
     }
 
     /**
@@ -626,7 +635,8 @@ public class ValueTransfer extends CFTransfer {
             Node rightNode,
             NumericalBinaryOps op,
             TransferInput<CFValue, CFStore> p) {
-        if (!isIntRange(leftNode, p) && !isIntRange(rightNode, p)) {
+        if (!isIntRangeOrIntegralUnknownVal(leftNode, p)
+                && !isIntRangeOrIntegralUnknownVal(rightNode, p)) {
             List<Number> resultValues = calculateValuesBinaryOp(leftNode, rightNode, op, p);
             return atypefactory.createNumberAnnotationMirror(resultValues);
         } else {
