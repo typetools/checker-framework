@@ -75,18 +75,6 @@ import org.checkerframework.checker.nullness.qual.*;
 // TODO: This class needs significant restructuring
 public final class TreeUtils {
 
-    static final Set<String> OBJECT_METHOD_NAMES =
-            new HashSet<String>(
-                    Arrays.asList(
-                            "equals",
-                            "hashCode",
-                            "toString",
-                            "finalize",
-                            "clone",
-                            "notify",
-                            "notifyAll",
-                            "wait"));
-
     // Class cannot be instantiated.
     private TreeUtils() {
         throw new AssertionError("Class TreeUtils cannot be instantiated.");
