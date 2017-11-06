@@ -100,8 +100,11 @@ public class AnnotationUtils {
      */
     public static boolean areSame(
             /*@Nullable*/ AnnotationMirror a1, /*@Nullable*/ AnnotationMirror a2) {
+        if (a1 == a2) {
+            return true;
+        }
         if (a1 == null || a2 == null) {
-            return a1 == a2;
+            return false;
         }
 
         if (!areSameIgnoringValues(a1, a2)) {
@@ -122,11 +125,14 @@ public class AnnotationUtils {
      */
     public static boolean areSameIgnoringValues(
             /*@Nullable*/ AnnotationMirror a1, /*@Nullable*/ AnnotationMirror a2) {
+        if (a1 == a2) {
+            return true;
+        }
         if (a1 == null || a2 == null) {
-            return a1 == a2;
+            return false;
         }
 
-        return a1 == a2 || annotationName(a1) == annotationName(a2);
+        return annotationName(a1) == annotationName(a2);
     }
 
     /**
