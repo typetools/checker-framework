@@ -403,7 +403,7 @@ public class RangeTest {
                 Long witness = re1.element % re2.element;
                 assert result.contains(witness)
                         : String.format(
-                                "Range.divide failure: %s %s => %s; witnesses %s %% %s => %s",
+                                "Range.remainder failure: %s %s => %s; witnesses %s %% %s => %s",
                                 re1.range, re2.range, result, re1.element, re2.element, witness);
             }
         }
@@ -475,6 +475,29 @@ public class RangeTest {
                     : String.format(
                             "Range.bitwiseComplement failure: %s => %s; witness %s => %s",
                             re.range, result, re.element, ~re.element);
+        }
+    }
+
+    @Test
+    public void testBitwiseAnd() {
+        for (RangeAndElement re1 : rangeAndElements()) {
+            for (RangeAndElement re2 : rangeAndElements()) {
+                Range result = re1.range.bitwiseAnd(re2.range);
+                if (re2.range.isConstant()) {
+                    Long witness = re1.element & re2.element;
+                    assert result.contains(witness)
+                            : String.format(
+                                    "Range.bitwiseAnd failure: %s %s => %s; witnesses %s & %s => %s",
+                                    re1.range,
+                                    re2.range,
+                                    result,
+                                    re1.element,
+                                    re2.element,
+                                    witness);
+                } else {
+                    assert result == Range.EVERYTHING;
+                }
+            }
         }
     }
 

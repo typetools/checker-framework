@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------
 
-Version 2.2.2, November 1, 2017
+Version 2.2.2, November 2, 2017
 
 The Interning Checker supports a new annotation, @InternedDistinct, which
 indicates that the value is not equals() to any other value.
@@ -9,6 +9,10 @@ An annotated version of the Commons IO library appears in checker/lib/ .
 
 Closed issue 1586, which required re-opening issues 293 and 341 until
 proper fixes for those are implemented.
+
+Closed issues:
+1386, 1389, 1423, 1520, 1529, 1530, 1531, 1546, 1553, 1555, 1565, 1570, 1579,
+1580, 1582, 1585, 1586, 1587, 1598, 1609, 1615, 1617.
 
 ---------------------------------------------------------------------------
 
