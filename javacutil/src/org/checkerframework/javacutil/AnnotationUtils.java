@@ -103,9 +103,6 @@ public class AnnotationUtils {
         if (a1 == a2) {
             return true;
         }
-        if (a1 == null || a2 == null) {
-            return false;
-        }
 
         if (!areSameIgnoringValues(a1, a2)) {
             return false;
