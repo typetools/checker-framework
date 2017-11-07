@@ -1239,7 +1239,7 @@ public class CFGBuilder {
                             final Label elseLabel = cj.getElseLabel();
                             missingEdges.add(
                                     new Tuple<>(
-                                            new SingleSuccessorBlockImpl() {
+                                            new SingleSuccessorBlockImpl(BlockType.REGULAR_BLOCK) {
                                                 @Override
                                                 public void setSuccessor(BlockImpl successor) {
                                                     cb.setThenSuccessor(successor);
@@ -1248,7 +1248,7 @@ public class CFGBuilder {
                                             bindings.get(thenLabel)));
                             missingEdges.add(
                                     new Tuple<>(
-                                            new SingleSuccessorBlockImpl() {
+                                            new SingleSuccessorBlockImpl(BlockType.REGULAR_BLOCK) {
                                                 @Override
                                                 public void setSuccessor(BlockImpl successor) {
                                                     cb.setElseSuccessor(successor);

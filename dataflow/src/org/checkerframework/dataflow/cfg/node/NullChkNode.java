@@ -19,8 +19,8 @@ import org.checkerframework.javacutil.InternalUtils;
  */
 public class NullChkNode extends Node {
 
-    protected Tree tree;
-    protected Node operand;
+    protected final Tree tree;
+    protected final Node operand;
 
     public NullChkNode(Tree tree, Node operand) {
         super(InternalUtils.typeOf(tree));

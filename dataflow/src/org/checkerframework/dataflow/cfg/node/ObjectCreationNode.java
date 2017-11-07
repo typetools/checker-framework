@@ -19,9 +19,9 @@ import org.checkerframework.javacutil.InternalUtils;
  */
 public class ObjectCreationNode extends Node {
 
-    protected NewClassTree tree;
-    protected Node constructor;
-    protected List<Node> arguments;
+    protected final NewClassTree tree;
+    protected final Node constructor;
+    protected final List<Node> arguments;
 
     public ObjectCreationNode(NewClassTree tree, Node constructor, List<Node> arguments) {
         super(InternalUtils.typeOf(tree));

@@ -25,10 +25,10 @@ import org.checkerframework.javacutil.InternalUtils;
  */
 public class MethodInvocationNode extends Node {
 
-    protected MethodInvocationTree tree;
-    protected MethodAccessNode target;
-    protected List<Node> arguments;
-    protected TreePath treePath;
+    protected final MethodInvocationTree tree;
+    protected final MethodAccessNode target;
+    protected final List<Node> arguments;
+    protected final TreePath treePath;
 
     public MethodInvocationNode(
             MethodInvocationTree tree,

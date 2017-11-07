@@ -29,7 +29,7 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
      * basic blocks later.
      */
     public ConditionalBlockImpl() {
-        type = BlockType.CONDITIONAL_BLOCK;
+        super(BlockType.CONDITIONAL_BLOCK);
     }
 
     /** Set the then branch successor. */

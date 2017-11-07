@@ -18,8 +18,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class LambdaResultExpressionNode extends Node {
 
-    protected ExpressionTree tree;
-    protected /*@Nullable*/ Node result;
+    protected final ExpressionTree tree;
+    protected final /*@Nullable*/ Node result;
 
     public LambdaResultExpressionNode(ExpressionTree t, /*@Nullable*/ Node result, Types types) {
         super(InternalUtils.typeOf(t));
