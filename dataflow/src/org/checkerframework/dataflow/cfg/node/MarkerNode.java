@@ -22,8 +22,8 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  */
 public class MarkerNode extends Node {
 
-    protected /*@Nullable*/ Tree tree;
-    protected String message;
+    protected final /*@Nullable*/ Tree tree;
+    protected final String message;
 
     public MarkerNode(/*@Nullable*/ Tree tree, String message, Types types) {
         super(types.getNoType(TypeKind.NONE));

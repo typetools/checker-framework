@@ -19,10 +19,10 @@ import org.checkerframework.javacutil.InternalUtils;
  */
 public class TernaryExpressionNode extends Node {
 
-    protected ConditionalExpressionTree tree;
-    protected Node condition;
-    protected Node thenOperand;
-    protected Node elseOperand;
+    protected final ConditionalExpressionTree tree;
+    protected final Node condition;
+    protected final Node thenOperand;
+    protected final Node elseOperand;
 
     public TernaryExpressionNode(
             ConditionalExpressionTree tree, Node condition, Node thenOperand, Node elseOperand) {

@@ -28,8 +28,8 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  */
 public class ReturnNode extends Node {
 
-    protected ReturnTree tree;
-    protected /*@Nullable*/ Node result;
+    protected final ReturnTree tree;
+    protected final /*@Nullable*/ Node result;
 
     public ReturnNode(ReturnTree t, /*@Nullable*/ Node result, Types types, MethodTree methodTree) {
         super(types.getNoType(TypeKind.NONE));
