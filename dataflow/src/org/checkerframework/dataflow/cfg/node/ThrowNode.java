@@ -20,8 +20,8 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  */
 public class ThrowNode extends Node {
 
-    protected ThrowTree tree;
-    protected Node expression;
+    protected final ThrowTree tree;
+    protected final Node expression;
 
     public ThrowNode(ThrowTree tree, Node expression, Types types) {
         super(types.getNoType(TypeKind.NONE));
