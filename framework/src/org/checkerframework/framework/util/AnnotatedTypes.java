@@ -762,7 +762,7 @@ public class AnnotatedTypes {
         return types;
     }
 
-    @Deprecated // use AnnotatedTypeMirror.equals()
+    @Deprecated // use AnnotatedTypeMirror.equals() ; remove after release 2.2.3
     public static boolean areSame(AnnotatedTypeMirror t1, AnnotatedTypeMirror t2) {
         return t1.equals(t2);
     }
