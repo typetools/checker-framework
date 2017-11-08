@@ -112,6 +112,8 @@ public interface NodeVisitor<R, P> {
 
     R visitReturn(ReturnNode n, P p);
 
+    R visitLambdaResultExpression(LambdaResultExpressionNode n, P p);
+
     R visitStringConversion(StringConversionNode n, P p);
 
     R visitNarrowingConversion(NarrowingConversionNode n, P p);

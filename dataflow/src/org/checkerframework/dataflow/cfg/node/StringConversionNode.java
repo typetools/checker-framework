@@ -23,8 +23,8 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  */
 public class StringConversionNode extends Node {
 
-    protected Tree tree;
-    protected Node operand;
+    protected final Tree tree;
+    protected final Node operand;
 
     // TODO: The type of a string conversion should be a final
     // TypeMirror representing java.lang.String. Currently we require

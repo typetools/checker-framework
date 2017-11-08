@@ -17,9 +17,9 @@ import org.checkerframework.javacutil.InternalUtils;
  * @author Charlie Garrett
  */
 public class StringConcatenateAssignmentNode extends Node {
-    protected Tree tree;
-    protected Node left;
-    protected Node right;
+    protected final Tree tree;
+    protected final Node left;
+    protected final Node right;
 
     public StringConcatenateAssignmentNode(Tree tree, Node left, Node right) {
         super(InternalUtils.typeOf(tree));

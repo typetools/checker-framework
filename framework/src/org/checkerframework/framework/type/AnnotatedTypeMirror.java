@@ -829,8 +829,6 @@ public abstract class AnnotatedTypeMirror {
         /** The enclosing Type */
         protected AnnotatedDeclaredType enclosingType;
 
-        protected List<AnnotatedDeclaredType> supertypes = null;
-
         private boolean declaration;
 
         /**
@@ -989,21 +987,7 @@ public abstract class AnnotatedTypeMirror {
 
         @Override
         public List<AnnotatedDeclaredType> directSuperTypes() {
-            if (supertypes == null) {
-                supertypes = Collections.unmodifiableList(SupertypeFinder.directSuperTypes(this));
-            }
-            return supertypes;
-        }
-
-        /*
-         * Return the direct super types field without lazy initialization;
-         * originally to prevent infinite recursion in IGJATF.postDirectSuperTypes.
-         *
-         * TODO: find a nicer way, see the single caller in QualifierDefaults
-         * for comment.
-         */
-        public List<AnnotatedDeclaredType> directSuperTypesField() {
-            return supertypes;
+            return Collections.unmodifiableList(SupertypeFinder.directSuperTypes(this));
         }
 
         @Override
