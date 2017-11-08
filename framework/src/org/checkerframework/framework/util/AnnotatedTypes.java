@@ -70,19 +70,6 @@ public class AnnotatedTypes {
         throw new AssertionError("Class AnnotatedTypes cannot be instantiated.");
     }
 
-    /**
-     * @deprecated Use {@link #asSuper(AnnotatedTypeFactory, AnnotatedTypeMirror,
-     *     AnnotatedTypeMirror)}
-     */
-    @Deprecated
-    public static AnnotatedTypeMirror asSuper(
-            Types types,
-            AnnotatedTypeFactory atypeFactory,
-            AnnotatedTypeMirror type,
-            AnnotatedTypeMirror superType) {
-        return asSuper(atypeFactory, type, superType);
-    }
-
     private static AsSuperVisitor asSuperVisitor;
 
     /**
@@ -575,18 +562,6 @@ public class AnnotatedTypes {
                     .getTypeArgumentInference()
                     .inferTypeArgs(atypeFactory, expr, elt, preType);
         }
-    }
-    /**
-     * @deprecated Use {@link #leastUpperBound(AnnotatedTypeFactory, AnnotatedTypeMirror,
-     *     AnnotatedTypeMirror)}
-     */
-    @Deprecated
-    public static AnnotatedTypeMirror leastUpperBound(
-            ProcessingEnvironment processingEnv,
-            AnnotatedTypeFactory atypeFactory,
-            AnnotatedTypeMirror type1,
-            AnnotatedTypeMirror type2) {
-        return leastUpperBound(atypeFactory, type1, type2);
     }
 
     /**
