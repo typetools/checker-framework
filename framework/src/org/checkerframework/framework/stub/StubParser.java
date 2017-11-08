@@ -931,7 +931,7 @@ public class StubParser {
 
         VariableDeclarator fieldVarDecl = null;
         for (VariableDeclarator var : decl.getVariables()) {
-            if (var.getName().contentEquals(elt.getSimpleName().toString())) {
+            if (var.getName().toString().equals(elt.getSimpleName().toString())) {
                 fieldVarDecl = var;
             }
         }
