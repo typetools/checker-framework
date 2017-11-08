@@ -3042,7 +3042,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         if (methodReference && isCaptureConverted) {
                             ExecutableElement overridenMethod = overridden.getElement();
                             boolean isFunctionApply =
-                                    overridenMethod.getSimpleName().toString().equals("apply")
+                                    overridenMethod.getSimpleName().contentEquals("apply")
                                             && overridenMethod
                                                     .getEnclosingElement()
                                                     .toString()
