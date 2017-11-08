@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -641,6 +642,28 @@ public class AnnotationBuilder {
                 assert false : " unknown type : " + v.getClass();
                 return v.visitUnknown(this, p);
             }
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof CheckerFrameworkAnnotationValue)) {
+                return false;
+            }
+            CheckerFrameworkAnnotationValue otherCfav = (CheckerFrameworkAnnotationValue) other;
+            System.out.printf(
+                    "CFAV equals: equals=%s, deep=%s%n  %s (%s)%n  %s (%s)%n",
+                    Objects.equals(this.value, otherCfav.value),
+                    Objects.deepEquals(this.value, otherCfav.value),
+                    this.value,
+                    this.value.getClass(),
+                    otherCfav.value,
+                    otherCfav.value.getClass());
+            return Objects.equals(this.value, otherCfav.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(this.value);
         }
     }
 }
