@@ -80,7 +80,6 @@ import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
-import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceVisitor;
@@ -1352,10 +1351,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         Element anno = TreeInfo.symbol((JCTree) node.getAnnotationType());
-        if (anno.toString().equals(DefaultQualifier.class.getName())
-                || anno.toString().equals(SuppressWarnings.class.getName())) {
-            // Skip these two annotations, as we don't care about the
-            // arguments to them.
+        String annoQualifiedName = anno.toString();
+        if (annoQualifiedName.equals("org.checkerframework.framework.qual.DefaultQualifier")
+                || annoQualifiedName.toString().equals("java.lang.SuppressWarnings")) {
+            // Skip these two annotations, as we don't care about the arguments to them.
             return null;
         }
 
@@ -3511,10 +3510,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         List<? extends Element> members = elements.getAllMembers(objectTE);
 
         for (Element member : members) {
-            if (member.toString().equals("equals(java.lang.Object)")) {
+            if (isObjectEquals(member)) {
                 ExecutableElement m = (ExecutableElement) member;
-                // The Nullness JDK serves as a proxy for all annotated
-                // JDKs.
+                // The Nullness JDK serves as a proxy for all annotated JDKs.
 
                 // Note that we cannot use the AnnotatedTypeMirrors from the
                 // Checker Framework, because those only return the annotations
@@ -3560,5 +3558,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
             }
         }
+    }
+
+    /** Return true iff the member is Object.equals(). */
+    private boolean isObjectEquals(Element member) {
+        // Less efficient implementation:
+        // return member.toString().equals("equals(java.lang.Object)");
+
+        if (member.getKind() != ElementKind.METHOD) {
+            return false;
+        }
+        ExecutableElement method = (ExecutableElement) member;
+        if (!method.getSimpleName().toString().equals("equals")) {
+            return false;
+        }
+        List<? extends VariableElement> params = method.getParameters();
+        if (params.size() != 1) {
+            return false;
+        }
+        VariableElement param = params.get(0);
+        TypeMirror paramType = param.asType();
+        return paramType.toString().equals("java.lang.Object");
     }
 }
