@@ -347,14 +347,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Void)} which issues warnings to users in these cases.
          *
          * <p>If any @IntRange or @ArrayLenRange annotation has incorrect parameters, e.g. the value
-         * "from" is greater than the value "to", replaces the annotation by @BOTTOMVAL. The {@link
+         * "from" is greater than the value "to", replaces the annotation by a range that covers the
+         * whole space. The {@link
          * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
-         * Void)} would raise an error to users in this case.
+         * Void)} should raise an error to users if the annotation was user-written.
          *
-         * <p>If any @ArrayLen annotation has a negative number, replaces the annotation
-         * by @BOTTOMVAL. The {@link
+         * <p>If any @ArrayLen annotation has a negative number, replaces the annotation by a range
+         * that covers all non-negative integers. The {@link
          * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
-         * Void)} would raise an error to users in this case.
+         * Void)} should raise an error to users if the annotation was user-written.
          *
          * <p>If a user only writes one side of an {@code IntRange} annotation, this method also
          * computes an appropriate default based on the underlying type for the other side of the
@@ -426,7 +427,22 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         }
                     }
                     if (from > to) {
-                        atm.replaceAnnotation(BOTTOMVAL);
+                        switch (atm.getUnderlyingType().getKind()) {
+                            case INT:
+                                atm.replaceAnnotation(
+                                        createIntRangeAnnotation(Range.INT_EVERYTHING));
+                                break;
+                            case SHORT:
+                                atm.replaceAnnotation(
+                                        createIntRangeAnnotation(Range.SHORT_EVERYTHING));
+                                break;
+                            case BYTE:
+                                atm.replaceAnnotation(
+                                        createIntRangeAnnotation(Range.BYTE_EVERYTHING));
+                                break;
+                            default:
+                                atm.replaceAnnotation(createIntRangeAnnotation(Range.EVERYTHING));
+                        }
                     } else {
                         // Always do a replacement of the annotation here so that
                         // the defaults calculated above are correctly added to the
@@ -437,7 +453,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     int from = AnnotationUtils.getElementValue(anno, "from", Integer.class, true);
                     int to = AnnotationUtils.getElementValue(anno, "to", Integer.class, true);
                     if (from > to || from < 0) {
-                        atm.replaceAnnotation(BOTTOMVAL);
+                        atm.replaceAnnotation(createArrayLenRangeAnnotation(0, Integer.MAX_VALUE));
                     }
                 } else if (AnnotationUtils.areSameByClass(anno, StringVal.class)) {
                     // The annotation is StringVal. If there are too many elements,
