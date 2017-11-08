@@ -468,7 +468,7 @@ public class AnnotationBuilder {
         }
 
         if (!isSubtype) {
-            if (found.toString().equals(expected.toString())) {
+            if (types.isSameType(found, expected)) {
                 ErrorReporter.errorAbort(
                         "given value differs from expected, but same string representation; "
                                 + "this is likely a bootclasspath/classpath issue; "
