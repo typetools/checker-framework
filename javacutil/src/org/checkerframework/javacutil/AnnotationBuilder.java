@@ -648,10 +648,21 @@ public class AnnotationBuilder {
 
         @Override
         public boolean equals(Object obj) {
+            // System.out.printf("Calling CFAV.equals()%n");
             if (!(obj instanceof AnnotationValue)) {
+                // System.out.printf(
+                //         "CFAV.equals() => false (other not instanceof AnnotationValue)%n");
                 return false;
             }
             AnnotationValue other = (AnnotationValue) obj;
+            // System.out.printf(
+            //         "CFAV equals: equals=%s, deep=%s%n  %s (%s)%n  %s (%s)%n",
+            //         Objects.equals(this.getValue(), other.getValue()),
+            //         Objects.deepEquals(this.getValue(), other.getValue()),
+            //         this.getValue(),
+            //         this.getValue().getClass(),
+            //         other.getValue(),
+            //         other.getValue().getClass());
             return Objects.equals(this.getValue(), other.getValue());
         }
 
