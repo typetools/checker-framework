@@ -70,19 +70,6 @@ public class AnnotatedTypes {
         throw new AssertionError("Class AnnotatedTypes cannot be instantiated.");
     }
 
-    /**
-     * @deprecated Use {@link #asSuper(AnnotatedTypeFactory, AnnotatedTypeMirror,
-     *     AnnotatedTypeMirror)}
-     */
-    @Deprecated
-    public static AnnotatedTypeMirror asSuper(
-            Types types,
-            AnnotatedTypeFactory atypeFactory,
-            AnnotatedTypeMirror type,
-            AnnotatedTypeMirror superType) {
-        return asSuper(atypeFactory, type, superType);
-    }
-
     private static AsSuperVisitor asSuperVisitor;
 
     /**
@@ -576,18 +563,6 @@ public class AnnotatedTypes {
                     .inferTypeArgs(atypeFactory, expr, elt, preType);
         }
     }
-    /**
-     * @deprecated Use {@link #leastUpperBound(AnnotatedTypeFactory, AnnotatedTypeMirror,
-     *     AnnotatedTypeMirror)}
-     */
-    @Deprecated
-    public static AnnotatedTypeMirror leastUpperBound(
-            ProcessingEnvironment processingEnv,
-            AnnotatedTypeFactory atypeFactory,
-            AnnotatedTypeMirror type1,
-            AnnotatedTypeMirror type2) {
-        return leastUpperBound(atypeFactory, type1, type2);
-    }
 
     /**
      * Returns the lub of two annotated types.
@@ -762,9 +737,10 @@ public class AnnotatedTypes {
         return types;
     }
 
-    // TODO: can't we do better than comparing the strings?
+    /** @deprecated use AnnotatedTypeMirror.equals() */
+    @Deprecated // remove after release 2.2.3
     public static boolean areSame(AnnotatedTypeMirror t1, AnnotatedTypeMirror t2) {
-        return t1.toString().equals(t2.toString());
+        return t1.equals(t2);
     }
 
     /**
