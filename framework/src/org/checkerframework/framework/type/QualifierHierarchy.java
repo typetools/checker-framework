@@ -600,15 +600,6 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * @deprecated use {@link #findAnnotationInSameHierarchy(Collection, AnnotationMirror)} instead
-     */
-    @Deprecated
-    public AnnotationMirror findCorrespondingAnnotation(
-            AnnotationMirror aliased, Collection<? extends AnnotationMirror> a) {
-        return findAnnotationInSameHierarchy(a, aliased);
-    }
-
-    /**
      * Returns the annotation in annos that is in the same hierarchy as annotationMirror.
      *
      * <p>If the annotation in the hierarchy is PolyAll, then the polymorphic qualifier in the
@@ -624,12 +615,6 @@ public abstract class QualifierHierarchy {
         return findAnnotationInHierarchy(annos, top);
     }
 
-    /** @deprecated use {@link #findAnnotationInHierarchy(Collection, AnnotationMirror)} instead */
-    @Deprecated
-    public AnnotationMirror getAnnotationInHierarchy(
-            Collection<? extends AnnotationMirror> annos, AnnotationMirror annotationMirror) {
-        return findAnnotationInHierarchy(annos, annotationMirror);
-    }
     /**
      * Returns the annotation in annos that is in the hierarchy for which annotationMirror is top.
      *
