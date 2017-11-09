@@ -53,6 +53,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.PolyAll;
+import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -136,6 +137,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker);
 
         BOTTOMVAL = AnnotationBuilder.fromClass(elements, BottomVal.class);
+
         UNKNOWNVAL = AnnotationBuilder.fromClass(elements, UnknownVal.class);
 
         reportEvalWarnings = checker.hasOption(ValueChecker.REPORT_EVAL_WARNS);
@@ -427,33 +429,31 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         }
                     }
                     if (from > to) {
-                        switch (atm.getUnderlyingType().getKind()) {
-                            case INT:
-                                atm.replaceAnnotation(
-                                        createIntRangeAnnotation(Range.INT_EVERYTHING));
-                                break;
-                            case SHORT:
-                                atm.replaceAnnotation(
-                                        createIntRangeAnnotation(Range.SHORT_EVERYTHING));
-                                break;
-                            case BYTE:
-                                atm.replaceAnnotation(
-                                        createIntRangeAnnotation(Range.BYTE_EVERYTHING));
-                                break;
-                            default:
-                                atm.replaceAnnotation(createIntRangeAnnotation(Range.EVERYTHING));
-                        }
+                        // from > to either indicates a user error when writing an
+                        // annotation or an error in the checker's implementation -
+                        // from should always be <= to. Create a special bottom
+                        // annotation that will trigger an error later.
+                        atm.replaceAnnotation(createErrorBottom("from.greater.than.to"));
                     } else {
                         // Always do a replacement of the annotation here so that
                         // the defaults calculated above are correctly added to the
                         // annotation (assuming the annotation is well-formed).
                         atm.replaceAnnotation(createIntRangeAnnotation(from, to));
                     }
+                    //}
                 } else if (AnnotationUtils.areSameByClass(anno, ArrayLenRange.class)) {
                     int from = AnnotationUtils.getElementValue(anno, "from", Integer.class, true);
                     int to = AnnotationUtils.getElementValue(anno, "to", Integer.class, true);
-                    if (from > to || from < 0) {
-                        atm.replaceAnnotation(createArrayLenRangeAnnotation(0, Integer.MAX_VALUE));
+                    if (from > to) {
+                        // from > to either indicates a user error when writing an
+                        // annotation or an error in the checker's implementation -
+                        // from should always be <= to. Create a special bottom type
+                        // that will trigger an error later.
+                        atm.replaceAnnotation(createErrorBottom("from.greater.than.to"));
+                    } else if (from < 0) {
+                        // No array can have a length less than 0. Any time the type includes a from
+                        // less than zero, it must indicate imprecision in the checker.
+                        atm.replaceAnnotation(createArrayLenRangeAnnotation(0, to));
                     }
                 } else if (AnnotationUtils.areSameByClass(anno, StringVal.class)) {
                     // The annotation is StringVal. If there are too many elements,
@@ -986,6 +986,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         public ValueTreeAnnotator(ValueAnnotatedTypeFactory factory) {
             super(factory);
+        }
+
+        @Override
+        protected Void defaultAction(Tree node, AnnotatedTypeMirror p) {
+            AnnotationMirror bottom = p.getAnnotation(BottomVal.class);
+            if (bottom != null) {
+                String errorKey =
+                        AnnotationUtils.getElementValue(bottom, "value", String.class, true);
+                if (!"".equals(errorKey)) {
+                    checker.report(Result.failure(errorKey), node);
+                }
+            }
+            return DEFAULT_VALUE;
         }
 
         @Override
@@ -1831,6 +1844,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return createArrayLenRangeAnnotation(
                     Long.valueOf(range.from).intValue(), Long.valueOf(range.to).intValue());
         }
+    }
+
+    public AnnotationMirror createErrorBottom(String errorKey) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, BottomVal.class);
+        builder.setValue("value", errorKey);
+        return builder.build();
     }
 
     /** Converts an {@code @StringVal} annotation to an {@code @ArrayLenRange} annotation. */
