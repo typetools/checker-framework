@@ -441,19 +441,7 @@ public class AnnotationUtils {
         // equals().  So, write my own version of deepEquals().
         // TODO: Is the array case dead code?  (Is only the list case used?)
         // TODO: Should arrays/lists be compared setwise, in a way that ignores order?
-        if ((val1 instanceof Object[]) && (val2 instanceof Object[])) {
-            Object[] a1 = (Object[]) val1;
-            Object[] a2 = (Object[]) val2;
-            if (a1.length != a2.length) {
-                return false;
-            }
-            for (int i = 0; i < a1.length; i++) {
-                if (!sameAnnotationValueValue(a1[i], a2[i])) {
-                    return false;
-                }
-            }
-            return true;
-        } else if ((val1 instanceof List<?>) && (val2 instanceof List<?>)) {
+        if ((val1 instanceof List<?>) && (val2 instanceof List<?>)) {
             List<?> list1 = (List<?>) val1;
             List<?> list2 = (List<?>) val2;
             if (list1.size() != list2.size()) {
