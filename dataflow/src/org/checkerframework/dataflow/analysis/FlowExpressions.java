@@ -160,8 +160,7 @@ public class FlowExpressions {
             // case we treat the method call as deterministic, because there is no way
             // to behave differently in two executions where two constants are being used.
             boolean considerDeterministic = false;
-            if (invokedMethod.toString().equals("valueOf(long)")
-                    && mn.getTarget().getReceiver().toString().equals("Long")) {
+            if (isLongValueOf(mn)) {
                 Node arg = mn.getArgument(0);
                 if (arg instanceof ValueLiteralNode) {
                     considerDeterministic = true;
@@ -189,6 +188,31 @@ public class FlowExpressions {
             receiver = new Unknown(receiverNode.getType());
         }
         return receiver;
+    }
+
+    /** Return true iff the invoked method is Long.valueOf(long). */
+    private static boolean isLongValueOf(MethodInvocationNode mn) {
+        ExecutableElement method = TreeUtils.elementFromUse(mn.getTree());
+
+        // Less efficient implementation:
+        // return method.toString().equals("valueOf(long)")
+        //     && mn.getTarget().getReceiver().toString().equals("Long")
+
+        if (mn.getTarget().getReceiver() == null
+                || !mn.getTarget().getReceiver().toString().equals("Long")) {
+            return false;
+        }
+
+        if (!method.getSimpleName().toString().equals("valueOf")) {
+            return false;
+        }
+        List<? extends VariableElement> params = method.getParameters();
+        if (params.size() != 1) {
+            return false;
+        }
+        VariableElement param = params.get(0);
+        TypeMirror paramType = param.asType();
+        return paramType.toString().equals("long");
     }
 
     /**
