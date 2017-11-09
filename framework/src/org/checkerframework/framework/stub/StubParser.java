@@ -639,10 +639,11 @@ public class StubParser {
                 // TODO: Java 7 added a few AutoCloseable superinterfaces to classes.
                 // We specify those as superinterfaces in the jdk.astub file. Let's ignore
                 // this addition to be compatible with Java 6.
+                String superTypeString = superType.toString();
                 assert foundType != null
-                                || (superType.toString().equals("AutoCloseable")
-                                        || superType.toString().equals("java.io.Closeable")
-                                        || superType.toString().equals("Closeable"))
+                                || (superTypeString.equals("AutoCloseable")
+                                        || superTypeString.equals("java.io.Closeable")
+                                        || superTypeString.equals("Closeable"))
                         : "StubParser: could not find superinterface "
                                 + superType
                                 + " from type "
@@ -930,9 +931,11 @@ public class StubParser {
         AnnotatedTypeMirror fieldType = atypeFactory.fromElement(elt);
 
         VariableDeclarator fieldVarDecl = null;
+        String eltName = elt.getSimpleName().toString();
         for (VariableDeclarator var : decl.getVariables()) {
-            if (var.getName().toString().equals(elt.getSimpleName().toString())) {
+            if (var.getName().toString().equals(eltName)) {
                 fieldVarDecl = var;
+                break;
             }
         }
         assert fieldVarDecl != null;
