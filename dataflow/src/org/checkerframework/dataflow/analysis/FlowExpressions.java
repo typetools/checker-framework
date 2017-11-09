@@ -13,6 +13,7 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -790,10 +791,10 @@ public class FlowExpressions {
                 return false;
             }
             ValueLiteral other = (ValueLiteral) obj;
-            if (value == null) {
-                return type.toString().equals(other.type.toString()) && other.value == null;
-            }
-            return type.toString().equals(other.type.toString()) && value.equals(other.value);
+            // TODO:  Can this string comparison be cleaned up?
+            // Cannot use Types.isSameType(type, other.type) because we don't have a Types object.
+            return type.toString().equals(other.type.toString())
+                    && Objects.equals(value, other.value);
         }
 
         @Override
