@@ -22,6 +22,10 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
      */
     protected Store.FlowRule flowRule = Store.FlowRule.EACH_TO_EACH;
 
+    public SingleSuccessorBlockImpl(BlockType type) {
+        super(type);
+    }
+
     @Override
     public /*@Nullable*/ Block getSuccessor() {
         return successor;

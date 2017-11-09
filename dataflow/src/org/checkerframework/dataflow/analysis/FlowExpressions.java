@@ -445,8 +445,8 @@ public class FlowExpressions {
     }
 
     public static class FieldAccess extends Receiver {
-        protected Receiver receiver;
-        protected VariableElement field;
+        protected final Receiver receiver;
+        protected final VariableElement field;
 
         public Receiver getReceiver() {
             return receiver;
@@ -662,7 +662,7 @@ public class FlowExpressions {
     }
 
     public static class LocalVariable extends Receiver {
-        protected Element element;
+        protected final Element element;
 
         public LocalVariable(LocalVariableNode localVar) {
             super(localVar.getType());
@@ -1048,8 +1048,8 @@ public class FlowExpressions {
 
     public static class ArrayCreation extends Receiver {
 
-        protected List<Node> dimensions;
-        protected List<Node> initializers;
+        protected final List<Node> dimensions;
+        protected final List<Node> initializers;
 
         public ArrayCreation(TypeMirror type, List<Node> dimensions, List<Node> initializers) {
             super(type);

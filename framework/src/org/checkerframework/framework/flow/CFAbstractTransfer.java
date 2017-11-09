@@ -101,7 +101,7 @@ public abstract class CFAbstractTransfer<
         implements TransferFunction<V, S> {
 
     /** The analysis class this store belongs to. */
-    protected CFAbstractAnalysis<V, S, T> analysis;
+    protected final CFAbstractAnalysis<V, S, T> analysis;
 
     /**
      * Should the analysis use sequential Java semantics (i.e., assume that only one thread is

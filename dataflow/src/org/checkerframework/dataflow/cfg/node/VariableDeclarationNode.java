@@ -20,8 +20,8 @@ import org.checkerframework.javacutil.InternalUtils;
  */
 public class VariableDeclarationNode extends Node {
 
-    protected VariableTree tree;
-    protected String name;
+    protected final VariableTree tree;
+    protected final String name;
 
     // TODO: make modifier accessible
 

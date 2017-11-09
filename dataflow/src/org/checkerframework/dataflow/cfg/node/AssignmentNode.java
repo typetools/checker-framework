@@ -26,9 +26,9 @@ import org.checkerframework.javacutil.InternalUtils;
  */
 public class AssignmentNode extends Node {
 
-    protected Tree tree;
-    protected Node lhs;
-    protected Node rhs;
+    protected final Tree tree;
+    protected final Node lhs;
+    protected final Node rhs;
 
     public AssignmentNode(Tree tree, Node target, Node expression) {
         super(InternalUtils.typeOf(tree));
