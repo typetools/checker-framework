@@ -62,6 +62,7 @@ if [[ "${GROUP}" == "nonjunit" || "${GROUP}" == "all" ]]; then
 fi
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
+  (cd framework && ant all-tests)
   (cd checker && ant all-tests-nobuildjdk)
   # Moved example-tests-nobuildjdk out of all tests because it fails in
   # the release script because the newest maven artifacts are not published yet.
@@ -132,7 +133,10 @@ if [[ "${GROUP}" == "demos" || "${GROUP}" == "all" ]]; then
 fi
 
 if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then
-  cd checker; ant jdk.jar
+  cd checker
+  ant jdk.jar
+  ## Run the tests for the type systems that use the annotated JDK
+  ant index-tests lock-tests nullness-tests-nobuildjdk
 fi
 
 if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
