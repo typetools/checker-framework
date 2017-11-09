@@ -1529,7 +1529,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(node);
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
 
-        if (AnnotatedTypes.areSame(castType, exprType)) {
+        if (castType.equals(exprType)) {
             checker.report(Result.warning("cast.redundant", castType), node);
         }
     }
