@@ -26,6 +26,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -646,24 +647,17 @@ public class AnnotationBuilder {
 
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof CheckerFrameworkAnnotationValue)) {
-                return false;
+            if (other instanceof AnnotationValue) {
+                return AnnotationUtils.sameAnnotationValue(this, (AnnotationValue) other);
+            } else {
+                // TODO: is this necessary/desirable?
+                return Objects.equals(this.getValue(), other);
             }
-            CheckerFrameworkAnnotationValue otherCfav = (CheckerFrameworkAnnotationValue) other;
-            System.out.printf(
-                    "CFAV equals: equals=%s, deep=%s%n  %s (%s)%n  %s (%s)%n",
-                    Objects.equals(this.value, otherCfav.value),
-                    Objects.deepEquals(this.value, otherCfav.value),
-                    this.value,
-                    this.value.getClass(),
-                    otherCfav.value,
-                    otherCfav.value.getClass());
-            return Objects.equals(this.value, otherCfav.value);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hashCode(this.value);
+            return Objects.hashCode(this.getValue());
         }
     }
 }

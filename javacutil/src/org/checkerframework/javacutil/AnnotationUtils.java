@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -112,8 +113,18 @@ public class AnnotationUtils {
                 getElementValuesWithDefaults(a1);
         Map<? extends ExecutableElement, ? extends AnnotationValue> elval2 =
                 getElementValuesWithDefaults(a2);
+        boolean stringSame1 = elval1.toString().equals(elval2.toString());
 
-        return elval1.toString().equals(elval2.toString());
+        boolean same2 = sameElementValues(a1, a2);
+
+        if (stringSame1 != same2) {
+            throw new Error(
+                    String.format(
+                            "stringSame1 %s, same2 %s%n  %s%n  %s%n",
+                            stringSame1, same2, elval1, elval2));
+        }
+
+        return same2;
     }
 
     /**
@@ -384,6 +395,87 @@ public class AnnotationUtils {
             }
         }
         return valMap;
+    }
+
+    /** am1 and am2 must be the same type of annotation. */
+    public static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
+        Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = am1.getElementValues();
+        Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = am2.getElementValues();
+        for (ExecutableElement meth :
+                ElementFilter.methodsIn(
+                        am1.getAnnotationType().asElement().getEnclosedElements())) {
+            AnnotationValue aval1 =
+                    (vals1.containsKey(meth) ? vals1.get(meth) : meth.getDefaultValue());
+            AnnotationValue aval2 =
+                    (vals2.containsKey(meth) ? vals2.get(meth) : meth.getDefaultValue());
+            if (!sameAnnotationValue(aval1, aval2)) {
+                // System.out.printf("sameAnnotationValue => false for%n  %s%n  %s%n", aval1, aval2);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Return true iff the two AnnotationValue objects are the same. This is a replacement for
+     * CheckerFrameworkAnnotationValue.equals, which wouldn't get called if the first argument is
+     * some AnnotationValue other than CheckerFrameworkAnnotationValue.
+     */
+    public static boolean sameAnnotationValue(AnnotationValue av1, AnnotationValue av2) {
+        if (av1 == av2) {
+            return true;
+        }
+        if (av1 == null || av2 == null) {
+            return false;
+        }
+        return sameAnnotationValueValue(av1.getValue(), av2.getValue());
+    }
+
+    /**
+     * Return true if the two annotation values are the same. The values are as might be returned by
+     * {@code AnnotationValue.getValue()}.
+     */
+    public static boolean sameAnnotationValueValue(Object val1, Object val2) {
+        // Can't use equals() or deepEquals() to compare val1 and val2, because they might have
+        // mismatched AnnotationValue vs. CheckerFrameworkAnnotationValue, and AnnotationValue
+        // doesn't override equals().  So, write my own version of deepEquals.
+        if ((val1 instanceof Object[]) && (val2 instanceof Object[])) {
+            Object[] a1 = (Object[]) val1;
+            Object[] a2 = (Object[]) val2;
+            if (a1.length != a2.length) {
+                return false;
+            }
+            for (int i = 0; i < a1.length; i++) {
+                if (!sameAnnotationValueValue(a1[i], a2[i])) {
+                    // System.out.printf(
+                    //         "sameAnnotationValueValue => false for%n  %s%n  %s%n", a1[i], a2[i]);
+                    return false;
+                }
+            }
+            return true;
+        } else if ((val1 instanceof List<?>) && (val2 instanceof List<?>)) {
+            List<?> list1 = (List<?>) val1;
+            List<?> list2 = (List<?>) val2;
+            if (list1.size() != list2.size()) {
+                return false;
+            }
+            for (int i = 0; i < list1.size(); i++) {
+                if (!sameAnnotationValueValue(list1.get(i), list2.get(i))) {
+                    // System.out.printf(
+                    //         "sameAnnotationValueValue => false for%n  %s%n  %s%n",
+                    //         list1.get(i), list2.get(i));
+                    return false;
+                }
+            }
+            return true;
+        } else if ((val1 instanceof AnnotationValue) && (val2 instanceof AnnotationValue)) {
+            return sameAnnotationValue((AnnotationValue) val1, (AnnotationValue) val2);
+        } else {
+            // System.out.printf(
+            //         "sameAnnotationValueValue delegating to Objects.equals => %s for%n  %s (%s)%n  %s (%s)%n",
+            //         Objects.equals(val1, val2), val1, val1.getClass(), val2, val2.getClass());
+            return Objects.equals(val1, val2);
+        }
     }
 
     /**
