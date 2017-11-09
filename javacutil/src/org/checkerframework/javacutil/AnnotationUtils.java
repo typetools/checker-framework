@@ -113,6 +113,7 @@ public class AnnotationUtils {
                 getElementValuesWithDefaults(a1);
         Map<? extends ExecutableElement, ? extends AnnotationValue> elval2 =
                 getElementValuesWithDefaults(a2);
+        // TODO: debugging code; remove it when tests pass
         boolean stringSame1 = elval1.toString().equals(elval2.toString());
 
         boolean same2 = sameElementValues(a1, a2);
@@ -120,8 +121,13 @@ public class AnnotationUtils {
         if (stringSame1 != same2) {
             throw new Error(
                     String.format(
-                            "stringSame1 %s, same2 %s%n  %s%n  %s%n",
-                            stringSame1, same2, elval1, elval2));
+                            "stringSame1 %s, same2 %s%n  %s (%s)%n  %s (%s)%n",
+                            stringSame1,
+                            same2,
+                            elval1,
+                            elval1.getClass(),
+                            elval2,
+                            elval2.getClass()));
         }
 
         return same2;
