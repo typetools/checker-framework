@@ -109,25 +109,27 @@ public class AnnotationUtils {
             return false;
         }
 
+        boolean same2 = sameElementValues(a1, a2);
+
+        // TODO: debugging code; remove it when tests pass
         Map<? extends ExecutableElement, ? extends AnnotationValue> elval1 =
                 getElementValuesWithDefaults(a1);
         Map<? extends ExecutableElement, ? extends AnnotationValue> elval2 =
                 getElementValuesWithDefaults(a2);
-        // TODO: debugging code; remove it when tests pass
         boolean stringSame1 = elval1.toString().equals(elval2.toString());
-
-        boolean same2 = sameElementValues(a1, a2);
 
         if (stringSame1 != same2) {
             throw new Error(
                     String.format(
-                            "stringSame1 %s, same2 %s%n  %s (%s)%n  %s (%s)%n",
+                            "stringSame1 %s, same2 %s%n  %s%n  %s%n  %s (%s)%n  %s (%s)%n",
                             stringSame1,
                             same2,
                             elval1,
-                            elval1.getClass(),
                             elval2,
-                            elval2.getClass()));
+                            a1,
+                            a1.getClass(),
+                            a2,
+                            a2.getClass()));
         }
 
         return same2;
@@ -410,12 +412,18 @@ public class AnnotationUtils {
         for (ExecutableElement meth :
                 ElementFilter.methodsIn(
                         am1.getAnnotationType().asElement().getEnclosedElements())) {
-            AnnotationValue aval1 =
-                    (vals1.containsKey(meth) ? vals1.get(meth) : meth.getDefaultValue());
-            AnnotationValue aval2 =
-                    (vals2.containsKey(meth) ? vals2.get(meth) : meth.getDefaultValue());
+            AnnotationValue aval1 = vals1.get(meth);
+            AnnotationValue aval2 = vals2.get(meth);
+            if (aval1 == null) {
+                aval1 = meth.getDefaultValue();
+            }
+            if (aval2 == null) {
+                aval2 = meth.getDefaultValue();
+            }
             if (!sameAnnotationValue(aval1, aval2)) {
-                // System.out.printf("sameAnnotationValue => false for%n  %s%n  %s%n", aval1, aval2);
+                // System.out.printf(
+                //         "sameAnnotationValue => false for%n  %s (%s)%n  %s (%s)%n",
+                //         aval1, aval1.getClass(), aval2, aval2.getClass());
                 return false;
             }
         }
@@ -442,6 +450,10 @@ public class AnnotationUtils {
      * {@code AnnotationValue.getValue()}.
      */
     public static boolean sameAnnotationValueValue(Object val1, Object val2) {
+        if (val1 == val2) {
+            return true;
+        }
+
         // Can't use equals() or deepEquals() to compare val1 and val2, because they might have
         // mismatched AnnotationValue vs. CheckerFrameworkAnnotationValue, and AnnotationValue
         // doesn't override equals().  So, write my own version of deepEquals.
@@ -476,12 +488,24 @@ public class AnnotationUtils {
             return true;
         } else if ((val1 instanceof AnnotationValue) && (val2 instanceof AnnotationValue)) {
             return sameAnnotationValue((AnnotationValue) val1, (AnnotationValue) val2);
+        } else if ((val1 instanceof Type.ClassType) && (val2 instanceof Type.ClassType)) {
+            // Type.ClassType does not override equals
+            return sameClassType((Type.ClassType) val1, (Type.ClassType) val2);
         } else {
             // System.out.printf(
             //         "sameAnnotationValueValue delegating to Objects.equals => %s for%n  %s (%s)%n  %s (%s)%n",
             //         Objects.equals(val1, val2), val1, val1.getClass(), val2, val2.getClass());
             return Objects.equals(val1, val2);
         }
+    }
+
+    // Type.ClassType does not override equals
+    public static boolean sameClassType(Type.ClassType t1, Type.ClassType t2) {
+        // Do a cheaper test first
+        if (!t1.tsym.name.toString().equals(t2.tsym.name.toString())) {
+            return false;
+        }
+        return t1.toString().equals(t1.toString());
     }
 
     /**
