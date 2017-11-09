@@ -204,7 +204,7 @@ public class FlowExpressions {
             return false;
         }
 
-        if (!method.getSimpleName().toString().equals("valueOf")) {
+        if (!method.getSimpleName().contentEquals("valueOf")) {
             return false;
         }
         List<? extends VariableElement> params = method.getParameters();
@@ -708,7 +708,7 @@ public class FlowExpressions {
             VarSymbol vs = (VarSymbol) element;
             VarSymbol vsother = (VarSymbol) other.element;
             // Use TypeAnnotationUtils.unannotatedType(type).toString().equals(...) instead of
-            // Types.isSameType(...)  because Types requires a processing environment, and
+            // Types.isSameType(...) because Types requires a processing environment, and
             // FlowExpressions is designed to be independent of processing environment.  See also
             // calls to getType().toString() in FlowExpressions.
             return vsother.name.contentEquals(vs.name)
@@ -1124,6 +1124,8 @@ public class FlowExpressions {
             ArrayCreation other = (ArrayCreation) obj;
             return this.dimensions.equals(other.getDimensions())
                     && this.initializers.equals(other.getInitializers())
+                    // It might be better to use Types.isSameType(getType(), other.getType()), but I
+                    // don't have a Types object.
                     && getType().toString().equals(other.getType().toString());
         }
 

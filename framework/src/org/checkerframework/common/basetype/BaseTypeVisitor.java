@@ -3569,7 +3569,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return false;
         }
         ExecutableElement method = (ExecutableElement) member;
-        if (!method.getSimpleName().toString().equals("equals")) {
+        if (!method.getSimpleName().contentEquals("equals")) {
             return false;
         }
         List<? extends VariableElement> params = method.getParameters();

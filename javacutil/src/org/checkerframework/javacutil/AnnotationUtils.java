@@ -99,8 +99,8 @@ public class AnnotationUtils {
             return false;
         }
 
-        // This implementation is less efficient.  It is also wrong:  it requires a particular order
-        // for fields, and it distinguishes the long constants "33" and "33L".
+        // This commented implementation is less efficient.  It is also wrong:  it requires a
+        // particular order for fields, and it distinguishes the long constants "33" and "33L".
         // Map<? extends ExecutableElement, ? extends AnnotationValue> elval1 =
         //         getElementValuesWithDefaults(a1);
         // Map<? extends ExecutableElement, ? extends AnnotationValue> elval2 =
