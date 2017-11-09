@@ -18,7 +18,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
@@ -767,7 +766,10 @@ public class FlowExpressions {
                 return false;
             }
             ValueLiteral other = (ValueLiteral) obj;
-            return Types.isSameType(type, other.type) && Objects.equals(value, other.value);
+            // TODO:  Can this be cleaned up?
+            // Cannot use Types.isSameType(type, other.type) because we don't have a Types object.
+            return type.toString().equals(other.type.toString())
+                    && Objects.equals(value, other.value);
         }
 
         @Override
