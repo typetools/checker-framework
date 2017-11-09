@@ -703,17 +703,20 @@ public class StubParser {
             }
         }
 
-        if (methodType.getReceiverType() == null
-                && decl.getReceiverAnnotations() != null
-                && !decl.getReceiverAnnotations().isEmpty()) {
-            stubAlwaysWarn(
-                    String.format(
-                            "parseMethod: static methods cannot have receiver annotations%n"
-                                    + "Method: %s%n"
-                                    + "Receiver annotations: %s",
-                            methodType, decl.getReceiverAnnotations()));
-        } else {
-            annotate(methodType.getReceiverType(), decl.getReceiverAnnotations());
+        if (decl.getReceiverParameter().isPresent()
+                && !decl.getReceiverParameter().get().getAnnotations().isEmpty()) {
+            if (methodType.getReceiverType() == null) {
+                stubAlwaysWarn(
+                        String.format(
+                                "parseMethod: static methods cannot have receiver annotations%n"
+                                        + "Method: %s%n"
+                                        + "Receiver annotations: %s",
+                                methodType, decl.getReceiverParameter().get().getAnnotations()));
+            } else {
+                annotate(
+                        methodType.getReceiverType(),
+                        decl.getReceiverParameter().get().getAnnotations());
+            }
         }
 
         putNew(atypes, elt, methodType);
@@ -805,13 +808,16 @@ public class StubParser {
          * However, why was this needed for the RequiredPermissions declaration annotation?
          * It looks like the StubParser ignored the target for annotations.
          */
-        for (int i = 0; i < typeDef.getArrayCount(); ++i) {
-            List<AnnotationExpr> annotations = typeDef.getAnnotationsAtLevel(i);
+        Type currentTypeDef = typeDef;
+        for (int i = 0; i < typeDef.getArrayLevel(); ++i) {
             handleExistingAnnotations(arrayTypes.get(i), typeDef);
-
+            List<AnnotationExpr> annotations = currentTypeDef.getAnnotations();
             if (annotations != null) {
                 annotate(arrayTypes.get(i), annotations);
             }
+            // Cast should succeed because of the assert earlier.
+            currentTypeDef =
+                    ((com.github.javaparser.ast.type.ArrayType) currentTypeDef).getComponentType();
         }
 
         // handle generic type on base
@@ -903,19 +909,21 @@ public class StubParser {
             annotate(paramType, param.getType());
         }
 
-        if (methodType.getReceiverType() == null
-                && decl.getReceiverAnnotations() != null
-                && !decl.getReceiverAnnotations().isEmpty()) {
-            stubAlwaysWarn(
-                    String.format(
-                            "parseConstructor: constructor of a top-level class cannot have receiver annotations%n"
-                                    + "Constructor: %s%n"
-                                    + "Receiver annotations: %s",
-                            methodType, decl.getReceiverAnnotations()));
-        } else {
-            annotate(methodType.getReceiverType(), decl.getReceiverAnnotations());
+        if (decl.getReceiverParameter().isPresent()
+                && !decl.getReceiverParameter().get().getAnnotations().isEmpty()) {
+            if (methodType.getReceiverType() == null) {
+                stubAlwaysWarn(
+                        String.format(
+                                "parseConstructor: constructor of a top-level class cannot have receiver annotations%n"
+                                        + "Constructor: %s%n"
+                                        + "Receiver annotations: %s",
+                                methodType, decl.getReceiverParameter().get().getAnnotations()));
+            } else {
+                annotate(
+                        methodType.getReceiverType(),
+                        decl.getReceiverParameter().get().getAnnotations());
+            }
         }
-
         putNew(atypes, elt, methodType);
     }
 
