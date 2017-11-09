@@ -25,6 +25,20 @@ public class AnnotationWithFieldTest {
                     )
                     String s) {}
 
+    void expectsSiblingWithFields2(
+            @SiblingWithFields(
+                        value = {"test2", "test"},
+                        value2 = "test3"
+                    )
+                    String s) {}
+
+    void expectsSiblingWithFields3(
+            @SiblingWithFields(
+                        value2 = "test3",
+                        value = {"test2", "test"}
+                    )
+                    String s) {}
+
     void expectsSiblingWithEmptyFields(
             @SiblingWithFields(
                         value = {},

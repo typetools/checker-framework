@@ -119,17 +119,20 @@ public class AnnotationUtils {
         boolean stringSame1 = elval1.toString().equals(elval2.toString());
 
         if (stringSame1 != same2) {
-            throw new Error(
-                    String.format(
-                            "stringSame1 %s, same2 %s%n  %s%n  %s%n  %s (%s)%n  %s (%s)%n",
-                            stringSame1,
-                            same2,
-                            elval1,
-                            elval2,
-                            a1,
-                            a1.getClass(),
-                            a2,
-                            a2.getClass()));
+            // Don't throw an error, because the toString can be wrong (it requires a particular
+            // order for fields, has an opinion about L at end of long constants, etc.).
+            new Error(
+                            String.format(
+                                    "stringSame1 %s, same2 %s%n  %s%n  %s%n  %s (%s)%n  %s (%s)%n",
+                                    stringSame1,
+                                    same2,
+                                    elval1,
+                                    elval2,
+                                    a1,
+                                    a1.getClass(),
+                                    a2,
+                                    a2.getClass()))
+                    .printStackTrace();
         }
 
         return same2;
