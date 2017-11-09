@@ -178,8 +178,7 @@ public class ConstraintMap {
             final AnnotatedTypeMirror supertype,
             AnnotationMirrorSet hierarchies) {
         final Subtypes subtypes = targetToRecords.get(target).subtypes;
-        final AnnotationMirrorSet subtypesTops =
-                subtypes.targets.get(supertype.getUnderlyingType());
+        final AnnotationMirrorSet subtypesTops = subtypes.types.get(supertype);
         if (subtypesTops == null) {
             subtypes.types.put(supertype, new AnnotationMirrorSet(hierarchies));
         } else {
