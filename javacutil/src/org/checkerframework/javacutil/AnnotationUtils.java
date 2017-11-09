@@ -409,7 +409,6 @@ public class AnnotationUtils {
             AnnotationValue aval2 =
                     (vals2.containsKey(meth) ? vals2.get(meth) : meth.getDefaultValue());
             if (!sameAnnotationValue(aval1, aval2)) {
-                // System.out.printf("sameAnnotationValue => false for%n  %s%n  %s%n", aval1, aval2);
                 return false;
             }
         }
@@ -447,8 +446,6 @@ public class AnnotationUtils {
             }
             for (int i = 0; i < a1.length; i++) {
                 if (!sameAnnotationValueValue(a1[i], a2[i])) {
-                    // System.out.printf(
-                    //         "sameAnnotationValueValue => false for%n  %s%n  %s%n", a1[i], a2[i]);
                     return false;
                 }
             }
@@ -461,9 +458,6 @@ public class AnnotationUtils {
             }
             for (int i = 0; i < list1.size(); i++) {
                 if (!sameAnnotationValueValue(list1.get(i), list2.get(i))) {
-                    // System.out.printf(
-                    //         "sameAnnotationValueValue => false for%n  %s%n  %s%n",
-                    //         list1.get(i), list2.get(i));
                     return false;
                 }
             }
@@ -471,9 +465,6 @@ public class AnnotationUtils {
         } else if ((val1 instanceof AnnotationValue) && (val2 instanceof AnnotationValue)) {
             return sameAnnotationValue((AnnotationValue) val1, (AnnotationValue) val2);
         } else {
-            // System.out.printf(
-            //         "sameAnnotationValueValue delegating to Objects.equals => %s for%n  %s (%s)%n  %s (%s)%n",
-            //         Objects.equals(val1, val2), val1, val1.getClass(), val2, val2.getClass());
             return Objects.equals(val1, val2);
         }
     }
