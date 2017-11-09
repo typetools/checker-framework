@@ -818,11 +818,11 @@ public class StubParser {
         AnnotatedTypeMirror annotatedTypeMirror = atype;
         while (typeDef.isArrayType() && annotatedTypeMirror.getKind() == TypeKind.ARRAY) {
             // handle generic type
-            handleExistingAnnotations(atype, typeDef);
+            handleExistingAnnotations(annotatedTypeMirror, typeDef);
 
             List<AnnotationExpr> annotations = typeDef.getAnnotations();
             if (annotations != null) {
-                annotate(atype, annotations);
+                annotate(annotatedTypeMirror, annotations);
             }
             // Cast should succeed because of the assert earlier.
             typeDef = ((com.github.javaparser.ast.type.ArrayType) typeDef).getComponentType();
