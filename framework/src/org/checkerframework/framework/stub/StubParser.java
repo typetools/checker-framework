@@ -908,10 +908,25 @@ public class StubParser {
         for (int i = 0; i < methodType.getParameterTypes().size(); ++i) {
             AnnotatedTypeMirror paramType = methodType.getParameterTypes().get(i);
             Parameter param = decl.getParameters().get(i);
-            if (param.getAnnotations() != null) {
+            if (param.isVarArgs()) {
+                assert paramType.getKind() == TypeKind.ARRAY;
+                // Duplicate parameter annotations to the type.
                 param.getType().setAnnotations(param.getAnnotations());
+                // The "type" of param is actually the component type of the vararg.
+                // For example, "Object..." the type would be "Object".
+                annotate(((AnnotatedArrayType) paramType).getComponentType(), param.getType());
+                // The "VarArgsAnnotations" are those just before "...".
+                annotate(paramType, param.getVarArgsAnnotations());
+            } else {
+                if (param.getType().isArrayType()) {
+                    annotateInnerMostComponentType(
+                            (AnnotatedArrayType) paramType, param.getAnnotations());
+                } else {
+                    // Duplicate parameter annotations to the type.
+                    param.getType().setAnnotations(param.getAnnotations());
+                }
+                annotate(paramType, param.getType());
             }
-            annotate(paramType, param.getType());
         }
 
         if (decl.getReceiverParameter().isPresent()
