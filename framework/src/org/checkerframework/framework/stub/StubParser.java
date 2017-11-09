@@ -9,7 +9,6 @@ import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.Problem;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
-import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
 import com.github.javaparser.ast.body.BodyDeclaration;
@@ -660,11 +659,6 @@ public class StubParser {
             ExecutableElement elt,
             Map<Element, AnnotatedTypeMirror> atypes,
             Map<String, Set<AnnotationMirror>> declAnnos) {
-        // Switch annotations between method declaration and type.
-        NodeList<AnnotationExpr> list = decl.getType().getAnnotations();
-        decl.getType().setAnnotations(decl.getAnnotations());
-        decl.setAnnotations(list);
-
         annotateDecl(declAnnos, elt, decl.getAnnotations());
         // StubParser parses all annotations in type annotation position as type annotations
         annotateDecl(declAnnos, elt, decl.getType().getAnnotations());
@@ -674,6 +668,13 @@ public class StubParser {
         annotateTypeParameters(
                 decl, elt, atypes, methodType.getTypeVariables(), decl.getTypeParameters());
         typeParameters.addAll(methodType.getTypeVariables());
+        if (decl.getType().isArrayType()) {
+            annotateInnerMostComponentType(
+                    (AnnotatedArrayType) methodType.getReturnType(), decl.getAnnotations());
+        } else {
+            // Duplicate method annotations to the type.
+            decl.getType().setAnnotations(decl.getAnnotations());
+        }
         annotate(methodType.getReturnType(), decl.getType());
 
         List<Parameter> params = decl.getParameters();
@@ -688,17 +689,23 @@ public class StubParser {
             annotateDecl(declAnnos, paramElt, param.getAnnotations());
             annotateDecl(declAnnos, paramElt, param.getType().getAnnotations());
 
-            // Duplicate parameter annotations to the type.
-            param.getType().setAnnotations(param.getAnnotations());
-
             if (param.isVarArgs()) {
                 assert paramType.getKind() == TypeKind.ARRAY;
+                // Duplicate parameter annotations to the type.
+                param.getType().setAnnotations(param.getAnnotations());
                 // The "type" of param is actually the component type of the vararg.
                 // For example, "Object..." the type would be "Object".
                 annotate(((AnnotatedArrayType) paramType).getComponentType(), param.getType());
                 // The "VarArgsAnnotations" are those just before "...".
                 annotate(paramType, param.getVarArgsAnnotations());
             } else {
+                if (param.getType().isArrayType()) {
+                    annotateInnerMostComponentType(
+                            (AnnotatedArrayType) paramType, param.getAnnotations());
+                } else {
+                    // Duplicate parameter annotations to the type.
+                    param.getType().setAnnotations(param.getAnnotations());
+                }
                 annotate(paramType, param.getType());
             }
         }
@@ -787,19 +794,19 @@ public class StubParser {
         return arrays;
     }
 
-    private void annotateAsArray(AnnotatedArrayType atype, ReferenceType typeDef) {
+    private void annotateAsArray(AnnotatedArrayType atype, ReferenceType type) {
         List<AnnotatedTypeMirror> arrayTypes = arrayAllComponents(atype);
-        assert typeDef.getArrayLevel() == arrayTypes.size() - 1
+        assert type.getArrayLevel() == arrayTypes.size() - 1
                         ||
                         // We want to allow simply using "Object" as return type of a
                         // method, regardless of what the real type is.
-                        typeDef.getArrayLevel() == 0
+                        type.getArrayLevel() == 0
                 : "Mismatched array lengths; typeDef: "
-                        + typeDef.getArrayLevel()
+                        + type.getArrayLevel()
                         + " vs. arrayTypes: "
                         + (arrayTypes.size() - 1)
                         + "\n  typedef: "
-                        + typeDef
+                        + type
                         + "\n  arraytypes: "
                         + arrayTypes;
         /* Separate TODO: the check for zero above ensures that "Object" can be
@@ -807,21 +814,20 @@ public class StubParser {
          * However, why was this needed for the RequiredPermissions declaration annotation?
          * It looks like the StubParser ignored the target for annotations.
          */
-        Type currentTypeDef = typeDef;
-        for (int i = 0; i < typeDef.getArrayLevel(); ++i) {
-            handleExistingAnnotations(arrayTypes.get(i), typeDef);
-            List<AnnotationExpr> annotations = currentTypeDef.getAnnotations();
+        Type typeDef = type;
+        AnnotatedTypeMirror annotatedTypeMirror = atype;
+        while (typeDef.isArrayType() && annotatedTypeMirror.getKind() == TypeKind.ARRAY) {
+            // handle generic type
+            handleExistingAnnotations(atype, typeDef);
+
+            List<AnnotationExpr> annotations = typeDef.getAnnotations();
             if (annotations != null) {
-                annotate(arrayTypes.get(i), annotations);
+                annotate(atype, annotations);
             }
             // Cast should succeed because of the assert earlier.
-            currentTypeDef =
-                    ((com.github.javaparser.ast.type.ArrayType) currentTypeDef).getComponentType();
+            typeDef = ((com.github.javaparser.ast.type.ArrayType) typeDef).getComponentType();
+            annotatedTypeMirror = ((AnnotatedArrayType) annotatedTypeMirror).getComponentType();
         }
-
-        // handle generic type on base
-        handleExistingAnnotations(arrayTypes.get(arrayTypes.size() - 1), typeDef);
-        annotate(arrayTypes.get(arrayTypes.size() - 1), typeDef.getAnnotations());
     }
 
     private ClassOrInterfaceType unwrapDeclaredType(Type type) {
