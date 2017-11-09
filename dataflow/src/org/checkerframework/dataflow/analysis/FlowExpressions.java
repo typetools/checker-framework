@@ -198,9 +198,12 @@ public class FlowExpressions {
         // return method.toString().equals("valueOf(long)")
         //     && mn.getTarget().getReceiver().toString().equals("Long")
 
-        // return member.toString().equals("equals(java.lang.Object)");
+        if (mn.getTarget().getReceiver() == null
+                || !mn.getTarget().getReceiver().toString().equals("Long")) {
+            return false;
+        }
 
-        if (!method.getSimpleName().toString().equals("equals")) {
+        if (!method.getSimpleName().toString().equals("valueOf")) {
             return false;
         }
         List<? extends VariableElement> params = method.getParameters();
@@ -209,7 +212,7 @@ public class FlowExpressions {
         }
         VariableElement param = params.get(0);
         TypeMirror paramType = param.asType();
-        return paramType.toString().equals("java.lang.Object");
+        return paramType.toString().equals("long");
     }
 
     /**
