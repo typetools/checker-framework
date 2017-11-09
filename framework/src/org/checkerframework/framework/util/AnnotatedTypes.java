@@ -737,9 +737,10 @@ public class AnnotatedTypes {
         return types;
     }
 
-    // TODO: can't we do better than comparing the strings?
+    /** @deprecated use AnnotatedTypeMirror.equals() */
+    @Deprecated // remove after release 2.2.3
     public static boolean areSame(AnnotatedTypeMirror t1, AnnotatedTypeMirror t2) {
-        return t1.toString().equals(t2.toString());
+        return t1.equals(t2);
     }
 
     /**
