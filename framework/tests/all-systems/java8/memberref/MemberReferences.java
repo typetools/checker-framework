@@ -1,5 +1,5 @@
 // If conservativeUninferredTypeArguments option is used, then the lines marked
-// "TODO: ISsue 802", will issue a methodref.inference.unimplemented warning.
+// "TODO: Issue 802", will issue a methodref.inference.unimplemented warning.
 
 interface Supplier<R> {
     R supply();
