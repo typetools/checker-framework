@@ -160,7 +160,7 @@ public class FlowExpressions {
             // case we treat the method call as deterministic, because there is no way
             // to behave differently in two executions where two constants are being used.
             boolean considerDeterministic = false;
-            if (isLongValueOf(invokedMethod)) {
+            if (isLongValueOf(mn)) {
                 Node arg = mn.getArgument(0);
                 if (arg instanceof ValueLiteralNode) {
                     considerDeterministic = true;
@@ -191,7 +191,7 @@ public class FlowExpressions {
     }
 
     /** Return true iff the invoked method is Long.valueOf(long). */
-    private boolean isLongValueOf(MethodInvocationNode mn) {
+    private static boolean isLongValueOf(MethodInvocationNode mn) {
         ExecutableElement method = TreeUtils.elementFromUse(mn.getTree());
 
         // Less efficient implementation:
