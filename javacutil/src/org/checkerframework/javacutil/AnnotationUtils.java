@@ -109,33 +109,15 @@ public class AnnotationUtils {
             return false;
         }
 
-        boolean same2 = sameElementValues(a1, a2);
+        // This implementation is less efficient.  It is also wrong:  it requires a particular order
+        // for fields, distinguishes the long constants "33" and "33L", etc.
+        // Map<? extends ExecutableElement, ? extends AnnotationValue> elval1 =
+        //         getElementValuesWithDefaults(a1);
+        // Map<? extends ExecutableElement, ? extends AnnotationValue> elval2 =
+        //         getElementValuesWithDefaults(a2);
+        // return elval1.toString().equals(elval2.toString());
 
-        // TODO: debugging code; remove it when tests pass
-        Map<? extends ExecutableElement, ? extends AnnotationValue> elval1 =
-                getElementValuesWithDefaults(a1);
-        Map<? extends ExecutableElement, ? extends AnnotationValue> elval2 =
-                getElementValuesWithDefaults(a2);
-        boolean stringSame1 = elval1.toString().equals(elval2.toString());
-
-        if (stringSame1 != same2) {
-            // Don't throw an error, because the toString can be wrong (it requires a particular
-            // order for fields, has an opinion about L at end of long constants, etc.).
-            new Error(
-                            String.format(
-                                    "stringSame1 %s, same2 %s%n  %s%n  %s%n  %s (%s)%n  %s (%s)%n",
-                                    stringSame1,
-                                    same2,
-                                    elval1,
-                                    elval2,
-                                    a1,
-                                    a1.getClass(),
-                                    a2,
-                                    a2.getClass()))
-                    .printStackTrace();
-        }
-
-        return same2;
+        return sameElementValues(a1, a2);
     }
 
     /**
@@ -424,9 +406,6 @@ public class AnnotationUtils {
                 aval2 = meth.getDefaultValue();
             }
             if (!sameAnnotationValue(aval1, aval2)) {
-                // System.out.printf(
-                //         "sameAnnotationValue => false for%n  %s (%s)%n  %s (%s)%n",
-                //         aval1, aval1.getClass(), aval2, aval2.getClass());
                 return false;
             }
         }
@@ -457,9 +436,11 @@ public class AnnotationUtils {
             return true;
         }
 
-        // Can't use equals() or deepEquals() to compare val1 and val2, because they might have
-        // mismatched AnnotationValue vs. CheckerFrameworkAnnotationValue, and AnnotationValue
-        // doesn't override equals().  So, write my own version of deepEquals.
+        // Can't use deepEquals() to compare val1 and val2, because they might have mismatched
+        // AnnotationValue vs. CheckerFrameworkAnnotationValue, and AnnotationValue doesn't override
+        // equals().  So, write my own version of deepEquals().
+        // TODO: Is the array case dead code?  (Is only the list case used?)
+        // TODO: Should arrays/lists be compared setwise, in a way that ignores order?
         if ((val1 instanceof Object[]) && (val2 instanceof Object[])) {
             Object[] a1 = (Object[]) val1;
             Object[] a2 = (Object[]) val2;
@@ -468,8 +449,6 @@ public class AnnotationUtils {
             }
             for (int i = 0; i < a1.length; i++) {
                 if (!sameAnnotationValueValue(a1[i], a2[i])) {
-                    // System.out.printf(
-                    //         "sameAnnotationValueValue => false for%n  %s%n  %s%n", a1[i], a2[i]);
                     return false;
                 }
             }
@@ -482,9 +461,6 @@ public class AnnotationUtils {
             }
             for (int i = 0; i < list1.size(); i++) {
                 if (!sameAnnotationValueValue(list1.get(i), list2.get(i))) {
-                    // System.out.printf(
-                    //         "sameAnnotationValueValue => false for%n  %s%n  %s%n",
-                    //         list1.get(i), list2.get(i));
                     return false;
                 }
             }
@@ -495,9 +471,6 @@ public class AnnotationUtils {
             // Type.ClassType does not override equals
             return sameClassType((Type.ClassType) val1, (Type.ClassType) val2);
         } else {
-            // System.out.printf(
-            //         "sameAnnotationValueValue delegating to Objects.equals => %s for%n  %s (%s)%n  %s (%s)%n",
-            //         Objects.equals(val1, val2), val1, val1.getClass(), val2, val2.getClass());
             return Objects.equals(val1, val2);
         }
     }
