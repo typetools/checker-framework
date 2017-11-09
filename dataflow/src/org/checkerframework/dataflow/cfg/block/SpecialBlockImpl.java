@@ -3,11 +3,11 @@ package org.checkerframework.dataflow.cfg.block;
 public class SpecialBlockImpl extends SingleSuccessorBlockImpl implements SpecialBlock {
 
     /** The type of this special basic block. */
-    protected SpecialBlockType specialType;
+    protected final SpecialBlockType specialType;
 
     public SpecialBlockImpl(SpecialBlockType type) {
+        super(BlockType.SPECIAL_BLOCK);
         this.specialType = type;
-        this.type = BlockType.SPECIAL_BLOCK;
     }
 
     @Override

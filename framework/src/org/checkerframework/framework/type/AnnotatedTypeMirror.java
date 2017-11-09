@@ -17,7 +17,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
@@ -332,37 +331,6 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Returns the actual annotation mirror used to annotate this type, whose name equals the passed
-     * annotationName if one exists, null otherwise.
-     *
-     * @return the annotation mirror for annotationName
-     * @deprecated use {@link AnnotationUtils#getAnnotationByName(Collection,String)} instead.
-     */
-    @Deprecated // Remove after 2.2.1 release
-    public AnnotationMirror getAnnotation(Name annotationName) {
-        assert annotationName != null : "Null annotationName in getAnnotation";
-        return getAnnotation(annotationName.toString().intern());
-    }
-
-    /**
-     * Returns the actual annotation mirror used to annotate this type, whose name equals the string
-     * argument if one exists, null otherwise.
-     *
-     * @return the annotation mirror for annotationStr
-     * @deprecated use {@link AnnotationUtils#getAnnotationByName(Collection,String)} instead.
-     */
-    @Deprecated // Remove after 2.2.1 release
-    public AnnotationMirror getAnnotation(/*@Interned*/ String annotationStr) {
-        assert annotationStr != null : "Null annotationName in getAnnotation";
-        for (AnnotationMirror anno : getAnnotations()) {
-            if (AnnotationUtils.areSameByName(anno, annotationStr)) {
-                return anno;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Returns the actual annotation mirror used to annotate this type, whose Class equals the
      * passed annoClass if one exists, null otherwise.
      *
@@ -429,19 +397,6 @@ public abstract class AnnotatedTypeMirror {
      */
     public boolean hasAnnotation(AnnotationMirror a) {
         return AnnotationUtils.containsSame(annotations, a);
-    }
-
-    /**
-     * Determines whether this type contains the given annotation.
-     *
-     * @param a the annotation name to check for
-     * @return true iff the type contains the annotation {@code a}
-     * @see #hasAnnotationRelaxed(AnnotationMirror)
-     * @deprecated use {@link AnnotationUtils#containsSameByName(Collection,String)} instead.
-     */
-    @Deprecated // Remove after 2.2.1 release
-    public boolean hasAnnotation(Name a) {
-        return getAnnotation(a) != null;
     }
 
     /**
@@ -829,8 +784,6 @@ public abstract class AnnotatedTypeMirror {
         /** The enclosing Type */
         protected AnnotatedDeclaredType enclosingType;
 
-        protected List<AnnotatedDeclaredType> supertypes = null;
-
         private boolean declaration;
 
         /**
@@ -989,21 +942,7 @@ public abstract class AnnotatedTypeMirror {
 
         @Override
         public List<AnnotatedDeclaredType> directSuperTypes() {
-            if (supertypes == null) {
-                supertypes = Collections.unmodifiableList(SupertypeFinder.directSuperTypes(this));
-            }
-            return supertypes;
-        }
-
-        /*
-         * Return the direct super types field without lazy initialization;
-         * originally to prevent infinite recursion in IGJATF.postDirectSuperTypes.
-         *
-         * TODO: find a nicer way, see the single caller in QualifierDefaults
-         * for comment.
-         */
-        public List<AnnotatedDeclaredType> directSuperTypesField() {
-            return supertypes;
+            return Collections.unmodifiableList(SupertypeFinder.directSuperTypes(this));
         }
 
         @Override

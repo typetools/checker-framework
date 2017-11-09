@@ -16,17 +16,14 @@ import java.util.Collections;
  */
 public class IntegerLiteralNode extends ValueLiteralNode {
 
-    int value;
-
     public IntegerLiteralNode(LiteralTree t) {
         super(t);
         assert t.getKind().equals(Tree.Kind.INT_LITERAL);
-        value = (Integer) tree.getValue();
     }
 
     @Override
     public Integer getValue() {
-        return value;
+        return (Integer) tree.getValue();
     }
 
     @Override

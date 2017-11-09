@@ -103,9 +103,6 @@ public class NullnessAnnotatedTypeFactory
         tempNullnessAnnos.add(PolyAll.class);
         nullnessAnnos = Collections.unmodifiableSet(tempNullnessAnnos);
 
-        addAliasedAnnotation(
-                org.checkerframework.checker.nullness.qual.LazyNonNull.class, MONOTONIC_NONNULL);
-
         // If you update the following, also update ../../../../../docs/manual/nullness-checker.tex
         // Aliases for @Nonnull:
         addAliasedAnnotation(com.sun.istack.internal.NotNull.class, NONNULL);

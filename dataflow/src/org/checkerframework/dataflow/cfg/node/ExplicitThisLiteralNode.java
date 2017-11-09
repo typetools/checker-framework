@@ -16,7 +16,7 @@ import org.checkerframework.javacutil.InternalUtils;
  */
 public class ExplicitThisLiteralNode extends ThisLiteralNode {
 
-    protected Tree tree;
+    protected final Tree tree;
 
     public ExplicitThisLiteralNode(Tree t) {
         super(InternalUtils.typeOf(t));

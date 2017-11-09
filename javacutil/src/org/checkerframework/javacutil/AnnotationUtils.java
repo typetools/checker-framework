@@ -31,7 +31,6 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
 
 /** A utility class for working with annotations. */
 public class AnnotationUtils {
@@ -54,8 +53,8 @@ public class AnnotationUtils {
     private static final int ANNOTATION_CACHE_SIZE = 500;
 
     /**
-     * Cache names of classes representing AnnotationMirrors for faster access. Values in the map
-     * are interned Strings, so they can be compared with ==.
+     * Maps classes representing AnnotationMirrors to their names. Values in the map are interned
+     * Strings, so they can be compared with ==.
      */
     private static final Map<Class<? extends Annotation>, /*@Interned*/ String>
             annotationClassNames =
@@ -79,15 +78,6 @@ public class AnnotationUtils {
         return name;
     }
 
-    /** @return the simple name of an annotation as a String */
-    @Deprecated // Remove after 2.2.1 release
-    public static String annotationSimpleName(AnnotationMirror annotation) {
-        final DeclaredType annoType = annotation.getAnnotationType();
-        final TypeElement elm = (TypeElement) annoType.asElement();
-        /*@Interned*/ String name = elm.getSimpleName().toString().intern();
-        return name;
-    }
-
     /**
      * Checks if both annotations are the same.
      *
@@ -100,38 +90,42 @@ public class AnnotationUtils {
      */
     public static boolean areSame(
             /*@Nullable*/ AnnotationMirror a1, /*@Nullable*/ AnnotationMirror a2) {
-        if (a1 != null && a2 != null) {
-            if (a1 == a2) {
-                return true;
-            }
-            if (annotationName(a1) != annotationName(a2)) {
-                return false;
-            }
-
-            Map<? extends ExecutableElement, ? extends AnnotationValue> elval1 =
-                    getElementValuesWithDefaults(a1);
-            Map<? extends ExecutableElement, ? extends AnnotationValue> elval2 =
-                    getElementValuesWithDefaults(a2);
-
-            return elval1.toString().equals(elval2.toString());
+        if (a1 == a2) {
+            return true;
         }
 
-        // only true, iff both are null
-        return a1 == a2;
+        if (!areSameIgnoringValues(a1, a2)) {
+            return false;
+        }
+
+        Map<? extends ExecutableElement, ? extends AnnotationValue> elval1 =
+                getElementValuesWithDefaults(a1);
+        Map<? extends ExecutableElement, ? extends AnnotationValue> elval2 =
+                getElementValuesWithDefaults(a2);
+
+        return elval1.toString().equals(elval2.toString());
     }
 
     /**
      * @see #areSame(AnnotationMirror, AnnotationMirror)
      * @return true iff a1 and a2 have the same annotation type
      */
-    public static boolean areSameIgnoringValues(AnnotationMirror a1, AnnotationMirror a2) {
-        if (a1 != null && a2 != null) {
-            return a1 == a2 || annotationName(a1) == annotationName(a2);
+    public static boolean areSameIgnoringValues(
+            /*@Nullable*/ AnnotationMirror a1, /*@Nullable*/ AnnotationMirror a2) {
+        if (a1 == a2) {
+            return true;
         }
-        return a1 == a2;
+        if (a1 == null || a2 == null) {
+            return false;
+        }
+
+        return annotationName(a1) == annotationName(a2);
     }
 
-    /** Checks that the annotation {@code am} has the name {@code aname}. Values are ignored. */
+    /**
+     * Checks that the annotation {@code am} has the name {@code aname} (a fully-qualified type
+     * name). Values are ignored.
+     */
     public static boolean areSameByName(AnnotationMirror am, /*@Interned*/ String aname) {
         // Both strings are interned.
         return annotationName(am) == aname;
@@ -569,17 +563,5 @@ public class AnnotationUtils {
             annotationSet.addAll(InternalUtils.annotationsFromTypeAnnotationTrees(annotationTrees));
         }
         return annotationSet;
-    }
-
-    /** @deprecated use {@link AnnotationBuilder#fromName(Elements,CharSequence)} instead. */
-    @Deprecated // Remove after 2.2.1 release
-    public static AnnotationMirror fromName(Elements elements, CharSequence name) {
-        return AnnotationBuilder.fromName(elements, name);
-    }
-
-    /** @deprecated use {@link AnnotationBuilder#fromClass(Elements,Class)} instead. */
-    @Deprecated // Remove after 2.2.1 release
-    public static AnnotationMirror fromClass(Elements elements, Class<? extends Annotation> clazz) {
-        return AnnotationBuilder.fromClass(elements, clazz);
     }
 }

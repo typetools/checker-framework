@@ -25,21 +25,20 @@ import org.checkerframework.javacutil.TreeUtils;
 // TODO: don't use for parameters, as they don't have a tree
 public class LocalVariableNode extends Node {
 
-    protected Tree tree;
-    protected Node receiver;
+    protected final Tree tree;
+    protected final Node receiver;
 
     public LocalVariableNode(Tree t) {
+        this(t, null);
+    }
+
+    public LocalVariableNode(Tree t, Node receiver) {
         super(InternalUtils.typeOf(t));
         // IdentifierTree for normal uses of the local variable or parameter,
         // and VariableTree for the translation of an initializer block
         assert t != null;
         assert t instanceof IdentifierTree || t instanceof VariableTree;
-        tree = t;
-        this.receiver = null;
-    }
-
-    public LocalVariableNode(Tree t, Node receiver) {
-        this(t);
+        this.tree = t;
         this.receiver = receiver;
     }
 
