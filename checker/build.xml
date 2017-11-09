@@ -827,10 +827,17 @@
         </antcall>
     </target>
 
-    <target name="index-tests" depends="jar,build-tests"
+    <target name="index-tests" depends="jar,build-tests, index-javadoc-astub-tests"
             description="Run tests for the Index Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.IndexTest"/>
+        </antcall>
+    </target>
+
+    <target name="index-javadoc-astub-tests" depends="jar,build-tests"
+            description="Run javadoc astub test with the Index Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.JavadocAstubTest"/>
         </antcall>
     </target>
 
