@@ -100,7 +100,7 @@ public class AnnotationUtils {
         }
 
         // This implementation is less efficient.  It is also wrong:  it requires a particular order
-        // for fields, distinguishes the long constants "33" and "33L", etc.
+        // for fields, and it distinguishes the long constants "33" and "33L".
         // Map<? extends ExecutableElement, ? extends AnnotationValue> elval1 =
         //         getElementValuesWithDefaults(a1);
         // Map<? extends ExecutableElement, ? extends AnnotationValue> elval2 =
@@ -380,7 +380,10 @@ public class AnnotationUtils {
         return valMap;
     }
 
-    /** am1 and am2 must be the same type of annotation. */
+    /**
+     * Returns true if the two annotations have the same elements (fields). The arguments {@code
+     * am1} and {@code am2} must be the same type of annotation.
+     */
     public static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = am1.getElementValues();
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = am2.getElementValues();
@@ -403,9 +406,9 @@ public class AnnotationUtils {
     }
 
     /**
-     * Return true iff the two AnnotationValue objects are the same. This is a replacement for
-     * CheckerFrameworkAnnotationValue.equals, which wouldn't get called if the first argument is
-     * some AnnotationValue other than CheckerFrameworkAnnotationValue.
+     * Return true iff the two AnnotationValue objects are the same. Use this instead of
+     * CheckerFrameworkAnnotationValue.equals, which wouldn't get called if the receiver is some
+     * AnnotationValue other than CheckerFrameworkAnnotationValue.
      */
     public static boolean sameAnnotationValue(AnnotationValue av1, AnnotationValue av2) {
         if (av1 == av2) {
@@ -418,8 +421,8 @@ public class AnnotationUtils {
     }
 
     /**
-     * Return true if the two annotation values are the same. The values are as might be returned by
-     * {@code AnnotationValue.getValue()}.
+     * Return true if the two annotation values are the same. The arguments to this method are
+     * values that are returned by {@code AnnotationValue.getValue()}.
      */
     public static boolean sameAnnotationValueValue(Object val1, Object val2) {
         if (val1 == val2) {
@@ -429,14 +432,13 @@ public class AnnotationUtils {
         // Can't use deepEquals() to compare val1 and val2, because they might have mismatched
         // AnnotationValue vs. CheckerFrameworkAnnotationValue, and AnnotationValue doesn't override
         // equals().  So, write my own version of deepEquals().
-        // TODO: Is the array case dead code?  (Is only the list case used?)
-        // TODO: Should arrays/lists be compared setwise, in a way that ignores order?
         if ((val1 instanceof List<?>) && (val2 instanceof List<?>)) {
             List<?> list1 = (List<?>) val1;
             List<?> list2 = (List<?>) val2;
             if (list1.size() != list2.size()) {
                 return false;
             }
+            // TODO: Should arrays/lists be compared setwise, in a way that ignores order?
             for (int i = 0; i < list1.size(); i++) {
                 if (!sameAnnotationValueValue(list1.get(i), list2.get(i))) {
                     return false;
