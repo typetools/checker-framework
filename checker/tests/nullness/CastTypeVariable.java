@@ -1,14 +1,14 @@
 import java.util.Map;
 
-class AnnotatedTypeMirror {
+class MyAnnotatedTypeMirror {
     void addAnnotations() {}
 }
 
-class AnnotatedTypeVariable extends AnnotatedTypeMirror {}
+class MyAnnotatedTypeVariable extends MyAnnotatedTypeMirror {}
 
 public class CastTypeVariable {
-    public static <K extends AnnotatedTypeMirror, V extends AnnotatedTypeMirror> V mapGetHelper(
-            Map<K, V> mappings, AnnotatedTypeVariable key) {
+    public static <K extends MyAnnotatedTypeMirror, V extends MyAnnotatedTypeMirror> V mapGetHelper(
+            Map<K, V> mappings, MyAnnotatedTypeVariable key) {
         V possValue = (V) mappings.get(key);
         // :: error: (dereference.of.nullable)
         possValue.addAnnotations();

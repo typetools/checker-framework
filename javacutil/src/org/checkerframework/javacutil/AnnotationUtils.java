@@ -31,7 +31,6 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
 
 /** A utility class for working with annotations. */
 public class AnnotationUtils {
@@ -76,15 +75,6 @@ public class AnnotationUtils {
         final DeclaredType annoType = annotation.getAnnotationType();
         final TypeElement elm = (TypeElement) annoType.asElement();
         /*@Interned*/ String name = elm.getQualifiedName().toString().intern();
-        return name;
-    }
-
-    /** @return the simple name of an annotation as a String */
-    @Deprecated // Remove after 2.2.1 release
-    public static String annotationSimpleName(AnnotationMirror annotation) {
-        final DeclaredType annoType = annotation.getAnnotationType();
-        final TypeElement elm = (TypeElement) annoType.asElement();
-        /*@Interned*/ String name = elm.getSimpleName().toString().intern();
         return name;
     }
 
@@ -573,17 +563,5 @@ public class AnnotationUtils {
             annotationSet.addAll(InternalUtils.annotationsFromTypeAnnotationTrees(annotationTrees));
         }
         return annotationSet;
-    }
-
-    /** @deprecated use {@link AnnotationBuilder#fromName(Elements,CharSequence)} instead. */
-    @Deprecated // Remove after 2.2.1 release
-    public static AnnotationMirror fromName(Elements elements, CharSequence name) {
-        return AnnotationBuilder.fromName(elements, name);
-    }
-
-    /** @deprecated use {@link AnnotationBuilder#fromClass(Elements,Class)} instead. */
-    @Deprecated // Remove after 2.2.1 release
-    public static AnnotationMirror fromClass(Elements elements, Class<? extends Annotation> clazz) {
-        return AnnotationBuilder.fromClass(elements, clazz);
     }
 }

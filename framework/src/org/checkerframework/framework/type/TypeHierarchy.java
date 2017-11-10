@@ -1,7 +1,6 @@
 package org.checkerframework.framework.type;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.util.Types;
 import org.checkerframework.framework.util.AnnotatedTypes;
 
 /** Compares AnnotatedTypeMirrors for subtype relationships. See also QualifierHierarchy */
@@ -21,10 +20,10 @@ public interface TypeHierarchy {
      * <p>4 categories are converted in isSubtype:
      *
      * <ul>
-     *   <li>Boxing conversions: isSubtype calls {@link AnnotatedTypes#asSuper(Types,
+     *   <li>Boxing conversions: isSubtype calls {@link AnnotatedTypes#asSuper(
      *       AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)} which calls {@link
      *       AnnotatedTypeFactory#getBoxedType}
-     *   <li>Unboxing conversions: isSubtype calls {@link AnnotatedTypes#asSuper(Types,
+     *   <li>Unboxing conversions: isSubtype calls {@link AnnotatedTypes#asSuper(
      *       AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)} which calls {@link
      *       AnnotatedTypeFactory#getUnboxedType}
      *   <li>Capture conversions: Wildcards are treated as though they were converted to type
