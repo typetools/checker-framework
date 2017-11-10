@@ -15,7 +15,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.util.Elements;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.Dependent;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
@@ -55,7 +54,9 @@ public class DependentTypes {
         // TODO: does this work with a .astub file?
         List<TypeCompound> tas = ((Symbol) element).getRawTypeAttributes();
         for (TypeCompound ta : tas) {
-            if (ta.getAnnotationType().toString().equals(Dependent.class.getCanonicalName())) {
+            if (ta.getAnnotationType()
+                    .toString()
+                    .equals("org.checkerframework.framework.qual.Dependent")) {
                 return ta;
             }
         }
