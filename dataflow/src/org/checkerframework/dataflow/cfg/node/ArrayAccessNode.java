@@ -21,9 +21,9 @@ import org.checkerframework.javacutil.InternalUtils;
  */
 public class ArrayAccessNode extends Node {
 
-    protected Tree tree;
-    protected Node array;
-    protected Node index;
+    protected final Tree tree;
+    protected final Node array;
+    protected final Node index;
 
     public ArrayAccessNode(Tree t, Node array, Node index) {
         super(InternalUtils.typeOf(t));

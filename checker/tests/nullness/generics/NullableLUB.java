@@ -4,7 +4,7 @@ import org.checkerframework.checker.nullness.qual.*;
  * type variables with non-type variables. The error did not previously
  * get raised, leading to a missed NPE.
  */
-//:: error: (initialization.fields.uninitialized)
+// :: error: (initialization.fields.uninitialized)
 public class NullableLUB<T extends @Nullable Object> {
     T t;
     @Nullable T nt;
@@ -12,9 +12,9 @@ public class NullableLUB<T extends @Nullable Object> {
     T m(boolean b, T p) {
         T r1 = b ? p : null;
         nt = r1;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         t = r1;
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return r1;
     }
 
@@ -25,9 +25,9 @@ public class NullableLUB<T extends @Nullable Object> {
     T m2(boolean b, T p) {
         T r1 = b ? null : p;
         nt = r1;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         t = r1;
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return r1;
     }
 }

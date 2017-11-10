@@ -360,7 +360,7 @@ public class PluginUtil {
         return "@" + fileArg.getAbsolutePath();
     }
 
-    //TODO: Perhaps unify this with CheckerMain as it violates DRY
+    // TODO: Perhaps unify this with CheckerMain as it violates DRY
     public static List<String> getCmd(
             final String executable,
             final File javacPath,

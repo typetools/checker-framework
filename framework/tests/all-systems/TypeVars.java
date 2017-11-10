@@ -1,4 +1,3 @@
-
 class TypeVars {
 
     class Test1<T> {

@@ -445,8 +445,8 @@ public class FlowExpressions {
     }
 
     public static class FieldAccess extends Receiver {
-        protected Receiver receiver;
-        protected VariableElement field;
+        protected final Receiver receiver;
+        protected final VariableElement field;
 
         public Receiver getReceiver() {
             return receiver;
@@ -662,7 +662,7 @@ public class FlowExpressions {
     }
 
     public static class LocalVariable extends Receiver {
-        protected Element element;
+        protected final Element element;
 
         public LocalVariable(LocalVariableNode localVar) {
             super(localVar.getType());
@@ -682,9 +682,9 @@ public class FlowExpressions {
             LocalVariable other = (LocalVariable) obj;
             VarSymbol vs = (VarSymbol) element;
             VarSymbol vsother = (VarSymbol) other.element;
-            // Use TypeAnnotationUtils.unannotatedType(type).toString().equals(...) instead of Types.isSameType(...)
-            // because Types requires a processing environment, and FlowExpressions is
-            // designed to be independent of processing environment.  See also
+            // Use TypeAnnotationUtils.unannotatedType(type).toString().equals(...) instead of
+            // Types.isSameType(...)  because Types requires a processing environment, and
+            // FlowExpressions is designed to be independent of processing environment.  See also
             // calls to getType().toString() in FlowExpressions.
             return vsother.name.contentEquals(vs.name)
                     && TypeAnnotationUtils.unannotatedType(vsother.type)
@@ -1048,8 +1048,8 @@ public class FlowExpressions {
 
     public static class ArrayCreation extends Receiver {
 
-        protected List<Node> dimensions;
-        protected List<Node> initializers;
+        protected final List<Node> dimensions;
+        protected final List<Node> initializers;
 
         public ArrayCreation(TypeMirror type, List<Node> dimensions, List<Node> initializers) {
             super(type);

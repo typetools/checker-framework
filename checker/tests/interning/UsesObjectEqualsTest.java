@@ -20,11 +20,11 @@ public class UsesObjectEqualsTest {
     class D {}
 
     @UsesObjectEquals
-    //:: error: (superclass.notannotated)
+    // :: error: (superclass.notannotated)
     class E extends D {}
 
     @UsesObjectEquals
-    //:: error: (overrides.equals)
+    // :: error: (overrides.equals)
     class TestEquals {
 
         @org.checkerframework.dataflow.qual.Pure

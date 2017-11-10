@@ -15,7 +15,7 @@ class MinLenFromPositive {
     }
 
     void foo2(int x) {
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         test(x);
     }
 
@@ -37,7 +37,7 @@ class MinLenFromPositive {
         } else {
             z = y;
         }
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Positive int q = z;
         @IntRange(from = -1) int w = z;
     }
@@ -51,7 +51,7 @@ class MinLenFromPositive {
         @IntRange(from = 1) int y = id(5);
 
         int @MinLen(1) [] a = new int[id(100)];
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         int @MinLen(10) [] c = new int[id(100)];
 
         int q = id(10);

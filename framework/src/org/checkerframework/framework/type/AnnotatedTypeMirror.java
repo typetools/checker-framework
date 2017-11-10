@@ -10,12 +10,13 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
@@ -146,7 +147,8 @@ public abstract class AnnotatedTypeMirror {
 
     /** The explicitly written annotations on this type. */
     // TODO: use this to cache the result once computed? For generic types?
-    // protected final Set<AnnotationMirror> explicitannotations = AnnotationUtils.createAnnotationSet();
+    // protected final Set<AnnotationMirror> explicitannotations =
+    // AnnotationUtils.createAnnotationSet();
 
     /**
      * Constructor for AnnotatedTypeMirror.
@@ -329,37 +331,6 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Returns the actual annotation mirror used to annotate this type, whose name equals the passed
-     * annotationName if one exists, null otherwise.
-     *
-     * @return the annotation mirror for annotationName
-     * @deprecated use {@link AnnotationUtils#getAnnotationByName(Collection,String)} instead.
-     */
-    @Deprecated // Remove after 2.2.1 release
-    public AnnotationMirror getAnnotation(Name annotationName) {
-        assert annotationName != null : "Null annotationName in getAnnotation";
-        return getAnnotation(annotationName.toString().intern());
-    }
-
-    /**
-     * Returns the actual annotation mirror used to annotate this type, whose name equals the string
-     * argument if one exists, null otherwise.
-     *
-     * @return the annotation mirror for annotationStr
-     * @deprecated use {@link AnnotationUtils#getAnnotationByName(Collection,String)} instead.
-     */
-    @Deprecated // Remove after 2.2.1 release
-    public AnnotationMirror getAnnotation(/*@Interned*/ String annotationStr) {
-        assert annotationStr != null : "Null annotationName in getAnnotation";
-        for (AnnotationMirror anno : getAnnotations()) {
-            if (AnnotationUtils.areSameByName(anno, annotationStr)) {
-                return anno;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Returns the actual annotation mirror used to annotate this type, whose Class equals the
      * passed annoClass if one exists, null otherwise.
      *
@@ -426,19 +397,6 @@ public abstract class AnnotatedTypeMirror {
      */
     public boolean hasAnnotation(AnnotationMirror a) {
         return AnnotationUtils.containsSame(annotations, a);
-    }
-
-    /**
-     * Determines whether this type contains the given annotation.
-     *
-     * @param a the annotation name to check for
-     * @return true iff the type contains the annotation {@code a}
-     * @see #hasAnnotationRelaxed(AnnotationMirror)
-     * @deprecated use {@link AnnotationUtils#containsSameByName(Collection,String)} instead.
-     */
-    @Deprecated // Remove after 2.2.1 release
-    public boolean hasAnnotation(Name a) {
-        return getAnnotation(a) != null;
     }
 
     /**
@@ -826,8 +784,6 @@ public abstract class AnnotatedTypeMirror {
         /** The enclosing Type */
         protected AnnotatedDeclaredType enclosingType;
 
-        protected List<AnnotatedDeclaredType> supertypes = null;
-
         private boolean declaration;
 
         /**
@@ -928,11 +884,25 @@ public abstract class AnnotatedTypeMirror {
                 // Copy annotations from the declaration to the wildcards.
                 AnnotatedDeclaredType declaration =
                         atypeFactory.fromElement((TypeElement) getUnderlyingType().asElement());
+                Map<TypeVariable, AnnotatedTypeMirror> map = new HashMap<>();
                 for (int i = 0; i < typeArgs.size(); i++) {
                     AnnotatedTypeVariable typeParam =
                             (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);
+                    map.put(typeParam.getUnderlyingType(), typeArgs.get(i));
+                }
+
+                for (int i = 0; i < typeArgs.size(); i++) {
+                    AnnotatedTypeVariable typeParam =
+                            (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);
+                    TypeVariableSubstitutor varSubstitutor = atypeFactory.getTypeVarSubstitutor();
+                    // The upper bound of a type parameter may refer to other type parameters.
+                    // Substitute those references with the type argument.
+                    AnnotatedTypeMirror typeParamUpperBound =
+                            varSubstitutor.substitute(map, typeParam.getUpperBound());
+
                     AnnotatedWildcardType wct = (AnnotatedWildcardType) typeArgs.get(i);
-                    AnnotatedTypeMerger.merge(typeParam.getUpperBound(), wct.getExtendsBound());
+                    AnnotatedTypeMerger.merge(typeParamUpperBound, wct.getExtendsBound());
+
                     wct.getSuperBound().replaceAnnotations(typeParam.getLowerBound().annotations);
                     wct.replaceAnnotations(typeParam.annotations);
                 }
@@ -972,21 +942,7 @@ public abstract class AnnotatedTypeMirror {
 
         @Override
         public List<AnnotatedDeclaredType> directSuperTypes() {
-            if (supertypes == null) {
-                supertypes = Collections.unmodifiableList(SupertypeFinder.directSuperTypes(this));
-            }
-            return supertypes;
-        }
-
-        /*
-         * Return the direct super types field without lazy initialization;
-         * originally to prevent infinite recursion in IGJATF.postDirectSuperTypes.
-         *
-         * TODO: find a nicer way, see the single caller in QualifierDefaults
-         * for comment.
-         */
-        public List<AnnotatedDeclaredType> directSuperTypesField() {
-            return supertypes;
+            return Collections.unmodifiableList(SupertypeFinder.directSuperTypes(this));
         }
 
         @Override
@@ -1221,7 +1177,8 @@ public abstract class AnnotatedTypeMirror {
             if (receiverType == null
                     // Static methods don't have a receiver
                     && !ElementUtils.isStatic(getElement())
-                    // Array constructors should also not have a receiver. Array members have a getEnclosingElement().getEnclosingElement() of NONE
+                    // Array constructors should also not have a receiver. Array members have a
+                    // getEnclosingElement().getEnclosingElement() of NONE
                     && (!(getElement().getKind() == ElementKind.CONSTRUCTOR
                             && getElement()
                                     .getEnclosingElement()
@@ -1564,9 +1521,9 @@ public abstract class AnnotatedTypeMirror {
         // because otherwise the annotations are inconsistent.
         private void fixupBoundAnnotations() {
 
-            // We allow the above replacement first because primary annotations might not have annotations for
-            // all hierarchies, so we don't want to avoid placing bottom on the lower bound for those hierarchies that
-            // don't have a qualifier in primaryAnnotations
+            // We allow the above replacement first because primary annotations might not have
+            // annotations for all hierarchies, so we don't want to avoid placing bottom on the
+            // lower bound for those hierarchies that don't have a qualifier in primaryAnnotations.
             if (!this.getAnnotationsField().isEmpty()) {
                 if (upperBound != null) {
                     replaceUpperBoundAnnotations();

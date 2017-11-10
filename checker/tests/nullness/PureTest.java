@@ -8,11 +8,11 @@ class PureTest {
     }
 
     public void test() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull Object l0 = puremethod(null);
 
         if (puremethod(null) == null) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @NonNull Object l1 = puremethod(null);
         }
 
@@ -21,12 +21,12 @@ class PureTest {
         }
 
         if (puremethod("m") != null) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @NonNull Object l1 = puremethod(null);
         }
 
         if (puremethod("m") != null) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @NonNull Object l1 = puremethod("n");
         }
 
@@ -40,10 +40,10 @@ class PureTest {
 
         x = new Object();
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull Object l3 = puremethod(x);
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull Object l4 = puremethod("n");
     }
 
@@ -69,7 +69,7 @@ class PureTest {
         if (pt.getSuperclass() instanceof Object) {
             return;
         }
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         pt.getSuperclass().toString();
     }
 
@@ -122,7 +122,7 @@ class PureTest {
         } else {
             pt.setSuperclass(null);
         }
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         pt.getSuperclass().toString();
     }
 

@@ -194,23 +194,6 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * Runs the analysis again within the block of {@code node} and returns the store at the
      * location of {@code node}. If {@code before} is true, then the store immediately before the
      * {@link Node} {@code node} is returned. Otherwise, the store after {@code node} is returned.
-     *
-     * @deprecated this method could be a cause of performance problem when you call this method
-     *     sometimes because this method runs analysis until {@code node} from the first node in the
-     *     block of {@code node} without cache. You should use {@link #runAnalysisFor(Node, boolean,
-     *     TransferInput, Map)} with a cache instead of this method.
-     * @see #runAnalysisFor(Node, boolean, TransferInput, Map)
-     */
-    @Deprecated
-    public static <A extends AbstractValue<A>, S extends Store<S>> S runAnalysisFor(
-            Node node, boolean before, TransferInput<A, S> transferInput) {
-        return runAnalysisFor(node, before, transferInput, null);
-    }
-
-    /**
-     * Runs the analysis again within the block of {@code node} and returns the store at the
-     * location of {@code node}. If {@code before} is true, then the store immediately before the
-     * {@link Node} {@code node} is returned. Otherwise, the store after {@code node} is returned.
      * If {@code analysisCaches} is not null, this method uses a cache. {@code analysisCaches} is a
      * map to a cache for analysis result from an input of the block of the node. If the cache for
      * {@code transferInput} is not in {@code analysisCaches}, this method create new cache and
@@ -250,7 +233,8 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
                     {
                         RegularBlock rb = (RegularBlock) block;
 
-                        // Apply transfer function to contents until we found the node we are looking for.
+                        // Apply transfer function to contents until we found the node we are
+                        // looking for.
                         TransferInput<A, S> store = transferInput;
                         TransferResult<A, S> transferResult = null;
                         for (Node n : rb.getContents()) {

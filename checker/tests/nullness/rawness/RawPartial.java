@@ -4,7 +4,7 @@ import org.checkerframework.checker.nullness.qual.*;
 public class RawPartial {
 
     public RawPartial() {
-        //:: error: (method.invocation.invalid)
+        // :: error: (method.invocation.invalid)
         foo1();
         foo2();
         foo3();
@@ -36,20 +36,20 @@ class SubRP extends RawPartial {
     }
 
     @Override
-    //:: error: (override.receiver.invalid)
+    // :: error: (override.receiver.invalid)
     public void foo2() {
         f.toLowerCase();
     }
 
     @Override
     public void foo3(@Raw(RawPartial.class) @UnknownInitialization(RawPartial.class) SubRP this) {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         f.toLowerCase();
     }
 
     @Override
     public void foo4(@Raw @UnknownInitialization SubRP this) {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         f.toLowerCase();
     }
 }

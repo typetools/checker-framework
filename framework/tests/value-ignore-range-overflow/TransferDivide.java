@@ -24,28 +24,28 @@ public class TransferDivide {
         /** pos / pos -> nn */
         @IntRange(from = 0) int l = d / c;
         @IntRange(from = 0) int m = c / d;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntRange(from = 1) int n = c / d;
 
         /** nn / pos -> nn */
         @IntRange(from = 0) int o = b / c;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntRange(from = 1) int p = b / d;
 
         /** pos / nn -> nn */
         @IntRange(from = 0) int q = d / l;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntRange(from = 1) int r = c / l;
 
         /** nn / nn -> nn */
         @IntRange(from = 0) int s = b / q;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntRange(from = 1) int t = b / q;
 
         /** n1p / pos -> n1p */
         @IntRange(from = -1) int u = a / d;
         @IntRange(from = -1) int v = a / c;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntRange(from = 0) int w = a / c;
 
         /** n1p / nn -> n1p */

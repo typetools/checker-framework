@@ -1,6 +1,7 @@
 // Test case for Issue 152:
 // https://github.com/typetools/checker-framework/issues/152
 // @skip-test
+
 import org.checkerframework.checker.lock.qual.GuardedBy;
 
 public class Issue152 {
@@ -16,7 +17,7 @@ public class Issue152 {
         @GuardedBy("myLock") private Object locked;
 
         void method() {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             this.locked = super.locked;
         }
     }
@@ -28,7 +29,7 @@ public class Issue152 {
 
         class InnerClass {
             private final Object lock = new Object();
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             @GuardedBy("this.lock") Object field2 = field;
         }
     }

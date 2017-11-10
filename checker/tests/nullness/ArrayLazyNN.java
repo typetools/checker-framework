@@ -9,9 +9,9 @@ class ArrayLazyNN {
     void test1() {
         @MonotonicNonNull Object[] o1 = new @MonotonicNonNull Object[10];
         o1[0] = new Object();
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         o1[0] = null;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull Object[] o2 = o1;
         @SuppressWarnings("nullness")
         @NonNull Object[] o3 = o1;

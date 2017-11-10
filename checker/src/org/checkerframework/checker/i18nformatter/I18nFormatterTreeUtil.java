@@ -493,8 +493,8 @@ public class I18nFormatterTreeUtil {
                                                     return Class.forName(
                                                             e.getQualifiedName().toString());
                                                 } catch (ClassNotFoundException e1) {
-                                                    return null; // the lookup should work for all the
-                                                    // classes we care about
+                                                    return null; // the lookup should work for all
+                                                    // the classes we care about
                                                 }
                                             }
                                         },

@@ -13,9 +13,10 @@ an index expression that might be negative or might be equal to or larger
 than the sequence's length.
 It also prevents \<NegativeArraySizeException>s that result from a negative
 array dimension in an array creation expression.
-(A caveat:  the Index Checker does not check for arithmetic overflow.  If
+(A caveat: the Index Checker does not check for arithmetic overflow. If
 an expression overflows, the Index Checker might fail to warn about a
-possible exception.)
+possible exception.  This is unlikely to be a problem in practice unless
+you have an array whose length is \<Integer.MAX\_VALUE>.)
 
 % Here's a pathological example of overflow leading to unsoundness:
 %
@@ -75,6 +76,9 @@ section:
 \item
   whether an integer came from calling the JDK's binary search routine on
   an array (Section~\ref{index-searchindex})
+\item
+  whether an integer came from calling a string search routine
+  (Section~\ref{index-substringindex})
 \end{itemize}
 
 In addition to the indexing annotations described in those sections, there
@@ -440,8 +444,8 @@ represents this concept.
 The Search Index Checker's type hierarchy (Figure~/ref{fig-index-searchindex}) has four type qualifiers:
 \begin{description}
 \item[\refqualclasswithparams{checker/index/qual}{SearchIndexFor}{String[] names}]
-  An expression with this type represents an integer that could have been produced by
-  calling
+  An expression with this type represents an integer that could have been
+  produced by calling
   \sunjavadoc{java/util/Arrays.html\#binarySearch-java.lang.Object:A-java.lang.Object-}{Arrays.binarySearch}:
   for each array \<a> specifed in the annotation, the annotated integer is
   between \<-a.length-1> and \<a.length-1>, inclusive
@@ -449,8 +453,8 @@ The Search Index Checker's type hierarchy (Figure~/ref{fig-index-searchindex}) h
   An expression with this type represents a ``negative index'' that is
   between \<a.length-1> and \<-1>, inclusive; that is, a value that is both
   a \<@SearchIndex> and is negative.  Applying the bitwise complement
-  operator (\verb|~|) to an expression of this type produces an expression of type
-  \refqualclass{checker/index/qual}{IndexOrHigh}.
+  operator (\verb|~|) to an expression of this type produces an expression
+  of type \refqualclass{checker/index/qual}{IndexOrHigh}.
 \item[\refqualclass{checker/index/qual}{SearchIndexBottom}]
   This is the bottom type, and programmers should rarely need to write it.
 \item[\refqualclass{checker/index/qual}{SearchIndexUnknown}]
@@ -458,8 +462,160 @@ The Search Index Checker's type hierarchy (Figure~/ref{fig-index-searchindex}) h
   This is the top type, and programmers should rarely need to write it.
 \end{description}
 
+
+\section{Substring indices\label{index-substringindex}}
+
+The methods
+\sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}
+and
+\sunjavadoc{java/lang/String.html\#lastIndexOf-java.lang.String-}{String.lastIndexOf}
+return an index of a given substring within a given string, or -1 if no
+such substring exists.  The index \<i> returned from
+\<receiver.indexOf(substring)> satisfies the following property, which is
+stated here in three equivalent ways:
+\begin{Verbatim}
+ i == -1 || ( i >= 0       && i <= receiver.length() - substring.length()                  )
+ i == -1 || ( @NonNegative && @LTLengthOf(value="receiver", offset="substring.length()-1") )
+ @SubstringIndexFor(value="receiver", offset="substring.length()-1")
+\end{Verbatim}
+
+% This new annotation is similar to \<@LTLengthOf\allowbreak(value =
+% "receiver", offset = "substring.length()-1")>, but explicitly allows the
+% index to be -1 even if the upper bound would not allow it because of the
+% offset.  The Upper Bound Checker can infer the corresponding
+% \<@LTLengthOf> annotation for expressions that have a
+% \<@SubstringIndexFor> annotation and at the same time are known to be
+% non-negative (according to the Lower Bound Checker).
+
+The return type of methods \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}
+and \sunjavadoc{java/lang/String.html\#lastIndexOf-java.lang.String-}{String.lastIndexOf} has the annotation
+\refqualclasswithparams{checker/index/qual}{SubstringIndexFor}{value="this", offset="\#1.length()-1")}.
+This allows writing code such as the following with no warnings from the
+Index Checker:
+
+\begin{Verbatim}
+  public static String removeSubstring(String original, String removed) {
+    int i = original.indexOf(removed);
+    if (i != -1) {
+      return original.substring(0, i) + original.substring(i + removed.length());
+    }
+    return original;
+  }
+\end{Verbatim}
+
+% The code removes the first occurrence of \<removed> from
+% \<original>. After checking that \code{i != -1}, the value of \<i> must
+% be a valid index for \<original>. Because this index is the start of an
+% occurrence of \<removed>, \code{i + removed.length()} is the index of the
+% end of the occurrence.  Without the \<@SubstringIndexFor> annotation, the
+% Upper Bound Checker would not be able to verify that \code{i +
+% removed.length()} is a valid argument to \<substring>, which requires
+% both arguments to be \<@IndexOrHigh("original")>.
+
+\begin{figure}
+\begin{center}
+  \hfill
+  \includeimage{substringindex}{3.5cm}
+  \hfill
+\end{center}
+  \caption{The type hierarchy for the Substring Index Checker, which
+    captures information about the results of calls to
+    \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}
+    and
+    \sunjavadoc{java/lang/String.html\#lastIndexOf-java.lang.String-}{String.lastIndexOf}.}
+  \label{fig-index-substringindex}
+\end{figure}
+
+The \<@SubstringIndexFor> annotation is implemented in a Substring Index
+Checker that runs together with the Index Checker and has its own type
+hierarchy (Figure~\ref{fig-index-substringindex}) with three type
+qualifiers:
+\begin{description}
+\item[\refqualclasswithparams{checker/index/qual}{SubstringIndexFor}{String[] value, String[] offset}]
+  An expression with this type represents an integer that could have been
+  produced by calling
+  \sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}:
+  the annotated integer is either -1, or it is non-negative and is less
+  than or equal to \<receiver.length - offset> (where the sequence
+  \<receiver> and the offset \<offset> are corresponding elements of the
+  annotation's arguments).
+\item[\refqualclass{checker/index/qual}{SubstringIndexBottom}]
+  This is the bottom type, and programmers should rarely need to write it.
+\item[\refqualclass{checker/index/qual}{SubstringIndexUnknown}]
+  No information is known about whether this integer is a substring index.
+  This is the top type, and programmers should rarely need to write it.
+\end{description}
+
+
+\subsection{The need for the \<@SubstringIndexFor> annotation\label{index-substringindex-justification}}
+
+No other annotation supported by the Index Checker precisely represents the
+possible return values of methods
+\sunjavadoc{java/lang/String.html\#indexOf-java.lang.String-}{String.indexOf}
+and
+\sunjavadoc{java/lang/String.html\#lastIndexOf-java.lang.String-}{String.lastIndexOf}.
+The reason is the methods' special cases for empty strings and for failed matches.
+
+Consider the result \<i> of \<receiver.indexOf(substring)>:
+
+\begin{itemize}
+\item
+  \<i> is \<@GTENegativeOne>, because \code{i >= -1}.
+\item
+  \<i> is \<@LTEqLengthOf("receiver")>, because \code{i <= receiver.length()}.
+\item
+  \<i> is not \<@IndexOrLow("receiver")>, because for
+  \code{receiver = "", substring = "", i = 0}, the property
+  \code{i >= -1 \&\& i < receiver.length()} does not hold.
+\item
+  \<i> is not \<@IndexOrHigh("receiver")>, because for
+  \code{receiver = "", substring = "b", i = -1}, the property
+  \code{i >= 0 \&\& i <= receiver.length()} does not hold.
+\item
+  \<i> is not
+  \<@LTLengthOf(value = "receiver", offset = "substring.length()-1")>,
+  because for \code{receiver = "", substring = "abc", i = -1}, the property
+  \code{i + substring.length() - 1 < receiver.length()} does not hold.
+\end{itemize}
+
+\noindent
+The last annotation in the list above,
+\<@LTLengthOf(value = "receiver", offset = "substring.length()-1")>,
+is the correct and precise upper bound for all values of \<i> except -1.
+The offset expresses the fact that we can add \<substring.length()> to this
+index and still get a valid index for \<receiver>.  That is useful for
+type-checking code that adds the length of the substring to the found
+index, in order to obtain the rest of the string.  However, the upper bound
+applies only after the index is explicitly checked not to be -1:
+
+\begin{Verbatim}
+  int i = receiver.indexOf(substring);
+  // i is @GTENegativeOne and @LTEqLengthOf("receiver")
+  // i is not @LTLengthOf(value = "receiver", offset = "substring.length()-1")
+  if (i != -1) {
+    // i is @NonNegative and @LTLengthOf(value = "receiver", offset = "substring.length()-1")
+    int j = i + substring.length();
+    // j is @IndexOrHigh("receiver")
+    return receiver.substring(j); // this call is safe
+  }
+\end{Verbatim}
+
+The property of the result of \<indexOf> cannot be expressed by any
+combination of lower-bound (Section~\ref{index-lowerbound}) and upper-bound
+(Section~\ref{index-upperbound}) annotations, because the upper-bound
+annotations apply independently of the lower-bound annotations, but in this
+case, the upper bound \code{i <= receiver.length() - substring.length()}
+holds only if \code{i >= 0}.  Therefore, to express this property and make
+the example type-check without false positives, a new annotation such as
+\<@SubstringIndexFor\allowbreak(value = "receiver", offset = "substring.length()-1")>
+is necessary.
+
+
+
 %%  LocalWords:  NegativeArraySizeException pre myArray IndexFor someArray
 %%  LocalWords:  MyJavaFile LTLengthOf LTEqLengthOf GTENegativeOne GTE
 %%  LocalWords:  LowerBoundUnknown LTOMLengthOf LTEq LTOM UpperBoundBottom
-%%  LocalWords:  UpperBoundUnknown MinLen MinLenBottom SameLen
-%%  LocalWords:  SameLenUnknown SameLenBottom
+%%  LocalWords:  UpperBoundUnknown MinLen MinLenBottom SameLen indexOf
+%%  LocalWords:  SameLenUnknown SameLenBottom lastIndexOf html lang
+%%  LocalWords:  LengthOf IndexOrLow PolyIndex PolyLowerBound PolyLength
+%%  LocalWords:  PolyUpperBound PolySameLen PolyValue LowerBoundBottom

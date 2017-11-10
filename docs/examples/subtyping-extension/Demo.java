@@ -9,7 +9,7 @@ abstract class EncryptionDemo {
         for (int i = 0; i < b.length; b[i++]++) {
             // side effect is in increment expression of for loop
         }
-        //:: warning: (cast.unsafe)
+        // :: warning: (cast.unsafe)
         return (@Encrypted String) new String(b);
     }
 

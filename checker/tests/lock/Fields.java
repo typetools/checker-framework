@@ -17,14 +17,14 @@ public class Fields {
 
     synchronized void wrongLock1() {
         // locking over wrong lock
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         locked.field = new Object(); // error
     }
 
     synchronized void wrongLock2() {
         // locking over wrong lock
         synchronized (this) {
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             locked.field = new Object(); // error
         }
     }
@@ -35,7 +35,7 @@ public class Fields {
         }
 
         // accessing after the synchronized object
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         locked.field = new Object(); // error
     }
 
@@ -48,11 +48,11 @@ public class Fields {
 
     void wrongLocksb() {
         // without locking
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         lockedByThis.field = new Object(); // error
 
         synchronized (Fields.class) {
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             lockedByThis.field = new Object(); // error
         }
     }
@@ -63,7 +63,7 @@ public class Fields {
         }
 
         // accessing after the synchronized object
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         lockedByThis.field = new Object(); // error
     }
 
@@ -78,24 +78,24 @@ public class Fields {
 
         synchronized (this) {
             lockedByThis.field = new Object();
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             a.lockedByThis.field = new Object(); // error
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             b.lockedByThis.field = new Object(); // error
         }
 
         synchronized (a) {
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             lockedByThis.field = new Object(); // error
             a.lockedByThis.field = new Object();
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             b.lockedByThis.field = new Object(); // error
         }
 
         synchronized (b) {
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             lockedByThis.field = new Object(); // error
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             a.lockedByThis.field = new Object(); // error
             b.lockedByThis.field = new Object();
         }

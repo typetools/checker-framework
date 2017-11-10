@@ -14,11 +14,11 @@ public class Strings {
             @GuardedBy("lock") Object o2,
             @GuardSatisfied Object o3,
             @GuardedByBottom Object o4) {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         String s1 = (String) o1;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         String s2 = (String) o2;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         String s3 = (String) o3;
         String s4 = (String) o4; // OK
     }
@@ -29,20 +29,21 @@ public class Strings {
     void StringConcat(@GuardedBy("lock") MyClass param) {
         {
             String s1a = "a" + "a";
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             String s1b = "a" + param;
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             String s1c = param + "a";
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             String s1d = param.toString();
 
             String s2 = "a";
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             s2 += param;
 
             String s3 = "a";
-            // In addition to testing whether "lock" is held, tests that the result of a string concatenation has type @GuardedBy({}).
-            //:: error: (lock.not.held)
+            // In addition to testing whether "lock" is held, tests that the result of a string
+            // concatenation has type @GuardedBy({}).
+            // :: error: (lock.not.held)
             String s4 = s3 += param;
         }
         synchronized (lock) {
@@ -55,7 +56,8 @@ public class Strings {
             s2 += param;
 
             String s3 = "a";
-            // In addition to testing whether "lock" is held, tests that the result of a string concatenation has type @GuardedBy({}).
+            // In addition to testing whether "lock" is held, tests that the result of a string
+            // concatenation has type @GuardedBy({}).
             String s4 = s3 += param;
         }
     }

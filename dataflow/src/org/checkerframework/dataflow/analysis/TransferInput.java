@@ -21,6 +21,7 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
 public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 
     /** The corresponding node. */
+    // TODO: explain when the node is changed.
     protected Node node;
 
     /**

@@ -20,8 +20,8 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class NarrowingConversionNode extends Node {
 
-    protected Tree tree;
-    protected Node operand;
+    protected final Tree tree;
+    protected final Node operand;
 
     public NarrowingConversionNode(Tree tree, Node operand, TypeMirror type) {
         super(type);

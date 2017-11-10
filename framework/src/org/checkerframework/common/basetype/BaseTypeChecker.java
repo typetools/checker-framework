@@ -383,7 +383,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         for (Class<? extends BaseTypeChecker> subcheckerClass : classesOfImmediateSubcheckers) {
             BaseTypeChecker subchecker = alreadyInitializedSubcheckerMap.get(subcheckerClass);
             if (subchecker != null) {
-                // Add the already initialized subchecker to the list of immediate subcheckers so that this checker can refer to it.
+                // Add the already initialized subchecker to the list of immediate subcheckers so
+                // that this checker can refer to it.
                 immediateSubcheckers.add(subchecker);
                 continue;
             }

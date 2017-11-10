@@ -1,4 +1,3 @@
-
 public class EqualityTests {
     // the Interning checker correctly issues an error below, but we would like to keep this test in all-systems.
     @SuppressWarnings("Interning")

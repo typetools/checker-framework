@@ -4,7 +4,7 @@ public class DefaultsSignedness {
 
     public void ConstantTest() {
 
-        //Test bytes with literal values
+        // Test bytes with literal values
         @Constant byte conByte;
         @SignednessBottom byte botByte;
 
@@ -12,10 +12,10 @@ public class DefaultsSignedness {
 
         conByte = testByte;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         botByte = testByte;
 
-        //Test shorts with literal values
+        // Test shorts with literal values
         @Constant short conShort;
         @SignednessBottom short botShort;
 
@@ -23,10 +23,10 @@ public class DefaultsSignedness {
 
         conShort = testShort;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         botShort = testShort;
 
-        //Test ints with literal values
+        // Test ints with literal values
         @Constant int conInt;
         @SignednessBottom int botInt;
 
@@ -34,10 +34,10 @@ public class DefaultsSignedness {
 
         conInt = testInt;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         botInt = testInt;
 
-        //Test longs with literal values
+        // Test longs with literal values
         @Constant long conLong;
         @SignednessBottom long botLong;
 
@@ -45,10 +45,10 @@ public class DefaultsSignedness {
 
         conLong = testLong;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         botLong = testLong;
 
-        //Test chars with literal values
+        // Test chars with literal values
         @Constant char conChar;
         @SignednessBottom char botChar;
 
@@ -56,7 +56,7 @@ public class DefaultsSignedness {
 
         conChar = testChar;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         botChar = testChar;
     }
 
@@ -74,67 +74,67 @@ public class DefaultsSignedness {
             Integer testBoxedInteger,
             Long testBoxedLong) {
 
-        //Test bytes
+        // Test bytes
         @Signed byte sinByte;
         @Constant byte conByte;
 
         sinByte = testByte;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         conByte = testByte;
 
-        //Test shorts
+        // Test shorts
         @Signed short sinShort;
         @Constant short conShort;
 
         sinShort = testShort;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         conShort = testShort;
 
-        //Test ints
+        // Test ints
         @Signed int sinInt;
         @Constant int conInt;
 
         sinInt = testInt;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         conInt = testInt;
 
-        //Test longs
+        // Test longs
         @Signed long sinLong;
         @Constant long conLong;
 
         sinLong = testLong;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         conLong = testLong;
 
-        //Test floats
+        // Test floats
         @Signed float sinFloat;
         @Constant float conFloat;
 
         sinFloat = testFloat;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         conFloat = testFloat;
 
-        //Test doubles
+        // Test doubles
         @Signed double sinDouble;
         @Constant double conDouble;
 
         sinDouble = testDouble;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         conDouble = testDouble;
 
-        //Test chars
+        // Test chars
         @Signed char sinChar;
         @Constant char conChar;
 
         sinChar = testChar;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         conChar = testChar;
 
         /*
@@ -144,7 +144,7 @@ public class DefaultsSignedness {
 
         sinBoxedByte = testBoxedByte;
 
-        ////:: error: (assignment.type.incompatible)
+        //// :: error: (assignment.type.incompatible)
         conBoxedByte = testBoxedByte;
 
         //Test boxed shorts
@@ -153,7 +153,7 @@ public class DefaultsSignedness {
 
         sinBoxedShort = testBoxedShort;
 
-        ////:: error: (assignment.type.incompatible)
+        //// :: error: (assignment.type.incompatible)
         conBoxedShort = testBoxedShort;
 
         //Test boxed Integers
@@ -162,7 +162,7 @@ public class DefaultsSignedness {
 
         sinBoxedInteger = testBoxedInteger;
 
-        ////:: error: (assignment.type.incompatible)
+        //// :: error: (assignment.type.incompatible)
         conBoxedInteger = testBoxedInteger;
 
         //Test boxed Longs
@@ -171,7 +171,7 @@ public class DefaultsSignedness {
 
         sinBoxedLong = testBoxedLong;
 
-        ////:: error: (assignment.type.incompatible)
+        //// :: error: (assignment.type.incompatible)
         conBoxedLong = testBoxedLong;
         */
     }
@@ -192,7 +192,7 @@ public class DefaultsSignedness {
 
         unkObj = testObj;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         sinObj = testObj;
     }
 

@@ -251,7 +251,8 @@ public class RangeTest {
                         && value > range.to - shortWidth
                         && (Math.abs(range.from) - 1) / Short.MIN_VALUE
                                 == (Math.abs(range.to) - 1) / Short.MIN_VALUE) {
-                    // filter out test data that would cause Range.shortRange to return SHORT_EVERYTHING
+                    // filter out test data that would cause Range.shortRange to return
+                    // SHORT_EVERYTHING
                     short shortValue = (short) value;
                     assert range.contains(value) && result.contains(shortValue)
                                     || !range.contains(value) && !result.contains(shortValue)
@@ -272,7 +273,8 @@ public class RangeTest {
                         && value > range.to - byteWidth
                         && (Math.abs(range.from) - 1) / Byte.MIN_VALUE
                                 == (Math.abs(range.to) - 1) / Byte.MIN_VALUE) {
-                    // filter out test data that would cause Range.ByteRange to return BYTE_EVERYTHING
+                    // filter out test data that would cause Range.ByteRange to return
+                    // BYTE_EVERYTHING
                     byte byteValue = (byte) value;
                     assert range.contains(value) && result.contains(byteValue)
                                     || !range.contains(value) && !result.contains(byteValue)
@@ -401,7 +403,7 @@ public class RangeTest {
                 Long witness = re1.element % re2.element;
                 assert result.contains(witness)
                         : String.format(
-                                "Range.divide failure: %s %s => %s; witnesses %s %% %s => %s",
+                                "Range.remainder failure: %s %s => %s; witnesses %s %% %s => %s",
                                 re1.range, re2.range, result, re1.element, re2.element, witness);
             }
         }
@@ -473,6 +475,29 @@ public class RangeTest {
                     : String.format(
                             "Range.bitwiseComplement failure: %s => %s; witness %s => %s",
                             re.range, result, re.element, ~re.element);
+        }
+    }
+
+    @Test
+    public void testBitwiseAnd() {
+        for (RangeAndElement re1 : rangeAndElements()) {
+            for (RangeAndElement re2 : rangeAndElements()) {
+                Range result = re1.range.bitwiseAnd(re2.range);
+                if (re2.range.isConstant()) {
+                    Long witness = re1.element & re2.element;
+                    assert result.contains(witness)
+                            : String.format(
+                                    "Range.bitwiseAnd failure: %s %s => %s; witnesses %s & %s => %s",
+                                    re1.range,
+                                    re2.range,
+                                    result,
+                                    re1.element,
+                                    re2.element,
+                                    witness);
+                } else {
+                    assert result == Range.EVERYTHING;
+                }
+            }
         }
     }
 

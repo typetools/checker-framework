@@ -1,4 +1,3 @@
-
 interface VarArgsFunc {
     void take(String... in);
 }

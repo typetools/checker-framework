@@ -5,7 +5,7 @@ public class BoxingNullness {
         Integer i1 = 3;
         int i1u = i1 + 2; // valid
         Integer i2 = null;
-        //:: error: (unboxing.of.nullable)
+        // :: error: (unboxing.of.nullable)
         int i2u = i2 + 2; // invalid
         Integer i3 = i1;
         i3.toString();
@@ -15,7 +15,7 @@ public class BoxingNullness {
         Integer i1 = 5;
         int i1u = i1;
         Integer i2 = null;
-        //:: error: (unboxing.of.nullable)
+        // :: error: (unboxing.of.nullable)
         int i2u = i2; // invalid
     }
 
@@ -29,9 +29,9 @@ public class BoxingNullness {
     void invalidWithinUnary() {
         // within blocks to stop flow
         Integer i1 = null, i2 = null, i3 = null, i4 = null;
-        //:: error: (unboxing.of.nullable)
+        // :: error: (unboxing.of.nullable)
         ++i1; // invalid
-        //:: error: (unboxing.of.nullable)
+        // :: error: (unboxing.of.nullable)
         i2++; // invalid
     }
 
@@ -45,21 +45,21 @@ public class BoxingNullness {
 
     void invalidCompoundAssignmentsAsVariable() {
         Integer i = null;
-        //:: error: (unboxing.of.nullable)
+        // :: error: (unboxing.of.nullable)
         i += 1; // invalid
         Boolean b = null;
-        //:: error: (unboxing.of.nullable)
+        // :: error: (unboxing.of.nullable)
         b &= true; // invalid
     }
 
     void invalidCompoundAssignmentAsValue() {
         @NonNull Integer var = 3;
         Integer val = null;
-        //:: error: (unboxing.of.nullable) :: error: (compound.assignment.type.incompatible)
+        // :: error: (unboxing.of.nullable)
         var += val;
         Boolean b1 = null;
         boolean b2 = true;
-        //:: error: (unboxing.of.nullable) :: error: (compound.assignment.type.incompatible)
+        // :: error: (unboxing.of.nullable)
         b2 &= b1; // invalid
     }
 
@@ -89,9 +89,9 @@ public class BoxingNullness {
         System.out.println(u1 == u1);
         System.out.println(u1 != u1);
 
-        //:: error: (unboxing.of.nullable)
+        // :: error: (unboxing.of.nullable)
         System.out.println(bN6 == u1); // invalid
-        //:: error: (unboxing.of.nullable)
+        // :: error: (unboxing.of.nullable)
         System.out.println(bN7 != u1); // invalid
     }
 
@@ -102,15 +102,15 @@ public class BoxingNullness {
         Integer bN3 = null;
         Integer b1 = 1;
         int u1 = 1;
-        //:: error: (unboxing.of.nullable)
+        // :: error: (unboxing.of.nullable)
         System.out.println(bN + bN1); // invalid
-        //:: error: (unboxing.of.nullable)
+        // :: error: (unboxing.of.nullable)
         System.out.println(bN2 + b1); // invalid
 
         System.out.println(u1 + b1);
         System.out.println(u1 + u1);
 
-        //:: error: (unboxing.of.nullable)
+        // :: error: (unboxing.of.nullable)
         System.out.println(bN3 + u1); // invalid
     }
 
@@ -121,7 +121,7 @@ public class BoxingNullness {
         int u1 = 1;
 
         println(bN);
-        //:: error: (unboxing.of.nullable)
+        // :: error: (unboxing.of.nullable)
         println((int) bN2); // invalid
 
         println(b1);

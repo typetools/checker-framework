@@ -1,4 +1,3 @@
-
 // Test file for nullness parameter and return checks.
 
 import org.checkerframework.checker.nullness.qual.*;
@@ -21,8 +20,8 @@ interface BiFunctionNull<T, U, R> {
 
 class LambdaNullness {
 
-    // Annotations in lamba expressions, in static, instance of fields initializers are stored on the last declared
-    // constructor.
+    // Annotations in lamba expressions, in static, instance of fields initializers are stored on
+    // the last declared constructor.
     //
     // For example, the annotation for @Nullable Integer x on f7's initializer
     // is stored on here because it is the last defined constructor.
@@ -36,7 +35,7 @@ class LambdaNullness {
     Supplier<Integer> f2a = () -> 42;
 
     // No parameters, expression body
-    //:: error: (return.type.incompatible)
+    // :: error: (return.type.incompatible)
     Supplier<Integer> f2b = () -> null;
 
     // No parameters, expression body
@@ -49,7 +48,7 @@ class LambdaNullness {
     // No parameters, block body with return
     Supplier<@Nullable Integer> f4b =
             () -> {
-                //:: error: (assignment.type.incompatible)
+                // :: error: (assignment.type.incompatible)
                 @NonNull String s = null;
 
                 return null;
@@ -69,7 +68,7 @@ class LambdaNullness {
                     for (int i = 1; i < 10; i++) {
                         result *= i;
                     }
-                    //:: error: (return.type.incompatible)
+                    // :: error: (return.type.incompatible)
                     return null;
                 }
             };
@@ -79,7 +78,7 @@ class LambdaNullness {
 
     // Single declared-type parameter
     FunctionNull<@Nullable String, String> f9 =
-            //:: error: (lambda.param.type.incompatible)
+            // :: error: (lambda.param.type.incompatible)
             (@NonNull String x) -> {
                 return x + "";
             };
@@ -92,7 +91,7 @@ class LambdaNullness {
     BiFunctionNull<Integer, Integer, Integer> f16 =
             (@Nullable Integer x, final Integer y) -> {
                 x = null;
-                //:: error: (unboxing.of.nullable)
+                // :: error: (unboxing.of.nullable)
                 return x + y;
             };
 
@@ -102,7 +101,7 @@ class LambdaNullness {
     // Infer based on context.
     FunctionNull<@Nullable String, String> fn =
             (s) -> {
-                //:: error: (dereference.of.nullable)
+                // :: error: (dereference.of.nullable)
                 s.toString();
                 return "";
             };

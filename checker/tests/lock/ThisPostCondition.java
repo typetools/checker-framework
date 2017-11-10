@@ -49,7 +49,7 @@ class ThisPostCondition {
     }
 
     void doNotLock() {
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         bar.field.toString();
     }
 
@@ -57,7 +57,7 @@ class ThisPostCondition {
         if (myLock.tryLock()) {
             bar.field.toString();
         } else {
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             bar.field.toString();
         }
     }

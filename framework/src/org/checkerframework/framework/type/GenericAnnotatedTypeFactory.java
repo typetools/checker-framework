@@ -423,7 +423,8 @@ public abstract class GenericAnnotatedTypeFactory<
      * they do not follow the checker naming convention.
      */
     // A more precise type for the parameter would be FlowAnalysis, which
-    // is the type parameter bounded by the current parameter type CFAbstractAnalysis<Value, Store, TransferFunction>.
+    // is the type parameter bounded by the current parameter type CFAbstractAnalysis<Value, Store,
+    // TransferFunction>.
     // However, we ran into issues in callers of the method if we used that type.
     public TransferFunction createFlowTransferFunction(
             CFAbstractAnalysis<Value, Store, TransferFunction> analysis) {
@@ -492,7 +493,8 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return the QualifierDefaults object
      */
     // TODO: When changing this method, also look into
-    // {@link org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesHelper#shouldIgnore}.
+    // {@link
+    // org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesHelper#shouldIgnore}.
     // Both methods should have some functionality merged into a single location.
     // See Issue 683
     // https://github.com/typetools/checker-framework/issues/683
@@ -707,10 +709,11 @@ public abstract class GenericAnnotatedTypeFactory<
             MemberReferenceTree memberReferenceTree, AnnotatedExecutableType constructorType) {
         assert memberReferenceTree.getMode() == MemberReferenceTree.ReferenceMode.NEW;
 
-        // The return type for constructors should only have explicit annotations from the constructor
-        // Recreate some of the logic from TypeFromTree.visitNewClass here.
+        // The return type for constructors should only have explicit annotations from the
+        // constructor.  Recreate some of the logic from TypeFromTree.visitNewClass here.
 
-        // The return type of the constructor will be the type of the expression of the member reference tree.
+        // The return type of the constructor will be the type of the expression of the member
+        // reference tree.
         AnnotatedDeclaredType constructorReturnType =
                 (AnnotatedDeclaredType) fromTypeTree(memberReferenceTree.getQualifierExpression());
 
@@ -976,7 +979,8 @@ public abstract class GenericAnnotatedTypeFactory<
                                     break;
                                 }
                             }
-                            // Abstract methods in an interface have a null body but do not have an ABSTRACT flag.
+                            // Abstract methods in an interface have a null body but do not have an
+                            // ABSTRACT flag.
                             if (mt.getBody() == null) {
                                 break;
                             }
@@ -1261,7 +1265,8 @@ public abstract class GenericAnnotatedTypeFactory<
                 break;
             default:
                 if (TreeUtils.isTypeTree(lhsTree)) {
-                    // lhsTree is a type tree at the pseudo assignment of a returned expression to declared return type.
+                    // lhsTree is a type tree at the pseudo assignment of a returned expression to
+                    // declared return type.
                     res = getAnnotatedType(lhsTree);
                 } else {
                     ErrorReporter.errorAbort(

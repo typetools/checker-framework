@@ -42,11 +42,11 @@ public class TypeVariableSubstitutor {
      *
      * @param argument the argument to declaration (this will be a value in typeParamToArg)
      * @param use the use that is being replaced
-     * @return a shallow copy of argument with the appropriate annotations applied
+     * @return a deep copy of argument with the appropriate annotations applied
      */
     protected AnnotatedTypeMirror substituteTypeVariable(
             final AnnotatedTypeMirror argument, final AnnotatedTypeVariable use) {
-        final AnnotatedTypeMirror substitute = argument.shallowCopy(false);
+        final AnnotatedTypeMirror substitute = argument.deepCopy(true);
         substitute.addAnnotations(argument.getAnnotationsField());
 
         if (!use.getAnnotationsField().isEmpty()) {
@@ -86,12 +86,13 @@ public class TypeVariableSubstitutor {
             maybeCopyPrimaryAnnotations(original, copy);
             originalToCopy.put(original, copy);
 
-            // Substitution (along with any other operation that changes the component types of an AnnotatedTypeMirror)
-            // may change the underlying Java type of components without updating the underlying Java
-            // type of the parent type.  We use the underlying type for various purposes (including equals/hashcode)
-            // so this can lead to unpredictable behavior.  Currently, we update the underlying type when
-            // substituting on arrays in order to avoid an ErrorAbort in LubTypeVariableAnnotator.
-            //TODO: Presumably there are more cases in which we want to do this
+            // Substitution (along with any other operation that changes the component types of an
+            // AnnotatedTypeMirror) may change the underlying Java type of components without
+            // updating the underlying Java type of the parent type.  We use the underlying type for
+            // various purposes (including equals/hashcode) so this can lead to unpredictable
+            // behavior.  Currently, we update the underlying type when substituting on arrays in
+            // order to avoid an ErrorAbort in LubTypeVariableAnnotator.
+            // TODO: Presumably there are more cases in which we want to do this
             final AnnotatedTypeMirror componentType =
                     visit(original.getComponentType(), originalToCopy);
             final Types types = componentType.atypeFactory.types;
@@ -99,7 +100,7 @@ public class TypeVariableSubstitutor {
             final AnnotatedArrayType correctedCopy;
             if (!types.isSameType(componentType.getUnderlyingType(), copy.getUnderlyingType())
                     && componentType.getKind()
-                            != TypeKind.WILDCARD) { //TODO: THIS SHOULD BE CAPTURE CONVERTED
+                            != TypeKind.WILDCARD) { // TODO: THIS SHOULD BE CAPTURE CONVERTED
                 final TypeMirror underlyingType =
                         types.getArrayType(componentType.getUnderlyingType());
                 correctedCopy =
@@ -124,11 +125,12 @@ public class TypeVariableSubstitutor {
 
             if (visitingExecutableTypeParam) {
                 // AnnotatedExecutableType differs from AnnotatedDeclaredType in that its list of
-                // type parameters cannot be adapted in place since the AnnotatedExecutable.typeVarTypes
-                // field is of type AnnotatedTypeVariable and not AnnotatedTypeMirror.
-                // When substituting, all component types that contain a use of the executable's type parameters
-                // will be substituted.  The executable's type parameters will have their bounds substituted
-                // but the top-level AnnotatedTypeVariable's will remain
+                // type parameters cannot be adapted in place since the
+                // AnnotatedExecutable.typeVarTypes field is of type AnnotatedTypeVariable and not
+                // AnnotatedTypeMirror.  When substituting, all component types that contain a use
+                // of the executable's type parameters will be substituted.  The executable's type
+                // parameters will have their bounds substituted but the top-level
+                // AnnotatedTypeVariable's will remain
                 visitingExecutableTypeParam = false;
                 return super.visitTypeVariable(original, originalToCopy);
 

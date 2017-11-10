@@ -1,5 +1,3 @@
-
-
 public class DeepEquals {
     public static int deepEquals(Object o1) {
         if (o1 instanceof boolean[]) {

@@ -17,7 +17,7 @@ class ConstructorsRawness {
 
     public ConstructorsRawness() {
 
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         Box b1 = new Box(this);
         Box b2 = new Box("hello");
         requireInitialized(b2);

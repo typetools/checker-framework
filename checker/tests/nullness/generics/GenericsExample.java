@@ -26,11 +26,11 @@ class GenericsExample {
             t = null;
             t = nble;
             nble = null;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             nn = null;
             t = this.get(0);
             nble = this.get(0);
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             nn = this.get(0);
             this.add(t);
             this.add(nble);
@@ -59,11 +59,11 @@ class GenericsExample {
             t = null;
             t = nble;
             nble = null;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             nn = null;
             t = this.get(0);
             nble = this.get(0);
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             nn = this.get(0);
             this.add(t);
             this.add(nble);
@@ -89,18 +89,18 @@ class GenericsExample {
         }
 
         void m() {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             t = null;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             t = nble;
             nble = null;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             nn = null;
             t = this.get(0);
             nble = this.get(0);
             nn = this.get(0);
             this.add(t);
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             this.add(nble);
             this.add(nn);
         }
@@ -124,18 +124,18 @@ class GenericsExample {
         }
 
         void m() {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             t = null;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             t = nble;
             nble = null;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             nn = null;
             t = this.get(0);
             nble = this.get(0);
             nn = this.get(0);
             this.add(t);
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             this.add(nble);
             this.add(nn);
         }
@@ -159,19 +159,19 @@ class GenericsExample {
         }
 
         void m() {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             t = null;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             t = nble;
             nble = null;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             nn = null;
             t = this.get(0);
             nble = this.get(0);
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             nn = this.get(0);
             this.add(t);
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             this.add(nble);
             this.add(nn);
         }

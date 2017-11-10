@@ -34,13 +34,13 @@ public class ThreadLocalTest2 {
 
     class MyThreadLocalNnIncorrectOverride extends ThreadLocal<@NonNull Integer> {
         @Override
-        //:: error: (override.return.invalid)
+        // :: error: (override.return.invalid)
         protected @Nullable Integer initialValue() {
             return null;
         }
     }
 
-    //:: error: (method.not.overridden)
+    // :: error: (method.not.overridden)
     class MyThreadLocalNnNoOverride extends ThreadLocal<@NonNull Integer> {}
 
     class MyThreadLocalNble extends ThreadLocal<@Nullable Integer> {
@@ -60,9 +60,9 @@ public class ThreadLocalTest2 {
     class MyThreadLocalNbleNoOverride extends ThreadLocal<@Nullable Integer> {}
 
     void foo() {
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         new ThreadLocal<@NonNull Object>();
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         new InheritableThreadLocal<@NonNull Object>();
         new ThreadLocal<@Nullable Object>();
         new InheritableThreadLocal<@Nullable Object>();

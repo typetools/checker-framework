@@ -13,7 +13,7 @@ public class Issue1315 {
 
         @SuppressWarnings("unchecked")
         T test1(@Nullable Object p) {
-            //:: warning: (cast.unsafe)
+            // :: warning: (cast.unsafe)
             return (T) p;
         }
         // The Nullness Checker should not issue a cast.unsafe warning,
@@ -28,7 +28,7 @@ public class Issue1315 {
         public static void test() {
             Box<String> bs = new Box<String>("");
             bs.f = bs.test1(null);
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             bs.f = bs.test2(null);
             bs.f.toString();
         }

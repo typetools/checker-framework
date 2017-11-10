@@ -1,5 +1,3 @@
-
-
 public class SimpleLog {
     public SimpleLog() {
         try {

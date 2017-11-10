@@ -525,7 +525,7 @@
             <fileset dir="tests/whole-program-inference/non-annotated"/>
             <filterchain>
                 <linecontains negate="true">
-                    <contains value="//:: error:"/>
+                     <contains value="// :: error:"/>
                 </linecontains>
             </filterchain>
         </copy>
@@ -630,11 +630,10 @@
     </target>
 
     <target name="-jtreg.download" depends="jtreg.check" unless="jtreg.exists">
-      <!-- Originally from https://adopt-openjdk.ci.cloudbees.com/view/OpenJDK/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.1-b12.tar.gz but the file cannot be found there any longer. -->
       <get
-        src="https://checkerframework.org/jtreg-4.1-b12.tar.gz"
+        src="https://adopt-openjdk.ci.cloudbees.com/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz"
         dest="${jtreg.home}/.." />
-      <untar src="${jtreg.home}/../jtreg-4.1-b12.tar.gz"
+      <untar src="${jtreg.home}/../jtreg-4.2.0-tip.tar.gz"
         dest="${jtreg.home}/../"
         compression="gzip" />
     </target>

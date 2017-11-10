@@ -20,7 +20,7 @@ public class Issue408Init {
 
         @Override
         String doFoo(@UnderInitialization @Raw Baz this) {
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             return myString.toLowerCase();
         }
     }

@@ -14,13 +14,13 @@ public class TestStatic {
 class FenumUserTestStatic {
     @Fenum("A") int state1 = TestStatic.ACONST1;
 
-    //:: error: (assignment.type.incompatible)
+    // :: error: (assignment.type.incompatible)
     @Fenum("B") int state2 = TestStatic.ACONST1;
 
     void bar(@Fenum("A") int p) {}
 
     void foo() {
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         state1 = 4;
 
         state1 = TestStatic.ACONST2;
@@ -28,13 +28,13 @@ class FenumUserTestStatic {
 
         state2 = TestStatic.BCONST3;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         state1 = TestStatic.BCONST1;
 
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         bar(5);
         bar(TestStatic.ACONST1);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         bar(TestStatic.BCONST1);
     }
 
@@ -47,7 +47,7 @@ class FenumUserTestStatic {
     @SuppressWarnings("fenum:assignment.type.incompatible")
     void ignoreOne() {
         state1 = 4;
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         bar(5);
     }
 }

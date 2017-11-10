@@ -15,12 +15,12 @@ public class IndexOrLowTests {
         }
 
         @IndexOrHigh("array") int y = index + 1;
-        //:: error: (array.access.unsafe.high)
+        // :: error: (array.access.unsafe.high)
         array[y] = 1;
         if (y < array.length) {
             array[y] = 1;
         }
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         index = array.length;
     }
 

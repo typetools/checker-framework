@@ -4,27 +4,27 @@ class ReceiverParameterTest {
 
     public @Unique ReceiverParameterTest() {
         nonLeaked();
-        //:: error: (unique.leaked)
+        // :: error: (unique.leaked)
         mayLeak();
     }
 
     public @Unique ReceiverParameterTest(int i) {
         leakedToResult();
-        //:: error: (unique.leaked)
+        // :: error: (unique.leaked)
         ReceiverParameterTest b = leakedToResult();
     }
 
     public @Unique ReceiverParameterTest(String s) {}
 
     void receiverTest() {
-        ReceiverParameterTest rec = new ReceiverParameterTest("s"); //@Unique
+        ReceiverParameterTest rec = new ReceiverParameterTest("s"); // @Unique
         isUnique(rec);
         rec.leakedToResult();
         isUnique(rec);
         ReceiverParameterTest other = rec.leakedToResult();
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         isUnique(rec);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         isUnique(other);
     }
 
@@ -35,9 +35,9 @@ class ReceiverParameterTest {
         sb.append("something");
         isUnique(sb);
         StringBuffer sb2 = sb.append("something");
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         isUnique(sb);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         isUnique(sb2);
     }
 

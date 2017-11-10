@@ -6,9 +6,9 @@ import org.checkerframework.checker.nullness.qual.*;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseProblemException;
+import com.github.javaparser.Problem;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
-import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
 import com.github.javaparser.ast.body.BodyDeclaration;
@@ -78,7 +78,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.TypesUtils;
 
 /** Main entry point is: {@link StubParser#parse(Map, Map)} */
 // Full entry point signature:
@@ -177,24 +176,38 @@ public class StubParser {
         try {
             parsedStubUnit = JavaParser.parseStubUnit(inputStream);
         } catch (ParseProblemException e) {
-            ErrorReporter.errorAbort(
-                    "StubParser: exception from StubParser.parse for file "
-                            + filename
-                            + "\n"
-                            + "Problem message with problems encountered: "
-                            + e.getMessage());
-            parsedStubUnit = null; // dead code, but needed for definite assignment checks
+            StringBuilder message =
+                    new StringBuilder(
+                            "exception from StubParser.parse for file "
+                                    + filename
+                                    + "; current class: "
+                                    + currentClass
+                                    + ". Encountered problems: ");
+            // Manually build up the message, because e.getMessage() would include a stack trace.
+            for (Problem p : e.getProblems()) {
+                message.append(p.getVerboseMessage());
+                message.append('\n');
+            }
+            stubAlwaysWarn(message.toString());
+            parsedStubUnit = null;
         } catch (Exception e) {
-            ErrorReporter.errorAbort(
-                    "StubParser: exception from StubParser.parse for file " + filename, e);
-            parsedStubUnit = null; // dead code, but needed for definite assignment checks
+            stubAlwaysWarn(
+                    "unexpected exception "
+                            + e.getClass()
+                            + " from StubParser.parse for file "
+                            + filename
+                            + "; current class: "
+                            + currentClass
+                            + ". Encountered problems: "
+                            + e.getMessage());
+            parsedStubUnit = null;
         }
         this.stubUnit = parsedStubUnit;
 
         // getSupportedAnnotations also modifies importedConstants and importedTypes. This should
         // be refactored to be nicer.
         supportedAnnotations = getSupportedAnnotations();
-        if (supportedAnnotations.isEmpty()) {
+        if (parsedStubUnit != null && supportedAnnotations.isEmpty()) {
             stubWarnIfNotFound(
                     String.format(
                             "No supported annotations found! This likely means stub file %s doesn't import them correctly.",
@@ -258,6 +271,10 @@ public class StubParser {
 
     /** @see #supportedAnnotations */
     private Map<String, AnnotationMirror> getSupportedAnnotations() {
+        if (stubUnit == null) {
+            // stubUnit is null if there was a problem parsing the astub file
+            return null;
+        }
         assert !stubUnit.getCompilationUnits().isEmpty();
         CompilationUnit cu = stubUnit.getCompilationUnits().get(0);
 
@@ -361,6 +378,10 @@ public class StubParser {
     public void parse(
             Map<Element, AnnotatedTypeMirror> atypes,
             Map<String, Set<AnnotationMirror>> declAnnos) {
+        if (stubUnit == null) {
+            // stubUnit is null if there was a problem parsing the astub file
+            return;
+        }
         parse(this.stubUnit, atypes, declAnnos);
     }
 
@@ -413,6 +434,9 @@ public class StubParser {
         // TODO: Handle atypes???
     }
 
+    /** Fully-qualified name of the type being parsed */
+    private String currentClass;
+
     private void parse(
             TypeDeclaration<?> typeDecl,
             String packageName,
@@ -422,6 +446,7 @@ public class StubParser {
         // Fully-qualified name of the type being parsed
         String typeName =
                 (packageName == null ? "" : packageName + ".") + typeDecl.getNameAsString();
+        currentClass = typeName;
         TypeElement typeElt = elements.getTypeElement(typeName);
         if (typeElt == null) {
             boolean warn = true;
@@ -454,7 +479,8 @@ public class StubParser {
         } else if (typeDecl instanceof ClassOrInterfaceDeclaration) {
             typeParameters.addAll(
                     parseType((ClassOrInterfaceDeclaration) typeDecl, typeElt, atypes, declAnnos));
-        } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have annotations, right?
+        } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have
+        // annotations, right?
 
         Map<Element, BodyDeclaration<?>> elementsToDecl = getMembers(typeElt, typeDecl);
         for (Map.Entry<Element, BodyDeclaration<?>> entry : elementsToDecl.entrySet()) {
@@ -512,7 +538,8 @@ public class StubParser {
 
         // It can be the case that args=[] and params=null.
         // if ((typeParameters == null) != (typeArguments == null)) {
-        //     throw new Error(String.format("parseType (%s, %s): inconsistent nullness for args and params%n  args = %s%n  params = %s%n", decl, elt, typeArguments, typeParameters));
+        //     throw new Error(String.format("parseType (%s, %s): inconsistent nullness for args and
+        // params%n  args = %s%n  params = %s%n", decl, elt, typeArguments, typeParameters));
         // }
 
         if (debugStubParser) {
@@ -542,7 +569,7 @@ public class StubParser {
         for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
             if (typeV.getKind() != TypeKind.TYPEVAR) {
                 stubAlwaysWarn(
-                        "Expected an AnnotatedTypeVariable but found type kind "
+                        "expected an AnnotatedTypeVariable but found type kind "
                                 + typeV.getKind()
                                 + ": "
                                 + typeV);
@@ -578,7 +605,7 @@ public class StubParser {
         for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
             if (typeV.getKind() != TypeKind.TYPEVAR) {
                 stubAlwaysWarn(
-                        "Expected an AnnotatedTypeVariable but found type kind "
+                        "expected an AnnotatedTypeVariable but found type kind "
                                 + typeV.getKind()
                                 + ": "
                                 + typeV);
@@ -632,11 +659,6 @@ public class StubParser {
             ExecutableElement elt,
             Map<Element, AnnotatedTypeMirror> atypes,
             Map<String, Set<AnnotationMirror>> declAnnos) {
-        // Switch annotations between method declaration and type.
-        NodeList<AnnotationExpr> list = decl.getType().getAnnotations();
-        decl.getType().setAnnotations(decl.getAnnotations());
-        decl.setAnnotations(list);
-
         annotateDecl(declAnnos, elt, decl.getAnnotations());
         // StubParser parses all annotations in type annotation position as type annotations
         annotateDecl(declAnnos, elt, decl.getType().getAnnotations());
@@ -646,6 +668,13 @@ public class StubParser {
         annotateTypeParameters(
                 decl, elt, atypes, methodType.getTypeVariables(), decl.getTypeParameters());
         typeParameters.addAll(methodType.getTypeVariables());
+        if (decl.getType().isArrayType()) {
+            annotateInnerMostComponentType(
+                    (AnnotatedArrayType) methodType.getReturnType(), decl.getAnnotations());
+        } else {
+            // Duplicate method annotations to the type.
+            decl.getType().setAnnotations(decl.getAnnotations());
+        }
         annotate(methodType.getReturnType(), decl.getType());
 
         List<Parameter> params = decl.getParameters();
@@ -660,32 +689,41 @@ public class StubParser {
             annotateDecl(declAnnos, paramElt, param.getAnnotations());
             annotateDecl(declAnnos, paramElt, param.getType().getAnnotations());
 
-            // Duplicate parameter annotations to the type.
-            param.getType().setAnnotations(param.getAnnotations());
-
             if (param.isVarArgs()) {
                 assert paramType.getKind() == TypeKind.ARRAY;
+                // Duplicate parameter annotations to the type.
+                param.getType().setAnnotations(param.getAnnotations());
                 // The "type" of param is actually the component type of the vararg.
                 // For example, "Object..." the type would be "Object".
                 annotate(((AnnotatedArrayType) paramType).getComponentType(), param.getType());
                 // The "VarArgsAnnotations" are those just before "...".
                 annotate(paramType, param.getVarArgsAnnotations());
             } else {
+                if (param.getType().isArrayType()) {
+                    annotateInnerMostComponentType(
+                            (AnnotatedArrayType) paramType, param.getAnnotations());
+                } else {
+                    // Duplicate parameter annotations to the type.
+                    param.getType().setAnnotations(param.getAnnotations());
+                }
                 annotate(paramType, param.getType());
             }
         }
 
-        if (methodType.getReceiverType() == null
-                && decl.getReceiverAnnotations() != null
-                && !decl.getReceiverAnnotations().isEmpty()) {
-            stubAlwaysWarn(
-                    String.format(
-                            "parseMethod: static methods cannot have receiver annotations%n"
-                                    + "Method: %s%n"
-                                    + "Receiver annotations: %s",
-                            methodType, decl.getReceiverAnnotations()));
-        } else {
-            annotate(methodType.getReceiverType(), decl.getReceiverAnnotations());
+        if (decl.getReceiverParameter().isPresent()
+                && !decl.getReceiverParameter().get().getAnnotations().isEmpty()) {
+            if (methodType.getReceiverType() == null) {
+                stubAlwaysWarn(
+                        String.format(
+                                "parseMethod: static methods cannot have receiver annotations%n"
+                                        + "Method: %s%n"
+                                        + "Receiver annotations: %s",
+                                methodType, decl.getReceiverParameter().get().getAnnotations()));
+            } else {
+                annotate(
+                        methodType.getReceiverType(),
+                        decl.getReceiverParameter().get().getAnnotations());
+            }
         }
 
         putNew(atypes, elt, methodType);
@@ -756,19 +794,19 @@ public class StubParser {
         return arrays;
     }
 
-    private void annotateAsArray(AnnotatedArrayType atype, ReferenceType typeDef) {
+    private void annotateAsArray(AnnotatedArrayType atype, ReferenceType type) {
         List<AnnotatedTypeMirror> arrayTypes = arrayAllComponents(atype);
-        assert typeDef.getArrayLevel() == arrayTypes.size() - 1
+        assert type.getArrayLevel() == arrayTypes.size() - 1
                         ||
                         // We want to allow simply using "Object" as return type of a
                         // method, regardless of what the real type is.
-                        typeDef.getArrayLevel() == 0
+                        type.getArrayLevel() == 0
                 : "Mismatched array lengths; typeDef: "
-                        + typeDef.getArrayLevel()
+                        + type.getArrayLevel()
                         + " vs. arrayTypes: "
                         + (arrayTypes.size() - 1)
                         + "\n  typedef: "
-                        + typeDef
+                        + type
                         + "\n  arraytypes: "
                         + arrayTypes;
         /* Separate TODO: the check for zero above ensures that "Object" can be
@@ -776,18 +814,20 @@ public class StubParser {
          * However, why was this needed for the RequiredPermissions declaration annotation?
          * It looks like the StubParser ignored the target for annotations.
          */
-        for (int i = 0; i < typeDef.getArrayCount(); ++i) {
-            List<AnnotationExpr> annotations = typeDef.getAnnotationsAtLevel(i);
-            handleExistingAnnotations(arrayTypes.get(i), typeDef);
+        Type typeDef = type;
+        AnnotatedTypeMirror annotatedTypeMirror = atype;
+        while (typeDef.isArrayType() && annotatedTypeMirror.getKind() == TypeKind.ARRAY) {
+            // handle generic type
+            handleExistingAnnotations(annotatedTypeMirror, typeDef);
 
+            List<AnnotationExpr> annotations = typeDef.getAnnotations();
             if (annotations != null) {
-                annotate(arrayTypes.get(i), annotations);
+                annotate(annotatedTypeMirror, annotations);
             }
+            // Cast should succeed because of the assert earlier.
+            typeDef = ((com.github.javaparser.ast.type.ArrayType) typeDef).getComponentType();
+            annotatedTypeMirror = ((AnnotatedArrayType) annotatedTypeMirror).getComponentType();
         }
-
-        // handle generic type on base
-        handleExistingAnnotations(arrayTypes.get(arrayTypes.size() - 1), typeDef);
-        annotate(arrayTypes.get(arrayTypes.size() - 1), typeDef.getAnnotations());
     }
 
     private ClassOrInterfaceType unwrapDeclaredType(Type type) {
@@ -841,7 +881,7 @@ public class StubParser {
                 annotate(atype, typeDef.getAnnotations());
             }
         } else if (atype.getKind() == TypeKind.TYPEVAR) {
-            //Add annotations from the declaration of the TypeVariable
+            // Add annotations from the declaration of the TypeVariable
             AnnotatedTypeVariable typeVarUse = (AnnotatedTypeVariable) atype;
             for (AnnotatedTypeVariable typePar : typeParameters) {
                 if (typePar.getUnderlyingType() == atype.getUnderlyingType()) {
@@ -868,25 +908,42 @@ public class StubParser {
         for (int i = 0; i < methodType.getParameterTypes().size(); ++i) {
             AnnotatedTypeMirror paramType = methodType.getParameterTypes().get(i);
             Parameter param = decl.getParameters().get(i);
-            if (param.getAnnotations() != null) {
+            if (param.isVarArgs()) {
+                assert paramType.getKind() == TypeKind.ARRAY;
+                // Duplicate parameter annotations to the type.
                 param.getType().setAnnotations(param.getAnnotations());
+                // The "type" of param is actually the component type of the vararg.
+                // For example, "Object..." the type would be "Object".
+                annotate(((AnnotatedArrayType) paramType).getComponentType(), param.getType());
+                // The "VarArgsAnnotations" are those just before "...".
+                annotate(paramType, param.getVarArgsAnnotations());
+            } else {
+                if (param.getType().isArrayType()) {
+                    annotateInnerMostComponentType(
+                            (AnnotatedArrayType) paramType, param.getAnnotations());
+                } else {
+                    // Duplicate parameter annotations to the type.
+                    param.getType().setAnnotations(param.getAnnotations());
+                }
+                annotate(paramType, param.getType());
             }
-            annotate(paramType, param.getType());
         }
 
-        if (methodType.getReceiverType() == null
-                && decl.getReceiverAnnotations() != null
-                && !decl.getReceiverAnnotations().isEmpty()) {
-            stubAlwaysWarn(
-                    String.format(
-                            "parseConstructor: constructor of a top-level class cannot have receiver annotations%n"
-                                    + "Constructor: %s%n"
-                                    + "Receiver annotations: %s",
-                            methodType, decl.getReceiverAnnotations()));
-        } else {
-            annotate(methodType.getReceiverType(), decl.getReceiverAnnotations());
+        if (decl.getReceiverParameter().isPresent()
+                && !decl.getReceiverParameter().get().getAnnotations().isEmpty()) {
+            if (methodType.getReceiverType() == null) {
+                stubAlwaysWarn(
+                        String.format(
+                                "parseConstructor: constructor of a top-level class cannot have receiver annotations%n"
+                                        + "Constructor: %s%n"
+                                        + "Receiver annotations: %s",
+                                methodType, decl.getReceiverParameter().get().getAnnotations()));
+            } else {
+                annotate(
+                        methodType.getReceiverType(),
+                        decl.getReceiverParameter().get().getAnnotations());
+            }
         }
-
         putNew(atypes, elt, methodType);
     }
 
@@ -978,7 +1035,7 @@ public class StubParser {
         if (typeParameters.size() != typeArguments.size()) {
             stubAlwaysWarn(
                     String.format(
-                            "annotateTypeParameters: mismatched sizes:  typeParameters (size %d)=%s;  typeArguments (size %d)=%s;  decl=%s;  elt=%s (%s).  For more details, run with -AstubDebug",
+                            "annotateTypeParameters: mismatched sizes:  typeParameters (size %d)=%s;  typeArguments (size %d)=%s;  decl=%s;  elt=%s (%s).%n  For more details, run with -AstubDebug",
                             typeParameters.size(),
                             typeParameters,
                             typeArguments.size(),
@@ -1325,7 +1382,6 @@ public class StubParser {
      * and the -AstubWarnIfNotFound command-line argument was passed.
      */
     private void stubWarnIfNotFound(String warning) {
-        ensureSingleLine(warning, "stubWarnIfNotFound");
         if (warnings.add(warning) && (warnIfNotFound || debugStubParser)) {
             processingEnv
                     .getMessager()
@@ -1338,7 +1394,6 @@ public class StubParser {
      * issued and the -AstubWarnIfOverwritesBytecode command-line argument was passed.
      */
     private void stubWarnIfOverwritesBytecode(String warning) {
-        ensureSingleLine(warning, "stubWarnIfOverwritesBytecode");
         if (warnings.add(warning) && (warnIfStubOverwritesBytecode || debugStubParser)) {
             processingEnv
                     .getMessager()
@@ -1352,7 +1407,6 @@ public class StubParser {
      */
     private void stubAlwaysWarn(String warning, Object... args) {
         warning = String.format(warning, args);
-        ensureSingleLine(warning, "stubAlwaysWarn");
         if (warnings.add(warning)) {
             processingEnv
                     .getMessager()
@@ -1361,25 +1415,10 @@ public class StubParser {
     }
 
     private void stubDebug(String warning) {
-        ensureSingleLine(warning, "stubDebug");
         if (warnings.add(warning) && debugStubParser) {
             processingEnv
                     .getMessager()
                     .printMessage(javax.tools.Diagnostic.Kind.NOTE, "StubParser: " + warning);
-        }
-    }
-
-    /**
-     * Throw an error if the message contains line separator characters. (Any characters after a
-     * line separator are silently discarded and not shown to the user.)
-     */
-    private void ensureSingleLine(String message, String methodName) {
-        if (message.contains(LINE_SEPARATOR)) {
-            throw new Error(
-                    "Don't pass multi-line strings to "
-                            + methodName
-                            + ": "
-                            + message.replace(LINE_SEPARATOR, "%n"));
         }
     }
 
@@ -1482,19 +1521,17 @@ public class StubParser {
             if (importedTypes.containsKey(className)) {
                 return importedTypes.get(className).asType();
             }
-            Class<?> clazz;
-            try {
-                clazz = Class.forName(className);
-            } catch (ClassNotFoundException e) {
+            String packageName = "";
+            if (theCompilationUnit.getPackageDeclaration().isPresent()) {
+                packageName = theCompilationUnit.getPackageDeclaration().get().getNameAsString();
+            }
+            TypeElement typeElement = findTypeOfName(packageName, currentClass, className);
+            if (typeElement == null) {
                 stubAlwaysWarn("StubParser: unknown class name " + className);
                 return null;
             }
-            // TODO: is it worth putting this value back into importedTypes?
-            return TypesUtils.typeFromClass(
-                    atypeFactory.getContext().getTypeUtils(),
-                    atypeFactory.getElementUtils(),
-                    clazz);
 
+            return typeElement.asType();
         } else if (expr instanceof NullLiteralExpr) {
             stubAlwaysWarn(
                     "Null found as value for %s. Null isn't allowed as an annotation value", name);
@@ -1503,6 +1540,44 @@ public class StubParser {
             stubAlwaysWarn("Unexpected annotation expression: " + expr);
             return null;
         }
+    }
+
+    private TypeElement checkCandidate(String name) {
+        TypeElement typeElement = elements.getTypeElement(name);
+        if (typeElement != null) {
+            importedTypes.put(name, typeElement);
+        }
+        return typeElement;
+    }
+
+    /**
+     * Returns the TypeElement with the fully qualified name {@code name}, if one exists. Otherwise,
+     * checks {@code enclosingClass} and {@code packageName} for such a class with {@code name}.
+     *
+     * @param packageName name of package being parsed
+     * @param enclosingClass fully-qualified name of the class being parsed
+     * @param name classname (Simple or fully qualified)
+     * @return the TypeElement for {@code name} or null if not found
+     */
+    private /*@Nullable*/ TypeElement findTypeOfName(
+            String packageName, String enclosingClass, String name) {
+        TypeElement typeElement = checkCandidate(name);
+        while (typeElement == null && !enclosingClass.equals(packageName)) {
+            typeElement = checkCandidate(enclosingClass + "." + name);
+            int lastDot = enclosingClass.lastIndexOf('.');
+            if (lastDot == -1) {
+                break;
+            } else {
+                enclosingClass = enclosingClass.substring(0, lastDot);
+            }
+        }
+        if (typeElement == null && !packageName.isEmpty()) {
+            typeElement = checkCandidate(packageName + "." + name);
+        }
+        if (typeElement == null && !packageName.equals("java.lang")) {
+            typeElement = checkCandidate("java.lang." + name);
+        }
+        return typeElement;
     }
 
     /**
@@ -1551,7 +1626,7 @@ public class StubParser {
         if (expr instanceof ArrayInitializerExpr) {
             if (expected.getKind() != TypeKind.ARRAY) {
                 stubAlwaysWarn(
-                        "StubParser: unhandled annotation attribute type: "
+                        "unhandled annotation attribute type: "
                                 + expr
                                 + " and expected: "
                                 + expected);

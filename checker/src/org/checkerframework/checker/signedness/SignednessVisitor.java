@@ -104,8 +104,8 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
             return true;
         }
 
-        // Shift the shiftAmount most significant bits to become the shiftAmount least significant bits, zeroing out the
-        // rest.
+        // Shift the shiftAmount most significant bits to become the shiftAmount least significant
+        // bits, zeroing out the rest.
         if (maskLit.getKind() != Kind.LONG_LITERAL) {
             mask <<= 32;
         }

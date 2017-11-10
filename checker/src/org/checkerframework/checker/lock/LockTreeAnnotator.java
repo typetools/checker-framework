@@ -41,8 +41,9 @@ public class LockTreeAnnotator extends TreeAnnotator {
         switch (opKind) {
             case EQUAL_TO:
             case NOT_EQUAL_TO:
-                // Technically, <=, <, > and >= are irrelevant for visitBinary, since currently boxed primitives
-                // cannot be annotated with @GuardedBy(...), but they are left here in case that rule changes.
+                // Technically, <=, <, > and >= are irrelevant for visitBinary, since currently
+                // boxed primitives cannot be annotated with @GuardedBy(...), but they are left here
+                // in case that rule changes.
             case LESS_THAN:
             case LESS_THAN_EQUAL:
             case GREATER_THAN:

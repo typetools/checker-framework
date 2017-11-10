@@ -9,7 +9,7 @@ public class AnonymousSkipDefs {
                     @Override
                     public void run() {
                         @Nullable Object veryNull = null;
-                        //:: error: (assignment.type.incompatible)
+                        // :: error: (assignment.type.incompatible)
                         @NonNull Object notNull = veryNull;
                         notNull.toString();
                     }

@@ -16,7 +16,7 @@ public class TransferAdd {
         @IntRange(from = -1) int d = a + 0;
         @IntRange(from = -1) int e = 0 + a;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntRange(from = 1) int f = a + 1;
 
         @IntRange(from = 0) int g = b + 0;
@@ -29,19 +29,19 @@ public class TransferAdd {
         // adding values
 
         @IntRange(from = 1) int k = i + j;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntRange(from = 1) int l = b + c;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntRange(from = 1) int m = d + c;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntRange(from = 1) int n = d + e;
 
         @IntRange(from = 1) int o = h + g;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntRange(from = 1) int p = h + d;
 
         @IntRange(from = 0) int q = b + c;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntRange(from = 0) int r = q + d;
 
         @IntRange(from = 0) int s = k + d;
@@ -49,7 +49,7 @@ public class TransferAdd {
 
         // increments
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntRange(from = 1) int u = b++;
 
         @IntRange(from = 1) int u1 = b;
@@ -64,19 +64,19 @@ public class TransferAdd {
 
         @IntRange(from = 0) int w1 = n1p1;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntRange(from = 1) int w2 = n1p1;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntRange(from = 1) int w3 = n1p1++;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntRange(from = 0) int x = n1p2++;
 
         @IntRange(from = 0) int x1 = n1p2;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntRange(from = 1) int y = ++d;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @IntRange(from = 1) int z = e++;
     }
 }

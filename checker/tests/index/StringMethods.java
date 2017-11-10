@@ -3,9 +3,9 @@
 class StringMethods {
 
     void testCharAt(String s, int i) {
-        //::  error: (argument.type.incompatible)
+        // ::  error: (argument.type.incompatible)
         s.charAt(i);
-        //::  error: (argument.type.incompatible)
+        // ::  error: (argument.type.incompatible)
         s.codePointAt(i);
 
         if (i >= 0 && i < s.length()) {
@@ -15,7 +15,7 @@ class StringMethods {
     }
 
     void testCodePointBefore(String s) {
-        //::  error: (argument.type.incompatible)
+        // ::  error: (argument.type.incompatible)
         s.codePointBefore(0);
 
         if (s.length() > 0) {
@@ -29,9 +29,9 @@ class StringMethods {
         s.substring(s.length());
         s.substring(s.length(), s.length());
         s.substring(0, s.length());
-        //::  error: (argument.type.incompatible)
+        // ::  error: (argument.type.incompatible)
         s.substring(1);
-        //::  error: (argument.type.incompatible)
+        // ::  error: (argument.type.incompatible)
         s.substring(0, 1);
     }
 

@@ -785,7 +785,7 @@ sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin libcurl3-gnutls
 
 \item[Mac OS]
   If you employ \ahref{https://brew.sh}{homebrew} to install packages, run
-  the following commands:
+  the following commands (you may need to update the version number (\<2.31>):
 
 \begin{Verbatim}
 brew update
@@ -794,8 +794,16 @@ brew install git ant hevea maven mercurial librsvg unzip make
 brew cask install java
 brew cask install mactex
 mkdir -p $HOME/Library/texmf/tex/latex
-cp -p /usr/local/Cellar/hevea/2.28/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
+cp -p /usr/local/Cellar/hevea/2.31/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
 \end{Verbatim}
+
+Also set the \<JAVA\_HOME> environment variable in your \<.bashrc> file;
+for example,
+
+\begin{Verbatim}
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_144.jdk/Contents/Home
+\end{Verbatim}
+
 
 \item[Windows]
   To build on Windows 10,

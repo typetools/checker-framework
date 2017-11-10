@@ -10,19 +10,19 @@ public class SimpleRegex {
 
     void validRegString() {
         @Regex String s1 = "validRegex";
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex String s2 = "(InvalidRegex"; // error
     }
 
     void compileCall() {
         Pattern.compile("test.*[^123]$");
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         Pattern.compile("$test.*[^123"); // error
     }
 
     void requireValidReg(@Regex String reg, String nonReg) {
         Pattern.compile(reg);
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         Pattern.compile(nonReg); // error
     }
 
@@ -31,18 +31,18 @@ public class SimpleRegex {
         @Regex String s2 = reg + "d.*sf";
         @Regex String s3 = reg + reg;
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex String n1 = nonReg; // error
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex String n2 = reg + "(df"; // error
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex String n3 = reg + nonReg; // error
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex String o1 = nonReg; // error
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex String o2 = nonReg + "sdf"; // error
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex String o3 = nonReg + reg; // error
     }
 
@@ -51,7 +51,7 @@ public class SimpleRegex {
 
     void testCompoundConcatenation() {
         takesRegex(regex);
-        //:: error: (compound.assignment.type.incompatible)
+        // :: error: (compound.assignment.type.incompatible)
         regex += ")"; // error
         takesRegex(regex);
 
@@ -59,7 +59,7 @@ public class SimpleRegex {
         // nonRegex is refined by flow to be a regular expression
         takesRegex(nonRegex);
         nonRegex += ")";
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         takesRegex(nonRegex); // error
     }
 
@@ -69,9 +69,9 @@ public class SimpleRegex {
         @Regex char c1 = 'c';
         @Regex Character c2 = 'c';
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex char c3 = '('; // error
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex Character c4 = '('; // error
     }
 
@@ -79,17 +79,17 @@ public class SimpleRegex {
         @Regex String s1 = "rege" + 'x';
         @Regex String s2 = 'r' + "egex";
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex String s4 = "rege" + '('; // error
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex String s5 = "reg(" + 'x'; // error
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex String s6 = '(' + "egex"; // error
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @Regex String s7 = 'r' + "ege("; // error
     }
 
-    //    TODO: Uncomment this once isValidUse works better. See RegexChecker.isValidUse for details.
+    // TODO: Uncomment this once isValidUse works better. See RegexChecker.isValidUse for details.
     //    class TestAllowedTypes {
     //        @Regex CharSequence cs;
     //        @Regex String s11;
@@ -99,15 +99,15 @@ public class SimpleRegex {
     //        @Regex Pattern p;
     //        @Regex Matcher m;
     //
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex Object o;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex List<String> l;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        ArrayList<@Regex Double> al;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex int i;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex boolean b;   // error
     //    }
 
@@ -120,19 +120,19 @@ public class SimpleRegex {
     //        @Regex Segment s21;
     //        @Regex char c;
     //
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex Object o;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex List<String> l;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        ArrayList<@Regex Double> al;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex int i;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex boolean b;   // error
     //
     //        @Regex String regex = "a";
-    //        //:: error: (argument.type.incompatible)
+    //        // :: error: (argument.type.incompatible)
     //        regex += "(";
     //
     //        String nonRegex = "a";
@@ -143,13 +143,13 @@ public class SimpleRegex {
         Pattern.compile("non(", Pattern.LITERAL);
         Pattern.compile(foo("regex"), Pattern.LITERAL);
 
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         Pattern.compile(foo("regex("), Pattern.LITERAL); // error
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         Pattern.compile("non("); // error
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         Pattern.compile(foo("regex")); // error
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         Pattern.compile("non(", Pattern.CASE_INSENSITIVE); // error
     }
 
@@ -165,13 +165,13 @@ public class SimpleRegex {
     //        @Regex char @Regex [] ca3;
     //        @Regex String[] s1;
     //
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex double[] da1;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        double @Regex [] da2;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        @Regex double @Regex [] da3;   // error
-    //        //:: error: (type.invalid)
+    //        // :: error: (type.invalid)
     //        String @Regex [] s2;    // error
     //    }
 
@@ -183,9 +183,9 @@ public class SimpleRegex {
     //        char @Regex [] c2 = {'(', 'r', 'e', 'g', 'e', 'x', ')', '.', '*'};
     //        char @Regex [] c3 = {r, 'e', 'g', 'e', 'x'};
     //
-    //        //:: error: (assignment.type.incompatible)
+    //        // :: error: (assignment.type.incompatible)
     //        char @Regex [] c4 = {'(', 'r', 'e', 'g', 'e', 'x'};   // error
-    //        //:: error: (assignment.type.incompatible)
+    //        // :: error: (assignment.type.incompatible)
     //        char @Regex [] c5 = {c, '.', '*'};   // error
     //    }
 }

@@ -10,7 +10,7 @@ public class SkipDefs1 {
 
     static class DontSkip {
         static Object foo() {
-            //:: error: (return.type.incompatible)
+            // :: error: (return.type.incompatible)
             return null;
         }
     }

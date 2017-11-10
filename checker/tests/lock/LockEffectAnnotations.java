@@ -42,11 +42,11 @@ public class LockEffectAnnotations {
     void myReleaseLocksEmptyMethod() {}
 
     @MayReleaseLocks
-    //:: error: (guardsatisfied.with.mayreleaselocks)
+    // :: error: (guardsatisfied.with.mayreleaselocks)
     void methodGuardSatisfiedReceiver(@GuardSatisfied LockEffectAnnotations this) {}
 
     @MayReleaseLocks
-    //:: error: (guardsatisfied.with.mayreleaselocks)
+    // :: error: (guardsatisfied.with.mayreleaselocks)
     void methodGuardSatisfiedParameter(@GuardSatisfied Object o) {}
 
     @MayReleaseLocks
@@ -56,20 +56,20 @@ public class LockEffectAnnotations {
             myMethod5();
             x3.field = new Object(); // OK: the lock is still held since myMethod is locking-free
             mySideEffectFreeMethod();
-            x3.field =
-                    new Object(); // OK: the lock is still held since mySideEffectFreeMethod is side-effect-free
+            x3.field = new Object(); // OK: the lock is still held since mySideEffectFreeMethod is
+            // side-effect-free
             myUnlockingMethod();
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             x3.field = new Object(); // ILLEGAL: myLockingMethod is not locking-free
         }
         if (myLock2.tryLock()) {
             x3.field = new Object(); // OK: the lock is held
             myReleaseLocksEmptyMethod();
-            //:: error: (lock.not.held)
+            // :: error: (lock.not.held)
             x3.field =
                     new Object(); // ILLEGAL: even though myUnannotatedEmptyMethod is empty, since
-            // myReleaseLocksEmptyMethod() is annotated with @MayReleaseLocks and the Lock Checker no longer knows
-            // the state of the lock.
+            // myReleaseLocksEmptyMethod() is annotated with @MayReleaseLocks and the Lock Checker
+            // no longer knows the state of the lock.
             if (myLock2.isHeldByCurrentThread()) {
                 x3.field = new Object(); // OK: the lock is known to be held
             }
@@ -84,7 +84,7 @@ public class LockEffectAnnotations {
         }
 
         InnerClass ic = new InnerClass();
-        //:: error: (method.guarantee.violated)
+        // :: error: (method.guarantee.violated)
         ic.innerClassMethod();
     }
 
@@ -95,15 +95,15 @@ public class LockEffectAnnotations {
     synchronized void releasesNoLocksSynchronizedMethod() {}
 
     @LockingFree
-    //:: error: (lockingfree.synchronized.method)
+    // :: error: (lockingfree.synchronized.method)
     synchronized void lockingFreeSynchronizedMethod() {}
 
     @SideEffectFree
-    //:: error: (lockingfree.synchronized.method)
+    // :: error: (lockingfree.synchronized.method)
     synchronized void sideEffectFreeSynchronizedMethod() {}
 
     @Pure
-    //:: error: (lockingfree.synchronized.method)
+    // :: error: (lockingfree.synchronized.method)
     synchronized void pureSynchronizedMethod() {}
 
     @MayReleaseLocks
@@ -120,33 +120,33 @@ public class LockEffectAnnotations {
 
     @LockingFree
     void lockingFreeMethodWithSynchronizedBlock() {
-        //:: error: (synchronized.block.in.lockingfree.method)
+        // :: error: (synchronized.block.in.lockingfree.method)
         synchronized (this) {
         }
     }
 
     @SideEffectFree
     void sideEffectFreeMethodWithSynchronizedBlock() {
-        //:: error: (synchronized.block.in.lockingfree.method)
+        // :: error: (synchronized.block.in.lockingfree.method)
         synchronized (this) {
         }
     }
 
     @Pure
     void pureMethodWithSynchronizedBlock() {
-        //:: error: (synchronized.block.in.lockingfree.method)
+        // :: error: (synchronized.block.in.lockingfree.method)
         synchronized (this) {
         }
     }
 
-    //:: error: (class.declaration.guardedby.annotation.invalid)
+    // :: error: (class.declaration.guardedby.annotation.invalid)
     @GuardedByUnknown class MyClass2 {}
-    //:: error: (class.declaration.guardedby.annotation.invalid)
+    // :: error: (class.declaration.guardedby.annotation.invalid)
     @GuardedBy("lock") class MyClass3 {}
 
     @GuardedBy({}) class MyClass4 {}
-    //:: error: (class.declaration.guardedby.annotation.invalid) :: error: (guardsatisfied.location.disallowed)
+    // :: error: (class.declaration.guardedby.annotation.invalid) :: error: (guardsatisfied.location.disallowed)
     @GuardSatisfied class MyClass5 {}
-    //:: error: (class.declaration.guardedby.annotation.invalid)
+    // :: error: (class.declaration.guardedby.annotation.invalid)
     @GuardedByBottom class MyClass6 {}
 }

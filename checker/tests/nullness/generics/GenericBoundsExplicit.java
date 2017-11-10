@@ -8,7 +8,7 @@ class GenericBoundsExplicit<@NonNull T extends @Nullable Object> {
     T t;
 
     public void method() {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         String str = t.toString();
     }
 
@@ -27,11 +27,11 @@ class GenericBoundsExplicit2<@NonNull TT extends @Nullable Object> {
 
     public void context() {
 
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         tt1.toString();
         tt2.toString();
 
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         tt3.toString();
     }
 }
@@ -43,7 +43,7 @@ class GenericBoundsExplicit3<@NonNull TTT extends @NonNull Object> {
     TTT ttt3;
 
     public void context() {
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         ttt1.toString();
         ttt2.toString();
         ttt3.toString();

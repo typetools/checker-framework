@@ -30,10 +30,10 @@ public class Consistency {
         // good
         msq = calcArea(m1, m2);
 
-        //:: bad args
+        // :: bad args
         msq = calcArea(m1, km2);
 
-        //:: bad return
+        // :: bad return
         kmsq = calcArea(m1, m2);
 
         // good

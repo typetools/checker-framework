@@ -43,7 +43,7 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
                             : IndexUtil.getValueOfAnnotationWithStringArgument(am);
 
             Receiver rec = FlowExpressions.internalReprOf(atypeFactory, (ExpressionTree) valueTree);
-            if (rec != null && SameLenAnnotatedTypeFactory.isReceiverToStringParsable(rec)) {
+            if (rec != null && SameLenAnnotatedTypeFactory.shouldUseInAnnotation(rec)) {
                 List<String> names = new ArrayList<>();
                 names.add(rec.toString());
                 AnnotationMirror newSameLen = atypeFactory.getCombinedSameLen(arraysInAnno, names);

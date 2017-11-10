@@ -142,6 +142,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Range.IGNORE_OVERFLOW = checker.hasOption(ValueChecker.IGNORE_RANGE_OVERFLOW);
         evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
+        addAliasedAnnotation(
+                android.support.annotation.IntRange.class,
+                AnnotationBuilder.fromClass(elements, IntRange.class),
+                true);
+
         // The actual ArrayLenRange is created by
         // {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)};
         // this line just registers the alias. The BottomVal is never used.
@@ -173,6 +178,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(
                 "org.checkerframework.checker.index.qual.IndexOrLow",
                 createIntRangeFromGTENegativeOne());
+        addAliasedAnnotation(
+                "org.checkerframework.checker.index.qual.SubstringIndexFor",
+                createIntRangeFromGTENegativeOne());
 
         // PolyLength is syntactic sugar for both @PolySameLen and @PolyValue
         addAliasedAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
@@ -191,11 +199,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public AnnotationMirror aliasedAnnotation(AnnotationMirror anno) {
-        if (AnnotationUtils.areSameByClass(anno, android.support.annotation.IntRange.class)) {
-            Range range = getRange(anno);
-            return createIntRangeAnnotation(range);
-        }
-
         if (AnnotationUtils.areSameByClass(anno, MinLen.class)) {
             Integer from = getMinLenValue(anno);
             if (from != null && from >= 0) {
@@ -237,7 +240,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Set<AnnotationMirror> annos = super.getDeclAnnotations(elt);
         Set<AnnotationMirror> newSet = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror anno : annos) {
-            if (!isSupportedQualifier(anno)) {
+            if (!isSupportedQualifier(aliasedAnnotation(anno))) {
                 newSet.add(anno);
             }
         }
@@ -447,7 +450,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
 
                 } else {
-                    // In here the annotation is @*Val where (*) is not Int, String but other types (Double, etc).
+                    // In here the annotation is @*Val where (*) is not Int, String but other types
+                    // (Double, etc).
                     // Therefore we extract its values in a generic way to check its size.
                     List<Object> values =
                             AnnotationUtils.getElementValueArray(
@@ -524,8 +528,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return a2;
             } else {
 
-                // Implementation of GLB where one of the annotations is StringVal is needed
-                // for length-based refinement of constant string values. Other cases of length-based
+                // Implementation of GLB where one of the annotations is StringVal is needed for
+                // length-based refinement of constant string values. Other cases of length-based
                 // refinement are handled by subtype check.
                 if (AnnotationUtils.areSameByClass(a1, StringVal.class)) {
                     return glbOfStringVal(a1, a2);
@@ -894,7 +898,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return superValues.contains("") && getMaxLenValue(subAnno) == 0;
             } else if (AnnotationUtils.areSameByClass(superAnno, ArrayLen.class)
                     && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
-                // StringVal is a subtype of ArrayLen, if all the strings have one of the correct lengths
+                // StringVal is a subtype of ArrayLen, if all the strings have one of the correct
+                // lengths
                 List<String> subValues = getStringValues(subAnno);
                 List<Integer> superValues = getArrayLength(superAnno);
 
@@ -906,7 +911,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return true;
             } else if (AnnotationUtils.areSameByClass(superAnno, ArrayLenRange.class)
                     && AnnotationUtils.areSameByClass(subAnno, StringVal.class)) {
-                // StringVal is a subtype of ArrayLenRange, if all the strings have a length in the range.
+                // StringVal is a subtype of ArrayLenRange, if all the strings have a length in the
+                // range.
                 List<String> subValues = getStringValues(subAnno);
                 Range superRange = getRange(superAnno);
                 for (String value : subValues) {
@@ -1179,9 +1185,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationMirror anno = type.getAnnotationInHierarchy(UNKNOWNVAL);
             if (anno == null) {
                 // If type is an AnnotatedTypeVariable (or other type without a primary annotation)
-                // then anno will be null. It would be safe to use the annotation on the upper bound;
-                // however, unless the upper bound was explicitly annotated, it will be unknown.
-                // AnnotatedTypes.findEffectiveAnnotationInHierarchy(, toSearch, top)
+                // then anno will be null. It would be safe to use the annotation on the upper
+                // bound; however, unless the upper bound was explicitly annotated, it will be
+                // unknown.  AnnotatedTypes.findEffectiveAnnotationInHierarchy(, toSearch, top)
                 return null;
             }
             return ValueCheckerUtils.getValuesCastedToType(anno, castTo);

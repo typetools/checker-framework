@@ -1,5 +1,3 @@
-
-
 class CompoundAssignments {
     static final int SIZE = 4;
 

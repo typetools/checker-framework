@@ -13,15 +13,15 @@ import org.checkerframework.dataflow.cfg.node.Node;
 public class RegularBlockImpl extends SingleSuccessorBlockImpl implements RegularBlock {
 
     /** Internal representation of the contents. */
-    protected List<Node> contents;
+    protected final List<Node> contents;
 
     /**
      * Initialize an empty basic block to be filled with contents and linked to other basic blocks
      * later.
      */
     public RegularBlockImpl() {
+        super(BlockType.REGULAR_BLOCK);
         contents = new LinkedList<>();
-        type = BlockType.REGULAR_BLOCK;
     }
 
     /** Add a node to the contents of this basic block. */
