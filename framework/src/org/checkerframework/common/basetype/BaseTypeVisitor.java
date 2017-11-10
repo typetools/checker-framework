@@ -1528,7 +1528,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(node);
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
 
-        if (AnnotatedTypes.areSame(castType, exprType)) {
+        if (castType.equals(exprType)) {
             checker.report(Result.warning("cast.redundant", castType), node);
         }
     }
@@ -2467,9 +2467,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return overrideChecker.checkOverride();
     }
 
-    // Only issue the methodref.inference.unimplemented message once
-    private static boolean typeArgumentInferenceCheck = false;
-
     /**
      * Check that a method reference is allowed. Using the OverrideChecker class.
      *
@@ -2588,11 +2585,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
             }
             if (requiresInference) {
-                if (!typeArgumentInferenceCheck) {
+                if (checker.hasOption("conservativeUninferredTypeArguments")) {
                     checker.report(
                             Result.warning("methodref.inference.unimplemented"),
                             memberReferenceTree);
-                    typeArgumentInferenceCheck = true;
                 }
                 return true;
             }

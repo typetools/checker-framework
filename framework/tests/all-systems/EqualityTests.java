@@ -1,7 +1,7 @@
-import org.checkerframework.checker.interning.qual.Interned;
-
 public class EqualityTests {
-    public boolean compareLongs(@Interned Long v1, @Interned Long v2) {
+    // the Interning checker correctly issues an error below, but we would like to keep this test in all-systems.
+    @SuppressWarnings("Interning")
+    public boolean compareLongs(Long v1, Long v2) {
         // This expression used to cause an assertion
         // failure in GLB computation.
         return !(((v1 == 0) || (v2 == 0)) && (v1 != v2));
