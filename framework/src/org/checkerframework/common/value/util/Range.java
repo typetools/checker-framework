@@ -542,7 +542,7 @@ public class Range {
         // 1. create different methods for int type and long type and use them accordingly
         // 2. add an additional boolean parameter to indicate the type of the left-hand operand
         //
-        // see http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.19 for more
+        // see https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.19 for more
         // detail.
         if (right.isWithin(0, 31)) {
             if (this.isWithinInteger()) {
