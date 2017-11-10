@@ -190,9 +190,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Loads and processes a single external units qualifier. */
     private void loadExternalUnit(String annoName) {
-        Class<? extends Annotation> annoClass = loader.loadExternalAnnotationClass(annoName);
-
-        addUnitToExternalQualMap(annoClass);
+        Class<? extends Annotation> loadedClass = loader.loadExternalAnnotationClass(annoName);
+        if (loadedClass != null) {
+            addUnitToExternalQualMap(loadedClass);
+        }
     }
 
     /** Loads and processes the units qualifiers from a single external directory. */

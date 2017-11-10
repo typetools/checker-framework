@@ -29,6 +29,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.Pair;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -560,24 +561,26 @@ public class AnnotationClassLoader {
      *
      * @param annoName canonical name of an external annotation class, e.g.
      *     "myproject.qual.myannotation"
-     * @return the loaded annotation class
+     * @return the loaded annotation class, or null if it was not a supported annotation as decided
+     *     by a checker
      */
     public final /* @Nullable */ Class<? extends Annotation> loadExternalAnnotationClass(
             final String annoName) {
-        Class<? extends Annotation> annotation = loadAnnotationClass(annoName);
-        if (annotation == null) {
+        Pair<Boolean, /* @Nullable */ Class<? extends Annotation>> loadResult =
+                loadAnnotationClass(annoName);
+        if (!loadResult.first) {
             checker.userErrorAbort(
                     checker.getClass().getSimpleName()
                             + ": could not load class for annotation: "
                             + annoName
                             + "; ensure that it is a type annotation and your classpath is correct.");
         }
-        return annotation;
+        return loadResult.second;
     }
 
     /**
      * This method takes as input a fully qualified path to a directory, and loads and returns the
-     * set of all annotation classes from that directory.
+     * set of all supported annotation classes from that directory.
      *
      * @param dirName absolute path to a directory containing annotation classes
      * @return a set of annotation classes
@@ -673,10 +676,15 @@ public class AnnotationClassLoader {
      * annotation that is supported by a checker.
      *
      * @param fullyQualifiedClassName the fully qualified name of the class
-     * @return the loaded annotation class if it is defined with ElementType.TYPE_USE and is a
-     *     supported annotation, null otherwise
+     * @return a pair consisting of a boolean indicating whether the class could be loaded, and the
+     *     loaded annotation class if it has a {@code @Target} meta-annotation with the required
+     *     ElementType values, and is a supported annotation by a checker. If the class cannot be
+     *     loaded, the pair {@code <false, null>} is returned. If an annotation class was loaded but
+     *     is not supported by a checker, the pair {@code <true, null>} is returned. If the
+     *     annotation is loaded and supported, then the pair {@code <true, theLoadedClass>} is
+     *     returned.
      */
-    private final /* @Nullable */ Class<? extends Annotation> loadAnnotationClass(
+    private final Pair<Boolean, /* @Nullable */ Class<? extends Annotation>> loadAnnotationClass(
             final String fullyQualifiedClassName) {
         Class<?> cls = null;
 
@@ -706,12 +714,14 @@ public class AnnotationClassLoader {
                 // return the loaded annotation if it is supported by a
                 // checker
                 if (isSupportedAnnotationClass(annoClass)) {
-                    return annoClass;
+                    return Pair.<Boolean, Class<? extends Annotation>>of(true, annoClass);
+                } else {
+                    return Pair.<Boolean, Class<? extends Annotation>>of(true, null);
                 }
             }
         }
 
-        return null;
+        return Pair.<Boolean, Class<? extends Annotation>>of(false, null);
     }
 
     /**
@@ -730,9 +740,10 @@ public class AnnotationClassLoader {
         if (fullyQualifiedAnnoNames != null && !fullyQualifiedAnnoNames.isEmpty()) {
             // loop through each class name & load the class
             for (String fullyQualifiedAnnoName : fullyQualifiedAnnoNames) {
-                Class<? extends Annotation> annoClass = loadAnnotationClass(fullyQualifiedAnnoName);
-                if (annoClass != null) {
-                    loadedClasses.add(annoClass);
+                Pair<Boolean, /* @Nullable */ Class<? extends Annotation>> loadResult =
+                        loadAnnotationClass(fullyQualifiedAnnoName);
+                if (loadResult.first && loadResult.second != null) {
+                    loadedClasses.add(loadResult.second);
                 }
             }
         }
