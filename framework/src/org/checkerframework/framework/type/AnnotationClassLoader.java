@@ -22,9 +22,9 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.Unqualified;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -89,10 +89,11 @@ public class AnnotationClassLoader {
     private final URL resourceURL;
 
     /**
-     * The loaded annotation classes. Call {@link #getLoadedAnnotationClasses} rather than using
-     * this field directly as it may be null.
+     * The loaded annotation classes, which includes bunded and external annotations that are deemed
+     * supported by each checker. Call {@link #getBundledAnnotationClasses()} rather than using this
+     * field directly as it may be null.
      */
-    private Set<Class<? extends Annotation>> loadedAnnotations;
+    private Set<Class<? extends Annotation>> supportedBundledAnnotationClasses;
 
     /**
      * Constructor for loading annotations defined for a checker.
@@ -126,18 +127,16 @@ public class AnnotationClassLoader {
                         Pattern.compile(Character.toString(DOT), Pattern.LITERAL)
                                 .split(packageName)));
 
-        // Only load annotations if requested.  This avoids issuing an error
-        // if the qual package contains an annotation that is not a qualifier,
-        // but the checker does not try to use it as a qualifier.
-        loadedAnnotations = null;
+        // Only load annotations if requested.
+        supportedBundledAnnotationClasses = null;
 
-        ClassLoader applicationClassloader = getAppClassLoader();
+        ClassLoader classLoader = getClassLoader();
 
-        if (applicationClassloader != null) {
+        if (classLoader != null) {
             // if the application classloader is accessible, then directly
             // retrieve the resource URL of the qual package
             // resource URLs must use slashes
-            resourceURL = applicationClassloader.getResource(packageNameWithSlashes);
+            resourceURL = classLoader.getResource(packageNameWithSlashes);
 
             // thread based application classloader, if needed in the future:
             // resourceURL =
@@ -160,7 +159,7 @@ public class AnnotationClassLoader {
      * @return a URL to the jar that contains the qual package, or to the qual package's directory,
      *     or null if no jar or directory contains the qual package
      */
-    private final /*@Nullable*/ URL getURLFromClasspaths() {
+    private final /* @Nullable */ URL getURLFromClasspaths() {
         // Debug use, uncomment if needed to see all of the classpaths (boot
         // classpath, extension classpath, and classpath)
         // printPaths();
@@ -335,7 +334,7 @@ public class AnnotationClassLoader {
      * @param absolutePathToDirectory an absolute path to a directory
      * @return a URL reference to the directory, or null if the URL is malformed
      */
-    private final /*@Nullable*/ URL getDirectoryURL(final String absolutePathToDirectory) {
+    private final /* @Nullable */ URL getDirectoryURL(final String absolutePathToDirectory) {
         URL directoryURL = null;
 
         try {
@@ -358,7 +357,7 @@ public class AnnotationClassLoader {
      * @param absolutePathToJarFile an absolute path to a jar file
      * @return a URL reference to the jar file, or null if the URL is malformed
      */
-    private final /*@Nullable*/ URL getJarURL(final String absolutePathToJarFile) {
+    private final /* @Nullable */ URL getJarURL(final String absolutePathToJarFile) {
         URL jarURL = null;
 
         try {
@@ -399,10 +398,10 @@ public class AnnotationClassLoader {
         paths.addAll(Arrays.asList(System.getProperty("java.class.path").split(":")));
 
         // add all paths that are examined by the classloader
-        ClassLoader applicationClassloader = getAppClassLoader();
+        ClassLoader classLoader = getClassLoader();
 
-        if (applicationClassloader != null) {
-            URL[] urls = ((URLClassLoader) applicationClassloader).getURLs();
+        if (classLoader != null) {
+            URL[] urls = ((URLClassLoader) classLoader).getURLs();
             for (int i = 0; i < urls.length; i++) {
                 paths.add(urls[i].getFile().toString());
             }
@@ -418,7 +417,7 @@ public class AnnotationClassLoader {
      * @return the classloader used to load the checker class, or the system classloader, or null if
      *     both are unavailable
      */
-    private final /*@Nullable*/ ClassLoader getAppClassLoader() {
+    private final /* @Nullable */ ClassLoader getClassLoader() {
         return InternalUtils.getClassLoaderForClass(checker.getClass());
     }
 
@@ -447,10 +446,10 @@ public class AnnotationClassLoader {
         }
 
         // add all paths that are examined by the classloader
-        ClassLoader applicationClassLoader = getAppClassLoader();
+        ClassLoader classLoader = getClassLoader();
         processingEnv.getMessager().printMessage(Kind.NOTE, "classloader examined paths:");
-        if (applicationClassLoader != null) {
-            URL[] urls = ((URLClassLoader) applicationClassLoader).getURLs();
+        if (classLoader != null) {
+            URL[] urls = ((URLClassLoader) classLoader).getURLs();
             for (int i = 0; i < urls.length; i++) {
                 processingEnv.getMessager().printMessage(Kind.NOTE, "\t" + urls[i].getFile());
             }
@@ -460,23 +459,23 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Gets the set of the loaded annotation classes. Note that the returned set from this method is
-     * mutable. This method is intended to be called within {@link
-     * AnnotatedTypeFactory#createSupportedTypeQualifiers() createSupportedTypeQualifiers()} (or its
-     * helper methods) to help define the set of supported qualifiers. {@link
-     * AnnotatedTypeFactory#createSupportedTypeQualifiers() createSupportedTypeQualifiers()} must
-     * return an immutable set, and it is the responsibility of that method (or helper methods it
-     * calls) to convert the set returned by this method, along with any additional annotation
-     * classes, into an immutable set.
+     * Gets the set of the annotation classes in the qual directory of each checker shipped with the
+     * Checker Framework. Note that the returned set from this method is mutable. This method is
+     * intended to be called within {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()
+     * createSupportedTypeQualifiers()} (or its helper methods) to help define the set of supported
+     * qualifiers. {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()
+     * createSupportedTypeQualifiers()} must return an immutable set, and it is the responsibility
+     * of that method (or helper methods it calls) to convert the set returned by this method, along
+     * with any additional annotation classes, into an immutable set.
      *
      * @return the set of loaded annotation classes
      */
-    public final Set<Class<? extends Annotation>> getLoadedAnnotationClasses() {
-        if (loadedAnnotations == null) {
-            loadedAnnotations = new LinkedHashSet<Class<? extends Annotation>>();
+    public final Set<Class<? extends Annotation>> getBundledAnnotationClasses() {
+        if (supportedBundledAnnotationClasses == null) {
+            supportedBundledAnnotationClasses = new LinkedHashSet<Class<? extends Annotation>>();
             if (resourceURL == null) {
                 // if there's no resourceURL, then there's nothing we can load
-                return loadedAnnotations;
+                return supportedBundledAnnotationClasses;
             }
 
             // retrieve the fully qualified class names of the annotations
@@ -514,9 +513,9 @@ public class AnnotationClassLoader {
                                 packageName + DOT, resourceURL.getFile(), packageDir, CLASS_SUFFIX);
             }
 
-            loadedAnnotations.addAll(loadAnnotationClasses(annotationNames));
+            supportedBundledAnnotationClasses.addAll(loadAnnotationClasses(annotationNames));
         }
-        return loadedAnnotations;
+        return supportedBundledAnnotationClasses;
     }
 
     /**
@@ -563,26 +562,17 @@ public class AnnotationClassLoader {
      *     "myproject.qual.myannotation"
      * @return the loaded annotation class
      */
-    public final /*@Nullable*/ Class<? extends Annotation> loadExternalAnnotationClass(
+    public final /* @Nullable */ Class<? extends Annotation> loadExternalAnnotationClass(
             final String annoName) {
-        try {
-            final Class<? extends Annotation> annoClass =
-                    Class.forName(annoName, true, getAppClassLoader()).asSubclass(Annotation.class);
-            return annoClass;
-        } catch (ClassNotFoundException e) {
+        Class<? extends Annotation> annotation = loadAnnotationClass(annoName);
+        if (annotation == null) {
             checker.userErrorAbort(
                     checker.getClass().getSimpleName()
                             + ": could not load class for annotation: "
                             + annoName
-                            + "; ensure that your classpath is correct");
-        } catch (ClassCastException e) {
-            checker.userErrorAbort(
-                    checker.getClass().getSimpleName()
-                            + ": class "
-                            + annoName
-                            + " is not an annotation");
+                            + "; ensure that it is a type annotation and your classpath is correct.");
         }
-        return null;
+        return annotation;
     }
 
     /**
@@ -686,13 +676,16 @@ public class AnnotationClassLoader {
      * @return the loaded annotation class if it is defined with ElementType.TYPE_USE and is a
      *     supported annotation, null otherwise
      */
-    private final /*@Nullable*/ Class<? extends Annotation> loadAnnotationClass(
+    private final /* @Nullable */ Class<? extends Annotation> loadAnnotationClass(
             final String fullyQualifiedClassName) {
         Class<?> cls = null;
 
         try {
             // load the class
-            cls = Class.forName(fullyQualifiedClassName, true, getAppClassLoader());
+            ClassLoader classLoader = getClassLoader();
+            if (classLoader != null) {
+                cls = Class.forName(fullyQualifiedClassName, true, classLoader);
+            }
         } catch (ClassNotFoundException e) {
             // do nothing: projects can have annotation class files and regular
             // source files located within the same directory, and as such when
@@ -700,19 +693,18 @@ public class AnnotationClassLoader {
             // ClassNotFoundException
         }
 
-        // ensure that the freshly loaded class is an annotation, and has
-        // the @Target annotation
-        if (cls != null && cls.isAnnotation() && cls.getAnnotation(Target.class) != null) {
-            // retrieve the set of ElementTypes in the @Target
-            // meta-annotation and check to see if this annotation is
-            // supported for automatic loading
-            if (AnnotatedTypes.hasTypeQualifierElementTypes(
-                    cls.getAnnotation(Target.class).value(), cls)) {
-                // if it is supported, then subclass it as an Annotation
-                // class
-                Class<? extends Annotation> annoClass = cls.asSubclass(Annotation.class);
+        // ensure that the freshly loaded class is an annotation
+        if (cls != null && cls.isAnnotation()) {
+            Class<? extends Annotation> annoClass = cls.asSubclass(Annotation.class);
 
-                // see if the annotation is supported by a checker
+            // make sure the loaded annotation class has the @Target meta-annotation, and is a well
+            // defined qualifier or is the special qualifier @Unqualified
+            if (annoClass.getAnnotation(Target.class) != null
+                    && (AnnotatedTypes.hasTypeQualifierElementTypes(
+                                    annoClass.getAnnotation(Target.class).value(), annoClass)
+                            || annoClass.equals(Unqualified.class))) {
+                // return the loaded annotation if it is supported by a
+                // checker
                 if (isSupportedAnnotationClass(annoClass)) {
                     return annoClass;
                 }
@@ -731,7 +723,7 @@ public class AnnotationClassLoader {
      * @see #loadAnnotationClass(String)
      */
     private final Set<Class<? extends Annotation>> loadAnnotationClasses(
-            final /*@Nullable*/ Set<String> fullyQualifiedAnnoNames) {
+            final /* @Nullable */ Set<String> fullyQualifiedAnnoNames) {
         Set<Class<? extends Annotation>> loadedClasses =
                 new LinkedHashSet<Class<? extends Annotation>>();
 
@@ -751,25 +743,16 @@ public class AnnotationClassLoader {
     /**
      * Checks to see whether a particular annotation class is supported.
      *
-     * <p>Every subclass of AnnotatedTypeLoader can override this method to indicate whether a
-     * particular annotation is supported by its checker.
+     * <p>By default, all loaded annotations that pass the basic checks in {@link
+     * #loadAnnotationClass(String)} are supported.
+     *
+     * <p>Individual checkers can create a subclass of AnnotatedTypeLoader and override this method
+     * to indicate whether a particular annotation is supported.
      *
      * @param annoClass an annotation class
      * @return true if the annotation is supported, false if it isn't
      */
     protected boolean isSupportedAnnotationClass(final Class<? extends Annotation> annoClass) {
-        if (getLoadedAnnotationClasses().contains(annoClass)) {
-            // if it has already been checked before, return true
-            return true;
-        } else {
-            // The standard way to see if an annotation is supported is to build
-            // its annotation mirror if there's no problems building the
-            // mirror, then it is supported
-            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoClass);
-            AnnotationMirror annoMirroResult = builder.build();
-            // TODO: build() internally will error abort if it fails, can we
-            // gracefully resume here?
-            return (annoMirroResult != null);
-        }
+        return true;
     }
 }
