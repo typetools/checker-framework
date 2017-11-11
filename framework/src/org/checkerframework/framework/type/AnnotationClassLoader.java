@@ -424,7 +424,7 @@ public class AnnotationClassLoader {
 
     /** Debug Use Displays all classpaths */
     @SuppressWarnings("unused") // for debugging
-    private final void printPaths() {
+    protected final void printPaths() {
         // all paths in Xbootclasspath
         String[] bootclassPaths = System.getProperty("sun.boot.class.path").split(":");
         processingEnv.getMessager().printMessage(Kind.NOTE, "bootclass path:");
@@ -684,7 +684,7 @@ public class AnnotationClassLoader {
      *     annotation is loaded and supported, then the pair {@code <true, theLoadedClass>} is
      *     returned.
      */
-    private final Pair<Boolean, /* @Nullable */ Class<? extends Annotation>> loadAnnotationClass(
+    protected final Pair<Boolean, /* @Nullable */ Class<? extends Annotation>> loadAnnotationClass(
             final String fullyQualifiedClassName) {
         Class<?> cls = null;
 
@@ -732,7 +732,7 @@ public class AnnotationClassLoader {
      * @return a set of loaded annotation classes
      * @see #loadAnnotationClass(String)
      */
-    private final Set<Class<? extends Annotation>> loadAnnotationClasses(
+    protected final Set<Class<? extends Annotation>> loadAnnotationClasses(
             final /* @Nullable */ Set<String> fullyQualifiedAnnoNames) {
         Set<Class<? extends Annotation>> loadedClasses =
                 new LinkedHashSet<Class<? extends Annotation>>();
