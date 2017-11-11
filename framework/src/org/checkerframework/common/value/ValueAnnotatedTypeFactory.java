@@ -992,7 +992,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         protected Void defaultAction(Tree node, AnnotatedTypeMirror p) {
             AnnotationMirror bottom = p.getAnnotation(BottomVal.class);
             if (bottom != null) {
-                String errorKey =
+                @SuppressWarnings(
+                        "assignment.type.incompatible") // Only compiler message keys are placed into these annotations
+                /*@CompilerMessageKey*/ String errorKey =
                         AnnotationUtils.getElementValue(bottom, "value", String.class, true);
                 if (!"".equals(errorKey)) {
                     checker.report(Result.failure(errorKey), node);
