@@ -831,9 +831,16 @@ public class StubParser {
             annotateAsArray((AnnotatedArrayType) atype, (ReferenceType) typeDef, declAnnos);
             return;
         }
-        if (declAnnos != null) {
-            typeDef.getAnnotations().addAll(declAnnos);
+        NodeList<AnnotationExpr> annos;
+        if (declAnnos == null || declAnnos.isEmpty()) {
+            annos = typeDef.getAnnotations();
+        } else {
+            annos = declAnnos;
+            if (!typeDef.getAnnotations().isEmpty()) {
+                stubAlwaysWarn("Ignoring annos");
+            }
         }
+
         handleExistingAnnotations(atype, typeDef);
 
         ClassOrInterfaceType declType = unwrapDeclaredType(typeDef);
@@ -862,12 +869,12 @@ public class StubParser {
             WildcardType wildcardDef = (WildcardType) typeDef;
             if (wildcardDef.getExtendedType().isPresent()) {
                 annotate(wildcardType.getExtendsBound(), wildcardDef.getExtendedType().get(), null);
-                annotate(wildcardType.getSuperBound(), typeDef.getAnnotations());
+                annotate(wildcardType.getSuperBound(), annos);
             } else if (wildcardDef.getSuperType().isPresent()) {
                 annotate(wildcardType.getSuperBound(), wildcardDef.getSuperType().get(), null);
-                annotate(wildcardType.getExtendsBound(), typeDef.getAnnotations());
+                annotate(wildcardType.getExtendsBound(), annos);
             } else {
-                annotate(atype, typeDef.getAnnotations());
+                annotate(atype, annos);
             }
         } else if (atype.getKind() == TypeKind.TYPEVAR) {
             // Add annotations from the declaration of the TypeVariable
@@ -880,7 +887,7 @@ public class StubParser {
             }
         }
         if (typeDef.getAnnotations() != null && atype.getKind() != TypeKind.WILDCARD) {
-            annotate(atype, typeDef.getAnnotations());
+            annotate(atype, annos);
         }
     }
 
