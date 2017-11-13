@@ -2,6 +2,7 @@
 // https://github.com/typetools/checker-framework/issues/1628
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 class Issue1628<V extends Comparable<? super V>> implements Issue1628R<V> {
 
@@ -15,5 +16,6 @@ class Issue1628<V extends Comparable<? super V>> implements Issue1628R<V> {
 }
 
 interface Issue1628R<V extends Comparable<? super V>> {
+    @Pure
     boolean isEmpty();
 }
