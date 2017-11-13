@@ -669,13 +669,7 @@ public class StubParser {
         annotateTypeParameters(
                 decl, elt, atypes, methodType.getTypeVariables(), decl.getTypeParameters());
         typeParameters.addAll(methodType.getTypeVariables());
-        if (decl.getType().isArrayType()) {
-            annotateInnerMostComponentType(
-                    (AnnotatedArrayType) methodType.getReturnType(), decl.getAnnotations());
-        } else {
-            // Duplicate method annotations to the type.
-            decl.getType().setAnnotations(decl.getAnnotations());
-        }
+
         annotate(methodType.getReturnType(), decl.getType(), decl.getAnnotations());
 
         parseParameters(decl, elt, declAnnos, methodType);
