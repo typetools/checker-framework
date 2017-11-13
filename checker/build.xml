@@ -827,7 +827,7 @@
         </antcall>
     </target>
 
-    <target name="index-tests" depends="jar,build-tests"
+    <target name="index-tests" depends="jar,jdk.jar.exists,build-tests"
             description="Run tests for the Index Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.IndexTest"/>
@@ -841,7 +841,7 @@
         </antcall>
     </target>
 
-    <target name="lock-tests" depends="jar,build-tests"
+    <target name="lock-tests" depends="jar,jdk.jar.exists,build-tests"
             description="Run tests for the Lock Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.LockTest"/>
@@ -1508,6 +1508,8 @@
          <env key="LT_BIN" value="${LT_BIN}"/>
       </exec>
       <move file="jdk/jdk.jar" tofile="jdk/${jdkName}"/>
+        <!-- Copy jars to dist. If dist doesn't exist then the copy task creates it.-->
+        <copy file="jdk/${jdkName}" tofile="dist/${jdkName}"/>
 
     </target>
 
