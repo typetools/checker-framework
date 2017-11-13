@@ -35,7 +35,6 @@ import javax.lang.model.util.Types;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.PolyAll;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -888,21 +887,8 @@ public abstract class AnnotatedTypeMirror {
                 for (int i = 0; i < typeArgs.size(); i++) {
                     AnnotatedTypeVariable typeParam =
                             (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);
-                    map.put(typeParam.getUnderlyingType(), typeArgs.get(i));
-                }
-
-                for (int i = 0; i < typeArgs.size(); i++) {
-                    AnnotatedTypeVariable typeParam =
-                            (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);
-                    TypeVariableSubstitutor varSubstitutor = atypeFactory.getTypeVarSubstitutor();
-                    // The upper bound of a type parameter may refer to other type parameters.
-                    // Substitute those references with the type argument.
-                    AnnotatedTypeMirror typeParamUpperBound =
-                            varSubstitutor.substitute(map, typeParam.getUpperBound());
-
                     AnnotatedWildcardType wct = (AnnotatedWildcardType) typeArgs.get(i);
-                    AnnotatedTypeMerger.merge(typeParamUpperBound, wct.getExtendsBound());
-
+                    wct.getExtendsBound().replaceAnnotations(typeParam.getUpperBound().annotations);
                     wct.getSuperBound().replaceAnnotations(typeParam.getLowerBound().annotations);
                     wct.replaceAnnotations(typeParam.annotations);
                 }
