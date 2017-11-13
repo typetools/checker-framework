@@ -228,20 +228,20 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         Effect.EffectRange range =
                 atypeFactory.findInheritedEffectRange(
                         ((TypeElement) methElt.getEnclosingElement()), methElt, true, node);
-        if (targetUIP == null && targetSafeP == null && targetPolyP == null) {
-            // implicitly annotate this method with the LUB of the effects of the methods it
-            // overrides
-            // atypeFactory.fromElement(methElt).addAnnotation(range != null ? range.min.getAnnot()
-            // : (isUIType(((TypeElement)methElt.getEnclosingElement())) ? UI.class :
-            // AlwaysSafe.class));
-            // TODO: This line does nothing! AnnotatedTypeMirror.addAnnotation
-            // silently ignores non-qualifier annotations!
-            // System.err.println("ERROR: TREE ANNOTATOR SHOULD HAVE ADDED EXPLICIT ANNOTATION! ("
-            //     +node.getName()+")");
-            atypeFactory
-                    .fromElement(methElt)
-                    .addAnnotation(atypeFactory.getDeclaredEffect(methElt).getAnnot());
-        }
+        // if (targetUIP == null && targetSafeP == null && targetPolyP == null) {
+        // implicitly annotate this method with the LUB of the effects of the methods it
+        // overrides
+        // atypeFactory.fromElement(methElt).addAnnotation(range != null ? range.min.getAnnot()
+        // : (isUIType(((TypeElement)methElt.getEnclosingElement())) ? UI.class :
+        // AlwaysSafe.class));
+        // TODO: This line does nothing! AnnotatedTypeMirror.addAnnotation
+        // silently ignores non-qualifier annotations!
+        // System.err.println("ERROR: TREE ANNOTATOR SHOULD HAVE ADDED EXPLICIT ANNOTATION! ("
+        //     +node.getName()+")");
+        // atypeFactory
+        //         .fromElement(methElt)
+        //         .addAnnotation(atypeFactory.getDeclaredEffect(methElt).getAnnot());
+        // }
 
         // We hang onto the current method here for ease.  We back up the old
         // current method because this code is reentrant when we traverse methods of an inner class
