@@ -262,8 +262,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final Map<String, String[]> aliasesIgnorableElements = new HashMap<>();
 
     /**
-     * A map from the class name (canonical name) of an annotation to the set of class names for
-     * annotations with the same meaning, as well as the annotation mirror that should be used.
+     * A map from the class of an annotation to the set of classes for annotations with the same
+     * meaning, as well as the annotation mirror that should be used.
      */
     private final Map<
                     Class<? extends Annotation>,
