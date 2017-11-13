@@ -438,7 +438,9 @@ public class AnnotationUtils {
             if (list1.size() != list2.size()) {
                 return false;
             }
-            // TODO: Should arrays/lists be compared setwise, in a way that ignores order?
+            // Don't compare setwise, because order can matter. These mean different things:
+            //   @LTLengthOf(value={"a1","a2"}, offest={"0", "1"})
+            //   @LTLengthOf(value={"a2","a1"}, offest={"0", "1"})
             for (int i = 0; i < list1.size(); i++) {
                 if (!sameAnnotationValueValue(list1.get(i), list2.get(i))) {
                     return false;
