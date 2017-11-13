@@ -775,6 +775,15 @@ public class StubParser {
         }
     }
 
+    /**
+     * Add the annotations from {@code type} to {@code atype}. Type annotations that parsed as
+     * declaration annotations (ie those in {@code declAnnos} are applied to the inner most
+     * component type.
+     *
+     * @param atype annotated type to which to add annotations
+     * @param type parsed type
+     * @param declAnnos annotations stored on the declaration of the variable with this type or null
+     */
     private void annotateAsArray(
             AnnotatedArrayType atype, ReferenceType type, NodeList<AnnotationExpr> declAnnos) {
         annotateInnerMostComponentType(atype, declAnnos);
@@ -808,6 +817,14 @@ public class StubParser {
         }
     }
 
+    /**
+     * Add the annotations from {@code typeDef} to {@code atype}, include any type annotations that
+     * parsed as declaration annotations (ie those in {@code declAnnos}.
+     *
+     * @param atype annotated type to which to add annotations
+     * @param typeDef parsed type
+     * @param declAnnos annotations stored on the declaration of the variable with this type or null
+     */
     private void annotate(
             AnnotatedTypeMirror atype, Type typeDef, NodeList<AnnotationExpr> declAnnos) {
         if (atype.getKind() == TypeKind.ARRAY) {
