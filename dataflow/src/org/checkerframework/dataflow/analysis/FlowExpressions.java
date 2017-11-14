@@ -213,7 +213,7 @@ public class FlowExpressions {
         }
         VariableElement param = params.get(0);
         TypeMirror paramType = param.asType();
-        return paramType.toString().equals("long");
+        return paramType.getKind() == TypeKind.LONG;
     }
 
     /**

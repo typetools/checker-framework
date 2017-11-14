@@ -4,7 +4,7 @@ import testlib.util.SuperQual;
 
 // @skip-test Dependent types are not currently supported (and may not make sense)
 // :: error: (initialization.fields.uninitialized)
-public class DependentTypes {
+public class DependentTypesTest {
 
     @SuperQual @Nullable Object supero = null;
     // A trivial error, so there is at least one in the output.
@@ -48,7 +48,7 @@ public class DependentTypes {
         privateDepSubQual = s;
     }
 
-    public void setDepSubQualGOOD2(@SuperQual DependentTypes this, @Nullable String s) {
+    public void setDepSubQualGOOD2(@SuperQual DependentTypesTest this, @Nullable String s) {
         privateDepSubQual = s;
     }
 
@@ -64,7 +64,7 @@ public class DependentTypes {
         return privateDepSuperQual;
     }
 
-    public @NonNull String getDepSuperQualGOOD2(@SuperQual DependentTypes this) {
+    public @NonNull String getDepSuperQualGOOD2(@SuperQual DependentTypesTest this) {
         return privateDepSuperQual;
     }
 
@@ -73,7 +73,7 @@ public class DependentTypes {
         privateDepSuperQual = s;
     }
 
-    public void setDepSuperQualOTHERGOOD(@SuperQual DependentTypes this, @NonNull String s) {
+    public void setDepSuperQualOTHERGOOD(@SuperQual DependentTypesTest this, @NonNull String s) {
         privateDepSuperQual = s;
     }
 }

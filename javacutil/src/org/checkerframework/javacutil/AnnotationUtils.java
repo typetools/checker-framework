@@ -451,19 +451,10 @@ public class AnnotationUtils {
             return sameAnnotationValue((AnnotationValue) val1, (AnnotationValue) val2);
         } else if ((val1 instanceof Type.ClassType) && (val2 instanceof Type.ClassType)) {
             // Type.ClassType does not override equals
-            return sameClassType((Type.ClassType) val1, (Type.ClassType) val2);
+            return TypesUtils.areSameDeclaredTypes((Type.ClassType) val1, (Type.ClassType) val2);
         } else {
             return Objects.equals(val1, val2);
         }
-    }
-
-    // Type.ClassType does not override equals
-    public static boolean sameClassType(Type.ClassType t1, Type.ClassType t2) {
-        // Do a cheaper test first
-        if (!t1.tsym.name.toString().equals(t2.tsym.name.toString())) {
-            return false;
-        }
-        return t1.toString().equals(t1.toString());
     }
 
     /**
