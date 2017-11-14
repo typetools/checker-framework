@@ -5,6 +5,7 @@ package org.checkerframework.checker.regex;
 // Uses annotations in comments because it may be run on a Java 7 JVM
 // when called from user code.
 /*>>>
+import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.regex.qual.*;
 import org.checkerframework.dataflow.qual.*;
@@ -88,8 +89,8 @@ public final class RegexUtil {
          *
          * @param desc a description of the error
          * @param regex the erroneous pattern
-         * @param index the approximate index in the pattern of the error, or -1 if the index is not
-         *     known
+         * @param index the approximate index in the pattern of the error, or {@code -1} if the
+         *     index is not known
          */
         public CheckedPatternSyntaxException(String desc, String regex, int index) {
             this(new PatternSyntaxException(desc, regex, index));
@@ -123,7 +124,7 @@ public final class RegexUtil {
          */
         @Override
         /*@Pure*/
-        public String getMessage() {
+        public String getMessage(/*>>>@GuardSatisfied CheckedPatternSyntaxException this*/) {
             return pse.getMessage();
         }
 
