@@ -424,7 +424,7 @@ public class AnnotationUtils {
      * Return true if the two annotation values are the same. The arguments to this method are
      * values that are returned by {@code AnnotationValue.getValue()}.
      */
-    public static boolean sameAnnotationValueValue(Object val1, Object val2) {
+    private static boolean sameAnnotationValueValue(Object val1, Object val2) {
         if (val1 == val2) {
             return true;
         }

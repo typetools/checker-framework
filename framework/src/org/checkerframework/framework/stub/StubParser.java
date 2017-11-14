@@ -635,22 +635,15 @@ public class StubParser {
         if (typeDecl.getImplementedTypes() != null) {
             for (ClassOrInterfaceType superType : typeDecl.getImplementedTypes()) {
                 AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
-                // TODO: Java 7 added a few AutoCloseable superinterfaces to classes.
-                // We specify those as superinterfaces in the jdk.astub file. Let's ignore
-                // this addition to be compatible with Java 6.
-                String superTypeString = superType.toString();
-                assert foundType != null
-                                || (superTypeString.equals("AutoCloseable")
-                                        || superTypeString.equals("java.io.Closeable")
-                                        || superTypeString.equals("Closeable"))
-                        : "StubParser: could not find superinterface "
-                                + superType
-                                + " from type "
-                                + type
-                                + "\nStub file does not match bytecode";
-                if (foundType != null) {
-                    annotate(foundType, superType);
+                if (foundType == null) {
+                    throw new Error(
+                            "StubParser: could not find superinterface "
+                                    + superType
+                                    + " from type "
+                                    + type
+                                    + "\nStub file does not match bytecode");
                 }
+                annotate(foundType, superType);
             }
         }
     }
