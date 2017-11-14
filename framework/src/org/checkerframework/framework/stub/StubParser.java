@@ -655,16 +655,20 @@ public class StubParser {
         }
     }
 
+    /** Adds type and declaration annotations to from {@code decl}. */
     private void parseMethod(
             MethodDeclaration decl,
             ExecutableElement elt,
             Map<Element, AnnotatedTypeMirror> atypes,
             Map<String, Set<AnnotationMirror>> declAnnos) {
+
+        // Declaration annotations
         annotateDecl(declAnnos, elt, decl.getAnnotations());
         // StubParser parses all annotations in type annotation position as type annotations
         annotateDecl(declAnnos, elt, decl.getType().getAnnotations());
         addDeclAnnotations(declAnnos, elt);
 
+        // Type annotations
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
         annotateTypeParameters(
                 decl, elt, atypes, methodType.getTypeVariables(), decl.getTypeParameters());
@@ -674,24 +678,26 @@ public class StubParser {
 
         parseParameters(decl, elt, declAnnos, methodType);
 
-        if (decl.getReceiverParameter().isPresent()
-                && !decl.getReceiverParameter().get().getAnnotations().isEmpty()) {
-            if (methodType.getReceiverType() == null) {
-                stubAlwaysWarn(
-                        String.format(
-                                "parseMethod: static methods cannot have receiver annotations%n"
-                                        + "Method: %s%n"
-                                        + "Receiver annotations: %s",
-                                methodType, decl.getReceiverParameter().get().getAnnotations()));
-            } else {
-                annotate(
-                        methodType.getReceiverType(),
-                        decl.getReceiverParameter().get().getAnnotations());
-            }
-        }
-
         putNew(atypes, elt, methodType);
         typeParameters.removeAll(methodType.getTypeVariables());
+    }
+
+    /** Adds type and declaration annotations to from {@code decl}. */
+    private void parseConstructor(
+            ConstructorDeclaration decl,
+            ExecutableElement elt,
+            Map<Element, AnnotatedTypeMirror> atypes,
+            Map<String, Set<AnnotationMirror>> declAnnos) {
+        // Declaration annotations
+        annotateDecl(declAnnos, elt, decl.getAnnotations());
+        addDeclAnnotations(declAnnos, elt);
+
+        // Type annotations
+        AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
+        annotate(methodType.getReturnType(), decl.getAnnotations());
+
+        parseParameters(decl, elt, declAnnos, methodType);
+        putNew(atypes, elt, methodType);
     }
 
     /**
@@ -732,6 +738,28 @@ public class StubParser {
                 annotate(paramType, param.getVarArgsAnnotations());
             } else {
                 annotate(paramType, param.getType(), param.getAnnotations());
+            }
+        }
+        if (method.getReceiverParameter().isPresent()
+                && !method.getReceiverParameter().get().getAnnotations().isEmpty()) {
+            if (methodType.getReceiverType() == null) {
+                if (method.isConstructorDeclaration()) {
+                    stubAlwaysWarn(
+                            "parseParameter: constructor of a top-level class cannot have receiver annotations%n"
+                                    + "Constructor: %s%n"
+                                    + "Receiver annotations: %s",
+                            methodType, method.getReceiverParameter().get().getAnnotations());
+                } else {
+                    stubAlwaysWarn(
+                            "parseParameter: static methods cannot have receiver annotations%n"
+                                    + "Method: %s%n"
+                                    + "Receiver annotations: %s",
+                            methodType, method.getReceiverParameter().get().getAnnotations());
+                }
+            } else {
+                annotate(
+                        methodType.getReceiverType(),
+                        method.getReceiverParameter().get().getAnnotations());
             }
         }
     }
@@ -911,36 +939,6 @@ public class StubParser {
         if (atype.getKind() != TypeKind.WILDCARD) {
             annotate(atype, annos);
         }
-    }
-
-    private void parseConstructor(
-            ConstructorDeclaration decl,
-            ExecutableElement elt,
-            Map<Element, AnnotatedTypeMirror> atypes,
-            Map<String, Set<AnnotationMirror>> declAnnos) {
-        annotateDecl(declAnnos, elt, decl.getAnnotations());
-        AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
-        addDeclAnnotations(declAnnos, elt);
-        annotate(methodType.getReturnType(), decl.getAnnotations());
-
-        parseParameters(decl, elt, declAnnos, methodType);
-
-        if (decl.getReceiverParameter().isPresent()
-                && !decl.getReceiverParameter().get().getAnnotations().isEmpty()) {
-            if (methodType.getReceiverType() == null) {
-                stubAlwaysWarn(
-                        String.format(
-                                "parseConstructor: constructor of a top-level class cannot have receiver annotations%n"
-                                        + "Constructor: %s%n"
-                                        + "Receiver annotations: %s",
-                                methodType, decl.getReceiverParameter().get().getAnnotations()));
-            } else {
-                annotate(
-                        methodType.getReceiverType(),
-                        decl.getReceiverParameter().get().getAnnotations());
-            }
-        }
-        putNew(atypes, elt, methodType);
     }
 
     private void parseField(
