@@ -694,12 +694,21 @@ public class StubParser {
         typeParameters.removeAll(methodType.getTypeVariables());
     }
 
+    /**
+     * Adds declaration and type annotations to the parameters of {@code methodType}, which is
+     * either a method or constructor.
+     *
+     * @param method Method or Constructor declaration
+     * @param elt ExecutableElement of {@code method}
+     * @param declAnnos Map of declaration elements strings to annotations
+     * @param methodType annotated type of {@code method}
+     */
     private void parseParameters(
-            CallableDeclaration<?> decl,
+            CallableDeclaration<?> method,
             ExecutableElement elt,
             Map<String, Set<AnnotationMirror>> declAnnos,
             AnnotatedExecutableType methodType) {
-        List<Parameter> params = decl.getParameters();
+        List<Parameter> params = method.getParameters();
         List<? extends VariableElement> paramElts = elt.getParameters();
         List<? extends AnnotatedTypeMirror> paramTypes = methodType.getParameterTypes();
 
@@ -842,51 +851,64 @@ public class StubParser {
         }
 
         handleExistingAnnotations(atype, typeDef);
-
-        ClassOrInterfaceType declType = unwrapDeclaredType(typeDef);
-        if (atype.getKind() == TypeKind.DECLARED && declType != null) {
-            AnnotatedDeclaredType adeclType = (AnnotatedDeclaredType) atype;
-            if (declType.getTypeArguments().isPresent()
-                    && !declType.getTypeArguments().get().isEmpty()
-                    && !adeclType.getTypeArguments().isEmpty()) {
-                assert declType.getTypeArguments().get().size()
-                                == adeclType.getTypeArguments().size()
-                        : String.format(
-                                "Mismatch in type argument size between %s (%d) and %s (%d)",
-                                declType,
-                                declType.getTypeArguments().get().size(),
-                                adeclType,
-                                adeclType.getTypeArguments().size());
-                for (int i = 0; i < declType.getTypeArguments().get().size(); ++i) {
+        switch (atype.getKind()) {
+            case DECLARED:
+                ClassOrInterfaceType declType = unwrapDeclaredType(typeDef);
+                if (declType == null) {
+                    break;
+                }
+                AnnotatedDeclaredType adeclType = (AnnotatedDeclaredType) atype;
+                if (declType.getTypeArguments().isPresent()
+                        && !declType.getTypeArguments().get().isEmpty()
+                        && !adeclType.getTypeArguments().isEmpty()) {
+                    assert declType.getTypeArguments().get().size()
+                                    == adeclType.getTypeArguments().size()
+                            : String.format(
+                                    "Mismatch in type argument size between %s (%d) and %s (%d)",
+                                    declType,
+                                    declType.getTypeArguments().get().size(),
+                                    adeclType,
+                                    adeclType.getTypeArguments().size());
+                    for (int i = 0; i < declType.getTypeArguments().get().size(); ++i) {
+                        annotate(
+                                adeclType.getTypeArguments().get(i),
+                                declType.getTypeArguments().get().get(i),
+                                null);
+                    }
+                }
+                break;
+            case WILDCARD:
+                AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atype;
+                WildcardType wildcardDef = (WildcardType) typeDef;
+                if (wildcardDef.getExtendedType().isPresent()) {
                     annotate(
-                            adeclType.getTypeArguments().get(i),
-                            declType.getTypeArguments().get().get(i),
+                            wildcardType.getExtendsBound(),
+                            wildcardDef.getExtendedType().get(),
                             null);
+                    annotate(wildcardType.getSuperBound(), annos);
+                } else if (wildcardDef.getSuperType().isPresent()) {
+                    annotate(wildcardType.getSuperBound(), wildcardDef.getSuperType().get(), null);
+                    annotate(wildcardType.getExtendsBound(), annos);
+                } else {
+                    annotate(atype, annos);
                 }
-            }
-        } else if (atype.getKind() == TypeKind.WILDCARD) {
-            AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atype;
-            WildcardType wildcardDef = (WildcardType) typeDef;
-            if (wildcardDef.getExtendedType().isPresent()) {
-                annotate(wildcardType.getExtendsBound(), wildcardDef.getExtendedType().get(), null);
-                annotate(wildcardType.getSuperBound(), annos);
-            } else if (wildcardDef.getSuperType().isPresent()) {
-                annotate(wildcardType.getSuperBound(), wildcardDef.getSuperType().get(), null);
-                annotate(wildcardType.getExtendsBound(), annos);
-            } else {
-                annotate(atype, annos);
-            }
-        } else if (atype.getKind() == TypeKind.TYPEVAR) {
-            // Add annotations from the declaration of the TypeVariable
-            AnnotatedTypeVariable typeVarUse = (AnnotatedTypeVariable) atype;
-            for (AnnotatedTypeVariable typePar : typeParameters) {
-                if (typePar.getUnderlyingType() == atype.getUnderlyingType()) {
-                    AnnotatedTypeMerger.merge(typePar.getUpperBound(), typeVarUse.getUpperBound());
-                    AnnotatedTypeMerger.merge(typePar.getLowerBound(), typeVarUse.getLowerBound());
+                break;
+            case TYPEVAR:
+                // Add annotations from the declaration of the TypeVariable
+                AnnotatedTypeVariable typeVarUse = (AnnotatedTypeVariable) atype;
+                for (AnnotatedTypeVariable typePar : typeParameters) {
+                    if (typePar.getUnderlyingType() == atype.getUnderlyingType()) {
+                        AnnotatedTypeMerger.merge(
+                                typePar.getUpperBound(), typeVarUse.getUpperBound());
+                        AnnotatedTypeMerger.merge(
+                                typePar.getLowerBound(), typeVarUse.getLowerBound());
+                    }
                 }
-            }
+                break;
+            default:
+                // Annotations added below
         }
-        if (typeDef.getAnnotations() != null && atype.getKind() != TypeKind.WILDCARD) {
+        if (atype.getKind() != TypeKind.WILDCARD) {
             annotate(atype, annos);
         }
     }
