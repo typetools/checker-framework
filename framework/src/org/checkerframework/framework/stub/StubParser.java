@@ -868,17 +868,24 @@ public class StubParser {
             annotateAsArray((AnnotatedArrayType) atype, (ReferenceType) typeDef, declAnnos);
             return;
         }
-        NodeList<AnnotationExpr> annos;
-        if (declAnnos == null || declAnnos.isEmpty()) {
-            annos = typeDef.getAnnotations();
-        } else {
-            annos = declAnnos;
-            if (!typeDef.getAnnotations().isEmpty()) {
-                stubAlwaysWarn("Ignoring annos");
-            }
-        }
 
         handleExistingAnnotations(atype, typeDef);
+
+        // Primary annotations for the type of a variable declaration are not store in typeDef, but
+        // rather as declaration annotations (passed as declAnnos to this method).  But, if typeDef
+        // is not the type of a variable, then the primary annotations are stored in typeDef.
+        NodeList<AnnotationExpr> primaryAnnotations;
+        if (typeDef.getAnnotations().isEmpty() && declAnnos != null) {
+            primaryAnnotations = declAnnos;
+        } else {
+            primaryAnnotations = typeDef.getAnnotations();
+        }
+
+        if (atype.getKind() != TypeKind.WILDCARD) {
+            // The primary annotation on a wildcard applies to the super or extends bound and
+            // are added below.
+            annotate(atype, primaryAnnotations);
+        }
         switch (atype.getKind()) {
             case DECLARED:
                 ClassOrInterfaceType declType = unwrapDeclaredType(typeDef);
@@ -913,12 +920,12 @@ public class StubParser {
                             wildcardType.getExtendsBound(),
                             wildcardDef.getExtendedType().get(),
                             null);
-                    annotate(wildcardType.getSuperBound(), annos);
+                    annotate(wildcardType.getSuperBound(), primaryAnnotations);
                 } else if (wildcardDef.getSuperType().isPresent()) {
                     annotate(wildcardType.getSuperBound(), wildcardDef.getSuperType().get(), null);
-                    annotate(wildcardType.getExtendsBound(), annos);
+                    annotate(wildcardType.getExtendsBound(), primaryAnnotations);
                 } else {
-                    annotate(atype, annos);
+                    annotate(atype, primaryAnnotations);
                 }
                 break;
             case TYPEVAR:
@@ -934,10 +941,7 @@ public class StubParser {
                 }
                 break;
             default:
-                // Annotations added below
-        }
-        if (atype.getKind() != TypeKind.WILDCARD) {
-            annotate(atype, annos);
+                // No annotations to add.
         }
     }
 
