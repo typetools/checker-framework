@@ -54,9 +54,7 @@ public class DependentTypes {
         // TODO: does this work with a .astub file?
         List<TypeCompound> tas = ((Symbol) element).getRawTypeAttributes();
         for (TypeCompound ta : tas) {
-            if (ta.getAnnotationType()
-                    .toString()
-                    .equals("org.checkerframework.framework.qual.Dependent")) {
+            if (ta.getAnnotationType().toString().equals(Dependent.class.getCanonicalName())) {
                 return ta;
             }
         }
