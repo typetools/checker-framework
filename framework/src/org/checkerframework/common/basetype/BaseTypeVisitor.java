@@ -3505,11 +3505,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
         TypeElement objectTE = elements.getTypeElement("java.lang.Object");
-        List<? extends Element> members = elements.getAllMembers(objectTE);
+        List<? extends ExecutableElement> memberMethods =
+                ElementFilter.methodsIn(elements.getAllMembers(objectTE));
 
-        for (Element member : members) {
-            if (isObjectEquals(member)) {
-                ExecutableElement m = (ExecutableElement) member;
+        for (ExecutableElement m : memberMethods) {
+            if (isObjectEquals(m)) {
                 // The Nullness JDK serves as a proxy for all annotated JDKs.
 
                 // Note that we cannot use the AnnotatedTypeMirrors from the
@@ -3559,14 +3559,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /** Return true iff the executable member is equals(Object). */
-    private boolean isObjectEquals(Element member) {
+    private boolean isObjectEquals(ExecutableElement method) {
         // Less efficient implementation:
-        // return member.toString().equals("equals(java.lang.Object)");
+        // return method.toString().equals("equals(java.lang.Object)");
 
-        if (member.getKind() != ElementKind.METHOD) {
-            return false;
-        }
-        ExecutableElement method = (ExecutableElement) member;
         if (!method.getSimpleName().contentEquals("equals")) {
             return false;
         }
