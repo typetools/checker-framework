@@ -43,6 +43,7 @@ import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.WildcardType;
 import java.io.InputStream;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1016,7 +1017,12 @@ public class StubParser {
         for (AnnotationExpr annotation : annotations) {
             AnnotationMirror annoMirror = getAnnotation(annotation, supportedAnnotations);
             if (annoMirror != null) {
-                annos.add(annoMirror);
+                Target target =
+                        annoMirror.getAnnotationType().asElement().getAnnotation(Target.class);
+                // Only add the declaration annotation if the annotation applies ot the element.
+                if (AnnotationUtils.getElementKindsForTarget(target).contains(elt.getKind())) {
+                    annos.add(annoMirror);
+                }
             }
         }
         String key = ElementUtils.getVerboseName(elt);
