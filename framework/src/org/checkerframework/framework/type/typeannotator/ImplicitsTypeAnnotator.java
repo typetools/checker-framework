@@ -4,7 +4,6 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -56,7 +55,7 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
         this.typeKinds = new EnumMap<TypeKind, Set<AnnotationMirror>>(TypeKind.class);
         this.typeClasses =
                 new HashMap<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>>();
-        this.typeNames = new IdentityHashMap<String, Set<AnnotationMirror>>();
+        this.typeNames = new HashMap<>();
 
         this.qualHierarchy = typeFactory.getQualifierHierarchy();
         // this.atypeFactory = atypeFactory;
@@ -110,7 +109,7 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
     }
 
     public void addTypeName(Class<?> typeName, AnnotationMirror theQual) {
-        String typeNameString = typeName.getCanonicalName().intern();
+        String typeNameString = typeName.getCanonicalName();
         boolean res = qualHierarchy.updateMappingToMutableSet(typeNames, typeNameString, theQual);
         if (!res) {
             ErrorReporter.errorAbort(
@@ -135,7 +134,7 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
         } else if (type.getKind().isPrimitive()) {
             qname = type.getUnderlyingType().toString();
         }
-        qname = (qname == null) ? null : qname.intern();
+
         if (qname != null && typeNames.containsKey(qname)) {
             Set<AnnotationMirror> fnd = typeNames.get(qname);
             type.addMissingAnnotations(fnd);
