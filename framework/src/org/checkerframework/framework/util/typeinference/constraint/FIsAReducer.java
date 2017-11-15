@@ -22,7 +22,7 @@ import org.checkerframework.framework.util.PluginUtil;
  * and reduces it by one step. The resulting constraint may still be reducible.
  *
  * <p>Generally reductions should map to corresponding rules in
- * http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7
+ * https://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7
  */
 public class FIsAReducer implements AFReducer {
 

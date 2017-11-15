@@ -245,7 +245,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Set<AnnotationMirror> annos = super.getDeclAnnotations(elt);
         Set<AnnotationMirror> newSet = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror anno : annos) {
-            if (!isSupportedQualifier(anno)) {
+            if (!isSupportedQualifier(aliasedAnnotation(anno))) {
                 newSet.add(anno);
             }
         }
