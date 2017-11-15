@@ -62,7 +62,6 @@ if [[ "${GROUP}" == "nonjunit" || "${GROUP}" == "all" ]]; then
 fi
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
-  (cd framework && ant all-tests)
   (cd checker && ant all-tests-nobuildjdk)
   # Moved example-tests-nobuildjdk out of all tests because it fails in
   # the release script because the newest maven artifacts are not published yet.
