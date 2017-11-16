@@ -1019,7 +1019,7 @@ public class StubParser {
             if (annoMirror != null) {
                 Target target =
                         annoMirror.getAnnotationType().asElement().getAnnotation(Target.class);
-                // Only add the declaration annotation if the annotation applies ot the element.
+                // Only add the declaration annotation if the annotation applies to the element.
                 if (AnnotationUtils.getElementKindsForTarget(target).contains(elt.getKind())) {
                     annos.add(annoMirror);
                 }

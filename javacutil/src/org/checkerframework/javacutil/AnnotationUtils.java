@@ -393,7 +393,9 @@ public class AnnotationUtils {
             case TYPE_PARAMETER:
                 return EnumSet.of(ElementKind.TYPE_PARAMETER);
             case TYPE_USE:
+                return EnumSet.noneOf(ElementKind.class);
             default:
+                ErrorReporter.errorAbort("New ElementType: %s", elementType);
                 return EnumSet.noneOf(ElementKind.class);
         }
     }
