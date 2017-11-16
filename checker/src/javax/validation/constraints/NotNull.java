@@ -1,4 +1,4 @@
-// Original annotation is documented at:
+// Upstream version:
 // https://javaee.github.io/javaee-spec/javadocs/javax/validation/constraints/NotNull.html
 
 package javax.validation.constraints;

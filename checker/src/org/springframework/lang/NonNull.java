@@ -1,3 +1,6 @@
+// Upstream version:
+// https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/NonNull.java
+
 package org.springframework.lang;
 
 import java.lang.annotation.Documented;

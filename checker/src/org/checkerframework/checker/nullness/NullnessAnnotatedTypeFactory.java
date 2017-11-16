@@ -124,6 +124,7 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(com.sun.istack.internal.Nullable.class, NULLABLE);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.CheckForNull.class, NULLABLE);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.Nullable.class, NULLABLE);
+        addAliasedAnnotation(edu.umd.cs.findbugs.annotations.PossiblyNull.class, NULLABLE);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.UnknownNullness.class, NULLABLE);
         addAliasedAnnotation(javax.annotation.CheckForNull.class, NULLABLE);
         addAliasedAnnotation(javax.annotation.Nullable.class, NULLABLE);
