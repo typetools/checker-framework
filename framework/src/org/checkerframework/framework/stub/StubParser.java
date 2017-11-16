@@ -493,15 +493,12 @@ public class StubParser {
                     parseField((FieldDeclaration) decl, (VariableElement) elt, atypes, declAnnos);
                     break;
                 case CONSTRUCTOR:
-                    parseConstructor(
-                            (ConstructorDeclaration) decl,
+                case METHOD:
+                    parseCallableDeclaration(
+                            (CallableDeclaration<?>) decl,
                             (ExecutableElement) elt,
                             atypes,
                             declAnnos);
-                    break;
-                case METHOD:
-                    parseMethod(
-                            (MethodDeclaration) decl, (ExecutableElement) elt, atypes, declAnnos);
                     break;
                 case CLASS:
                 case INTERFACE:
@@ -656,48 +653,66 @@ public class StubParser {
     }
 
     /** Adds type and declaration annotations from {@code decl}. */
-    private void parseMethod(
-            MethodDeclaration decl,
+    private void parseCallableDeclaration(
+            CallableDeclaration<?> decl,
             ExecutableElement elt,
             Map<Element, AnnotatedTypeMirror> atypes,
             Map<String, Set<AnnotationMirror>> declAnnos) {
 
         // Declaration annotations
         annotateDecl(declAnnos, elt, decl.getAnnotations());
-        // StubParser parses all annotations in type annotation position as type annotations
-        annotateDecl(declAnnos, elt, decl.getType().getAnnotations());
+        if (decl.isMethodDeclaration()) {
+            // StubParser parses all annotations in type annotation position as type annotations
+            annotateDecl(declAnnos, elt, ((MethodDeclaration) decl).getType().getAnnotations());
+        }
         addDeclAnnotations(declAnnos, elt);
 
-        // Type annotations
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
+        // Type Parameters
         annotateTypeParameters(
                 decl, elt, atypes, methodType.getTypeVariables(), decl.getTypeParameters());
         typeParameters.addAll(methodType.getTypeVariables());
 
-        annotate(methodType.getReturnType(), decl.getType(), decl.getAnnotations());
+        // Type annotations
+        if (decl.isMethodDeclaration()) {
+            annotate(
+                    methodType.getReturnType(),
+                    ((MethodDeclaration) decl).getType(),
+                    decl.getAnnotations());
+        } else {
+            annotate(methodType.getReturnType(), decl.getAnnotations());
+        }
 
+        // Parameters
         parseParameters(decl, elt, declAnnos, methodType);
 
+        // Receiver
+        if (decl.getReceiverParameter().isPresent()
+                && !decl.getReceiverParameter().get().getAnnotations().isEmpty()) {
+            if (methodType.getReceiverType() == null) {
+                if (decl.isConstructorDeclaration()) {
+                    stubAlwaysWarn(
+                            "parseParameter: constructor of a top-level class cannot have receiver annotations%n"
+                                    + "Constructor: %s%n"
+                                    + "Receiver annotations: %s",
+                            methodType, decl.getReceiverParameter().get().getAnnotations());
+                } else {
+                    stubAlwaysWarn(
+                            "parseParameter: static methods cannot have receiver annotations%n"
+                                    + "Method: %s%n"
+                                    + "Receiver annotations: %s",
+                            methodType, decl.getReceiverParameter().get().getAnnotations());
+                }
+            } else {
+                annotate(
+                        methodType.getReceiverType(),
+                        decl.getReceiverParameter().get().getAnnotations());
+            }
+        }
+
+        // Store the type.
         putNew(atypes, elt, methodType);
         typeParameters.removeAll(methodType.getTypeVariables());
-    }
-
-    /** Adds type and declaration annotations from {@code decl}. */
-    private void parseConstructor(
-            ConstructorDeclaration decl,
-            ExecutableElement elt,
-            Map<Element, AnnotatedTypeMirror> atypes,
-            Map<String, Set<AnnotationMirror>> declAnnos) {
-        // Declaration annotations
-        annotateDecl(declAnnos, elt, decl.getAnnotations());
-        addDeclAnnotations(declAnnos, elt);
-
-        // Type annotations
-        AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
-        annotate(methodType.getReturnType(), decl.getAnnotations());
-
-        parseParameters(decl, elt, declAnnos, methodType);
-        putNew(atypes, elt, methodType);
     }
 
     /**
@@ -738,28 +753,6 @@ public class StubParser {
                 annotate(paramType, param.getVarArgsAnnotations());
             } else {
                 annotate(paramType, param.getType(), param.getAnnotations());
-            }
-        }
-        if (method.getReceiverParameter().isPresent()
-                && !method.getReceiverParameter().get().getAnnotations().isEmpty()) {
-            if (methodType.getReceiverType() == null) {
-                if (method.isConstructorDeclaration()) {
-                    stubAlwaysWarn(
-                            "parseParameter: constructor of a top-level class cannot have receiver annotations%n"
-                                    + "Constructor: %s%n"
-                                    + "Receiver annotations: %s",
-                            methodType, method.getReceiverParameter().get().getAnnotations());
-                } else {
-                    stubAlwaysWarn(
-                            "parseParameter: static methods cannot have receiver annotations%n"
-                                    + "Method: %s%n"
-                                    + "Receiver annotations: %s",
-                            methodType, method.getReceiverParameter().get().getAnnotations());
-                }
-            } else {
-                annotate(
-                        methodType.getReceiverType(),
-                        method.getReceiverParameter().get().getAnnotations());
             }
         }
     }
