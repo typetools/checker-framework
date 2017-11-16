@@ -1,3 +1,6 @@
+// Upstream version:
+// http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/NonNull.java
+
 package org.jmlspecs.annotation;
 
 import java.lang.annotation.Documented;
