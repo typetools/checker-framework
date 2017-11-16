@@ -655,7 +655,7 @@ public class StubParser {
         }
     }
 
-    /** Adds type and declaration annotations to from {@code decl}. */
+    /** Adds type and declaration annotations from {@code decl}. */
     private void parseMethod(
             MethodDeclaration decl,
             ExecutableElement elt,
@@ -682,7 +682,7 @@ public class StubParser {
         typeParameters.removeAll(methodType.getTypeVariables());
     }
 
-    /** Adds type and declaration annotations to from {@code decl}. */
+    /** Adds type and declaration annotations from {@code decl}. */
     private void parseConstructor(
             ConstructorDeclaration decl,
             ExecutableElement elt,
@@ -838,8 +838,7 @@ public class StubParser {
             typeDef = ((com.github.javaparser.ast.type.ArrayType) typeDef).getComponentType();
             annotatedTypeMirror = ((AnnotatedArrayType) annotatedTypeMirror).getComponentType();
             if (typeDef.isArrayType() ^ annotatedTypeMirror.getKind() == TypeKind.ARRAY) {
-                stubWarnIfNotFound(
-                        "Mismatched array lengths; atype: " + atype + "\n  type: " + type);
+                stubAlwaysWarn("Mismatched array lengths; atype: " + atype + "\n  type: " + type);
             }
         }
     }
@@ -871,7 +870,7 @@ public class StubParser {
 
         handleExistingAnnotations(atype, typeDef);
 
-        // Primary annotations for the type of a variable declaration are not store in typeDef, but
+        // Primary annotations for the type of a variable declaration are not stored in typeDef, but
         // rather as declaration annotations (passed as declAnnos to this method).  But, if typeDef
         // is not the type of a variable, then the primary annotations are stored in typeDef.
         NodeList<AnnotationExpr> primaryAnnotations;
@@ -941,7 +940,7 @@ public class StubParser {
                 }
                 break;
             default:
-                // No annotations to add.
+                // No additional annotations to add.
         }
     }
 
