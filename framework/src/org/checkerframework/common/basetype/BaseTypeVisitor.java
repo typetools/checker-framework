@@ -1,12 +1,5 @@
 package org.checkerframework.common.basetype;
 
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
-import static org.checkerframework.framework.util.AnnotatedTypes.getArrayDepth;
-
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
@@ -60,6 +53,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -119,6 +113,11 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.nullness.qual.Nullable;
+*/
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment checking, method
@@ -1018,8 +1017,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeMirror lastArgType =
                     atypeFactory.getAnnotatedType(args.get(args.size() - 1));
             if (lastArgType.getKind() == TypeKind.ARRAY
-                    && getArrayDepth(lastParamAnnotatedType)
-                            == getArrayDepth((AnnotatedArrayType) lastArgType)) {
+                    && AnnotatedTypes.getArrayDepth(lastParamAnnotatedType)
+                            == AnnotatedTypes.getArrayDepth((AnnotatedArrayType) lastArgType)) {
                 return;
             }
         }
@@ -1352,10 +1351,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return null;
         }
 
-        Element anno = TreeInfo.symbol((JCTree) node.getAnnotationType());
-        String annoQualifiedName = anno.toString();
-        if (annoQualifiedName.equals(DefaultQualifier.class.getName())
-                || annoQualifiedName.toString().equals(SuppressWarnings.class.getName())) {
+        TypeElement anno = (TypeElement) TreeInfo.symbol((JCTree) node.getAnnotationType());
+
+        Name annoName = anno.getQualifiedName();
+        if (annoName.contentEquals(DefaultQualifier.class.getName())
+                || annoName.contentEquals(SuppressWarnings.class.getName())) {
             // Skip these two annotations, as we don't care about the arguments to them.
             return null;
         }
