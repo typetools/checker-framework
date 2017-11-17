@@ -619,35 +619,29 @@ public class StubParser {
         if (typeDecl.getExtendedTypes() != null) {
             for (ClassOrInterfaceType superType : typeDecl.getExtendedTypes()) {
                 AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
-                assert foundType != null
-                        : "StubParser: could not find superclass "
-                                + superType
-                                + " from type "
-                                + type
-                                + "\nStub file does not match bytecode";
-                if (foundType != null) {
-                    annotate(foundType, superType, null);
+                if (foundType == null) {
+                    throw new Error(
+                            "StubParser: could not find superclass "
+                                    + superType
+                                    + " from type "
+                                    + type
+                                    + "\nStub file does not match bytecode");
                 }
+                annotate(foundType, superType, null);
             }
         }
         if (typeDecl.getImplementedTypes() != null) {
             for (ClassOrInterfaceType superType : typeDecl.getImplementedTypes()) {
                 AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
-                // TODO: Java 7 added a few AutoCloseable superinterfaces to classes.
-                // We specify those as superinterfaces in the jdk.astub file. Let's ignore
-                // this addition to be compatible with Java 6.
-                assert foundType != null
-                                || (superType.toString().equals("AutoCloseable")
-                                        || superType.toString().equals("java.io.Closeable")
-                                        || superType.toString().equals("Closeable"))
-                        : "StubParser: could not find superinterface "
-                                + superType
-                                + " from type "
-                                + type
-                                + "\nStub file does not match bytecode";
-                if (foundType != null) {
-                    annotate(foundType, superType, null);
+                if (foundType == null) {
+                    throw new Error(
+                            "StubParser: could not find superinterface "
+                                    + superType
+                                    + " from type "
+                                    + type
+                                    + "\nStub file does not match bytecode");
                 }
+                annotate(foundType, superType, null);
             }
         }
     }
@@ -949,9 +943,11 @@ public class StubParser {
         AnnotatedTypeMirror fieldType = atypeFactory.fromElement(elt);
 
         VariableDeclarator fieldVarDecl = null;
+        String eltName = elt.getSimpleName().toString();
         for (VariableDeclarator var : decl.getVariables()) {
-            if (var.getName().toString().equals(elt.getSimpleName().toString())) {
+            if (var.getName().toString().equals(eltName)) {
                 fieldVarDecl = var;
+                break;
             }
         }
         assert fieldVarDecl != null;
