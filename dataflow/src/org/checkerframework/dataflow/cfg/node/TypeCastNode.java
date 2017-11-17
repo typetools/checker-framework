@@ -16,8 +16,8 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  */
 public class TypeCastNode extends Node {
 
-    protected Tree tree;
-    protected Node operand;
+    protected final Tree tree;
+    protected final Node operand;
 
     public TypeCastNode(Tree tree, Node operand, TypeMirror type) {
         super(type);

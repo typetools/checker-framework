@@ -469,16 +469,16 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitMethod(MethodTree node, AnnotatedTypeMirror type) {
             AnnotatedTypeMirror.AnnotatedExecutableType methType =
                     (AnnotatedTypeMirror.AnnotatedExecutableType) type;
-            Effect e = getDeclaredEffect(methType.getElement());
+            // Effect e = getDeclaredEffect(methType.getElement());
             TypeElement cls = (TypeElement) methType.getElement().getEnclosingElement();
 
             // STEP 1: Get the method effect annotation
-            if (!hasExplicitEffect(methType.getElement())) {
-                // TODO: This line does nothing!
-                // AnnotatedTypeMirror.addAnnotation silently ignores non-qualifier annotations!
-                // We should be digging up the /declaration/ of the method, and annotating that.
-                methType.addAnnotation(e.getAnnot());
-            }
+            // if (!hasExplicitEffect(methType.getElement())) {
+            // TODO: This line does nothing!
+            // AnnotatedTypeMirror.addAnnotation silently ignores non-qualifier annotations!
+            // We should be digging up the /declaration/ of the method, and annotating that.
+            // methType.addAnnotation(e.getAnnot());
+            // }
 
             // STEP 2: Fix up the method receiver annotation
             AnnotatedTypeMirror.AnnotatedDeclaredType receiverType = methType.getReceiverType();

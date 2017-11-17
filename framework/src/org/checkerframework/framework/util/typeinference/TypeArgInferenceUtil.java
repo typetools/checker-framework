@@ -101,7 +101,8 @@ public class TypeArgInferenceUtil {
             final AnnotatedTypeMirror type, final Set<TypeVariable> targetTypeVars) {
         return type.getKind() == TypeKind.TYPEVAR
                 && targetTypeVars.contains(
-                        TypeAnnotationUtils.unannotatedType(type.getUnderlyingType()));
+                        (TypeVariable)
+                                TypeAnnotationUtils.unannotatedType(type.getUnderlyingType()));
     }
 
     /**
@@ -414,7 +415,8 @@ public class TypeArgInferenceUtil {
         @Override
         public Boolean visitTypeVariable(
                 AnnotatedTypeVariable type, Collection<TypeVariable> typeVars) {
-            if (typeVars.contains(TypeAnnotationUtils.unannotatedType(type.getUnderlyingType()))) {
+            if (typeVars.contains(
+                    (TypeVariable) TypeAnnotationUtils.unannotatedType(type.getUnderlyingType()))) {
                 return true;
             } else {
                 return super.visitTypeVariable(type, typeVars);
@@ -451,16 +453,23 @@ public class TypeArgInferenceUtil {
     }
 
     /**
-     * Create a copy of toModify. In the copy, For each pair {@code typeVariable &rArr; annotated
+     * Create a copy of toModify. In the copy, for each pair {@code typeVariable &rArr; annotated
      * type} replace uses of typeVariable with the corresponding annotated type using normal
-     * substitution rules (@see TypeVariableSubstitutor) Return the copy
+     * substitution rules (@see TypeVariableSubstitutor). Return the copy.
      */
     public static AnnotatedTypeMirror substitute(
             Map<TypeVariable, AnnotatedTypeMirror> substitutions,
             final AnnotatedTypeMirror toModify) {
-        final AnnotatedTypeMirror substitution =
-                substitutions.get(
-                        TypeAnnotationUtils.unannotatedType(toModify.getUnderlyingType()));
+        final AnnotatedTypeMirror substitution;
+        if (toModify.getKind() == TypeKind.TYPEVAR) {
+            substitution =
+                    substitutions.get(
+                            (TypeVariable)
+                                    TypeAnnotationUtils.unannotatedType(
+                                            toModify.getUnderlyingType()));
+        } else {
+            substitution = null;
+        }
         if (substitution != null) {
             return substitution.deepCopy();
         }

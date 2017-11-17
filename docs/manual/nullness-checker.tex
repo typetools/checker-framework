@@ -861,7 +861,8 @@ exactly as if you had written the corresponding annotation from the
 Nullness Checker, as described in Figure~\ref{fig-nullness-refactoring}.
 
 
-% These lists should be kept in sync with NullnessAnnotatedTypeFactory.java .
+% These lists should be kept in sync with
+% ../../checker/src/org/checkerframework/checker/nullness/NullnessAnnotatedTypeFactory.java
 \begin{figure}
 \begin{center}
 % The ~ around the text makes things look better in Hevea (and not terrible
@@ -881,6 +882,7 @@ Nullness Checker, as described in Figure~\ref{fig-nullness-refactoring}.
  ~org.jetbrains.annotations.NotNull~ \\ \hline
  ~org.jmlspecs.annotation.NonNull~ \\ \hline
  ~org.netbeans.api.annotations.common.NonNull~ \\ \hline
+ ~org.springframework.lang.NonNull~ \\ \hline
 \end{tabular}
 &
 $\Rightarrow$
@@ -895,6 +897,7 @@ $\Rightarrow$
  ~com.sun.istack.internal.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.CheckForNull~ \\ \hline
+ ~edu.umd.cs.findbugs.annotations.PossiblyNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.UnknownNullness~ \\ \hline
  ~javax.annotation.Nullable~ \\ \hline
  ~javax.annotation.CheckForNull~ \\ \hline
@@ -905,6 +908,7 @@ $\Rightarrow$
  ~org.netbeans.api.annotations.common.NullAllowed~ \\ \hline
  ~org.netbeans.api.annotations.common.CheckForNull~ \\ \hline
  ~org.netbeans.api.annotations.common.NullUnknown~ \\ \hline
+ ~org.springframework.lang.Nullable~ \\ \hline
 \end{tabular}
 &
 $\Rightarrow$
@@ -974,6 +978,11 @@ issue.
 
 Different tools are appropriate in different circumstances.  Here is a
 brief comparison with FindBugs, but similar points apply to other tools.
+(For example, the \href{https://github.com/uber/NullAway}{NullAway} and
+\href{http://fbinfer.com/docs/eradicate.html}{Eradicate} tools are more
+like sound type-checking than FindBugs, but all of those tools accept
+unsoundness --- that is, false negatives or missed warnings --- in exchange
+for analysis speed.)
 
 The Checker Framework has a more powerful nullness analysis; FindBugs misses
 some real

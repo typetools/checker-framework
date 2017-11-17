@@ -21,9 +21,9 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  */
 public class CaseNode extends Node {
 
-    protected CaseTree tree;
-    protected Node switchExpr;
-    protected Node caseExpr;
+    protected final CaseTree tree;
+    protected final Node switchExpr;
+    protected final Node caseExpr;
 
     public CaseNode(CaseTree tree, Node switchExpr, Node caseExpr, Types types) {
         super(types.getNoType(TypeKind.NONE));

@@ -19,9 +19,9 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  */
 public class AssertionErrorNode extends Node {
 
-    protected Tree tree;
-    protected Node condition;
-    protected Node detail;
+    protected final Tree tree;
+    protected final Node condition;
+    protected final Node detail;
 
     public AssertionErrorNode(Tree tree, Node condition, Node detail, TypeMirror type) {
         // TODO: Find out the correct "type" for statements.

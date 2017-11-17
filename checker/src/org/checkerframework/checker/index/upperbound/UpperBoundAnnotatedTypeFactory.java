@@ -80,12 +80,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         BOTTOM = AnnotationBuilder.fromClass(elements, UpperBoundBottom.class);
         POLY = AnnotationBuilder.fromClass(elements, PolyUpperBound.class);
 
-        addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation());
-        addAliasedAnnotation(IndexOrLow.class, createLTLengthOfAnnotation());
-        addAliasedAnnotation(IndexOrHigh.class, createLTEqLengthOfAnnotation());
-        addAliasedAnnotation(SearchIndexFor.class, createLTLengthOfAnnotation());
-        addAliasedAnnotation(NegativeIndexFor.class, createLTLengthOfAnnotation());
-        addAliasedAnnotation(LengthOf.class, createLTEqLengthOfAnnotation());
+        addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation(), true);
+        addAliasedAnnotation(IndexOrLow.class, createLTLengthOfAnnotation(), true);
+        addAliasedAnnotation(IndexOrHigh.class, createLTEqLengthOfAnnotation(), true);
+        addAliasedAnnotation(SearchIndexFor.class, createLTLengthOfAnnotation(), true);
+        addAliasedAnnotation(NegativeIndexFor.class, createLTLengthOfAnnotation(), true);
+        addAliasedAnnotation(LengthOf.class, createLTEqLengthOfAnnotation(), true);
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyIndex.class, POLY);
 
@@ -190,29 +190,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected DependentTypesHelper createDependentTypesHelper() {
         return new OffsetDependentTypesHelper(this);
-    }
-
-    @Override
-    public AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
-        if (AnnotationUtils.areSameByClass(a, IndexFor.class)
-                || AnnotationUtils.areSameByClass(a, SearchIndexFor.class)
-                || AnnotationUtils.areSameByClass(a, NegativeIndexFor.class)) {
-            List<String> stringList =
-                    AnnotationUtils.getElementValueArray(a, "value", String.class, true);
-            return createLTLengthOfAnnotation(stringList.toArray(new String[0]));
-        }
-        if (AnnotationUtils.areSameByClass(a, IndexOrLow.class)) {
-            List<String> stringList =
-                    AnnotationUtils.getElementValueArray(a, "value", String.class, true);
-            return createLTLengthOfAnnotation(stringList.toArray(new String[0]));
-        }
-        if (AnnotationUtils.areSameByClass(a, IndexOrHigh.class)
-                || AnnotationUtils.areSameByClass(a, LengthOf.class)) {
-            List<String> stringList =
-                    AnnotationUtils.getElementValueArray(a, "value", String.class, true);
-            return createLTEqLengthOfAnnotation(stringList.toArray(new String[0]));
-        }
-        return super.aliasedAnnotation(a);
     }
 
     /**
