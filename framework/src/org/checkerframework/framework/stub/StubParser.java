@@ -9,9 +9,11 @@ import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.Problem;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
 import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
@@ -47,7 +49,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -492,15 +493,12 @@ public class StubParser {
                     parseField((FieldDeclaration) decl, (VariableElement) elt, atypes, declAnnos);
                     break;
                 case CONSTRUCTOR:
-                    parseConstructor(
-                            (ConstructorDeclaration) decl,
+                case METHOD:
+                    parseCallableDeclaration(
+                            (CallableDeclaration<?>) decl,
                             (ExecutableElement) elt,
                             atypes,
                             declAnnos);
-                    break;
-                case METHOD:
-                    parseMethod(
-                            (MethodDeclaration) decl, (ExecutableElement) elt, atypes, declAnnos);
                     break;
                 case CLASS:
                 case INTERFACE:
@@ -621,15 +619,15 @@ public class StubParser {
         if (typeDecl.getExtendedTypes() != null) {
             for (ClassOrInterfaceType superType : typeDecl.getExtendedTypes()) {
                 AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
-                assert foundType != null
-                        : "StubParser: could not find superclass "
-                                + superType
-                                + " from type "
-                                + type
-                                + "\nStub file does not match bytecode";
-                if (foundType != null) {
-                    annotate(foundType, superType);
+                if (foundType == null) {
+                    throw new Error(
+                            "StubParser: could not find superclass "
+                                    + superType
+                                    + " from type "
+                                    + type
+                                    + "\nStub file does not match bytecode");
                 }
+                annotate(foundType, superType, null);
             }
         }
         if (typeDecl.getImplementedTypes() != null) {
@@ -643,35 +641,89 @@ public class StubParser {
                                     + type
                                     + "\nStub file does not match bytecode");
                 }
-                annotate(foundType, superType);
+                annotate(foundType, superType, null);
             }
         }
     }
 
-    private void parseMethod(
-            MethodDeclaration decl,
+    /** Adds type and declaration annotations from {@code decl}. */
+    private void parseCallableDeclaration(
+            CallableDeclaration<?> decl,
             ExecutableElement elt,
             Map<Element, AnnotatedTypeMirror> atypes,
             Map<String, Set<AnnotationMirror>> declAnnos) {
+
+        // Declaration annotations
         annotateDecl(declAnnos, elt, decl.getAnnotations());
-        // StubParser parses all annotations in type annotation position as type annotations
-        annotateDecl(declAnnos, elt, decl.getType().getAnnotations());
+        if (decl.isMethodDeclaration()) {
+            // StubParser parses all annotations in type annotation position as type annotations
+            annotateDecl(declAnnos, elt, ((MethodDeclaration) decl).getType().getAnnotations());
+        }
         addDeclAnnotations(declAnnos, elt);
 
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
+        // Type Parameters
         annotateTypeParameters(
                 decl, elt, atypes, methodType.getTypeVariables(), decl.getTypeParameters());
         typeParameters.addAll(methodType.getTypeVariables());
-        if (decl.getType().isArrayType()) {
-            annotateInnerMostComponentType(
-                    (AnnotatedArrayType) methodType.getReturnType(), decl.getAnnotations());
-        } else {
-            // Duplicate method annotations to the type.
-            decl.getType().setAnnotations(decl.getAnnotations());
-        }
-        annotate(methodType.getReturnType(), decl.getType());
 
-        List<Parameter> params = decl.getParameters();
+        // Type annotations
+        if (decl.isMethodDeclaration()) {
+            annotate(
+                    methodType.getReturnType(),
+                    ((MethodDeclaration) decl).getType(),
+                    decl.getAnnotations());
+        } else {
+            annotate(methodType.getReturnType(), decl.getAnnotations());
+        }
+
+        // Parameters
+        parseParameters(decl, elt, declAnnos, methodType);
+
+        // Receiver
+        if (decl.getReceiverParameter().isPresent()
+                && !decl.getReceiverParameter().get().getAnnotations().isEmpty()) {
+            if (methodType.getReceiverType() == null) {
+                if (decl.isConstructorDeclaration()) {
+                    stubAlwaysWarn(
+                            "parseParameter: constructor of a top-level class cannot have receiver annotations%n"
+                                    + "Constructor: %s%n"
+                                    + "Receiver annotations: %s",
+                            methodType, decl.getReceiverParameter().get().getAnnotations());
+                } else {
+                    stubAlwaysWarn(
+                            "parseParameter: static methods cannot have receiver annotations%n"
+                                    + "Method: %s%n"
+                                    + "Receiver annotations: %s",
+                            methodType, decl.getReceiverParameter().get().getAnnotations());
+                }
+            } else {
+                annotate(
+                        methodType.getReceiverType(),
+                        decl.getReceiverParameter().get().getAnnotations());
+            }
+        }
+
+        // Store the type.
+        putNew(atypes, elt, methodType);
+        typeParameters.removeAll(methodType.getTypeVariables());
+    }
+
+    /**
+     * Adds declaration and type annotations to the parameters of {@code methodType}, which is
+     * either a method or constructor.
+     *
+     * @param method Method or Constructor declaration
+     * @param elt ExecutableElement of {@code method}
+     * @param declAnnos Map of declaration elements strings to annotations
+     * @param methodType annotated type of {@code method}
+     */
+    private void parseParameters(
+            CallableDeclaration<?> method,
+            ExecutableElement elt,
+            Map<String, Set<AnnotationMirror>> declAnnos,
+            AnnotatedExecutableType methodType) {
+        List<Parameter> params = method.getParameters();
         List<? extends VariableElement> paramElts = elt.getParameters();
         List<? extends AnnotatedTypeMirror> paramTypes = methodType.getParameterTypes();
 
@@ -685,43 +737,18 @@ public class StubParser {
 
             if (param.isVarArgs()) {
                 assert paramType.getKind() == TypeKind.ARRAY;
-                // Duplicate parameter annotations to the type.
-                param.getType().setAnnotations(param.getAnnotations());
                 // The "type" of param is actually the component type of the vararg.
                 // For example, "Object..." the type would be "Object".
-                annotate(((AnnotatedArrayType) paramType).getComponentType(), param.getType());
+                annotate(
+                        ((AnnotatedArrayType) paramType).getComponentType(),
+                        param.getType(),
+                        param.getAnnotations());
                 // The "VarArgsAnnotations" are those just before "...".
                 annotate(paramType, param.getVarArgsAnnotations());
             } else {
-                if (param.getType().isArrayType()) {
-                    annotateInnerMostComponentType(
-                            (AnnotatedArrayType) paramType, param.getAnnotations());
-                } else {
-                    // Duplicate parameter annotations to the type.
-                    param.getType().setAnnotations(param.getAnnotations());
-                }
-                annotate(paramType, param.getType());
+                annotate(paramType, param.getType(), param.getAnnotations());
             }
         }
-
-        if (decl.getReceiverParameter().isPresent()
-                && !decl.getReceiverParameter().get().getAnnotations().isEmpty()) {
-            if (methodType.getReceiverType() == null) {
-                stubAlwaysWarn(
-                        String.format(
-                                "parseMethod: static methods cannot have receiver annotations%n"
-                                        + "Method: %s%n"
-                                        + "Receiver annotations: %s",
-                                methodType, decl.getReceiverParameter().get().getAnnotations()));
-            } else {
-                annotate(
-                        methodType.getReceiverType(),
-                        decl.getReceiverParameter().get().getAnnotations());
-            }
-        }
-
-        putNew(atypes, elt, methodType);
-        typeParameters.removeAll(methodType.getTypeVariables());
     }
 
     /**
@@ -773,42 +800,17 @@ public class StubParser {
     }
 
     /**
-     * List of all array component types. Example input: int[][] Example output: int, int[], int[][]
+     * Add the annotations from {@code type} to {@code atype}. Type annotations that parsed as
+     * declaration annotations (ie those in {@code declAnnos} are applied to the inner most
+     * component type.
+     *
+     * @param atype annotated type to which to add annotations
+     * @param type parsed type
+     * @param declAnnos annotations stored on the declaration of the variable with this type or null
      */
-    private List<AnnotatedTypeMirror> arrayAllComponents(AnnotatedArrayType atype) {
-        LinkedList<AnnotatedTypeMirror> arrays = new LinkedList<AnnotatedTypeMirror>();
-
-        AnnotatedTypeMirror type = atype;
-        while (type.getKind() == TypeKind.ARRAY) {
-            arrays.addFirst(type);
-
-            type = ((AnnotatedArrayType) type).getComponentType();
-        }
-
-        arrays.add(type);
-        return arrays;
-    }
-
-    private void annotateAsArray(AnnotatedArrayType atype, ReferenceType type) {
-        List<AnnotatedTypeMirror> arrayTypes = arrayAllComponents(atype);
-        assert type.getArrayLevel() == arrayTypes.size() - 1
-                        ||
-                        // We want to allow simply using "Object" as return type of a
-                        // method, regardless of what the real type is.
-                        type.getArrayLevel() == 0
-                : "Mismatched array lengths; typeDef: "
-                        + type.getArrayLevel()
-                        + " vs. arrayTypes: "
-                        + (arrayTypes.size() - 1)
-                        + "\n  typedef: "
-                        + type
-                        + "\n  arraytypes: "
-                        + arrayTypes;
-        /* Separate TODO: the check for zero above ensures that "Object" can be
-         * used as return type, even when the real method uses something else.
-         * However, why was this needed for the RequiredPermissions declaration annotation?
-         * It looks like the StubParser ignored the target for annotations.
-         */
+    private void annotateAsArray(
+            AnnotatedArrayType atype, ReferenceType type, NodeList<AnnotationExpr> declAnnos) {
+        annotateInnerMostComponentType(atype, declAnnos);
         Type typeDef = type;
         AnnotatedTypeMirror annotatedTypeMirror = atype;
         while (typeDef.isArrayType() && annotatedTypeMirror.getKind() == TypeKind.ARRAY) {
@@ -822,6 +824,9 @@ public class StubParser {
             // Cast should succeed because of the assert earlier.
             typeDef = ((com.github.javaparser.ast.type.ArrayType) typeDef).getComponentType();
             annotatedTypeMirror = ((AnnotatedArrayType) annotatedTypeMirror).getComponentType();
+            if (typeDef.isArrayType() ^ annotatedTypeMirror.getKind() == TypeKind.ARRAY) {
+                stubAlwaysWarn("Mismatched array lengths; atype: " + atype + "\n  type: " + type);
+            }
         }
     }
 
@@ -835,111 +840,95 @@ public class StubParser {
         }
     }
 
-    private void annotate(AnnotatedTypeMirror atype, Type typeDef) {
+    /**
+     * Add the annotations from {@code typeDef} to {@code atype}, include any type annotations that
+     * parsed as declaration annotations (ie those in {@code declAnnos}.
+     *
+     * @param atype annotated type to which to add annotations
+     * @param typeDef parsed type
+     * @param declAnnos annotations stored on the declaration of the variable with this type or null
+     */
+    private void annotate(
+            AnnotatedTypeMirror atype, Type typeDef, NodeList<AnnotationExpr> declAnnos) {
         if (atype.getKind() == TypeKind.ARRAY) {
-            annotateAsArray((AnnotatedArrayType) atype, (ReferenceType) typeDef);
+            annotateAsArray((AnnotatedArrayType) atype, (ReferenceType) typeDef, declAnnos);
             return;
         }
 
         handleExistingAnnotations(atype, typeDef);
 
-        ClassOrInterfaceType declType = unwrapDeclaredType(typeDef);
-        if (atype.getKind() == TypeKind.DECLARED && declType != null) {
-            AnnotatedDeclaredType adeclType = (AnnotatedDeclaredType) atype;
-            if (declType.getTypeArguments().isPresent()
-                    && !declType.getTypeArguments().get().isEmpty()
-                    && !adeclType.getTypeArguments().isEmpty()) {
-                assert declType.getTypeArguments().get().size()
-                                == adeclType.getTypeArguments().size()
-                        : String.format(
-                                "Mismatch in type argument size between %s (%d) and %s (%d)",
-                                declType,
-                                declType.getTypeArguments().get().size(),
-                                adeclType,
-                                adeclType.getTypeArguments().size());
-                for (int i = 0; i < declType.getTypeArguments().get().size(); ++i) {
+        // Primary annotations for the type of a variable declaration are not stored in typeDef, but
+        // rather as declaration annotations (passed as declAnnos to this method).  But, if typeDef
+        // is not the type of a variable, then the primary annotations are stored in typeDef.
+        NodeList<AnnotationExpr> primaryAnnotations;
+        if (typeDef.getAnnotations().isEmpty() && declAnnos != null) {
+            primaryAnnotations = declAnnos;
+        } else {
+            primaryAnnotations = typeDef.getAnnotations();
+        }
+
+        if (atype.getKind() != TypeKind.WILDCARD) {
+            // The primary annotation on a wildcard applies to the super or extends bound and
+            // are added below.
+            annotate(atype, primaryAnnotations);
+        }
+        switch (atype.getKind()) {
+            case DECLARED:
+                ClassOrInterfaceType declType = unwrapDeclaredType(typeDef);
+                if (declType == null) {
+                    break;
+                }
+                AnnotatedDeclaredType adeclType = (AnnotatedDeclaredType) atype;
+                if (declType.getTypeArguments().isPresent()
+                        && !declType.getTypeArguments().get().isEmpty()
+                        && !adeclType.getTypeArguments().isEmpty()) {
+                    assert declType.getTypeArguments().get().size()
+                                    == adeclType.getTypeArguments().size()
+                            : String.format(
+                                    "Mismatch in type argument size between %s (%d) and %s (%d)",
+                                    declType,
+                                    declType.getTypeArguments().get().size(),
+                                    adeclType,
+                                    adeclType.getTypeArguments().size());
+                    for (int i = 0; i < declType.getTypeArguments().get().size(); ++i) {
+                        annotate(
+                                adeclType.getTypeArguments().get(i),
+                                declType.getTypeArguments().get().get(i),
+                                null);
+                    }
+                }
+                break;
+            case WILDCARD:
+                AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atype;
+                WildcardType wildcardDef = (WildcardType) typeDef;
+                if (wildcardDef.getExtendedType().isPresent()) {
                     annotate(
-                            adeclType.getTypeArguments().get(i),
-                            declType.getTypeArguments().get().get(i));
-                }
-            }
-        } else if (atype.getKind() == TypeKind.WILDCARD) {
-            AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atype;
-            WildcardType wildcardDef = (WildcardType) typeDef;
-            if (wildcardDef.getExtendedType().isPresent()) {
-                annotate(wildcardType.getExtendsBound(), wildcardDef.getExtendedType().get());
-                annotate(wildcardType.getSuperBound(), typeDef.getAnnotations());
-            } else if (wildcardDef.getSuperType().isPresent()) {
-                annotate(wildcardType.getSuperBound(), wildcardDef.getSuperType().get());
-                annotate(wildcardType.getExtendsBound(), typeDef.getAnnotations());
-            } else {
-                annotate(atype, typeDef.getAnnotations());
-            }
-        } else if (atype.getKind() == TypeKind.TYPEVAR) {
-            // Add annotations from the declaration of the TypeVariable
-            AnnotatedTypeVariable typeVarUse = (AnnotatedTypeVariable) atype;
-            for (AnnotatedTypeVariable typePar : typeParameters) {
-                if (typePar.getUnderlyingType() == atype.getUnderlyingType()) {
-                    AnnotatedTypeMerger.merge(typePar.getUpperBound(), typeVarUse.getUpperBound());
-                    AnnotatedTypeMerger.merge(typePar.getLowerBound(), typeVarUse.getLowerBound());
-                }
-            }
-        }
-        if (typeDef.getAnnotations() != null && atype.getKind() != TypeKind.WILDCARD) {
-            annotate(atype, typeDef.getAnnotations());
-        }
-    }
-
-    private void parseConstructor(
-            ConstructorDeclaration decl,
-            ExecutableElement elt,
-            Map<Element, AnnotatedTypeMirror> atypes,
-            Map<String, Set<AnnotationMirror>> declAnnos) {
-        annotateDecl(declAnnos, elt, decl.getAnnotations());
-        AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
-        addDeclAnnotations(declAnnos, elt);
-        annotate(methodType.getReturnType(), decl.getAnnotations());
-
-        for (int i = 0; i < methodType.getParameterTypes().size(); ++i) {
-            AnnotatedTypeMirror paramType = methodType.getParameterTypes().get(i);
-            Parameter param = decl.getParameters().get(i);
-            if (param.isVarArgs()) {
-                assert paramType.getKind() == TypeKind.ARRAY;
-                // Duplicate parameter annotations to the type.
-                param.getType().setAnnotations(param.getAnnotations());
-                // The "type" of param is actually the component type of the vararg.
-                // For example, "Object..." the type would be "Object".
-                annotate(((AnnotatedArrayType) paramType).getComponentType(), param.getType());
-                // The "VarArgsAnnotations" are those just before "...".
-                annotate(paramType, param.getVarArgsAnnotations());
-            } else {
-                if (param.getType().isArrayType()) {
-                    annotateInnerMostComponentType(
-                            (AnnotatedArrayType) paramType, param.getAnnotations());
+                            wildcardType.getExtendsBound(),
+                            wildcardDef.getExtendedType().get(),
+                            null);
+                    annotate(wildcardType.getSuperBound(), primaryAnnotations);
+                } else if (wildcardDef.getSuperType().isPresent()) {
+                    annotate(wildcardType.getSuperBound(), wildcardDef.getSuperType().get(), null);
+                    annotate(wildcardType.getExtendsBound(), primaryAnnotations);
                 } else {
-                    // Duplicate parameter annotations to the type.
-                    param.getType().setAnnotations(param.getAnnotations());
+                    annotate(atype, primaryAnnotations);
                 }
-                annotate(paramType, param.getType());
-            }
+                break;
+            case TYPEVAR:
+                // Add annotations from the declaration of the TypeVariable
+                AnnotatedTypeVariable typeVarUse = (AnnotatedTypeVariable) atype;
+                for (AnnotatedTypeVariable typePar : typeParameters) {
+                    if (typePar.getUnderlyingType() == atype.getUnderlyingType()) {
+                        AnnotatedTypeMerger.merge(
+                                typePar.getUpperBound(), typeVarUse.getUpperBound());
+                        AnnotatedTypeMerger.merge(
+                                typePar.getLowerBound(), typeVarUse.getLowerBound());
+                    }
+                }
+                break;
+            default:
+                // No additional annotations to add.
         }
-
-        if (decl.getReceiverParameter().isPresent()
-                && !decl.getReceiverParameter().get().getAnnotations().isEmpty()) {
-            if (methodType.getReceiverType() == null) {
-                stubAlwaysWarn(
-                        String.format(
-                                "parseConstructor: constructor of a top-level class cannot have receiver annotations%n"
-                                        + "Constructor: %s%n"
-                                        + "Receiver annotations: %s",
-                                methodType, decl.getReceiverParameter().get().getAnnotations()));
-            } else {
-                annotate(
-                        methodType.getReceiverType(),
-                        decl.getReceiverParameter().get().getAnnotations());
-            }
-        }
-        putNew(atypes, elt, methodType);
     }
 
     private void parseField(
@@ -962,14 +951,7 @@ public class StubParser {
             }
         }
         assert fieldVarDecl != null;
-
-        annotate(fieldType, fieldVarDecl.getType());
-
-        if (fieldType.getKind() == TypeKind.ARRAY) {
-            annotateInnerMostComponentType((AnnotatedArrayType) fieldType, decl.getAnnotations());
-        } else {
-            annotate(fieldType, decl.getAnnotations());
-        }
+        annotate(fieldType, fieldVarDecl.getType(), decl.getAnnotations());
         putNew(atypes, elt, fieldType);
     }
 
@@ -1050,7 +1032,7 @@ public class StubParser {
                 annotate(paramType, param.getAnnotations());
             } else if (param.getTypeBound() != null && param.getTypeBound().size() > 0) {
                 annotate(paramType.getLowerBound(), param.getAnnotations());
-                annotate(paramType.getUpperBound(), param.getTypeBound().get(0));
+                annotate(paramType.getUpperBound(), param.getTypeBound().get(0), null);
                 if (param.getTypeBound().size() > 1) {
                     // TODO: add support for intersection types
                     stubWarnIfNotFound("Annotations on intersection types are not yet supported");
