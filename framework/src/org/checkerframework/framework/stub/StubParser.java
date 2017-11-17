@@ -736,6 +736,7 @@ public class StubParser {
      * @param atype the type to modify
      * @param typeDef the type from the stub file, for warnings
      */
+    @SuppressWarnings("unused") // for disabled warning message
     private void handleExistingAnnotations(AnnotatedTypeMirror atype, Type typeDef) {
         Set<AnnotationMirror> annos = atype.getAnnotations();
         // TODO: instead of comparison against flow.astub, this should

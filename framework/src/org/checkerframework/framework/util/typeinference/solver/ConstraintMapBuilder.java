@@ -78,7 +78,9 @@ public class ConstraintMapBuilder {
             if (!constraint.uIsArg
                     && typeU.getKind() == TypeKind.TYPEVAR
                     && targets.contains(
-                            TypeAnnotationUtils.unannotatedType(typeU.getUnderlyingType()))) {
+                            (TypeVariable)
+                                    TypeAnnotationUtils.unannotatedType(
+                                            typeU.getUnderlyingType()))) {
                 if (typeT.getAnnotations().isEmpty() && typeU.getAnnotations().isEmpty()) {
                     hierarchiesInRelation.addAll(tops);
 

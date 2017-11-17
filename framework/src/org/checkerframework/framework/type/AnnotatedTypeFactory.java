@@ -262,11 +262,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final Map<String, String[]> aliasesIgnorableElements = new HashMap<>();
 
     /**
-     * A map from the class name (canonical name) of an annotation to the set of class names for
-     * annotations with the same meaning, as well as the annotation mirror that should be used.
+     * A map from the class of an annotation to the set of classes for annotations with the same
+     * meaning, as well as the annotation mirror that should be used.
      */
-    private final Map<String, Pair<AnnotationMirror, Set</*@Interned*/ String>>> declAliases =
-            new HashMap<>();
+    private final Map<
+                    Class<? extends Annotation>,
+                    Pair<AnnotationMirror, Set<Class<? extends Annotation>>>>
+            declAliases = new HashMap<>();
 
     /** Unique ID counter; for debugging purposes. */
     private static int uidCounter = 0;
@@ -2551,14 +2553,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Class<? extends Annotation> alias,
             Class<? extends Annotation> annotation,
             AnnotationMirror annotationToUse) {
-        String aliasName = alias.getCanonicalName();
-        /*@Interned*/ String annotationName = annotation.getCanonicalName();
-        Set</*@Interned*/ String> set = new HashSet<>();
-        if (declAliases.containsKey(annotationName)) {
-            set.addAll(declAliases.get(annotationName).second);
+        String annotationName = annotation.getCanonicalName();
+        Set<Class<? extends Annotation>> set = new HashSet<>();
+        if (declAliases.containsKey(annotation)) {
+            set.addAll(declAliases.get(annotation).second);
         }
-        set.add(aliasName.intern());
-        declAliases.put(annotationName, Pair.of(annotationToUse, set));
+        set.add(alias);
+        declAliases.put(annotation, Pair.of(annotationToUse, set));
     }
 
     /**
@@ -3031,8 +3032,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     @Override
     public final AnnotationMirror getDeclAnnotation(Element elt, Class<? extends Annotation> anno) {
-        String annoName = anno.getCanonicalName().intern();
-        return getDeclAnnotation(elt, annoName, true);
+        return getDeclAnnotation(elt, anno, true);
     }
 
     /**
@@ -3054,8 +3054,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public final AnnotationMirror getDeclAnnotationNoAliases(
             Element elt, Class<? extends Annotation> anno) {
-        String annoName = anno.getCanonicalName().intern();
-        return getDeclAnnotation(elt, annoName, false);
+        return getDeclAnnotation(elt, anno, false);
     }
 
     /**
@@ -3087,28 +3086,30 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * overridden method.
      *
      * @param elt the element to retrieve the annotation from
-     * @param annoName the class name of the annotation to retrieve
+     * @param annoClass the class the annotation to retrieve
      * @param checkAliases whether to return an annotation mirror for an alias of the requested
      *     annotation class name
      * @return the annotation mirror for the requested annotation or null if not found
      */
     private AnnotationMirror getDeclAnnotation(
-            Element elt, /*@Interned*/ String annoName, boolean checkAliases) {
+            Element elt, Class<? extends Annotation> annoClass, boolean checkAliases) {
         Set<AnnotationMirror> declAnnos = getDeclAnnotations(elt);
 
         for (AnnotationMirror am : declAnnos) {
-            if (AnnotationUtils.areSameByName(am, annoName)) {
+            if (AnnotationUtils.areSameByClass(am, annoClass)) {
                 return am;
             }
         }
         // Look through aliases.
         if (checkAliases) {
-            Pair<AnnotationMirror, Set</*@Interned*/ String>> aliases = declAliases.get(annoName);
+            Pair<AnnotationMirror, Set<Class<? extends Annotation>>> aliases =
+                    declAliases.get(annoClass);
             if (aliases != null) {
-                for (String alias : aliases.second) {
-                    AnnotationMirror declAnnotation = getDeclAnnotation(elt, alias, false);
-                    if (declAnnotation != null) {
-                        return aliases.first;
+                for (Class<? extends Annotation> alias : aliases.second) {
+                    for (AnnotationMirror am : declAnnos) {
+                        if (AnnotationUtils.areSameByClass(am, alias)) {
+                            return aliases.first;
+                        }
                     }
                 }
             }

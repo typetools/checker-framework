@@ -1,3 +1,6 @@
+// Upstream version:
+// https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/NonNull.java
+
 package lombok;
 
 import java.lang.annotation.Documented;

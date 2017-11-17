@@ -1,3 +1,6 @@
+// Upstream version:
+// http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/NonNull.html
+
 package edu.umd.cs.findbugs.annotations;
 
 import java.lang.annotation.Documented;
