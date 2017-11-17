@@ -50,7 +50,9 @@ public class PurityChecker {
     public static PurityResult checkPurity(
             Tree statement, AnnotationProvider annoProvider, boolean assumeSideEffectFree) {
         PurityCheckerHelper helper = new PurityCheckerHelper(annoProvider, assumeSideEffectFree);
-        helper.scan(statement, null);
+        if (statement != null) {
+            helper.scan(statement, null);
+        }
         return helper.presult;
     }
 
@@ -151,11 +153,12 @@ public class PurityChecker {
             this.assumeSideEffectFree = assumeSideEffectFree;
         }
 
+        // I don't understand why this definition does not type-checck.
         // /** Scan a list of nodes. */
         // public void scan(Iterable<? extends Tree> nodes, Void ignore) {
         //     if (nodes != null) {
         //         for (Tree node : nodes) {
-        //             scan(node, null);
+        //             scan(node, ignore);
         //         }
         //     }
         // }
