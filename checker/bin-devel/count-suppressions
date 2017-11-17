@@ -37,7 +37,7 @@ echo "regex=${regex}"
 
 greplines=$(mktemp /tmp/count-suppressions.XXXXXX)
 # This grep command captures a few stray lines; users should ignore them.
-grep -n --recursive --include='*.java' "\"${regex}[:\"]\|@AssumeAssertion(${regex})" > ${greplines}
+grep -n --recursive --include='*.java' "\"${regex}[:\"]\|@AssumeAssertion(${regex})" | grep -v "@AnnotatedFor" > ${greplines}
 echo -n "Total: "
 cat ${greplines} | wc -l
 cat ${greplines} \

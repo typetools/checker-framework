@@ -1,3 +1,6 @@
+// Upstream version:  in the OpenJDK repository, file
+// jaxws/src/share/jaxws_classes/com/sun/istack/internal/Interned.java
+
 package com.sun.istack.internal;
 
 import java.lang.annotation.Documented;
