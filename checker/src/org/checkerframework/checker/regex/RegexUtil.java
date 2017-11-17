@@ -89,8 +89,8 @@ public final class RegexUtil {
          *
          * @param desc a description of the error
          * @param regex the erroneous pattern
-         * @param index the approximate index in the pattern of the error, or {@code -1} if the
-         *     index is not known
+         * @param index the approximate index in the pattern of the error, or -1 if the index is not
+         *     known
          */
         public CheckedPatternSyntaxException(String desc, String regex, int index) {
             this(new PatternSyntaxException(desc, regex, index));
@@ -108,8 +108,8 @@ public final class RegexUtil {
         /**
          * Retrieves the error index.
          *
-         * @return the approximate index in the pattern of the error, or -1 if the index is not
-         *     known
+         * @return the approximate index in the pattern of the error, or {@code -1} if the index is
+         *     not known
          */
         public int getIndex() {
             return pse.getIndex();
