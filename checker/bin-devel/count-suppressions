@@ -36,7 +36,8 @@ fi
 echo "regex=${regex}"
 
 greplines=$(mktemp /tmp/count-suppressions.XXXXXX)
-grep -n --recursive --include='*.java' "\"${regex}\"\|@AssumeAssertion(${regex})" > ${greplines}
+# This grep command captures a few stray lines; users should ignore them.
+grep -n --recursive --include='*.java' "\"${regex}[:\"]\|@AssumeAssertion(${regex})" | grep -v "@AnnotatedFor" > ${greplines}
 echo -n "Total: "
 cat ${greplines} | wc -l
 cat ${greplines} \
@@ -48,5 +49,5 @@ cat ${greplines} \
 if [ "$debug" -eq "0" ]; then
   rm -f ${greplines}
 else
-  echo ${greplines}
+  echo Output is in: ${greplines}
 fi

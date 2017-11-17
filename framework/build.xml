@@ -625,17 +625,16 @@
     </target>
 
     <target name="-jtreg.download" depends="jtreg.check" unless="jtreg.exists">
-      <!-- Originally from https://adopt-openjdk.ci.cloudbees.com/view/OpenJDK/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.1-b12.tar.gz but the file cannot be found there any longer. -->
       <get
-        src="https://checkerframework.org/jtreg-4.1-b12.tar.gz"
+        src="https://adopt-openjdk.ci.cloudbees.com/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz"
         dest="${jtreg.home}/.." />
-      <untar src="${jtreg.home}/../jtreg-4.1-b12.tar.gz"
+      <untar src="${jtreg.home}/../jtreg-4.2.0-tip.tar.gz"
         dest="${jtreg.home}/../"
         compression="gzip" />
     </target>
 
 
-    <target name="jtreg-tests" depends="-def-jtreg,jar,build-tests"
+    <target name="jtreg-tests" depends="-jtreg.download,-def-jtreg,jar,build-tests"
             description="Run jtreg tests">
         <!--As of version 4.2-b02, a NullPointerException is thrown without making this dir-->
         <mkdir dir="${build}/jtreg/all/report/html"/>

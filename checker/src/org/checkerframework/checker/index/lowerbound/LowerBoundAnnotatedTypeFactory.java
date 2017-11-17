@@ -219,8 +219,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Sets typeDst to the immediate supertype of typeSrc, unless typeSrc is already Positive.
          * Implements the following transitions:
          *
-         * <p>
-         *
          * <pre>
          *      pos &rarr; pos
          *      nn &rarr; pos
@@ -243,8 +241,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Sets typeDst to the immediate subtype of typeSrc, unless typeSrc is already
          * LowerBoundUnknown. Implements the following transitions:
-         *
-         * <p>
          *
          * <pre>
          *       pos &rarr; nn

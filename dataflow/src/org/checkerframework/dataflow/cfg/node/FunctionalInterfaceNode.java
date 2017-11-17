@@ -30,7 +30,7 @@ import org.checkerframework.javacutil.InternalUtils;
  */
 public class FunctionalInterfaceNode extends Node {
 
-    protected Tree tree;
+    protected final Tree tree;
 
     public FunctionalInterfaceNode(MemberReferenceTree tree) {
         super(InternalUtils.typeOf(tree));

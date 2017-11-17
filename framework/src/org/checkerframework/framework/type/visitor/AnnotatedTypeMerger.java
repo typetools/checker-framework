@@ -58,6 +58,7 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
 
     @Override
     protected Void compare(AnnotatedTypeMirror one, AnnotatedTypeMirror two) {
+        assert one != two;
         if (one != null && two != null) {
             replaceAnnotations(one, two);
         }

@@ -140,6 +140,7 @@ import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.IntegerDivisionNode;
 import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.IntegerRemainderNode;
+import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
 import org.checkerframework.dataflow.cfg.node.LeftShiftNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
@@ -1238,7 +1239,7 @@ public class CFGBuilder {
                             final Label elseLabel = cj.getElseLabel();
                             missingEdges.add(
                                     new Tuple<>(
-                                            new SingleSuccessorBlockImpl() {
+                                            new SingleSuccessorBlockImpl(BlockType.REGULAR_BLOCK) {
                                                 @Override
                                                 public void setSuccessor(BlockImpl successor) {
                                                     cb.setThenSuccessor(successor);
@@ -1247,7 +1248,7 @@ public class CFGBuilder {
                                             bindings.get(thenLabel)));
                             missingEdges.add(
                                     new Tuple<>(
-                                            new SingleSuccessorBlockImpl() {
+                                            new SingleSuccessorBlockImpl(BlockType.REGULAR_BLOCK) {
                                                 @Override
                                                 public void setSuccessor(BlockImpl successor) {
                                                     cb.setElseSuccessor(successor);
@@ -1551,7 +1552,22 @@ public class CFGBuilder {
             generatedTreesLookupMap = new IdentityHashMap<>();
 
             // traverse AST of the method body
-            scan(bodyPath, null);
+            Node finalNode = scan(bodyPath, null);
+
+            // If we are building the CFG for a lambda with a single expression as the body, then add an extra node
+            // for the result of that lambda
+            if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
+                LambdaExpressionTree lambdaTree =
+                        ((UnderlyingAST.CFGLambda) underlyingAST).getLambdaTree();
+                if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
+                    Node resultNode =
+                            new LambdaResultExpressionNode(
+                                    (ExpressionTree) lambdaTree.getBody(),
+                                    finalNode,
+                                    env.getTypeUtils());
+                    extendWithNode(resultNode);
+                }
+            }
 
             // add marker to indicate that the next block will be the exit block
             // Note: if there is a return statement earlier in the method (which

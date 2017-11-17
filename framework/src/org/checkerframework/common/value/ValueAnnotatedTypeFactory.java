@@ -142,6 +142,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Range.IGNORE_OVERFLOW = checker.hasOption(ValueChecker.IGNORE_RANGE_OVERFLOW);
         evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
+        addAliasedAnnotation(
+                android.support.annotation.IntRange.class,
+                AnnotationBuilder.fromClass(elements, IntRange.class),
+                true);
+
         // The actual ArrayLenRange is created by
         // {@link ValueAnnotatedTypeFactory#aliasedAnnotation(AnnotationMirror)};
         // this line just registers the alias. The BottomVal is never used.
@@ -194,11 +199,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public AnnotationMirror aliasedAnnotation(AnnotationMirror anno) {
-        if (AnnotationUtils.areSameByClass(anno, android.support.annotation.IntRange.class)) {
-            Range range = getRange(anno);
-            return createIntRangeAnnotation(range);
-        }
-
         if (AnnotationUtils.areSameByClass(anno, MinLen.class)) {
             Integer from = getMinLenValue(anno);
             if (from != null && from >= 0) {
@@ -240,7 +240,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Set<AnnotationMirror> annos = super.getDeclAnnotations(elt);
         Set<AnnotationMirror> newSet = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror anno : annos) {
-            if (!isSupportedQualifier(anno)) {
+            if (!isSupportedQualifier(aliasedAnnotation(anno))) {
                 newSet.add(anno);
             }
         }

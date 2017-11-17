@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -15,6 +17,7 @@ import javax.lang.model.element.AnnotationValueVisitor;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -152,6 +155,28 @@ public class AnnotationBuilder {
         assertNotBuilt();
         wasBuilt = true;
         return new CheckerFrameworkAnnotationMirror(annotationType, elementValues);
+    }
+
+    /**
+     * Copies every element value from the given annotation. If an element in the given annotation
+     * doesn't exist in the annotation to be built, an error is raised unless the element is
+     * specified in {@code ignorableElements}.
+     *
+     * @param valueHolder the annotation that holds the values to be copied
+     * @param ignorableElements the elements that can be safely dropped
+     */
+    public void copyElementValuesFromAnnotation(
+            AnnotationMirror valueHolder, String... ignorableElements) {
+        Set<String> ignorableElementsSet = new HashSet<>(Arrays.asList(ignorableElements));
+        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> eltValToCopy :
+                valueHolder.getElementValues().entrySet()) {
+            Name eltNameToCopy = eltValToCopy.getKey().getSimpleName();
+            if (ignorableElementsSet.contains(eltNameToCopy.toString())) {
+                continue;
+            }
+            elementValues.put(findElement(eltNameToCopy), eltValToCopy.getValue());
+        }
+        return;
     }
 
     public AnnotationBuilder setValue(CharSequence elementName, AnnotationMirror value) {

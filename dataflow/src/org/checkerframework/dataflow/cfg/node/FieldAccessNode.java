@@ -22,10 +22,10 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class FieldAccessNode extends Node {
 
-    protected Tree tree;
-    protected VariableElement element;
-    protected String field;
-    protected Node receiver;
+    protected final Tree tree;
+    protected final VariableElement element;
+    protected final String field;
+    protected final Node receiver;
 
     // TODO: add method to get modifiers (static, access level, ..)
 
