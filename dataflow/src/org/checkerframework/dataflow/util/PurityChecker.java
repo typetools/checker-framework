@@ -9,6 +9,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,11 +49,9 @@ public class PurityChecker {
      * result that can be queried.
      */
     public static PurityResult checkPurity(
-            Tree statement, AnnotationProvider annoProvider, boolean assumeSideEffectFree) {
+            TreePath statement, AnnotationProvider annoProvider, boolean assumeSideEffectFree) {
         PurityCheckerHelper helper = new PurityCheckerHelper(annoProvider, assumeSideEffectFree);
-        if (statement != null) {
-            helper.scan(statement, null);
-        }
+        helper.scan(statement, null);
         return helper.presult;
     }
 
