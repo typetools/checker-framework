@@ -51,7 +51,9 @@ public class PurityChecker {
     public static PurityResult checkPurity(
             TreePath statement, AnnotationProvider annoProvider, boolean assumeSideEffectFree) {
         PurityCheckerHelper helper = new PurityCheckerHelper(annoProvider, assumeSideEffectFree);
-        helper.scan(statement, null);
+        if (statement != null) {
+            helper.scan(statement, null);
+        }
         return helper.presult;
     }
 
