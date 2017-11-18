@@ -154,16 +154,6 @@ public class PurityChecker {
             this.assumeSideEffectFree = assumeSideEffectFree;
         }
 
-        // I don't understand why this definition does not type-checck.
-        // /** Scan a list of nodes. */
-        // public void scan(Iterable<? extends Tree> nodes, Void ignore) {
-        //     if (nodes != null) {
-        //         for (Tree node : nodes) {
-        //             scan(node, ignore);
-        //         }
-        //     }
-        // }
-
         @Override
         public Void visitCatch(CatchTree node, Void ignore) {
             presult.addNotDetReason(node, "catch");
