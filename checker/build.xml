@@ -758,7 +758,7 @@
             <isset property="debugger.on"/>
         </condition>
 
-        <ant dir="${framework.loc}">
+        <ant dir="${framework.loc}" inheritAll="false">
             <target name="all-tests-nojtreg-nobuild"/>
         </ant>
 
