@@ -10,7 +10,7 @@ public class Issue951 {
     @Pure
     public static int min(int[] a) {
         if (a.length == 0) {
-            throw new ArrayIndexOutOfBoundsException("Empty array passed to min(int[])");
+            throw new MyExceptionSefConstructor("Empty array passed to min(int[])");
         }
         int result = a[0];
         for (int i = 1; i < a.length; i++) {
@@ -20,28 +20,54 @@ public class Issue951 {
     }
 
     @Pure
-    public static int arbitraryExceptionArg() {
-        // :: error: (purity.not.deterministic.not.sideeffectfree.call)
-        throw new ArrayIndexOutOfBoundsException("" + arbitraryMethod());
+    public static int arbitraryExceptionArg1() {
+        // :: error: (purity.not.deterministic.not.sideeffectfree.call) :: error: (purity.not.sideeffectfree.object.creation)
+        throw new MyException("" + arbitraryMethod());
     }
 
     @Pure
-    public static int sefExceptionArg() {
+    public static int arbitraryExceptionArg2() {
+        // :: error: (purity.not.deterministic.not.sideeffectfree.call)
+        throw new MyExceptionSefConstructor("" + arbitraryMethod());
+    }
+
+    @Pure
+    public static int sefExceptionArg1() {
+        // The method is safe, so this is a false positive warning;
+        // in the future the Purity Checker may not issue this warning.
+        // :: error: (purity.not.deterministic.call) :: error: (purity.not.sideeffectfree.object.creation)
+        throw new MyException("" + sefMethod());
+    }
+
+    @Pure
+    public static int sefExceptionArg2() {
         // The method is safe, so this is a false positive warning;
         // in the future the Purity Checker may not issue this warning.
         // :: error: (purity.not.deterministic.call)
-        throw new ArrayIndexOutOfBoundsException("" + sefMethod());
+        throw new MyExceptionSefConstructor("" + sefMethod());
     }
 
     @Pure
-    public static int detExceptionArg() {
+    public static int detExceptionArg1() {
+        // :: error: (purity.not.sideeffectfree.call) :: error: (purity.not.sideeffectfree.object.creation)
+        throw new MyException("" + detMethod());
+    }
+
+    @Pure
+    public static int detExceptionArg2() {
         // :: error: (purity.not.sideeffectfree.call)
-        throw new ArrayIndexOutOfBoundsException("" + detMethod());
+        throw new MyExceptionSefConstructor("" + detMethod());
     }
 
     @Pure
-    public static int pureExceptionArg(int a, int b) {
-        throw new ArrayIndexOutOfBoundsException("" + min(a, b));
+    public static int pureExceptionArg1(int a, int b) {
+        // :: error: (purity.not.sideeffectfree.object.creation)
+        throw new MyException("" + min(a, b));
+    }
+
+    @Pure
+    public static int pureExceptionArg2(int a, int b) {
+        throw new MyExceptionSefConstructor("" + min(a, b));
     }
 
     @Pure
@@ -49,10 +75,10 @@ public class Issue951 {
         for (int i = 0; i < 10; i++) {
             try {
                 for (int j = 0; j < 10; j++) {
-                    throw new Error();
+                    throw new MyExceptionSefConstructor("foo");
                 }
                 // :: error: (purity.not.deterministic.catch)
-            } catch (Error e) {
+            } catch (MyExceptionSefConstructor e) {
                 return -1;
             }
         }
@@ -85,5 +111,19 @@ public class Issue951 {
         } else {
             return b;
         }
+    }
+
+    // Constructors
+
+    static class MyException extends Error {
+        // Not side-effect-free
+        MyException(String message) {}
+    }
+
+    static class MyExceptionSefConstructor extends Error {
+        // Side-effect-free
+        @SuppressWarnings("purity.not.sideeffectfree.call") // until java.util.Error is annotated
+        @SideEffectFree
+        MyExceptionSefConstructor(String message) {}
     }
 }

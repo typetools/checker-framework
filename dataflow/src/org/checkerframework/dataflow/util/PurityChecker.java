@@ -213,18 +213,19 @@ public class PurityChecker {
             // (There is no need to check the latter condition, because the purity checker
             // forbids all catch statements.)
             Tree parent = getCurrentPath().getParentPath().getLeaf();
-            boolean okThrow = parent.getKind() == Tree.Kind.THROW;
+            boolean okThrowDeterminism = parent.getKind() == Tree.Kind.THROW;
 
-            if (!okThrow) {
-                Element methodElement = InternalUtils.symbol(node);
-                boolean sideEffectFree =
-                        (assumeSideEffectFree
-                                || PurityUtils.isSideEffectFree(annoProvider, methodElement));
-                if (sideEffectFree) {
-                    purityResult.addNotDetReason(node, "object.creation");
-                } else {
-                    purityResult.addNotBothReason(node, "object.creation");
-                }
+            Element methodElement = InternalUtils.symbol(node);
+            boolean deterministic = okThrowDeterminism;
+            boolean sideEffectFree =
+                    (assumeSideEffectFree
+                            || PurityUtils.isSideEffectFree(annoProvider, methodElement));
+            if (!sideEffectFree && !deterministic) {
+                purityResult.addNotBothReason(node, "object.creation");
+            } else if (!deterministic) {
+                purityResult.addNotDetReason(node, "object.creation");
+            } else if (!sideEffectFree) {
+                purityResult.addNotSEFreeReason(node, "object.creation");
             }
 
             // TODO: if okThrow, permit arguments to the newClass to be non-deterministic (don't add
