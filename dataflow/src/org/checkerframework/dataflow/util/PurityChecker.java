@@ -54,7 +54,7 @@ public class PurityChecker {
         if (statement != null) {
             helper.scan(statement, null);
         }
-        return helper.presult;
+        return helper.purityResult;
     }
 
     /**
@@ -139,7 +139,7 @@ public class PurityChecker {
     /** Helper class to keep {@link PurityChecker}'s interface clean. */
     protected static class PurityCheckerHelper extends TreePathScanner<Void, Void> {
 
-        PurityResult presult = new PurityResult();
+        PurityResult purityResult = new PurityResult();
 
         protected final AnnotationProvider annoProvider;
 
@@ -156,7 +156,7 @@ public class PurityChecker {
 
         @Override
         public Void visitCatch(CatchTree node, Void ignore) {
-            presult.addNotDetReason(node, "catch");
+            purityResult.addNotDetReason(node, "catch");
             return super.visitCatch(node, ignore);
         }
 
@@ -165,17 +165,17 @@ public class PurityChecker {
             Element elt = TreeUtils.elementFromUse(node);
             String reason = "call";
             if (!PurityUtils.hasPurityAnnotation(annoProvider, elt)) {
-                presult.addNotBothReason(node, reason);
+                purityResult.addNotBothReason(node, reason);
             } else {
                 boolean det = PurityUtils.isDeterministic(annoProvider, elt);
                 boolean seFree =
                         (assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, elt));
                 if (!det && !seFree) {
-                    presult.addNotBothReason(node, reason);
+                    purityResult.addNotBothReason(node, reason);
                 } else if (!det) {
-                    presult.addNotDetReason(node, reason);
+                    purityResult.addNotDetReason(node, reason);
                 } else if (!seFree) {
-                    presult.addNotSEFreeReason(node, reason);
+                    purityResult.addNotSEFreeReason(node, reason);
                 }
             }
             return super.visitMethodInvocation(node, ignore);
@@ -188,9 +188,9 @@ public class PurityChecker {
                     (assumeSideEffectFree
                             || PurityUtils.isSideEffectFree(annoProvider, methodElement));
             if (sideEffectFree) {
-                presult.addNotDetReason(node, "object.creation");
+                purityResult.addNotDetReason(node, "object.creation");
             } else {
-                presult.addNotBothReason(node, "object.creation");
+                purityResult.addNotBothReason(node, "object.creation");
             }
             return super.visitNewClass(node, ignore);
         }
@@ -205,10 +205,10 @@ public class PurityChecker {
         protected void assignmentCheck(ExpressionTree variable) {
             if (TreeUtils.isFieldAccess(variable)) {
                 // rhs is a field access
-                presult.addNotBothReason(variable, "assign.field");
+                purityResult.addNotBothReason(variable, "assign.field");
             } else if (variable instanceof ArrayAccessTree) {
                 // rhs is array access
-                presult.addNotBothReason(variable, "assign.array");
+                purityResult.addNotBothReason(variable, "assign.array");
             } else {
                 // rhs is a local variable
                 assert isLocalVariable(variable);
