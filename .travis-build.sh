@@ -162,4 +162,7 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   # make -C ../jsr308-langtools/doc
   make -C ../jsr308-langtools/doc pdf
 
+  # HTML legality
+  ant html-validate
+
 fi

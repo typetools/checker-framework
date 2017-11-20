@@ -183,15 +183,56 @@ public class PurityChecker {
 
         @Override
         public Void visitNewClass(NewClassTree node, Void ignore) {
+            // Ordinarily, "new MyClass()" is forbidden.  It is permitted, however, when it is the
+            // expression in "throw EXPR;".  (In the future, more expressions could be permitted.)
+            //
+            // The expression in "throw EXPR;" is allowed to be non-@Deterministic, so long as it is
+            // not within a catch block that could catch an exception that the statement throws.
+            // For example, EXPR can be object creation (a "new" expression) or can call a
+            // non-deterministic method.
+            //
+            // Coarse rule (currently implemented):
+            //  * permit only "throw new SomeExpression(args)", where the constructor is
+            //    @SideEffectFree and the args are pure, and forbid all enclosing try statements
+            //    that have a catch clause.
+            // More precise rule:
+            //  * permit other non-deterministic expresssions within throw (at which time move this
+            //    logic to visitThrow()).
+            //  * the only bad try statements are those with a catch block that is:
+            //     * unchecked exceptions
+            //        * checked = Exception or lower, but excluding RuntimeException and its
+            //          subclasses
+            //     * super- or sub-classes of the type of _expr_
+            //        * if _expr_ is exactly "new SomeException", this can be changed to just
+            //          "superclasses of SomeException".
+            //     * super- or sub-classes of exceptions declared to be thrown by any component of
+            //       _expr_.
+            //     * need to check every containing try statement, not just the nearest enclosing
+            //       one.
+
+            // Object creation is usually prohibited, but permit "throw new SomeException();"
+            // if it is not contained within any try statement that has a catch clause.
+            // (There is no need to check the latter condition, because the purity checker
+            // forbids all catch statements.)
+            Tree parent = getCurrentPath().getParentPath().getLeaf();
+            boolean okThrowDeterministic = parent.getKind() == Tree.Kind.THROW;
+
             Element methodElement = InternalUtils.symbol(node);
+            boolean deterministic = okThrowDeterministic;
             boolean sideEffectFree =
                     (assumeSideEffectFree
                             || PurityUtils.isSideEffectFree(annoProvider, methodElement));
-            if (sideEffectFree) {
-                purityResult.addNotDetReason(node, "object.creation");
-            } else {
+            if (!sideEffectFree && !deterministic) {
                 purityResult.addNotBothReason(node, "object.creation");
+            } else if (!deterministic) {
+                purityResult.addNotDetReason(node, "object.creation");
+            } else if (!sideEffectFree) {
+                purityResult.addNotSEFreeReason(node, "object.creation");
             }
+
+            // TODO: if okThrowDeterministic, permit arguments to the newClass to be
+            // non-deterministic (don't add those to purityResult), but still don't permit them to
+            // have side effects.  This should probably wait until a rewrite of the Purity Checker.
             return super.visitNewClass(node, ignore);
         }
 
