@@ -183,7 +183,7 @@ public class PurityChecker {
 
         @Override
         public Void visitNewClass(NewClassTree node, Void ignore) {
-            // Ordinarily, "new MyClass()" is forbidden.  It is permitted, however when it is the
+            // Ordinarily, "new MyClass()" is forbidden.  It is permitted, however, when it is the
             // expression in "throw EXPR;".  (In the future, more expressions could be permitted.)
             //
             // The expression in "throw EXPR;" is allowed to be non-@Deterministic, so long as it is
@@ -192,10 +192,12 @@ public class PurityChecker {
             // non-deterministic method.
             //
             // Coarse rule (currently implemented):
-            //  * permit only "throw new SomeExpression(args)", where the args are themselves pure,
-            //    and forbid all enclosing try statements that have a catch clause.
+            //  * permit only "throw new SomeExpression(args)", where the constructor is
+            //    @SideEffectFree and the args are pure, and forbid all enclosing try statements
+            //    that have a catch clause.
             // More precise rule:
-            //  * permit other non-deterministic expresssions
+            //  * permit other non-deterministic expresssions within throw (at which time move this
+            //    logic to visitThrow()).
             //  * the only bad try statements are those with a catch block that is:
             //     * unchecked exceptions
             //        * checked = Exception or lower, but excluding RuntimeException and its
