@@ -183,6 +183,9 @@ public class PurityChecker {
 
         @Override
         public Void visitNewClass(NewClassTree node, Void ignore) {
+            // Ordinarily, "new MyClass()" is forbidden.  It is permitted, however when it is the
+            // expression in "throw EXPR;".  (In the future, more expressions could be permitted.)
+            //
             // The expression in "throw EXPR;" is allowed to be non-@Deterministic, so long as it is
             // not within a catch block that could catch an exception that the statement throws.
             // For example, EXPR can be object creation (a "new" expression) or can call a
