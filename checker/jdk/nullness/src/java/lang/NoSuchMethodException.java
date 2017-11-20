@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -40,6 +41,7 @@ class NoSuchMethodException extends Exception {
     /**
      * Constructs a <code>NoSuchMethodException</code> without a detail message.
      */
+    @SideEffectFree
     public NoSuchMethodException() {
         super();
     }
@@ -49,6 +51,7 @@ class NoSuchMethodException extends Exception {
      *
      * @param      s   the detail message.
      */
+    @SideEffectFree
     public NoSuchMethodException(@Nullable String s) {
         super(s);
     }

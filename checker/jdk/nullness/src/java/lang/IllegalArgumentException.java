@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -41,6 +42,7 @@ class IllegalArgumentException extends RuntimeException {
      * Constructs an <code>IllegalArgumentException</code> with no
      * detail message.
      */
+    @SideEffectFree
     public IllegalArgumentException() {
         super();
     }
@@ -51,6 +53,7 @@ class IllegalArgumentException extends RuntimeException {
      *
      * @param   s   the detail message.
      */
+    @SideEffectFree
     public IllegalArgumentException(@Nullable String s) {
         super(s);
     }
@@ -71,6 +74,7 @@ class IllegalArgumentException extends RuntimeException {
      *         unknown.)
      * @since 1.5
      */
+    @SideEffectFree
     public IllegalArgumentException(@Nullable String message, @Nullable Throwable cause) {
         super(message, cause);
     }
@@ -89,6 +93,7 @@ class IllegalArgumentException extends RuntimeException {
      *         unknown.)
      * @since  1.5
      */
+    @SideEffectFree
     public IllegalArgumentException(@Nullable Throwable cause) {
         super(cause);
     }

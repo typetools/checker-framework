@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -65,6 +66,7 @@ public class IllegalAccessException extends Exception {
      * Constructs an <code>IllegalAccessException</code> without a
      * detail message.
      */
+    @SideEffectFree
     public IllegalAccessException() {
         super();
     }
@@ -74,6 +76,7 @@ public class IllegalAccessException extends Exception {
      *
      * @param   s   the detail message.
      */
+    @SideEffectFree
     public IllegalAccessException(@Nullable String s) {
         super(s);
     }
