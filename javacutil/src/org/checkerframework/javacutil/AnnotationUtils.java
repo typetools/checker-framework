@@ -12,11 +12,14 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacElements;
 import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +30,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
@@ -349,6 +353,63 @@ public class AnnotationUtils {
     /** Returns true if the given annotation has a @Inherited meta-annotation. */
     public static boolean hasInheritedMeta(AnnotationMirror anno) {
         return anno.getAnnotationType().asElement().getAnnotation(Inherited.class) != null;
+    }
+
+    /**
+     * @return the set of {@link ElementKind}s to which {@code target} applies, ignoring TYPE_USE
+     */
+    public static EnumSet<ElementKind> getElementKindsForTarget(/*@Nullable*/ Target target) {
+        if (target == null) {
+            // A missing @Target implies that the annotation can be written everywhere.
+            return EnumSet.allOf(ElementKind.class);
+        }
+        EnumSet<ElementKind> eleKinds = EnumSet.noneOf(ElementKind.class);
+        for (ElementType elementType : target.value()) {
+            eleKinds.addAll(getElementKindsForElementType(elementType));
+        }
+        return eleKinds;
+    }
+
+    /**
+     * Returns the set of {@link ElementKind}s corresponding to {@code elementType}. If the element
+     * type is TYPE_USE, then ElementKinds returned should be the same as those returned for TYPE
+     * and TYPE_PARAMETER, but this method returns the empty set instead.
+     *
+     * @return the set of {@link ElementKind}s corresponding to {@code elementType}
+     */
+    public static EnumSet<ElementKind> getElementKindsForElementType(ElementType elementType) {
+        switch (elementType) {
+            case TYPE:
+                return EnumSet.of(
+                        ElementKind.CLASS,
+                        ElementKind.INTERFACE,
+                        ElementKind.ANNOTATION_TYPE,
+                        ElementKind.ENUM);
+            case FIELD:
+                return EnumSet.of(ElementKind.FIELD, ElementKind.ENUM_CONSTANT);
+            case METHOD:
+                return EnumSet.of(ElementKind.METHOD);
+            case PARAMETER:
+                return EnumSet.of(ElementKind.PARAMETER);
+            case CONSTRUCTOR:
+                return EnumSet.of(ElementKind.CONSTRUCTOR);
+            case LOCAL_VARIABLE:
+                return EnumSet.of(
+                        ElementKind.LOCAL_VARIABLE,
+                        ElementKind.RESOURCE_VARIABLE,
+                        ElementKind.EXCEPTION_PARAMETER);
+            case ANNOTATION_TYPE:
+                return EnumSet.of(ElementKind.ANNOTATION_TYPE);
+            case PACKAGE:
+                return EnumSet.of(ElementKind.PACKAGE);
+            case TYPE_PARAMETER:
+                return EnumSet.of(ElementKind.TYPE_PARAMETER);
+            case TYPE_USE:
+                return EnumSet.noneOf(ElementKind.class);
+            default:
+                ErrorReporter.errorAbort("New ElementType: %s", elementType);
+                return EnumSet.noneOf(ElementKind.class);
+        }
     }
 
     // **********************************************************************
