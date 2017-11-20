@@ -15,7 +15,7 @@ public class KeyForFlow extends HashMap<String, Object> {
             @KeyFor("m_local") Object s = k_local;
         }
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @KeyFor("m_local") String s2 = k_local;
     }
 
@@ -26,7 +26,7 @@ public class KeyForFlow extends HashMap<String, Object> {
             @KeyFor("m") Object s = k_local;
         }
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @KeyFor("m") String s2 = k_local;
     }
 
@@ -37,7 +37,7 @@ public class KeyForFlow extends HashMap<String, Object> {
             @KeyFor("m_local") Object s = k;
         }
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @KeyFor("m_local") String s2 = k;
     }
 
@@ -46,7 +46,7 @@ public class KeyForFlow extends HashMap<String, Object> {
             @KeyFor("m") Object s = k;
         }
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @KeyFor("m") String s2 = k;
     }
 
@@ -57,7 +57,7 @@ public class KeyForFlow extends HashMap<String, Object> {
             @KeyFor("m") Object s = k_s;
         }
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @KeyFor("m") String s2 = k_s;
     }
 
@@ -69,7 +69,7 @@ public class KeyForFlow extends HashMap<String, Object> {
             @KeyFor("m_s") Object s = k;
         }
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @KeyFor("m_s") String s2 = k;
     }
 
@@ -78,7 +78,7 @@ public class KeyForFlow extends HashMap<String, Object> {
             @KeyFor("this") Object s = k;
         }
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @KeyFor("this") String s2 = k;
     }
 
@@ -87,7 +87,7 @@ public class KeyForFlow extends HashMap<String, Object> {
     String k2 = "key2";
 
     void testCallingPutAfterAdd() {
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         coll.add(k2);
         m2.put(k2, new Object());
     }
@@ -144,7 +144,7 @@ public class KeyForFlow extends HashMap<String, Object> {
             @KeyFor("f.m") Object s = k;
         }
 
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @KeyFor("f.m") String s2 = k;
     }
 

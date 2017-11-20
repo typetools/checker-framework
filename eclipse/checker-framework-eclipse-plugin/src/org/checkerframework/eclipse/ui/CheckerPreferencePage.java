@@ -306,8 +306,9 @@ public class CheckerPreferencePage extends PreferencePage implements IWorkbenchP
                 });
     }
 
-    //TODO: Lot's of overlap with procTable, perhaps there is a way to generalize these two
-    //TODO: We could also move some of the other built-in options as unremovable options in this table
+    // TODO: Lot's of overlap with procTable, perhaps there is a way to generalize these two
+    // TODO: We could also move some of the other built-in options as unremovable options in this
+    // table
     public void makeCompilerParameters(final Composite tableComposite) {
         final Group group = new Group(tableComposite, SWT.None);
         group.setText("Additional compiler parameters");
@@ -544,13 +545,13 @@ public class CheckerPreferencePage extends PreferencePage implements IWorkbenchP
                 }
             }
 
-            //TODO: CHECK FOR DUPLICATES?
+            // TODO: CHECK FOR DUPLICATES?
 
             final List<String> classesInTable = classesFromTableItems();
             for (final String cn : classNames) {
                 final CheckerInfo ci = CheckerInfo.fromClassPath(cn, null);
                 if (!classesInTable.contains(
-                        cn)) { //TODO: ADD A DIALOG TO WARN IF ALREADY CONTAINED
+                        cn)) { // TODO: ADD A DIALOG TO WARN IF ALREADY CONTAINED
                     addProcTableItem(ci, false);
                 }
             }

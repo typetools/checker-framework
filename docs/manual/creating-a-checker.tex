@@ -277,7 +277,7 @@ Here is a good way to proceed.
   void foo(@UnknownSign int us, @NonNegative int nn) {
     @UnknownSign int a = us;
     @UnknownSign int b = nn;
-    //:: error: assignment.type.incompatible
+    // :: error: assignment.type.incompatible
     @NonNegative int c = us;  // expected error on this line
     @NonNegative int d = nn;
   }

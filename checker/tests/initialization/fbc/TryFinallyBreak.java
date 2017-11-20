@@ -12,7 +12,7 @@ class TryFinallyBreak {
                 ans = null;
             }
         }
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return ans;
     }
 
@@ -26,7 +26,7 @@ class TryFinallyBreak {
                 ans = null;
             }
         }
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return ans;
     }
 }

@@ -153,7 +153,7 @@ public class CustomPreferencesPage extends PreferencePage implements IWorkbenchP
             }
 
             for (final String cn : classNames) {
-                if (!contains(cn)) { //TODO: ADD A DIALOG TO WARN IF ALREADY CONTAINED
+                if (!contains(cn)) { // TODO: ADD A DIALOG TO WARN IF ALREADY CONTAINED
                     customCheckers.add(cn);
                 }
             }

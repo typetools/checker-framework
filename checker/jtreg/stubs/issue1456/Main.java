@@ -2,9 +2,9 @@
  * @test
  * @summary Test case for Issue 1456 https://github.com/typetools/checker-framework/issues/1456
  * @compile -XDrawDiagnostics -Xlint:unchecked ../issue1456lib/Lib.java
- * @compile -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.tainting.TaintingChecker -AprintErrorStack -Anomsgtext Main.java -Astubs=Lib.astub -AstubWarnIfNotFound
+ *  @compile/fail/ref=WithStub.out -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.tainting.TaintingChecker -AprintErrorStack -Anomsgtext Main.java -Astubs=Lib.astub -AstubWarnIfNotFound -Werror
+ *  @compile/fail/ref=WithOutStub.out -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.tainting.TaintingChecker -AprintErrorStack -Anomsgtext Main.java -AstubWarnIfNotFound -Werror
  */
-
 package issue1456;
 
 import issue1456lib.Lib;
@@ -20,5 +20,9 @@ public class Main {
         @Untainted byte b2 = lib.byte1;
         @Untainted byte @Untainted [] b3 = lib.byteArray2;
         byte @Untainted [] @Untainted [] b4 = lib.byteArray3;
+    }
+
+    void test2(Lib l) {
+        Lib f = new Lib(l);
     }
 }

@@ -140,6 +140,7 @@ import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.IntegerDivisionNode;
 import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.IntegerRemainderNode;
+import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
 import org.checkerframework.dataflow.cfg.node.LeftShiftNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
@@ -1238,7 +1239,7 @@ public class CFGBuilder {
                             final Label elseLabel = cj.getElseLabel();
                             missingEdges.add(
                                     new Tuple<>(
-                                            new SingleSuccessorBlockImpl() {
+                                            new SingleSuccessorBlockImpl(BlockType.REGULAR_BLOCK) {
                                                 @Override
                                                 public void setSuccessor(BlockImpl successor) {
                                                     cb.setThenSuccessor(successor);
@@ -1247,7 +1248,7 @@ public class CFGBuilder {
                                             bindings.get(thenLabel)));
                             missingEdges.add(
                                     new Tuple<>(
-                                            new SingleSuccessorBlockImpl() {
+                                            new SingleSuccessorBlockImpl(BlockType.REGULAR_BLOCK) {
                                                 @Override
                                                 public void setSuccessor(BlockImpl successor) {
                                                     cb.setElseSuccessor(successor);
@@ -1551,7 +1552,22 @@ public class CFGBuilder {
             generatedTreesLookupMap = new IdentityHashMap<>();
 
             // traverse AST of the method body
-            scan(bodyPath, null);
+            Node finalNode = scan(bodyPath, null);
+
+            // If we are building the CFG for a lambda with a single expression as the body, then add an extra node
+            // for the result of that lambda
+            if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
+                LambdaExpressionTree lambdaTree =
+                        ((UnderlyingAST.CFGLambda) underlyingAST).getLambdaTree();
+                if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
+                    Node resultNode =
+                            new LambdaResultExpressionNode(
+                                    (ExpressionTree) lambdaTree.getBody(),
+                                    finalNode,
+                                    env.getTypeUtils());
+                    extendWithNode(resultNode);
+                }
+            }
 
             // add marker to indicate that the next block will be the exit block
             // Note: if there is a return statement earlier in the method (which
@@ -1582,6 +1598,7 @@ public class CFGBuilder {
                 AnnotationProvider annotationProvider) {
             trees = Trees.instance(env);
             TreePath bodyPath = trees.getPath(root, underlyingAST.getCode());
+            assert bodyPath != null;
             return process(
                     bodyPath,
                     env,
@@ -1901,7 +1918,7 @@ public class CFGBuilder {
                         new MethodInvocationNode(
                                 primValueCall,
                                 primValueAccess,
-                                Collections.<Node>emptyList(),
+                                Collections.emptyList(),
                                 getCurrentPath());
                 unboxed.setInSource(false);
 
@@ -3542,7 +3559,7 @@ public class CFGBuilder {
                         new MethodInvocationNode(
                                 iteratorCall,
                                 iteratorAccessNode,
-                                Collections.<Node>emptyList(),
+                                Collections.emptyList(),
                                 getCurrentPath());
                 iteratorCallNode.setInSource(false);
                 extendWithNode(iteratorCallNode);
@@ -3576,7 +3593,7 @@ public class CFGBuilder {
                         new MethodInvocationNode(
                                 hasNextCall,
                                 hasNextAccessNode,
-                                Collections.<Node>emptyList(),
+                                Collections.emptyList(),
                                 getCurrentPath());
                 hasNextCallNode.setInSource(false);
                 extendWithNode(hasNextCallNode);
@@ -3608,7 +3625,7 @@ public class CFGBuilder {
                         new MethodInvocationNode(
                                 nextCall,
                                 nextAccessNode,
-                                Collections.<Node>emptyList(),
+                                Collections.emptyList(),
                                 getCurrentPath());
                 nextCallNode.setInSource(false);
                 extendWithNode(nextCallNode);
@@ -4236,11 +4253,12 @@ public class CFGBuilder {
             }
 
             Label finallyLabel = null;
-            Label exceptionalFinallyLabel = null;
+            // Label exceptionalFinallyLabel = null; // #293
             if (finallyBlock != null) {
                 finallyLabel = new Label();
-                exceptionalFinallyLabel = new Label();
-                tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
+                // exceptionalFinallyLabel = new Label(); // #293
+                // tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
+                tryStack.pushFrame(new TryFinallyFrame(finallyLabel));
             }
 
             Label doneLabel = new Label();
@@ -4264,39 +4282,39 @@ public class CFGBuilder {
             if (finallyLabel != null) {
                 tryStack.popFrame();
 
-                if (hasExceptionalPath(exceptionalFinallyLabel)) {
-                    // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
-                    // and scan copied 'finallyBlock' for 'finallyLabel'(a successful path). If there
-                    // is no successful path, it will be removed in later phase.
-                    addLabelForNextNode(exceptionalFinallyLabel);
-                    scan(finallyBlock, p);
+                // if (hasExceptionalPath(exceptionalFinallyLabel)) {  // #293
+                // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
+                // and scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there
+                // is no successful path, it will be removed in later phase.
+                // addLabelForNextNode(exceptionalFinallyLabel);
+                addLabelForNextNode(finallyLabel);
+                scan(finallyBlock, p);
 
-                    TypeMirror throwableType =
-                            elements.getTypeElement("java.lang.Throwable").asType();
-                    NodeWithExceptionsHolder throwing =
-                            extendWithNodeWithException(
-                                    new MarkerNode(
-                                            tree, "end of finally block", env.getTypeUtils()),
-                                    throwableType);
-                    throwing.setTerminatesExecution(true);
+                TypeMirror throwableType = elements.getTypeElement("java.lang.Throwable").asType();
+                NodeWithExceptionsHolder throwing =
+                        extendWithNodeWithException(
+                                new MarkerNode(tree, "end of finally block", env.getTypeUtils()),
+                                throwableType);
+                /* #293
+                              throwing.setTerminatesExecution(true);
 
-                    addLabelForNextNode(finallyLabel);
-                    BlockTree successfulFinallyBlock = treeBuilder.copy(finallyBlock);
-                    addToGeneratedTreesLookupMap(finallyBlock, successfulFinallyBlock);
-                    scan(successfulFinallyBlock, p);
-                    extendWithNode(
-                            new MarkerNode(tree, "end of finally block", env.getTypeUtils()));
-                    extendWithExtendedNode(new UnconditionalJump(doneLabel));
-                } else {
-                    // Scan 'finallyBlock' for only 'finallyLabel'(a successful path) because there
-                    // is no path to 'exceptionalFinallyLabel'.
-                    addLabelForNextNode(finallyLabel);
-                    scan(finallyBlock, p);
+                              addLabelForNextNode(finallyLabel);
+                              BlockTree successfulFinallyBlock = treeBuilder.copy(finallyBlock);
+                              addToGeneratedTreesLookupMap(finallyBlock, successfulFinallyBlock);
+                              scan(successfulFinallyBlock, p);
+                              extendWithNode(
+                                      new MarkerNode(tree, "end of finally block", env.getTypeUtils()));
+                              extendWithExtendedNode(new UnconditionalJump(doneLabel));
+                       } else {
+                              // Scan 'finallyBlock' for only 'finallyLabel' (a successful path)
+                              // because there is no path to 'exceptionalFinallyLabel'.
+                              addLabelForNextNode(finallyLabel);
+                              scan(finallyBlock, p);
 
-                    extendWithNode(
-                            new MarkerNode(tree, "end of finally block", env.getTypeUtils()));
-                    extendWithExtendedNode(new UnconditionalJump(doneLabel));
-                }
+                              extendWithNode(
+                                      new MarkerNode(tree, "end of finally block", env.getTypeUtils()));
+                              extendWithExtendedNode(new UnconditionalJump(doneLabel));
+                }*/
             }
 
             addLabelForNextNode(doneLabel);

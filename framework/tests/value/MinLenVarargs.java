@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-//@skip-test
+// @skip-test
 
 class MinLenVarargs {
     static void check(String @MinLen(3) ... var) {
@@ -8,13 +8,13 @@ class MinLenVarargs {
     }
 
     public static void main(String[] args) {
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         check(new String[] {"goodbye"});
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         check("goodbye");
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         check();
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         check("hello", "goodbye");
     }
 }

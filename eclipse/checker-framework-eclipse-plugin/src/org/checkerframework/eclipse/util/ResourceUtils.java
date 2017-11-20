@@ -5,7 +5,6 @@ import static org.eclipse.core.resources.IResource.FILE;
 import static org.eclipse.core.resources.IResource.FOLDER;
 
 import java.io.File;
-import java.lang.RuntimeException;
 import java.util.*;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -237,7 +236,7 @@ public class ResourceUtils {
             try {
                 out = project.getOutputLocation();
 
-                //TODO: THERE HAS TO BE A BETTER WAY TO DO THIS BECAUSE THIS IS KLUDGERIFFIC
+                // TODO: THERE HAS TO BE A BETTER WAY TO DO THIS BECAUSE THIS IS KLUDGERIFFIC
                 if (out != null) {
 
                     String path =

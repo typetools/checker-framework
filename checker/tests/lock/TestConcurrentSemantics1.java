@@ -40,7 +40,7 @@ class TestConcurrentSemantics1 {
         @GuardedBy("lock1") MyClass local = new MyClass();
         m = local;
         lock1.lock();
-        //:: error: (lock.not.held)
+        // :: error: (lock.not.held)
         m.field = new Object();
     }
 

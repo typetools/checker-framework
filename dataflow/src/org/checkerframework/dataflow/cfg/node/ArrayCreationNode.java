@@ -26,14 +26,14 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
 public class ArrayCreationNode extends Node {
 
     /** The tree is null when an array is created for variable arity method calls. */
-    protected /*@Nullable*/ NewArrayTree tree;
+    protected final /*@Nullable*/ NewArrayTree tree;
     /**
      * The length of this list is the number of dimensions in the array. Each element is the size of
      * the given dimension.
      */
-    protected List<Node> dimensions;
+    protected final List<Node> dimensions;
 
-    protected List<Node> initializers;
+    protected final List<Node> initializers;
 
     public ArrayCreationNode(
             /*@Nullable*/ NewArrayTree tree,

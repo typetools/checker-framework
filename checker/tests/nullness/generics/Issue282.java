@@ -1,5 +1,6 @@
 // Test case for Issue 282
 // https://github.com/typetools/checker-framework/issues/282
+
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;

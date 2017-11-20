@@ -13,6 +13,7 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -160,8 +161,7 @@ public class FlowExpressions {
             // case we treat the method call as deterministic, because there is no way
             // to behave differently in two executions where two constants are being used.
             boolean considerDeterministic = false;
-            if (invokedMethod.toString().equals("valueOf(long)")
-                    && mn.getTarget().getReceiver().toString().equals("Long")) {
+            if (isLongValueOf(mn, invokedMethod)) {
                 Node arg = mn.getArgument(0);
                 if (arg instanceof ValueLiteralNode) {
                     considerDeterministic = true;
@@ -189,6 +189,30 @@ public class FlowExpressions {
             receiver = new Unknown(receiverNode.getType());
         }
         return receiver;
+    }
+
+    /** Return true iff the invoked method is Long.valueOf(long). */
+    private static boolean isLongValueOf(MethodInvocationNode mn, ExecutableElement method) {
+
+        // Less efficient implementation:
+        // return method.toString().equals("valueOf(long)")
+        //     && mn.getTarget().getReceiver().toString().equals("Long")
+
+        if (mn.getTarget().getReceiver() == null
+                || !mn.getTarget().getReceiver().toString().equals("Long")) {
+            return false;
+        }
+
+        if (!method.getSimpleName().contentEquals("valueOf")) {
+            return false;
+        }
+        List<? extends VariableElement> params = method.getParameters();
+        if (params.size() != 1) {
+            return false;
+        }
+        VariableElement param = params.get(0);
+        TypeMirror paramType = param.asType();
+        return paramType.getKind() == TypeKind.LONG;
     }
 
     /**
@@ -233,8 +257,8 @@ public class FlowExpressions {
                 receiver =
                         new ArrayCreation(
                                 InternalUtils.typeOf(receiverTree),
-                                Collections.<Node>emptyList(),
-                                Collections.<Node>emptyList());
+                                Collections.emptyList(),
+                                Collections.emptyList());
                 break;
             case METHOD_INVOCATION:
                 MethodInvocationTree mn = (MethodInvocationTree) receiverTree;
@@ -445,8 +469,8 @@ public class FlowExpressions {
     }
 
     public static class FieldAccess extends Receiver {
-        protected Receiver receiver;
-        protected VariableElement field;
+        protected final Receiver receiver;
+        protected final VariableElement field;
 
         public Receiver getReceiver() {
             return receiver;
@@ -662,7 +686,7 @@ public class FlowExpressions {
     }
 
     public static class LocalVariable extends Receiver {
-        protected Element element;
+        protected final Element element;
 
         public LocalVariable(LocalVariableNode localVar) {
             super(localVar.getType());
@@ -682,9 +706,9 @@ public class FlowExpressions {
             LocalVariable other = (LocalVariable) obj;
             VarSymbol vs = (VarSymbol) element;
             VarSymbol vsother = (VarSymbol) other.element;
-            // Use TypeAnnotationUtils.unannotatedType(type).toString().equals(...) instead of Types.isSameType(...)
-            // because Types requires a processing environment, and FlowExpressions is
-            // designed to be independent of processing environment.  See also
+            // Use TypeAnnotationUtils.unannotatedType(type).toString().equals(...) instead of
+            // Types.isSameType(...) because Types requires a processing environment, and
+            // FlowExpressions is designed to be independent of processing environment.  See also
             // calls to getType().toString() in FlowExpressions.
             return vsother.name.contentEquals(vs.name)
                     && TypeAnnotationUtils.unannotatedType(vsother.type)
@@ -766,10 +790,10 @@ public class FlowExpressions {
                 return false;
             }
             ValueLiteral other = (ValueLiteral) obj;
-            if (value == null) {
-                return type.toString().equals(other.type.toString()) && other.value == null;
-            }
-            return type.toString().equals(other.type.toString()) && value.equals(other.value);
+            // TODO:  Can this string comparison be cleaned up?
+            // Cannot use Types.isSameType(type, other.type) because we don't have a Types object.
+            return type.toString().equals(other.type.toString())
+                    && Objects.equals(value, other.value);
         }
 
         @Override
@@ -1048,8 +1072,8 @@ public class FlowExpressions {
 
     public static class ArrayCreation extends Receiver {
 
-        protected List<Node> dimensions;
-        protected List<Node> initializers;
+        protected final List<Node> dimensions;
+        protected final List<Node> initializers;
 
         public ArrayCreation(TypeMirror type, List<Node> dimensions, List<Node> initializers) {
             super(type);
@@ -1099,6 +1123,8 @@ public class FlowExpressions {
             ArrayCreation other = (ArrayCreation) obj;
             return this.dimensions.equals(other.getDimensions())
                     && this.initializers.equals(other.getInitializers())
+                    // It might be better to use Types.isSameType(getType(), other.getType()), but I
+                    // don't have a Types object.
                     && getType().toString().equals(other.getType().toString());
         }
 

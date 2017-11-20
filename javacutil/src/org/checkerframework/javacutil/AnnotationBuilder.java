@@ -5,9 +5,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -15,6 +18,7 @@ import javax.lang.model.element.AnnotationValueVisitor;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -28,6 +32,7 @@ import javax.lang.model.util.Types;
 
 /*>>>
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.checker.interning.qual.Interned;
 */
 
 /**
@@ -153,6 +158,28 @@ public class AnnotationBuilder {
         return new CheckerFrameworkAnnotationMirror(annotationType, elementValues);
     }
 
+    /**
+     * Copies every element value from the given annotation. If an element in the given annotation
+     * doesn't exist in the annotation to be built, an error is raised unless the element is
+     * specified in {@code ignorableElements}.
+     *
+     * @param valueHolder the annotation that holds the values to be copied
+     * @param ignorableElements the elements that can be safely dropped
+     */
+    public void copyElementValuesFromAnnotation(
+            AnnotationMirror valueHolder, String... ignorableElements) {
+        Set<String> ignorableElementsSet = new HashSet<>(Arrays.asList(ignorableElements));
+        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> eltValToCopy :
+                valueHolder.getElementValues().entrySet()) {
+            Name eltNameToCopy = eltValToCopy.getKey().getSimpleName();
+            if (ignorableElementsSet.contains(eltNameToCopy.toString())) {
+                continue;
+            }
+            elementValues.put(findElement(eltNameToCopy), eltValToCopy.getValue());
+        }
+        return;
+    }
+
     public AnnotationBuilder setValue(CharSequence elementName, AnnotationMirror value) {
         setValue(elementName, (Object) value);
         return this;
@@ -214,8 +241,16 @@ public class AnnotationBuilder {
         return setValue(elementName, (Object) value);
     }
 
+    private TypeMirror getErasedOrBoxedType(TypeMirror type) {
+        // See com.sun.tools.javac.code.Attribute.Class.makeClassType()
+        return type.getKind().isPrimitive()
+                ? types.boxedClass((PrimitiveType) type).asType()
+                : types.erasure(type);
+    }
+
     public AnnotationBuilder setValue(CharSequence elementName, TypeMirror value) {
         assertNotBuilt();
+        value = getErasedOrBoxedType(value);
         AnnotationValue val = createValue(value);
         ExecutableElement var = findElement(elementName);
         // Check subtyping
@@ -249,7 +284,8 @@ public class AnnotationBuilder {
     }
 
     public AnnotationBuilder setValue(CharSequence elementName, Class<?> value) {
-        return setValue(elementName, typeFromClass(value));
+        TypeMirror type = typeFromClass(value);
+        return setValue(elementName, getErasedOrBoxedType(type));
     }
 
     public AnnotationBuilder setValue(CharSequence elementName, Enum<?> value) {
@@ -433,7 +469,7 @@ public class AnnotationBuilder {
         }
 
         if (!isSubtype) {
-            if (found.toString().equals(expected.toString())) {
+            if (types.isSameType(found, expected)) {
                 ErrorReporter.errorAbort(
                         "given value differs from expected, but same string representation; "
                                 + "this is likely a bootclasspath/classpath issue; "
@@ -458,15 +494,21 @@ public class AnnotationBuilder {
     }
 
     /** Implementation of AnnotationMirror used by the Checker Framework. */
-    private static class CheckerFrameworkAnnotationMirror implements AnnotationMirror {
+    /* default visibility to allow access from within package. */
+    static class CheckerFrameworkAnnotationMirror implements AnnotationMirror {
 
-        private String toStringVal;
+        private /*@Interned*/ String toStringVal;
         private final DeclaredType annotationType;
         private final Map<ExecutableElement, AnnotationValue> elementValues;
+
+        // default visibility to allow access from within package.
+        final /*@Interned*/ String annotationName;
 
         CheckerFrameworkAnnotationMirror(
                 DeclaredType at, Map<ExecutableElement, AnnotationValue> ev) {
             this.annotationType = at;
+            final TypeElement elm = (TypeElement) at.asElement();
+            this.annotationName = elm.getQualifiedName().toString().intern();
             this.elementValues = ev;
         }
 
@@ -483,32 +525,33 @@ public class AnnotationBuilder {
         /*@SideEffectFree*/
         @Override
         public String toString() {
-            if (toStringVal == null) {
-                StringBuilder buf = new StringBuilder();
-                buf.append("@");
-                buf.append(annotationType);
-                int len = elementValues.size();
-                if (len > 0) {
-                    buf.append('(');
-                    boolean first = true;
-                    for (Map.Entry<ExecutableElement, AnnotationValue> pair :
-                            elementValues.entrySet()) {
-                        if (!first) {
-                            buf.append(", ");
-                        }
-                        first = false;
-
-                        String name = pair.getKey().getSimpleName().toString();
-                        if (len > 1 || !name.equals("value")) {
-                            buf.append(name);
-                            buf.append('=');
-                        }
-                        buf.append(pair.getValue());
-                    }
-                    buf.append(')');
-                }
-                toStringVal = buf.toString();
+            if (toStringVal != null) {
+                return toStringVal;
             }
+            StringBuilder buf = new StringBuilder();
+            buf.append("@");
+            buf.append(annotationName);
+            int len = elementValues.size();
+            if (len > 0) {
+                buf.append('(');
+                boolean first = true;
+                for (Map.Entry<ExecutableElement, AnnotationValue> pair :
+                        elementValues.entrySet()) {
+                    if (!first) {
+                        buf.append(", ");
+                    }
+                    first = false;
+
+                    String name = pair.getKey().getSimpleName().toString();
+                    if (len > 1 || !name.equals("value")) {
+                        buf.append(name);
+                        buf.append('=');
+                    }
+                    buf.append(pair.getValue());
+                }
+                buf.append(')');
+            }
+            toStringVal = buf.toString().intern();
             return toStringVal;
 
             // return "@" + annotationType + "(" + elementValues + ")";
@@ -516,7 +559,8 @@ public class AnnotationBuilder {
     }
 
     private static class CheckerFrameworkAnnotationValue implements AnnotationValue {
-        final Object value;
+        private final Object value;
+        private /*@Interned*/ String toStringVal;
 
         CheckerFrameworkAnnotationValue(Object obj) {
             this.value = obj;
@@ -530,10 +574,13 @@ public class AnnotationBuilder {
         /*@SideEffectFree*/
         @Override
         public String toString() {
+            if (toStringVal != null) {
+                return toStringVal;
+            }
             if (value instanceof String) {
-                return "\"" + value.toString() + "\"";
+                toStringVal = "\"" + value.toString() + "\"";
             } else if (value instanceof Character) {
-                return "\'" + value.toString() + "\'";
+                toStringVal = "\'" + value.toString() + "\'";
             } else if (value instanceof List<?>) {
                 StringBuilder sb = new StringBuilder();
                 List<?> list = (List<?>) value;
@@ -547,7 +594,7 @@ public class AnnotationBuilder {
                     sb.append(o.toString());
                 }
                 sb.append('}');
-                return sb.toString();
+                toStringVal = sb.toString();
             } else if (value instanceof VariableElement) {
                 // for Enums
                 VariableElement var = (VariableElement) value;
@@ -555,13 +602,15 @@ public class AnnotationBuilder {
                 if (!encl.isEmpty()) {
                     encl = encl + '.';
                 }
-                return encl + var.toString();
+                toStringVal = encl + var.toString();
             } else if (value instanceof TypeMirror
                     && InternalUtils.isClassType((TypeMirror) value)) {
-                return value.toString() + ".class";
+                toStringVal = value.toString() + ".class";
             } else {
-                return value.toString();
+                toStringVal = value.toString();
             }
+            toStringVal = toStringVal.intern();
+            return toStringVal;
         }
 
         @SuppressWarnings("unchecked")
@@ -595,6 +644,21 @@ public class AnnotationBuilder {
                 assert false : " unknown type : " + v.getClass();
                 return v.visitUnknown(this, p);
             }
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            // System.out.printf("Calling CFAV.equals()%n");
+            if (!(obj instanceof AnnotationValue)) {
+                return false;
+            }
+            AnnotationValue other = (AnnotationValue) obj;
+            return Objects.equals(this.getValue(), other.getValue());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(this.value);
         }
     }
 }

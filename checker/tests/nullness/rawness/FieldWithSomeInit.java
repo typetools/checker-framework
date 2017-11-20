@@ -1,5 +1,5 @@
 class FieldWithSomeInit {
-    //:: error: (method.invocation.invalid)
+    // :: error: (method.invocation.invalid)
     Object f = foo();
     Object g = new Object();
 

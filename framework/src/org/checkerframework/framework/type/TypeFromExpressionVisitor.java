@@ -96,7 +96,8 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             ConditionalExpressionTree node, AnnotatedTypeFactory f) {
         // The Java type of a conditional expression is generally the LUB of the boxed types
         // of the true and false expressions, but with a few exceptions. See JLS 15.25.
-        // So, use the type of the ConditionalExpressionTree instead of InternalUtils#leastUpperBound
+        // So, use the type of the ConditionalExpressionTree instead of
+        // InternalUtils#leastUpperBound
         TypeMirror alub = InternalUtils.typeOf(node);
 
         AnnotatedTypeMirror trueType = f.getAnnotatedType(node.getTrueExpression());
@@ -139,7 +140,6 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             // the type of a class literal is the type of the "class" element.
             return f.getAnnotatedType(elt);
         }
-        String kind = elt.getKind().toString();
         switch (elt.getKind()) {
             case METHOD:
             case PACKAGE: // "java.lang" in new java.lang.Short("2")
@@ -317,7 +317,8 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         // the first time getSuperBound/getExtendsBound is called the bound of this wildcard will be
         // appropriately initialized where for the type of node, instead of replacing that bound
         // we merge the annotations onto the initialized bound
-        // This ensures that the structure of the wildcard will match that created by BoundsInitializer/createType
+        // This ensures that the structure of the wildcard will match that created by
+        // BoundsInitializer/createType
         if (node.getKind() == Tree.Kind.SUPER_WILDCARD) {
             AnnotatedTypeMerger.merge(bound, ((AnnotatedWildcardType) result).getSuperBound());
 

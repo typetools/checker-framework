@@ -59,7 +59,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * An implementation of TypeArgumentInference that mostly follows the process outlined in JLS7 See
- * <a href="http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7">JLS
+ * <a href="https://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7">JLS
  * &sect;5.12.2.7</a>
  *
  * <p>Note, there are some deviations JLS 7 for the following cases:
@@ -115,9 +115,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             ExecutableElement methodElem,
             AnnotatedExecutableType methodType) {
 
-        //TODO: REMOVE THIS HACK WHEN YOU CAN CALL getTopAnnotations on GeneralAnnotatedTypeFactory
-        //TODO: currently this will only affect inferring METHOD type arguments on constructor
-        //TODO: invocations for the Nullness type system
+        // TODO: REMOVE THIS HACK WHEN YOU CAN CALL getTopAnnotations on GeneralAnnotatedTypeFactory
+        // TODO: currently this will only affect inferring METHOD type arguments on constructor
+        // TODO: invocations for the Nullness type system
         if (typeFactory instanceof GeneralAnnotatedTypeFactory) {
             return new HashMap<>();
         }
@@ -149,7 +149,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             // <T> T outMethod()
             // <U> void inMethod(U u);
             // inMethod(outMethod())
-            // would require solving the constraints for both type argument inferences simultaneously
+            // would require solving the constraints for both type argument inferences
+            // simultaneously
             Map<TypeVariable, AnnotatedTypeMirror> inferredArgs = new LinkedHashMap<>();
             handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
             return inferredArgs;
@@ -333,13 +334,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             final Set<TypeVariable> targets,
             final boolean useNullArguments) {
 
-        //1.  Step 1 - Build up argument constraints
+        // 1.  Step 1 - Build up argument constraints
         // The AFConstraints for arguments are used also in the
         Set<AFConstraint> afArgumentConstraints =
                 createArgumentAFConstraints(
                         typeFactory, argumentTypes, methodType, targets, useNullArguments);
 
-        //2. Step 2 - Solve the constraints.
+        // 2. Step 2 - Solve the constraints.
         Pair<InferenceResult, InferenceResult> argInference =
                 inferFromArguments(typeFactory, afArgumentConstraints, targets);
 
@@ -378,11 +379,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                     combineSupertypeAndAssignmentResults(
                             targets, typeFactory, fromAssignmentEqualities, fromArgSubandSupers);
 
-            // Step 5 - Combine the result from 2.a and step 4, if there is a conflict use the result from step 2.a
+            // Step 5 - Combine the result from 2.a and step 4, if there is a conflict use the
+            // result from step 2.a
             fromArgEqualities.mergeSubordinate(combinedSupertypesAndAssignment);
 
             // if we don't have a result for all type arguments
-            // Step 6 - Infer the type arguments from the greatest-lower-bounds of all "subtype" constraints
+            // Step 6 - Infer the type arguments from the greatest-lower-bounds of all "subtype"
+            // constraints
             if (!fromArguments.isComplete(targets)) {
                 InferenceResult fromAssignment =
                         inferFromAssignment(
@@ -604,8 +607,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         for (AnnotatedTypeVariable typeParam : methodType.getTypeVariables()) {
             final TypeVariable target = typeParam.getUnderlyingType();
             final AnnotatedTypeMirror inferredType = inferredArgs.get(target);
-            // for all inferred types Ti:  Ti >> Bi where Bi is upper bound and Ti << Li where Li is the lower bound
-            // for all uninferred types Tu: Tu >> Bi and Lu >> Tu
+            // for all inferred types Ti:  Ti >> Bi where Bi is upper bound and Ti << Li where Li is
+            // the lower bound for all uninferred types Tu: Tu >> Bi and Lu >> Tu
             if (inferredType != null) {
                 assignmentAfs.add(new A2F(inferredType, typeParam.getUpperBound()));
                 assignmentAfs.add(new F2A(typeParam.getLowerBound(), inferredType));
@@ -738,7 +741,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         for (AnnotatedTypeVariable atv : methodType.getTypeVariables()) {
             final TypeVariable typeVar = atv.getUnderlyingType();
-            if (targets.contains(TypeAnnotationUtils.unannotatedType(typeVar))) {
+            if (targets.contains((TypeVariable) TypeAnnotationUtils.unannotatedType(typeVar))) {
                 final AnnotatedTypeMirror inferredType = inferredArgs.get(typeVar);
                 if (inferredType == null
                         || TypeArgInferenceUtil.containsTypeParameter(inferredType, targets)) {

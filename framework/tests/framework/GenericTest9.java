@@ -12,7 +12,7 @@ class GenericTest9 {
     interface Entry<S> {}
 
     <V> void testclass() {
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         C<@Odd Object, Entry<V>> c1 = new C<@Odd Object, Entry<V>>();
         C<@Odd Object, @Odd Entry<V>> c2 = new C<@Odd Object, @Odd Entry<V>>();
     }
@@ -33,9 +33,9 @@ class GenericTest9 {
     }
 
     <V> void test(Ordering2<@Odd Entry<?>> ord, Entry<V> e, @Odd Entry<V> o) {
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         Entry<V> e1 = ord.sort(e);
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         Entry<V> e2 = ord.<Entry<V>>sort(e);
         Entry<V> e3 = ord.sort(o);
         Entry<V> e4 = ord.<@Odd Entry<V>>sort(o);
@@ -48,7 +48,7 @@ class GenericTest9 {
     <V> void test(Ordering3<@Odd Entry<?>> o, @Odd Entry<V> e) {
         Entry<V> e1 = o.sort(e);
         Entry<V> e2 = o.<@Odd Entry<V>>sort(e);
-        //:: error: (type.argument.type.incompatible) :: error: (argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible) :: error: (argument.type.incompatible)
         Entry<V> e3 = o.<@Even Entry<V>>sort(e);
     }
 

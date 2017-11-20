@@ -1,4 +1,3 @@
-
 import org.checkerframework.dataflow.qual.*;
 
 interface PureFunc {
@@ -19,7 +18,7 @@ class TestPure {
 
     void context() {
         PureFunc f1 = TestPure::myPureMethod;
-        //:: error: (purity.invalid.methodref)
+        // :: error: (purity.invalid.methodref)
         PureFunc f2 = TestPure::myMethod;
     }
 }

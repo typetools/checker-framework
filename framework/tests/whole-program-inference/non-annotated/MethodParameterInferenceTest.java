@@ -1,5 +1,6 @@
 import testlib.wholeprograminference.qual.*;
-//TODO: Like this one, some tests must verify that it contains the expected
+
+// TODO: Like this one, some tests must verify that it contains the expected
 // output after performing the whole-program inference.
 public class MethodParameterInferenceTest {
     void foo(int i) {

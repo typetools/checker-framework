@@ -51,16 +51,21 @@ fi
 
 set -e
 
+# Subsumed by "all-tests" group.
 if [[ "${GROUP}" == "junit" || "${GROUP}" == "all" ]]; then
   (cd checker && ant junit-tests-nojtreg-nobuild)
 fi
 
+# Subsumed by "all-tests" group.
 if [[ "${GROUP}" == "nonjunit" || "${GROUP}" == "all" ]]; then
   (cd checker && ant nonjunit-tests-nojtreg-nobuild jtreg-tests)
 fi
 
 if [[ "${GROUP}" == "all-tests" || "${GROUP}" == "all" ]]; then
   (cd checker && ant all-tests-nobuildjdk)
+  # Moved example-tests-nobuildjdk out of all tests because it fails in
+  # the release script because the newest maven artifacts are not published yet.
+  (cd checker && ant example-tests-nobuildjdk)
   # If the above command ever exceeds the time limit on Travis, it can be split
   # using the following commands:
   # (cd checker && ant junit-tests-nojtreg-nobuild)
@@ -127,7 +132,10 @@ if [[ "${GROUP}" == "demos" || "${GROUP}" == "all" ]]; then
 fi
 
 if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then
-  cd checker; ant jdk.jar
+  cd checker
+  ant jdk.jar
+  ## Run the tests for the type systems that use the annotated JDK
+  ant index-tests lock-tests nullness-tests-nobuildjdk
 fi
 
 if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then

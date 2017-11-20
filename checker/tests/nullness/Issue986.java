@@ -17,7 +17,7 @@ public class Issue986 {
         nno2 = nno1;
         lnno2 = lnno1;
         lnno2 = nno1;
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         nno2 = lnno1;
         lnno2 = NullnessUtil.castNonNullDeep(nno1);
         nno2 = NullnessUtil.castNonNullDeep(lnno1);

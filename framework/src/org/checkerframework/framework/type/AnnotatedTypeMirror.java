@@ -10,12 +10,13 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
@@ -34,7 +35,6 @@ import javax.lang.model.util.Types;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.PolyAll;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -142,11 +142,12 @@ public abstract class AnnotatedTypeMirror {
     // the class name of Annotation instead.
     // Caution: Assumes that a type can have at most one AnnotationMirror for
     // any Annotation type. JSR308 is pushing to have this change.
-    private final Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
+    protected final Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
 
     /** The explicitly written annotations on this type. */
     // TODO: use this to cache the result once computed? For generic types?
-    // protected final Set<AnnotationMirror> explicitannotations = AnnotationUtils.createAnnotationSet();
+    // protected final Set<AnnotationMirror> explicitannotations =
+    // AnnotationUtils.createAnnotationSet();
 
     /**
      * Constructor for AnnotatedTypeMirror.
@@ -329,33 +330,6 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Returns the actual annotation mirror used to annotate this type, whose name equals the passed
-     * annotationName if one exists, null otherwise.
-     *
-     * @return the annotation mirror for annotationName
-     */
-    public AnnotationMirror getAnnotation(Name annotationName) {
-        assert annotationName != null : "Null annotationName in getAnnotation";
-        return getAnnotation(annotationName.toString().intern());
-    }
-
-    /**
-     * Returns the actual annotation mirror used to annotate this type, whose name equals the string
-     * argument if one exists, null otherwise.
-     *
-     * @return the annotation mirror for annotationStr
-     */
-    public AnnotationMirror getAnnotation(/*@Interned*/ String annotationStr) {
-        assert annotationStr != null : "Null annotationName in getAnnotation";
-        for (AnnotationMirror anno : getAnnotations()) {
-            if (AnnotationUtils.areSameByName(anno, annotationStr)) {
-                return anno;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Returns the actual annotation mirror used to annotate this type, whose Class equals the
      * passed annoClass if one exists, null otherwise.
      *
@@ -363,7 +337,7 @@ public abstract class AnnotatedTypeMirror {
      * @return the annotation mirror for anno
      */
     public AnnotationMirror getAnnotation(Class<? extends Annotation> annoClass) {
-        for (AnnotationMirror annoMirror : getAnnotations()) {
+        for (AnnotationMirror annoMirror : annotations) {
             if (AnnotationUtils.areSameByClass(annoMirror, annoClass)) {
                 return annoMirror;
             }
@@ -421,18 +395,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotationRelaxed(AnnotationMirror)
      */
     public boolean hasAnnotation(AnnotationMirror a) {
-        return AnnotationUtils.containsSame(getAnnotations(), a);
-    }
-
-    /**
-     * Determines whether this type contains the given annotation.
-     *
-     * @param a the annotation name to check for
-     * @return true iff the type contains the annotation {@code a}
-     * @see #hasAnnotationRelaxed(AnnotationMirror)
-     */
-    public boolean hasAnnotation(Name a) {
-        return getAnnotation(a) != null;
+        return AnnotationUtils.containsSame(annotations, a);
     }
 
     /**
@@ -514,7 +477,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotation(AnnotationMirror)
      */
     public boolean hasAnnotationRelaxed(AnnotationMirror a) {
-        return AnnotationUtils.containsSameIgnoringValues(getAnnotations(), a);
+        return AnnotationUtils.containsSameIgnoringValues(annotations, a);
     }
 
     /**
@@ -652,7 +615,8 @@ public abstract class AnnotatedTypeMirror {
         // TODO: however, this also means that if we are annotated with "@I(1)" and
         // remove "@I(2)" it will be removed. Is this what we want?
         // It's currently necessary for the Lock Checker.
-        AnnotationMirror anno = getAnnotation(AnnotationUtils.annotationName(a));
+        AnnotationMirror anno =
+                AnnotationUtils.getAnnotationByName(annotations, AnnotationUtils.annotationName(a));
         if (anno != null) {
             return annotations.remove(anno);
         } else {
@@ -819,8 +783,6 @@ public abstract class AnnotatedTypeMirror {
         /** The enclosing Type */
         protected AnnotatedDeclaredType enclosingType;
 
-        protected List<AnnotatedDeclaredType> supertypes = null;
-
         private boolean declaration;
 
         /**
@@ -921,14 +883,14 @@ public abstract class AnnotatedTypeMirror {
                 // Copy annotations from the declaration to the wildcards.
                 AnnotatedDeclaredType declaration =
                         atypeFactory.fromElement((TypeElement) getUnderlyingType().asElement());
+                Map<TypeVariable, AnnotatedTypeMirror> map = new HashMap<>();
                 for (int i = 0; i < typeArgs.size(); i++) {
                     AnnotatedTypeVariable typeParam =
                             (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);
                     AnnotatedWildcardType wct = (AnnotatedWildcardType) typeArgs.get(i);
-                    AnnotatedTypeMerger.merge(typeParam.getUpperBound(), wct.getExtendsBound());
-                    wct.getSuperBound()
-                            .replaceAnnotations(typeParam.getLowerBound().getAnnotations());
-                    wct.replaceAnnotations(typeParam.getAnnotations());
+                    wct.getExtendsBound().replaceAnnotations(typeParam.getUpperBound().annotations);
+                    wct.getSuperBound().replaceAnnotations(typeParam.getLowerBound().annotations);
+                    wct.replaceAnnotations(typeParam.annotations);
                 }
                 return typeArgs;
             } else if (getUnderlyingType().getTypeArguments().isEmpty()) {
@@ -966,21 +928,7 @@ public abstract class AnnotatedTypeMirror {
 
         @Override
         public List<AnnotatedDeclaredType> directSuperTypes() {
-            if (supertypes == null) {
-                supertypes = Collections.unmodifiableList(SupertypeFinder.directSuperTypes(this));
-            }
-            return supertypes;
-        }
-
-        /*
-         * Return the direct super types field without lazy initialization;
-         * originally to prevent infinite recursion in IGJATF.postDirectSuperTypes.
-         *
-         * TODO: find a nicer way, see the single caller in QualifierDefaults
-         * for comment.
-         */
-        public List<AnnotatedDeclaredType> directSuperTypesField() {
-            return supertypes;
+            return Collections.unmodifiableList(SupertypeFinder.directSuperTypes(this));
         }
 
         @Override
@@ -1018,8 +966,8 @@ public abstract class AnnotatedTypeMirror {
                                         atypeFactory.types.erasure(actualType),
                                         atypeFactory,
                                         declaration);
-                rType.addAnnotations(getAnnotations());
-                rType.setTypeArguments(Collections.<AnnotatedTypeMirror>emptyList());
+                rType.addAnnotations(annotations);
+                rType.setTypeArguments(Collections.emptyList());
                 return rType.getErased();
 
             } else if ((getEnclosingType() != null)
@@ -1038,29 +986,6 @@ public abstract class AnnotatedTypeMirror {
                 return this.deepCopy();
             }
         }
-
-        /* Using this equals method resulted in an infinite recursion
-         * with type variables. TODO: Keep track of visited type variables?
-        @Override
-        public boolean equals(Object o) {
-            boolean res = super.equals(o);
-
-            if (res && (o instanceof AnnotatedDeclaredType)) {
-                AnnotatedDeclaredType dt = (AnnotatedDeclaredType) o;
-
-                List<AnnotatedTypeMirror> mytas = this.getTypeArguments();
-                List<AnnotatedTypeMirror> othertas = dt.getTypeArguments();
-                for (int i = 0; i < mytas.size(); ++i) {
-                    if (!mytas.get(i).equals(othertas.get(i))) {
-                        System.out.println("in AnnotatedDeclaredType; this: " + this + " and " + o);
-                        res = false;
-                        break;
-                    }
-                }
-            }
-            return res;
-        }
-        */
 
         /** Sets the enclosing type */
         /*default-visibility*/ void setEnclosingType(AnnotatedDeclaredType enclosingType) {
@@ -1111,41 +1036,14 @@ public abstract class AnnotatedTypeMirror {
             return (ExecutableType) this.actualType;
         }
 
-        /* TODO: it never makes sense to add annotations to an executable type -
-         * instead, they should be added to the right component.
-         * For simpler, more regular use, we might want to allow querying for annotations.
-         *
-        @Override
-        public void addAnnotations(Iterable<? extends AnnotationMirror> annotations) {
-            // Thread.dumpStack();
-            super.addAnnotations(annotations);
-        }
+        /**
+         * It never makes sense to add annotations to an executable type - instead, they should be
+         * added to the right component.
+         */
         @Override
         public void addAnnotation(AnnotationMirror a) {
-            // Thread.dumpStack();
-            super.addAnnotation(a);
+            assert false : "AnnotatedExecutableType.addAnnotation should never be called";
         }
-        @Override
-        public void addAnnotation(Class<? extends Annotation> a) {
-            // Thread.dumpStack();
-            super.addAnnotation(a);
-        }
-
-        @Override
-        public Set<AnnotationMirror> getAnnotations() {
-            Thread.dumpStack();
-            return null;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof AnnotatedExecutableType)) {
-                return false;
-                }
-            // TODO compare components
-            return true;
-        }
-        */
 
         /**
          * Sets the parameter types of this executable type
@@ -1215,7 +1113,8 @@ public abstract class AnnotatedTypeMirror {
             if (receiverType == null
                     // Static methods don't have a receiver
                     && !ElementUtils.isStatic(getElement())
-                    // Array constructors should also not have a receiver. Array members have a getEnclosingElement().getEnclosingElement() of NONE
+                    // Array constructors should also not have a receiver. Array members have a
+                    // getEnclosingElement().getEnclosingElement() of NONE
                     && (!(getElement().getKind() == ElementKind.CONSTRUCTOR
                             && getElement()
                                     .getEnclosingElement()
@@ -1558,9 +1457,9 @@ public abstract class AnnotatedTypeMirror {
         // because otherwise the annotations are inconsistent.
         private void fixupBoundAnnotations() {
 
-            // We allow the above replacement first because primary annotations might not have annotations for
-            // all hierarchies, so we don't want to avoid placing bottom on the lower bound for those hierarchies that
-            // don't have a qualifier in primaryAnnotations
+            // We allow the above replacement first because primary annotations might not have
+            // annotations for all hierarchies, so we don't want to avoid placing bottom on the
+            // lower bound for those hierarchies that don't have a qualifier in primaryAnnotations.
             if (!this.getAnnotationsField().isEmpty()) {
                 if (upperBound != null) {
                     replaceUpperBoundAnnotations();

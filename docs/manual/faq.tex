@@ -255,7 +255,7 @@ If null pointer exceptions are most important to you, then by all means use
 the Nullness Checker.  But if you just want to try \emph{some}
 type-checker, there are others that are easier to use.
 
-we do not recommend indiscriminately running all the checkers on your code.
+We do not recommend indiscriminately running all the checkers on your code.
 The reason is that each one has a cost --- not just at compile time, but
 also in terms of code clutter and human time to maintain the annotations.
 If the property is important to you, is difficult for people to reason
@@ -263,6 +263,7 @@ about, or has caused problems in the past, then you should run that
 checker.  For other properties, the benefits may not repay the effort to
 use it.  You will be the best judge of this for your own code, of course.
 
+You might want to avoid some type-checkers when you are first starting out.
 The \ahrefloc{linear-checker}{Linear Checker} (see
 \chapterpageref{linear-checker}) has not been extensively tested.
 Some of the third-party checkers (see

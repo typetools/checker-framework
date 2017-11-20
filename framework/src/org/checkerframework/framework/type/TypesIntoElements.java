@@ -24,10 +24,12 @@ import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -225,7 +227,8 @@ public class TypesIntoElements {
                 tapos = TypeAnnotationUtils.methodTypeParameterTAPosition(tpidx, ((JCTree) tp).pos);
             }
 
-            { // This block is essentially direct annotations, perhaps we should refactor that method out
+            { // This block is essentially direct annotations, perhaps we should refactor that
+                // method out
                 List<Attribute.TypeCompound> res = List.nil();
                 for (AnnotationMirror am : typeVar.getLowerBound().getAnnotations()) {
                     Attribute.TypeCompound tc =
@@ -313,9 +316,6 @@ public class TypesIntoElements {
                 ErrorReporter.errorAbort(
                         "TypesIntoElements: invalid usage, null pos with type: " + type);
             }
-            if (type == null) {
-                return List.nil();
-            }
             List<TypeCompound> res = super.scan(type, pos);
             return res;
         }
@@ -340,19 +340,22 @@ public class TypesIntoElements {
             return r1.appendList(r2);
         }
 
-        List<TypeCompound> directAnnotations(
+        private List<TypeCompound> directAnnotations(
                 AnnotatedTypeMirror type, TypeAnnotationPosition tapos) {
             List<Attribute.TypeCompound> res = List.nil();
 
             for (AnnotationMirror am : type.getAnnotations()) {
-                //TODO: I BELIEVE THIS ISN'T TRUE BECAUSE PARAMETERS MAY HAVE ANNOTATIONS THAT CAME FROM THE ELEMENT OF THE CLASS
-                // WHICH PREVIOUSLY WAS WRITTEN OUT BY TYPESINTOELEMENT
+                // TODO: I BELIEVE THIS ISN'T TRUE BECAUSE PARAMETERS MAY HAVE ANNOTATIONS THAT CAME
+                // FROM THE ELEMENT OF THE CLASS WHICH PREVIOUSLY WAS WRITTEN OUT BY
+                // TYPESINTOELEMENT
                 //                if (am instanceof Attribute.TypeCompound) {
-                //                    // If it is a TypeCompound it was already present in source (right?),
+                //                    // If it is a TypeCompound it was already present in source
+                // (right?),
                 //                    // so there is nothing to do.
-                //                    // System.out.println("  found TypeComound: " + am + " pos: " + ((Attribute.TypeCompound)am).position);
+                //                    // System.out.println("  found TypeComound: " + am + " pos: "
+                // + ((Attribute.TypeCompound)am).position);
                 //                } else {
-                //TODO: DOES THIS LEAD TO DOUBLING UP ON THE SAME ANNOTATION IN THE ELEMENT?
+                // TODO: DOES THIS LEAD TO DOUBLING UP ON THE SAME ANNOTATION IN THE ELEMENT?
                 Attribute.TypeCompound tc =
                         TypeAnnotationUtils.createTypeCompoundFromAnnotationMirror(
                                 processingEnv, am, tapos);
@@ -369,7 +372,7 @@ public class TypesIntoElements {
                 return visitedNodes.get(type);
             }
             // Hack for termination
-            visitedNodes.put(type, List.<TypeCompound>nil());
+            visitedNodes.put(type, List.nil());
             List<Attribute.TypeCompound> res;
 
             TypeAnnotationPosition oldpos = TypeAnnotationUtils.copyTAPosition(tapos);
@@ -377,8 +380,9 @@ public class TypesIntoElements {
 
             res = directAnnotations(type, tapos);
 
-            // we sometimes fix-up raw types with wildcards, do not write these into the bytecode as there are
-            // no corresponding type arguments and therefore no location to actually add them to
+            // we sometimes fix-up raw types with wildcards, do not write these into the bytecode as
+            // there are no corresponding type arguments and therefore no location to actually add
+            // them to
             if (!type.wasRaw()) {
                 int arg = 0;
                 for (AnnotatedTypeMirror ta : type.getTypeArguments()) {
@@ -424,6 +428,38 @@ public class TypesIntoElements {
         }
 
         @Override
+        public List<TypeCompound> visitIntersection(
+                AnnotatedIntersectionType type, TypeAnnotationPosition tapos) {
+            if (visitedNodes.containsKey(type)) {
+                return visitedNodes.get(type);
+            }
+            visitedNodes.put(type, List.nil());
+            List<Attribute.TypeCompound> res;
+            res = directAnnotations(type, tapos);
+
+            int arg = 0;
+            for (AnnotatedTypeMirror ta : type.directSuperTypes()) {
+                TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(tapos);
+                newpos.location =
+                        tapos.location.append(
+                                new TypePathEntry(TypePathEntryKind.TYPE_ARGUMENT, arg));
+                res = scanAndReduce(ta, newpos, res);
+                ++arg;
+            }
+            visitedNodes.put(type, res);
+            return res;
+        }
+
+        @Override
+        public List<TypeCompound> visitUnion(
+                AnnotatedUnionType type, TypeAnnotationPosition tapos) {
+            // We should never need to write a union type, so raise an error.
+            ErrorReporter.errorAbort(
+                    "TypesIntoElement: encountered union type: " + type + " at position: " + tapos);
+            return null;
+        }
+
+        @Override
         public List<TypeCompound> visitArray(
                 AnnotatedArrayType type, TypeAnnotationPosition tapos) {
             List<Attribute.TypeCompound> res;
@@ -458,12 +494,13 @@ public class TypesIntoElements {
             if (this.visitedNodes.containsKey(type)) {
                 return List.nil();
             }
-            // Hack for termination, otherwise we'll visit one type too far (the same recursive wildcard twice
-            // and generate extra type annos)
-            visitedNodes.put(type, List.<TypeCompound>nil());
+            // Hack for termination, otherwise we'll visit one type too far (the same recursive
+            // wildcard twice and generate extra type annos)
+            visitedNodes.put(type, List.nil());
             List<Attribute.TypeCompound> res;
 
-            // Note: By default, an Unbound wildcard will return true for both isExtendsBound and isSuperBound
+            // Note: By default, an Unbound wildcard will return true for both isExtendsBound and
+            // isSuperBound
             if (((Type.WildcardType) type.getUnderlyingType()).isExtendsBound()) {
                 res = directAnnotations(type.getSuperBound(), tapos);
 

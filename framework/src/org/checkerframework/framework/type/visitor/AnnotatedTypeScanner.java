@@ -68,11 +68,24 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
         visitedNodes.clear();
     }
 
+    /**
+     * Calls {@link #reset()} and then scans {@code type} using null as the parameter.
+     *
+     * @param type type to scan
+     * @return result of scanning {@code type}
+     */
     @Override
-    public final R visit(AnnotatedTypeMirror t) {
-        return visit(t, null);
+    public final R visit(AnnotatedTypeMirror type) {
+        return visit(type, null);
     }
 
+    /**
+     * Calls {@link #reset()} and then scans {@code type} using {@code p} as the parameter.
+     *
+     * @param type the type to visit
+     * @param p a visitor-specified parameter
+     * @return result of scanning {@code type}
+     */
     @Override
     public final R visit(AnnotatedTypeMirror type, P p) {
         reset();
@@ -80,20 +93,23 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
     }
 
     /**
-     * Processes an element by calling e.accept(this, p); this method may be overridden by
+     * Scan {@code type} by calling {@code type.accept(this, p)}; this method may be overridden by
      * subclasses.
      *
+     * @param type type to scan
+     * @param p the parameter to use
      * @return the result of visiting {@code type}
      */
     protected R scan(AnnotatedTypeMirror type, P p) {
-        return (type == null ? null : type.accept(this, p));
+        return type.accept(this, p);
     }
 
     /**
-     * Processes an element by calling e.accept(this, p); this method may be overridden by
-     * subclasses.
+     * Scan all the types and returns the reduced result.
      *
-     * @return a visitor-specified result
+     * @param types types to scan
+     * @param p the parameter to use
+     * @return the reduced result of scanning all the types
      */
     protected R scan(Iterable<? extends AnnotatedTypeMirror> types, P p) {
         if (types == null) {
@@ -112,10 +128,26 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
         return reduce(scan(types, p), r);
     }
 
-    public R scanAndReduce(AnnotatedTypeMirror type, P p, R r) {
+    /**
+     * Scans {@code type} with the parameter {@code p} and reduces the result with {@code r}.
+     *
+     * @param type type to scan
+     * @param p parameter to use for when scanning {@code type}
+     * @param r result to combine with the result of scanning {@code type}
+     * @return the combination of {@code r} with the result of scanning {@code type}
+     */
+    protected R scanAndReduce(AnnotatedTypeMirror type, P p, R r) {
         return reduce(scan(type, p), r);
     }
 
+    /**
+     * Combines {@code r1} and {@code r2} and returns the result. The default implementation returns
+     * {@code r1} if it is not null; otherwise, it returns {@code r2}.
+     *
+     * @param r1 a result of scan
+     * @param r2 a result of scan
+     * @return the combination of {@code r1} and {@code r2}
+     */
     protected R reduce(R r1, R r2) {
         if (r1 == null) {
             return r2;
@@ -125,11 +157,18 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
 
     @Override
     public R visitDeclared(AnnotatedDeclaredType type, P p) {
-        if (visitedNodes.containsKey(type)) {
-            return visitedNodes.get(type);
+        if (!type.getTypeArguments().isEmpty()) {
+            // Only declared types with type arguments might be recursive.
+            if (visitedNodes.containsKey(type)) {
+                return visitedNodes.get(type);
+            }
+            visitedNodes.put(type, null);
         }
-        visitedNodes.put(type, null);
-        R r = scan(type.getTypeArguments(), p);
+        R r = null;
+        if (type.getEnclosingType() != null) {
+            scan(type.getEnclosingType(), p);
+        }
+        r = scanAndReduce(type.getTypeArguments(), p, r);
         return r;
     }
 
@@ -162,7 +201,9 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
     @Override
     public R visitExecutable(AnnotatedExecutableType type, P p) {
         R r = scan(type.getReturnType(), p);
-        r = scanAndReduce(type.getReceiverType(), p, r);
+        if (type.getReceiverType() != null) {
+            r = scanAndReduce(type.getReceiverType(), p, r);
+        }
         r = scanAndReduce(type.getParameterTypes(), p, r);
         r = scanAndReduce(type.getThrownTypes(), p, r);
         r = scanAndReduce(type.getTypeVariables(), p, r);

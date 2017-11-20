@@ -1,18 +1,17 @@
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.*;
 
-//interface Dest<DA,DB,DC,DD,DE> {
-//}
+// interface Dest<DA,DB,DC,DD,DE> {
+// }
 //
-//interface Inter1<I1A,I1B,I1C,I1D,I1E> extends Dest<I1A, I1A, I1C, I1D, String> {}
+// interface Inter1<I1A,I1B,I1C,I1D,I1E> extends Dest<I1A, I1A, I1C, I1D, String> {}
 //
-//interface Inter2<I2A,I2B,I2C,I2D,I2E> extends Dest<I2D,I2E,I2C,I2D,I2E> {}
+// interface Inter2<I2A,I2B,I2C,I2D,I2E> extends Dest<I2D,I2E,I2C,I2D,I2E> {}
 //
-//class Source<SA,SB,SC,SD,SE> extends HashMap<SA,SB> implements Inter2<SA,SB,SB,SD,SE> {}
+// class Source<SA,SB,SC,SD,SE> extends HashMap<SA,SB> implements Inter2<SA,SB,SB,SD,SE> {}
 
 class KeyForPropagation {
 

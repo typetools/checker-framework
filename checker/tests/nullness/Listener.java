@@ -1,4 +1,3 @@
-
 import org.checkerframework.checker.nullness.qual.*;
 
 public class Listener {
@@ -7,7 +6,7 @@ public class Listener {
 
     public Listener() {
         Talker w = new Talker();
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         w.register(this);
 
         f = "abc";

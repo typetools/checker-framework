@@ -1,4 +1,3 @@
-
 public class Options {
 
     private Class main_class;

@@ -198,12 +198,12 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         final AnnotatedTypeMirror type2AsLub = AnnotatedTypes.asSuper(atypeFactory, type2, lub);
 
         // If the type argument is a wildcard or captured wildcard, then the lub computation is
-        // slightly different.  The primary annotation on the lower bound is the glb of lower
-        // bounds of the type types.  This is because the lub of  Gen<@A ? extends @A Object> and
-        // Gen<@B ? extends @A Object> is Gen<@B ? extends @A Object>.   If visit(type1AsLub, type2AsLub, lub)
+        // slightly different.  The primary annotation on the lower bound is the glb of lower bounds
+        // of the type types.  This is because the lub of Gen<@A ? extends @A Object> and Gen<@B ?
+        // extends @A Object> is Gen<@B ? extends @A Object>.  If visit(type1AsLub, type2AsLub, lub)
         // was called instead of the below code, then the lub would be Gen<@A ? extends @A Object>.
-        // (Note the lub of  Gen<@A ? super @A Object> and Gen<@A ? super @B Object> does not
-        // exist, but Gen<@A ? super @B Object> is returned.)
+        // (Note the lub of Gen<@A ? super @A Object> and Gen<@A ? super @B Object> does not exist,
+        // but Gen<@A ? super @B Object> is returned.)
         if (lub.getKind() == TypeKind.WILDCARD) {
             if (visited(lub)) {
                 return;

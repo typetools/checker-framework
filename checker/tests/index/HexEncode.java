@@ -1,4 +1,3 @@
-import java.lang.StringBuffer;
 
 @SuppressWarnings("array.access.unsafe.high")
 public class HexEncode {

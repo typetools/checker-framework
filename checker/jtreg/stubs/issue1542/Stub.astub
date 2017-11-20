@@ -1,0 +1,46 @@
+package issue1542;
+
+import issue1542.ExampleAnno.CharArrayExample;
+import issue1542.ExampleAnno.DoubleArrayExample;
+import issue1542.ExampleAnno.DoubleExample;
+import issue1542.ExampleAnno.LongArrayExample;
+import issue1542.ExampleAnno.LongExample;
+import issue1542.ExampleAnno.MyEnum;
+import static issue1542.ExampleAnno.MyEnum.*;
+import issue1542.ExampleAnno.MyEnumArrayExample;
+import issue1542.ExampleAnno.MyEnumExample;
+import issue1542.ExampleAnno.ClassArrayExample;
+import issue1542.ExampleAnno.ClassExample;
+
+public class Stub {
+    @CharArrayExample({1, 'a'}) int x1;
+    @CharArrayExample('a') int x2;
+    @CharArrayExample(1) int x3;
+    @LongExample(1) int x4;
+    @LongExample(1L) int x5;
+    @LongArrayExample(1L) int x6;
+    @LongArrayExample({1L, 1}) int x7;
+
+    @MyEnumArrayExample(MyEnum.A) int x8;
+    @MyEnumArrayExample(A) int x9;
+    @MyEnumArrayExample({MyEnum.A, B}) int x10;
+    @MyEnumExample(A) int x11;
+
+    @DoubleExample(0) int x12;
+    @DoubleExample(0L) int x13;
+    @DoubleExample(0.0) int x14;
+    @DoubleExample(0.0f) int x15;
+    @DoubleArrayExample({0, 0L, 0.0, 0.0F}) int x16;
+
+    @ClassExample(ClassExample.class) int x17;
+    @ClassArrayExample(ClassExample.class) int x18;
+    @ClassArrayExample({ClassExample.class, java.lang.String.class, String.class}) int x19;
+    @ClassArrayExample({InnerStub.class, Stub.class, Stub.InnerStub.class}) int x20;
+
+    class InnerStub {
+        @ClassArrayExample({InnerStub.class, Stub.class, InnerStub2.class}) int x20;
+        class InnerInnerStub {
+            @ClassArrayExample({InnerStub.class, Stub.class, InnerStub2.class}) int x20;
+        }
+    }
+}

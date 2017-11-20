@@ -5,6 +5,8 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import java.util.Collections;
@@ -18,6 +20,8 @@ import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.DoubleVal;
 import org.checkerframework.common.value.qual.IntRange;
+import org.checkerframework.common.value.qual.IntRangeFromGTENegativeOne;
+import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
@@ -40,11 +44,14 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
     /**
      * ValueVisitor overrides this method so that it does not have to check variables annotated with
-     * the {@link IntRangeFromPositive} annotation. This annotation is only introduced by the Index
-     * Checker's {@link org.checkerframework.checker.index.qual.Positive} annotation. It is safe to
-     * defer checking of these values to the Index Checker because this is only introduced for
-     * explicitly-written {@link org.checkerframework.checker.index.qual.Positive} annotations,
-     * which must be checked by the Lower Bound Checker.
+     * the {@link IntRangeFromPositive} annotation, the {@link IntRangeFromNonNegative} annotation,
+     * or the {@link IntRangeFromGTENegativeOne} annotation. This annotation is only introduced by
+     * the Index Checker's lower bound annotations. It is safe to defer checking of these values to
+     * the Index Checker because this is only introduced for explicitly-written {@link
+     * org.checkerframework.checker.index.qual.Positive}, explicitly-written {@link
+     * org.checkerframework.checker.index.qual.NonNegative}, and explicitly-written {@link
+     * org.checkerframework.checker.index.qual.GTENegativeOne} annotations, which must be checked by
+     * the Lower Bound Checker.
      *
      * @param varType the annotated type of the lvalue (usually a variable)
      * @param valueExp the AST node for the rvalue (the new value)
@@ -56,19 +63,65 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             ExpressionTree valueExp,
             /*@CompilerMessageKey*/ String errorKey) {
 
-        SimpleAnnotatedTypeScanner<Void, Void> replaceIntRangeFromPositive =
+        replaceSpecialIntRangeAnnotations(varType);
+        super.commonAssignmentCheck(varType, valueExp, errorKey);
+    }
+
+    @Override
+    protected void commonAssignmentCheck(
+            AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType,
+            Tree valueTree,
+            /*@CompilerMessageKey*/ String errorKey) {
+
+        replaceSpecialIntRangeAnnotations(varType);
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+    }
+
+    /**
+     * Return types for methods that are annotated with {@code @IntRangeFromX} annotations need to
+     * be replaced with {@code @UnknownVal}. See the documentation on {@link
+     * #commonAssignmentCheck(AnnotatedTypeMirror, ExpressionTree, String) commonAssignmentCheck}.
+     *
+     * <p>A separate override is necessary because checkOverride doesn't actually use the
+     * commonAssignmentCheck.
+     */
+    @Override
+    protected boolean checkOverride(
+            MethodTree overriderTree,
+            AnnotatedTypeMirror.AnnotatedExecutableType overrider,
+            AnnotatedTypeMirror.AnnotatedDeclaredType overridingType,
+            AnnotatedTypeMirror.AnnotatedExecutableType overridden,
+            AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType) {
+
+        replaceSpecialIntRangeAnnotations(overrider);
+        replaceSpecialIntRangeAnnotations(overridden);
+
+        return super.checkOverride(
+                overriderTree, overrider, overridingType, overridden, overriddenType);
+    }
+
+    /**
+     * Replaces any {@code IntRangeFromX} annotations with {@code @UnknownVal}. This is used to
+     * prevent these annotations from being required on the left hand side of assignments.
+     *
+     * @param varType an annotated type mirror that may contain IntRangeFromX annotations, which
+     *     will be used on the lhs of an assignment or pseudo-assignment.
+     */
+    private void replaceSpecialIntRangeAnnotations(AnnotatedTypeMirror varType) {
+        SimpleAnnotatedTypeScanner<Void, Void> replaceSpecialIntRangeAnnotations =
                 new SimpleAnnotatedTypeScanner<Void, Void>() {
                     @Override
                     protected Void defaultAction(AnnotatedTypeMirror type, Void p) {
-                        if (type.hasAnnotation(IntRangeFromPositive.class)) {
+                        if (type.hasAnnotation(IntRangeFromPositive.class)
+                                || type.hasAnnotation(IntRangeFromNonNegative.class)
+                                || type.hasAnnotation(IntRangeFromGTENegativeOne.class)) {
                             type.replaceAnnotation(atypeFactory.UNKNOWNVAL);
                         }
                         return null;
                     }
                 };
-
-        replaceIntRangeFromPositive.visit(varType);
-        super.commonAssignmentCheck(varType, valueExp, errorKey);
+        replaceSpecialIntRangeAnnotations.visit(varType);
     }
 
     @Override

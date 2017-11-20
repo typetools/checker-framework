@@ -5,6 +5,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -66,7 +67,8 @@ public class DefaultInferredTypesApplier {
             if (primary == null) {
                 // Type doesn't have a primary either, nothing to remove
             } else if (type.getKind() == TypeKind.TYPEVAR) {
-                removePrimaryAnnotationTypeVar(type, inferredTypeMirror, top, primary);
+                removePrimaryAnnotationTypeVar(
+                        (AnnotatedTypeVariable) type, inferredTypeMirror, top, primary);
             } else {
                 removePrimaryTypeVarApplyUpperBound(type, inferredTypeMirror, top, primary);
             }
@@ -106,26 +108,31 @@ public class DefaultInferredTypesApplier {
     }
 
     private void removePrimaryAnnotationTypeVar(
-            AnnotatedTypeMirror type,
-            TypeMirror typeMirror,
+            AnnotatedTypeVariable annotatedTypeVariable,
+            TypeMirror inferredTypeMirror,
             AnnotationMirror top,
-            final AnnotationMirror notInferred) {
-        if (typeMirror.getKind() != TypeKind.TYPEVAR) {
+            AnnotationMirror previousAnnotation) {
+        if (inferredTypeMirror.getKind() == TypeKind.WILDCARD) {
+            // Dataflow might infer a wildcard that extends a type variable for types that are
+            // actually type variables.  Use the type variable instead.
+            while (inferredTypeMirror.getKind() == TypeKind.WILDCARD) {
+                inferredTypeMirror = ((WildcardType) inferredTypeMirror).getExtendsBound();
+            }
+        }
+        if (inferredTypeMirror.getKind() != TypeKind.TYPEVAR) {
             ErrorReporter.errorAbort("Missing annos");
             return;
         }
-        TypeVariable typeVar = (TypeVariable) typeMirror;
+        TypeVariable typeVar = (TypeVariable) inferredTypeMirror;
         AnnotatedTypeVariable typeVariableDecl =
                 (AnnotatedTypeVariable) factory.getAnnotatedType(typeVar.asElement());
         AnnotationMirror upperBound = typeVariableDecl.getEffectiveAnnotationInHierarchy(top);
-        if (omitSubtypingCheck || hierarchy.isSubtype(upperBound, notInferred)) {
-            AnnotatedTypeVariable typeTV = (AnnotatedTypeVariable) type;
-            type.removeAnnotationInHierarchy(top);
-
+        if (omitSubtypingCheck || hierarchy.isSubtype(upperBound, previousAnnotation)) {
+            annotatedTypeVariable.removeAnnotationInHierarchy(top);
             AnnotationMirror ub = typeVariableDecl.getUpperBound().getAnnotationInHierarchy(top);
-            apply(typeTV.getUpperBound(), ub, typeVar.getUpperBound(), top);
+            apply(annotatedTypeVariable.getUpperBound(), ub, typeVar.getUpperBound(), top);
             AnnotationMirror lb = typeVariableDecl.getLowerBound().getAnnotationInHierarchy(top);
-            apply(typeTV.getLowerBound(), lb, typeVar.getLowerBound(), top);
+            apply(annotatedTypeVariable.getLowerBound(), lb, typeVar.getLowerBound(), top);
         }
     }
 }

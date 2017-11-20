@@ -1,4 +1,3 @@
-
 class InferTypeArgs2<V extends InferTypeArgs2<V>> {}
 
 // having a concrete extension of InferTypeArgs2 is the key difference between this and

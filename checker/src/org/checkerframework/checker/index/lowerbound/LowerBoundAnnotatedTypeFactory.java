@@ -1,6 +1,5 @@
 package org.checkerframework.checker.index.lowerbound;
 
-import static org.checkerframework.checker.index.IndexUtil.getExactValue;
 import static org.checkerframework.checker.index.IndexUtil.getPossibleValues;
 
 import com.sun.source.tree.BinaryTree;
@@ -8,7 +7,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -30,6 +28,7 @@ import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.PolyIndex;
 import org.checkerframework.checker.index.qual.PolyLowerBound;
 import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.searchindex.SearchIndexAnnotatedTypeFactory;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -38,6 +37,7 @@ import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.util.Range;
+import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -89,12 +89,17 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
+        // Any annotations that are aliased to @NonNegative, @Positive,
+        // or @GTENegativeOne must also be aliased in the constructor of
+        // ValueAnnotatedTypeFactory to the appropriate @IntRangeFrom*
+        // annotation.
         addAliasedAnnotation(IndexFor.class, NN);
         addAliasedAnnotation(IndexOrLow.class, GTEN1);
         addAliasedAnnotation(IndexOrHigh.class, NN);
         addAliasedAnnotation(LengthOf.class, NN);
         addAliasedAnnotation(PolyAll.class, POLY);
         addAliasedAnnotation(PolyIndex.class, POLY);
+        addAliasedAnnotation(SubstringIndexFor.class, GTEN1);
 
         imf = new IndexMethodIdentifier(processingEnv);
 
@@ -187,7 +192,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** Determine the annotation that should be associated with a literal. */
-    private AnnotationMirror anmFromVal(long val) {
+    AnnotationMirror anmFromVal(long val) {
         if (val >= 1) {
             return POS;
         } else if (val >= 0) {
@@ -228,7 +233,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 typeDst.replaceAnnotation(POS);
             } else if (typeSrc.hasAnnotation(GTEN1)) {
                 typeDst.replaceAnnotation(NN);
-            } else { //Only unknown is left.
+            } else { // Only unknown is left.
                 typeDst.replaceAnnotation(UNKNOWN);
             }
         }
@@ -313,28 +318,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Looks up the minlen of a member select tree. Returns null if the tree doesn't represent
-         * an array's length field.
-         */
-        private Integer getMinLenFromMemberSelectTree(MemberSelectTree tree) {
-            if (TreeUtils.isArrayLengthAccess(tree)) {
-                return IndexUtil.getMinLenFromTree(tree, getValueAnnotatedTypeFactory());
-            }
-            return null;
-        }
-
-        /**
-         * Looks up the minlen of a method invocation tree. Returns null if the tree doesn't
-         * represent an string length method.
-         */
-        private Integer getMinLenFromMethodInvocationTree(MethodInvocationTree tree) {
-            if (imf.isStringLength(tree, processingEnv)) {
-                return IndexUtil.getMinLenFromTree(tree, getValueAnnotatedTypeFactory());
-            }
-            return null;
-        }
-
-        /**
          * For dealing with array length expressions. Looks for array length accesses specifically,
          * then dispatches to the MinLen checker to determine the length of the relevant array. If
          * it's found, use it to give the expression a type.
@@ -349,458 +332,78 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Dispatch to binary operator helper methods. The Lower Bound Checker currently handles
-         * addition, subtraction, multiplication, division, and remainder.
+         * Does not dispatch to binary operator helper methods. The Lower Bound Checker handles
+         * binary operations via its transfer function.
          */
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
-            // Check if this is a string concatenation. If so, bail.
-            if (TreeUtils.isStringConcatenation(tree)) {
-                type.addAnnotation(UNKNOWN);
-                return super.visitBinary(tree, type);
-            }
-
-            // Dispatch according to the operation.
-            ExpressionTree left = tree.getLeftOperand();
-            ExpressionTree right = tree.getRightOperand();
-            // Every "addAnnotationForX" method is stateful and modifies the variable "type".
-            switch (tree.getKind()) {
-                case PLUS:
-                    addAnnotationForPlus(left, right, type);
-                    break;
-                case MINUS:
-                    addAnnotationForMinus(left, right, type);
-                    break;
-                case MULTIPLY:
-                    addAnnotationForMultiply(left, right, type);
-                    break;
-                case DIVIDE:
-                    addAnnotationForDivide(left, right, type);
-                    break;
-                case REMAINDER:
-                    addAnnotationForRemainder(left, right, type);
-                    break;
-                case AND:
-                    addAnnotationForAnd(left, right, type);
-                    break;
-                case RIGHT_SHIFT:
-                    addAnnotationForRightShift(left, right, type);
-                    break;
-                default:
-                    break;
-            }
+            type.addAnnotation(UNKNOWN);
             return super.visitBinary(tree, type);
         }
-
-        /**
-         * Helper method for addAnnotationForPlus. Handles addition of constants.
-         *
-         * @param val the integer value of the constant
-         * @param nonLiteralType the type of the side of the expression that isn't a constant
-         * @param type the type of the result expression
-         */
-        private void addAnnotationForLiteralPlus(
-                int val, AnnotatedTypeMirror nonLiteralType, AnnotatedTypeMirror type) {
-            if (val == -2) {
-                if (nonLiteralType.hasAnnotation(POS)) {
-                    type.addAnnotation(GTEN1);
-                    return;
-                }
-            } else if (val == -1) {
-                demoteType(nonLiteralType, type);
-                return;
-            } else if (val == 0) {
-                // This gets the type of nonLiteralType in our hierarchy (in which POS is the
-                // bottom type).
-                type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(POS));
-                return;
-            } else if (val == 1) {
-                promoteType(nonLiteralType, type);
-                return;
-            } else if (val >= 2) {
-                if (!nonLiteralType.hasAnnotation(UNKNOWN)) {
-                    // 2 + a positive, or a non-negative, or a non-negative-1 is a positive
-                    type.addAnnotation(POS);
-                    return;
-                }
-            }
-            type.addAnnotation(UNKNOWN);
-        }
-
-        /**
-         * addAnnotationForPlus handles the following cases:
-         *
-         * <pre>
-         *      lit -2 + pos &rarr; gte-1
-         *      lit -1 + * &rarr; call demote
-         *      lit 0 + * &rarr; *
-         *      lit 1 + * &rarr; call promote
-         *      lit &ge; 2 + {gte-1, nn, or pos} &rarr; pos
-         *      let all other lits, including sets, fall through:
-         *      pos + pos &rarr; pos
-         *      nn + * &rarr; *
-         *      pos + gte-1 &rarr; nn
-         *      * + * &rarr; lbu
-         *  </pre>
-         */
-        private void addAnnotationForPlus(
-                ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
-
-            // Adding two literals is handled by visitBinary, so that
-            // case can be ignored.
-            AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
-            // Check if the right side's value is known at compile time.
-
-            Long valRight = getExactValue(rightExpr, getValueAnnotatedTypeFactory());
-            if (valRight != null) {
-                addAnnotationForLiteralPlus(valRight.intValue(), leftType, type);
-                return;
-            }
-
-            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
-            // Check if the left side's value is known at compile time.
-
-            Long valLeft = getExactValue(leftExpr, getValueAnnotatedTypeFactory());
-            if (valLeft != null) {
-                addAnnotationForLiteralPlus(valLeft.intValue(), rightType, type);
-                return;
-            }
-
-            /* This section is handling the generic cases:
-             *      pos + pos -> pos
-             *      nn + * -> *
-             *      pos + gte-1 -> nn
-             */
-            if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
-                type.addAnnotation(POS);
-                return;
-            }
-
-            if (leftType.hasAnnotation(NN)) {
-                type.addAnnotation(rightType.getAnnotationInHierarchy(POS));
-                return;
-            }
-            if (rightType.hasAnnotation(NN)) {
-                type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
-                return;
-            }
-
-            if ((leftType.hasAnnotation(POS) && rightType.hasAnnotation(GTEN1))
-                    || (leftType.hasAnnotation(GTEN1) && rightType.hasAnnotation(POS))) {
-                type.addAnnotation(NN);
-                return;
-            }
-
-            // * + * -> lbu.
-            type.addAnnotation(UNKNOWN);
-        }
-
-        /**
-         * addAnnotationForMinus handles the following cases:
-         *
-         * <pre>
-         *      * - lit &rarr; call plus(*, -1 * the value of the lit)
-         *      * - * &rarr; lbu
-         *  </pre>
-         */
-        private void addAnnotationForMinus(
-                ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
-
-            // Check if the right side's value is known at compile time.
-            Long valRight = getExactValue(rightExpr, getValueAnnotatedTypeFactory());
-            if (valRight != null) {
-                AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
-                // Instead of a separate method for subtraction, add the negative of a constant.
-                addAnnotationForLiteralPlus(-1 * valRight.intValue(), leftType, type);
-
-                Integer minLen = null;
-                // Check if the left side is a field access of an array's length,
-                // or invocation of String.length. If so,
-                // try to look up the MinLen of the array, and potentially keep
-                // this either NN or POS instead of GTEN1 or LBU.
-                if (leftExpr.getKind() == Kind.MEMBER_SELECT) {
-                    MemberSelectTree mstree = (MemberSelectTree) leftExpr;
-                    minLen = getMinLenFromMemberSelectTree(mstree);
-                } else if (leftExpr.getKind() == Kind.METHOD_INVOCATION) {
-                    MethodInvocationTree mitree = (MethodInvocationTree) leftExpr;
-                    minLen = getMinLenFromMethodInvocationTree(mitree);
-                }
-
-                if (minLen != null) {
-                    type.replaceAnnotation(anmFromVal(minLen - valRight));
-                }
-
-                return;
-            }
-
-            // The checker can't reason about arbitrary (i.e. non-literal)
-            // things that are being subtracted, so it gives up.
-            type.addAnnotation(UNKNOWN);
-        }
-
-        /**
-         * Helper function for addAnnotationForMultiply. Handles compile-time known constants.
-         *
-         * @param val the integer value of the constant
-         * @param nonLiteralType the type of the side of the expression that isn't a constant
-         * @param type the type of the result expression
-         */
-        private void addAnnotationForLiteralMultiply(
-                int val, AnnotatedTypeMirror nonLiteralType, AnnotatedTypeMirror type) {
-            if (val == 0) {
-                type.addAnnotation(NN);
-                return;
-            } else if (val == 1) {
-                // Make the result type equal to nonLiteralType.
-                type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(POS));
-                return;
-            } else if (val > 1) {
-                if (nonLiteralType.hasAnnotation(POS) || nonLiteralType.hasAnnotation(NN)) {
-                    type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(POS));
-                    return;
-                }
-            }
-            type.addAnnotation(UNKNOWN);
-        }
-
-        private boolean checkForMathRandomSpecialCase(
-                ExpressionTree randTree, ExpressionTree arrLenTree, AnnotatedTypeMirror type) {
-            if (randTree.getKind() == Kind.METHOD_INVOCATION
-                    && TreeUtils.isArrayLengthAccess(arrLenTree)) {
-                MethodInvocationTree miTree = (MethodInvocationTree) randTree;
-
-                if (imf.isMathRandom(miTree, processingEnv)) {
-                    // This is Math.random() * array.length, which must be NonNegative
-                    type.addAnnotation(NN);
-                    return true;
-                }
-
-                if (imf.isRandomNextDouble(miTree, processingEnv)) {
-                    // This is Random.nextDouble() * array.length, which must be NonNegative
-                    type.addAnnotation(NN);
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /**
-         * addAnnotationForMultiply handles the following cases:
-         *
-         * <pre>
-         *        * * lit 0 &rarr; nn (=0)
-         *        * * lit 1 &rarr; *
-         *        pos * pos &rarr; pos
-         *        pos * nn &rarr; nn
-         *        nn * nn &rarr; nn
-         *        * * * &rarr; lbu
-         *  </pre>
-         */
-        private void addAnnotationForMultiply(
-                ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
-
-            // Special handling for multiplying an array length by a Math.random().
-            if (checkForMathRandomSpecialCase(rightExpr, leftExpr, type)
-                    || checkForMathRandomSpecialCase(leftExpr, rightExpr, type)) {
-                return;
-            }
-
-            AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
-            // Check if the right side's value is known at compile time.
-
-            Long valRight = getExactValue(rightExpr, getValueAnnotatedTypeFactory());
-            if (valRight != null) {
-                addAnnotationForLiteralMultiply(valRight.intValue(), leftType, type);
-                return;
-            }
-
-            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
-            // Check if the left side's value is known at compile time.
-            Long valLeft = getExactValue(leftExpr, getValueAnnotatedTypeFactory());
-            if (valLeft != null) {
-                addAnnotationForLiteralMultiply(valLeft.intValue(), rightType, type);
-                return;
-            }
-
-            /* This section handles generic annotations:
-             *   pos * pos -> pos
-             *   nn * pos -> nn
-             *   nn * nn -> nn
-             */
-            if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
-                type.addAnnotation(POS);
-                return;
-            }
-            if ((leftType.hasAnnotation(POS) && rightType.hasAnnotation(NN))
-                    || (leftType.hasAnnotation(NN) && rightType.hasAnnotation(POS))) {
-                type.addAnnotation(NN);
-                return;
-            }
-            if (leftType.hasAnnotation(NN) && rightType.hasAnnotation(NN)) {
-                type.addAnnotation(NN);
-                return;
-            }
-            type.addAnnotation(UNKNOWN);
-        }
-
-        /** When the value on the left is known at compile time. */
-        private void addAnnotationForLiteralDivideLeft(
-                int val, AnnotatedTypeMirror rightType, AnnotatedTypeMirror type) {
-            if (val == 0) {
-                type.addAnnotation(NN);
-            } else if (val == 1) {
-                if (rightType.hasAnnotation(NN) || rightType.hasAnnotation(POS)) {
-                    type.addAnnotation(NN);
-                } else {
-                    // (1 / x) can't be outside the range [-1, 1] when x is an integer.
-                    type.addAnnotation(GTEN1);
-                }
-            }
-        }
-
-        /** When the value on the right is known at compile time. */
-        private void addAnnotationForLiteralDivideRight(
-                int val, AnnotatedTypeMirror leftType, AnnotatedTypeMirror type) {
-            if (val == 0) {
-                // Reaching this indicates a divide by zero error. If the value is zero, then this is
-                // division by zero. Division by zero is treated as bottom so that users
-                // aren't warned about dead code that's dividing by zero. This code assumes that non-dead
-                // code won't include literal divide by zeros...
-                type.addAnnotation(BOTTOM);
-            } else if (val == 1) {
-                type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
-            } else if (val >= 2) {
-                if (leftType.hasAnnotation(NonNegative.class)
-                        || leftType.hasAnnotation(Positive.class)) {
-                    type.addAnnotation(NN);
-                }
-            }
-        }
-
-        /**
-         * addAnnotationForDivide handles these cases:
-         *
-         * <pre>
-         * lit 0 / * &rarr; nn (=0)
-         *      * / lit 0 &rarr; pos
-         *      lit 1 / {pos, nn} &rarr; nn
-         *      lit 1 / * &rarr; gten1
-         *      * / lit 1 &rarr; *
-         *      {pos, nn} / lit &gt;1 &rarr; nn
-         *      pos / {pos, nn} &rarr; nn (can round to zero)
-         *      * / {pos, nn} &rarr; *
-         *      * / * &rarr; lbu
-         *  </pre>
-         */
-        private void addAnnotationForDivide(
-                ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
-
-            AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
-            // Check if the right side's value is known at compile time.
-
-            Long valRight = getExactValue(rightExpr, getValueAnnotatedTypeFactory());
-            if (valRight != null) {
-                addAnnotationForLiteralDivideRight(valRight.intValue(), leftType, type);
-                return;
-            }
-
-            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
-            // Check if the left side's value is known at compile time.
-            Long valLeft = getExactValue(leftExpr, getValueAnnotatedTypeFactory());
-            if (valLeft != null) {
-                addAnnotationForLiteralDivideLeft(valLeft.intValue(), leftType, type);
-                return;
-            }
-
-            /* This section handles generic annotations:
-             *    pos / {pos, nn} -> nn (can round to zero)
-             *    * / {pos, nn} -> *
-             */
-            if (leftType.hasAnnotation(POS)
-                    && (rightType.hasAnnotation(POS) || rightType.hasAnnotation(NN))) {
-                type.addAnnotation(NN);
-                return;
-            }
-            if (rightType.hasAnnotation(POS) || rightType.hasAnnotation(NN)) {
-                type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
-                return;
-            }
-            // Everything else is unknown.
-            type.addAnnotation(UNKNOWN);
-        }
-
-        /** A remainder with 1 or -1 as the divisor always results in zero. */
-        private void addAnnotationForLiteralRemainder(int val, AnnotatedTypeMirror type) {
-            if (val == 1 || val == -1) {
-                type.addAnnotation(NN);
-            }
-        }
-
-        /**
-         * addAnnotationForRemainder handles these cases: * % 1/-1 &rarr; nn pos/nn % * &rarr; nn
-         * gten1 % * &rarr; gten1 * % * &rarr; lbu
-         */
-        public void addAnnotationForRemainder(
-                ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
-            AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
-            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
-
-            // Check if the right side's value is known at compile time.
-            Long valRight = getExactValue(rightExpr, getValueAnnotatedTypeFactory());
-            if (valRight != null) {
-                addAnnotationForLiteralRemainder(valRight.intValue(), type);
-            }
-
-            /* This section handles generic annotations:
-               pos/nn % * -> nn
-               gten1 % * -> gten1
-            */
-            if (leftType.hasAnnotation(POS) || leftType.hasAnnotation(NN)) {
-                type.addAnnotation(NN);
-                return;
-            }
-            if (leftType.hasAnnotation(GTEN1)) {
-                type.addAnnotation(GTEN1);
-                return;
-            }
-
-            // Everything else is unknown.
-            type.addAnnotation(UNKNOWN);
-        }
-    }
-
-    /** Handles shifts. * &gt;&gt; NonNegative &rarr; NonNegative */
-    private void addAnnotationForRightShift(
-            ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
-        AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
-        AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
-        if (leftType.hasAnnotation(NN) || leftType.hasAnnotation(POS)) {
-            if (rightType.hasAnnotation(NN) || rightType.hasAnnotation(POS)) {
-                type.addAnnotation(NN);
-                return;
-            }
-        }
-        type.addAnnotation(UNKNOWN);
     }
 
     /**
-     * Handles masking. Particularly, handles the following cases: * &amp; NonNegative &rarr;
-     * NonNegative
+     * Looks up the minlen of a member select tree. Returns null if the tree doesn't represent an
+     * array's length field.
      */
-    private void addAnnotationForAnd(
-            ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
-        AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
-        if (rightType.hasAnnotation(NN) || rightType.hasAnnotation(POS)) {
-            type.addAnnotation(NN);
-            return;
+    Integer getMinLenFromMemberSelectTree(MemberSelectTree tree) {
+        if (TreeUtils.isArrayLengthAccess(tree)) {
+            return IndexUtil.getMinLenFromTree(tree, getValueAnnotatedTypeFactory());
         }
+        return null;
+    }
 
-        AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
-        if (leftType.hasAnnotation(NN) || leftType.hasAnnotation(POS)) {
-            type.addAnnotation(NN);
-            return;
+    /**
+     * Looks up the minlen of a method invocation tree. Returns null if the tree doesn't represent
+     * an string length method.
+     */
+    Integer getMinLenFromMethodInvocationTree(MethodInvocationTree tree) {
+        if (imf.isStringLength(tree, processingEnv)) {
+            return IndexUtil.getMinLenFromTree(tree, getValueAnnotatedTypeFactory());
         }
+        return null;
+    }
 
-        type.addAnnotation(UNKNOWN);
+    /**
+     * Determines whether the multiplication includes a call to Math.random that requires
+     * special-casing by the LBC. In particular, the LBC must special cases calls to Math.random *
+     * array.length and Random.nextDouble() * array.length.
+     *
+     * @param node a multiplication node that may need special casing
+     * @return an AnnotationMirror representing the result if the special case is valid, or null if
+     *     not
+     */
+    AnnotationMirror checkForMathRandomSpecialCase(NumericalMultiplicationNode node) {
+        AnnotationMirror forwardRes =
+                checkForMathRandomSpecialCase(
+                        node.getLeftOperand().getTree(), node.getRightOperand().getTree());
+        if (forwardRes != null) {
+            return forwardRes;
+        }
+        AnnotationMirror backwardsRes =
+                checkForMathRandomSpecialCase(
+                        node.getRightOperand().getTree(), node.getLeftOperand().getTree());
+        if (backwardsRes != null) {
+            return backwardsRes;
+        }
+        return null;
+    }
+
+    private AnnotationMirror checkForMathRandomSpecialCase(Tree randTree, Tree arrLenTree) {
+        if (randTree.getKind() == Tree.Kind.METHOD_INVOCATION
+                && TreeUtils.isArrayLengthAccess(arrLenTree)) {
+            MethodInvocationTree miTree = (MethodInvocationTree) randTree;
+
+            if (imf.isMathRandom(miTree, processingEnv)) {
+                // This is Math.random() * array.length, which must be NonNegative
+                return NN;
+            }
+
+            if (imf.isRandomNextDouble(miTree, processingEnv)) {
+                // This is Random.nextDouble() * array.length, which must be NonNegative
+                return NN;
+            }
+        }
+        return null;
     }
 }

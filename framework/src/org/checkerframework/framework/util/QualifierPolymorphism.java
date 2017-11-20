@@ -166,7 +166,8 @@ public class QualifierPolymorphism {
             Elements elements, AnnotationMirror qual) {
         AnnotationMirror poly = getPolymorphicQualifier(qual);
 
-        // System.out.println("poly: " + poly + " pq: " + PolymorphicQualifier.class.getCanonicalName());
+        // System.out.println("poly: " + poly + " pq: " +
+        //     PolymorphicQualifier.class.getCanonicalName());
         if (poly == null) {
             return null;
         }
@@ -194,13 +195,13 @@ public class QualifierPolymorphism {
         if (TreeUtils.isEnumSuper(tree)) {
             return;
         }
-        List<AnnotatedTypeMirror> requiredArgs =
+        List<AnnotatedTypeMirror> parameters =
                 AnnotatedTypes.expandVarArgs(atypeFactory, type, tree.getArguments());
         List<AnnotatedTypeMirror> arguments =
-                AnnotatedTypes.getAnnotatedTypes(atypeFactory, requiredArgs, tree.getArguments());
+                AnnotatedTypes.getAnnotatedTypes(atypeFactory, parameters, tree.getArguments());
 
         Map<AnnotationMirror, Set<? extends AnnotationMirror>> matchingMapping =
-                collector.visit(arguments, requiredArgs);
+                collector.visit(arguments, parameters);
 
         // for super() and this() method calls, getReceiverType(tree) does not return the correct
         // type. So, just skip those.  This is consistent with skipping receivers of constructors
@@ -248,7 +249,8 @@ public class QualifierPolymorphism {
             AnnotatedExecutableType functionalInterface, AnnotatedExecutableType memberReference) {
         for (AnnotationMirror type : functionalInterface.getReturnType().getAnnotations()) {
             if (isPolymorphicQualified(type)) {
-                // functional interface has a polymorphic qualifier, so they should not be resolved on memberReference.
+                // functional interface has a polymorphic qualifier, so they should not be resolved
+                // on memberReference.
                 return;
             }
         }
@@ -275,7 +277,7 @@ public class QualifierPolymorphism {
         if (matchingMapping != null && !matchingMapping.isEmpty()) {
             replacer.visit(memberReference, matchingMapping);
         } else {
-            //TODO: Do we need this (return type?)
+            // TODO: Do we need this (return type?)
             completer.visit(memberReference);
         }
     }
@@ -288,15 +290,13 @@ public class QualifierPolymorphism {
                         public Void scan(
                                 AnnotatedTypeMirror type,
                                 Map<AnnotationMirror, Set<? extends AnnotationMirror>> matches) {
-                            if (type != null) {
-                                for (Map.Entry<AnnotationMirror, Set<? extends AnnotationMirror>>
-                                        pqentry : matches.entrySet()) {
-                                    AnnotationMirror poly = pqentry.getKey();
-                                    if (poly != null && type.hasAnnotation(poly)) {
-                                        type.removeAnnotation(poly);
-                                        Set<? extends AnnotationMirror> quals = pqentry.getValue();
-                                        type.replaceAnnotations(quals);
-                                    }
+                            for (Map.Entry<AnnotationMirror, Set<? extends AnnotationMirror>>
+                                    pqentry : matches.entrySet()) {
+                                AnnotationMirror poly = pqentry.getKey();
+                                if (poly != null && type.hasAnnotation(poly)) {
+                                    type.removeAnnotation(poly);
+                                    Set<? extends AnnotationMirror> quals = pqentry.getValue();
+                                    type.replaceAnnotations(quals);
                                 }
                             }
                             return super.scan(type, matches);
@@ -310,21 +310,19 @@ public class QualifierPolymorphism {
     class Completer extends AnnotatedTypeScanner<Void, Void> {
         @Override
         protected Void scan(AnnotatedTypeMirror type, Void p) {
-            if (type != null) {
-                for (Map.Entry<AnnotationMirror, AnnotationMirror> pqentry : polyQuals.entrySet()) {
-                    AnnotationMirror top = pqentry.getKey();
-                    AnnotationMirror poly = pqentry.getValue();
+            for (Map.Entry<AnnotationMirror, AnnotationMirror> pqentry : polyQuals.entrySet()) {
+                AnnotationMirror top = pqentry.getKey();
+                AnnotationMirror poly = pqentry.getValue();
 
-                    if (type.hasAnnotation(poly)) {
-                        type.removeAnnotation(poly);
-                        if (top == null) {
-                            // poly is PolyAll -> add all tops not explicitly given
-                            type.addMissingAnnotations(topQuals);
-                        } else if (type.getKind() != TypeKind.TYPEVAR
-                                && type.getKind() != TypeKind.WILDCARD) {
-                            // Do not add the top qualifiers to type variables and wildcards
-                            type.addAnnotation(top);
-                        }
+                if (type.hasAnnotation(poly)) {
+                    type.removeAnnotation(poly);
+                    if (top == null) {
+                        // poly is PolyAll -> add all tops not explicitly given
+                        type.addMissingAnnotations(topQuals);
+                    } else if (type.getKind() != TypeKind.TYPEVAR
+                            && type.getKind() != TypeKind.WILDCARD) {
+                        // Do not add the top qualifiers to type variables and wildcards
+                        type.addAnnotation(top);
                     }
                 }
             }
@@ -435,7 +433,7 @@ public class QualifierPolymorphism {
                             wctype.getSuperBound().getUnderlyingType())) {
                         result = visit(type, wctype.getSuperBound());
                     } else if (wctype.getSuperBound().getKind() == TypeKind.NULL) {
-                        //TODO: poly annotation on wildcards need to be reviewed.  This prevents
+                        // TODO: poly annotation on wildcards need to be reviewed.  This prevents
                         // a crash in asSuper.
                         result = Collections.emptyMap();
                     } else {
@@ -621,9 +619,10 @@ public class QualifierPolymorphism {
 
             } else {
                 // When using the polyCollector we compare the formal parameters to the actual
-                // arguments but, when the formal parameters are uses of method type parameters
-                // then the declared formal parameters may not actually be supertypes of their arguments
-                // (though they should be if we substituted them for the method call's type arguments)
+                // arguments but, when the formal parameters are uses of method type parameters then
+                // the declared formal parameters may not actually be supertypes of their arguments
+                // (though they should be if we substituted them for the method call's type
+                // arguments).
                 // For an example of this see framework/tests/all-system/PolyCollectorTypeVars.java
                 return visit(type.getUpperBound(), actualType);
             }
@@ -650,8 +649,8 @@ public class QualifierPolymorphism {
 
             if (actualType.getKind() != TypeKind.WILDCARD
                     && actualType.getKind() != TypeKind.TYPEVAR) {
-                // currently because the default action of inferTypeArgs is to use a wildcard when we fail
-                // to infer a type, the actualType might not be a wildcard
+                // currently because the default action of inferTypeArgs is to use a wildcard when
+                // we fail to infer a type, the actualType might not be a wildcard
                 return Collections.emptyMap();
             }
 

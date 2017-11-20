@@ -1,0 +1,5 @@
+package issue1585;
+
+class Demo<dkfa {
+  Demo x;
+}

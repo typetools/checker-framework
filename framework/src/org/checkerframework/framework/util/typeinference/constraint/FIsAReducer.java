@@ -22,7 +22,7 @@ import org.checkerframework.framework.util.PluginUtil;
  * and reduces it by one step. The resulting constraint may still be reducible.
  *
  * <p>Generally reductions should map to corresponding rules in
- * http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7
+ * https://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7
  */
 public class FIsAReducer implements AFReducer {
 
@@ -87,7 +87,7 @@ public class FIsAReducer implements AFReducer {
                     + PluginUtil.join(", ", afConstraints)
                     + "\n]";
         }
-        //------------------------------------------------------------------------
+        // ------------------------------------------------------------------------
         // Arrays as arguments
 
         @Override
@@ -124,7 +124,7 @@ public class FIsAReducer implements AFReducer {
             return null;
         }
 
-        //------------------------------------------------------------------------
+        // ------------------------------------------------------------------------
         // Declared as argument
         @Override
         public Void visitDeclared_Array(
@@ -195,7 +195,7 @@ public class FIsAReducer implements AFReducer {
                 AnnotatedDeclaredType parameter,
                 AnnotatedUnionType argument,
                 Set<AFConstraint> constraints) {
-            return null; //TODO: NOT SUPPORTED AT THE MOMENT
+            return null; // TODO: NOT SUPPORTED AT THE MOMENT
         }
 
         @Override
@@ -203,7 +203,7 @@ public class FIsAReducer implements AFReducer {
                 AnnotatedIntersectionType parameter,
                 AnnotatedIntersectionType argument,
                 Set<AFConstraint> constraints) {
-            return null; //TODO: NOT SUPPORTED AT THE MOMENT
+            return null; // TODO: NOT SUPPORTED AT THE MOMENT
         }
 
         @Override
@@ -224,15 +224,15 @@ public class FIsAReducer implements AFReducer {
             return null;
         }
 
-        //------------------------------------------------------------------------
+        // ------------------------------------------------------------------------
         // Primitive as argument
         @Override
         public Void visitPrimitive_Declared(
                 AnnotatedPrimitiveType parameter,
                 AnnotatedDeclaredType argument,
                 Set<AFConstraint> constraints) {
-            // we may be able to eliminate this case, since I believe the corresponding constraint will just be discarded
-            // as the parameter must be a boxed primitive
+            // we may be able to eliminate this case, since I believe the corresponding constraint
+            // will just be discarded as the parameter must be a boxed primitive
             constraints.add(new FIsA(typeFactory.getBoxedType(parameter), argument));
             return null;
         }
@@ -250,8 +250,9 @@ public class FIsAReducer implements AFReducer {
                 AnnotatedTypeVariable parameter,
                 AnnotatedTypeVariable argument,
                 Set<AFConstraint> constraints) {
-            // if we've reached this point and the two are corresponding type variables, then they are NOT ones that
-            // may have a type variable we are inferring types for and therefore we can discard this constraint
+            // if we've reached this point and the two are corresponding type variables, then they
+            // are NOT ones that may have a type variable we are inferring types for and therefore
+            // we can discard this constraint
             return null;
         }
 

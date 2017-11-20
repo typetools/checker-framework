@@ -1,11 +1,10 @@
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import polyall.quals.*;
 
 class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
-    //----------------------------------------------------------
+    // ----------------------------------------------------------
     // Test Case - A
     <A> A methodA(@H2Top A a1, @H2Top A a2) {
         return null;
@@ -16,7 +15,7 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
         @H1Top @H2Bot Object aTester = a;
     }
 
-    //----------------------------------------------------------
+    // ----------------------------------------------------------
     // Test Case - B
     <B> B methodB(List<@H2S2 B> b1, List<@H1S2 B> b2) {
         return null;
@@ -26,7 +25,7 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
         @H1S1 @H2S1 String str = methodB(l1, l2);
     }
 
-    //----------------------------------------------------------
+    // ----------------------------------------------------------
     // Test Case - C
     <C extends List<? extends Object>> C methodC(C c1, C c2) {
         return null;
@@ -36,7 +35,7 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
         List<@H1S1 @H2S2 ?> str = methodC(l1, l2);
     }
 
-    //----------------------------------------------------------
+    // ----------------------------------------------------------
     // Test Case - D
 
     <D extends OUTER_SCOPE_TV, DD> D methodD(D d1, D d2, DD dd) {
@@ -50,10 +49,10 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
     void contextD(OUTER_SCOPE_TV os1, @H1S1 @H2S1 OUTER_SCOPE_TV os2) {
         OUTER_SCOPE_TV osNaked1 = methodD(os1, os1, os2);
 
-        // So for the next failure we correctly infer that for methodD to take both os1 and os2 as arguments
-        // D must be @H1Top @H2Top OUTER_SCOPE_TV.
-        // However, the UPPER_BOUND of D is <@H1Bottom @H2Bottom OUTER_SCOPE_TV extends @H1Top @H2Top Object>
-        // notice that our inferred type for D is above this bound.
+        // So for the next failure we correctly infer that for methodD to take both os1 and os2 as
+        // arguments D must be @H1Top @H2Top OUTER_SCOPE_TV.  However, the UPPER_BOUND of D is
+        // <@H1Bottom @H2Bottom OUTER_SCOPE_TV extends @H1Top @H2Top Object> notice that our
+        // inferred type for D is above this bound.
         //
         // A similar, more useful example in the Nullness type system would be:
         /*
@@ -79,18 +78,18 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
            g.listo = new ArrayList<@NonNull String>();
            g.launder("", null);    // during this method call null would be added to g.listo
         */
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         OUTER_SCOPE_TV osNaked2 = methodD(os1, os2, "");
 
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         OUTER_SCOPE_TV osAnnoed = methodD(os2, os2, "");
 
-        //:: error: (type.argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         String str = methodD2(os2, os1, "");
         OUTER_SCOPE_TV osNaked3 = methodD2(os1, os1, os2);
     }
 
-    //----------------------------------------------------------
+    // ----------------------------------------------------------
     // Test Case - E
     <E> E methodE(E e1, E[] aos2) {
         return null;
@@ -101,7 +100,7 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
         OUTER_SCOPE_TV osLocal = methodE(os, aos);
     }
 
-    //----------------------------------------------------------
+    // ----------------------------------------------------------
     // Test Case - C
     <F> List<? super F> methodF(List<? extends F> lExtF, List<? super F> lSupF) {
         return null;
@@ -112,10 +111,10 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
             List<? super @H1S1 @H2S2 String> l2,
             List<@H1S1 @H2S2 ? extends @H1Top @H2Top String> l3) {
 
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         List<? super @H1Bot @H2Bot String> lstr1 = methodF(l1, l2);
 
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         List<? super @H1Top @H2S2 String> lstr2 = methodF(l3, l2);
     }
 
@@ -156,7 +155,7 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
 
     void contextOP(@H1S1 @H2S1 String s1, @H1Bot @H2Bot String s2) {
         // This test is actually here to test that the constraint P :> O is implied on p
-        //:: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @H1Bot @H2Bot String loc = methodOP(s1, s2);
     }
 

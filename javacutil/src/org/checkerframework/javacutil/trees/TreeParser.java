@@ -117,7 +117,7 @@ public class TreeParser {
                 }
                 // For now, handle empty args only
                 assert ")".equals(token);
-                tree = maker.Apply(List.<JCExpression>nil(), tree, args.toList());
+                tree = maker.Apply(List.nil(), tree, args.toList());
             } else if ("[".equals(token)) {
                 nextToken();
                 JCExpression index = parseExpression();

@@ -1,4 +1,5 @@
 // Tests that String.length() is supported in the same situations as array length
+
 import java.util.Random;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
@@ -12,19 +13,19 @@ class StringLength {
     void testMinLenSubtractPositive(@MinLen(10) String s) {
         @Positive int i1 = s.length() - 9;
         @NonNegative int i0 = s.length() - 10;
-        //::  error: (assignment.type.incompatible)
+        // ::  error: (assignment.type.incompatible)
         @NonNegative int im1 = s.length() - 11;
     }
 
     void testNewArraySameLen(String s) {
-        int @SameLen("s") [] array = new int[s.length()]; //TODO
-        //::  error: (assignment.type.incompatible)
+        int @SameLen("s") [] array = new int[s.length()]; // TODO
+        // ::  error: (assignment.type.incompatible)
         int @SameLen("s") [] array1 = new int[s.length() + 1];
     }
 
     void testStringAssignSameLen(String s, String r) {
         @SameLen("s") String t = s;
-        //::  error: (assignment.type.incompatible)
+        // ::  error: (assignment.type.incompatible)
         @SameLen("s") String tN = r;
     }
 
@@ -47,7 +48,7 @@ class StringLength {
             @LTLengthOf(value = "#2") int j,
             int k) {
         @LTLengthOf("s") int ij = i + j;
-        //::  error: (assignment.type.incompatible)
+        // ::  error: (assignment.type.incompatible)
         @LTLengthOf("s") int ik = i + k;
     }
 
@@ -67,7 +68,7 @@ class StringLength {
     void testNotEqualLength(String s, @IndexOrHigh("#1") int i, @IndexOrHigh("#1") int j) {
         if (i != s.length()) {
             @IndexFor("s") int in = i;
-            //::  error: (assignment.type.incompatible)
+            // ::  error: (assignment.type.incompatible)
             @IndexFor("s") int jn = j;
         }
     }

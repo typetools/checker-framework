@@ -1,3 +1,6 @@
+// Upstream version:
+// https://javaee.github.io/javaee-spec/javadocs/javax/validation/constraints/NotNull.html
+
 package javax.validation.constraints;
 
 import java.lang.annotation.Documented;
@@ -13,7 +16,8 @@ import java.lang.annotation.Target;
     ElementType.FIELD,
     ElementType.ANNOTATION_TYPE,
     ElementType.CONSTRUCTOR,
-    ElementType.PARAMETER
+    ElementType.PARAMETER,
+    ElementType.TYPE_USE
 })
 public @interface NotNull {
     // The following annotation attributes are allowed in source code,

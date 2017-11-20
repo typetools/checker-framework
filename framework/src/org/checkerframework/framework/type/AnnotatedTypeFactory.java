@@ -244,18 +244,31 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final BaseTypeChecker checker;
 
     /**
-     * Map from class name (canonical name) of an annotation, to the annotation in the Checker
-     * Framework that will be used in its place.
+     * Map from the fully-qualified names of the aliased annotations, to the annotations in the
+     * Checker Framework that will be used in its place.
      */
     private final Map<String, AnnotationMirror> aliases = new HashMap<String, AnnotationMirror>();
 
     /**
-     * A map from the class name (canonical name) of an annotation to the set of class names
-     * (canonical names) for annotations with the same meaning (i.e., aliases), as well as the
-     * annotation mirror that should be used.
+     * A set that contains the fully-qualified class names of the aliased annotations whose elements
+     * need to be copied over.
      */
-    private final Map<String, Pair<AnnotationMirror, Set</*@Interned*/ String>>> declAliases =
-            new HashMap<>();
+    private final Set<String> aliasesCopyElements = new HashSet<>();
+
+    /**
+     * Map from the fully-qualified names of aliased class, to the ignorable elements that the
+     * framework can safely drop when copying over the elements.
+     */
+    private final Map<String, String[]> aliasesIgnorableElements = new HashMap<>();
+
+    /**
+     * A map from the class of an annotation to the set of classes for annotations with the same
+     * meaning, as well as the annotation mirror that should be used.
+     */
+    private final Map<
+                    Class<? extends Annotation>,
+                    Pair<AnnotationMirror, Set<Class<? extends Annotation>>>>
+            declAliases = new HashMap<>();
 
     /** Unique ID counter; for debugging purposes. */
     private static int uidCounter = 0;
@@ -1070,7 +1083,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // Because of a bug in Java 8, annotations on type parameters are not stored in elements,
         // so get explicit annotations from the tree. (This bug has been fixed in Java 9.)
         // Also, since annotations computed by the AnnotatedTypeFactory are stored in the element,
-        // the annotations have to be retrived from the tree so that only explicit annotations are returned.
+        // the annotations have to be retrived from the tree so that only explicit annotations are
+        // returned.
         Tree decl = declarationFromElement(elt);
 
         if (decl == null && typesFromStubFiles != null && typesFromStubFiles.containsKey(elt)) {
@@ -1329,7 +1343,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected void addAnnotationFromFieldInvariant(
             AnnotatedTypeMirror type, AnnotatedTypeMirror accessedVia, VariableElement field) {
-        TypeElement typeElement = InternalUtils.getTypeElement(accessedVia.getUnderlyingType());
+        TypeMirror declaringType = accessedVia.getUnderlyingType();
+        // Find the first upper bound that isn't a wildcard or type variable
+        while (declaringType.getKind() == TypeKind.WILDCARD
+                || declaringType.getKind() == TypeKind.TYPEVAR) {
+            if (declaringType.getKind() == TypeKind.WILDCARD) {
+                declaringType = ((WildcardType) declaringType).getExtendsBound();
+            } else if (declaringType.getKind() == TypeKind.TYPEVAR) {
+                declaringType = ((TypeVariable) declaringType).getUpperBound();
+            }
+        }
+        TypeElement typeElement = InternalUtils.getTypeElement(declaringType);
         if (ElementUtils.enclosingClass(field).equals(typeElement)) {
             // If the field is declared in the accessedVia class, then the field in the invariant
             // cannot be this field, even if the field has the same name.
@@ -1423,7 +1447,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /** Returns the set of classes of field invariant annotations. */
     protected Set<Class<? extends Annotation>> getFieldInvariantDeclarationAnnotations() {
-        return Collections.<Class<? extends Annotation>>singleton(FieldInvariant.class);
+        return Collections.singleton(FieldInvariant.class);
     }
 
     /**
@@ -1490,8 +1514,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
 
-        for (int i = 0; i < targs.size(); ++i) {
-            mapping.put(((AnnotatedTypeVariable) tvars.get(i)).getUnderlyingType(), targs.get(i));
+        AnnotatedDeclaredType enclosing = type;
+        while (enclosing != null) {
+            List<AnnotatedTypeMirror> enclosingTArgs = enclosing.getTypeArguments();
+            AnnotatedDeclaredType declaredType =
+                    getAnnotatedType((TypeElement) enclosing.getUnderlyingType().asElement());
+            List<AnnotatedTypeMirror> enclosingTVars = declaredType.getTypeArguments();
+            for (int i = 0; i < enclosingTArgs.size(); i++) {
+                AnnotatedTypeVariable enclosingTVar = (AnnotatedTypeVariable) enclosingTVars.get(i);
+                mapping.put(enclosingTVar.getUnderlyingType(), enclosingTArgs.get(i));
+            }
+            enclosing = enclosing.getEnclosingType();
         }
 
         List<AnnotatedTypeParameterBounds> res = new LinkedList<>();
@@ -2229,7 +2262,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 break;
             default:
                 if (ctxtype.getKind().isPrimitive()) {
-                    // See Issue 438. Ignore primitive types for diamond inference - a primitive type
+                    // See Issue 438. Ignore primitive types for diamond inference - a primitive
+                    // type
                     // is never a suitable context anyways.
                 } else {
                     ErrorReporter.errorAbort(
@@ -2383,37 +2417,130 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *     operates, false otherwise
      */
     public boolean isSupportedQualifier(/*@Nullable*/ AnnotationMirror a) {
-        if (a == null) return false;
+        if (a == null) {
+            return false;
+        }
         return AnnotationUtils.containsSameIgnoringValues(
                 this.getQualifierHierarchy().getTypeQualifiers(), a);
     }
 
-    /** Add the annotation {@code clazz} as an alias for the annotation {@code type}. */
-    protected void addAliasedAnnotation(Class<?> alias, AnnotationMirror type) {
-        addAliasedAnnotation(alias.getCanonicalName(), type);
+    /**
+     * Adds the annotation {@code aliasClass} as an alias for the canonical annotation {@code type}
+     * that will be used by the Checker Framework in the alias's place.
+     *
+     * <p>By specifying the alias/canonical relationship using this method, the elements of the
+     * alias are not preserved when the canonical annotation to use is constructed from the alias.
+     * If you want the elements to be copied over as well, please refer to {@link
+     * #addAliasedAnnotation(Class, AnnotationMirror, boolean, String...)}.
+     *
+     * @param aliasClass the class of the aliased annotation
+     * @param type the canonical annotation
+     */
+    protected void addAliasedAnnotation(Class<?> aliasClass, AnnotationMirror type) {
+        addAliasedAnnotation(aliasClass.getCanonicalName(), type);
     }
 
     /**
-     * Add the annotation whose canonical name is given by {@code canonicalName} as an alias for the
-     * annotation {@code type}.
+     * Adds the annotation, whose fully-qualified name is given by {@code aliasName}, as an alias
+     * for the canonical annotation {@code type} that will be used by the Checker Framework in the
+     * alias's place.
+     *
+     * <p>This overload provides a workaround when the alias class cannot be referenced directly. In
+     * general, it is nicer and less error-prone to use the {@link #addAliasedAnnotation(Class,
+     * AnnotationMirror)} version instead.
+     *
+     * @param aliasName the fully-qualified name of the aliased annotation
+     * @param type the canonical annotation
      */
-    protected void addAliasedAnnotation(String canonicalName, AnnotationMirror type) {
-        aliases.put(canonicalName, type);
+    protected void addAliasedAnnotation(String aliasName, AnnotationMirror type) {
+        aliases.put(aliasName, type);
+    }
+
+    /**
+     * Adds the annotation {@code aliasClass} as an alias for the canonical annotation {@code type}
+     * that will be used by the Checker Framework in the alias's place.
+     *
+     * <p>You may specify the copyElements flag to indicate whether you want the elements of the
+     * alias to be copied over when the canonical annotation is constructed. Be careful that the
+     * framework will try to copy the elements by name matching, so make sure that names and types
+     * of the elements to be copied over are exactly the same as the ones in the canonical
+     * annotation. Otherwise, an 'Couldn't find element in annotation' error is raised.
+     *
+     * <p>To facilitate the cases where some of the elements is ignored on purpose when constructing
+     * the canonical annotation, this method also provides a varargs {@code ignorableElements} for
+     * you to explicitly specify the ignoring rules. For example, {@link
+     * org.checkerframework.checker.index.qual.IndexFor @IndexFor} is an alias of {@link
+     * org.checkerframework.checker.index.qual.NonNegative @NonNegative}, but the element "value" of
+     * {@code @IndexFor} should be ignored when constructing {@code @NonNegative}. In the cases
+     * where all elements are ignored, we can simply use {@link #addAliasedAnnotation(Class,
+     * AnnotationMirror)} instead.
+     *
+     * @param aliasClass the class of the aliased annotation
+     * @param type the canonical annotation
+     * @param copyElements a flag that indicates whether you want to copy the elements over when
+     *     getting the alias from the canonical annotation
+     * @param ignorableElements a list of elements that can be safely dropped when the elements are
+     *     being copied over
+     */
+    protected void addAliasedAnnotation(
+            Class<?> aliasClass,
+            AnnotationMirror type,
+            boolean copyElements,
+            String... ignorableElements) {
+        addAliasedAnnotation(aliasClass.getCanonicalName(), type, copyElements, ignorableElements);
+    }
+
+    /**
+     * Adds the annotation, whose fully-qualified name is given by {@code aliasName}, as an alias
+     * for the canonical annotation {@code type} that will be used by the Checker Framework in the
+     * alias's place.
+     *
+     * <p>This overload provides a workaround when the alias class cannot be referenced directly. In
+     * general, it is nicer and less error-prone to use the {@link #addAliasedAnnotation(Class,
+     * AnnotationMirror)} version instead.
+     *
+     * @param aliasName the fully-qualified name of the aliased class
+     * @param type the canonical annotation
+     * @param copyElements a flag that indicates whether we want to copy the elements over when
+     *     getting the alias from the canonical annotation
+     * @param ignorableElements a list of elements that can be safely dropped when the elements are
+     *     being copied over
+     */
+    protected void addAliasedAnnotation(
+            String aliasName,
+            AnnotationMirror type,
+            boolean copyElements,
+            String... ignorableElements) {
+        addAliasedAnnotation(aliasName, type);
+        if (copyElements) {
+            aliasesCopyElements.add(aliasName);
+            aliasesIgnorableElements.put(aliasName, ignorableElements);
+        }
     }
 
     /**
      * Returns the canonical annotation for the passed annotation if it is an alias of a canonical
      * one in the framework. If it is not an alias, the method returns null.
      *
-     * <p>Returns an aliased type of the current one
+     * <p>A canonical annotation is the internal annotation that will be used by the Checker
+     * Framework in the aliased annotation's place.
      *
      * @param a the qualifier to check for an alias
-     * @return the alias or null if none exists
+     * @return the canonical annotation or null if none exists
      */
     public /*@Nullable*/ AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
         TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
         String qualName = elem.getQualifiedName().toString();
-        return aliases.get(qualName);
+        AnnotationMirror canonicalAnno = aliases.get(qualName);
+        if (canonicalAnno != null && a.getElementValues().size() > 0) {
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, canonicalAnno);
+            if (aliasesCopyElements.contains(qualName)) {
+                builder.copyElementValuesFromAnnotation(a, aliasesIgnorableElements.get(qualName));
+            }
+            return builder.build();
+        } else {
+            return canonicalAnno;
+        }
     }
 
     /**
@@ -2426,14 +2553,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Class<? extends Annotation> alias,
             Class<? extends Annotation> annotation,
             AnnotationMirror annotationToUse) {
-        String aliasName = alias.getCanonicalName();
-        /*@Interned*/ String annotationName = annotation.getCanonicalName();
-        Set</*@Interned*/ String> set = new HashSet<>();
-        if (declAliases.containsKey(annotationName)) {
-            set.addAll(declAliases.get(annotationName).second);
+        String annotationName = annotation.getCanonicalName();
+        Set<Class<? extends Annotation>> set = new HashSet<>();
+        if (declAliases.containsKey(annotation)) {
+            set.addAll(declAliases.get(annotation).second);
         }
-        set.add(aliasName.intern());
-        declAliases.put(annotationName, Pair.of(annotationToUse, set));
+        set.add(alias);
+        declAliases.put(annotation, Pair.of(annotationToUse, set));
     }
 
     /**
@@ -2906,8 +3032,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     @Override
     public final AnnotationMirror getDeclAnnotation(Element elt, Class<? extends Annotation> anno) {
-        String annoName = anno.getCanonicalName().intern();
-        return getDeclAnnotation(elt, annoName, true);
+        return getDeclAnnotation(elt, anno, true);
     }
 
     /**
@@ -2929,8 +3054,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public final AnnotationMirror getDeclAnnotationNoAliases(
             Element elt, Class<? extends Annotation> anno) {
-        String annoName = anno.getCanonicalName().intern();
-        return getDeclAnnotation(elt, annoName, false);
+        return getDeclAnnotation(elt, anno, false);
     }
 
     /**
@@ -2962,28 +3086,30 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * overridden method.
      *
      * @param elt the element to retrieve the annotation from
-     * @param annoName the class name of the annotation to retrieve
+     * @param annoClass the class the annotation to retrieve
      * @param checkAliases whether to return an annotation mirror for an alias of the requested
      *     annotation class name
      * @return the annotation mirror for the requested annotation or null if not found
      */
     private AnnotationMirror getDeclAnnotation(
-            Element elt, /*@Interned*/ String annoName, boolean checkAliases) {
+            Element elt, Class<? extends Annotation> annoClass, boolean checkAliases) {
         Set<AnnotationMirror> declAnnos = getDeclAnnotations(elt);
 
         for (AnnotationMirror am : declAnnos) {
-            if (AnnotationUtils.areSameByName(am, annoName)) {
+            if (AnnotationUtils.areSameByClass(am, annoClass)) {
                 return am;
             }
         }
         // Look through aliases.
         if (checkAliases) {
-            Pair<AnnotationMirror, Set</*@Interned*/ String>> aliases = declAliases.get(annoName);
+            Pair<AnnotationMirror, Set<Class<? extends Annotation>>> aliases =
+                    declAliases.get(annoClass);
             if (aliases != null) {
-                for (String alias : aliases.second) {
-                    AnnotationMirror declAnnotation = getDeclAnnotation(elt, alias, false);
-                    if (declAnnotation != null) {
-                        return aliases.first;
+                for (Class<? extends Annotation> alias : aliases.second) {
+                    for (AnnotationMirror am : declAnnos) {
+                        if (AnnotationUtils.areSameByClass(am, alias)) {
+                            return aliases.first;
+                        }
                     }
                 }
             }
@@ -3377,8 +3503,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             return (AnnotatedDeclaredType) t;
                         }
                     }
-                    // We should never reach here: assertFunctionalInterface performs the same check and
-                    // would have raised an error already.
+                    // We should never reach here: assertFunctionalInterface performs the same check
+                    // and would have raised an error already.
                     ErrorReporter.errorAbort(
                             String.format(
                                     "Expected the type of a cast tree in an assignment context to contain a functional interface bound. "
@@ -3560,6 +3686,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     final AnnotatedTypeMirror newArg;
                     if (types.isSameType(wildcardUbType, correctArgType)) {
                         newArg = wildcardType.getExtendsBound().deepCopy();
+                    } else if (correctArgType.getKind() == TypeKind.TYPEVAR) {
+                        newArg = this.toAnnotatedType(correctArgType, false);
+                        AnnotatedTypeVariable newArgAsTypeVar = (AnnotatedTypeVariable) newArg;
+                        newArgAsTypeVar
+                                .getUpperBound()
+                                .replaceAnnotations(
+                                        wildcardType.getExtendsBound().getAnnotations());
+                        newArgAsTypeVar
+                                .getLowerBound()
+                                .replaceAnnotations(wildcardType.getSuperBound().getAnnotations());
                     } else {
                         newArg = this.toAnnotatedType(correctArgType, false);
                         newArg.replaceAnnotations(wildcardType.getExtendsBound().getAnnotations());

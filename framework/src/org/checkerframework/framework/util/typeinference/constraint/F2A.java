@@ -15,7 +15,7 @@ public class F2A extends AFConstraint {
 
     @Override
     public TUConstraint toTUConstraint() {
-        return new TSubU((AnnotatedTypeVariable) formalParameter, argument);
+        return new TSubU((AnnotatedTypeVariable) formalParameter, argument, true);
     }
 
     @Override

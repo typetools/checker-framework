@@ -10,7 +10,7 @@ class ProcessBuilding2 {
     }
 
     public void strArraysNullable(@Nullable String[] parameter) {
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         new ProcessBuilder(parameter);
     }
 
@@ -19,7 +19,7 @@ class ProcessBuilding2 {
     }
 
     public void strVarargNullable(@Nullable String... parameter) {
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         new ProcessBuilder(parameter);
     }
 }

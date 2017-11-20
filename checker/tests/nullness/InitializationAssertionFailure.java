@@ -1,4 +1,3 @@
-
 import java.io.*;
 
 // An assertion failure occurred after CFAbstractTransfer.initialStore inserted

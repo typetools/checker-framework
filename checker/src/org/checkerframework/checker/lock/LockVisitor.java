@@ -32,6 +32,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
@@ -177,7 +178,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 }
             }
 
-            if (!issueGSwithMRLWarning) { // Skip this loop if we have already decided to issue the warning.
+            if (!issueGSwithMRLWarning) { // Skip loop if we already decided to issue the warning.
                 for (VariableTree vt : node.getParameters()) {
                     if (atypeFactory
                             .getAnnotatedType(vt)
@@ -193,7 +194,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             }
         }
 
-        // Issue an error if a non-constructor method definition has a return type of @GuardSatisfied without an index.
+        // Issue an error if a non-constructor method definition has a return type of
+        // @GuardSatisfied without an index.
         if (methodElement != null && methodElement.getKind() != ElementKind.CONSTRUCTOR) {
             AnnotatedTypeMirror returnTypeATM = atypeFactory.getAnnotatedType(node).getReturnType();
 
@@ -275,7 +277,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 methodCallReceiver.getEffectiveAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
 
         // If the receiver actual parameter has type @GuardSatisfied, skip the subtype check.
-        // Consider only a @GuardSatisfied primary annotation - hence use primaryGb instead of effectiveGb.
+        // Consider only a @GuardSatisfied primary annotation - hence use primaryGb instead of
+        // effectiveGb.
         if (primaryGb != null
                 && AnnotationUtils.areSameByClass(primaryGb, checkerGuardSatisfiedClass)) {
             AnnotationMirror primaryGbOnMethodDefinition =
@@ -367,12 +370,14 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 checkLock(valueTree, valueType.getAnnotation(GuardedBy.class));
                 return;
             } else if (valueType.hasAnnotation(GuardSatisfied.class)) {
-                // TODO: Find a cleaner, non-abstraction-breaking way to know whether method actual parameters are being assigned to formal parameters.
+                // TODO: Find a cleaner, non-abstraction-breaking way to know whether method actual
+                // parameters are being assigned to formal parameters.
 
                 if (!errorKey.equals("argument.type.incompatible")) {
-                    // If both @GuardSatisfied have no index, the assignment is not allowed because the LHS and RHS expressions
-                    // may be guarded by different lock expressions.  The assignment is allowed when matching a formal
-                    // parameter to an actual parameter (see the if block above).
+                    // If both @GuardSatisfied have no index, the assignment is not allowed because
+                    // the LHS and RHS expressions may be guarded by different lock expressions.
+                    // The assignment is allowed when matching a formal parameter to an actual
+                    // parameter (see the if block above).
 
                     int varTypeGuardSatisfiedIndex = atypeFactory.getGuardSatisfiedIndex(varType);
                     int valueTypeGuardSatisfiedIndex =
@@ -385,16 +390,21 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                                 valueTree);
                     }
                 } else {
-                    // The RHS can be @GuardSatisfied with a different index when matching method formal parameters to actual parameters.
-                    // The actual matching is done in LockVisitor.visitMethodInvocation and a guardsatisfied.parameters.must.match error
+                    // The RHS can be @GuardSatisfied with a different index when matching method
+                    // formal parameters to actual parameters.
+                    // The actual matching is done in LockVisitor.visitMethodInvocation and a
+                    // guardsatisfied.parameters.must.match error
                     // is issued if the parameters do not match exactly.
-                    // Do nothing here, since there is no precondition to be checked on a @GuardSatisfied parameter.
-                    // Note: this matching of a @GS(index) to a @GS(differentIndex) is *only* allowed when matching method formal parameters to actual parameters.
+                    // Do nothing here, since there is no precondition to be checked on a
+                    // @GuardSatisfied parameter.
+                    // Note: this matching of a @GS(index) to a @GS(differentIndex) is *only*
+                    // allowed when matching method formal parameters to actual parameters.
 
                     return;
                 }
             } else if (!atypeFactory.getTypeHierarchy().isSubtype(valueType, varType)) {
-                // Special case: replace the @GuardSatisfied primary annotation on the LHS with @GuardedBy({}) and see if it type checks.
+                // Special case: replace the @GuardSatisfied primary annotation on the LHS with
+                // @GuardedBy({}) and see if it type checks.
 
                 AnnotatedTypeMirror varType2 =
                         varType.deepCopy(); // TODO: Would shallowCopy be sufficient?
@@ -412,9 +422,14 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     public Void visitMemberSelect(MemberSelectTree tree, Void p) {
         if (atypeFactory.getNodeForTree(tree) instanceof FieldAccessNode) {
             AnnotatedTypeMirror atmOfReceiver = atypeFactory.getAnnotatedType(tree.getExpression());
-            AnnotationMirror gb =
-                    atmOfReceiver.getEffectiveAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
-            checkLock(tree.getExpression(), gb);
+            // The atmOfReceiver for "void.class" is TypeKind.VOID, which isn't annotated so avoid
+            // it.
+            if (atmOfReceiver.getKind() != TypeKind.VOID) {
+                AnnotationMirror gb =
+                        atmOfReceiver.getEffectiveAnnotationInHierarchy(
+                                atypeFactory.GUARDEDBYUNKNOWN);
+                checkLock(tree.getExpression(), gb);
+            }
         }
 
         return super.visitMemberSelect(tree, p);
@@ -467,8 +482,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             MethodTree overriderTree,
             AnnotatedDeclaredType enclosingType,
             AnnotatedExecutableType overridden,
-            AnnotatedDeclaredType overriddenType,
-            Void p) {
+            AnnotatedDeclaredType overriddenType) {
 
         boolean isValid = true;
 
@@ -490,7 +504,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     null);
         }
 
-        return super.checkOverride(overriderTree, enclosingType, overridden, overriddenType, p)
+        return super.checkOverride(overriderTree, enclosingType, overridden, overriddenType)
                 && isValid;
     }
 
@@ -561,17 +575,20 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         if (methodElement != null) {
-            // Handle releasing of explicit locks. Verify that the lock expression is effectively final.
+            // Handle releasing of explicit locks. Verify that the lock expression is effectively
+            // final.
             ExpressionTree recvTree = getReceiverTree(node);
 
             ensureReceiverOfExplicitUnlockCallIsEffectivelyFinal(node, methodElement, recvTree);
 
-            // Handle acquiring of explicit locks. Verify that the lock expression is effectively final.
+            // Handle acquiring of explicit locks. Verify that the lock expression is effectively
+            // final.
 
-            // If the method causes expression "this" or "#1" to be locked, verify that those expressions are effectively final.
-            // TODO: generalize to any expression. This is currently designed only to support methods in ReentrantLock
-            // and ReentrantReadWriteLock (which use the "this" expression), as well as Thread.holdsLock (which uses
-            // the "#1" expression).
+            // If the method causes expression "this" or "#1" to be locked, verify that those
+            // expressions are effectively final.  TODO: generalize to any expression. This is
+            // currently designed only to support methods in ReentrantLock and
+            // ReentrantReadWriteLock (which use the "this" expression), as well as Thread.holdsLock
+            // (which uses the "#1" expression).
 
             AnnotationMirror ensuresLockHeldAnno =
                     atypeFactory.getDeclAnnotation(methodElement, EnsuresLockHeld.class);
@@ -594,7 +611,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
             for (String expr : expressions) {
                 if (expr.equals("this")) {
-                    // recvTree will be null for implicit this, or class name receivers. But they are also final. So nothing to be checked for them.
+                    // recvTree will be null for implicit this, or class name receivers. But they
+                    // are also final. So nothing to be checked for them.
                     if (recvTree != null) {
                         ensureExpressionIsEffectivelyFinal(recvTree);
                     }
@@ -607,7 +625,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             }
         }
 
-        // Check that matching @GuardSatisfied(index) on a method's formal receiver/parameters matches
+        // Check that matching @GuardSatisfied(index) on a method's formal receiver/parameters
+        // matches
         // those in corresponding locations on the method call site.
 
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
@@ -617,9 +636,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         List<AnnotatedTypeMirror> requiredArgs =
                 AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());
 
-        // Index on @GuardSatisfied at each location. -1 when no @GuardSatisfied annotation was present.
+        // Index on @GuardSatisfied at each location. -1 when no @GuardSatisfied annotation was
+        // present.
         // Note that @GuardSatisfied with no index is normally represented as having index -1.
-        // We would like to ignore a @GuardSatisfied with no index for these purposes, so if it is encountered we leave its index as -1.
+        // We would like to ignore a @GuardSatisfied with no index for these purposes, so if it is
+        // encountered we leave its index as -1.
         // The first element of the array is reserved for the receiver.
         int guardSatisfiedIndex[] =
                 new int[requiredArgs.size() + 1]; // + 1 for the receiver parameter type
@@ -677,8 +698,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             if (guardSatisfiedIndex[i] != -1) {
                 for (int j = i + 1; j < guardSatisfiedIndex.length; j++) {
                     if (guardSatisfiedIndex[i] == guardSatisfiedIndex[j]) {
-                        // The @GuardedBy/@GuardSatisfied/@GuardedByUnknown/@GuardedByBottom annotations
-                        // must be identical on the corresponding actual parameters.
+                        // The @GuardedBy/@GuardSatisfied/@GuardedByUnknown/@GuardedByBottom
+                        // annotations must be identical on the corresponding actual parameters.
                         AnnotationMirror arg1Anno = passedArgAnnotations.get(i);
                         AnnotationMirror arg2Anno = passedArgAnnotations.get(j);
                         if (arg1Anno != null && arg2Anno != null) {
@@ -689,8 +710,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                                             arg2Anno, checkerGuardSatisfiedClass)) {
                                 if (atypeFactory.getGuardSatisfiedIndex(arg1Anno) == -1
                                         && atypeFactory.getGuardSatisfiedIndex(arg2Anno) == -1) {
-                                    // Generally speaking, two @GuardSatisfied annotations with no index are incomparable.
-                                    // TODO: If they come from the same variable, they are comparable.  Fix and add a test case.
+                                    // Generally speaking, two @GuardSatisfied annotations with no
+                                    // index are incomparable.
+                                    // TODO: If they come from the same variable, they are
+                                    // comparable.  Fix and add a test case.
                                     bothAreGSwithNoIndex = true;
                                 }
                             }
@@ -749,7 +772,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             ExecutableElement methodElement,
             ExpressionTree lockExpression) {
         if (lockExpression == null) {
-            // Implicit this, or class name receivers, are null. But they are also final. So nothing to be checked for them.
+            // Implicit this, or class name receivers, are null. But they are also final. So nothing
+            // to be checked for them.
             return;
         }
 
@@ -763,7 +787,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         javax.lang.model.util.Types types = processingEnvironment.getTypeUtils();
 
-        // TODO: make a type declaration annotation for this rather than looking for the Lock.unlock() method explicitly.
+        // TODO: make a type declaration annotation for this rather than looking for the
+        // Lock.unlock() method explicitly.
         TypeMirror lockInterfaceTypeMirror =
                 TypesUtils.typeFromClass(
                         types, processingEnvironment.getElementUtils(), Lock.class);
@@ -794,7 +819,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         javax.lang.model.util.Types types = processingEnvironment.getTypeUtils();
 
-        // TODO: make a type declaration annotation for this rather than looking for Lock.class explicitly.
+        // TODO: make a type declaration annotation for this rather than looking for Lock.class
+        // explicitly.
         TypeMirror lockInterfaceTypeMirror =
                 TypesUtils.typeFromClass(
                         types, processingEnvironment.getElementUtils(), Lock.class);
@@ -849,7 +875,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // will always be issued if a tree kind is not recognized.
         // Only the most common tree kinds for synchronized expressions are supported.
 
-        // Traverse the expression using 'tree', as 'lockExpressionTree' is used for error reporting.
+        // Traverse the expression using 'tree', as 'lockExpressionTree' is used for error
+        // reporting.
         ExpressionTree tree = lockExpressionTree;
 
         while (true) {
@@ -1002,7 +1029,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     private TreePath getPathForLocalVariableRetrieval(TreePath path) {
         assert path.getLeaf() instanceof AnnotationTree;
 
-        // TODO: handle annotations in trees of kind NEW_CLASS (and add test coverage for this scenario).
+        // TODO: handle annotations in trees of kind NEW_CLASS (and add test coverage for this
+        // scenario).
         // Currently an annotation in such a tree, such as "new @GuardedBy("foo") Object()",
         // results in a constructor.invocation.invalid error. This must be fixed first.
 
@@ -1034,7 +1062,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             case NEW_ARRAY:
             case TYPE_PARAMETER:
                 // TODO: visitAnnotation does not currently visit annotations on wildcard bounds.
-                // Address this for the Lock Checker somehow and enable these, as well as the corresponding test cases in ChapterExamples.java
+                // Address this for the Lock Checker somehow and enable these, as well as the
+                // corresponding test cases in ChapterExamples.java
                 // case EXTENDS_WILDCARD:
                 // case SUPER_WILDCARD:
                 return path;
@@ -1276,14 +1305,15 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     }
                     return lockExpression;
                 } else {
-                    // TODO: The proper way to do this is to call flowExprContext.copyChangeToParsingMemberOfReceiver to set the
-                    // receiver to the <self> expression, and then call FlowExpressionParseUtil.parse on the
-                    // remaining expression string with the new flow expression context. However, this currently
-                    // results in a FlowExpressions.Receiver that has a different hash code than if
-                    // the following flow expression is parsed directly, which results in our inability
-                    // to check that a lock expression is held as it does not match anything in the store
-                    // due to the hash code mismatch.
-                    // For now, convert the "<self>" portion to the node's string representation, and parse
+                    // TODO: The proper way to do this is to call
+                    // flowExprContext.copyChangeToParsingMemberOfReceiver to set the receiver to
+                    // the <self> expression, and then call FlowExpressionParseUtil.parse on the
+                    // remaining expression string with the new flow expression context. However,
+                    // this currently results in a FlowExpressions.Receiver that has a different
+                    // hash code than if the following flow expression is parsed directly, which
+                    // results in our inability to check that a lock expression is held as it does
+                    // not match anything in the store due to the hash code mismatch.  For now,
+                    // convert the "<self>" portion to the node's string representation, and parse
                     // the entire string:
 
                     lockExpression.lockExpression =

@@ -1,6 +1,5 @@
 import java.util.Date;
 
-@SuppressWarnings("upperbound")
 public class ArrayLengthLBC {
 
     public static Date[] add_date(Date[] dates, Date new_date) {
@@ -11,4 +10,4 @@ public class ArrayLengthLBC {
         return (new_dates_cast);
     }
 }
-//a comment
+// a comment

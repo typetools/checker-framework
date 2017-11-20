@@ -70,8 +70,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             MethodTree overriderTree,
             AnnotatedTypeMirror.AnnotatedDeclaredType enclosingType,
             AnnotatedTypeMirror.AnnotatedExecutableType overridden,
-            AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType,
-            Void p) {
+            AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType) {
         // Method override validity is checked manually by the type factory during visitation
         return true;
     }
@@ -185,16 +184,19 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
     @Override
     public Void visitMethod(MethodTree node, Void p) {
-        // TODO: If the type we're in is a polymorphic (over effect qualifiers) type, the receiver must be @PolyUI.
-        //       Otherwise a "non-polymorphic" method of a polymorphic type could be called on a UI instance, which then
-        //       gets a Safe reference to itself (unsound!) that it can then pass off elsewhere (dangerous!).  So all
-        //       receivers in methods of a @PolyUIType must be @PolyUI.
-        // TODO: What do we do then about classes that inherit from a concrete instantiation?  If it subclasses a Safe
-        //       instantiation, all is well.  If it subclasses a UI instantiation, then the receivers should probably
-        //       be @UI in both new and override methods, so calls to polymorphic methods of the parent class will work
-        //       correctly.  In which case for proving anything, the qualifier on sublasses of UI instantiations would
-        //       always have to be @UI... Need to write down |- t for this system!  And the judgments for method overrides
-        //       and inheritance!  Those are actually the hardest part of the system.
+        // TODO: If the type we're in is a polymorphic (over effect qualifiers) type, the receiver
+        // must be @PolyUI.  Otherwise a "non-polymorphic" method of a polymorphic type could be
+        // called on a UI instance, which then gets a Safe reference to itself (unsound!) that it
+        // can then pass off elsewhere (dangerous!).  So all receivers in methods of a @PolyUIType
+        // must be @PolyUI.
+
+        // TODO: What do we do then about classes that inherit from a concrete instantiation?  If it
+        // subclasses a Safe instantiation, all is well.  If it subclasses a UI instantiation, then
+        // the receivers should probably be @UI in both new and override methods, so calls to
+        // polymorphic methods of the parent class will work correctly.  In which case for proving
+        // anything, the qualifier on sublasses of UI instantiations would always have to be
+        // @UI... Need to write down |- t for this system!  And the judgments for method overrides
+        // and inheritance!  Those are actually the hardest part of the system.
 
         ExecutableElement methElt = TreeUtils.elementFromDeclaration(node);
         if (debugSpew) {
@@ -220,21 +222,26 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             checker.report(Result.warning("effects.redundant.uitype"), node);
         }
 
-        // TODO: Report an error for polymorphic method bodies??? Until we fix the receiver defaults, it won't really be correct
+        // TODO: Report an error for polymorphic method bodies??? Until we fix the receiver
+        // defaults, it won't really be correct
         @SuppressWarnings("unused") // call has side-effects
         Effect.EffectRange range =
                 atypeFactory.findInheritedEffectRange(
                         ((TypeElement) methElt.getEnclosingElement()), methElt, true, node);
-        if (targetUIP == null && targetSafeP == null && targetPolyP == null) {
-            // implicitly annotate this method with the LUB of the effects of the methods it overrides
-            // atypeFactory.fromElement(methElt).addAnnotation(range != null ? range.min.getAnnot() : (isUIType(((TypeElement)methElt.getEnclosingElement())) ? UI.class : AlwaysSafe.class));
-            // TODO: This line does nothing! AnnotatedTypeMirror.addAnnotation
-            // silently ignores non-qualifier annotations!
-            // System.err.println("ERROR: TREE ANNOTATOR SHOULD HAVE ADDED EXPLICIT ANNOTATION! ("+node.getName()+")");
-            atypeFactory
-                    .fromElement(methElt)
-                    .addAnnotation(atypeFactory.getDeclaredEffect(methElt).getAnnot());
-        }
+        // if (targetUIP == null && targetSafeP == null && targetPolyP == null) {
+        // implicitly annotate this method with the LUB of the effects of the methods it
+        // overrides
+        // atypeFactory.fromElement(methElt).addAnnotation(range != null ? range.min.getAnnot()
+        // : (isUIType(((TypeElement)methElt.getEnclosingElement())) ? UI.class :
+        // AlwaysSafe.class));
+        // TODO: This line does nothing! AnnotatedTypeMirror.addAnnotation
+        // silently ignores non-qualifier annotations!
+        // System.err.println("ERROR: TREE ANNOTATOR SHOULD HAVE ADDED EXPLICIT ANNOTATION! ("
+        //     +node.getName()+")");
+        // atypeFactory
+        //         .fromElement(methElt)
+        //         .addAnnotation(atypeFactory.getDeclaredEffect(methElt).getAnnot());
+        // }
 
         // We hang onto the current method here for ease.  We back up the old
         // current method because this code is reentrant when we traverse methods of an inner class
@@ -242,7 +249,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         // effStack.push(targetSafeP != null ? new Effect(AlwaysSafe.class) :
         //                (targetPolyP != null ? new Effect(PolyUI.class) :
         //                   (targetUIP != null ? new Effect(UI.class) :
-        //                      (range != null ? range.min : (isUIType(((TypeElement)methElt.getEnclosingElement())) ? new Effect(UI.class) : new Effect(AlwaysSafe.class))))));
+        //                      (range != null ? range.min :
+        // (isUIType(((TypeElement)methElt.getEnclosingElement())) ? new Effect(UI.class) : new
+        // Effect(AlwaysSafe.class))))));
         effStack.push(atypeFactory.getDeclaredEffect(methElt));
         if (debugSpew) {
             System.err.println(
@@ -257,14 +266,15 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
-        //TODO: Same effect checks as for methods
+        // TODO: Same effect checks as for methods
         return super.visitMemberSelect(node, p);
     }
 
     @Override
     public void processClassTree(ClassTree node) {
         // TODO: Check constraints on this class decl vs. parent class decl., and interfaces
-        // TODO: This has to wait for now: maybe this will be easier with the isValidUse on the TypeFactory
+        // TODO: This has to wait for now: maybe this will be easier with the isValidUse on the
+        // TypeFactory
         // AnnotatedTypeMirror.AnnotatedDeclaredType atype = atypeFactory.fromClass(node);
 
         // Push a null method and UI effect onto the stack for static field initialization

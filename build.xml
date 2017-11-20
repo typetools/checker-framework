@@ -189,4 +189,16 @@
     </exec>
   </target>
 
+  <target name="clean-tags"
+          description="Remove TAGS files">
+    <exec executable="rm" failonerror="false">
+      <arg value="-f"/>
+      <arg value="checker/TAGS"/>
+      <arg value="dataflow/TAGS"/>
+      <arg value="framework/TAGS"/>
+      <arg value="javacutil/TAGS"/>
+      <arg value="docs/manual/TAGS"/>
+    </exec>
+  </target>
+
 </project>

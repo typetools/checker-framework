@@ -9,6 +9,6 @@ import org.checkerframework.common.value.qual.BottomVal;
 /** This class tests that errors issued on the same tree are sorted by checker. */
 public class OrderOfCheckers {
     void test(int[] y) {
-        @GTENegativeOne @UpperBoundBottom @SearchIndexBottom @BottomVal int @BottomVal @SameLenBottom [] x = y;
+        @GTENegativeOne @UpperBoundBottom @SearchIndexBottom int @BottomVal @SameLenBottom [] x = y;
     }
 }

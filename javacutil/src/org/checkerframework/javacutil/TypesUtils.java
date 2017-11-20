@@ -166,6 +166,21 @@ public final class TypesUtils {
     /**
      * Returns true iff the arguments are both the same primitive types.
      *
+     * <p>This is needed because class {@code Type.ClassType} does not override equals.
+     *
+     * @return whether the arguments are the same primitive types
+     */
+    public static boolean areSameDeclaredTypes(Type.ClassType t1, Type.ClassType t2) {
+        // Do a cheaper test first
+        if (t1.tsym.name != t2.tsym.name) {
+            return false;
+        }
+        return t1.toString().equals(t1.toString());
+    }
+
+    /**
+     * Returns true iff the arguments are both the same primitive types.
+     *
      * @return whether the arguments are the same primitive types
      */
     public static boolean areSamePrimitiveTypes(TypeMirror left, TypeMirror right) {

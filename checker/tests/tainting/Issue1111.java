@@ -1,6 +1,7 @@
 // Test case for Issue1111
 // https://github.com/typetools/checker-framework/issues/1111
 // Addtional test case in framework/tests/all-systems/Issue1111.java
+
 import java.util.List;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
@@ -10,7 +11,7 @@ public class Issue1111 {
     }
 
     void foo2(Box<@Untainted ? super Integer> box, List<Integer> list) {
-        //:: error: (argument.type.incompatible)
+        // :: error: (argument.type.incompatible)
         bar(box, list);
     }
 

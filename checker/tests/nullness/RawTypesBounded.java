@@ -1,77 +1,233 @@
-import org.checkerframework.checker.nullness.qual.Nullable;
+// Note that this file is a near duplicate in /nullness and /nullness-uninit
 
-class Generic<G extends @Nullable Object> {}
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.*;
 
-class MyClass extends Generic<MyClass> {}
+@org.checkerframework.framework.qual.DefaultQualifier(Nullable.class)
+class RawTypesBounded {
 
-class BoundedGeneric<B extends @Nullable CharSequence> {}
+    class Bad {
+        @NonNull String field;
 
-class RawTypes {
-    Generic rawReturn() {
-        return new Generic();
+        public Bad() {
+            // :: error: (method.invocation.invalid)
+            this.init(); // error
+            // :: error: (method.invocation.invalid)
+            init(); // error
+
+            this.field = "field"; // valid
+            // :: error: (assignment.type.incompatible)
+            this.field = null; // error
+            field = "field"; // valid
+            // :: error: (assignment.type.incompatible)
+            field = null; // error
+        }
+
+        void init() {
+            output(this.field.length()); // valid
+        }
     }
 
-    Generic rawField = new Generic();
+    class A {
+        @NonNull String field;
 
-    void use() {
-        Generic rawLocal = new Generic<String>();
-        Generic<?> generic1 = rawReturn();
-        Generic<?> generic2 = rawField;
-        Generic<?> generic3 = rawLocal;
-    }
-}
+        public A() {
+            this.field = "field"; // valid
+            field = "field"; // valid
+            this.init(); // valid
+            init(); // valid
+        }
 
-class TestBounded {
-    BoundedGeneric rawReturn() {
-        return new BoundedGeneric<>();
-    }
+        public void init(@Raw @UnknownInitialization A this) {
+            // :: error: (dereference.of.nullable)
+            output(this.field.length());
+        }
 
-    BoundedGeneric rawField = new BoundedGeneric();
+        public void initExpl2(@Raw @UnknownInitialization A this) {
+            // :: error: (argument.type.incompatible)
+            output(this.field);
+        }
 
-    void useWildCard() {
-        BoundedGeneric rawLocal = new BoundedGeneric<String>();
-        BoundedGeneric<?> generic1 = rawReturn();
-        BoundedGeneric<?> generic2 = rawField;
-        BoundedGeneric<?> generic3 = rawLocal;
-    }
+        public void initImpl1(@Raw @UnknownInitialization A this) {
+            // :: error: (dereference.of.nullable)
+            output(field.length());
+        }
 
-    void useBoundedWildCard() {
-        BoundedGeneric rawLocal = new BoundedGeneric<String>();
-        //:: warning: [unchecked] unchecked conversion
-        BoundedGeneric<? extends Object> generic1 = rawReturn();
-        //:: warning: [unchecked] unchecked conversion
-        BoundedGeneric<? extends Object> generic2 = rawField;
-        //:: warning: [unchecked] unchecked conversion
-        BoundedGeneric<? extends Object> generic3 = rawLocal;
+        public void initImpl2(@Raw @UnknownInitialization A this) {
+            // :: error: (argument.type.incompatible)
+            output(field);
+        }
     }
 
-    void useBoundedWildCard2() {
-        BoundedGeneric rawLocal = new BoundedGeneric<String>();
-        //:: warning: [unchecked] unchecked conversion
-        BoundedGeneric<? extends CharSequence> generic1 = rawReturn();
-        //:: warning: [unchecked] unchecked conversion
-        BoundedGeneric<? extends CharSequence> generic2 = rawField;
-        //:: warning: [unchecked] unchecked conversion
-        BoundedGeneric<? extends CharSequence> generic3 = rawLocal;
+    class B extends A {
+        @NonNull String otherField;
+
+        public B() {
+            super();
+            // :: error: (assignment.type.incompatible)
+            this.otherField = null; // error
+            this.otherField = "otherField"; // valid
+        }
+
+        @Override
+        public void init(@Raw @UnknownInitialization B this) {
+            // :: error: (dereference.of.nullable)
+            output(this.field.length()); // error (TODO: substitution)
+            super.init(); // valid
+        }
+
+        public void initImpl1(@Raw @UnknownInitialization B this) {
+            // :: error: (dereference.of.nullable)
+            output(field.length()); // error (TODO: substitution)
+        }
+
+        public void initExpl2(@Raw @UnknownInitialization B this) {
+            // :: error: (dereference.of.nullable)
+            output(this.otherField.length()); // error
+        }
+
+        public void initImpl2(@Raw @UnknownInitialization B this) {
+            // :: error: (dereference.of.nullable)
+            output(otherField.length()); // error
+        }
+
+        void other() {
+            init(); // valid
+            this.init(); // valid
+        }
+
+        void otherRaw(@Raw @UnknownInitialization B this) {
+            init(); // valid
+            this.init(); // valid
+        }
     }
 
-    void useTypeArg() {
-        BoundedGeneric rawLocal = new BoundedGeneric<String>();
-        //:: warning: [unchecked] unchecked conversion
-        BoundedGeneric<String> generic1 = rawReturn();
-        //:: warning: [unchecked] unchecked conversion
-        BoundedGeneric<String> generic2 = rawField;
-        //:: warning: [unchecked] unchecked conversion
-        BoundedGeneric<String> generic3 = rawLocal;
+    class C extends B {
+
+        @NonNull String[] strings;
+
+        @Override
+        public void init(@Raw @UnknownInitialization C this) {
+            // :: error: (dereference.of.nullable)
+            output(this.strings.length); // error
+            System.out.println(); // valid
+        }
     }
 
-    void useAnnotatedTypeArg() {
-        BoundedGeneric rawLocal = new BoundedGeneric<String>();
-        //:: warning: [unchecked] unchecked conversion
-        BoundedGeneric<@Nullable String> generic1 = rawReturn();
-        //:: warning: [unchecked] unchecked conversion
-        BoundedGeneric<@Nullable String> generic2 = rawField;
-        //:: warning: [unchecked] unchecked conversion
-        BoundedGeneric<@Nullable String> generic3 = rawLocal;
+    // To test whether the argument is @NonNull and @NonRaw
+    static void output(@NonNull Object o) {}
+
+    class D extends C {
+        @Override
+        public void init(@Raw @UnknownInitialization D this) {
+            this.field = "s";
+            output(this.field.length());
+        }
+    }
+
+    class MyTest {
+        int i;
+
+        MyTest(int i) {
+            this.i = i;
+        }
+
+        void myTest(@Raw @UnknownInitialization MyTest this) {
+            i++;
+        }
+    }
+
+    class AllFieldsInitialized {
+        long elapsedMillis = 0;
+        long startTime = 0;
+
+        // If all fields have an initializer, then the type of "this"
+        // should still not be non-raw (there might be uninitilized subclasses)
+        public AllFieldsInitialized() {
+            // :: error: (method.invocation.invalid)
+            nonRawMethod();
+        }
+
+        public void nonRawMethod() {}
+    }
+
+    class AFSIICell {
+        AllFieldsSetInInitializer afsii;
+    }
+
+    class AllFieldsSetInInitializer {
+        long elapsedMillis;
+        long startTime;
+
+        public AllFieldsSetInInitializer() {
+            elapsedMillis = 0;
+            // :: error: (method.invocation.invalid)
+            nonRawMethod();
+            startTime = 0;
+            // :: error: (method.invocation.invalid)
+            nonRawMethod(); // still error (subclasses...)
+        }
+
+        public AllFieldsSetInInitializer(boolean b) {
+            // :: error: (method.invocation.invalid)
+            nonRawMethod();
+        }
+
+        public void nonRawMethod() {}
+    }
+
+    class ConstructorInvocations {
+        int v;
+
+        public ConstructorInvocations(int v) {
+            this.v = v;
+        }
+
+        public ConstructorInvocations() {
+            this(0);
+            // :: error: (method.invocation.invalid)
+            nonRawMethod();
+        }
+
+        public void nonRawMethod() {}
+    }
+
+    class MethodAccess {
+        public MethodAccess() {
+            @NonNull String s = string();
+        }
+
+        public @NonNull String string(@Raw @UnknownInitialization MethodAccess this) {
+            return "nonnull";
+        }
+    }
+
+    void cast(@Raw @UnknownInitialization Object... args) {
+
+        @SuppressWarnings("rawtypes")
+        // :: error: (assignment.type.incompatible)
+        Object[] argsNonRaw1 = args;
+
+        @SuppressWarnings("cast")
+        Object[] argsNonRaw2 = (Object[]) args;
+    }
+
+    // default qualifier is @Nullable, so this is OK.
+    class RawAfterConstructorBad {
+        Object o;
+
+        RawAfterConstructorBad() {}
+    }
+
+    class RawAfterConstructorOK1 {
+        @Nullable Object o;
+
+        RawAfterConstructorOK1() {}
+    }
+
+    class RawAfterConstructorOK2 {
+        int a;
+
+        RawAfterConstructorOK2() {}
     }
 }

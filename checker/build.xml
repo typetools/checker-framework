@@ -94,6 +94,8 @@
         <delete file="${checker.lib}"/>
         <delete file="${checker.qual.lib}"/>
         <delete file="${checker.qual.sources.lib}"/>
+        <delete file="${checker.qual7.lib}"/>
+        <delete file="${checker.qual7.sources.lib}"/>
         <delete file="${checker.compat.qual.lib}"/>
         <delete file="${checker.compat.qual.sources.lib}"/>
         <delete file="${checker.sources.lib}"/>
@@ -107,6 +109,19 @@
 
         <delete dir="${dist}"/>
         <delete dir="dist" failonerror="false"/>
+
+        <ant dir="${checkerframework}">
+            <target name="clean-tags"/>
+        </ant>
+
+        <exec executable="make" dir="${docs.loc}/manual" failonerror="true">
+          <arg value="very_clean"/>
+        </exec>
+
+        <exec executable="make" dir="${dataflow.loc}/manual" failonerror="true">
+          <arg value="clean"/>
+        </exec>
+
     </target>
 
     <target name="clean-nojar" description="Remove generated class files, but not the .jar files">
@@ -328,6 +343,7 @@
          </delete>
         <!-- Work-around for Issue 894, see above. -->
         <unjar src="${checker.lib.tmp}" dest="${build}" />
+        <delete file="${checker.lib.tmp}"/>
 
         <unjar src="${stubparser.lib}" dest="${build}" />
 
@@ -403,10 +419,23 @@
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
 
+        <!--Jar classes and source files-->
+        <jar destfile="${checker.qual7.lib}" basedir="${checker-qual-classes-tmp}">
+            <manifest>
+                <attribute name="Implementation-Version" value="${build.version}"/>
+                <attribute name="Implementation-URL" value="https://checkerframework.org/"/>
+            </manifest>
+        </jar>
+
+        <jar destfile="${checker.qual7.sources.lib}" basedir="${checker-qual-sources-tmp}">
+            <manifest>
+                <attribute name="Implementation-Version" value="${build.version}"/>
+                <attribute name="Implementation-URL" value="https://checkerframework.org/"/>
+            </manifest>
+        </jar>
+
         <!-- Compile and copy Java 8 sources -->
-        <property name="checker-qual-sources8-tmp" value="${tmpdir}/checker-qual-sources8"/>
-        <mkdir dir="${checker-qual-sources8-tmp}"/>
-        <copy todir="${checker-qual-sources8-tmp}">
+        <copy todir="${checker-qual-sources-tmp}">
             <!-- Copying like this removes the $CHECKERFRAMEWORK/checker/src portion of the file
             names so that the top level directory is org.-->
             <fileset dir="${checker.loc}/${src}">
@@ -416,18 +445,30 @@
 
         <pathconvert pathsep=" " property="qual.src8.files.spaceseparated">
             <path>
-                <fileset dir="${checker-qual-sources8-tmp}">
+                <fileset dir="${checker-qual-sources-tmp}">
                     <include name="**/*.java"/>
                 </fileset>
             </path>
         </pathconvert>
-        <delete file="${tmpdir}/srcfiles-checker.txt"/>
-        <echo message="${qual.src8.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
+        <echo message="${qual.src8.files.spaceseparated}" append="true" file="${tmpdir}/srcfiles-checker.txt"/>
+
+
+        <!-- Remove annotations in comments-->
+        <replaceregexp match="\/\*@([^*]+)\*\/" replace="@\1" flags="g">
+            <fileset dir="${checker-qual-sources-tmp}">
+                <include name="**/*.java"/>
+            </fileset>
+        </replaceregexp>
+        <replaceregexp match="\/\*>>>([^*]+)\*\/" replace="\1" flags="g">
+            <fileset dir="${checker-qual-sources-tmp}">
+                <include name="**/*.java"/>
+            </fileset>
+        </replaceregexp>
 
         <java fork="true"
               failonerror="true"
               classname="com.sun.tools.javac.Main"
-              classpath="${javac.lib}:${checker-qual-classes-tmp}">
+              classpath="${javac.lib}">
             <arg value="-g"/>
             <arg value="-source"/>
             <arg value="8"/>
@@ -468,8 +509,8 @@
                 <attribute name="Implementation-URL" value="https://checkerframework.org/"/>
             </manifest>
         </jar>
+
         <delete dir="${checker-qual-sources-tmp}" failonerror="false"/>
-        <delete dir="${checker-qual-sources8-tmp}" failonerror="false"/>
         <delete dir="${checker-qual-classes-tmp}" failonerror="false"/>
     </target>
 
@@ -717,7 +758,7 @@
             <isset property="debugger.on"/>
         </condition>
 
-        <ant dir="${framework.loc}">
+        <ant dir="${framework.loc}" inheritAll="false">
             <target name="all-tests-nojtreg-nobuild"/>
         </ant>
 
@@ -730,7 +771,9 @@
 
         <antcall target="command-line-tests"/>
 
-        <antcall target="example-tests-nobuildjdk"/>
+      <!--TODO: This breaks during the release process because the latest Maven artifacts haven't been created.
+                This target is called in .travis-build.sh -->
+        <!--<antcall target="example-tests-nobuildjdk"/>-->
 
         <antcall target="check-tutorial"/>
         <antcall target="check-compilermsgs"/>
@@ -784,7 +827,7 @@
         </antcall>
     </target>
 
-    <target name="index-tests" depends="jar,build-tests"
+    <target name="index-tests" depends="jar,jdk.jar.exists,build-tests"
             description="Run tests for the Index Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.IndexTest"/>
@@ -798,7 +841,7 @@
         </antcall>
     </target>
 
-    <target name="lock-tests" depends="jar,build-tests"
+    <target name="lock-tests" depends="jar,jdk.jar.exists,build-tests"
             description="Run tests for the Lock Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.LockTest"/>
@@ -972,7 +1015,7 @@
         </antcall>
     </target>
 
-    <target name="stubfile-tests" depends="jar,build-tests"
+    <target name="nullness-stubfile-tests" depends="jar,build-tests"
             description="Run stubfile tests for the Nullness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessStubfileTest"/>
@@ -1083,26 +1126,10 @@
     </target>
 
     <target name="-jtreg.download" depends="jtreg.check" unless="jtreg.exists">
-      <!-- The last successful artifact
-           (https://adopt-openjdk.ci.cloudbees.com/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz)
-           includes Java 8 class files.
-           You can confirm the problem by running:
-wget https://adopt-openjdk.ci.cloudbees.com/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz
-tar xzf jtreg-4.2.0-tip.tar.gz
-cd jtreg/lib
-jar xf *.jar
-file `find . -name '*.class'` | grep 'version 52.0'
-
-The last build that does not was
-https://adopt-openjdk.ci.cloudbees.com/job/jtreg/545/artifact/jtreg-4.2.0-tip.tar.gz
-but it expired from the cloudbees Jenkins server in early June 2016.
-
-So, use our own archived version.
-      -->
       <get
-        src="https://types.cs.washington.edu/jtreg-4.2.0-for-jdk7.tar.gz"
+        src="https://adopt-openjdk.ci.cloudbees.com/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz"
         dest="${jtreg.home}/.." />
-      <untar src="${jtreg.home}/../jtreg-4.2.0-for-jdk7.tar.gz"
+      <untar src="${jtreg.home}/../jtreg-4.2.0-tip.tar.gz"
         dest="${jtreg.home}/../"
         compression="gzip" />
     </target>
@@ -1425,7 +1452,8 @@ So, use our own archived version.
     </target>
 
     <target name="download-jdk" description="Downloads jdk8.jar from checkerframework.org/dev-jdk to checker/jdk and checker/dist">
-        <get src="https://checkerframework.org/dev-jdk/jdk8.jar" dest="jdk/jdk8.jar"/>
+        <get src="https://checkerframework.org/dev-jdk/jdk8.jar" dest="jdk/jdk8.jar"
+             usetimestamp="true"/>
 
         <!-- Copy jars to dist. If dist doesn't exist then the copy task creates it.-->
         <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar"/>
@@ -1480,6 +1508,8 @@ So, use our own archived version.
          <env key="LT_BIN" value="${LT_BIN}"/>
       </exec>
       <move file="jdk/jdk.jar" tofile="jdk/${jdkName}"/>
+      <!-- Copy jars to dist. If dist doesn't exist then the copy task creates it.-->
+      <copy file="jdk/${jdkName}" tofile="dist/${jdkName}"/>
 
     </target>
 
@@ -1513,9 +1543,6 @@ So, use our own archived version.
 
         <copy tofile="dist/javac.jar" file="${javac.lib}"
               overwrite="true" failonerror="true" />
-
-        <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar" overwrite="true" failonerror="false" />
-        <copy file="jdk/jdk9.jar" tofile="dist/jdk9.jar" overwrite="true" failonerror="false" />
     </target>
 
     <target name="jdk.jar.exists"

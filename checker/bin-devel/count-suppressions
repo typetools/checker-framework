@@ -1,0 +1,53 @@
+#!/bin/sh
+
+# This command counts the frequency of each distinct reason for warning
+# suppressions.
+# Invoke it like this:
+#   count-suppressions nullness
+
+# If warning suppression text contains a colon, it prints only the text
+# before the colon, under the assumption that the initial text is a
+# category name.
+
+debug=0
+
+if [ "$#" -ne 1 ]; then
+  echo "Usage: $0 TYPESYSTEM" >&2
+  exit 1
+fi
+
+regex="$1"
+
+# If argument is a compound checker, make the regex match them all.
+if [ "$regex" = "nullness" ]; then
+    regex="\(nullness\|initialization\|rawness\|keyfor\)"
+fi
+if [ "$regex" = "index" ]; then
+    regex="\(index\|lowerbound\|upperbound\)"
+fi
+
+# Implementation notes:
+# These are the two types of matching lines:
+# Matching lines:
+#  * "KEY"  (for @SuppressWarnings, but don't match "@SuppressWarnings"
+#    because that might be on the previous line)
+#  * @AssumeAssertion(key)
+
+echo "regex=${regex}"
+
+greplines=$(mktemp /tmp/count-suppressions.XXXXXX)
+# This grep command captures a few stray lines; users should ignore them.
+grep -n --recursive --include='*.java' "\"${regex}[:\"]\|@AssumeAssertion(${regex})" | grep -v "@AnnotatedFor" > ${greplines}
+echo -n "Total: "
+cat ${greplines} | wc -l
+cat ${greplines} \
+    | sed 's/.*\/\/ //g' \
+    | sed "s/.*@AssumeAssertion([^)])[ :]*\([^\"]\+\)\";/\1/g" \
+    | sed 's/\([^0-9]\): [^:].*/\1/' \
+    | sed 's/ \+$//' \
+    | sort | uniq -c | sort -rg
+if [ "$debug" -eq "0" ]; then
+  rm -f ${greplines}
+else
+  echo Output is in: ${greplines}
+fi

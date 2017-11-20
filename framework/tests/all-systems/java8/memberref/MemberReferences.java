@@ -1,3 +1,5 @@
+// If conservativeUninferredTypeArguments option is used, then the lines marked
+// "TODO: Issue 802", will issue a methodref.inference.unimplemented warning.
 
 interface Supplier<R> {
     R supply();
@@ -31,7 +33,6 @@ class Super {
         void context() {
             FunctionMR<Object, Object> f1 = super::func1;
             // TODO: Issue 802: type argument inference
-            // TODO: should expect warning: (methodref.inference.unimplemented)
             FunctionMR f2 = super::func2;
             // Top level wildcards are ignored when type checking
             FunctionMR<? extends String, ? extends String> f3 = super::<String>func2;
@@ -94,7 +95,7 @@ class Static {
     }
 }
 
-///** Expr # instMethod */
+/** Expr # instMethod */
 // BOUND(ReferenceMode.INVOKE, false),
 class Bound {
     <T> T func1(T o) {
@@ -174,7 +175,7 @@ class TopLevelWithArg<T> {
 
 class ArrayType {
     void context() {
-        //TODO: Signedness Checker does not default boxed primitives correctly
+        // TODO: Signedness Checker does not default boxed primitives correctly
         // See Issue #797
         // https://github.com/typetools/checker-framework/issues/797
         @SuppressWarnings({"signedness"})

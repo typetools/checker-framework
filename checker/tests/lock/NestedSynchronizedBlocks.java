@@ -30,13 +30,13 @@ public class NestedSynchronizedBlocks {
 
         // Test that the locks are known to have been released.
 
-        //:: error:(lock.not.held)
+        // :: error:(lock.not.held)
         m1.field = new Object();
-        //:: error:(lock.not.held)
+        // :: error:(lock.not.held)
         m2.field = new Object();
-        //:: error:(lock.not.held)
+        // :: error:(lock.not.held)
         m3.field = new Object();
-        //:: error:(lock.not.held)
+        // :: error:(lock.not.held)
         m4.field = new Object();
     }
 }

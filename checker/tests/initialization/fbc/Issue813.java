@@ -1,6 +1,7 @@
 // Test case for Issue 813
 // https://github.com/typetools/checker-framework/issues/813
 // @skip-test
+
 import org.checkerframework.checker.initialization.qual.NotOnlyInitialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 

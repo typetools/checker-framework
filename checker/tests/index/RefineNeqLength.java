@@ -16,7 +16,7 @@ class RefineNeqLength {
         }
         // No refinement
         if (i != array.length - 1) {
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             refineNeqLengthMOne(array, i);
         }
     }
@@ -25,7 +25,7 @@ class RefineNeqLength {
         // Refines i < array.length to i < array.length - 1
         if (i != array.length - 1) {
             refineNeqLengthMTwo(array, i);
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             refineNeqLengthMThree(array, i);
         }
     }
@@ -37,7 +37,7 @@ class RefineNeqLength {
         }
         // No refinement
         if (i != array.length - 1) {
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             refineNeqLengthMThree(array, i);
         }
     }
@@ -53,7 +53,7 @@ class RefineNeqLength {
         }
         // No refinement
         if (i != array.length - c23) {
-            //:: error: (argument.type.incompatible)
+            // :: error: (argument.type.incompatible)
             refineNeqLengthMThree(array, i);
         }
     }
@@ -64,7 +64,7 @@ class RefineNeqLength {
         if (i != array.length - 3) {
             return i;
         }
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return i;
     }
 
@@ -75,7 +75,7 @@ class RefineNeqLength {
         if (i != str.length() - 3) {
             return i;
         }
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return i;
     }
 }

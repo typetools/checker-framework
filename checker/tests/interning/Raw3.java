@@ -23,35 +23,35 @@ class Raw3 {
     // with raw types
     List<String> foo2() {
         List<String> sl = new ArrayList<>();
-        //:: warning: [unchecked] unchecked conversion
+        // :: warning: [unchecked] unchecked conversion
         return (List) sl;
     }
 
     // no raw types
     List<String> foo3() {
         List<@Interned String> sl = new ArrayList<@Interned String>();
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return (List<@Interned String>) sl;
     }
 
     // with raw types
     List<String> foo4() {
         List<@Interned String> sl = new ArrayList<@Interned String>();
-        //:: warning: [unchecked] unchecked conversion
+        // :: warning: [unchecked] unchecked conversion
         return (List) sl;
     }
 
     // no raw types
     List<@Interned String> foo5() {
         List<String> sl = new ArrayList<>();
-        //:: error: (return.type.incompatible)
+        // :: error: (return.type.incompatible)
         return (List<String>) sl;
     }
 
     // with raw types
     List<@Interned String> foo6() {
         List<String> sl = new ArrayList<>();
-        //:: warning: [unchecked] unchecked conversion
+        // :: warning: [unchecked] unchecked conversion
         return (List) sl;
     }
 
@@ -63,12 +63,12 @@ class Raw3 {
 
         List<String> bar2() {
             List<String> sl = new ArrayList<>();
-            //:: warning: [unchecked] unchecked conversion
+            // :: warning: [unchecked] unchecked conversion
             return (List) sl;
         }
 
         List<String> bar3(List<String> sl) {
-            //:: warning: [unchecked] unchecked conversion
+            // :: warning: [unchecked] unchecked conversion
             return (List) sl;
         }
 
@@ -78,7 +78,7 @@ class Raw3 {
             // This line was previously failing because we couldn't adequately infer the
             // type of DuoList as a List; it works now, though the future checking of rawtypes
             // may be more strict
-            //:: warning: [unchecked] unchecked conversion
+            // :: warning: [unchecked] unchecked conversion
             return (DuoList) sl;
         }
     }

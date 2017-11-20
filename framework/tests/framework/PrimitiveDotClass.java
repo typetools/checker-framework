@@ -1,4 +1,3 @@
-
 class PrimitiveDotClass {
 
     void test() {

@@ -23,24 +23,24 @@ class Explosion {
         @NonNull String s = "Dan";
         String s2;
         s2 = null;
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         if (s2 != null || s != null) {
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             s = s2;
         } else {
             s = new String("Levitan");
         }
         s2 = args[0];
-        //:: error: (dereference.of.nullable)
+        // :: error: (dereference.of.nullable)
         System.out.println("Possibly cause null pointer with this: " + s2.length());
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         if (s2 == null) {
             // do nothing
         } else {
             System.out.println("Can't cause null pointer here: " + s2.length());
             s = s2;
         }
-        //:: warning: (known.nonnull)
+        // :: warning: (known.nonnull)
         if (s == null ? s2 != null : s2 != null) {
             s = s2;
         }
@@ -74,13 +74,13 @@ class Explosion {
             // y = z;
             nnz = z;
             z = null;
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             nnz = z;
 
             while (z == null) {
                 break;
             }
-            //:: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             nnz = z;
             while (z == null) {
                 // do nothing
@@ -106,7 +106,7 @@ class Explosion {
 
     private void bar(List<@NonNull String> ss, String b, String c) {
         @NonNull String a;
-        //:: error: (iterating.over.nullable)
+        // :: error: (iterating.over.nullable)
         for (@NonNull String s : ss) {
             a = s;
         }
@@ -114,7 +114,7 @@ class Explosion {
             System.out.println("hey");
         }
         if (b != null) {
-            //:: error: (dereference.of.nullable)
+            // :: error: (dereference.of.nullable)
             for (; b.length() > 0; b = null) {
                 System.out.println(b.length());
             }

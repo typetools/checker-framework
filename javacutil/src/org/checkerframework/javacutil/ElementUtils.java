@@ -240,7 +240,7 @@ public class ElementUtils {
     /** Returns the field of the class */
     public static VariableElement findFieldInType(TypeElement type, String name) {
         for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
-            if (field.getSimpleName().toString().equals(name)) {
+            if (field.getSimpleName().contentEquals(name)) {
                 return field;
             }
         }
@@ -396,7 +396,7 @@ public class ElementUtils {
             superelems.add(jlobject);
         }
 
-        return Collections.<TypeElement>unmodifiableList(superelems);
+        return Collections.unmodifiableList(superelems);
     }
 
     /**
@@ -411,7 +411,7 @@ public class ElementUtils {
         for (TypeElement atype : alltypes) {
             fields.addAll(ElementFilter.fieldsIn(atype.getEnclosedElements()));
         }
-        return Collections.<VariableElement>unmodifiableList(fields);
+        return Collections.unmodifiableList(fields);
     }
 
     /**
@@ -427,7 +427,7 @@ public class ElementUtils {
         for (TypeElement atype : alltypes) {
             meths.addAll(ElementFilter.methodsIn(atype.getEnclosedElements()));
         }
-        return Collections.<ExecutableElement>unmodifiableList(meths);
+        return Collections.unmodifiableList(meths);
     }
 
     /** Return all nested/inner classes/interfaces declared in the given type. */
@@ -467,7 +467,7 @@ public class ElementUtils {
     public static boolean matchesElement(
             ExecutableElement method, String methodName, Class<?>... parameters) {
 
-        if (!method.getSimpleName().toString().equals(methodName)) {
+        if (!method.getSimpleName().contentEquals(methodName)) {
             return false;
         }
 
