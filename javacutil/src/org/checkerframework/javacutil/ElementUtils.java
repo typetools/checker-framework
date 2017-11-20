@@ -240,7 +240,7 @@ public class ElementUtils {
     /** Returns the field of the class */
     public static VariableElement findFieldInType(TypeElement type, String name) {
         for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
-            if (field.getSimpleName().toString().equals(name)) {
+            if (field.getSimpleName().contentEquals(name)) {
                 return field;
             }
         }
@@ -467,7 +467,7 @@ public class ElementUtils {
     public static boolean matchesElement(
             ExecutableElement method, String methodName, Class<?>... parameters) {
 
-        if (!method.getSimpleName().toString().equals(methodName)) {
+        if (!method.getSimpleName().contentEquals(methodName)) {
             return false;
         }
 

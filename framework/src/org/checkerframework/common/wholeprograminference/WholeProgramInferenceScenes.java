@@ -323,7 +323,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         // Look-up parameter by name:
         for (int i = 0; i < params.size(); i++) {
             VariableTree vt = params.get(i);
-            if (vt.getName().toString().equals(lhs.getName())) {
+            if (vt.getName().contentEquals(lhs.getName())) {
                 Tree treeNode = rhs.getTree();
                 if (treeNode == null) {
                     // TODO: Handle variable-length list as parameter.
