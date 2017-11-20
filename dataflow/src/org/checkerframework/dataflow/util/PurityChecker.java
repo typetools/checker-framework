@@ -215,10 +215,10 @@ public class PurityChecker {
             // (There is no need to check the latter condition, because the purity checker
             // forbids all catch statements.)
             Tree parent = getCurrentPath().getParentPath().getLeaf();
-            boolean okThrowDeterminism = parent.getKind() == Tree.Kind.THROW;
+            boolean okThrowDeterministic = parent.getKind() == Tree.Kind.THROW;
 
             Element methodElement = InternalUtils.symbol(node);
-            boolean deterministic = okThrowDeterminism;
+            boolean deterministic = okThrowDeterministic;
             boolean sideEffectFree =
                     (assumeSideEffectFree
                             || PurityUtils.isSideEffectFree(annoProvider, methodElement));
@@ -230,8 +230,9 @@ public class PurityChecker {
                 purityResult.addNotSEFreeReason(node, "object.creation");
             }
 
-            // TODO: if okThrow, permit arguments to the newClass to be non-deterministic (don't add
-            // those to purityResult), but still don't permit them to have side effects.
+            // TODO: if okThrowDeterministic, permit arguments to the newClass to be
+            // non-deterministic (don't add those to purityResult), but still don't permit them to
+            // have side effects.  This should probably wait until a rewrite of the Purity Checker.
             return super.visitNewClass(node, ignore);
         }
 
