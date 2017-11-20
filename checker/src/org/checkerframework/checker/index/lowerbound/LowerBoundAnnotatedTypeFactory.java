@@ -14,6 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
@@ -148,6 +149,11 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     getValueAnnotatedTypeFactory().getAnnotatedType(element);
             addLowerBoundTypeFromValueType(valueType, type);
         }
+        // chars are unsigned -> chars are non-negative. See JLS 4.2.
+        if (type.getUnderlyingType().getKind() == TypeKind.CHAR
+                && type.getAnnotation(Positive.class) == null) {
+            type.replaceAnnotation(NN);
+        }
     }
 
     @Override
@@ -159,6 +165,11 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (iUseFlow && tree != null && TreeUtils.isExpressionTree(tree)) {
             AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
             addLowerBoundTypeFromValueType(valueType, type);
+        }
+        // chars are unsigned -> chars are non-negative. See JLS 4.2.
+        if (type.getUnderlyingType().getKind() == TypeKind.CHAR
+                && type.getAnnotation(Positive.class) == null) {
+            type.replaceAnnotation(NN);
         }
     }
 
