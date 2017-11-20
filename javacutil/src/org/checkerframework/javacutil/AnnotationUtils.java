@@ -355,7 +355,9 @@ public class AnnotationUtils {
         return anno.getAnnotationType().asElement().getAnnotation(Inherited.class) != null;
     }
 
-    /** @return the set of {@link ElementKind}s to which {@code target} applies */
+    /**
+     * @return the set of {@link ElementKind}s to which {@code target} applies, ignoring TYPE_USE
+     */
     public static EnumSet<ElementKind> getElementKindsForTarget(/*@Nullable*/ Target target) {
         if (target == null) {
             // A missing @Target implies that the annotation can be written everywhere.
@@ -368,7 +370,13 @@ public class AnnotationUtils {
         return eleKinds;
     }
 
-    /** @return the set of {@link ElementKind}s corresponding to {@code elementType} */
+    /**
+     * Returns the set of {@link ElementKind}s corresponding to {@code elementType}. If the element
+     * type is TYPE_USE, then ElementKinds returned should be the same as those returned for TYPE
+     * and TYPE_PARAMETER, but this method returns the empty set instead.
+     *
+     * @return the set of {@link ElementKind}s corresponding to {@code elementType}
+     */
     public static EnumSet<ElementKind> getElementKindsForElementType(ElementType elementType) {
         switch (elementType) {
             case TYPE:
