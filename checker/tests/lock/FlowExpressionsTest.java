@@ -1,7 +1,7 @@
 import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.dataflow.qual.Pure;
 
-class FlowExpressions {
+class FlowExpressionsTest {
     class MyClass {
         public Object field;
     }

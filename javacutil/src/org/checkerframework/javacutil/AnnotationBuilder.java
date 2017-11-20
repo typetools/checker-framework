@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -468,7 +469,7 @@ public class AnnotationBuilder {
         }
 
         if (!isSubtype) {
-            if (found.toString().equals(expected.toString())) {
+            if (types.isSameType(found, expected)) {
                 ErrorReporter.errorAbort(
                         "given value differs from expected, but same string representation; "
                                 + "this is likely a bootclasspath/classpath issue; "
@@ -643,6 +644,21 @@ public class AnnotationBuilder {
                 assert false : " unknown type : " + v.getClass();
                 return v.visitUnknown(this, p);
             }
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            // System.out.printf("Calling CFAV.equals()%n");
+            if (!(obj instanceof AnnotationValue)) {
+                return false;
+            }
+            AnnotationValue other = (AnnotationValue) obj;
+            return Objects.equals(this.getValue(), other.getValue());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(this.value);
         }
     }
 }
