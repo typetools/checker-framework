@@ -136,7 +136,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker);
 
         BOTTOMVAL = AnnotationBuilder.fromClass(elements, BottomVal.class);
-
         UNKNOWNVAL = AnnotationBuilder.fromClass(elements, UnknownVal.class);
 
         reportEvalWarnings = checker.hasOption(ValueChecker.REPORT_EVAL_WARNS);
@@ -396,12 +395,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Void)} which issues warnings to users in these cases.
          *
          * <p>If any @IntRange or @ArrayLenRange annotation has incorrect parameters, e.g. the value
-         * "from" is greater than the value "to", replaces the annotation with bottom. The {@link
+         * "from" is greater than the value "to", replaces the annotation by {@code @BottomVal}. The
+         * {@link
          * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
          * Void)} raises an error to users if the annotation was user-written.
          *
-         * <p>If any @ArrayLen annotation has a negative number, replaces the annotation by a range
-         * that covers all non-negative integers. The {@link
+         * <p>If any @ArrayLen annotation has a negative number, replaces the annotation by {@code
+         * BottomVal}. The {@link
          * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
          * Void)} raises an error to users if the annotation was user-written.
          *
