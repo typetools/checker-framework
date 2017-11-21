@@ -262,9 +262,10 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     }
 
     /**
-     * Overridden to issue errors at the appropriate place if an IntRange or ArrayLenRange
-     * annotation has from > to. from > to either indicates a user error when writing an annotation
-     * or an error in the checker's implementation - from should always be <= to.
+     * Overridden to issue errors at the appropriate place if an {@code IntRange} or {@code
+     * ArrayLenRange} annotation has {@code from > to}. {@code from > to} either indicates a user
+     * error when writing an annotation or an error in the checker's implementation, as {@code from}
+     * should always be {@code <= to}.
      */
     @Override
     public boolean validateType(Tree tree, AnnotatedTypeMirror type) {

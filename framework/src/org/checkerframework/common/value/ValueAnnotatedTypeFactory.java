@@ -330,6 +330,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case BYTE:
                     from = Byte.MIN_VALUE;
                     break;
+                case CHAR:
+                    from = Character.MIN_VALUE;
+                    break;
                 default:
                     from = Long.MIN_VALUE;
             }
@@ -360,6 +363,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     break;
                 case BYTE:
                     to = Byte.MAX_VALUE;
+                    break;
+                case CHAR:
+                    to = Character.MAX_VALUE;
                     break;
                 default:
                     to = Long.MAX_VALUE;
