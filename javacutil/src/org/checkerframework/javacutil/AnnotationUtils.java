@@ -510,6 +510,8 @@ public class AnnotationUtils {
                 }
             }
             return true;
+        } else if ((val1 instanceof AnnotationMirror) && (val2 instanceof AnnotationMirror)) {
+            return areSame((AnnotationMirror) val1, (AnnotationMirror) val2);
         } else if ((val1 instanceof AnnotationValue) && (val2 instanceof AnnotationValue)) {
             return sameAnnotationValue((AnnotationValue) val1, (AnnotationValue) val2);
         } else if ((val1 instanceof Type.ClassType) && (val2 instanceof Type.ClassType)) {
