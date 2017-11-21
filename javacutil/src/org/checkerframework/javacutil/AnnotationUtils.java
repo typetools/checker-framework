@@ -513,6 +513,8 @@ public class AnnotationUtils {
         } else if ((val1 instanceof AnnotationMirror) && (val2 instanceof AnnotationMirror)) {
             return areSame((AnnotationMirror) val1, (AnnotationMirror) val2);
         } else if ((val1 instanceof AnnotationValue) && (val2 instanceof AnnotationValue)) {
+            // This case occurs because of the recursive call when comparing arrays of
+            // annotation values.
             return sameAnnotationValue((AnnotationValue) val1, (AnnotationValue) val2);
         } else if ((val1 instanceof Type.ClassType) && (val2 instanceof Type.ClassType)) {
             // Type.ClassType does not override equals
