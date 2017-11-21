@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -55,6 +56,7 @@ class InterruptedException extends Exception {
     /**
      * Constructs an <code>InterruptedException</code> with no detail  message.
      */
+    @SideEffectFree
     public InterruptedException() {
         super();
     }
@@ -65,6 +67,7 @@ class InterruptedException extends Exception {
      *
      * @param   s   the detail message.
      */
+    @SideEffectFree
     public InterruptedException(@Nullable String s) {
         super(s);
     }

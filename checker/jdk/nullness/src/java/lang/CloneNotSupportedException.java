@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -51,6 +52,7 @@ class CloneNotSupportedException extends Exception {
      * Constructs a <code>CloneNotSupportedException</code> with no
      * detail message.
      */
+    @SideEffectFree
     public CloneNotSupportedException() {
         super();
     }
@@ -61,6 +63,7 @@ class CloneNotSupportedException extends Exception {
      *
      * @param   s   the detail message.
      */
+    @SideEffectFree
     public CloneNotSupportedException(@Nullable String s) {
         super(s);
     }

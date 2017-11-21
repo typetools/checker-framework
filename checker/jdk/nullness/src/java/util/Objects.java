@@ -28,6 +28,7 @@ package java.util;
 // TODO: reinstate
 // import java.util.function.Supplier;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.dataflow.qual.*;
 
