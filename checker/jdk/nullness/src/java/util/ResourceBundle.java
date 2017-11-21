@@ -1,5 +1,6 @@
 package java.util;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.*;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;

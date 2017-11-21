@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -46,6 +47,7 @@ class ArrayStoreException extends RuntimeException {
     /**
      * Constructs an <code>ArrayStoreException</code> with no detail message.
      */
+    @SideEffectFree
     public ArrayStoreException() {
         super();
     }
@@ -56,6 +58,7 @@ class ArrayStoreException extends RuntimeException {
      *
      * @param   s   the detail message.
      */
+    @SideEffectFree
     public ArrayStoreException(@Nullable String s) {
         super(s);
     }

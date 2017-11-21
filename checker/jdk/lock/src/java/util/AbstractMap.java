@@ -5,7 +5,7 @@ import org.checkerframework.checker.lock.qual.*;
 // Subclasses of this interface/class may opt to prohibit null elements.
 public abstract class AbstractMap<K extends Object, V extends Object> implements Map<K, V> {
   protected AbstractMap() {}
-  public class SimpleEntry<K extends Object, V extends Object>
+  public static class SimpleEntry<K extends Object, V extends Object>
       implements Map.Entry<K, V>, java.io.Serializable {
     private static final long serialVersionUID = 0;
     public SimpleEntry(K a1, V a2) { throw new RuntimeException("skeleton method"); }
@@ -17,7 +17,7 @@ public abstract class AbstractMap<K extends Object, V extends Object> implements
      public int hashCode(@GuardSatisfied SimpleEntry<K,V> this) { throw new RuntimeException("skeleton method"); }
      public String toString(@GuardSatisfied SimpleEntry<K,V> this) { throw new RuntimeException("skeleton method"); }
   }
-  public class SimpleImmutableEntry<K extends Object, V extends Object>
+  public static class SimpleImmutableEntry<K extends Object, V extends Object>
       implements Map.Entry<K, V>, java.io.Serializable {
     private static final long serialVersionUID = 0;
     public SimpleImmutableEntry(K a1, V a2) { throw new RuntimeException("skeleton method"); }
