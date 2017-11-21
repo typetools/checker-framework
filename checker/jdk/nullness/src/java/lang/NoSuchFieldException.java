@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -39,6 +40,7 @@ public class NoSuchFieldException extends Exception {
     /**
      * Constructor.
      */
+    @SideEffectFree
     public NoSuchFieldException() {
         super();
     }
@@ -48,6 +50,7 @@ public class NoSuchFieldException extends Exception {
      *
      * @param s the detail message
      */
+    @SideEffectFree
     public NoSuchFieldException(@Nullable String s) {
         super(s);
     }

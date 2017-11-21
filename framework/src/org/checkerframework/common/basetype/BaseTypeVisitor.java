@@ -1,12 +1,5 @@
 package org.checkerframework.common.basetype;
 
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
-import static org.checkerframework.framework.util.AnnotatedTypes.getArrayDepth;
-
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
@@ -42,6 +35,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCTry;
 import com.sun.tools.javac.tree.TreeInfo;
+import java.lang.SuppressWarnings;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +53,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -118,6 +113,11 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.nullness.qual.Nullable;
+*/
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment checking, method
@@ -499,7 +499,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // Report errors if necessary.
                     PurityResult r =
                             PurityChecker.checkPurity(
-                                    node.getBody(),
+                                    atypeFactory.getPath(node.getBody()),
                                     atypeFactory,
                                     checker.hasOption("assumeSideEffectFree"));
                     if (!r.isPure(kinds)) {
@@ -1017,8 +1017,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeMirror lastArgType =
                     atypeFactory.getAnnotatedType(args.get(args.size() - 1));
             if (lastArgType.getKind() == TypeKind.ARRAY
-                    && getArrayDepth(lastParamAnnotatedType)
-                            == getArrayDepth((AnnotatedArrayType) lastArgType)) {
+                    && AnnotatedTypes.getArrayDepth(lastParamAnnotatedType)
+                            == AnnotatedTypes.getArrayDepth((AnnotatedArrayType) lastArgType)) {
                 return;
             }
         }
@@ -1351,11 +1351,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return null;
         }
 
-        Element anno = TreeInfo.symbol((JCTree) node.getAnnotationType());
-        if (anno.toString().equals(DefaultQualifier.class.getName())
-                || anno.toString().equals(SuppressWarnings.class.getName())) {
-            // Skip these two annotations, as we don't care about the
-            // arguments to them.
+        TypeElement anno = (TypeElement) TreeInfo.symbol((JCTree) node.getAnnotationType());
+
+        Name annoName = anno.getQualifiedName();
+        if (annoName.contentEquals(DefaultQualifier.class.getName())
+                || annoName.contentEquals(SuppressWarnings.class.getName())) {
+            // Skip these two annotations, as we don't care about the arguments to them.
             return null;
         }
 
@@ -3038,7 +3039,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         if (methodReference && isCaptureConverted) {
                             ExecutableElement overridenMethod = overridden.getElement();
                             boolean isFunctionApply =
-                                    overridenMethod.getSimpleName().toString().equals("apply")
+                                    overridenMethod.getSimpleName().contentEquals("apply")
                                             && overridenMethod
                                                     .getEnclosingElement()
                                                     .toString()
@@ -3303,8 +3304,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return true;
         }
 
-        String when =
-                AnnotationUtils.getElementValueClassName(unused, "when", false).toString().intern();
+        String when = AnnotationUtils.getElementValueClassName(unused, "when", false).toString();
         if (!AnnotationUtils.containsSameByName(receiver.getAnnotations(), when)) {
             return true;
         }
@@ -3504,13 +3504,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
         TypeElement objectTE = elements.getTypeElement("java.lang.Object");
-        List<? extends Element> members = elements.getAllMembers(objectTE);
+        List<? extends ExecutableElement> memberMethods =
+                ElementFilter.methodsIn(elements.getAllMembers(objectTE));
 
-        for (Element member : members) {
-            if (member.toString().equals("equals(java.lang.Object)")) {
-                ExecutableElement m = (ExecutableElement) member;
-                // The Nullness JDK serves as a proxy for all annotated
-                // JDKs.
+        for (ExecutableElement m : memberMethods) {
+            if (isObjectEquals(m)) {
+                // The Nullness JDK serves as a proxy for all annotated JDKs.
 
                 // Note that we cannot use the AnnotatedTypeMirrors from the
                 // Checker Framework, because those only return the annotations
@@ -3556,5 +3555,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
             }
         }
+    }
+
+    /** Return true iff the executable member is equals(Object). */
+    private boolean isObjectEquals(ExecutableElement method) {
+        // Less efficient implementation:
+        // return method.toString().equals("equals(java.lang.Object)");
+
+        if (!method.getSimpleName().contentEquals("equals")) {
+            return false;
+        }
+        List<? extends VariableElement> params = method.getParameters();
+        if (params.size() != 1) {
+            return false;
+        }
+        VariableElement param = params.get(0);
+        TypeMirror paramType = param.asType();
+        return TypesUtils.isObject(paramType);
     }
 }

@@ -8,6 +8,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
@@ -234,7 +235,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         // Currently we are ignoring them. See ElementUtils#getSuperTypes.
         // See Issue 682
         // https://github.com/typetools/checker-framework/issues/682
-        if (!classSymbol.getEnclosedElements().contains(methodElt)) return;
+        if (!classSymbol.getEnclosedElements().contains((Symbol) methodElt)) {
+            return;
+        }
 
         String className = classSymbol.flatname.toString();
         String jaifPath = helper.getJaifPath(className);
@@ -320,7 +323,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         // Look-up parameter by name:
         for (int i = 0; i < params.size(); i++) {
             VariableTree vt = params.get(i);
-            if (vt.getName().toString().equals(lhs.getName())) {
+            if (vt.getName().contentEquals(lhs.getName())) {
                 Tree treeNode = rhs.getTree();
                 if (treeNode == null) {
                     // TODO: Handle variable-length list as parameter.
@@ -409,13 +412,17 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         ClassSymbol classSymbol = getEnclosingClassSymbol(classTree, lhs);
         // See Issue 682
         // https://github.com/typetools/checker-framework/issues/682
-        if (classSymbol == null) return; // TODO: Handle anonymous classes.
+        if (classSymbol == null) {
+            return; // TODO: Handle anonymous classes.
+        }
 
         // TODO: We must handle cases where the field is declared on a superclass.
         // Currently we are ignoring them. See ElementUtils#getSuperTypes.
         // See Issue 682
         // https://github.com/typetools/checker-framework/issues/682
-        if (!classSymbol.getEnclosedElements().contains(lhs.getElement())) return;
+        if (!classSymbol.getEnclosedElements().contains((Symbol) lhs.getElement())) {
+            return;
+        }
 
         // If the inferred field has a declaration annotation with the
         // @IgnoreInWholeProgramInference meta-annotation, exit this routine.

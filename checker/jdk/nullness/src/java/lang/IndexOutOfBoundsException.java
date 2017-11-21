@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -44,6 +45,7 @@ class IndexOutOfBoundsException extends RuntimeException {
      * Constructs an <code>IndexOutOfBoundsException</code> with no
      * detail message.
      */
+    @SideEffectFree
     public IndexOutOfBoundsException() {
         super();
     }
@@ -54,6 +56,7 @@ class IndexOutOfBoundsException extends RuntimeException {
      *
      * @param   s   the detail message.
      */
+    @SideEffectFree
     public IndexOutOfBoundsException(@Nullable String s) {
         super(s);
     }

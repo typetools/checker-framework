@@ -132,7 +132,10 @@ if [[ "${GROUP}" == "demos" || "${GROUP}" == "all" ]]; then
 fi
 
 if [[ "${GROUP}" == "jdk.jar" || "${GROUP}" == "all" ]]; then
-  cd checker; ant jdk.jar
+  cd checker
+  ant jdk.jar
+  ## Run the tests for the type systems that use the annotated JDK
+  ant index-tests lock-tests nullness-tests-nobuildjdk
 fi
 
 if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
@@ -158,5 +161,8 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   # I cannot reproduce the problem locally and it isn't important enough to fix.
   # make -C ../jsr308-langtools/doc
   make -C ../jsr308-langtools/doc pdf
+
+  # HTML legality
+  ant html-validate
 
 fi

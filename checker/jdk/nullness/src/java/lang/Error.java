@@ -57,7 +57,8 @@ public class Error extends Throwable {
      * The cause is not initialized, and may subsequently be initialized by a
      * call to {@link #initCause}.
      */
-    @SideEffectFree public Error() {
+    @SideEffectFree
+    public Error() {
         super();
     }
 
@@ -69,7 +70,8 @@ public class Error extends Throwable {
      * @param   message   the detail message. The detail message is saved for
      *          later retrieval by the {@link #getMessage()} method.
      */
-    @SideEffectFree public Error(@Nullable String message) {
+    @SideEffectFree
+    public Error(@Nullable String message) {
         super(message);
     }
 
@@ -87,7 +89,8 @@ public class Error extends Throwable {
      *         unknown.)
      * @since  1.4
      */
-    @SideEffectFree public Error(@Nullable String message, @Nullable Throwable cause) {
+    @SideEffectFree
+    public Error(@Nullable String message, @Nullable Throwable cause) {
         super(message, cause);
     }
 
@@ -104,7 +107,8 @@ public class Error extends Throwable {
      *         unknown.)
      * @since  1.4
      */
-    @SideEffectFree public Error(@Nullable Throwable cause) {
+    @SideEffectFree
+    public Error(@Nullable Throwable cause) {
         super(cause);
     }
 
@@ -123,7 +127,8 @@ public class Error extends Throwable {
      *
      * @since 1.7
      */
-    @SideEffectFree protected Error(@Nullable String message, @Nullable Throwable cause,
+    @SideEffectFree
+    protected Error(@Nullable String message, @Nullable Throwable cause,
                     boolean enableSuppression,
                     boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
