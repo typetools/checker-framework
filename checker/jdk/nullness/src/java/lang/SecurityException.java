@@ -24,6 +24,7 @@
  */
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -40,6 +41,7 @@ public class SecurityException extends RuntimeException {
     /**
      * Constructs a <code>SecurityException</code> with no detail  message.
      */
+    @SideEffectFree
     public SecurityException() {
         super();
     }
@@ -50,6 +52,7 @@ public class SecurityException extends RuntimeException {
      *
      * @param   s   the detail message.
      */
+    @SideEffectFree
     public SecurityException(@Nullable String s) {
         super(s);
     }
@@ -65,6 +68,7 @@ public class SecurityException extends RuntimeException {
      *        and indicates that the cause is nonexistent or unknown.)
      * @since 1.5
      */
+    @SideEffectFree
     public SecurityException(@Nullable String message, @Nullable Throwable cause) {
         super(message, cause);
     }
@@ -80,6 +84,7 @@ public class SecurityException extends RuntimeException {
      *        and indicates that the cause is nonexistent or unknown.)
      * @since 1.5
      */
+    @SideEffectFree
     public SecurityException(@Nullable Throwable cause) {
         super(cause);
     }

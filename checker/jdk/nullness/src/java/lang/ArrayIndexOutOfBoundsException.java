@@ -26,6 +26,7 @@
 package java.lang;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * Thrown to indicate that an array has been accessed with an
@@ -43,6 +44,7 @@ class ArrayIndexOutOfBoundsException extends IndexOutOfBoundsException {
      * Constructs an <code>ArrayIndexOutOfBoundsException</code> with no
      * detail message.
      */
+    @SideEffectFree
     public ArrayIndexOutOfBoundsException() {
         super();
     }
@@ -53,6 +55,7 @@ class ArrayIndexOutOfBoundsException extends IndexOutOfBoundsException {
      *
      * @param   index   the illegal index.
      */
+    @SideEffectFree
     public ArrayIndexOutOfBoundsException(int index) {
         super("Array index out of range: " + index);
     }
@@ -63,6 +66,7 @@ class ArrayIndexOutOfBoundsException extends IndexOutOfBoundsException {
      *
      * @param   s   the detail message.
      */
+    @SideEffectFree
     public ArrayIndexOutOfBoundsException(@Nullable String s) {
         super(s);
     }

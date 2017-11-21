@@ -1,5 +1,6 @@
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class ExceptionInInitializerError extends LinkageError {
@@ -7,15 +8,18 @@ public class ExceptionInInitializerError extends LinkageError {
 
     private Throwable exception;
 
+    @SideEffectFree
     public ExceptionInInitializerError() {
         initCause(null);  // Disallow subsequent initCause
     }
 
+    @SideEffectFree
     public ExceptionInInitializerError(@Nullable Throwable thrown) {
         initCause(null);  // Disallow subsequent initCause
         this.exception = thrown;
     }
 
+    @SideEffectFree
     public ExceptionInInitializerError(@Nullable String s) {
         super(s);
         initCause(null);  // Disallow subsequent initCause
