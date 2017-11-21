@@ -31,8 +31,4 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 })
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
-public @interface BottomVal {
-    String value() default ""; // this value functions as a flag - does this bottom type represent
-    // an illegal annotation? If so, an error corresponding to this value
-    // will be issued when the annotation is visited.
-}
+public @interface BottomVal {}
