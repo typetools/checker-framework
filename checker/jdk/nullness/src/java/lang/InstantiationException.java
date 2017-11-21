@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -51,6 +52,7 @@ class InstantiationException extends Exception {
     /**
      * Constructs an {@code InstantiationException} with no detail message.
      */
+    @SideEffectFree
     public InstantiationException() {
         super();
     }
@@ -61,6 +63,7 @@ class InstantiationException extends Exception {
      *
      * @param   s   the detail message.
      */
+    @SideEffectFree
     public InstantiationException(@Nullable String s) {
         super(s);
     }

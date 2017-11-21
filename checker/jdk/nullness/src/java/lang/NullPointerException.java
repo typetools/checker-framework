@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -53,6 +54,7 @@ class NullPointerException extends RuntimeException {
     /**
      * Constructs a <code>NullPointerException</code> with no detail message.
      */
+    @SideEffectFree
     public NullPointerException() {
         super();
     }
@@ -63,6 +65,7 @@ class NullPointerException extends RuntimeException {
      *
      * @param   s   the detail message.
      */
+    @SideEffectFree
     public NullPointerException(@Nullable String s) {
         super(s);
     }
