@@ -595,8 +595,16 @@ public class Range {
         }
     }
 
-    /** We give up the analysis for unsigned shift right operation */
+    /**
+     * When this range only contains non-negative values, the refined result should be the same as
+     * {@link #signedShiftRight(Range)}. We give up the analysis when this range contains negative
+     * value(s).
+     */
     public Range unsignedShiftRight(Range right) {
+        if (this.from >= 0) {
+            return signedShiftRight(right);
+        }
+
         if (this.isNothing() || right.isNothing()) {
             return NOTHING;
         }

@@ -1,3 +1,6 @@
+// Upstream version:
+// http://jcip.net/annotations/doc/net/jcip/annotations/GuardedBy.html
+
 package net.jcip.annotations;
 
 import java.lang.annotation.Documented;
@@ -18,7 +21,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.FIELD})
+@Target({ElementType.FIELD, ElementType.METHOD})
 @PreconditionAnnotation(qualifier = LockHeld.class)
 public @interface GuardedBy {
     /**

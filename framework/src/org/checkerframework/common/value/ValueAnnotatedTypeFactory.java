@@ -239,20 +239,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
-        // Work around for Issue #1356
-        // https://github.com/typetools/checker-framework/issues/1356
-        Set<AnnotationMirror> annos = super.getDeclAnnotations(elt);
-        Set<AnnotationMirror> newSet = AnnotationUtils.createAnnotationSet();
-        for (AnnotationMirror anno : annos) {
-            if (!isSupportedQualifier(aliasedAnnotation(anno))) {
-                newSet.add(anno);
-            }
-        }
-        return newSet;
-    }
-
-    @Override
     public CFTransfer createFlowTransferFunction(
             CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         return new ValueTransfer(analysis);

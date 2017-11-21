@@ -1,5 +1,5 @@
 // Upstream version:
-// http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/UnknownNullness.html
+// http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/PossiblyNull.html
 
 package edu.umd.cs.findbugs.annotations;
 
@@ -12,4 +12,4 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
-public @interface UnknownNullness {}
+public @interface PossiblyNull {}
