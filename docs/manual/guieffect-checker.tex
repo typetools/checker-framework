@@ -312,7 +312,7 @@ This is sound because a method instantiated according to any qualifier will alwa
 safe to call in place of a method instantiated according to one of its super-qualifiers.
 This allows clients to pass ``safer'' instances of some object type to a given method.
 
-\subsubsection{Effect polymorphism and arguments}
+\subsubsection{Effect polymorphism and arguments\label{guieffect-overrides}}
 Sometimes it is useful to have \code{@PolyUI} parameters on a method.  As a trivial example, this
 permits us to specify an identity method that works for both \code{@UI Runnable} and
 \code{@AlwaysSafe Runnable}:
