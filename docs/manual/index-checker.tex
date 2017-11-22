@@ -47,9 +47,9 @@ write an \refqualclasswithparams{checker/index/qual}{IndexFor}{myArray}
 annotation on the formal parameter's types.
 
 The Index Checker checks fixed-size data structures, whose size is never
-changed after creation.  For example, a fixed-size data structure has no
-\<add()> or \<remove> operation.  Examples are strings and arrays, and you
-can add support for other fixed-size data structures (see
+changed after creation.  A fixed-size data structure has no \<add()> or
+\<remove> operation.  Examples are strings and arrays, and you can add
+support for other fixed-size data structures (see
 Section~\ref{index-annotating-fixed-size}).
 
 To run the Index Checker, run the command
@@ -622,9 +622,8 @@ is necessary.
 The Index Checker has built-in support for Strings and arrays.
 You can add support for additional fixed-size data structures by writing
 annotations.
-This allows the Index Checker to both typecheck the data structure's
-implementation
-and also typecheck uses of the class.
+This allows the Index Checker to typecheck the data structure's
+implementation and to typecheck uses of the class.
 
 This section gives an example:  a fixed-length collection.
 
