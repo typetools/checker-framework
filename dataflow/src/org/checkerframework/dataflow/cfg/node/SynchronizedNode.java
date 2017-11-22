@@ -19,9 +19,9 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
 
 public class SynchronizedNode extends Node {
 
-    protected /*@Nullable*/ Tree tree;
-    protected Node expression;
-    protected boolean startOfBlock;
+    protected final /*@Nullable*/ Tree tree;
+    protected final Node expression;
+    protected final boolean startOfBlock;
 
     public SynchronizedNode(
             /*@Nullable*/ Tree tree, Node expression, boolean startOfBlock, Types types) {

@@ -157,10 +157,13 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
 
     @Override
     public R visitDeclared(AnnotatedDeclaredType type, P p) {
-        if (visitedNodes.containsKey(type)) {
-            return visitedNodes.get(type);
+        if (!type.getTypeArguments().isEmpty()) {
+            // Only declared types with type arguments might be recursive.
+            if (visitedNodes.containsKey(type)) {
+                return visitedNodes.get(type);
+            }
+            visitedNodes.put(type, null);
         }
-        visitedNodes.put(type, null);
         R r = null;
         if (type.getEnclosingType() != null) {
             scan(type.getEnclosingType(), p);

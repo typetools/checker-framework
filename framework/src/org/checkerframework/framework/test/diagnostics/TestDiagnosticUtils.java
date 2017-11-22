@@ -236,6 +236,17 @@ public class TestDiagnosticUtils {
             TestDiagnostic diagnostic = fromJavaFileComment("", 0, diagnosticString);
             return new TestDiagnosticLine(
                     "", 0, originalLine, Collections.singletonList(diagnostic));
+        } else if (trimmedLine.startsWith("//::")) {
+            TestDiagnostic diagnostic =
+                    new TestDiagnostic(
+                            filename,
+                            lineNumber,
+                            DiagnosticKind.Error,
+                            "Use \"// ::\", not \"//::\"",
+                            false,
+                            true);
+            return new TestDiagnosticLine(
+                    filename, lineNumber, originalLine, Collections.singletonList(diagnostic));
         } else {
             return new TestDiagnosticLine(filename, errorLine, originalLine, EMPTY);
         }

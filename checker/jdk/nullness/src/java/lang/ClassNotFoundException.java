@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -70,6 +71,7 @@ public class ClassNotFoundException extends Exception {
     /**
      * Constructs a <code>ClassNotFoundException</code> with no detail message.
      */
+    @SideEffectFree
     public ClassNotFoundException() {
         super((Throwable)null);  // Disallow initCause
     }
@@ -80,6 +82,7 @@ public class ClassNotFoundException extends Exception {
      *
      * @param   s   the detail message.
      */
+    @SideEffectFree
     public ClassNotFoundException(@Nullable String s) {
         super(s, null);  //  Disallow initCause
     }
@@ -93,6 +96,7 @@ public class ClassNotFoundException extends Exception {
      * @param ex the exception that was raised while loading the class
      * @since 1.2
      */
+    @SideEffectFree
     public ClassNotFoundException(@Nullable String s, @Nullable Throwable ex) {
         super(s, null);  //  Disallow initCause
         this.ex = ex;

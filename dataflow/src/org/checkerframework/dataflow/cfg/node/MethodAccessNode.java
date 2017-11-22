@@ -20,9 +20,9 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class MethodAccessNode extends Node {
 
-    protected ExpressionTree tree;
-    protected ExecutableElement method;
-    protected Node receiver;
+    protected final ExpressionTree tree;
+    protected final ExecutableElement method;
+    protected final Node receiver;
 
     // TODO: add method to get modifiers (static, access level, ..)
 

@@ -758,7 +758,7 @@
             <isset property="debugger.on"/>
         </condition>
 
-        <ant dir="${framework.loc}">
+        <ant dir="${framework.loc}" inheritAll="false">
             <target name="all-tests-nojtreg-nobuild"/>
         </ant>
 
@@ -827,7 +827,7 @@
         </antcall>
     </target>
 
-    <target name="index-tests" depends="jar,build-tests"
+    <target name="index-tests" depends="jar,jdk.jar.exists,build-tests"
             description="Run tests for the Index Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.IndexTest"/>
@@ -841,7 +841,7 @@
         </antcall>
     </target>
 
-    <target name="lock-tests" depends="jar,build-tests"
+    <target name="lock-tests" depends="jar,jdk.jar.exists,build-tests"
             description="Run tests for the Lock Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.LockTest"/>
@@ -1452,7 +1452,8 @@
     </target>
 
     <target name="download-jdk" description="Downloads jdk8.jar from checkerframework.org/dev-jdk to checker/jdk and checker/dist">
-        <get src="https://checkerframework.org/dev-jdk/jdk8.jar" dest="jdk/jdk8.jar"/>
+        <get src="https://checkerframework.org/dev-jdk/jdk8.jar" dest="jdk/jdk8.jar"
+             usetimestamp="true"/>
 
         <!-- Copy jars to dist. If dist doesn't exist then the copy task creates it.-->
         <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar"/>
@@ -1507,6 +1508,8 @@
          <env key="LT_BIN" value="${LT_BIN}"/>
       </exec>
       <move file="jdk/jdk.jar" tofile="jdk/${jdkName}"/>
+      <!-- Copy jars to dist. If dist doesn't exist then the copy task creates it.-->
+      <copy file="jdk/${jdkName}" tofile="dist/${jdkName}"/>
 
     </target>
 
@@ -1540,9 +1543,6 @@
 
         <copy tofile="dist/javac.jar" file="${javac.lib}"
               overwrite="true" failonerror="true" />
-
-        <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar" overwrite="true" failonerror="false" />
-        <copy file="jdk/jdk9.jar" tofile="dist/jdk9.jar" overwrite="true" failonerror="false" />
     </target>
 
     <target name="jdk.jar.exists"

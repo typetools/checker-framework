@@ -23,7 +23,7 @@ import org.checkerframework.javacutil.InternalUtils;
  */
 public class ParameterizedTypeNode extends Node {
 
-    protected Tree tree;
+    protected final Tree tree;
 
     public ParameterizedTypeNode(Tree t) {
         super(InternalUtils.typeOf(t));

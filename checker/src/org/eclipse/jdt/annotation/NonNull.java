@@ -1,3 +1,6 @@
+// Upstream version:
+// https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/NonNull.html
+
 package org.eclipse.jdt.annotation;
 
 import java.lang.annotation.Documented;
@@ -8,5 +11,5 @@ import java.lang.annotation.Target;
 
 @Documented
 @Retention(RetentionPolicy.CLASS)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({ElementType.TYPE_USE})
 public @interface NonNull {}

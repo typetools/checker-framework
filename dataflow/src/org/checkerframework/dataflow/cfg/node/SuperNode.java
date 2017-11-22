@@ -19,7 +19,7 @@ import org.checkerframework.javacutil.InternalUtils;
  */
 public class SuperNode extends Node {
 
-    protected Tree tree;
+    protected final Tree tree;
 
     public SuperNode(Tree t) {
         super(InternalUtils.typeOf(t));

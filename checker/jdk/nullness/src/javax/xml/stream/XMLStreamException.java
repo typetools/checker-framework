@@ -49,7 +49,8 @@ public class XMLStreamException extends Exception {
   /**
    * Default constructor
    */
-  @SideEffectFree public XMLStreamException(){
+  @SideEffectFree
+  public XMLStreamException(){
     super();
   }
 
@@ -58,7 +59,8 @@ public class XMLStreamException extends Exception {
    *
    * @param msg the message to report
    */
-  @SideEffectFree public XMLStreamException(@Nullable String msg) {
+  @SideEffectFree
+  public XMLStreamException(@Nullable String msg) {
     super(msg);
   }
 
@@ -67,7 +69,8 @@ public class XMLStreamException extends Exception {
    *
    * @param th a nested exception
    */
-  @SideEffectFree public XMLStreamException(@Nullable Throwable th) {
+  @SideEffectFree
+  public XMLStreamException(@Nullable Throwable th) {
       super(th);
     nested = th;
   }
@@ -78,7 +81,8 @@ public class XMLStreamException extends Exception {
    * @param th a nested exception
    * @param msg the message to report
    */
-  @SideEffectFree public XMLStreamException(@Nullable String msg, @Nullable Throwable th) {
+  @SideEffectFree
+  public XMLStreamException(@Nullable String msg, @Nullable Throwable th) {
     super(msg, th);
     nested = th;
   }
@@ -90,7 +94,8 @@ public class XMLStreamException extends Exception {
    * @param msg the message to report
    * @param location the location of the error
    */
-  @SideEffectFree public XMLStreamException(@Nullable String msg, Location location, @Nullable Throwable th) {
+  @SideEffectFree
+  public XMLStreamException(@Nullable String msg, Location location, @Nullable Throwable th) {
     super("ParseError at [row,col]:["+location.getLineNumber()+","+
           location.getColumnNumber()+"]\n"+
           "Message: "+msg);
@@ -104,7 +109,8 @@ public class XMLStreamException extends Exception {
    * @param msg the message to report
    * @param location the location of the error
    */
-  @SideEffectFree public XMLStreamException(@Nullable String msg,
+  @SideEffectFree
+  public XMLStreamException(@Nullable String msg,
                             Location location) {
     super("ParseError at [row,col]:["+location.getLineNumber()+","+
           location.getColumnNumber()+"]\n"+
@@ -118,7 +124,8 @@ public class XMLStreamException extends Exception {
    *
    * @return Nested exception
    */
-  @Pure public @Nullable Throwable getNestedException() {
+  @Pure
+  public @Nullable Throwable getNestedException() {
     return nested;
   }
 
