@@ -69,9 +69,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     protected class GuiEffectOverrideChecker extends OverrideChecker {
         /**
          * Extend the receiver part of the method override check. We extend the standard check, to
-         * additionally permit narrowing the receiver's permission to {@code @AlwaysSafe} in a
-         * safe instantiation of a {@code @PolyUIType}. Returns true if the override is
-         * permitted.
+         * additionally permit narrowing the receiver's permission to {@code @AlwaysSafe} in a safe
+         * instantiation of a {@code @PolyUIType}. Returns true if the override is permitted.
          */
         @Override
         protected boolean checkReceiverOverride() {
@@ -84,7 +83,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             // TODO: Does this need to be improved for generic receivers?  I.e., do we need to
             // add extra checking to reject the case of also changing qualifiers in type parameters?
             // Such as overriding a {@code @PolyUI C<@UI T>} by {@code @AlwaysSafe C<@AlwaysSafe
-            // T>}?  The change to the receiver permission is acceptable, while the change to the 
+            // T>}?  The change to the receiver permission is acceptable, while the change to the
             // parameter should be rejected.
             AnnotatedTypeMirror overriddenReceiver =
                     overrider.getReceiverType().getErased().shallowCopy(false);
