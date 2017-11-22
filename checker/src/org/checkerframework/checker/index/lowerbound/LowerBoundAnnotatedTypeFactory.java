@@ -141,6 +141,15 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /** chars are unsigned implies chars are non-negative. See JLS 4.2. */
+    private void ensureCharNonNegative(AnnotatedTypeMirror type) {
+        if (type.getUnderlyingType().getKind() == TypeKind.CHAR) {
+            if (qualHierarchy.isSubtype(NN, type.getAnnotationInHierarchy(UNKNOWN))) {
+                type.replaceAnnotation(NN);
+            }
+        }
+    }
+
     @Override
     public void addComputedTypeAnnotations(Element element, AnnotatedTypeMirror type) {
         super.addComputedTypeAnnotations(element, type);
@@ -149,11 +158,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     getValueAnnotatedTypeFactory().getAnnotatedType(element);
             addLowerBoundTypeFromValueType(valueType, type);
         }
-        // chars are unsigned -> chars are non-negative. See JLS 4.2.
-        if (type.getUnderlyingType().getKind() == TypeKind.CHAR
-                && type.getAnnotation(Positive.class) == null) {
-            type.replaceAnnotation(NN);
-        }
+        ensureCharNonNegative(type);
     }
 
     @Override
@@ -166,11 +171,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
             addLowerBoundTypeFromValueType(valueType, type);
         }
-        // chars are unsigned -> chars are non-negative. See JLS 4.2.
-        if (type.getUnderlyingType().getKind() == TypeKind.CHAR
-                && type.getAnnotation(Positive.class) == null) {
-            type.replaceAnnotation(NN);
-        }
+        ensureCharNonNegative(type);
     }
 
     /** Returns the Value Checker's annotated type factory. */
