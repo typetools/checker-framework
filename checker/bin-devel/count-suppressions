@@ -23,7 +23,7 @@ if [ "$regex" = "nullness" ]; then
     regex="\(nullness\|initialization\|rawness\|keyfor\)"
 fi
 if [ "$regex" = "index" ]; then
-    regex="\(index\|lowerbound\|upperbound\)"
+    regex="\(index\|lowerbound\|samelen\|searchindex\|substringindex\|upperbound\)"
 fi
 
 # Implementation notes:
