@@ -46,6 +46,12 @@ if a method's formal parameter is used as an index for
 write an \refqualclasswithparams{checker/index/qual}{IndexFor}{myArray}
 annotation on the formal parameter's types.
 
+The Index Checker checks fixed-size data structures, whose size is never
+changed after creation.  For example, a fixed-size data structure has no
+\<add()> or \<remove> operation.  Examples are strings and arrays, and you
+can add support for other fixed-size data structures (see
+Section~\ref{index-annotating-fixed-size}).
+
 To run the Index Checker, run the command
 
 \begin{alltt}
@@ -611,103 +617,51 @@ the example type-check without false positives, a new annotation such as
 is necessary.
 
 
-\section{Annotating your own fixed-size data structures\label{index-annotating-fixed-size}}
+\section{Annotating fixed-size data structures\label{index-annotating-fixed-size}}
 
-The Index Checker, by default, checks the bounds of Strings and
-of arrays. But, often the data structures actually in use in a
-program are \emph{wrappers} for these types. This section will
-explain how to annotate a fixed-size data structure, backed
-by a String or array, that you are writing, so that the Index
-Checker can check it just like any array or String. Note that
-the Index Checker only supports fixed-size data structures---that is,
-only those data structures whose size is set when they are created,
-and cannot be changed.
+The Index Checker has built-in support for Strings and arrays.
+You can add support for additional fixed-size data structures by writing
+annotations.
+This allows the Index Checker to both typecheck the data structure's
+implementation
+and also typecheck uses of the class.
 
-Consider the following weakly-typed, fixed-length collection:
+This section gives an example:  a fixed-length collection.
+
 \begin{Verbatim}
-/*
- * ArrayWrapper is a fixed-size, weakly typed generic collection.
- */
+/** ArrayWrapper is a fixed-size, weakly-typed generic collection. */
 public class ArrayWrapper<T> {
-    private final Object [] internalRep;
+    private final Object @SameLen("this") [] delegate;
 
-    ArrayWrapper(int size) {
-        internalRep = new Object[size];
+    @SuppressWarnings("index") // constructor creates object of size @SameLen(this) by definition
+    ArrayWrapper(@NonNegative int size) {
+        delegate = new Object[size];
     }
 
-    public int size() {
-        return internalRep.length;
+    public @LengthOf("this") int size() {
+        return delegate.length;
     }
 
-    public void set(int index, T obj) {
-        internalRep[index] = obj;
+    public void set(@IndexFor("this") int index, T obj) {
+        delegate[index] = obj;
     }
 
-    @SuppressWarnings("unchecked")
-    public T get(int index) {
-        return (T) internalRep[index];
+    @SuppressWarnings("unchecked") // required for normal Java compilation due to unchecked cast
+    public T get(@IndexFor("this") int index) {
+        return (T) delegate[index];
     }
 }
 \end{Verbatim}
 
-To allow the Index Checker to both typecheck this class and to typecheck uses
-of this class as if this class were, itself, an array, we need to add several
-annotations.
-
-Starting at the top of the class, the first annotation needed is on
-the internal field \code{internalRep}. To establish the relationship
-between the internal representation (an array) and this class,
-a \code{@SameLen("this")} annotation is added to the field. The resulting
-definition is:
+With these annotations, client code like the following typechecks with no
+warnings:
 \begin{Verbatim}
-    private final Object @SameLen("this") [] internalRep;
-\end{Verbatim}
-
-Next, some annotations are needed on the constructor. Since the \code{size}
-parameter is used to create an array, it must be \code{@NonNegative}.
-However, the assignment to \code{internalRep} still does not typecheck, as
-the SameLen Checker reports that \code{new Object[size]} is not
-\code{@SameLen("this")}. This warning must be suppressed; suppressing it
-indicates to the typechecker what the relationship between the external
-representation of the class (\code{"this"}) and the internal representation
-(\code{internalRep}) is. Because of the limitations of Java annotations,
-the resulting constructor looks like this:
-\begin{Verbatim}
-    ArrayWrapper(@NonNegative int size) {
-        @SuppressWarnings("index") // use the SameLen checker to ensure that anything that's an index for "this" is an
-        // index for the internal array representation. This suppress warnings asserts this fact.
-        final Object @SameLen("this") [] tmp = new Object[size];
-        internalRep = tmp;
-    }
-\end{Verbatim}
-
-An annotation must also be written on the \code{size} method. The return type should be
-annotated as \code{@LengthOf("this")}; the SameLen annotation above allows
-this to typecheck with no other annotations. The resulting method is:
-\begin{Verbatim}
-    public @LengthOf("this") int size() {
-        return internalRep.length;
-    }
-\end{Verbatim}
-
-Finally, annotations must be added to the \code{set} and \code{get} methods.
-These annotations, too, need only reference \code{this}:
-\begin{Verbatim}
-    public void set(@IndexFor("this") int index, T obj) {
-        internalRep[index] = obj;
+    public static void clearIndex1(ArrayWrapper<? extends Object> a, @IndexFor("#1") int i) {
+        a.set(i, null);
     }
 
-    @SuppressWarnings("unchecked")
-    public T get(@IndexFor("this") int index) {
-        return (T) internalRep[index];
-    }
-\end{Verbatim}
-
-With these annotations, users can treat \code{ArrayWrapper} as if it were an
-array; code like the following typechecks with no warnings:
-\begin{Verbatim}
-    public static void clearIndex(ArrayWrapper a, @NonNegative int i) {
-        if (i < a.size()) {
+    public static void clearIndex2(ArrayWrapper<? extends Object> a, int i) {
+        if (0 <= i && i < a.size()) {
             a.set(i, null);
         }
     }
