@@ -34,7 +34,9 @@ api
 build
 dist
 stubparser/docs/api
-# Don't want to ignore .jar files in checker/lib/
+# Don't want to ignore .jar files in
+# docs/tutorial/eclipse-projects/personalblog-demo/lib/ and a few
+# other places
 # *.jar
 checker/jdk/jdk*.jar
 checker/jdk/**/*.class
