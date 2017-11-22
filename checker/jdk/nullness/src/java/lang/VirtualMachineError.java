@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -41,6 +42,7 @@ abstract public class VirtualMachineError extends Error {
     /**
      * Constructs a <code>VirtualMachineError</code> with no detail message.
      */
+    @SideEffectFree
     public VirtualMachineError() {
         super();
     }
@@ -51,6 +53,7 @@ abstract public class VirtualMachineError extends Error {
      *
      * @param   message   the detail message.
      */
+    @SideEffectFree
     public VirtualMachineError(@Nullable String message) {
         super(message);
     }
@@ -69,6 +72,7 @@ abstract public class VirtualMachineError extends Error {
      *         unknown.)
      * @since  1.8
      */
+    @SideEffectFree
     public VirtualMachineError(@Nullable String message, @Nullable Throwable cause) {
         super(message, cause);
     }
@@ -85,6 +89,7 @@ abstract public class VirtualMachineError extends Error {
      *         unknown.)
      * @since  1.8
      */
+    @SideEffectFree
     public VirtualMachineError(@Nullable Throwable cause) {
         super(cause);
     }

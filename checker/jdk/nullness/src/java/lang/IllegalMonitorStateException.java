@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -48,6 +49,7 @@ class IllegalMonitorStateException extends RuntimeException {
      * Constructs an <code>IllegalMonitorStateException</code> with no
      * detail message.
      */
+    @SideEffectFree
     public IllegalMonitorStateException() {
         super();
     }
@@ -58,6 +60,7 @@ class IllegalMonitorStateException extends RuntimeException {
      *
      * @param   s   the detail message.
      */
+    @SideEffectFree
     public IllegalMonitorStateException(@Nullable String s) {
         super(s);
     }

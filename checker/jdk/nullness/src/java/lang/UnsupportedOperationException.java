@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -41,6 +42,7 @@ public class UnsupportedOperationException extends RuntimeException {
     /**
      * Constructs an UnsupportedOperationException with no detail message.
      */
+    @SideEffectFree
     public UnsupportedOperationException() {
     }
 
@@ -50,6 +52,7 @@ public class UnsupportedOperationException extends RuntimeException {
      *
      * @param message the detail message
      */
+    @SideEffectFree
     public UnsupportedOperationException(@Nullable String message) {
         super(message);
     }
@@ -70,6 +73,7 @@ public class UnsupportedOperationException extends RuntimeException {
      *         unknown.)
      * @since 1.5
      */
+    @SideEffectFree
     public UnsupportedOperationException(@Nullable String message, @Nullable Throwable cause) {
         super(message, cause);
     }
@@ -88,6 +92,7 @@ public class UnsupportedOperationException extends RuntimeException {
      *         unknown.)
      * @since  1.5
      */
+    @SideEffectFree
     public UnsupportedOperationException(@Nullable Throwable cause) {
         super(cause);
     }
