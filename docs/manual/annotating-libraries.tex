@@ -34,8 +34,10 @@ annotations in the class files for code that was previously compiled.)
 \section{Using annotated libraries from the Checker Framework distribution\label{annotated-libraries-using}}
 
 The Checker Framework distribution contains annotated versions of popular
-libraries in directory \<checker-framework/checker/lib/>.  See its
-\href{https://github.com/typetools/specified-libraries/tree/master/}{\<README.md>
+libraries in
+directory \<checker-framework/checker/annotated-libraries/>.
+See its
+\href{https://github.com/typetools/annotated-libraries/tree/master/}{\<README.md>
   file} for a list of the currently-available libraries.
 
 %% Todo: this should be done automatically for the user.
@@ -254,7 +256,7 @@ This section describes the typical workflow for creating a
 partially-annotated library.
 
 \begin{enumerate}
-\item Read file \<checker-framework/checker/lib/README>
+\item Read file \<checker-framework/checker/annotated-libraries/README.md>
   to find out whether an annotated version of the library already exists.
 %% This adds clutter to the source code, so omit the step from these instructions.
 % \item Optionally, run a script that adds
@@ -328,7 +330,8 @@ partially-annotated library.
     Please inform the Checker Framework developers
     about your new annotated library by opening an issue.
     This will let us include your annotated \<.jar> file in directory
-    \<checker-framework/checker/lib/> of the Checker Framework release.
+    \<checker-framework/checker/annotated-libraries/> of the Checker
+    Framework release.
 
   \item
     Encourage the library's maintainers to accept your annotations into its
