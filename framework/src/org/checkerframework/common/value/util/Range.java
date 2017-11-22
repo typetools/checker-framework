@@ -283,8 +283,8 @@ public class Range {
 
     /**
      * Returns the smallest range that includes all possible values resulting from adding an
-     * arbitrary value in the specified range to an arbitrary value in this range. We call this We
-     * call this the addition of two ranges.
+     * arbitrary value in the specified range to an arbitrary value in this range. We call this the
+     * addition of two ranges.
      *
      * @param right a range to be added to this range
      * @return the range resulting from the addition of the specified range and this range
@@ -298,7 +298,11 @@ public class Range {
             // This bound is adequate to guarantee no overflow when using long to evaluate
             long resultFrom = from + right.from;
             long resultTo = to + right.to;
-            return new Range(resultFrom, resultTo);
+            if (from > to) {
+                return Range.EVERYTHING;
+            } else {
+                return new Range(resultFrom, resultTo);
+            }
         } else {
             BigInteger bigFrom = BigInteger.valueOf(from).add(BigInteger.valueOf(right.from));
             BigInteger bigTo = BigInteger.valueOf(to).add(BigInteger.valueOf(right.to));

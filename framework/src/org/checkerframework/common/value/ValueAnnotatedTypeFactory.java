@@ -307,6 +307,74 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
+     * Finds the appropriate value for the {@code from} value of an annotated type mirror containing
+     * an {@code IntRange} annotation.
+     *
+     * @param atm An annotated type mirror that contains an {@code IntRange} annotation.
+     * @return either the from value from the passed int range annotation, or the minimum value of
+     *     the domain of the underlying type (i.e. Integer.MIN_VALUE if the underlying type is int)
+     */
+    public long getFromValueFromIntRange(AnnotatedTypeMirror atm) {
+        AnnotationMirror anno = atm.getAnnotation(IntRange.class);
+        long from;
+        if (AnnotationUtils.hasElementValue(anno, "from")) {
+            from = AnnotationUtils.getElementValue(anno, "from", Long.class, false);
+        } else {
+            switch (atm.getUnderlyingType().getKind()) {
+                case INT:
+                    from = Integer.MIN_VALUE;
+                    break;
+                case SHORT:
+                    from = Short.MIN_VALUE;
+                    break;
+                case BYTE:
+                    from = Byte.MIN_VALUE;
+                    break;
+                case CHAR:
+                    from = Character.MIN_VALUE;
+                    break;
+                default:
+                    from = Long.MIN_VALUE;
+            }
+        }
+        return from;
+    }
+
+    /**
+     * Finds the appropriate value for the {@code to} value of an annotated type mirror containing
+     * an {@code IntRange} annotation.
+     *
+     * @param atm An annotated type mirror that contains an {@code IntRange} annotation.
+     * @return either the to value from the passed int range annotation, or the maximum value of the
+     *     domain of the underlying type (i.e. Integer.MAX_VALUE if the underlying type is int)
+     */
+    public long getToValueFromIntRange(AnnotatedTypeMirror atm) {
+        AnnotationMirror anno = atm.getAnnotation(IntRange.class);
+        long to;
+        if (AnnotationUtils.hasElementValue(anno, "to")) {
+            to = AnnotationUtils.getElementValue(anno, "to", Long.class, false);
+        } else {
+            switch (atm.getUnderlyingType().getKind()) {
+                case INT:
+                    to = Integer.MAX_VALUE;
+                    break;
+                case SHORT:
+                    to = Short.MAX_VALUE;
+                    break;
+                case BYTE:
+                    to = Byte.MAX_VALUE;
+                    break;
+                case CHAR:
+                    to = Character.MAX_VALUE;
+                    break;
+                default:
+                    to = Long.MAX_VALUE;
+            }
+        }
+        return to;
+    }
+
+    /**
      * Performs pre-processing on annotations written by users, replacing illegal annotations by
      * legal ones.
      */
@@ -333,14 +401,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Void)} which issues warnings to users in these cases.
          *
          * <p>If any @IntRange or @ArrayLenRange annotation has incorrect parameters, e.g. the value
-         * "from" is greater than the value "to", replaces the annotation by @BOTTOMVAL. The {@link
+         * "from" is greater than the value "to", replaces the annotation by {@code @BottomVal}. The
+         * {@link
          * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
-         * Void)} would raise an error to users in this case.
+         * Void)} raises an error to users if the annotation was user-written.
          *
-         * <p>If any @ArrayLen annotation has a negative number, replaces the annotation
-         * by @BOTTOMVAL. The {@link
+         * <p>If any @ArrayLen annotation has a negative number, replaces the annotation by {@code
+         * BottomVal}. The {@link
          * org.checkerframework.common.value.ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree,
-         * Void)} would raise an error to users in this case.
+         * Void)} raises an error to users if the annotation was user-written.
          *
          * <p>If a user only writes one side of an {@code IntRange} annotation, this method also
          * computes an appropriate default based on the underlying type for the other side of the
@@ -376,42 +445,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                 } else if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
                     // Compute appropriate defaults for integral ranges.
-                    long from, to;
-                    if (AnnotationUtils.hasElementValue(anno, "from")) {
-                        from = AnnotationUtils.getElementValue(anno, "from", Long.class, false);
-                    } else {
-                        switch (atm.getUnderlyingType().getKind()) {
-                            case INT:
-                                from = Integer.MIN_VALUE;
-                                break;
-                            case SHORT:
-                                from = Short.MIN_VALUE;
-                                break;
-                            case BYTE:
-                                from = Byte.MIN_VALUE;
-                                break;
-                            default:
-                                from = Long.MIN_VALUE;
-                        }
-                    }
-                    if (AnnotationUtils.hasElementValue(anno, "to")) {
-                        to = AnnotationUtils.getElementValue(anno, "to", Long.class, false);
-                    } else {
-                        switch (atm.getUnderlyingType().getKind()) {
-                            case INT:
-                                to = Integer.MAX_VALUE;
-                                break;
-                            case SHORT:
-                                to = Short.MAX_VALUE;
-                                break;
-                            case BYTE:
-                                to = Byte.MAX_VALUE;
-                                break;
-                            default:
-                                to = Long.MAX_VALUE;
-                        }
-                    }
+                    long from = getFromValueFromIntRange(atm);
+                    long to = getToValueFromIntRange(atm);
+
                     if (from > to) {
+                        // from > to either indicates a user error when writing an
+                        // annotation or an error in the checker's implementation -
+                        // from should always be <= to. ValueVisitor#validateType will
+                        // issue an error.
                         atm.replaceAnnotation(BOTTOMVAL);
                     } else {
                         // Always do a replacement of the annotation here so that
@@ -422,8 +463,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else if (AnnotationUtils.areSameByClass(anno, ArrayLenRange.class)) {
                     int from = AnnotationUtils.getElementValue(anno, "from", Integer.class, true);
                     int to = AnnotationUtils.getElementValue(anno, "to", Integer.class, true);
-                    if (from > to || from < 0) {
+                    if (from > to) {
+                        // from > to either indicates a user error when writing an
+                        // annotation or an error in the checker's implementation -
+                        // from should always be <= to. ValueVisitor#validateType will
+                        // issue an error.
                         atm.replaceAnnotation(BOTTOMVAL);
+                    } else if (from < 0) {
+                        // No array can have a length less than 0. Any time the type includes a from
+                        // less than zero, it must indicate imprecision in the checker.
+                        atm.replaceAnnotation(createArrayLenRangeAnnotation(0, to));
                     }
                 } else if (AnnotationUtils.areSameByClass(anno, StringVal.class)) {
                     // The annotation is StringVal. If there are too many elements,
