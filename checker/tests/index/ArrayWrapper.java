@@ -2,12 +2,15 @@
 // This class wraps an array, but doesn't expose the array in its public interface. This test
 // ensures that indexes for this new collection can be annotated as if the collection were an array.
 
+// Note that there is a copy of this code in the manual in index-checker.tex. If this code is
+// updated, you MUST update that copy, as well.
+
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.LengthOf;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.SameLen;
 
-/** ArrayWrapper is a fixed-size, weakly-typed generic collection. */
+/** ArrayWrapper is a fixed-size generic collection. */
 public class ArrayWrapper<T> {
     private final Object @SameLen("this") [] delegate;
 
