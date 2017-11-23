@@ -61,7 +61,8 @@ public class InternalUtils {
     }
 
     /**
-     * Gets the {@link Element} ("symbol") for the given Tree API node.
+     * Gets the {@link Element} ("symbol") for the given Tree API node. For an object instantiation
+     * returns the result of {@link InternalUtils#constructor(NewClassTree)}.
      *
      * @param tree the {@link Tree} node to get the symbol for
      * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal
@@ -105,7 +106,7 @@ public class InternalUtils {
                 return symbol(((ArrayAccessTree) tree).getExpression());
 
             case NEW_CLASS:
-                return ((JCNewClass) tree).constructor;
+                return constructor((JCNewClass) tree);
 
             case MEMBER_REFERENCE:
                 // TreeInfo.symbol, which is used in the default case, didn't handle
@@ -138,12 +139,6 @@ public class InternalUtils {
     }
 
     /**
-     * indicates whether it should return the constructor that gets invoked in cases of anonymous
-     * classes
-     */
-    private static final boolean RETURN_INVOKE_CONSTRUCTOR = true;
-
-    /**
      * Determines the symbol for a constructor given an invocation via {@code new}.
      *
      * <p>If the tree is a declaration of an anonymous class, then method returns constructor that
@@ -162,7 +157,7 @@ public class InternalUtils {
 
         JCNewClass newClassTree = (JCNewClass) tree;
 
-        if (RETURN_INVOKE_CONSTRUCTOR && tree.getClassBody() != null) {
+        if (tree.getClassBody() != null) {
             // anonymous constructor bodies should contain exactly one statement
             // in the form:
             //    super(arg1, ...)
@@ -179,13 +174,10 @@ public class InternalUtils {
             JCExpressionStatement stmt = (JCExpressionStatement) anonConstructor.body.stats.head;
             JCTree.JCMethodInvocation superInvok = (JCMethodInvocation) stmt.expr;
             return (ExecutableElement) TreeInfo.symbol(superInvok.meth);
+        } else {
+            Element e = newClassTree.constructor;
+            return (ExecutableElement) e;
         }
-
-        Element e = newClassTree.constructor;
-
-        assert e instanceof ExecutableElement;
-
-        return (ExecutableElement) e;
     }
 
     public static final List<AnnotationMirror> annotationsFromTypeAnnotationTrees(
