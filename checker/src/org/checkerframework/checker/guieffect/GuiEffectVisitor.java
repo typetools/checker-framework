@@ -250,9 +250,6 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     @Override
     public Void visitReturn(ReturnTree node, Void p) {
         Void result = super.visitReturn(node, p);
-        /*if (node.getExpression() != null && TreeUtils.enclosingClass(getCurrentPath()).toString().contains("Java8"))
-        System.err.println(TreeUtils.enclosingMethodOrLambda(getCurrentPath()) + " returns: " + node.getExpression() + " with type " +
-            atypeFactory.getAnnotatedType(node.getExpression()));*/
         if (node.getExpression() != null
                 && node.getExpression().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
 
@@ -365,14 +362,12 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 atypeFactory.methodFromUse(node);
         AnnotatedExecutableType invokedMethod = mfuPair.first;
         List<? extends VariableElement> parameters = methodElt.getParameters();
-        List<AnnotatedTypeMirror> typeargs =
+        List<AnnotatedTypeMirror> argsTypes =
                 AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());
         for (int i = 0; i < args.size(); ++i) {
             if (args.get(i) instanceof LambdaExpressionTree) {
-                // !! This doesn't work, because BaseTypeVisitor.shouldSkipUses(...) always returns true from lambdas
-                //commonAssignmentCheck(typeargs.get(i), args.get(i), "argument.type.incompatible");
                 lambdaAssignmentCheck(
-                        typeargs.get(i),
+                        argsTypes.get(i),
                         (LambdaExpressionTree) args.get(i),
                         "argument.type.incompatible");
             }
