@@ -214,8 +214,8 @@
                 <exclude name="${checker.jdk8orhigher.sources}" if="${jdk7orlower}"/>
             </fileset>
 
-            <link href="http://docs.oracle.com/javase/8/docs/api/"/>
-            <link href="http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
+            <link href="https://docs.oracle.com/javase/8/docs/api/"/>
+            <link href="https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
             <taglet name="org.checkerframework.javacutil.dist.ManualTaglet"
                     path="${javacutil.loc}/${build}"/>
         </javadoc>
