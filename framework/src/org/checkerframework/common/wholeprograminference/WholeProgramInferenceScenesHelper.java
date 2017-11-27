@@ -1,15 +1,5 @@
 package org.checkerframework.common.wholeprograminference;
 
-import annotations.Annotation;
-import annotations.el.AClass;
-import annotations.el.AField;
-import annotations.el.AMethod;
-import annotations.el.AScene;
-import annotations.el.ATypeElement;
-import annotations.el.DefException;
-import annotations.el.InnerTypeLocation;
-import annotations.io.IndexFileParser;
-import annotations.io.IndexFileWriter;
 import com.sun.tools.javac.code.TypeAnnotationPosition;
 import java.io.File;
 import java.io.FileWriter;
@@ -38,6 +28,16 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
+import scenelib.annotations.Annotation;
+import scenelib.annotations.el.AClass;
+import scenelib.annotations.el.AField;
+import scenelib.annotations.el.AMethod;
+import scenelib.annotations.el.AScene;
+import scenelib.annotations.el.ATypeElement;
+import scenelib.annotations.el.DefException;
+import scenelib.annotations.el.InnerTypeLocation;
+import scenelib.annotations.io.IndexFileParser;
+import scenelib.annotations.io.IndexFileWriter;
 
 /**
  * This class stores annotations for fields, method return types, and method parameters.

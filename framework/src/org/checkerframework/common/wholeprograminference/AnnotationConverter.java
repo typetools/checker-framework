@@ -1,11 +1,5 @@
 package org.checkerframework.common.wholeprograminference;
 
-import annotations.Annotation;
-import annotations.el.AnnotationDef;
-import annotations.field.AnnotationFieldType;
-import annotations.field.ArrayAFT;
-import annotations.field.BasicAFT;
-import annotations.field.ScalarAFT;
 import com.sun.tools.javac.code.Attribute.Array;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
@@ -22,6 +16,12 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
+import scenelib.annotations.Annotation;
+import scenelib.annotations.el.AnnotationDef;
+import scenelib.annotations.field.AnnotationFieldType;
+import scenelib.annotations.field.ArrayAFT;
+import scenelib.annotations.field.BasicAFT;
+import scenelib.annotations.field.ScalarAFT;
 
 /**
  * This class has auxiliary methods that performs conversion between {@link annotations.Annotation}
