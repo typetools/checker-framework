@@ -707,7 +707,7 @@ public class AnnotationClassLoader {
      * @param fullyQualifiedAnnoNames a set of strings where each string is a single annotation
      *     class's fully qualified name
      * @return a set of loaded annotation classes
-     * @see #loadAnnotationClass(String)
+     * @see #loadAnnotationClass(String, boolean)
      */
     protected final Set<Class<? extends Annotation>> loadAnnotationClasses(
             final /*@Nullable*/ Set<String> fullyQualifiedAnnoNames, boolean issueWarnings) {
@@ -732,7 +732,7 @@ public class AnnotationClassLoader {
      * Checks to see whether a particular annotation class is supported.
      *
      * <p>By default, all loaded annotations that pass the basic checks in {@link
-     * #loadAnnotationClass(String)} are supported.
+     * #loadAnnotationClass(String, boolean)} are supported.
      *
      * <p>Individual checkers can create a subclass of AnnotatedTypeLoader and override this method
      * to indicate whether a particular annotation is supported.
