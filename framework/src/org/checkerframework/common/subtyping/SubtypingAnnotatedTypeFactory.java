@@ -33,11 +33,7 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // load individually named qualifiers
         if (qualNames != null) {
             for (String qualName : qualNames.split(",")) {
-                Class<? extends Annotation> loadedClass =
-                        loader.loadExternalAnnotationClass(qualName);
-                if (loadedClass != null) {
-                    qualSet.add(loadedClass);
-                }
+                qualSet.add(loader.loadExternalAnnotationClass(qualName));
             }
         }
 
