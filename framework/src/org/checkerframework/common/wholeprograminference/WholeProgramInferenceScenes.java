@@ -1,9 +1,5 @@
 package org.checkerframework.common.wholeprograminference;
 
-import annotations.el.AClass;
-import annotations.el.AField;
-import annotations.el.AMethod;
-import annotations.util.JVMNames;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -36,6 +32,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
+import scenelib.annotations.el.AClass;
+import scenelib.annotations.el.AField;
+import scenelib.annotations.el.AMethod;
+import scenelib.annotations.util.JVMNames;
 
 /**
  * WholeProgramInferenceScenes is an implementation of {@link
