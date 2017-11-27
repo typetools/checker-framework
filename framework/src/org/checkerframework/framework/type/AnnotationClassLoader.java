@@ -652,6 +652,9 @@ public class AnnotationClassLoader {
      * annotation that is supported by a checker.
      *
      * @param fullyQualifiedClassName the fully qualified name of the class
+     * @param issueWarnings set to true to issue a warning when a loaded annotation is not a type
+     *     annotation. It is useful to set this to true if a given annotation must be a well-defined
+     *     type annotation (eg annotation class names given as command line arguments).
      * @return the loaded annotation class if it has a {@code @Target} meta-annotation with the
      *     required ElementType values, and is a supported annotation by a checker. If the
      *     annotation is not supported by a checker, null is returned.
@@ -706,6 +709,11 @@ public class AnnotationClassLoader {
      *
      * @param fullyQualifiedAnnoNames a set of strings where each string is a single annotation
      *     class's fully qualified name
+     * @param issueWarnings set to true to issue a warning when a loaded annotation is not a type
+     *     annotation. It is useful to set this to true if the given set of annotations must all be
+     *     well-defined type annotations (eg annotation class names given as command line
+     *     arguments). This should be set to false if the given set of annotations contain
+     *     meta-annotations or non-type annotations.
      * @return a set of loaded annotation classes
      * @see #loadAnnotationClass(String, boolean)
      */
