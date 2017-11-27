@@ -47,8 +47,8 @@ import scenelib.annotations.util.JVMNames;
  * #updateInferredMethodParameterTypes updateInferredMethodParameterTypes}, {@link
  * #updateInferredParameterType updateInferredParameterType}, or {@link
  * #updateInferredMethodReturnType updateInferredMethodReturnType}) replaces the currently-stored
- * type for an element in a {@link annotations.el.AScene}, if any, by the LUB of it and the update
- * method's argument.
+ * type for an element in a {@link scenelib.annotations.el.AScene}, if any, by the LUB of it and the
+ * update method's argument.
  *
  * <p>This class does not perform inference for an element if the element has explicit annotations:
  * an update* method ignores an explicitly annotated field, method return, or method parameter when
