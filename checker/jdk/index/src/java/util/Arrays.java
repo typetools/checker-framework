@@ -3308,7 +3308,7 @@ public class Arrays {
      * @return a string representation of <tt>a</tt>
      * @since 1.5
      */
-    public static String toString(long[] a) {
+    public static @MinLen(2) String toString(long[] a) {
         if (a == null)
             return "null";
         int iMax = a.length - 1;
@@ -3338,7 +3338,7 @@ public class Arrays {
      * @return a string representation of <tt>a</tt>
      * @since 1.5
      */
-    public static String toString(int[] a) {
+    public static @MinLen(2) String toString(int[] a) {
         if (a == null)
             return "null";
         int iMax = a.length - 1;
@@ -3368,7 +3368,7 @@ public class Arrays {
      * @return a string representation of <tt>a</tt>
      * @since 1.5
      */
-    public static String toString(short[] a) {
+    public static @MinLen(2) String toString(short[] a) {
         if (a == null)
             return "null";
         int iMax = a.length - 1;
@@ -3398,7 +3398,7 @@ public class Arrays {
      * @return a string representation of <tt>a</tt>
      * @since 1.5
      */
-    public static String toString(char[] a) {
+    public static @MinLen(2) String toString(char[] a) {
         if (a == null)
             return "null";
         int iMax = a.length - 1;
@@ -3428,7 +3428,7 @@ public class Arrays {
      * @return a string representation of <tt>a</tt>
      * @since 1.5
      */
-    public static String toString(byte[] a) {
+    public static @MinLen(2) String toString(byte[] a) {
         if (a == null)
             return "null";
         int iMax = a.length - 1;
@@ -3458,7 +3458,7 @@ public class Arrays {
      * @return a string representation of <tt>a</tt>
      * @since 1.5
      */
-    public static String toString(boolean[] a) {
+    public static @MinLen(2) String toString(boolean[] a) {
         if (a == null)
             return "null";
         int iMax = a.length - 1;
@@ -3488,7 +3488,7 @@ public class Arrays {
      * @return a string representation of <tt>a</tt>
      * @since 1.5
      */
-    public static String toString(float[] a) {
+    public static @MinLen(2) String toString(float[] a) {
         if (a == null)
             return "null";
 
@@ -3519,7 +3519,7 @@ public class Arrays {
      * @return a string representation of <tt>a</tt>
      * @since 1.5
      */
-    public static String toString(double[] a) {
+    public static @MinLen(2) String toString(double[] a) {
         if (a == null)
             return "null";
         int iMax = a.length - 1;
@@ -3552,7 +3552,7 @@ public class Arrays {
      * @see #deepToString(Object[])
      * @since 1.5
      */
-    public static String toString(Object[] a) {
+    public static @MinLen(2) String toString(Object[] a) {
         if (a == null)
             return "null";
 
@@ -3603,7 +3603,7 @@ public class Arrays {
      * @see #toString(Object[])
      * @since 1.5
      */
-    public static String deepToString(Object[] a) {
+    public @MinLen(2) static String deepToString(Object[] a) {
         if (a == null)
             return "null";
 
