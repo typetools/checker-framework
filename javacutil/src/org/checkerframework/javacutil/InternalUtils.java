@@ -62,7 +62,8 @@ public class InternalUtils {
 
     /**
      * Gets the {@link Element} ("symbol") for the given Tree API node. For an object instantiation
-     * returns the result of {@link InternalUtils#constructor(NewClassTree)}.
+     * returns the value of the {@link JCNewClass#constructor} field. Note that this result might
+     * differ from the result of {@link InternalUtils#constructor(NewClassTree)}.
      *
      * @param tree the {@link Tree} node to get the symbol for
      * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal
@@ -106,7 +107,7 @@ public class InternalUtils {
                 return symbol(((ArrayAccessTree) tree).getExpression());
 
             case NEW_CLASS:
-                return constructor((JCNewClass) tree);
+                return ((JCNewClass) tree).constructor;
 
             case MEMBER_REFERENCE:
                 // TreeInfo.symbol, which is used in the default case, didn't handle
