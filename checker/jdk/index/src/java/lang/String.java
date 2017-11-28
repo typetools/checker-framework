@@ -151,7 +151,7 @@ public final class String
      * @param  original
      *         A {@code String}
      */
-    public String(String original) {
+    public @SameLen("#1") String(String original) {
         this.value = original.value;
         this.hash = original.hash;
     }
@@ -165,7 +165,7 @@ public final class String
      * @param  value
      *         The initial value of the string
      */
-    public String(char[] value) {
+    public @SameLen("#1") String(char[] value) {
         this.value = Arrays.copyOf(value, value.length);
     }
 
@@ -3062,7 +3062,7 @@ public final class String
      * @return  a {@code String} that contains the characters of the
      *          character array.
      */
-    public static String copyValueOf(char data[]) {
+    public static @SameLen("#1") String copyValueOf(char data[]) {
         return new String(data);
     }
 
