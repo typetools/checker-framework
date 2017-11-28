@@ -24,7 +24,6 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.tree.JCTree;
@@ -418,9 +417,12 @@ public final class TreeUtils {
 
     /**
      * Gets the element for the declaration corresponding to this use of an element. To get the
-     * element for a declaration, use {@link Trees#getElement(TreePath)} instead.
+     * element for a declaration, use {@link #elementFromDeclaration(ClassTree)}, {@link
+     * #elementFromDeclaration(MethodTree)}, or {@link #elementFromDeclaration(VariableTree)}
+     * instead.
      *
-     * <p>TODO: remove this method, as it really doesn't do anything.
+     * <p>This method is just a wrapper around {@link InternalUtils#symbol(Tree)}, but this class
+     * might be the first place someone looks for this functionality.
      *
      * @param node the tree corresponding to a use of an element
      * @return the element for the corresponding declaration
@@ -432,7 +434,7 @@ public final class TreeUtils {
     // Specialization for return type.
     // Might return null if element wasn't found.
     public static final ExecutableElement elementFromUse(MethodInvocationTree node) {
-        Element el = elementFromUse((ExpressionTree) node);
+        Element el = InternalUtils.symbol(node);
         if (el instanceof ExecutableElement) {
             return (ExecutableElement) el;
         } else {
@@ -442,7 +444,7 @@ public final class TreeUtils {
 
     // Specialization for return type.
     public static final ExecutableElement elementFromUse(NewClassTree node) {
-        return (ExecutableElement) elementFromUse((ExpressionTree) node);
+        return (ExecutableElement) InternalUtils.symbol(node);
     }
 
     /**
