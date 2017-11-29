@@ -2888,7 +2888,7 @@ public final class String
      *
      * @return  the string itself.
      */
-    public String toString() {
+    public @SameLen("this") String toString() {
         return this;
     }
 
@@ -2899,7 +2899,7 @@ public final class String
      *          of this string and whose contents are initialized to contain
      *          the character sequence represented by this string.
      */
-    public char[] toCharArray() {
+    public @SameLen("this") char[] toCharArray() {
         // Cannot use Arrays.copyOf because of class initialization order issues
         char result[] = new char[value.length];
         System.arraycopy(value, 0, result, 0, value.length);
@@ -3009,7 +3009,7 @@ public final class String
      * @return  a {@code String} that contains the characters of the
      *          character array.
      */
-    public static String valueOf(char data[]) {
+    public static @SameLen("#1") String valueOf(char data[]) {
         return new String(data);
     }
 
@@ -3170,5 +3170,5 @@ public final class String
      * @return  a string that has the same contents as this string, but is
      *          guaranteed to be from a pool of unique strings.
      */
-    public native @PolyLength String intern(@PolyLength String this);
+    public native @SameLen("this") String intern();
 }
