@@ -259,7 +259,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
      * @param node The method invocation as an AST node.
      * @param callerReceiver The type of the receiver object if available. Used to resolve direct
      *     calls like "super()"
-     * @param methodElt The element of the callee method.s
+     * @param methodElt The element of the callee method.
      * @return The computed effect (SafeEffect or UIEffect) for the method call.
      */
     public Effect getComputedEffectAtCallsite(
@@ -570,7 +570,6 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitMethod(MethodTree node, AnnotatedTypeMirror type) {
-
             AnnotatedTypeMirror.AnnotatedExecutableType methType =
                     (AnnotatedTypeMirror.AnnotatedExecutableType) type;
             // Effect e = getDeclaredEffect(methType.getElement());
