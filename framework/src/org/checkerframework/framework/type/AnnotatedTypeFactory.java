@@ -3524,6 +3524,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         constructorParam.getUnderlyingType(), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) constructorParam;
 
+            case NEW_ARRAY:
+                NewArrayTree newArray = (NewArrayTree) parentTree;
+                AnnotatedArrayType newArrayATM = getAnnotatedType(newArray);
+                AnnotatedTypeMirror elementATM = newArrayATM.getComponentType();
+                assertFunctionalInterface(elementATM.getUnderlyingType(), parentTree, lambdaTree);
+                return (AnnotatedDeclaredType) elementATM;
+
             case METHOD_INVOCATION:
                 MethodInvocationTree method = (MethodInvocationTree) parentTree;
                 int index = method.getArguments().indexOf(lambdaTree);
@@ -3564,6 +3571,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     AnnotatedExecutableType methodExe = result.second;
                     return (AnnotatedDeclaredType) methodExe.getReturnType();
                 }
+
             case LAMBDA_EXPRESSION:
                 LambdaExpressionTree enclosingLambda = (LambdaExpressionTree) parentTree;
                 Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result =
