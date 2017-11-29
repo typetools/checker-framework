@@ -2899,7 +2899,7 @@ public final class String
      *          of this string and whose contents are initialized to contain
      *          the character sequence represented by this string.
      */
-    public @SameLen("this") char[] toCharArray() {
+    public char @SameLen("this")[] toCharArray() {
         // Cannot use Arrays.copyOf because of class initialization order issues
         char result[] = new char[value.length];
         System.arraycopy(value, 0, result, 0, value.length);
