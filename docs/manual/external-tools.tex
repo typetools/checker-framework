@@ -773,12 +773,17 @@ To run a checker within IntelliJ:
   Deployment>Compiler>Java Compiler).  Add the following to the field
   ``Additional command line parameters'': \\
   \<-Xbootclasspath/p:\$CHECKERFRAMEWORK/checker/dist/jdk8.jar>
+  Note: It is a good idea to enclose the address in double quotation marks
+  to escape special characters and spaces (to avoid errors). For example,
+  \<-Xbootclasspath/p:"\$CHECKERFRAMEWORK/checker/dist/jdk8.jar">
 
 \item
-  Create an annotation profile and specify which checkers to run.
+  Create an annotation profile and specify which checkers to run:
   Directly under the ``Java Compiler'' sub-menu is the ``Annotation
   Processors'' sub-menu. Navigate here and click on the green ``+'' to create
-  a new Annotation Processor profile. Select the modules you would like to
+  a new Annotation Processor profile. Give this new profile a unique name
+  of your choice, avoiding spaces and special characters. For example,
+  "annotationProcessorProfile". Select the modules you would like to
   use checkers with from under the ``Default'' profile and move them to your
   new profile via the button directly right of the ``-'' button.
 
@@ -900,10 +905,16 @@ You can download it from \myurl{https://sourceforge.net/projects/tide/}.
 
 \section{NetBeans\label{netbeans}}
 
-There are two approaches to running a checker in NetBeans:  via modifying the project properties, or via a custom ant target.
+There are three approaches to running a checker in NetBeans: via modifying
+the project properties, via a custom ant target, or using the NetBeans
+Checker Framework plugin.
 
+Note: The 'compile and save' action in Netbeans 8.1 automatically
+runs the Checker Framework whereas this functionality has not yet
+been incorporated into Netbeans 8.2. Additionally, JDK annotations
+are currently unavailable on Netbeans 8.1 and 8.2.
 
-\subsection{Adding a checker via the project properties\label{netbeans-project-properties}}
+\subsection{Adding a checker via the Project Properties window\label{netbeans-project-properties}}
 
 \begin{enumerate}
 \item
@@ -1009,8 +1020,8 @@ In this example, a nullness checker is run:
                     source="${javac.source}" sourcepath="@{sourcepath}"
                     srcdir="@{srcdir}" target="${javac.target}"
                     tempdir="${java.io.tmpdir}">
-		<src>
-                    <dirset dir="@{gensrcdir}" erroronmissingdir="false">
+                <src>
+                   <dirset dir="@{gensrcdir}" erroronmissingdir="false">
                         <include name="*"/>
                     </dirset>
                 </src>
@@ -1049,12 +1060,34 @@ will not appear in the editor.
 \end{enumerate}
 
 
+\subsection {Adding a checker using the Checker Framework Plugin\label{netbeans-plugin}}
+
+In order to run a checker using the NetBeans plugin, you should first
+install the plugin. To do so, select ``Tools'' and then ``Plugins''.
+In the Plugins window, click on the ``Settings'' tab, and then ``Add''.
+In the popup that appears, enter ``Checker Framework'' under ``Name'' and
+the URL where the Checker Framework plugin is hosted under ``URL''.
+
+Currently, the Checker Framework plugin is kept at \url{https://twlogger.github.io/catalog.xml}.
+
+After adding the Checker Framework plugin Update Center, go to the
+``Available Plugins'' tab, and search for ``Checker Framework'', select
+the checkbox, and click ``Install''.
+
+Once the Checker Framework is installed, right click on the project
+that you wish to run the checker on, and click ``Properties''. Then,
+select the checkboxes of the checkers that you wish to run, and press
+``Ok'' to apply the changes. If ``Compile on save'' is enabled (this can
+also be set in the Project Properties window), the results of the checker
+should appear automatically in the editor.
+
+
 \section{Type inference tools\label{type-inference-varieties}}
 
 There are two different tasks that are commonly called ``type inference''.
 You are probably interested in type inference to annotate a program's
 source code; see Section~\ref{type-inference-to-annotate}.  This section
-expalins the two different varieties of type inference.
+explains the two different varieties of type inference.
 
 \begin{enumerate}
 \item
@@ -1138,7 +1171,7 @@ inside the body of a method.
 
 
 % LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle
-% LocalWords:  IntelliJ Maia newdir classpath Unconfuse nullness Gradle
+% LocalWords:  IntelliJ Maia newdir classpath Unconfuse nullness Gradle FQ
 % LocalWords:  compilerArgs Xbootclasspath JSR308 jsr308 jsr308javac mvn
 %  LocalWords:  plugins proc procOnly DirectoryScanner setIncludes groupId
 %  LocalWords:  setExcludes checkerFrameworkVersion javacParams javaParams
@@ -1146,5 +1179,6 @@ inside the body of a method.
 %%  LocalWords:  javacheck checkerframework MavenExample org arg typecheck
 %%  LocalWords:  AoutputArgsToFile qual jdk7 jdk8 annotatedJdk Unhandled
 %%  LocalWords:  annotationProcessors annotationProcessor JavaCompile Ctrl
-%%  LocalWords:  typeAnnotationsJavac targetJavaVersion GradleExamples
-%%  LocalWords:  systemPath artifactID MacOS
+%%  LocalWords:  typeAnnotationsJavac targetJavaVersion GradleExamples Ok
+%%  LocalWords:  systemPath artifactID MacOS eclipsec init macrodef popup
+%  LocalWords:  checkbox checkboxes
