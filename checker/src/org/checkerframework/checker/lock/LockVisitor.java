@@ -67,7 +67,6 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -96,7 +95,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // with any qualifier from the @GuardedBy hierarchy.
         // They are immutable, so there is no need to guard them.
 
-        TypeMirror tm = InternalUtils.typeOf(node);
+        TypeMirror tm = TreeUtils.typeOf(node);
 
         if (TypesUtils.isBoxedPrimitive(tm)
                 || TypesUtils.isPrimitive(tm)
@@ -129,7 +128,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         int guardedByAnnotationCount = 0;
 
         List<AnnotationMirror> annos =
-                InternalUtils.annotationsFromTypeAnnotationTrees(
+                TreeUtils.annotationsFromTypeAnnotationTrees(
                         variableTree.getModifiers().getAnnotations());
         for (AnnotationMirror anno : annos) {
             if (AnnotationUtils.areSameByClass(anno, GuardedBy.class)
@@ -781,7 +780,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             return;
         }
 
-        TypeMirror lockExpressionType = InternalUtils.typeOf(lockExpression);
+        TypeMirror lockExpressionType = TreeUtils.typeOf(lockExpression);
 
         ProcessingEnvironment processingEnvironment = checker.getProcessingEnvironment();
 
@@ -943,7 +942,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         ArrayList<AnnotationTree> annotationTreeList = new ArrayList<AnnotationTree>(1);
         annotationTreeList.add(tree);
         List<AnnotationMirror> amList =
-                InternalUtils.annotationsFromTypeAnnotationTrees(annotationTreeList);
+                TreeUtils.annotationsFromTypeAnnotationTrees(annotationTreeList);
 
         if (amList != null) {
             for (AnnotationMirror annotationMirror : amList) {
@@ -1077,7 +1076,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * and method symbols are unmodifiable and therefore considered final.
      */
     private boolean isTreeSymbolEffectivelyFinalOrUnmodifiable(Tree tree) {
-        Element elem = InternalUtils.symbol(tree);
+        Element elem = TreeUtils.symbol(tree);
         ElementKind ek = elem.getKind();
         return ek == ElementKind.PACKAGE
                 || ek == ElementKind.CLASS
@@ -1109,8 +1108,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     @Override
     public void processClassTree(ClassTree node) {
         List<AnnotationMirror> annos =
-                InternalUtils.annotationsFromTypeAnnotationTrees(
-                        node.getModifiers().getAnnotations());
+                TreeUtils.annotationsFromTypeAnnotationTrees(node.getModifiers().getAnnotations());
 
         for (AnnotationMirror anno : annos) {
             if (!AnnotationUtils.areSame(anno, atypeFactory.GUARDEDBY)
@@ -1134,8 +1132,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             Tree leftTree = binaryTree.getLeftOperand();
             Tree rightTree = binaryTree.getRightOperand();
 
-            boolean lhsIsString = TypesUtils.isString(InternalUtils.typeOf(leftTree));
-            boolean rhsIsString = TypesUtils.isString(InternalUtils.typeOf(rightTree));
+            boolean lhsIsString = TypesUtils.isString(TreeUtils.typeOf(leftTree));
+            boolean rhsIsString = TypesUtils.isString(TreeUtils.typeOf(rightTree));
             if (!lhsIsString) {
                 checkPreconditionsForImplicitToStringCall(leftTree);
             } else if (!rhsIsString) {
@@ -1150,7 +1148,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
         if (TreeUtils.isStringCompoundConcatenation(node)) {
             ExpressionTree rightTree = node.getExpression();
-            if (!TypesUtils.isString(InternalUtils.typeOf(rightTree))) {
+            if (!TypesUtils.isString(TreeUtils.typeOf(rightTree))) {
                 checkPreconditionsForImplicitToStringCall(rightTree);
             }
         }
@@ -1263,7 +1261,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         List<Receiver> params =
                 FlowExpressions.getParametersOfEnclosingMethod(atypeFactory, currentPath);
 
-        TypeMirror enclosingType = InternalUtils.typeOf(TreeUtils.enclosingClass(currentPath));
+        TypeMirror enclosingType = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
         Receiver pseudoReceiver =
                 FlowExpressions.internalRepOfPseudoReceiver(currentPath, enclosingType);
         FlowExpressionContext exprContext =

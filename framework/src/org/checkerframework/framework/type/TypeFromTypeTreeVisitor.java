@@ -33,7 +33,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersec
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Converts type trees into AnnotatedTypeMirrors
@@ -50,7 +51,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         if (type == null) // e.g., for receiver type
         type = f.toAnnotatedType(f.types.getNoType(TypeKind.NONE), false);
         assert AnnotatedTypeFactory.validAnnotatedType(type);
-        List<? extends AnnotationMirror> annos = InternalUtils.annotationsFromTree(node);
+        List<? extends AnnotationMirror> annos = TreeUtils.annotationsFromTree(node);
 
         if (type.getKind() == TypeKind.WILDCARD) {
             final ExpressionTree underlyingTree = node.getUnderlyingType();
@@ -130,7 +131,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         }
 
         AnnotatedTypeVariable result = (AnnotatedTypeVariable) f.type(node);
-        List<? extends AnnotationMirror> annotations = InternalUtils.annotationsFromTree(node);
+        List<? extends AnnotationMirror> annotations = TreeUtils.annotationsFromTree(node);
         result.getLowerBound().addAnnotations(annotations);
 
         switch (bounds.size()) {
@@ -221,7 +222,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         } else {
             // Captured types can have a generic element (owner) that is
             // not an element at all, namely Symtab.noSymbol.
-            if (InternalUtils.isCaptured(typeVar)) {
+            if (TypesUtils.isCaptured(typeVar)) {
                 return type;
             } else {
                 ErrorReporter.errorAbort(

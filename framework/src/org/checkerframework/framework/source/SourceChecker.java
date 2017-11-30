@@ -59,7 +59,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorHandler;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -1351,13 +1350,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         /*@Nullable*/ VariableTree var = TreeUtils.enclosingVariable(path);
-        if (var != null && shouldSuppressWarnings(InternalUtils.symbol(var), errKey)) {
+        if (var != null && shouldSuppressWarnings(TreeUtils.symbol(var), errKey)) {
             return true;
         }
 
         /*@Nullable*/ MethodTree method = TreeUtils.enclosingMethod(path);
         if (method != null) {
-            /*@Nullable*/ Element elt = InternalUtils.symbol(method);
+            /*@Nullable*/ Element elt = TreeUtils.symbol(method);
 
             if (shouldSuppressWarnings(elt, errKey)) {
                 return true;
@@ -1373,7 +1372,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         /*@Nullable*/ ClassTree cls = TreeUtils.enclosingClass(path);
         if (cls != null) {
-            /*@Nullable*/ Element elt = InternalUtils.symbol(cls);
+            /*@Nullable*/ Element elt = TreeUtils.symbol(cls);
 
             if (shouldSuppressWarnings(elt, errKey)) {
                 return true;
@@ -1954,7 +1953,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @return true if checker should not test node
      */
     public final boolean shouldSkipDefs(ClassTree node) {
-        String qualifiedName = InternalUtils.typeOf(node).toString();
+        String qualifiedName = TreeUtils.typeOf(node).toString();
         // System.out.printf("shouldSkipDefs(%s) %s%nskipDefs %s%nonlyDefs %s%nresult %s%n%n",
         //                   node,
         //                   qualifiedName,

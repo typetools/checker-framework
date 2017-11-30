@@ -8,7 +8,6 @@ import java.util.Collections;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -30,7 +29,7 @@ public class FieldAccessNode extends Node {
     // TODO: add method to get modifiers (static, access level, ..)
 
     public FieldAccessNode(Tree tree, Node receiver) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         assert TreeUtils.isFieldAccess(tree);
         this.tree = tree;
         this.receiver = receiver;

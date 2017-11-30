@@ -36,7 +36,6 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -220,7 +219,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // Create annotations for Class literals
                 // C.class: @ClassVal(fully qualified name of C)
                 ExpressionTree etree = tree.getExpression();
-                Type classType = (Type) InternalUtils.typeOf(etree);
+                Type classType = (Type) TreeUtils.typeOf(etree);
                 String name = getClassNameFromType(classType);
                 if (name != null) {
                     AnnotationMirror newQual = createClassVal(Arrays.asList(name));
@@ -245,10 +244,10 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // exp.getClass(): @ClassBound(fully qualified class name of exp)
                 Type clType;
                 if (TreeUtils.getReceiverTree(tree) != null) {
-                    clType = (Type) InternalUtils.typeOf(TreeUtils.getReceiverTree(tree));
+                    clType = (Type) TreeUtils.typeOf(TreeUtils.getReceiverTree(tree));
                 } else { // receiver is null, so it is implicitly "this"
                     ClassTree classTree = TreeUtils.enclosingClass(getPath(tree));
-                    clType = (Type) InternalUtils.typeOf(classTree);
+                    clType = (Type) TreeUtils.typeOf(classTree);
                 }
                 String className = getClassNameFromType(clType);
                 AnnotationMirror newQual = createClassBound(Arrays.asList(className));
@@ -258,11 +257,11 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private boolean isForNameMethodInovaction(MethodInvocationTree tree) {
-            return getDeclAnnotation(InternalUtils.symbol(tree), ForName.class) != null;
+            return getDeclAnnotation(TreeUtils.symbol(tree), ForName.class) != null;
         }
 
         private boolean isGetClassMethodInovaction(MethodInvocationTree tree) {
-            return getDeclAnnotation(InternalUtils.symbol(tree), GetClass.class) != null;
+            return getDeclAnnotation(TreeUtils.symbol(tree), GetClass.class) != null;
         }
 
         private List<String> getStringValues(ExpressionTree arg) {

@@ -35,7 +35,6 @@ import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.framework.util.TypeArgumentMapper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -1081,8 +1080,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         TypeMirror superTypeMirror = supertype.getUnderlyingType();
         if (supertype.getKind() == TypeKind.TYPEVAR) {
             TypeVariable atv = (TypeVariable) supertype.getUnderlyingType();
-            if (InternalUtils.isCaptured(atv)) {
-                superTypeMirror = InternalUtils.getCapturedWildcard(atv);
+            if (TypesUtils.isCaptured(atv)) {
+                superTypeMirror = TypesUtils.getCapturedWildcard(atv);
             }
         }
 

@@ -61,7 +61,6 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -444,7 +443,7 @@ public class NullnessAnnotatedTypeFactory
 
         @Override
         public Void visitVariable(VariableTree node, AnnotatedTypeMirror type) {
-            Element elt = InternalUtils.symbol(node);
+            Element elt = TreeUtils.symbol(node);
             if (elt.getKind() == ElementKind.EXCEPTION_PARAMETER) {
                 if (!type.isAnnotatedInHierarchy(NONNULL)) {
                     // case 9. exception parameter

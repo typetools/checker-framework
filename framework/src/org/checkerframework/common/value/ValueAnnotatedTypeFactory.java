@@ -70,7 +70,6 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -1370,7 +1369,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
             if (TreeUtils.isFieldAccess(tree) && handledByValueChecker(type)) {
-                VariableElement elem = (VariableElement) InternalUtils.symbol(tree);
+                VariableElement elem = (VariableElement) TreeUtils.symbol(tree);
                 Object value = elem.getConstantValue();
                 if (value != null) {
                     // The field is a compile time constant.
@@ -1380,7 +1379,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 if (ElementUtils.isStatic(elem) && ElementUtils.isFinal(elem)) {
                     // The field is static and final.
-                    Element e = InternalUtils.symbol(tree.getExpression());
+                    Element e = TreeUtils.symbol(tree.getExpression());
                     if (e != null) {
                         String classname = ElementUtils.getQualifiedClassName(e).toString();
                         String fieldName = tree.getIdentifier().toString();

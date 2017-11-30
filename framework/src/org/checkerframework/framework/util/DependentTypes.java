@@ -21,7 +21,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 public class DependentTypes {
@@ -113,7 +112,7 @@ public class DependentTypes {
 
     public void handleConstructor(
             NewClassTree tree, AnnotatedTypeMirror ctr, AnnotatedExecutableType type) {
-        ExecutableElement constructorElt = InternalUtils.constructor(tree);
+        ExecutableElement constructorElt = TreeUtils.constructor(tree);
         for (int i = 0; i < constructorElt.getParameters().size(); ++i) {
             Element parameter = constructorElt.getParameters().get(i);
             AnnotatedTypeMirror paramType = type.getParameterTypes().get(i);

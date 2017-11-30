@@ -37,7 +37,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -98,7 +97,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         // of the true and false expressions, but with a few exceptions. See JLS 15.25.
         // So, use the type of the ConditionalExpressionTree instead of
         // InternalUtils#leastUpperBound
-        TypeMirror alub = InternalUtils.typeOf(node);
+        TypeMirror alub = TreeUtils.typeOf(node);
 
         AnnotatedTypeMirror trueType = f.getAnnotatedType(node.getTrueExpression());
         AnnotatedTypeMirror falseType = f.getAnnotatedType(node.getFalseExpression());
@@ -154,8 +153,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
         if (node.getIdentifier().contentEquals("this")) {
             // TODO: why don't we use getSelfType here?
-            return f.getEnclosingType(
-                    (TypeElement) InternalUtils.symbol(node.getExpression()), node);
+            return f.getEnclosingType((TypeElement) TreeUtils.symbol(node.getExpression()), node);
         } else {
             // node must be a field access, so get the type of the expression, and then call
             // asMemberOf.
@@ -215,13 +213,13 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         while (level.getKind() == TypeKind.ARRAY) {
             AnnotatedArrayType array = (AnnotatedArrayType) level;
             List<? extends AnnotationMirror> annos =
-                    InternalUtils.annotationsFromArrayCreation(node, idx++);
+                    TreeUtils.annotationsFromArrayCreation(node, idx++);
             array.addAnnotations(annos);
             level = array.getComponentType();
         }
 
         // Add top-level annotations.
-        result.addAnnotations(InternalUtils.annotationsFromArrayCreation(node, -1));
+        result.addAnnotations(TreeUtils.annotationsFromArrayCreation(node, -1));
     }
 
     /**
@@ -269,7 +267,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             MemberReferenceTree node, AnnotatedTypeFactory f) {
 
         AnnotatedDeclaredType type =
-                (AnnotatedDeclaredType) f.toAnnotatedType(InternalUtils.typeOf(node), false);
+                (AnnotatedDeclaredType) f.toAnnotatedType(TreeUtils.typeOf(node), false);
         return type;
     }
 
@@ -278,7 +276,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             LambdaExpressionTree node, AnnotatedTypeFactory f) {
 
         AnnotatedDeclaredType type =
-                (AnnotatedDeclaredType) f.toAnnotatedType(InternalUtils.typeOf(node), false);
+                (AnnotatedDeclaredType) f.toAnnotatedType(TreeUtils.typeOf(node), false);
         return type;
     }
 
