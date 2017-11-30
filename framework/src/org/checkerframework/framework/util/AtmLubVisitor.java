@@ -173,9 +173,9 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
             if (castedLub.wasRaw()) {
                 TypeMirror lubTM =
                         TypesUtils.leastUpperBound(
-                                atypeFactory.getProcessingEnv(),
                                 type1TypeArg.getUnderlyingType(),
-                                type2TypeArg.getUnderlyingType());
+                                type2TypeArg.getUnderlyingType(),
+                                atypeFactory.getProcessingEnv());
                 lubTypeArg = AnnotatedTypeMirror.createType(lubTM, atypeFactory, false);
                 lubTypArgs.add(lubTypeArg);
             } else {

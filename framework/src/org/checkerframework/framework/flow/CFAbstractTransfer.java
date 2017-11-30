@@ -325,7 +325,7 @@ public abstract class CFAbstractTransfer<
             Element enclosingElement = null;
             if (enclosingTree.getKind() == Tree.Kind.METHOD) {
                 // If it is in an initializer, we need to use locals from the initializer.
-                enclosingElement = TreeUtils.symbol(enclosingTree);
+                enclosingElement = TreeUtils.elementFromTree(enclosingTree);
 
             } else if (TreeUtils.isClassTree(enclosingTree)) {
 
@@ -337,7 +337,7 @@ public abstract class CFAbstractTransfer<
                 TreePath loopTree = factory.getPath(lambda.getLambdaTree()).getParentPath();
                 Element anEnclosingElement = null;
                 while (loopTree.getLeaf() != enclosingTree) {
-                    Element sym = TreeUtils.symbol(loopTree.getLeaf());
+                    Element sym = TreeUtils.elementFromTree(loopTree.getLeaf());
                     if (sym != null) {
                         anEnclosingElement = sym;
                         break;
@@ -345,7 +345,7 @@ public abstract class CFAbstractTransfer<
                     loopTree = loopTree.getParentPath();
                 }
                 while (anEnclosingElement != null
-                        && !anEnclosingElement.equals(TreeUtils.symbol(enclosingTree))) {
+                        && !anEnclosingElement.equals(TreeUtils.elementFromTree(enclosingTree))) {
                     if (anEnclosingElement.getKind() == ElementKind.INSTANCE_INIT
                             || anEnclosingElement.getKind() == ElementKind.STATIC_INIT) {
                         enclosingElement = anEnclosingElement;
@@ -807,7 +807,7 @@ public abstract class CFAbstractTransfer<
         if (shouldPerformWholeProgramInference(n.getTree())) {
             // Retrieves class containing the method
             ClassTree classTree = analysis.getContainingClass(n.getTree());
-            ClassSymbol classSymbol = (ClassSymbol) TreeUtils.symbol(classTree);
+            ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromTree(classTree);
             // Updates the inferred return type of the method
             analysis.atypeFactory
                     .getWholeProgramInference()
@@ -943,7 +943,7 @@ public abstract class CFAbstractTransfer<
         if (!shouldPerformWholeProgramInference(expressionTree)) {
             return false;
         }
-        Element elt = TreeUtils.symbol(lhsTree);
+        Element elt = TreeUtils.elementFromTree(lhsTree);
         return !analysis.checker.shouldSuppressWarnings(elt, null);
     }
 

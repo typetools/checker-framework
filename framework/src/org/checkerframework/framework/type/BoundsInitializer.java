@@ -483,7 +483,7 @@ public class BoundsInitializer {
             if (underlyingSuperBound == null) {
                 underlyingSuperBound =
                         TypesUtils.wildLowerBound(
-                                wildcard.atypeFactory.processingEnv, underlyingType);
+                                underlyingType, wildcard.atypeFactory.processingEnv);
             }
 
             final AnnotatedTypeMirror superBound =
@@ -512,7 +512,7 @@ public class BoundsInitializer {
                 // Otherwise use the upper bound of the java wildcard.
                 javaExtendsBound =
                         TypesUtils.wildUpperBound(
-                                wildcard.atypeFactory.processingEnv, javaWildcardType);
+                                javaWildcardType, wildcard.atypeFactory.processingEnv);
             }
 
             if (wildcard.isUninferredTypeArgument()) {

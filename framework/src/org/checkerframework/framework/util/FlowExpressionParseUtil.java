@@ -600,7 +600,7 @@ public class FlowExpressionParseUtil {
             }
             TypeMirror methodType =
                     TypesUtils.substituteMethodReturnType(
-                            env, methodElement, context.receiver.getType());
+                            methodElement, context.receiver.getType(), env);
             return new MethodCall(methodType, methodElement, context.receiver, parameters);
         }
     }

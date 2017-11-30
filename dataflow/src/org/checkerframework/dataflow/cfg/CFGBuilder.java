@@ -2495,7 +2495,7 @@ public class CFGBuilder {
             ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
 
             /* Check for the TerminatesExecution annotation. */
-            Element methodElement = TreeUtils.symbol(tree);
+            Element methodElement = TreeUtils.elementFromTree(tree);
             boolean terminatesExecution =
                     annotationProvider.getDeclAnnotation(methodElement, TerminatesExecution.class)
                             != null;

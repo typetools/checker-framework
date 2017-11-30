@@ -216,7 +216,7 @@ public class PurityChecker {
             Tree parent = getCurrentPath().getParentPath().getLeaf();
             boolean okThrowDeterministic = parent.getKind() == Tree.Kind.THROW;
 
-            Element methodElement = TreeUtils.symbol(node);
+            Element methodElement = TreeUtils.elementFromTree(node);
             boolean deterministic = okThrowDeterministic;
             boolean sideEffectFree =
                     (assumeSideEffectFree

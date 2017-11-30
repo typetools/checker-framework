@@ -196,10 +196,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         } else if (types.isAssignable(other.getUnderlyingType(), this.getUnderlyingType())) {
             mostSpecifTypeMirror = other.getUnderlyingType();
         } else if (TypesUtils.isErasedSubtype(
-                types, this.getUnderlyingType(), other.getUnderlyingType())) {
+                this.getUnderlyingType(), other.getUnderlyingType(), types)) {
             mostSpecifTypeMirror = this.getUnderlyingType();
         } else if (TypesUtils.isErasedSubtype(
-                types, other.getUnderlyingType(), this.getUnderlyingType())) {
+                other.getUnderlyingType(), this.getUnderlyingType(), types)) {
             mostSpecifTypeMirror = other.getUnderlyingType();
         } else {
             mostSpecifTypeMirror = this.getUnderlyingType();
@@ -334,7 +334,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         Set<AnnotationMirror> lub = AnnotationUtils.createAnnotationSet();
         TypeMirror lubTypeMirror =
                 TypesUtils.leastUpperBound(
-                        processingEnv, this.getUnderlyingType(), other.getUnderlyingType());
+                        this.getUnderlyingType(), other.getUnderlyingType(), processingEnv);
 
         LubVisitor lubVisitor =
                 new LubVisitor(

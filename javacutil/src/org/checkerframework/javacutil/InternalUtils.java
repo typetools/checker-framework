@@ -72,10 +72,10 @@ public class InternalUtils {
         return Integer.compare(pos1.getStartPosition(), pos2.getStartPosition());
     }
 
-    /** @deprecated Use {@link TreeUtils#symbol(Tree)} instead */
+    /** @deprecated Use {@link TreeUtils#elementFromTree(Tree)} instead */
     @Deprecated
     public static /*@Nullable*/ Element symbol(Tree tree) {
-        return TreeUtils.symbol(tree);
+        return TreeUtils.elementFromTree(tree);
     }
 
     /** @deprecated Use {@link TreeUtils#isAnonymousConstructor(MethodTree)} instead */
@@ -153,32 +153,32 @@ public class InternalUtils {
 
     /**
      * @deprecated Use {@link
-     *     TypesUtils#leastUpperBound(ProcessingEnvironment,TypeMirror,TypeMirror)} instead
+     *     TypesUtils#leastUpperBound(TypeMirror,TypeMirror,ProcessingEnvironment)} instead
      */
     @Deprecated
     public static TypeMirror leastUpperBound(
             ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
-        return TypesUtils.leastUpperBound(processingEnv, tm1, tm2);
+        return TypesUtils.leastUpperBound(tm1, tm2, processingEnv);
     }
 
     /**
      * @deprecated Use {@link
-     *     TypesUtils#greatestLowerBound(ProcessingEnvironment,TypeMirror,TypeMirror)} instead
+     *     TypesUtils#greatestLowerBound(TypeMirror,TypeMirror,ProcessingEnvironment)} instead
      */
     @Deprecated
     public static TypeMirror greatestLowerBound(
             ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
-        return TypesUtils.greatestLowerBound(processingEnv, tm1, tm2);
+        return TypesUtils.greatestLowerBound(tm1, tm2, processingEnv);
     }
 
     /**
      * @deprecated Use {@link
-     *     TypesUtils#substituteMethodReturnType(ProcessingEnvironment,Element,TypeMirror)} instead
+     *     TypesUtils#substituteMethodReturnType(Element,TypeMirror,ProcessingEnvironment)} instead
      */
     @Deprecated
     public static TypeMirror substituteMethodReturnType(
             ProcessingEnvironment env, Element methodElement, TypeMirror substitutedReceiverType) {
-        return TypesUtils.substituteMethodReturnType(env, methodElement, substitutedReceiverType);
+        return TypesUtils.substituteMethodReturnType(methodElement, substitutedReceiverType, env);
     }
 
     /** @deprecated Use {@link TypesUtils#getTypeElement(TypeMirror)} instead */

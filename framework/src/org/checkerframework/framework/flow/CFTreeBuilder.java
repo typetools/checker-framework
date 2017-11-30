@@ -50,7 +50,7 @@ public class CFTreeBuilder extends TreeBuilder {
             // TODO: what TypeAnnotationPosition should be used?
             Attribute.TypeCompound typeCompound =
                     TypeAnnotationUtils.createTypeCompoundFromAnnotationMirror(
-                            env, am, TypeAnnotationUtils.unknownTAPosition());
+                            am, TypeAnnotationUtils.unknownTAPosition(), env);
             JCTree.JCAnnotation annotationTree = maker.Annotation(typeCompound);
             JCTree.JCAnnotation typeAnnotationTree =
                     maker.TypeAnnotation(

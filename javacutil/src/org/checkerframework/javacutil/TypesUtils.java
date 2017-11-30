@@ -332,7 +332,7 @@ public final class TypesUtils {
      * (called upperBound there) and jdk8u.
      */
     // TODO: contrast to upperBound.
-    public static Type wildUpperBound(ProcessingEnvironment env, TypeMirror tm) {
+    public static Type wildUpperBound(TypeMirror tm, ProcessingEnvironment env) {
         Type t = (Type) tm;
         if (t.hasTag(TypeTag.WILDCARD)) {
             Context context = ((JavacProcessingEnvironment) env).getContext();
@@ -342,7 +342,7 @@ public final class TypesUtils {
                 // w.bound is null if the wildcard is from bytecode.
                 return w.bound == null ? syms.objectType : w.bound.bound;
             } else {
-                return wildUpperBound(env, w.type);
+                return wildUpperBound(w.type, env);
             }
         } else {
             return TypeAnnotationUtils.unannotatedType(t);
@@ -353,19 +353,22 @@ public final class TypesUtils {
      * Version of com.sun.tools.javac.code.Types.wildLowerBound(Type) that works with both jdk8
      * (called upperBound there) and jdk8u.
      */
-    public static Type wildLowerBound(ProcessingEnvironment env, TypeMirror tm) {
+    public static Type wildLowerBound(TypeMirror tm, ProcessingEnvironment env) {
         Type t = (Type) tm;
         if (t.hasTag(WILDCARD)) {
             Context context = ((JavacProcessingEnvironment) env).getContext();
             Symtab syms = Symtab.instance(context);
             Type.WildcardType w = (Type.WildcardType) TypeAnnotationUtils.unannotatedType(t);
-            return w.isExtendsBound() ? syms.botType : wildLowerBound(env, w.type);
+            return w.isExtendsBound() ? syms.botType : wildLowerBound(w.type, env);
         } else {
             return TypeAnnotationUtils.unannotatedType(t);
         }
     }
-    /** Returns the {@link TypeMirror} for a given {@link Class}. */
-    public static TypeMirror typeFromClass(Types types, Elements elements, Class<?> clazz) {
+
+    /**
+     * Returns the {@link TypeMirror} for a given {@link Class}.
+     */
+    public static TypeMirror typeFromClass(Class<?> clazz, Types types, Elements elements) {
         if (clazz == void.class) {
             return types.getNoType(TypeKind.VOID);
         } else if (clazz.isPrimitive()) {
@@ -373,7 +376,7 @@ public final class TypesUtils {
             TypeKind primitiveKind = TypeKind.valueOf(primitiveName);
             return types.getPrimitiveType(primitiveKind);
         } else if (clazz.isArray()) {
-            TypeMirror componentType = typeFromClass(types, elements, clazz.getComponentType());
+            TypeMirror componentType = typeFromClass(clazz.getComponentType(), types, elements);
             return types.getArrayType(componentType);
         } else {
             TypeElement element = elements.getTypeElement(clazz.getCanonicalName());
@@ -386,7 +389,7 @@ public final class TypesUtils {
     }
 
     /** Returns an {@link ArrayType} with elements of type {@code componentType}. */
-    public static ArrayType createArrayType(Types types, TypeMirror componentType) {
+    public static ArrayType createArrayType(TypeMirror componentType, Types types) {
         JavacTypes t = (JavacTypes) types;
         return t.getArrayType(componentType);
     }
@@ -458,13 +461,13 @@ public final class TypesUtils {
 
     /**
      * Returns true if the erased type of subtype is a subtype of the erased type of supertype.
-     *
-     * @param types a Types object
      * @param subtype possible subtype
      * @param supertype possible supertype
+     * @param types a Types object
+     *
      * @return true if the erased type of subtype is a subtype of the erased type of supertype
      */
-    public static boolean isErasedSubtype(Types types, TypeMirror subtype, TypeMirror supertype) {
+    public static boolean isErasedSubtype(TypeMirror subtype, TypeMirror supertype, Types types) {
         return types.isSubtype(types.erasure(subtype), types.erasure(supertype));
     }
 
@@ -492,14 +495,14 @@ public final class TypesUtils {
      *
      * <p>Wrapper around Types.lub to add special handling for null types, primitives, and
      * wildcards.
-     *
-     * @param processingEnv the {@link ProcessingEnvironment} to use
      * @param tm1 a {@link TypeMirror}
      * @param tm2 a {@link TypeMirror}
+     * @param processingEnv the {@link ProcessingEnvironment} to use
+     *
      * @return the least upper bound of {@code tm1} and {@code tm2}.
      */
     public static TypeMirror leastUpperBound(
-            ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
+            TypeMirror tm1, TypeMirror tm2, ProcessingEnvironment processingEnv) {
         Type t1 = TypeAnnotationUtils.unannotatedType(tm1);
         Type t2 = TypeAnnotationUtils.unannotatedType(tm2);
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
@@ -556,14 +559,14 @@ public final class TypesUtils {
      *
      * <p>Wrapper around Types.glb to add special handling for null types, primitives, and
      * wildcards.
-     *
-     * @param processingEnv the {@link ProcessingEnvironment} to use
      * @param tm1 a {@link TypeMirror}
      * @param tm2 a {@link TypeMirror}
+     * @param processingEnv the {@link ProcessingEnvironment} to use
+     *
      * @return the greatest lower bound of {@code tm1} and {@code tm2}.
      */
     public static TypeMirror greatestLowerBound(
-            ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
+            TypeMirror tm1, TypeMirror tm2, ProcessingEnvironment processingEnv) {
         Type t1 = TypeAnnotationUtils.unannotatedType(tm1);
         Type t2 = TypeAnnotationUtils.unannotatedType(tm2);
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
@@ -607,7 +610,7 @@ public final class TypesUtils {
 
     /** Returns the return type of a method, given the receiver of the method call. */
     public static TypeMirror substituteMethodReturnType(
-            ProcessingEnvironment env, Element methodElement, TypeMirror substitutedReceiverType) {
+            Element methodElement, TypeMirror substitutedReceiverType, ProcessingEnvironment env) {
 
         com.sun.tools.javac.code.Types types =
                 com.sun.tools.javac.code.Types.instance(InternalUtils.getJavacContext(env));

@@ -426,7 +426,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         // If the inferred field has a declaration annotation with the
         // @IgnoreInWholeProgramInference meta-annotation, exit this routine.
-        for (AnnotationMirror declAnno : atf.getDeclAnnotations(TreeUtils.symbol(lhs.getTree()))) {
+        for (AnnotationMirror declAnno : atf.getDeclAnnotations(TreeUtils.elementFromTree(lhs.getTree()))) {
             if (AnnotationUtils.areSameByClass(declAnno, IgnoreInWholeProgramInference.class)) {
                 return;
             }
@@ -512,7 +512,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         }
         if ((receiverNode == null || receiverNode instanceof ImplicitThisLiteralNode)
                 && classTree != null) {
-            return (ClassSymbol) TreeUtils.symbol(classTree);
+            return (ClassSymbol) TreeUtils.elementFromTree(classTree);
         }
         TypeMirror type = receiverNode.getType();
         if (type instanceof ClassType) {
@@ -524,7 +524,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     /** Returns the ClassSymbol of the class encapsulating tree passed as parameter. */
     private ClassSymbol getEnclosingClassSymbol(Tree tree) {
-        Element symbol = TreeUtils.symbol(tree);
+        Element symbol = TreeUtils.elementFromTree(tree);
         if (symbol instanceof ClassSymbol) {
             return (ClassSymbol) symbol;
         } else if (symbol instanceof VarSymbol) {

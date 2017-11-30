@@ -577,9 +577,9 @@ public class AnnotatedTypes {
             AnnotatedTypeMirror type2) {
         TypeMirror lub =
                 TypesUtils.leastUpperBound(
-                        atypeFactory.getProcessingEnv(),
                         type1.getUnderlyingType(),
-                        type2.getUnderlyingType());
+                        type2.getUnderlyingType(),
+                        atypeFactory.getProcessingEnv());
         return leastUpperBound(atypeFactory, type1, type2, lub);
     }
 

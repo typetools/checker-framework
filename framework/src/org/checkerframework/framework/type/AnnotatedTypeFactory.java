@@ -1677,7 +1677,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         || tree.getKind() == Tree.Kind.NEW_CLASS)
                 : "Unexpected tree kind: " + tree.getKind();
 
-        Element element = TreeUtils.symbol(tree);
+        Element element = TreeUtils.elementFromTree(tree);
         assert element != null : "Unexpected null element for tree: " + tree;
         // Return null if the element kind has no receiver.
         if (!ElementUtils.hasReceiver(element)) {
@@ -1712,7 +1712,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
 
-        Element rcvelem = TreeUtils.symbol(receiver);
+        Element rcvelem = TreeUtils.elementFromTree(receiver);
         assert rcvelem != null : "Unexpected null element for receiver: " + receiver;
 
         if (!ElementUtils.hasReceiver(rcvelem)) {
@@ -2319,7 +2319,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // See Issue #715
     // https://github.com/typetools/checker-framework/issues/715
     public AnnotatedDeclaredType getStringType(AnnotatedTypeMirror type) {
-        TypeMirror stringTypeMirror = TypesUtils.typeFromClass(types, elements, String.class);
+        TypeMirror stringTypeMirror = TypesUtils.typeFromClass(String.class, types, elements);
         AnnotatedDeclaredType stringATM =
                 (AnnotatedDeclaredType)
                         AnnotatedTypeMirror.createType(
@@ -2550,7 +2550,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Class<? extends Annotation> alias,
             Class<? extends Annotation> annotation,
             AnnotationMirror annotationToUse) {
-        String annotationName = annotation.getCanonicalName();
         Set<Class<? extends Annotation>> set = new HashSet<>();
         if (declAliases.containsKey(annotation)) {
             set.addAll(declAliases.get(annotation).second);
@@ -3680,9 +3679,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                 bounds.get(i).getUpperBound().getUnderlyingType();
                         correctArgType =
                                 TypesUtils.greatestLowerBound(
-                                        this.checker.getProcessingEnvironment(),
                                         typeParamUbType,
-                                        wildcardUbType);
+                                        wildcardUbType,
+                                        this.checker.getProcessingEnvironment());
                     } else {
                         correctArgType = groundTargetJavaType.getTypeArguments().get(i);
                     }

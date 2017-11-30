@@ -1350,13 +1350,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         /*@Nullable*/ VariableTree var = TreeUtils.enclosingVariable(path);
-        if (var != null && shouldSuppressWarnings(TreeUtils.symbol(var), errKey)) {
+        if (var != null && shouldSuppressWarnings(TreeUtils.elementFromTree(var), errKey)) {
             return true;
         }
 
         /*@Nullable*/ MethodTree method = TreeUtils.enclosingMethod(path);
         if (method != null) {
-            /*@Nullable*/ Element elt = TreeUtils.symbol(method);
+            /*@Nullable*/ Element elt = TreeUtils.elementFromTree(method);
 
             if (shouldSuppressWarnings(elt, errKey)) {
                 return true;
@@ -1372,7 +1372,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         /*@Nullable*/ ClassTree cls = TreeUtils.enclosingClass(path);
         if (cls != null) {
-            /*@Nullable*/ Element elt = TreeUtils.symbol(cls);
+            /*@Nullable*/ Element elt = TreeUtils.elementFromTree(cls);
 
             if (shouldSuppressWarnings(elt, errKey)) {
                 return true;

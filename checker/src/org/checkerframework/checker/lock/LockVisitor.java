@@ -790,7 +790,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // Lock.unlock() method explicitly.
         TypeMirror lockInterfaceTypeMirror =
                 TypesUtils.typeFromClass(
-                        types, processingEnvironment.getElementUtils(), Lock.class);
+                        Lock.class, types, processingEnvironment.getElementUtils());
 
         if (types.isSubtype(types.erasure(lockExpressionType), lockInterfaceTypeMirror)) {
             ensureExpressionIsEffectivelyFinal(lockExpression);
@@ -822,7 +822,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // explicitly.
         TypeMirror lockInterfaceTypeMirror =
                 TypesUtils.typeFromClass(
-                        types, processingEnvironment.getElementUtils(), Lock.class);
+                        Lock.class, types, processingEnvironment.getElementUtils());
 
         ExpressionTree synchronizedExpression = node.getExpression();
 
@@ -1076,7 +1076,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * and method symbols are unmodifiable and therefore considered final.
      */
     private boolean isTreeSymbolEffectivelyFinalOrUnmodifiable(Tree tree) {
-        Element elem = TreeUtils.symbol(tree);
+        Element elem = TreeUtils.elementFromTree(tree);
         ElementKind ek = elem.getKind();
         return ek == ElementKind.PACKAGE
                 || ek == ElementKind.CLASS

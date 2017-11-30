@@ -1369,7 +1369,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
             if (TreeUtils.isFieldAccess(tree) && handledByValueChecker(type)) {
-                VariableElement elem = (VariableElement) TreeUtils.symbol(tree);
+                VariableElement elem = (VariableElement) TreeUtils.elementFromTree(tree);
                 Object value = elem.getConstantValue();
                 if (value != null) {
                     // The field is a compile time constant.
@@ -1379,7 +1379,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 if (ElementUtils.isStatic(elem) && ElementUtils.isFinal(elem)) {
                     // The field is static and final.
-                    Element e = TreeUtils.symbol(tree.getExpression());
+                    Element e = TreeUtils.elementFromTree(tree.getExpression());
                     if (e != null) {
                         String classname = ElementUtils.getQualifiedClassName(e).toString();
                         String fieldName = tree.getIdentifier().toString();
