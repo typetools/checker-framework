@@ -59,7 +59,7 @@ public class DeclarationsIntoElements {
         for (AnnotationMirror anno : declAnnotations) {
             // Only add the annotation if it isn't in the Element already.
             if (!AnnotationUtils.containsSame(elementAnnos, anno)) {
-                tcs = tcs.append(TypeAnnotationUtils.createCompoundFromAnnotationMirror(env, anno));
+                tcs = tcs.append(TypeAnnotationUtils.createCompoundFromAnnotationMirror(anno, env));
             }
         }
 

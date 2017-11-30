@@ -60,9 +60,9 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
             } else {
                 relevantTypes.add(
                         TypesUtils.typeFromClass(
+                                clazz,
                                 typeFactory.getContext().getTypeUtils(),
-                                typeFactory.getElementUtils(),
-                                clazz));
+                                typeFactory.getElementUtils()));
             }
         }
         this.allFoundRelevantTypes = Collections.newSetFromMap(CollectionUtils.createLRUCache(300));

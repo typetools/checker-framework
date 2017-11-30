@@ -109,7 +109,6 @@ import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -391,7 +390,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         FieldInvariants superInvar =
-                atypeFactory.getFieldInvariants(InternalUtils.getTypeElement(superClass));
+                atypeFactory.getFieldInvariants(TypesUtils.getTypeElement(superClass));
         if (superInvar != null) {
             // Checks #3 (see method Javadoc)
             Result superError = invariants.isSuperInvariant(superInvar, atypeFactory);
@@ -469,7 +468,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
 
         try {
-            if (InternalUtils.isAnonymousConstructor(node)) {
+            if (TreeUtils.isAnonymousConstructor(node)) {
                 // We shouldn't dig deeper
                 return null;
             }
@@ -489,7 +488,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         if (TreeUtils.isConstructor(node)) {
                             checker.report(
                                     Result.warning("purity.deterministic.constructor"), node);
-                        } else if (InternalUtils.typeOf(node.getReturnType()).getKind()
+                        } else if (TreeUtils.typeOf(node.getReturnType()).getKind()
                                 == TypeKind.VOID) {
                             checker.report(
                                     Result.warning("purity.deterministic.void.method"), node);
@@ -750,7 +749,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected void checkConditionalPostcondition(
             MethodTree node, AnnotationMirror annotation, Receiver expression, boolean result) {
         boolean booleanReturnType =
-                TypesUtils.isBooleanType(InternalUtils.typeOf(node.getReturnType()));
+                TypesUtils.isBooleanType(TreeUtils.typeOf(node.getReturnType()));
         if (!booleanReturnType) {
             checker.report(
                     Result.failure("contracts.conditional.postcondition.invalid.returntype"), node);
@@ -1182,7 +1181,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypeMirror vectorTypeArg = receiverAsVector.getTypeArguments().get(0);
         Tree errorLocation = node.getArguments().get(0);
         if (TypesUtils.isErasedSubtype(
-                types, vectorTypeArg.getUnderlyingType(), argComponent.getUnderlyingType())) {
+                vectorTypeArg.getUnderlyingType(), argComponent.getUnderlyingType(), types)) {
             commonAssignmentCheck(
                     argComponent,
                     vectorTypeArg,
@@ -1208,7 +1207,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     @Override
     public Void visitNewClass(NewClassTree node, Void p) {
-        if (checker.shouldSkipUses(InternalUtils.constructor(node))) {
+        if (checker.shouldSkipUses(TreeUtils.constructor(node))) {
             return super.visitNewClass(node, p);
         }
 
@@ -2495,7 +2494,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // ========= Overriding Executable =========
         // The ::method element
         ExecutableElement overridingElement =
-                (ExecutableElement) InternalUtils.symbol(memberReferenceTree);
+                (ExecutableElement) TreeUtils.elementFromTree(memberReferenceTree);
         AnnotatedExecutableType overridingMethodType =
                 atypeFactory.methodFromUse(memberReferenceTree, overridingElement, overridingType)
                         .first;
@@ -3032,7 +3031,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
                         boolean isCaptureConverted =
                                 (overriddenReturnType.getKind() == TypeKind.TYPEVAR)
-                                        && InternalUtils.isCaptured(
+                                        && TypesUtils.isCaptured(
                                                 (TypeVariable)
                                                         overriddenReturnType.getUnderlyingType());
 
@@ -3222,7 +3221,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!isAssignable(varType, rcvType, varTree)) {
                 checker.report(
                         Result.failure(
-                                "assignability.invalid", InternalUtils.symbol(varTree), rcvType),
+                                "assignability.invalid",
+                                TreeUtils.elementFromTree(varTree),
+                                rcvType),
                         varTree);
             }
         }
@@ -3469,7 +3470,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (exprTree instanceof MemberReferenceTree || exprTree instanceof LambdaExpressionTree) {
             return true;
         }
-        Element elm = InternalUtils.symbol(exprTree);
+        Element elm = TreeUtils.elementFromTree(exprTree);
         return checker.shouldSkipUses(elm);
     }
 

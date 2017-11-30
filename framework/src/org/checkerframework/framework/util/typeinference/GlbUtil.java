@@ -104,9 +104,9 @@ public class GlbUtil {
             if (!incomparable
                     && type.getKind() != TypeKind.NULL
                     && (!TypesUtils.isErasedSubtype(
-                                    typeFactory.getContext().getTypeUtils(),
                                     glbType.getUnderlyingType(),
-                                    type.getUnderlyingType())
+                                    type.getUnderlyingType(),
+                                    typeFactory.getContext().getTypeUtils())
                             || !typeHierarchy.isSubtype(glbType, type))) {
                 incomparable = true;
             }

@@ -104,7 +104,6 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -790,7 +789,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public FlowExpressions.Receiver getReceiverFromJavaExpressionString(
             String expression, TreePath currentPath) throws FlowExpressionParseException {
-        TypeMirror enclosingClass = InternalUtils.typeOf(TreeUtils.enclosingClass(currentPath));
+        TypeMirror enclosingClass = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
 
         FlowExpressions.Receiver r =
                 FlowExpressions.internalRepOfPseudoReceiver(currentPath, enclosingClass);

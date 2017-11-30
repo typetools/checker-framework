@@ -96,7 +96,6 @@ The GUI Effect Checker's annotations fall into three categories:
 
 \section{GUI effect annotations\label{guieffect-annotations}}
 
-
 There are two primary GUI effect annotations:
 \begin{itemize}
 \item
@@ -115,7 +114,6 @@ call a \code{@SafeEffect} method anywhere it is permitted to call a
 \code{@UIEffect} method.  We write this relationship as
 
 \centerline{\code{@SafeEffect} $\prec$ \code{@UIEffect}}
-
 
 
 \section{What the GUI Effect Checker checks\label{guieffect-checks}}
@@ -157,6 +155,7 @@ issues a warning (not an error).
 % starting new background threads (in which case the code must have the \code{@SafeEffect}) and
 % dispatching code to run on the UI thread (in which case the code may have the \code{@UIEffect}).
 
+
 \section{Running the GUI Effect Checker\label{guieffect-running}}
 
 The GUI Effect Checker can be invoked by running the following command:
@@ -166,6 +165,7 @@ The GUI Effect Checker can be invoked by running the following command:
 
 
 \section{Annotation defaults\label{guieffect-defaults}}
+
 The default method annotation is \code{@SafeEffect}, since most code in most programs is not related
 to the UI\@.  This also means that typically, code that is unrelated to the UI need not be annotated
 at all.
@@ -198,7 +198,9 @@ m()} need not explicitly annotate its implementation of \code{m()}; the implemen
 the parent's effect.  Methods of the anonymous inner class that are not inherited from a parent type
 follow the standard defaulting rules.
 
+
 \section{Polymorphic effects\label{guieffect-polymorphism}}
+
 Sometimes a type is reused for both UI-specific and background-thread work.  A good example is the
 \code{Runnable} interface, which is used both for creating new background threads (in which case the
 \code{run()} method must have the \code{@SafeEffect}) and for sending code to the UI thread to
@@ -216,6 +218,7 @@ Recall that to \emph{define} a generic type, you write a type parameter such as
  \code{class List<T> \ttlcb\ ...\ \ T get() \ttlcb...\ttrcb\ \ ...\ \ \ttrcb}.
 To \emph{instantiate} a generic type, you write its name along with a type
 argument; for example, \code{List<Date> myDates;}.
+
 
 \subsection{Defining an effect-polymorphic type\label{guieffect-polymorphism-defining}}
 
@@ -274,7 +277,9 @@ As an example:
 
 It is an error to apply an effect instantiation qualifier to a type that is not effect-polymorphic.
 
+
 \subsection{Subclassing a specific instantiation of an effect-polymorphic type\label{guieffect-subclassing}}
+
 Sometimes you may wish to subclass a specific instantiation of an effect-polymorphic type, just as
 you may extend \code{List<String>}.
 
@@ -291,7 +296,9 @@ The GUI Effect Checker will automatically apply the qualifier to all classes and
 being defined extends or implements.  (This means you cannot write a class that is a subtype of a
 \code{@AlwaysSafe Foo} and a \code{@UI Bar}, but this has not been a problem in our experience.)
 
+
 \subsection{Subtyping with polymorphic effects\label{guieffect-subtyping}}
+
 With three effect annotations, we must extend the static sub-effecting relationship:
 
 \centerline{\code{@SafeEffect} $\prec$ \code{@PolyUIEffect} $\prec$ \code{@UIEffect}}
@@ -314,6 +321,92 @@ safe to call in place of a method instantiated according to one of its super-qua
 This allows clients to pass ``safer'' instances of some object type to a given method.
 
 
+\subsubsection{Effect polymorphism and arguments\label{guieffect-overrides}}
+
+Sometimes it is useful to have \code{@PolyUI} parameters on a method.  As a trivial example, this
+permits us to specify an identity method that works for both \code{@UI Runnable} and
+\code{@AlwaysSafe Runnable}:
+
+\begin{alltt}
+public @PolyUI Runnable id(@PolyUI Runnable r) \{
+    return r;
+\}
+\end{alltt}
+
+\noindent
+This use of \code{@PolyUI} will be handled as is standard for polymorphic qualifiers in the Checker
+Framework (see Section \ref{qualifier-polymorphism}).
+
+\code{@PolyUIEffect} methods should generally not use \code{@PolyUI} arguments: it is permitted by
+the framework, but its interaction with inheritance is subtle, and may not behave as you would
+hope.
+
+The shortest explanation is this: \code{@PolyUI} arguments may only be overridden by \code{@PolyUI}
+arguments, even though the implicitly \code{@PolyUI} \emph{receiver} may be overridden with a
+\code{@AlwaysSafe} receiver.
+
+As noted earlier (Section \ref{covariant-type-parameters}), Java's generics are invariant ---
+\code{A<X>} is a subtype of \code{B<Y>} only if \code{X} is identical to \code{Y}.
+Class-level use of \code{@PolyUI} behaves slightly differently.
+Marking a type declaration \code{@PolyUIType} is conceptually
+equivalent to parameterizing the type by some \code{E extends Effect}.  But in this view,
+\code{Runnable<SafeEffect>} (really \code{@AlwaysSafe Runnable}) would be considered a subtype of
+\code{Runnable<UIEffect>} (really \code{@UI Runnable}), as explained earlier in this section.  Java's
+generics do not permit this, which is called \emph{covariant} subtyping in the effect parameter.
+Permitting it for all generics leads to problems where a type system can miss errors.  Java solves
+this by making all generics invariant, which rejects more programs than strictly necessary, but
+leads to an easy-to-explain limitation.  For this checker, covariant subtyping of effect parameters
+is very important: being able to pass an \code{@AlwaysSafe
+Runnable} in place of a \code{@UI Runnable} is extremely useful.  Since we need to allow some
+cases for flexibility, but need to reject other cases to avoid missing errors, the distinction is a
+bit more subtle for this checker.
+
+Consider this small example (warning: the following is rejected by the GUI Effect Checker):
+
+\begin{alltt}
+@PolyUIType
+public interface Dispatcher \{
+    @PolyUIEffect
+    void dispatch(@PolyUI Runnable toRun);
+\}
+@SafeType
+public class SafeDispatcher \{
+    @Override
+    public void dispatch(@AlwaysSafe Runnable toRun) \{
+        runOnBackgroundThread(toRun);
+    \}
+\}
+\end{alltt}
+
+This may initially seem like harmless code to write, which simply specializes the implicit effect
+parameter from \code{Dispatcher} in the \code{SafeDispatcher} implementation.  However, the way
+method effect polymorphism is implemented is by implicitly making the receiver of a
+\code{@PolyUIEffect} method --- the object on which the method is invoked --- \code{@PolyUI}.  So
+if the definitions above were permitted, the following client code would be possible:
+
+\begin{alltt}
+@AlwaysSafe SafeDispatcher s = ...;
+@UI Runnable uitask = ...;
+s.dispatch(uitask);
+\end{alltt}
+
+At the call to \code{dispatch}, the Checker Framework is free to consider \code{s} as its
+supertype, \code{@UI SafeDispatcher}.  This permits the framework to choose the same qualifier for
+both the (implicit) receiver use of \code{@PolyUI} and the \code{toRun} argument to
+\code{Dispatcher.dispatch}, passing the checker.  But this code would then pass a UI-thread-only
+task to a method which should only accept background thread tasks --- exactly what the checker
+should prevent!
+
+To resolve this, the GUI Effect Checker rejects the definitions above, specifically the
+\code{@AlwaysSafe} on \code{SafeDispatcher.dispatch}'s parameter, which would need to remain
+\code{@PolyUI}.
+
+A subtlety of the code above is that the receiver for \code{SafeDispatcher.dispatch} is also
+overridden, switching from a \code{@PolyUI} receiver to a \code{@Safe} receiver.  That change is
+permissible.  But when that is done, the polymorphic arguments may no longer be interchangeable
+with the receiver.
+
+
 \section{References\label{guieffect-references}}
 
 The ECOOP 2013 paper ``JavaUI: Effects for Controlling UI Object Access''
@@ -328,4 +421,5 @@ The ECOOP 2013 paper ``JavaUI: Effects for Controlling UI Object Access''
 %  LocalWords:  SafeEffect calledFromBackgroundThreads JLabel setText AWT
 %  LocalWords:  UIEffect syncExec Runnable UIType UIPackage SafeType SWT
 %  LocalWords:  PolyUIType PolyUIEffect PolyUI UIRunnable SafeRunnable Foo
-%  LocalWords:  JavaUI JPanel myDates AlwaysSafe
+%  LocalWords:  JavaUI JPanel myDates AlwaysSafe toRun SafeDispatcher
+%%  LocalWords:  runOnBackgroundThread uitask

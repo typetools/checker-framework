@@ -39,7 +39,6 @@ import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -435,7 +434,7 @@ public class InitializationVisitor<
             Iterator<VariableTree> itor = violatingFields.iterator();
             while (itor.hasNext()) {
                 VariableTree f = itor.next();
-                Element e = InternalUtils.symbol(f);
+                Element e = TreeUtils.elementFromTree(f);
                 if (checker.shouldSuppressWarnings(e, COMMITMENT_FIELDS_UNINITIALIZED)) {
                     itor.remove();
                 }

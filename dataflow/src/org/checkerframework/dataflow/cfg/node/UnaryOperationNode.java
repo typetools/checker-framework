@@ -3,7 +3,7 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.UnaryTree;
 import java.util.Collection;
 import java.util.Collections;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for a postfix or an unary expression.
@@ -24,7 +24,7 @@ public abstract class UnaryOperationNode extends Node {
     protected final Node operand;
 
     public UnaryOperationNode(UnaryTree tree, Node operand) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         this.tree = tree;
         this.operand = operand;
     }

@@ -184,7 +184,6 @@ import org.checkerframework.dataflow.util.MostlySingleton;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BasicAnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -1934,7 +1933,7 @@ public class CFGBuilder {
         }
 
         private TreeInfo getTreeInfo(Tree tree) {
-            final TypeMirror type = InternalUtils.typeOf(tree);
+            final TypeMirror type = TreeUtils.typeOf(tree);
             final boolean boxed = TypesUtils.isBoxedPrimitive(type);
             final TypeMirror unboxedType = boxed ? types.unboxedType(type) : type;
 
@@ -2281,8 +2280,7 @@ public class CFGBuilder {
                 List<Node> initializers = new ArrayList<>();
                 if (numActuals == numFormals
                         && types.isAssignable(
-                                InternalUtils.typeOf(actualExprs.get(numActuals - 1)),
-                                lastParamType)) {
+                                TreeUtils.typeOf(actualExprs.get(numActuals - 1)), lastParamType)) {
                     // Normal call with no array creation, apply method
                     // invocation conversion to all arguments.
                     for (int i = 0; i < numActuals; i++) {
@@ -2497,7 +2495,7 @@ public class CFGBuilder {
             ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
 
             /* Check for the TerminatesExecution annotation. */
-            Element methodElement = InternalUtils.symbol(tree);
+            Element methodElement = TreeUtils.elementFromTree(tree);
             boolean terminatesExecution =
                     annotationProvider.getDeclAnnotation(methodElement, TerminatesExecution.class)
                             != null;
@@ -2632,7 +2630,7 @@ public class CFGBuilder {
 
             AssignmentNode assignmentNode;
             ExpressionTree variable = tree.getVariable();
-            TypeMirror varType = InternalUtils.typeOf(variable);
+            TypeMirror varType = TreeUtils.typeOf(variable);
 
             // case 1: field access
             if (TreeUtils.isFieldAccess(variable)) {
@@ -2771,9 +2769,9 @@ public class CFGBuilder {
                         Node targetLHS = scan(tree.getVariable(), p);
                         Node value = scan(tree.getExpression(), p);
 
-                        TypeMirror exprType = InternalUtils.typeOf(tree);
-                        TypeMirror leftType = InternalUtils.typeOf(tree.getVariable());
-                        TypeMirror rightType = InternalUtils.typeOf(tree.getExpression());
+                        TypeMirror exprType = TreeUtils.typeOf(tree);
+                        TypeMirror leftType = TreeUtils.typeOf(tree.getVariable());
+                        TypeMirror rightType = TreeUtils.typeOf(tree.getExpression());
                         TypeMirror promotedType = binaryPromotedType(leftType, rightType);
                         Node targetRHS = binaryNumericPromotion(targetLHS, promotedType);
                         value = binaryNumericPromotion(value, promotedType);
@@ -2831,8 +2829,8 @@ public class CFGBuilder {
                         Node targetLHS = scan(tree.getVariable(), p);
                         Node value = scan(tree.getExpression(), p);
 
-                        TypeMirror leftType = InternalUtils.typeOf(tree.getVariable());
-                        TypeMirror rightType = InternalUtils.typeOf(tree.getExpression());
+                        TypeMirror leftType = TreeUtils.typeOf(tree.getVariable());
+                        TypeMirror rightType = TreeUtils.typeOf(tree.getExpression());
 
                         if (TypesUtils.isString(leftType) || TypesUtils.isString(rightType)) {
                             assert (kind == Tree.Kind.PLUS_ASSIGNMENT);
@@ -2885,7 +2883,7 @@ public class CFGBuilder {
                         Node targetLHS = scan(tree.getVariable(), p);
                         Node value = scan(tree.getExpression(), p);
 
-                        TypeMirror leftType = InternalUtils.typeOf(tree.getVariable());
+                        TypeMirror leftType = TreeUtils.typeOf(tree.getVariable());
 
                         Node targetRHS = unaryNumericPromotion(targetLHS);
                         value = unaryNumericPromotion(value);
@@ -2926,8 +2924,8 @@ public class CFGBuilder {
                     Node targetLHS = scan(tree.getVariable(), p);
                     Node value = scan(tree.getExpression(), p);
 
-                    TypeMirror leftType = InternalUtils.typeOf(tree.getVariable());
-                    TypeMirror rightType = InternalUtils.typeOf(tree.getExpression());
+                    TypeMirror leftType = TreeUtils.typeOf(tree.getVariable());
+                    TypeMirror rightType = TreeUtils.typeOf(tree.getExpression());
 
                     Node targetRHS = null;
                     if (isNumericOrBoxed(leftType) && isNumericOrBoxed(rightType)) {
@@ -2996,9 +2994,9 @@ public class CFGBuilder {
                     {
                         // see JLS 15.17
 
-                        TypeMirror exprType = InternalUtils.typeOf(tree);
-                        TypeMirror leftType = InternalUtils.typeOf(leftTree);
-                        TypeMirror rightType = InternalUtils.typeOf(rightTree);
+                        TypeMirror exprType = TreeUtils.typeOf(tree);
+                        TypeMirror leftType = TreeUtils.typeOf(leftTree);
+                        TypeMirror rightType = TreeUtils.typeOf(rightTree);
                         TypeMirror promotedType = binaryPromotedType(leftType, rightType);
 
                         Node left = binaryNumericPromotion(scan(leftTree, p), promotedType);
@@ -3037,8 +3035,8 @@ public class CFGBuilder {
                         // see JLS 15.18
 
                         // TypeMirror exprType = InternalUtils.typeOf(tree);
-                        TypeMirror leftType = InternalUtils.typeOf(leftTree);
-                        TypeMirror rightType = InternalUtils.typeOf(rightTree);
+                        TypeMirror leftType = TreeUtils.typeOf(leftTree);
+                        TypeMirror rightType = TreeUtils.typeOf(rightTree);
 
                         if (TypesUtils.isString(leftType) || TypesUtils.isString(rightType)) {
                             assert (kind == Tree.Kind.PLUS);
@@ -3088,12 +3086,12 @@ public class CFGBuilder {
                 case LESS_THAN_EQUAL:
                     {
                         // see JLS 15.20.1
-                        TypeMirror leftType = InternalUtils.typeOf(leftTree);
+                        TypeMirror leftType = TreeUtils.typeOf(leftTree);
                         if (TypesUtils.isBoxedPrimitive(leftType)) {
                             leftType = types.unboxedType(leftType);
                         }
 
-                        TypeMirror rightType = InternalUtils.typeOf(rightTree);
+                        TypeMirror rightType = TreeUtils.typeOf(rightTree);
                         if (TypesUtils.isBoxedPrimitive(rightType)) {
                             rightType = types.unboxedType(rightType);
                         }
@@ -3162,8 +3160,8 @@ public class CFGBuilder {
                 case XOR:
                     {
                         // see JLS 15.22
-                        TypeMirror leftType = InternalUtils.typeOf(leftTree);
-                        TypeMirror rightType = InternalUtils.typeOf(rightTree);
+                        TypeMirror leftType = TreeUtils.typeOf(leftTree);
+                        TypeMirror rightType = TreeUtils.typeOf(rightTree);
                         boolean isBooleanOp =
                                 TypesUtils.isBooleanType(leftType)
                                         && TypesUtils.isBooleanType(rightType);
@@ -3295,7 +3293,7 @@ public class CFGBuilder {
                 }
                 caseBodyLabels[cases] = breakTargetL;
 
-                TypeMirror switchExprType = InternalUtils.typeOf(switchTree.getExpression());
+                TypeMirror switchExprType = TreeUtils.typeOf(switchTree.getExpression());
                 VariableTree variable =
                         treeBuilder.buildVariableDecl(
                                 switchExprType, uniqueName("switch"), findOwner(), null);
@@ -3388,7 +3386,7 @@ public class CFGBuilder {
         @Override
         public Node visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
             // see JLS 15.25
-            TypeMirror exprType = InternalUtils.typeOf(tree);
+            TypeMirror exprType = TreeUtils.typeOf(tree);
 
             Label trueStart = new Label();
             Label falseStart = new Label();
@@ -3522,7 +3520,7 @@ public class CFGBuilder {
             ExpressionTree expression = tree.getExpression();
             StatementTree statement = tree.getStatement();
 
-            TypeMirror exprType = InternalUtils.typeOf(expression);
+            TypeMirror exprType = TreeUtils.typeOf(expression);
 
             if (types.isSubtype(exprType, iterableType)) {
                 // Take the upper bound of a type variable or wildcard
@@ -3777,7 +3775,7 @@ public class CFGBuilder {
 
         protected VariableTree createEnhancedForLoopIteratorVariable(
                 MethodInvocationTree iteratorCall, VariableElement variableElement) {
-            TypeMirror iteratorType = InternalUtils.typeOf(iteratorCall);
+            TypeMirror iteratorType = TreeUtils.typeOf(iteratorCall);
 
             // Declare and initialize a new, unique iterator variable
             VariableTree iteratorVariable =
@@ -3791,7 +3789,7 @@ public class CFGBuilder {
 
         protected VariableTree createEnhancedForLoopArrayVariable(
                 ExpressionTree expression, VariableElement variableElement) {
-            TypeMirror arrayType = InternalUtils.typeOf(expression);
+            TypeMirror arrayType = TreeUtils.typeOf(expression);
 
             // Declare and initialize a temporary array variable
             VariableTree arrayVariable =
@@ -4033,7 +4031,7 @@ public class CFGBuilder {
         public Node visitNewArray(NewArrayTree tree, Void p) {
             // see JLS 15.10
 
-            ArrayType type = (ArrayType) InternalUtils.typeOf(tree);
+            ArrayType type = (ArrayType) TreeUtils.typeOf(tree);
             TypeMirror elemType = type.getComponentType();
 
             List<? extends ExpressionTree> dimensions = tree.getDimensions();
@@ -4247,7 +4245,7 @@ public class CFGBuilder {
 
             List<Pair<TypeMirror, Label>> catchLabels = new ArrayList<>();
             for (CatchTree c : catches) {
-                TypeMirror type = InternalUtils.typeOf(c.getParameter().getType());
+                TypeMirror type = TreeUtils.typeOf(c.getParameter().getType());
                 assert type != null : "exception parameters must have a type";
                 catchLabels.add(Pair.of(type, new Label()));
             }
@@ -4362,7 +4360,7 @@ public class CFGBuilder {
         @Override
         public Node visitTypeCast(TypeCastTree tree, Void p) {
             final Node operand = scan(tree.getExpression(), p);
-            final TypeMirror type = InternalUtils.typeOf(tree.getType());
+            final TypeMirror type = TreeUtils.typeOf(tree.getType());
             final Node node = new TypeCastNode(tree, operand, type);
             final TypeElement cceElement = elements.getTypeElement("java.lang.ClassCastException");
 
@@ -4384,7 +4382,7 @@ public class CFGBuilder {
         @Override
         public Node visitInstanceOf(InstanceOfTree tree, Void p) {
             Node operand = scan(tree.getExpression(), p);
-            TypeMirror refType = InternalUtils.typeOf(tree.getType());
+            TypeMirror refType = TreeUtils.typeOf(tree.getType());
             InstanceOfNode node = new InstanceOfNode(tree, operand, refType, types);
             extendWithNode(node);
             return node;
@@ -4450,7 +4448,7 @@ public class CFGBuilder {
                         addToUnaryAssignLookupMap(tree, unaryAssign);
 
                         if (isPostfix) {
-                            TypeMirror exprType = InternalUtils.typeOf(exprTree);
+                            TypeMirror exprType = TreeUtils.typeOf(exprTree);
                             VariableTree tempVarDecl =
                                     treeBuilder.buildVariableDecl(
                                             exprType,

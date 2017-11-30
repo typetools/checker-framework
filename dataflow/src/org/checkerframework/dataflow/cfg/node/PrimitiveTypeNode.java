@@ -5,7 +5,7 @@ import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node representing a primitive type used in an expression such as a field access
@@ -20,7 +20,7 @@ public class PrimitiveTypeNode extends Node {
     protected final PrimitiveTypeTree tree;
 
     public PrimitiveTypeNode(PrimitiveTypeTree tree) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         this.tree = tree;
     }
 

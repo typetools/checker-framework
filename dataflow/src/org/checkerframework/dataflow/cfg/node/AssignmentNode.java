@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import org.checkerframework.dataflow.cfg.node.AssignmentContext.AssignmentLhsContext;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for an assignment:
@@ -31,7 +31,7 @@ public class AssignmentNode extends Node {
     protected final Node rhs;
 
     public AssignmentNode(Tree tree, Node target, Node expression) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         assert tree instanceof AssignmentTree
                 || tree instanceof VariableTree
                 || tree instanceof CompoundAssignmentTree

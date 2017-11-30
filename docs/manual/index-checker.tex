@@ -46,6 +46,12 @@ if a method's formal parameter is used as an index for
 write an \refqualclasswithparams{checker/index/qual}{IndexFor}{myArray}
 annotation on the formal parameter's types.
 
+The Index Checker checks fixed-size data structures, whose size is never
+changed after creation.  A fixed-size data structure has no \<add> or
+\<remove> operation.  Examples are strings and arrays, and you can add
+support for other fixed-size data structures (see
+Section~\ref{index-annotating-fixed-size}).
+
 To run the Index Checker, run the command
 
 \begin{alltt}
@@ -611,6 +617,57 @@ the example type-check without false positives, a new annotation such as
 is necessary.
 
 
+\section{Annotating fixed-size data structures\label{index-annotating-fixed-size}}
+
+The Index Checker has built-in support for Strings and arrays.
+You can add support for additional fixed-size data structures by writing
+annotations.
+This allows the Index Checker to typecheck the data structure's
+implementation and to typecheck uses of the class.
+
+This section gives an example:  a fixed-length collection.
+
+%% The code that follows is copied from checker/tests/index/ArrayWrapper.java.
+%% If this code is updated, please update that file, too.
+
+\begin{Verbatim}
+/** ArrayWrapper is a fixed-size generic collection. */
+public class ArrayWrapper<T> {
+    private final Object @SameLen("this") [] delegate;
+
+    @SuppressWarnings("index") // constructor creates object of size @SameLen(this) by definition
+    ArrayWrapper(@NonNegative int size) {
+        delegate = new Object[size];
+    }
+
+    public @LengthOf("this") int size() {
+        return delegate.length;
+    }
+
+    public void set(@IndexFor("this") int index, T obj) {
+        delegate[index] = obj;
+    }
+
+    @SuppressWarnings("unchecked") // required for normal Java compilation due to unchecked cast
+    public T get(@IndexFor("this") int index) {
+        return (T) delegate[index];
+    }
+}
+\end{Verbatim}
+
+With these annotations, client code like the following typechecks with no
+warnings:
+\begin{Verbatim}
+    public static void clearIndex1(ArrayWrapper<? extends Object> a, @IndexFor("#1") int i) {
+        a.set(i, null);
+    }
+
+    public static void clearIndex2(ArrayWrapper<? extends Object> a, int i) {
+        if (0 <= i && i < a.size()) {
+            a.set(i, null);
+        }
+    }
+\end{Verbatim}
 
 %%  LocalWords:  NegativeArraySizeException pre myArray IndexFor someArray
 %%  LocalWords:  MyJavaFile LTLengthOf LTEqLengthOf GTENegativeOne GTE

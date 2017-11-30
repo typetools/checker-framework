@@ -30,7 +30,7 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * @author plvines
@@ -145,7 +145,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             return super.visitAnnotation(node, p);
         }
 
-        AnnotationMirror anno = InternalUtils.annotationFromAnnotationTree(node);
+        AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(node);
 
         if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
             // If there are 2 arguments, issue an error if from.greater.than.to.

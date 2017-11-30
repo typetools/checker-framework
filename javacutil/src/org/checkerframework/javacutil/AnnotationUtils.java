@@ -708,7 +708,7 @@ public class AnnotationUtils {
         ModifiersTree modifiersTree = constructorDeclaration.getModifiers();
         if (modifiersTree != null) {
             List<? extends AnnotationTree> annotationTrees = modifiersTree.getAnnotations();
-            annotationSet.addAll(InternalUtils.annotationsFromTypeAnnotationTrees(annotationTrees));
+            annotationSet.addAll(TreeUtils.annotationsFromTypeAnnotationTrees(annotationTrees));
         }
         return annotationSet;
     }

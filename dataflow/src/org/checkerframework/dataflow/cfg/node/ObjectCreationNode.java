@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for new object creation
@@ -24,7 +24,7 @@ public class ObjectCreationNode extends Node {
     protected final List<Node> arguments;
 
     public ObjectCreationNode(NewClassTree tree, Node constructor, List<Node> arguments) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         this.tree = tree;
         this.constructor = constructor;
         this.arguments = arguments;
