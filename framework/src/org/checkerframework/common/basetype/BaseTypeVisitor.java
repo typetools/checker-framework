@@ -3220,7 +3220,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeMirror rcvType = atypeFactory.getReceiverType((ExpressionTree) varTree);
             if (!isAssignable(varType, rcvType, varTree)) {
                 checker.report(
-                        Result.failure("assignability.invalid", TreeUtils.elementFromTree(varTree), rcvType),
+                        Result.failure(
+                                "assignability.invalid",
+                                TreeUtils.elementFromTree(varTree),
+                                rcvType),
                         varTree);
             }
         }
