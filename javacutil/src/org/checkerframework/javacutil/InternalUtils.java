@@ -90,10 +90,7 @@ public class InternalUtils {
         return TreeUtils.constructor(tree);
     }
 
-    /**
-     * @deprecated Use {@link TreeUtils#annotationsFromTypeAnnotationTrees(List<? extends
-     *     AnnotationTree>)} instead
-     */
+    /** @deprecated Use {@link TreeUtils#annotationsFromTypeAnnotationTrees(List)} instead */
     @Deprecated
     public static final List<AnnotationMirror> annotationsFromTypeAnnotationTrees(
             List<? extends AnnotationTree> annos) {
