@@ -2,8 +2,10 @@ package org.checkerframework.javacutil;
 
 import static com.sun.tools.javac.code.TypeTag.WILDCARD;
 
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
@@ -464,5 +466,188 @@ public final class TypesUtils {
      */
     public static boolean isErasedSubtype(Types types, TypeMirror subtype, TypeMirror supertype) {
         return types.isSubtype(types.erasure(subtype), types.erasure(supertype));
+    }
+
+    /** Returns whether a TypeVariable represents a captured type. */
+    public static boolean isCaptured(TypeVariable typeVar) {
+        return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(typeVar)).isCaptured();
+    }
+
+    /** If typeVar is a captured wildcard, returns that wildcard; otherwise returns null. */
+    public static WildcardType getCapturedWildcard(TypeVariable typeVar) {
+        if (isCaptured(typeVar)) {
+            return ((CapturedType) TypeAnnotationUtils.unannotatedType(typeVar)).wildcard;
+        }
+        return null;
+    }
+
+    /** Returns whether a TypeMirror represents a class type. */
+    public static boolean isClassType(TypeMirror type) {
+        return (type instanceof Type.ClassType);
+    }
+
+    /**
+     * Returns the least upper bound of two {@link TypeMirror}s, ignoring any annotations on the
+     * types.
+     *
+     * <p>Wrapper around Types.lub to add special handling for null types, primitives, and
+     * wildcards.
+     *
+     * @param processingEnv the {@link ProcessingEnvironment} to use
+     * @param tm1 a {@link TypeMirror}
+     * @param tm2 a {@link TypeMirror}
+     * @return the least upper bound of {@code tm1} and {@code tm2}.
+     */
+    public static TypeMirror leastUpperBound(
+            ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
+        Type t1 = TypeAnnotationUtils.unannotatedType(tm1);
+        Type t2 = TypeAnnotationUtils.unannotatedType(tm2);
+        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
+        com.sun.tools.javac.code.Types types =
+                com.sun.tools.javac.code.Types.instance(javacEnv.getContext());
+        if (types.isSameType(t1, t2)) {
+            // Special case if the two types are equal.
+            return t1;
+        }
+        // Handle the 'null' type manually (not done by types.lub).
+        if (t1.getKind() == TypeKind.NULL) {
+            return t2;
+        }
+        if (t2.getKind() == TypeKind.NULL) {
+            return t1;
+        }
+        if (t1.getKind() == TypeKind.WILDCARD) {
+            WildcardType wc1 = (WildcardType) t1;
+            Type bound = (Type) wc1.getExtendsBound();
+            if (bound == null) {
+                // Implicit upper bound of java.lang.Object
+                Elements elements = processingEnv.getElementUtils();
+                return elements.getTypeElement("java.lang.Object").asType();
+            }
+            t1 = bound;
+        }
+        if (t2.getKind() == TypeKind.WILDCARD) {
+            WildcardType wc2 = (WildcardType) t2;
+            Type bound = (Type) wc2.getExtendsBound();
+            if (bound == null) {
+                // Implicit upper bound of java.lang.Object
+                Elements elements = processingEnv.getElementUtils();
+                return elements.getTypeElement("java.lang.Object").asType();
+            }
+            t2 = bound;
+        }
+        // Special case for primitives.
+        if (isPrimitive(t1) || isPrimitive(t2)) {
+            if (types.isAssignable(t1, t2)) {
+                return t2;
+            } else if (types.isAssignable(t2, t1)) {
+                return t1;
+            } else {
+                Elements elements = processingEnv.getElementUtils();
+                return elements.getTypeElement("java.lang.Object").asType();
+            }
+        }
+        return types.lub(t1, t2);
+    }
+
+    /**
+     * Returns the greatest lower bound of two {@link TypeMirror}s, ignoring any annotations on the
+     * types.
+     *
+     * <p>Wrapper around Types.glb to add special handling for null types, primitives, and
+     * wildcards.
+     *
+     * @param processingEnv the {@link ProcessingEnvironment} to use
+     * @param tm1 a {@link TypeMirror}
+     * @param tm2 a {@link TypeMirror}
+     * @return the greatest lower bound of {@code tm1} and {@code tm2}.
+     */
+    public static TypeMirror greatestLowerBound(
+            ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
+        Type t1 = TypeAnnotationUtils.unannotatedType(tm1);
+        Type t2 = TypeAnnotationUtils.unannotatedType(tm2);
+        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
+        com.sun.tools.javac.code.Types types =
+                com.sun.tools.javac.code.Types.instance(javacEnv.getContext());
+        if (types.isSameType(t1, t2)) {
+            // Special case if the two types are equal.
+            return t1;
+        }
+        // Handle the 'null' type manually.
+        if (t1.getKind() == TypeKind.NULL) {
+            return t1;
+        }
+        if (t2.getKind() == TypeKind.NULL) {
+            return t2;
+        }
+        // Special case for primitives.
+        if (isPrimitive(t1) || isPrimitive(t2)) {
+            if (types.isAssignable(t1, t2)) {
+                return t1;
+            } else if (types.isAssignable(t2, t1)) {
+                return t2;
+            } else {
+                // Javac types.glb returns TypeKind.Error when the GLB does
+                // not exist, but we can't create one.  Use TypeKind.NONE
+                // instead.
+                return processingEnv.getTypeUtils().getNoType(TypeKind.NONE);
+            }
+        }
+        if (t1.getKind() == TypeKind.WILDCARD) {
+            return t2;
+        }
+        if (t2.getKind() == TypeKind.WILDCARD) {
+            return t1;
+        }
+
+        // If neither type is a primitive type, null type, or wildcard
+        // and if the types are not the same, use javac types.glb
+        return types.glb(t1, t2);
+    }
+
+    /** Returns the return type of a method, given the receiver of the method call. */
+    public static TypeMirror substituteMethodReturnType(
+            ProcessingEnvironment env, Element methodElement, TypeMirror substitutedReceiverType) {
+
+        com.sun.tools.javac.code.Types types =
+                com.sun.tools.javac.code.Types.instance(InternalUtils.getJavacContext(env));
+
+        Type substitutedMethodType =
+                types.memberType((Type) substitutedReceiverType, (Symbol) methodElement);
+        return substitutedMethodType.getReturnType();
+    }
+
+    /**
+     * Returns the type element for {@code type} if {@code type} is a class, interface, annotation
+     * type, or enum. Otherwise, returns null.
+     *
+     * @param type whose element is returned
+     * @return the type element for {@code type} if {@code type} is a class, interface, annotation
+     *     type, or enum; otherwise, returns null
+     */
+    public static TypeElement getTypeElement(TypeMirror type) {
+        Element element = ((Type) type).asElement();
+        switch (element.getKind()) {
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+                return (TypeElement) element;
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Returns whether or not {@code type} is a functional interface type (as defined in JLS 9.8).
+     *
+     * @param type possible functional interface type
+     * @param env ProcessingEnvironment
+     * @return whether or not {@code type} is a functional interface type (as defined in JLS 9.8)
+     */
+    public static boolean isFunctionalInterface(TypeMirror type, ProcessingEnvironment env) {
+        Context ctx = ((JavacProcessingEnvironment) env).getContext();
+        com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
+        return javacTypes.isFunctionalInterface((Type) type);
     }
 }

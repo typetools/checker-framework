@@ -52,7 +52,6 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.Resolver;
 import org.checkerframework.javacutil.TreeUtils;
@@ -600,7 +599,7 @@ public class FlowExpressionParseUtil {
                         s, "a non-static method call cannot have a class name as a receiver.");
             }
             TypeMirror methodType =
-                    InternalUtils.substituteMethodReturnType(
+                    TypesUtils.substituteMethodReturnType(
                             env, methodElement, context.receiver.getType());
             return new MethodCall(methodType, methodElement, context.receiver, parameters);
         }
@@ -1090,7 +1089,7 @@ public class FlowExpressionParseUtil {
         public static FlowExpressionContext buildContextForMethodDeclaration(
                 MethodTree methodDeclaration, Tree enclosingTree, BaseContext checkerContext) {
             return buildContextForMethodDeclaration(
-                    methodDeclaration, InternalUtils.typeOf(enclosingTree), checkerContext);
+                    methodDeclaration, TreeUtils.typeOf(enclosingTree), checkerContext);
         }
 
         /**
@@ -1134,7 +1133,7 @@ public class FlowExpressionParseUtil {
 
         public static FlowExpressionContext buildContextForLambda(
                 LambdaExpressionTree lambdaTree, TreePath path, BaseContext checkerContext) {
-            TypeMirror enclosingType = InternalUtils.typeOf(TreeUtils.enclosingClass(path));
+            TypeMirror enclosingType = TreeUtils.typeOf(TreeUtils.enclosingClass(path));
             Node receiver = new ImplicitThisLiteralNode(enclosingType);
             Receiver internalReceiver =
                     FlowExpressions.internalReprOf(
@@ -1174,7 +1173,7 @@ public class FlowExpressionParseUtil {
          */
         public static FlowExpressionContext buildContextForClassDeclaration(
                 ClassTree classTree, BaseContext checkerContext) {
-            Node receiver = new ImplicitThisLiteralNode(InternalUtils.typeOf(classTree));
+            Node receiver = new ImplicitThisLiteralNode(TreeUtils.typeOf(classTree));
 
             Receiver internalReceiver =
                     FlowExpressions.internalReprOf(

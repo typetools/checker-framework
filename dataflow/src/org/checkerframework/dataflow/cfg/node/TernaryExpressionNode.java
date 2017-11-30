@@ -5,7 +5,7 @@ import com.sun.source.tree.Tree.Kind;
 import java.util.Collection;
 import java.util.LinkedList;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for a conditional expression:
@@ -26,7 +26,7 @@ public class TernaryExpressionNode extends Node {
 
     public TernaryExpressionNode(
             ConditionalExpressionTree tree, Node condition, Node thenOperand, Node elseOperand) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         assert tree.getKind().equals(Kind.CONDITIONAL_EXPRESSION);
         this.tree = tree;
         this.condition = condition;

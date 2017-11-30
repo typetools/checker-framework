@@ -13,7 +13,7 @@ import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Our //TODO: USING THE SAME LOGIC AS THE OLD TYPE_HIERARCHY.isSubtypeAsTypeArgument but only for
@@ -111,7 +111,7 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
         AnnotatedTypeMirror supertypeUpper = supertype.getExtendsBound();
 
         if (supertypeUpper.getKind() == TypeKind.TYPEVAR
-                && InternalUtils.isCaptured((TypeVariable) supertypeUpper.getUnderlyingType())) {
+                && TypesUtils.isCaptured((TypeVariable) supertypeUpper.getUnderlyingType())) {
             supertypeUpper = ((AnnotatedTypeVariable) supertypeUpper).getUpperBound();
         }
 

@@ -59,8 +59,8 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * LockAnnotatedTypeFactory builds types with @LockHeld and @LockPossiblyHeld annotations. LockHeld
@@ -661,7 +661,7 @@ public class LockAnnotatedTypeFactory
     @Override
     public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
         if (tree.getKind() == Tree.Kind.VARIABLE) {
-            translateJcipAndJavaxAnnotations(InternalUtils.symbol((VariableTree) tree), type);
+            translateJcipAndJavaxAnnotations(TreeUtils.symbol((VariableTree) tree), type);
         }
 
         super.addComputedTypeAnnotations(tree, type, useFlow);

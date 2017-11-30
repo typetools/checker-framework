@@ -19,7 +19,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.SynchronizedNode;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /*
@@ -110,7 +109,7 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
 
             if (methodElement.getModifiers().contains(Modifier.SYNCHRONIZED)) {
                 final ClassTree classTree = method.getClassTree();
-                TypeMirror classType = InternalUtils.typeOf(classTree);
+                TypeMirror classType = TreeUtils.typeOf(classTree);
 
                 if (methodElement.getModifiers().contains(Modifier.STATIC)) {
                     store.insertValue(

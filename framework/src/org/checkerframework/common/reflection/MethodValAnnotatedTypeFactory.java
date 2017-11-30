@@ -32,7 +32,6 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -272,14 +271,14 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private boolean isGetConstructorMethodInovaction(MethodInvocationTree tree) {
-            if (getDeclAnnotation(InternalUtils.symbol(tree), GetConstructor.class) != null) {
+            if (getDeclAnnotation(TreeUtils.symbol(tree), GetConstructor.class) != null) {
                 return true;
             }
             return false;
         }
 
         private boolean isGetMethodMethodInovaction(MethodInvocationTree tree) {
-            if (getDeclAnnotation(InternalUtils.symbol(tree), GetMethod.class) != null) {
+            if (getDeclAnnotation(TreeUtils.symbol(tree), GetMethod.class) != null) {
                 return true;
             }
             return false;

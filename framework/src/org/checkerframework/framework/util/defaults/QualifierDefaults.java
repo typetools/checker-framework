@@ -48,7 +48,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -390,7 +389,7 @@ public class QualifierDefaults {
             if (method != null) {
                 return method;
             } else {
-                return InternalUtils.symbol(tree);
+                return TreeUtils.symbol(tree);
             }
         }
 

@@ -36,7 +36,6 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.Heuristics;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -80,7 +79,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     private boolean shouldCheckExpression(ExpressionTree tree) {
         if (typeToCheck == null) return true;
 
-        TypeMirror type = InternalUtils.typeOf(tree);
+        TypeMirror type = TreeUtils.typeOf(tree);
         return types.isSubtype(type, typeToCheck) || types.isSubtype(typeToCheck, type);
     }
 

@@ -47,7 +47,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -131,7 +130,7 @@ public class NullnessVisitor
         }
 
         if (tree.getKind() == Tree.Kind.VARIABLE) {
-            Element vs = InternalUtils.symbol(tree);
+            Element vs = TreeUtils.symbol(tree);
             switch (vs.getKind()) {
                 case EXCEPTION_PARAMETER:
                     if (useType.hasAnnotation(NULLABLE)) {
@@ -511,13 +510,13 @@ public class NullnessVisitor
 
     /** @return true if the type of the tree is a super of String */
     private final boolean isString(ExpressionTree tree) {
-        TypeMirror type = InternalUtils.typeOf(tree);
+        TypeMirror type = TreeUtils.typeOf(tree);
         return types.isAssignable(stringType, type);
     }
 
     /** @return true if the type of the tree is a primitive */
     private static final boolean isPrimitive(ExpressionTree tree) {
-        return InternalUtils.typeOf(tree).getKind().isPrimitive();
+        return TreeUtils.typeOf(tree).getKind().isPrimitive();
     }
 
     @Override

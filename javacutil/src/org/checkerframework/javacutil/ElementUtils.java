@@ -301,7 +301,7 @@ public class ElementUtils {
         if (TypesUtils.isObject(type)) {
             return;
         }
-        TypeElement elt = InternalUtils.getTypeElement(type);
+        TypeElement elt = TypesUtils.getTypeElement(type);
 
         Set<VariableElement> fieldElts = findFieldsInType(elt, notFound);
         for (VariableElement field : new HashSet<>(fieldElts)) {

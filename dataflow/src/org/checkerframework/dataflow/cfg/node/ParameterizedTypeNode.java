@@ -5,7 +5,7 @@ import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for a parameterized type occurring in an expression:
@@ -26,7 +26,7 @@ public class ParameterizedTypeNode extends Node {
     protected final Tree tree;
 
     public ParameterizedTypeNode(Tree t) {
-        super(InternalUtils.typeOf(t));
+        super(TreeUtils.typeOf(t));
         assert t instanceof ParameterizedTypeTree;
         tree = t;
     }

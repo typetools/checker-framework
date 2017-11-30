@@ -25,7 +25,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -334,7 +333,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         ProcessingEnvironment processingEnv = analysis.getTypeFactory().getProcessingEnv();
         Set<AnnotationMirror> lub = AnnotationUtils.createAnnotationSet();
         TypeMirror lubTypeMirror =
-                InternalUtils.leastUpperBound(
+                TypesUtils.leastUpperBound(
                         processingEnv, this.getUnderlyingType(), other.getUnderlyingType());
 
         LubVisitor lubVisitor =

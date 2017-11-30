@@ -38,7 +38,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -85,7 +85,7 @@ public class TreeBuilder {
      */
     public MemberSelectTree buildIteratorMethodAccess(ExpressionTree iterableExpr) {
         DeclaredType exprType =
-                (DeclaredType) TypesUtils.upperBound(InternalUtils.typeOf(iterableExpr));
+                (DeclaredType) TypesUtils.upperBound(TreeUtils.typeOf(iterableExpr));
         assert exprType != null : "expression must be of declared type Iterable<>";
 
         TypeElement exprElement = (TypeElement) exprType.asElement();
@@ -147,7 +147,7 @@ public class TreeBuilder {
      * @return a MemberSelectTree that accesses the hasNext() method of the expression
      */
     public MemberSelectTree buildHasNextMethodAccess(ExpressionTree iteratorExpr) {
-        DeclaredType exprType = (DeclaredType) InternalUtils.typeOf(iteratorExpr);
+        DeclaredType exprType = (DeclaredType) TreeUtils.typeOf(iteratorExpr);
         assert exprType != null : "expression must be of declared type Iterator<>";
 
         TypeElement exprElement = (TypeElement) exprType.asElement();
@@ -183,7 +183,7 @@ public class TreeBuilder {
      * @return a MemberSelectTree that accesses the next() method of the expression
      */
     public MemberSelectTree buildNextMethodAccess(ExpressionTree iteratorExpr) {
-        DeclaredType exprType = (DeclaredType) InternalUtils.typeOf(iteratorExpr);
+        DeclaredType exprType = (DeclaredType) TreeUtils.typeOf(iteratorExpr);
         assert exprType != null : "expression must be of declared type Iterator<>";
 
         TypeElement exprElement = (TypeElement) exprType.asElement();
@@ -297,7 +297,7 @@ public class TreeBuilder {
      */
     public VariableTree buildVariableDecl(
             Tree type, String name, Element owner, ExpressionTree initializer) {
-        Type typeMirror = (Type) InternalUtils.typeOf(type);
+        Type typeMirror = (Type) TreeUtils.typeOf(type);
         DetachedVarSymbol sym =
                 new DetachedVarSymbol(0, names.fromString(name), typeMirror, (Symbol) owner);
         JCTree.JCModifiers mods = maker.Modifiers(0);
@@ -354,7 +354,7 @@ public class TreeBuilder {
      */
     public AssignmentTree buildAssignment(ExpressionTree lhs, ExpressionTree rhs) {
         JCTree.JCAssign assign = maker.Assign((JCTree.JCExpression) lhs, (JCTree.JCExpression) rhs);
-        assign.setType((Type) InternalUtils.typeOf(lhs));
+        assign.setType((Type) TreeUtils.typeOf(lhs));
         return assign;
     }
 
@@ -386,7 +386,7 @@ public class TreeBuilder {
      * @return a Tree representing the dereference
      */
     public ArrayAccessTree buildArrayAccess(ExpressionTree array, ExpressionTree index) {
-        ArrayType arrayType = (ArrayType) InternalUtils.typeOf(array);
+        ArrayType arrayType = (ArrayType) TreeUtils.typeOf(array);
         JCTree.JCArrayAccess access =
                 maker.Indexed((JCTree.JCExpression) array, (JCTree.JCExpression) index);
         access.setType((Type) arrayType.getComponentType());
@@ -410,7 +410,7 @@ public class TreeBuilder {
      * @return a MemberSelectTree that accesses the valueOf() method of the expression
      */
     public MemberSelectTree buildValueOfMethodAccess(Tree expr) {
-        TypeMirror boxedType = InternalUtils.typeOf(expr);
+        TypeMirror boxedType = TreeUtils.typeOf(expr);
 
         assert TypesUtils.isBoxedPrimitive(boxedType);
 
@@ -458,7 +458,7 @@ public class TreeBuilder {
      * @return a MemberSelectTree that accesses the *Value() method of the expression
      */
     public MemberSelectTree buildPrimValueMethodAccess(Tree expr) {
-        TypeMirror boxedType = InternalUtils.typeOf(expr);
+        TypeMirror boxedType = TreeUtils.typeOf(expr);
         TypeElement boxedElement = (TypeElement) ((DeclaredType) boxedType).asElement();
 
         assert TypesUtils.isBoxedPrimitive(boxedType);
