@@ -365,9 +365,7 @@ public final class TypesUtils {
         }
     }
 
-    /**
-     * Returns the {@link TypeMirror} for a given {@link Class}.
-     */
+    /** Returns the {@link TypeMirror} for a given {@link Class}. */
     public static TypeMirror typeFromClass(Class<?> clazz, Types types, Elements elements) {
         if (clazz == void.class) {
             return types.getNoType(TypeKind.VOID);
@@ -461,10 +459,10 @@ public final class TypesUtils {
 
     /**
      * Returns true if the erased type of subtype is a subtype of the erased type of supertype.
+     *
      * @param subtype possible subtype
      * @param supertype possible supertype
      * @param types a Types object
-     *
      * @return true if the erased type of subtype is a subtype of the erased type of supertype
      */
     public static boolean isErasedSubtype(TypeMirror subtype, TypeMirror supertype, Types types) {
@@ -495,10 +493,10 @@ public final class TypesUtils {
      *
      * <p>Wrapper around Types.lub to add special handling for null types, primitives, and
      * wildcards.
+     *
      * @param tm1 a {@link TypeMirror}
      * @param tm2 a {@link TypeMirror}
      * @param processingEnv the {@link ProcessingEnvironment} to use
-     *
      * @return the least upper bound of {@code tm1} and {@code tm2}.
      */
     public static TypeMirror leastUpperBound(
@@ -559,10 +557,10 @@ public final class TypesUtils {
      *
      * <p>Wrapper around Types.glb to add special handling for null types, primitives, and
      * wildcards.
+     *
      * @param tm1 a {@link TypeMirror}
      * @param tm2 a {@link TypeMirror}
      * @param processingEnv the {@link ProcessingEnvironment} to use
-     *
      * @return the greatest lower bound of {@code tm1} and {@code tm2}.
      */
     public static TypeMirror greatestLowerBound(

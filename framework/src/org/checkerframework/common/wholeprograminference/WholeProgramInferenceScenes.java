@@ -426,7 +426,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         // If the inferred field has a declaration annotation with the
         // @IgnoreInWholeProgramInference meta-annotation, exit this routine.
-        for (AnnotationMirror declAnno : atf.getDeclAnnotations(TreeUtils.elementFromTree(lhs.getTree()))) {
+        for (AnnotationMirror declAnno :
+                atf.getDeclAnnotations(TreeUtils.elementFromTree(lhs.getTree()))) {
             if (AnnotationUtils.areSameByClass(declAnno, IgnoreInWholeProgramInference.class)) {
                 return;
             }
