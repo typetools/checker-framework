@@ -126,7 +126,7 @@ public class BoundsInitializer {
             case INTERSECTION:
                 // Can't create a wildcard with an intersection as the upper bound, so use
                 // an unbound wildcard instead.  The extends bound of the
-                // AnnotatedWildcardType be initialized properly elsewhere.
+                // AnnotatedWildcardType will be initialized properly elsewhere.
                 return factory.types.getWildcardType(null, null);
             default:
                 ErrorReporter.errorAbort(
