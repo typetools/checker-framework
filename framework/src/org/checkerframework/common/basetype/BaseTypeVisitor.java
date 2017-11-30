@@ -1181,7 +1181,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypeMirror vectorTypeArg = receiverAsVector.getTypeArguments().get(0);
         Tree errorLocation = node.getArguments().get(0);
         if (TypesUtils.isErasedSubtype(
-                types, vectorTypeArg.getUnderlyingType(), argComponent.getUnderlyingType())) {
+                vectorTypeArg.getUnderlyingType(), argComponent.getUnderlyingType(), types)) {
             commonAssignmentCheck(
                     argComponent,
                     vectorTypeArg,
@@ -2494,7 +2494,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // ========= Overriding Executable =========
         // The ::method element
         ExecutableElement overridingElement =
-                (ExecutableElement) TreeUtils.symbol(memberReferenceTree);
+                (ExecutableElement) TreeUtils.elementFromTree(memberReferenceTree);
         AnnotatedExecutableType overridingMethodType =
                 atypeFactory.methodFromUse(memberReferenceTree, overridingElement, overridingType)
                         .first;
@@ -3220,7 +3220,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeMirror rcvType = atypeFactory.getReceiverType((ExpressionTree) varTree);
             if (!isAssignable(varType, rcvType, varTree)) {
                 checker.report(
-                        Result.failure("assignability.invalid", TreeUtils.symbol(varTree), rcvType),
+                        Result.failure("assignability.invalid", TreeUtils.elementFromTree(varTree), rcvType),
                         varTree);
             }
         }
@@ -3467,7 +3467,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (exprTree instanceof MemberReferenceTree || exprTree instanceof LambdaExpressionTree) {
             return true;
         }
-        Element elm = TreeUtils.symbol(exprTree);
+        Element elm = TreeUtils.elementFromTree(exprTree);
         return checker.shouldSkipUses(elm);
     }
 

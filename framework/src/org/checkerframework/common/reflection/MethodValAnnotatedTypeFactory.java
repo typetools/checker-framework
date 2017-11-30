@@ -271,14 +271,14 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private boolean isGetConstructorMethodInovaction(MethodInvocationTree tree) {
-            if (getDeclAnnotation(TreeUtils.symbol(tree), GetConstructor.class) != null) {
+            if (getDeclAnnotation(TreeUtils.elementFromTree(tree), GetConstructor.class) != null) {
                 return true;
             }
             return false;
         }
 
         private boolean isGetMethodMethodInovaction(MethodInvocationTree tree) {
-            if (getDeclAnnotation(TreeUtils.symbol(tree), GetMethod.class) != null) {
+            if (getDeclAnnotation(TreeUtils.elementFromTree(tree), GetMethod.class) != null) {
                 return true;
             }
             return false;

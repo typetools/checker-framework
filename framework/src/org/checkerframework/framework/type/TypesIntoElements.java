@@ -233,7 +233,7 @@ public class TypesIntoElements {
                 for (AnnotationMirror am : typeVar.getLowerBound().getAnnotations()) {
                     Attribute.TypeCompound tc =
                             TypeAnnotationUtils.createTypeCompoundFromAnnotationMirror(
-                                    processingEnv, am, tapos);
+                                    am, tapos, processingEnv);
                     res = res.prepend(tc);
                 }
                 tcs = tcs.appendList(res);
@@ -281,7 +281,7 @@ public class TypesIntoElements {
         List<Attribute.TypeCompound> res = List.nil();
 
         for (Attribute.TypeCompound tc : tcs) {
-            if (!TypeAnnotationUtils.isTypeCompoundContained(types, raw, tc)) {
+            if (!TypeAnnotationUtils.isTypeCompoundContained(raw, tc, types)) {
                 res = res.append(tc);
             }
         }
@@ -358,7 +358,7 @@ public class TypesIntoElements {
                 // TODO: DOES THIS LEAD TO DOUBLING UP ON THE SAME ANNOTATION IN THE ELEMENT?
                 Attribute.TypeCompound tc =
                         TypeAnnotationUtils.createTypeCompoundFromAnnotationMirror(
-                                processingEnv, am, tapos);
+                                am, tapos, processingEnv);
                 res = res.prepend(tc);
                 //                }
             }

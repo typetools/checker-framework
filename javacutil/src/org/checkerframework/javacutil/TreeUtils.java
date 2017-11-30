@@ -32,6 +32,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotatedType;
@@ -411,7 +412,7 @@ public final class TreeUtils {
      * @return the element for the given class
      */
     public static final TypeElement elementFromDeclaration(ClassTree node) {
-        TypeElement elt = (TypeElement) TreeUtils.symbol(node);
+        TypeElement elt = (TypeElement) TreeUtils.elementFromTree(node);
         return elt;
     }
 
@@ -421,7 +422,7 @@ public final class TreeUtils {
      * @return the element for the given method
      */
     public static final ExecutableElement elementFromDeclaration(MethodTree node) {
-        ExecutableElement elt = (ExecutableElement) TreeUtils.symbol(node);
+        ExecutableElement elt = (ExecutableElement) TreeUtils.elementFromTree(node);
         return elt;
     }
 
@@ -431,7 +432,7 @@ public final class TreeUtils {
      * @return the element for the given variable
      */
     public static final VariableElement elementFromDeclaration(VariableTree node) {
-        VariableElement elt = (VariableElement) TreeUtils.symbol(node);
+        VariableElement elt = (VariableElement) TreeUtils.elementFromTree(node);
         return elt;
     }
 
@@ -441,20 +442,20 @@ public final class TreeUtils {
      * #elementFromDeclaration(MethodTree)}, or {@link #elementFromDeclaration(VariableTree)}
      * instead.
      *
-     * <p>This method is just a wrapper around {@link TreeUtils#symbol(Tree)}, but this class might
+     * <p>This method is just a wrapper around {@link TreeUtils#elementFromTree(Tree)}, but this class might
      * be the first place someone looks for this functionality.
      *
      * @param node the tree corresponding to a use of an element
      * @return the element for the corresponding declaration
      */
     public static final Element elementFromUse(ExpressionTree node) {
-        return TreeUtils.symbol(node);
+        return TreeUtils.elementFromTree(node);
     }
 
     // Specialization for return type.
     // Might return null if element wasn't found.
     public static final ExecutableElement elementFromUse(MethodInvocationTree node) {
-        Element el = TreeUtils.symbol(node);
+        Element el = TreeUtils.elementFromTree(node);
         if (el instanceof ExecutableElement) {
             return (ExecutableElement) el;
         } else {
@@ -462,9 +463,19 @@ public final class TreeUtils {
         }
     }
 
-    // Specialization for return type.
+    /**
+     * Specialization for return type.
+     * Might return null if element wasn't found.
+     *
+     * @see #constructor(NewClassTree)
+     */
     public static final ExecutableElement elementFromUse(NewClassTree node) {
-        return (ExecutableElement) TreeUtils.symbol(node);
+        Element el = TreeUtils.elementFromTree(node);
+        if (el instanceof ExecutableElement) {
+            return (ExecutableElement) el;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -1077,7 +1088,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets the {@link Element} ("symbol") for the given Tree API node. For an object instantiation
+     * Gets the {@link Element} for the given Tree API node. For an object instantiation
      * returns the value of the {@link JCNewClass#constructor} field. Note that this result might
      * differ from the result of {@link TreeUtils#constructor(NewClassTree)}.
      *
@@ -1086,7 +1097,7 @@ public final class TreeUtils {
      *     tree (JCTree)
      * @return the {@link Symbol} for the given tree, or null if one could not be found
      */
-    public static /*@Nullable*/ Element symbol(Tree tree) {
+    public static /*@Nullable*/ Element elementFromTree(Tree tree) {
         if (tree == null) {
             ErrorReporter.errorAbort("InternalUtils.symbol: tree is null");
             return null; // dead code
@@ -1120,7 +1131,7 @@ public final class TreeUtils {
                 return TreeInfo.symbol((JCTree) ((AssignmentTree) tree).getVariable());
 
             case ARRAY_ACCESS:
-                return symbol(((ArrayAccessTree) tree).getExpression());
+                return elementFromTree(((ArrayAccessTree) tree).getExpression());
 
             case NEW_CLASS:
                 return ((JCNewClass) tree).constructor;
@@ -1143,7 +1154,7 @@ public final class TreeUtils {
      * @return true if the given path points to an anonymous constructor, false if it does not
      */
     public static boolean isAnonymousConstructor(final MethodTree method) {
-        /*@Nullable*/ Element e = symbol(method);
+        /*@Nullable*/ Element e = elementFromTree(method);
         if (e == null || !(e instanceof Symbol)) {
             return false;
         }
@@ -1162,6 +1173,7 @@ public final class TreeUtils {
      * gets invoked in the extended class, rather than the anonymous constructor implicitly added by
      * the constructor (JLS 15.9.5.1)
      *
+     * @see #elementFromUse(NewClassTree)
      * @param tree the constructor invocation
      * @return the {@link ExecutableElement} corresponding to the constructor call in {@code tree}
      */
@@ -1253,7 +1265,7 @@ public final class TreeUtils {
      */
     public static Symbol findFunction(Tree tree, ProcessingEnvironment env) {
         Context ctx = ((JavacProcessingEnvironment) env).getContext();
-        com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
+        Types javacTypes = Types.instance(ctx);
         return javacTypes.findDescriptorSymbol(((Type) typeOf(tree)).asElement());
     }
 }

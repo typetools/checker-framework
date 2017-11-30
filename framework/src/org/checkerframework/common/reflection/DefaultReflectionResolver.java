@@ -88,8 +88,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
     @Override
     public boolean isReflectiveMethodInvocation(MethodInvocationTree tree) {
-        if ((provider.getDeclAnnotation(TreeUtils.symbol(tree), Invoke.class) != null
-                || provider.getDeclAnnotation(TreeUtils.symbol(tree), NewInstance.class) != null)) {
+        if ((provider.getDeclAnnotation(TreeUtils.elementFromTree(tree), Invoke.class) != null
+                || provider.getDeclAnnotation(TreeUtils.elementFromTree(tree), NewInstance.class) != null)) {
             return true;
         }
         // Called method is neither Method.invoke nor Constructor.newInstance
@@ -102,7 +102,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             MethodInvocationTree tree,
             Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> origResult) {
         assert isReflectiveMethodInvocation(tree);
-        if (provider.getDeclAnnotation(TreeUtils.symbol(tree), NewInstance.class) != null) {
+        if (provider.getDeclAnnotation(TreeUtils.elementFromTree(tree), NewInstance.class) != null) {
             return resolveConstructorCall(factory, tree, origResult);
         } else {
             return resolveMethodCall(factory, tree, origResult);

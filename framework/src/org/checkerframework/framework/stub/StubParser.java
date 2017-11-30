@@ -1198,7 +1198,7 @@ public class StubParser {
         final int wantedMethodParams =
                 (methodDecl.getParameters() == null) ? 0 : methodDecl.getParameters().size();
         final String wantedMethodString = StubUtil.toString(methodDecl);
-        for (ExecutableElement method : ElementUtils.getAllMethodsIn(elements, typeElt)) {
+        for (ExecutableElement method : ElementUtils.getAllMethodsIn(typeElt, elements)) {
             // do heuristics first
             if (wantedMethodParams == method.getParameters().size()
                     && wantedMethodName.contentEquals(method.getSimpleName().toString())
@@ -1268,7 +1268,7 @@ public class StubParser {
      * @return field element in typeElt with the provided name or null if field element is not found
      */
     private VariableElement findFieldElement(TypeElement typeElt, String fieldName) {
-        for (VariableElement field : ElementUtils.getAllFieldsIn(elements, typeElt)) {
+        for (VariableElement field : ElementUtils.getAllFieldsIn(typeElt, elements)) {
             // field.getSimpleName() is a CharSequence, not a String
             if (fieldName.equals(field.getSimpleName().toString())) {
                 return field;

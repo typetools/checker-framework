@@ -817,7 +817,7 @@ public abstract class InitializationAnnotatedTypeFactory<
                 return a;
             }
 
-            return TypesUtils.leastUpperBound(processingEnv, a, b);
+            return TypesUtils.leastUpperBound(a, b, processingEnv);
         }
 
         @Override

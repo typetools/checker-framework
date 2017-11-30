@@ -125,7 +125,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
                 break;
             } else {
                 if (loop.getKind() == ElementKind.PACKAGE) {
-                    loop = ElementUtils.parentPackage(elements, (PackageElement) loop);
+                    loop = ElementUtils.parentPackage((PackageElement) loop, elements);
                     continue;
                 }
             }
@@ -150,7 +150,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         // this.atypeFactory.getDeclAnnotation(member, ReportInherit.class) != null;
 
         // Check whether any superclass/interface had the ReportInherit annotation.
-        List<TypeElement> suptypes = ElementUtils.getSuperTypes(elements, member);
+        List<TypeElement> suptypes = ElementUtils.getSuperTypes(member, elements);
         for (TypeElement sup : suptypes) {
             report = this.atypeFactory.getDeclAnnotation(sup, ReportInherit.class) != null;
             if (report) {
@@ -275,7 +275,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         }
         if (!report) {
             // Check whether any superclass/interface had the ReportCreation annotation.
-            List<TypeElement> suptypes = ElementUtils.getSuperTypes(elements, (TypeElement) member);
+            List<TypeElement> suptypes = ElementUtils.getSuperTypes((TypeElement) member, elements);
             for (TypeElement sup : suptypes) {
                 report = this.atypeFactory.getDeclAnnotation(sup, ReportCreation.class) != null;
                 if (report) {

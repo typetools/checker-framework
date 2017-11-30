@@ -638,7 +638,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         Types types = checker.getTypeUtils();
         for (AnnotatedDeclaredType supertypeAltern : supertype.getAlternatives()) {
             if (TypesUtils.isErasedSubtype(
-                            types, subtype.getUnderlyingType(), supertypeAltern.getUnderlyingType())
+                            subtype.getUnderlyingType(), supertypeAltern.getUnderlyingType(), types)
                     && isSubtype(subtype, supertypeAltern)) {
                 return true;
             }
@@ -662,7 +662,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
             Types types = checker.getTypeUtils();
             if (TypesUtils.isErasedSubtype(
-                            types, subtypeI.getUnderlyingType(), supertype.getUnderlyingType())
+                            subtypeI.getUnderlyingType(), supertype.getUnderlyingType(), types)
                     && isSubtype(subtypeI, supertype)) {
                 return true;
             }
@@ -693,7 +693,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
             for (AnnotatedDeclaredType supertypeI : supertype.directSuperTypes()) {
                 if (TypesUtils.isErasedSubtype(
-                                types, subtypeI.getUnderlyingType(), supertypeI.getUnderlyingType())
+                                subtypeI.getUnderlyingType(), supertypeI.getUnderlyingType(), types)
                         && !isSubtype(subtypeI, supertypeI)) {
                     return false;
                 }
@@ -723,7 +723,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
             Types types = checker.getTypeUtils();
             if (TypesUtils.isErasedSubtype(
-                            types, subtypeI.getUnderlyingType(), supertype.getUnderlyingType())
+                            subtypeI.getUnderlyingType(), supertype.getUnderlyingType(), types)
                     && isSubtype(subtypeI, supertype)) {
                 return true;
             }

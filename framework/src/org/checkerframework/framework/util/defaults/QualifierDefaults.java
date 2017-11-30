@@ -389,7 +389,7 @@ public class QualifierDefaults {
             if (method != null) {
                 return method;
             } else {
-                return TreeUtils.symbol(tree);
+                return TreeUtils.elementFromTree(tree);
             }
         }
 
@@ -566,7 +566,7 @@ public class QualifierDefaults {
             if (elt.getKind() == ElementKind.PACKAGE) {
                 // elt.getEnclosingElement() on a package is null; therefore,
                 // use the dedicated method.
-                parent = ElementUtils.parentPackage(elements, (PackageElement) elt);
+                parent = ElementUtils.parentPackage((PackageElement) elt, elements);
             } else {
                 parent = elt.getEnclosingElement();
             }
@@ -622,7 +622,7 @@ public class QualifierDefaults {
 
         Element parent;
         if (elt.getKind() == ElementKind.PACKAGE) {
-            parent = ElementUtils.parentPackage(elements, (PackageElement) elt);
+            parent = ElementUtils.parentPackage((PackageElement) elt, elements);
         } else {
             parent = elt.getEnclosingElement();
         }

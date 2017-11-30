@@ -130,7 +130,7 @@ public class NullnessVisitor
         }
 
         if (tree.getKind() == Tree.Kind.VARIABLE) {
-            Element vs = TreeUtils.symbol(tree);
+            Element vs = TreeUtils.elementFromTree(tree);
             switch (vs.getKind()) {
                 case EXCEPTION_PARAMETER:
                     if (useType.hasAnnotation(NULLABLE)) {

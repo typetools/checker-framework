@@ -443,7 +443,7 @@ public class NullnessAnnotatedTypeFactory
 
         @Override
         public Void visitVariable(VariableTree node, AnnotatedTypeMirror type) {
-            Element elt = TreeUtils.symbol(node);
+            Element elt = TreeUtils.elementFromTree(node);
             if (elt.getKind() == ElementKind.EXCEPTION_PARAMETER) {
                 if (!type.isAnnotatedInHierarchy(NONNULL)) {
                     // case 9. exception parameter
