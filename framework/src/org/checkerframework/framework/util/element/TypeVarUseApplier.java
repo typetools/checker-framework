@@ -1,10 +1,5 @@
 package org.checkerframework.framework.util.element;
 
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.addAnnotationsFromElement;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.contains;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.getTypeAtLocation;
-
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
@@ -49,7 +44,7 @@ public class TypeVarUseApplier {
      */
     public static boolean accepts(AnnotatedTypeMirror type, Element element) {
         return (type instanceof AnnotatedTypeVariable || isGenericArrayType(type))
-                && contains(element.getKind(), acceptedKinds);
+                && ElementAnnotationUtil.contains(element.getKind(), acceptedKinds);
     }
 
     private static boolean isGenericArrayType(AnnotatedTypeMirror type) {
@@ -114,7 +109,8 @@ public class TypeVarUseApplier {
      * explicit annotations written on the type variable
      */
     public void extractAndApply() {
-        addAnnotationsFromElement(typeVariable, useElem.getAnnotationMirrors());
+        ElementAnnotationUtil.addAnnotationsFromElement(
+                typeVariable, useElem.getAnnotationMirrors());
 
         // apply declaration annotations
         ElementAnnotationApplier.apply(typeVariable, declarationElem, typeFactory);
@@ -126,7 +122,7 @@ public class TypeVarUseApplier {
             // if the outer-most type is an array type then we want to ensure the outer annotations
             // are not applied as the type variables primary annotation
             typeVarAnnotations = removeComponentAnnotations(arrayType, annotations);
-            annotateViaTypeAnnoPosition(arrayType, annotations);
+            ElementAnnotationUtil.annotateViaTypeAnnoPosition(arrayType, annotations);
 
         } else {
             typeVarAnnotations = annotations;
@@ -175,7 +171,7 @@ public class TypeVarUseApplier {
 
     private boolean isBaseComponent(
             final AnnotatedArrayType arrayType, final Attribute.TypeCompound anno) {
-        return getTypeAtLocation(arrayType, anno.getPosition().location)
+        return ElementAnnotationUtil.getTypeAtLocation(arrayType, anno.getPosition().location)
                 .getClass()
                 .equals(AnnotatedTypeVariable.class);
     }
