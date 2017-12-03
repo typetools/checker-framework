@@ -1,9 +1,5 @@
 package org.checkerframework.framework.util.element;
 
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.getBoundIndexOffset;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.isOnComponentType;
-
 import com.sun.tools.javac.code.Attribute.TypeCompound;
 import com.sun.tools.javac.code.TargetType;
 import java.util.ArrayList;
@@ -90,7 +86,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
                 continue;
             }
 
-            if (isOnComponentType(anno)) {
+            if (ElementAnnotationUtil.isOnComponentType(anno)) {
                 applyComponentAnnotation(anno);
 
             } else if (anno.position.type == upperBoundTarget()) {
@@ -117,7 +113,8 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
 
                 final List<? extends AnnotatedTypeMirror> intersectionTypes =
                         upperBoundType.directSuperTypes();
-                final int boundIndexOffset = getBoundIndexOffset(intersectionTypes);
+                final int boundIndexOffset =
+                        ElementAnnotationUtil.getBoundIndexOffset(intersectionTypes);
 
                 for (final TypeCompound anno : upperBounds) {
                     final int boundIndex = anno.position.bound_index + boundIndexOffset;
@@ -184,7 +181,8 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
                 final List<? extends AnnotatedTypeMirror> intersectionTypes =
                         upperBoundType.directSuperTypes();
                 final int boundIndex =
-                        anno.position.bound_index + getBoundIndexOffset(intersectionTypes);
+                        anno.position.bound_index
+                                + ElementAnnotationUtil.getBoundIndexOffset(intersectionTypes);
 
                 if (boundIndex < 0 || boundIndex > intersectionTypes.size()) {
                     ErrorReporter.errorAbort(
@@ -209,7 +207,8 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
 
         for (Entry<AnnotatedTypeMirror, List<TypeCompound>> typeToAnno :
                 typeToAnnotations.entrySet()) {
-            annotateViaTypeAnnoPosition(typeToAnno.getKey(), typeToAnno.getValue());
+            ElementAnnotationUtil.annotateViaTypeAnnoPosition(
+                    typeToAnno.getKey(), typeToAnno.getValue());
         }
     }
 }

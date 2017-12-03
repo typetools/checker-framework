@@ -1,27 +1,5 @@
 package org.checkerframework.framework.util.element;
 
-import static com.sun.tools.javac.code.TargetType.CAST;
-import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT;
-import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_REFERENCE;
-import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT;
-import static com.sun.tools.javac.code.TargetType.EXCEPTION_PARAMETER;
-import static com.sun.tools.javac.code.TargetType.INSTANCEOF;
-import static com.sun.tools.javac.code.TargetType.LOCAL_VARIABLE;
-import static com.sun.tools.javac.code.TargetType.METHOD_FORMAL_PARAMETER;
-import static com.sun.tools.javac.code.TargetType.METHOD_INVOCATION_TYPE_ARGUMENT;
-import static com.sun.tools.javac.code.TargetType.METHOD_RECEIVER;
-import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE;
-import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE_TYPE_ARGUMENT;
-import static com.sun.tools.javac.code.TargetType.METHOD_RETURN;
-import static com.sun.tools.javac.code.TargetType.METHOD_TYPE_PARAMETER;
-import static com.sun.tools.javac.code.TargetType.METHOD_TYPE_PARAMETER_BOUND;
-import static com.sun.tools.javac.code.TargetType.NEW;
-import static com.sun.tools.javac.code.TargetType.RESOURCE_VARIABLE;
-import static com.sun.tools.javac.code.TargetType.THROWS;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.addAnnotationsFromElement;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.partitionByTargetType;
-
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -127,30 +105,30 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
     /** @return {TargetType.METHOD_FORMAL_PARAMETER, TargetType.METHOD_RECEIVER} */
     @Override
     protected TargetType[] annotatedTargets() {
-        return new TargetType[] {METHOD_FORMAL_PARAMETER, METHOD_RECEIVER};
+        return new TargetType[] {TargetType.METHOD_FORMAL_PARAMETER, TargetType.METHOD_RECEIVER};
     }
 
     /** @return any annotation TargetType that can be found on a method */
     @Override
     protected TargetType[] validTargets() {
         return new TargetType[] {
-            METHOD_FORMAL_PARAMETER,
-            METHOD_RETURN,
-            THROWS,
-            METHOD_TYPE_PARAMETER,
-            METHOD_TYPE_PARAMETER_BOUND,
-            LOCAL_VARIABLE,
-            RESOURCE_VARIABLE,
-            EXCEPTION_PARAMETER,
-            NEW,
-            CAST,
-            INSTANCEOF,
-            METHOD_INVOCATION_TYPE_ARGUMENT,
-            CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT,
-            METHOD_REFERENCE,
-            CONSTRUCTOR_REFERENCE,
-            METHOD_REFERENCE_TYPE_ARGUMENT,
-            CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT
+            TargetType.METHOD_FORMAL_PARAMETER,
+            TargetType.METHOD_RETURN,
+            TargetType.THROWS,
+            TargetType.METHOD_TYPE_PARAMETER,
+            TargetType.METHOD_TYPE_PARAMETER_BOUND,
+            TargetType.LOCAL_VARIABLE,
+            TargetType.RESOURCE_VARIABLE,
+            TargetType.EXCEPTION_PARAMETER,
+            TargetType.NEW,
+            TargetType.CAST,
+            TargetType.INSTANCEOF,
+            TargetType.METHOD_INVOCATION_TYPE_ARGUMENT,
+            TargetType.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT,
+            TargetType.METHOD_REFERENCE,
+            TargetType.CONSTRUCTOR_REFERENCE,
+            TargetType.METHOD_REFERENCE_TYPE_ARGUMENT,
+            TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT
         };
     }
 
@@ -204,13 +182,15 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
 
         final List<TypeCompound> formalParams = new ArrayList<>();
         Map<TargetType, List<TypeCompound>> targetToAnnos =
-                partitionByTargetType(targeted, formalParams, METHOD_RECEIVER);
+                ElementAnnotationUtil.partitionByTargetType(
+                        targeted, formalParams, TargetType.METHOD_RECEIVER);
 
         if (isReceiver(element)) {
-            annotateViaTypeAnnoPosition(type, targetToAnnos.get(METHOD_RECEIVER));
+            ElementAnnotationUtil.annotateViaTypeAnnoPosition(
+                    type, targetToAnnos.get(TargetType.METHOD_RECEIVER));
 
         } else {
-            annotateViaTypeAnnoPosition(type, formalParams);
+            ElementAnnotationUtil.annotateViaTypeAnnoPosition(type, formalParams);
         }
     }
 
@@ -247,7 +227,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
 
     @Override
     public void extractAndApply() {
-        addAnnotationsFromElement(type, element.getAnnotationMirrors());
+        ElementAnnotationUtil.addAnnotationsFromElement(type, element.getAnnotationMirrors());
         super.extractAndApply();
     }
 }
