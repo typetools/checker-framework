@@ -3,7 +3,7 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.BinaryTree;
 import java.util.Collection;
 import java.util.LinkedList;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for a binary expression.
@@ -23,7 +23,7 @@ public abstract class BinaryOperationNode extends Node {
     protected final Node right;
 
     public BinaryOperationNode(BinaryTree tree, Node left, Node right) {
-        super(InternalUtils.typeOf(tree));
+        super(TreeUtils.typeOf(tree));
         this.tree = tree;
         this.left = left;
         this.right = right;

@@ -428,9 +428,9 @@ public class QualifierPolymorphism {
                     result = visit(type, wctype.getExtendsBound());
                 } else if (wctype.getUnderlyingType().getSuperBound() != null) {
                     if (TypesUtils.isErasedSubtype(
-                            types,
                             type.getUnderlyingType(),
-                            wctype.getSuperBound().getUnderlyingType())) {
+                            wctype.getSuperBound().getUnderlyingType(),
+                            types)) {
                         result = visit(type, wctype.getSuperBound());
                     } else if (wctype.getSuperBound().getKind() == TypeKind.NULL) {
                         // TODO: poly annotation on wildcards need to be reviewed.  This prevents
@@ -633,7 +633,7 @@ public class QualifierPolymorphism {
                 AnnotatedWildcardType type, AnnotatedTypeMirror actualType) {
             if (type.isUninferredTypeArgument()
                     || !TypesUtils.isErasedSubtype(
-                            types, type.getUnderlyingType(), actualType.getUnderlyingType())) {
+                            type.getUnderlyingType(), actualType.getUnderlyingType(), types)) {
                 return Collections.emptyMap();
             }
             AnnotatedTypeMirror typeSuper = AnnotatedTypes.asSuper(atypeFactory, type, actualType);

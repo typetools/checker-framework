@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodParameterContext;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for method invocation
@@ -35,7 +35,7 @@ public class MethodInvocationNode extends Node {
             MethodAccessNode target,
             List<Node> arguments,
             TreePath treePath) {
-        super(tree != null ? InternalUtils.typeOf(tree) : target.getMethod().getReturnType());
+        super(tree != null ? TreeUtils.typeOf(tree) : target.getMethod().getReturnType());
         this.tree = tree;
         this.target = target;
         this.arguments = arguments;

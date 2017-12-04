@@ -47,7 +47,7 @@ public class TypeAnnotationUtils {
      * @return true, iff a TypeCompound equal to tc is contained in list
      */
     public static boolean isTypeCompoundContained(
-            Types types, List<TypeCompound> list, TypeCompound tc) {
+            List<TypeCompound> list, TypeCompound tc, Types types) {
         for (Attribute.TypeCompound rawat : list) {
             if (contentEquals(rawat.type.tsym.name, tc.type.tsym.name)
                     // TODO: in previous line, it would be nicer to use reference equality:
@@ -105,13 +105,13 @@ public class TypeAnnotationUtils {
      * @return a new Attribute.Compound corresponding to the AnnotationMirror
      */
     public static Attribute.Compound createCompoundFromAnnotationMirror(
-            ProcessingEnvironment env, AnnotationMirror am) {
+            AnnotationMirror am, ProcessingEnvironment env) {
         // Create a new Attribute to match the AnnotationMirror.
         List<Pair<Symbol.MethodSymbol, Attribute>> values = List.nil();
         for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
                 am.getElementValues().entrySet()) {
             Attribute attribute =
-                    attributeFromAnnotationValue(env, entry.getKey(), entry.getValue());
+                    attributeFromAnnotationValue(entry.getKey(), entry.getValue(), env);
             values = values.append(new Pair<>((Symbol.MethodSymbol) entry.getKey(), attribute));
         }
         return new Attribute.Compound((Type.ClassType) am.getAnnotationType(), values);
@@ -125,13 +125,13 @@ public class TypeAnnotationUtils {
      * @return a new Attribute.TypeCompound corresponding to the AnnotationMirror
      */
     public static Attribute.TypeCompound createTypeCompoundFromAnnotationMirror(
-            ProcessingEnvironment env, AnnotationMirror am, TypeAnnotationPosition tapos) {
+            AnnotationMirror am, TypeAnnotationPosition tapos, ProcessingEnvironment env) {
         // Create a new Attribute to match the AnnotationMirror.
         List<Pair<Symbol.MethodSymbol, Attribute>> values = List.nil();
         for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
                 am.getElementValues().entrySet()) {
             Attribute attribute =
-                    attributeFromAnnotationValue(env, entry.getKey(), entry.getValue());
+                    attributeFromAnnotationValue(entry.getKey(), entry.getValue(), env);
             values = values.append(new Pair<>((Symbol.MethodSymbol) entry.getKey(), attribute));
         }
         return new Attribute.TypeCompound((Type.ClassType) am.getAnnotationType(), values, tapos);
@@ -145,7 +145,7 @@ public class TypeAnnotationUtils {
      * @return a new Attribute corresponding to the AnnotationValue
      */
     public static Attribute attributeFromAnnotationValue(
-            ProcessingEnvironment env, ExecutableElement meth, AnnotationValue av) {
+            ExecutableElement meth, AnnotationValue av, ProcessingEnvironment env) {
         return av.accept(new AttributeCreator(env, meth), null);
     }
 
@@ -256,7 +256,7 @@ public class TypeAnnotationUtils {
 
         @Override
         public Attribute visitAnnotation(AnnotationMirror a, Void p) {
-            return createCompoundFromAnnotationMirror(processingEnv, a);
+            return createCompoundFromAnnotationMirror(a, processingEnv);
         }
 
         @Override

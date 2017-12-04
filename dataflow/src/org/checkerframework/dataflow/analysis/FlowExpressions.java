@@ -38,7 +38,6 @@ import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -240,7 +239,7 @@ public class FlowExpressions {
                 ArrayAccessTree a = (ArrayAccessTree) receiverTree;
                 Receiver arrayAccessExpression = internalReprOf(provider, a.getExpression());
                 Receiver index = internalReprOf(provider, a.getIndex());
-                receiver = new ArrayAccess(InternalUtils.typeOf(a), arrayAccessExpression, index);
+                receiver = new ArrayAccess(TreeUtils.typeOf(a), arrayAccessExpression, index);
                 break;
             case BOOLEAN_LITERAL:
             case CHAR_LITERAL:
@@ -251,12 +250,12 @@ public class FlowExpressions {
             case NULL_LITERAL:
             case STRING_LITERAL:
                 LiteralTree vn = (LiteralTree) receiverTree;
-                receiver = new ValueLiteral(InternalUtils.typeOf(receiverTree), vn.getValue());
+                receiver = new ValueLiteral(TreeUtils.typeOf(receiverTree), vn.getValue());
                 break;
             case NEW_ARRAY:
                 receiver =
                         new ArrayCreation(
-                                InternalUtils.typeOf(receiverTree),
+                                TreeUtils.typeOf(receiverTree),
                                 Collections.emptyList(),
                                 Collections.emptyList());
                 break;
@@ -270,11 +269,11 @@ public class FlowExpressions {
                     }
                     Receiver methodReceiver;
                     if (ElementUtils.isStatic(invokedMethod)) {
-                        methodReceiver = new ClassName(InternalUtils.typeOf(mn.getMethodSelect()));
+                        methodReceiver = new ClassName(TreeUtils.typeOf(mn.getMethodSelect()));
                     } else {
                         methodReceiver = internalReprOf(provider, mn.getMethodSelect());
                     }
-                    TypeMirror type = InternalUtils.typeOf(mn);
+                    TypeMirror type = TreeUtils.typeOf(mn);
                     receiver = new MethodCall(type, invokedMethod, methodReceiver, parameters);
                 } else {
                     receiver = null;
@@ -285,7 +284,7 @@ public class FlowExpressions {
                 break;
             case IDENTIFIER:
                 IdentifierTree identifierTree = (IdentifierTree) receiverTree;
-                TypeMirror typeOfId = InternalUtils.typeOf(identifierTree);
+                TypeMirror typeOfId = TreeUtils.typeOf(identifierTree);
                 if (identifierTree.getName().contentEquals("this")
                         || identifierTree.getName().contentEquals("super")) {
                     receiver = new ThisReference(typeOfId);
@@ -327,7 +326,7 @@ public class FlowExpressions {
         }
 
         if (receiver == null) {
-            receiver = new Unknown(InternalUtils.typeOf(receiverTree));
+            receiver = new Unknown(TreeUtils.typeOf(receiverTree));
         }
         return receiver;
     }
@@ -371,7 +370,7 @@ public class FlowExpressions {
 
     private static Receiver internalRepOfMemberSelect(
             AnnotationProvider provider, MemberSelectTree memberSelectTree) {
-        TypeMirror expressionType = InternalUtils.typeOf(memberSelectTree.getExpression());
+        TypeMirror expressionType = TreeUtils.typeOf(memberSelectTree.getExpression());
         if (TreeUtils.isClassLiteral(memberSelectTree)) {
             return new ClassName(expressionType);
         }

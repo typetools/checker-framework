@@ -49,7 +49,6 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -357,7 +356,7 @@ public class DependentTypesHelper {
         if (enclosingClass == null) {
             return;
         }
-        TypeMirror enclosingType = InternalUtils.typeOf(enclosingClass);
+        TypeMirror enclosingType = TreeUtils.typeOf(enclosingClass);
 
         FlowExpressions.Receiver receiver =
                 FlowExpressions.internalRepOfPseudoReceiver(path, enclosingType);
@@ -390,7 +389,7 @@ public class DependentTypesHelper {
                         return;
                     }
                     ErrorReporter.errorAbort(this.getClass() + ": tree not found");
-                } else if (InternalUtils.typeOf(tree) == null) {
+                } else if (TreeUtils.typeOf(tree) == null) {
                     // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory()
                     // gets the assignment context for a pseudo assignment of an argument to
                     // a method parameter.

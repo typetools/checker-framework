@@ -31,7 +31,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
@@ -427,7 +427,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         // If the inferred field has a declaration annotation with the
         // @IgnoreInWholeProgramInference meta-annotation, exit this routine.
         for (AnnotationMirror declAnno :
-                atf.getDeclAnnotations(InternalUtils.symbol(lhs.getTree()))) {
+                atf.getDeclAnnotations(TreeUtils.elementFromTree(lhs.getTree()))) {
             if (AnnotationUtils.areSameByClass(declAnno, IgnoreInWholeProgramInference.class)) {
                 return;
             }
@@ -513,7 +513,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         }
         if ((receiverNode == null || receiverNode instanceof ImplicitThisLiteralNode)
                 && classTree != null) {
-            return (ClassSymbol) InternalUtils.symbol(classTree);
+            return (ClassSymbol) TreeUtils.elementFromTree(classTree);
         }
         TypeMirror type = receiverNode.getType();
         if (type instanceof ClassType) {
@@ -525,7 +525,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     /** Returns the ClassSymbol of the class encapsulating tree passed as parameter. */
     private ClassSymbol getEnclosingClassSymbol(Tree tree) {
-        Element symbol = InternalUtils.symbol(tree);
+        Element symbol = TreeUtils.elementFromTree(tree);
         if (symbol instanceof ClassSymbol) {
             return (ClassSymbol) symbol;
         } else if (symbol instanceof VarSymbol) {

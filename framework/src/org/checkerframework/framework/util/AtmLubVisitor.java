@@ -20,7 +20,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Helper class to compute the least upper bound of two AnnotatedTypeMirrors.
@@ -172,10 +172,10 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
             AnnotatedTypeMirror lubTypeArg;
             if (castedLub.wasRaw()) {
                 TypeMirror lubTM =
-                        InternalUtils.leastUpperBound(
-                                atypeFactory.getProcessingEnv(),
+                        TypesUtils.leastUpperBound(
                                 type1TypeArg.getUnderlyingType(),
-                                type2TypeArg.getUnderlyingType());
+                                type2TypeArg.getUnderlyingType(),
+                                atypeFactory.getProcessingEnv());
                 lubTypeArg = AnnotatedTypeMirror.createType(lubTM, atypeFactory, false);
                 lubTypArgs.add(lubTypeArg);
             } else {
@@ -223,7 +223,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
                     lubWildcard.getSuperBound(),
                     lubWildcard.getExtendsBound());
         } else if (lub.getKind() == TypeKind.TYPEVAR
-                && InternalUtils.isCaptured((TypeVariable) lub.getUnderlyingType())) {
+                && TypesUtils.isCaptured((TypeVariable) lub.getUnderlyingType())) {
             if (visited(lub)) {
                 return;
             }

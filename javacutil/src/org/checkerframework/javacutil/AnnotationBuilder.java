@@ -603,8 +603,7 @@ public class AnnotationBuilder {
                     encl = encl + '.';
                 }
                 toStringVal = encl + var.toString();
-            } else if (value instanceof TypeMirror
-                    && InternalUtils.isClassType((TypeMirror) value)) {
+            } else if (value instanceof TypeMirror && TypesUtils.isClassType((TypeMirror) value)) {
                 toStringVal = value.toString() + ".class";
             } else {
                 toStringVal = value.toString();

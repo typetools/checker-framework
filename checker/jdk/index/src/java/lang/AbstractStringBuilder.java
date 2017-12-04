@@ -81,7 +81,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *          represented by this object
      */
     @Override
-    public int length() {
+    public @NonNegative int length() {
         return count;
     }
 

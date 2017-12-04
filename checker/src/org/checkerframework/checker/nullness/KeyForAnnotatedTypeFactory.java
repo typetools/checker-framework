@@ -62,7 +62,7 @@ public class KeyForAnnotatedTypeFactory
         addAliasedAnnotation(
                 org.checkerframework.checker.nullness.compatqual.KeyForType.class, KEYFOR);
 
-        TypeMirror mapType = TypesUtils.typeFromClass(types, elements, Map.class);
+        TypeMirror mapType = TypesUtils.typeFromClass(Map.class, types, elements);
         erasedMapType = types.erasure(mapType);
 
         this.postInit();

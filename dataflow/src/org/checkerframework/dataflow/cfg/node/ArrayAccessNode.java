@@ -5,7 +5,7 @@ import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.LinkedList;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for an array access:
@@ -26,7 +26,7 @@ public class ArrayAccessNode extends Node {
     protected final Node index;
 
     public ArrayAccessNode(Tree t, Node array, Node index) {
-        super(InternalUtils.typeOf(t));
+        super(TreeUtils.typeOf(t));
         assert t instanceof ArrayAccessTree;
         this.tree = t;
         this.array = array;

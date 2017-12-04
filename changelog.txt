@@ -1,6 +1,15 @@
 ---------------------------------------------------------------------------
 
+Version 2.3.0, December 1, 2017
+
 Removed the deprecated @LazyNonNull type qualifier.
+Deprecated most methods in InternalUtils and moved them to either
+TreeUtils or TypesUtils. Adapted a few method names and parameter
+orders for consistency.
+
+Closed issues:
+951, 1356, 1495, 1602, 1605, 1623, 1628, 1636, 1641, 1653, 1655, 1664, 1665,
+1681, 1684, 1688, 1690.
 
 ---------------------------------------------------------------------------
 

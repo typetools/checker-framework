@@ -56,7 +56,6 @@ import org.checkerframework.framework.type.SyntheticArrays;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -577,10 +576,10 @@ public class AnnotatedTypes {
             AnnotatedTypeMirror type1,
             AnnotatedTypeMirror type2) {
         TypeMirror lub =
-                InternalUtils.leastUpperBound(
-                        atypeFactory.getProcessingEnv(),
+                TypesUtils.leastUpperBound(
                         type1.getUnderlyingType(),
-                        type2.getUnderlyingType());
+                        type2.getUnderlyingType(),
+                        atypeFactory.getProcessingEnv());
         return leastUpperBound(atypeFactory, type1, type2, lub);
     }
 

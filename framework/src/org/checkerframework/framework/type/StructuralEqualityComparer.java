@@ -20,7 +20,6 @@ import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -357,8 +356,8 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         visited.add(type1, type2);
 
         // TODO: Remove this code when capture conversion is implemented
-        if (InternalUtils.isCaptured(type1.getUnderlyingType())
-                || InternalUtils.isCaptured(type2.getUnderlyingType())) {
+        if (TypesUtils.isCaptured(type1.getUnderlyingType())
+                || TypesUtils.isCaptured(type2.getUnderlyingType())) {
             if (!boundsMatch(type1, type2)) {
                 return subtypeAndCompare(type1.getUpperBound(), type2.getUpperBound(), visited)
                         && subtypeAndCompare(type1.getLowerBound(), type2.getLowerBound(), visited);
