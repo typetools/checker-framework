@@ -16,27 +16,11 @@ class StringSameLen {
         }
     }
 
-    public void m3(String s) {
-        String t = new String(s);
-
-        for (int i = 0; i < s.length(); ++i) {
-            char c = t.charAt(i);
-        }
-    }
-
     public void m4(String s) {
         char[] t = s.toCharArray();
 
         for (int i = 0; i < s.length(); ++i) {
             char c = t[i];
-        }
-    }
-
-    public void m5(char[] s) {
-        String t = new String(s);
-
-        for (int i = 0; i < s.length; ++i) {
-            char c = t.charAt(i);
         }
     }
 
@@ -62,5 +46,9 @@ class StringSameLen {
         for (int i = 0; i < s.length(); ++i) {
             char c = t.charAt(i);
         }
+    }
+
+    public void constructor(String s) {
+        String t = new String(new char[] {'a'});
     }
 }
