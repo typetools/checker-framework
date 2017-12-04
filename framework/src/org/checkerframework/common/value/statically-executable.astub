@@ -347,3 +347,16 @@ class StringTokenizer {
     @MinLen(1) String nextToken();
     @MinLen(1) String nextToken(String delim);
 }
+
+class Arrays {
+    static @MinLen(2) String toString(long[] a);
+    static @MinLen(2) String toString(int[] a);
+    static @MinLen(2) String toString(short[] a);
+    static @MinLen(2) String toString(char[] a);
+    static @MinLen(2) String toString(byte[] a);
+    static @MinLen(2) String toString(boolean[] a);
+    static @MinLen(2) String toString(float[] a);
+    static @MinLen(2) String toString(double[] a);
+    static @MinLen(2) String toString(Object[] a);
+    static @MinLen(2) String deepToString(Object[] a);
+}
