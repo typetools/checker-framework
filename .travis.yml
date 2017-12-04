@@ -102,8 +102,6 @@ jobs:
               sh trigger-travis.sh typetests daikon-typecheck $TRAVIS_ACCESS_TOKEN
               sh trigger-travis.sh typetests guava-typecheck $TRAVIS_ACCESS_TOKEN
               sh trigger-travis.sh typetests plume-lib-typecheck $TRAVIS_ACCESS_TOKEN
-              # Temporary
-              sh trigger-travis.sh mernst plume-lib-check-index-new $TRAVIS_ACCESS_TOKEN
             fi
           fi
 
