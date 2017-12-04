@@ -151,7 +151,7 @@ public final class String
      * @param  original
      *         A {@code String}
      */
-    public @SameLen("#1") String(String original) {
+    public String(String original) {
         this.value = original.value;
         this.hash = original.hash;
     }
@@ -165,7 +165,7 @@ public final class String
      * @param  value
      *         The initial value of the string
      */
-    public @SameLen("#1") String(char[] value) {
+    public String(char[] value) {
         this.value = Arrays.copyOf(value, value.length);
     }
 
