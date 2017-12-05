@@ -224,10 +224,12 @@ public class TypeArgInferenceUtil {
                 break;
             }
         }
-        assert treeIndex != -1
-                : "Could not find path in MethodInvocationTree.\n" + "treePath=" + path.toString();
         final AnnotatedTypeMirror paramType;
-        if (treeIndex >= method.getParameterTypes().size() && methodElt.isVarArgs()) {
+        if (treeIndex == -1) {
+            // The tree wasn't found as an argument, so it has to be the receiver.
+            // This can happen for inner class constructors that take an outer class argument.
+            paramType = method.getReceiverType();
+        } else if (treeIndex >= method.getParameterTypes().size() && methodElt.isVarArgs()) {
             paramType = method.getParameterTypes().get(method.getParameterTypes().size() - 1);
         } else {
             paramType = method.getParameterTypes().get(treeIndex);
