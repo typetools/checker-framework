@@ -141,7 +141,7 @@ class GZIPOutputStream extends DeflaterOutputStream {
      * @param len the length of the data
      * @exception IOException If an I/O error has occurred.
      */
-    public synchronized void write(byte[] buf, @IndexFor("#1") int off, @IndexOrHigh("#1") int len)
+    public synchronized void write(byte[] buf, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len)
         throws IOException
     {
         super.write(buf, off, len);

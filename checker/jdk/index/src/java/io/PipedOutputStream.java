@@ -136,7 +136,7 @@ class PipedOutputStream extends OutputStream {
      *          {@link #connect(java.io.PipedInputStream) unconnected},
      *          closed, or if an I/O error occurs.
      */
-    public void write(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public void write(byte b[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         if (sink == null) {
             throw new IOException("Pipe not connected");
         } else if (b == null) {

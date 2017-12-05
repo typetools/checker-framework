@@ -296,7 +296,7 @@ class ZipOutputStream extends DeflaterOutputStream implements ZipConstants {
      * @exception ZipException if a ZIP file error has occurred
      * @exception IOException if an I/O error has occurred
      */
-    public synchronized void write(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len)
+    public synchronized void write(byte[] b, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len)
         throws IOException
     {
         ensureOpen();
