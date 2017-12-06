@@ -5048,7 +5048,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * count} is larger than the length of the given array.
      * @since  1.5
      */
-    public static @NonNegative int codePointCount(char[] a, @IndexFor("#1") int offset, @IndexOrHigh("#1") int count) {
+    public static @NonNegative int codePointCount(char[] a, @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int count) {
         if (count > a.length - offset || offset < 0 || count < 0) {
             throw new IndexOutOfBoundsException();
         }
@@ -5157,8 +5157,8 @@ class Character implements java.io.Serializable, Comparable<Character> {
      *   {@code codePointOffset} code points.
      * @since 1.5
      */
-    public static @IndexFor("#1") int offsetByCodePoints(char[] a, @IndexFor("#1") int start, @IndexOrHigh("#1") int count,
-                                         @IndexFor("#1") int index, int codePointOffset) {
+    public static @IndexOrHigh("#1") int offsetByCodePoints(char[] a, @IndexOrHigh("#1") int start, @IndexOrHigh("#1") int count,
+                                         @IndexOrHigh("#1") int index, int codePointOffset) {
         if (count > a.length-start || start < 0 || count < 0
             || index < start || index > start+count) {
             throw new IndexOutOfBoundsException();
