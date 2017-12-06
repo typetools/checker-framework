@@ -3328,8 +3328,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * BaseTypeVisitor#validateTypeOf(Tree)} would call this for each type argument or array
      * dimension separately.
      *
-     * <p>In most cases, {@code useType} simply needs to be a subtype of {@code declarationType},
-     * but there are exceptions.
+     * <p>In most cases, {@code useType} simply needs to be a subtype of {@code declarationType}. If
+     * a type system makes exceptions to this rule, its implementation should override this method.
      *
      * @param declarationType the type of the class (TypeElement)
      * @param useType the use of the class (instance type)

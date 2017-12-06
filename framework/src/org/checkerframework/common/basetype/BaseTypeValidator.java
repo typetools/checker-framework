@@ -79,6 +79,23 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     }
 
     /**
+     * Like {@link #reportValidityResult()}, but the type is printed in the error message without
+     * annotations. This method would print "annotation @NonNull is not permitted on type int",
+     * whereas {@link #reportValidityResult()} would print "annotation @NonNull is not permitted on
+     * type @NonNull int".
+     */
+    protected void reportValidityResultOnUnannotatedType(
+            final /*@CompilerMessageKey*/ String errorType,
+            final AnnotatedTypeMirror type,
+            final Tree p) {
+        // TODO: if underlying is a compound type such as List<@Palindrome String>, then it would be
+        // nice to print it as "List" instead of as "List<@Palindrome String>".
+        TypeMirror underlying = type.getUnderlyingType();
+        checker.report(Result.failure(errorType, type.getAnnotations(), underlying.toString()), p);
+        isValid = false;
+    }
+
+    /**
      * Most errors reported by this class are of the form type.invalid. This method reports when the
      * bounds of a wildcard or type variable don't make sense. Bounds make sense when the effective
      * annotations on the upper bound are supertypes of those on the lower bounds for all
@@ -127,6 +144,10 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         reportValidityResult("type.invalid", type, p);
     }
 
+    protected void reportInvalidAnnotationsOnUse(final AnnotatedTypeMirror type, final Tree p) {
+        reportValidityResultOnUnannotatedType("type.invalid.annotations.on.use", type, p);
+    }
+
     @Override
     public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
         if (visitedNodes.containsKey(type)) {
@@ -143,7 +164,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                             atypeFactory.getAnnotatedType(type.getUnderlyingType().asElement());
 
             if (!visitor.isValidUse(elemType, type, tree)) {
-                reportInvalidType(type, tree);
+                reportInvalidAnnotationsOnUse(type, tree);
             }
         }
 
@@ -284,7 +305,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         }
 
         if (!visitor.isValidUse(type, tree)) {
-            reportInvalidType(type, tree);
+            reportInvalidAnnotationsOnUse(type, tree);
         }
 
         return super.visitPrimitive(type, tree);
@@ -306,7 +327,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         }
 
         if (!visitor.isValidUse(type, tree)) {
-            reportInvalidType(type, tree);
+            reportInvalidAnnotationsOnUse(type, tree);
         }
 
         return super.visitArray(type, tree);
