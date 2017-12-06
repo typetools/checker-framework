@@ -123,7 +123,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         isValid = false;
     }
 
-    protected void reportError(final AnnotatedTypeMirror type, final Tree p) {
+    protected void reportInvalidType(final AnnotatedTypeMirror type, final Tree p) {
         reportValidityResult("type.invalid", type, p);
     }
 
@@ -143,7 +143,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                             atypeFactory.getAnnotatedType(type.getUnderlyingType().asElement());
 
             if (!visitor.isValidUse(elemType, type, tree)) {
-                reportError(type, tree);
+                reportInvalidType(type, tree);
             }
         }
 
@@ -284,7 +284,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         }
 
         if (!visitor.isValidUse(type, tree)) {
-            reportError(type, tree);
+            reportInvalidType(type, tree);
         }
 
         return super.visitPrimitive(type, tree);
@@ -306,7 +306,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         }
 
         if (!visitor.isValidUse(type, tree)) {
-            reportError(type, tree);
+            reportInvalidType(type, tree);
         }
 
         return super.visitArray(type, tree);
@@ -382,7 +382,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                     if (upper.isAnnotatedInHierarchy(aOnVar) &&
                             !checker.getQualifierHierarchy().isSubtype(aOnVar,
                                     upper.findAnnotationInHierarchy(aOnVar))) {
-                        this.reportError(type, tree);
+                        this.reportInvalidType(type, tree);
                     }
                 }
                 upper.replaceAnnotations(onVar);
@@ -428,7 +428,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                     if (upper.isAnnotatedInHierarchy(aOnVar) &&
                             !atypeFactory.getQualifierHierarchy().isSubtype(aOnVar,
                                     upper.findAnnotationInHierarchy(aOnVar))) {
-                        this.reportError(type, tree);
+                        this.reportInvalidType(type, tree);
                     }
                 }
                 upper.replaceAnnotations(onVar);
@@ -442,7 +442,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                             && !atypeFactory
                                     .getQualifierHierarchy()
                                     .isSubtype(lower.getAnnotationInHierarchy(aOnVar), aOnVar)) {
-                        this.reportError(type, tree);
+                        this.reportInvalidType(type, tree);
                     }
                 }
                 lower.replaceAnnotations(onVar);
@@ -496,7 +496,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             }
             AnnotationMirror top = atypeFactory.getQualifierHierarchy().getTopAnnotation(aOnVar);
             if (seenTops.contains(top)) {
-                this.reportError(type, tree);
+                reportValidityResult("type.invalid.conflicting.annos", type, tree);
                 error = true;
             }
             seenTops.add(top);
