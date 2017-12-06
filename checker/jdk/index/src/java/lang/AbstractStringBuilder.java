@@ -383,7 +383,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *             {@code dst.length}
      *             </ul>
      */
-    public void getChars(/*!IndexOrHigh("this")*/ int srcBegin, /*!IndexOrHigh("this")*/ int srcEnd, char[] dst, @IndexFor("#3") int dstBegin)
+    public void getChars(/*!IndexOrHigh("this")*/ int srcBegin, /*!IndexOrHigh("this")*/ int srcEnd, char[] dst, @IndexOrHigh("#3") int dstBegin)
     {
         if (srcBegin < 0)
             throw new StringIndexOutOfBoundsException(srcBegin);
@@ -597,7 +597,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *         if {@code offset < 0} or {@code len < 0}
      *         or {@code offset+len > str.length}
      */
-    public AbstractStringBuilder append(char str[], @NonNegative @LTLengthOf(value="#1", offset="#3") int offset, @IndexFor("#1") int len) {
+    public AbstractStringBuilder append(char str[], @NonNegative @LTLengthOf(value="#1", offset="#3 - 1") int offset, @IndexOrHigh("#1") int len) {
         if (len > 0)                // let arraycopy report AIOOBE for len < 0
             ensureCapacityInternal(count + len);
         System.arraycopy(str, offset, value, count, len);
@@ -963,8 +963,8 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *             {@code (offset+len)} is greater than
      *             {@code str.length}.
      */
-    public AbstractStringBuilder insert(int index, char[] str, @NonNegative @LTLengthOf(value="#2", offset="#4") int offset,
-                                        @IndexFor("#2") int len)
+    public AbstractStringBuilder insert(int index, char[] str, @NonNegative @LTLengthOf(value="#2", offset="#4 - 1") int offset,
+                                        @IndexOrHigh("#2") int len)
     {
         if ((index < 0) || (index > length()))
             throw new StringIndexOutOfBoundsException(index);
