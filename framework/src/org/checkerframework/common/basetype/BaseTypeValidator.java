@@ -80,9 +80,9 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     }
 
     /**
-     * Like {@link #reportValidityResult()}, but the type is printed in the error message without
+     * Like {@link #reportValidityResult}, but the type is printed in the error message without
      * annotations. This method would print "annotation @NonNull is not permitted on type int",
-     * whereas {@link #reportValidityResult()} would print "annotation @NonNull is not permitted on
+     * whereas {@link #reportValidityResult} would print "annotation @NonNull is not permitted on
      * type @NonNull int".
      */
     protected void reportValidityResultOnUnannotatedType(
