@@ -471,6 +471,11 @@ public class QualifierPolymorphism {
             return mapQualifierToPoly(type, actualType);
         }
 
+        /**
+         * If the primary annotation of {@code actualType} is a polymorphic qualifier, then it is
+         * mapped to the primary annotation of {@code type} and the map is returned. Otherwise, an
+         * empty map is returned.
+         */
         private Map<AnnotationMirror, Set<? extends AnnotationMirror>> mapQualifierToPoly(
                 AnnotatedTypeMirror type, AnnotatedTypeMirror actualType) {
             Map<AnnotationMirror, Set<? extends AnnotationMirror>> result = new HashMap<>();
