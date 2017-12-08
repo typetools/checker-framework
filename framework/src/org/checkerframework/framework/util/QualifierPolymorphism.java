@@ -598,7 +598,7 @@ public class QualifierPolymorphism {
             if (type.isUninferredTypeArgument()
                     || !TypesUtils.isErasedSubtype(
                             type.getUnderlyingType(), actualType.getUnderlyingType(), types)) {
-                return mapQualifierToPoly(type, actualType);
+                return mapQualifierToPoly(type.getExtendsBound(), actualType);
             }
             AnnotatedTypeMirror typeSuper = AnnotatedTypes.asSuper(atypeFactory, type, actualType);
             if (typeSuper.getKind() != TypeKind.WILDCARD) {
