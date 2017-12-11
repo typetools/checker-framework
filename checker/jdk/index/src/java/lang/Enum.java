@@ -24,6 +24,7 @@
  */
 
 package java.lang;
+import org.checkerframework.checker.index.qual.*;
 
 import java.io.Serializable;
 import java.io.IOException;
