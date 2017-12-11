@@ -99,7 +99,7 @@ public abstract class Enum<E extends Enum<E>>
      *
      * @return the ordinal of this enumeration constant
      */
-    public final int ordinal() {
+    public final @NonNegative int ordinal() {
         return ordinal;
     }
 
@@ -114,7 +114,7 @@ public abstract class Enum<E extends Enum<E>>
      *         in the enum declaration, where the initial constant is assigned
      *         an ordinal of zero).
      */
-    protected Enum(String name, int ordinal) {
+    protected Enum(String name, @NonNegative int ordinal) {
         this.name = name;
         this.ordinal = ordinal;
     }
