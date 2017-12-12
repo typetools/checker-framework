@@ -852,7 +852,7 @@ public class ObjectInputStream
      * @throws  IOException If an I/O error has occurred.
      * @see java.io.DataInputStream#readFully(byte[],int,int)
      */
-    public @IndexOrLow("#1") int read(byte[] buf, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public @GTENegativeOne @LTEqLengthOf("#1") int read(byte[] buf, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         if (buf == null) {
             throw new NullPointerException();
         }
@@ -1022,7 +1022,7 @@ public class ObjectInputStream
      * @throws  EOFException If end of file is reached.
      * @throws  IOException If other I/O error has occurred.
      */
-    public void readFully(byte[] buf, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public void readFully(byte[] buf, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         int endoff = off + len;
         if (off < 0 || len < 0 || endoff > buf.length || endoff < 0) {
             throw new IndexOutOfBoundsException();

@@ -201,7 +201,7 @@ public final class StringBuilder
     /**
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder append(char[] str, @IndexFor("#1") int offset, @IndexOrHigh("#1") int len) {
+    public StringBuilder append(char[] str, @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int len) {
         super.append(str, offset, len);
         return this;
     }
@@ -271,7 +271,7 @@ public final class StringBuilder
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder insert(/* !IndexFor("this") */ int index, char[] str, @IndexFor("#2") int offset,
+    public StringBuilder insert(/* !IndexFor("this") */ int index, char[] str, @IndexOrHigh("#2") int offset,
                                 @IndexOrHigh("#2") int len)
     {
         super.insert(index, str, offset, len);
