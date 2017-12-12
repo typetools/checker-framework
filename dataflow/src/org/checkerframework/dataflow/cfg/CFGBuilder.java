@@ -70,6 +70,7 @@ import com.sun.tools.javac.util.Context;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -3251,16 +3252,18 @@ public class CFGBuilder {
 
         @Override
         public Node visitBreak(BreakTree tree, Void p) {
-            Name label = tree.getLabel();
-            if (label == null) {
+            Name labelName = tree.getLabel();
+            Label label;
+            if (labelName == null) {
                 assert breakTargetL != null : "no target for break statement";
-
-                extendWithExtendedNode(new UnconditionalJump(breakTargetL));
+                label = breakTargetL;
             } else {
-                assert breakLabels.containsKey(label);
-
-                extendWithExtendedNode(new UnconditionalJump(breakLabels.get(label)));
+                assert breakLabels.containsKey(labelName);
+                label = breakLabels.get(labelName);
             }
+
+            extendsFinalliesUntil(label);
+            extendWithExtendedNode(new UnconditionalJump(label));
 
             return null;
         }
@@ -3287,6 +3290,7 @@ public class CFGBuilder {
             public void build() {
                 Label oldBreakTargetL = breakTargetL;
                 breakTargetL = new Label();
+                finalliesLabelsStack.push(breakTargetL);
                 int cases = caseBodyLabels.length - 1;
                 for (int i = 0; i < cases; ++i) {
                     caseBodyLabels[i] = new Label();
@@ -3341,6 +3345,7 @@ public class CFGBuilder {
                 }
 
                 addLabelForNextNode(breakTargetL);
+                finalliesLabelsStack.pop();
                 breakTargetL = oldBreakTargetL;
             }
 
@@ -3412,18 +3417,41 @@ public class CFGBuilder {
             return node;
         }
 
+        private void extendsFinalliesUntil(Label l) {
+            assert finalliesLabelsStack.contains(l);
+
+            Deque<Object> oldFinalliesLabelsStack = finalliesLabelsStack;
+            finalliesLabelsStack = new LinkedList<>(finalliesLabelsStack);
+            while (!finalliesLabelsStack.isEmpty()) {
+                Object o = finalliesLabelsStack.pop();
+                if (l.equals(o)) {
+                    break;
+                } else if (o instanceof BlockTree) {
+                    BlockTree finallyBlock = (BlockTree) o;
+                    Tree f = treeBuilder.copy(finallyBlock);
+                    addToGeneratedTreesLookupMap(finallyBlock, f);
+                    scan(f, null);
+                }
+            }
+            finalliesLabelsStack = oldFinalliesLabelsStack;
+        }
+
         @Override
         public Node visitContinue(ContinueTree tree, Void p) {
-            Name label = tree.getLabel();
-            if (label == null) {
+            Name labelName = tree.getLabel();
+            Label label;
+            if (labelName == null) {
                 assert continueTargetL != null : "no target for continue statement";
 
-                extendWithExtendedNode(new UnconditionalJump(continueTargetL));
+                label = continueTargetL;
             } else {
-                assert continueLabels.containsKey(label);
+                assert continueLabels.containsKey(labelName);
 
-                extendWithExtendedNode(new UnconditionalJump(continueLabels.get(label)));
+                label = continueLabels.get(labelName);
             }
+
+            extendsFinalliesUntil(label);
+            extendWithExtendedNode(new UnconditionalJump(label));
 
             return null;
         }
@@ -3451,6 +3479,9 @@ public class CFGBuilder {
             Label oldContinueTargetL = continueTargetL;
             continueTargetL = conditionStart;
 
+            finalliesLabelsStack.push(breakTargetL);
+            finalliesLabelsStack.push(continueTargetL);
+
             // Loop body
             addLabelForNextNode(loopEntry);
             if (tree.getStatement() != null) {
@@ -3470,6 +3501,9 @@ public class CFGBuilder {
 
             breakTargetL = oldBreakTargetL;
             continueTargetL = oldContinueTargetL;
+
+            finalliesLabelsStack.pop();
+            finalliesLabelsStack.pop();
 
             return null;
         }
@@ -3509,6 +3543,9 @@ public class CFGBuilder {
 
             Label oldContinueTargetL = continueTargetL;
             continueTargetL = updateStart;
+
+            finalliesLabelsStack.push(breakTargetL);
+            finalliesLabelsStack.push(continueTargetL);
 
             // Distinguish loops over Iterables from loops over arrays.
 
@@ -3770,6 +3807,9 @@ public class CFGBuilder {
             breakTargetL = oldBreakTargetL;
             continueTargetL = oldContinueTargetL;
 
+            finalliesLabelsStack.pop();
+            finalliesLabelsStack.pop();
+
             return null;
         }
 
@@ -3825,6 +3865,9 @@ public class CFGBuilder {
             Label oldContinueTargetL = continueTargetL;
             continueTargetL = updateStart;
 
+            finalliesLabelsStack.push(breakTargetL);
+            finalliesLabelsStack.push(continueTargetL);
+
             // Initializer
             for (StatementTree init : tree.getInitializer()) {
                 scan(init, p);
@@ -3857,6 +3900,9 @@ public class CFGBuilder {
 
             breakTargetL = oldBreakTargetL;
             continueTargetL = oldContinueTargetL;
+
+            finalliesLabelsStack.pop();
+            finalliesLabelsStack.pop();
 
             return null;
         }
@@ -3968,12 +4014,18 @@ public class CFGBuilder {
             breakLabels.put(labelName, breakL);
             continueLabels.put(labelName, continueL);
 
+            finalliesLabelsStack.push(breakL);
+            finalliesLabelsStack.push(continueL);
+
             scan(tree.getStatement(), p);
 
             addLabelForNextNode(breakL);
 
             breakLabels.remove(labelName);
             continueLabels.remove(labelName);
+
+            finalliesLabelsStack.pop();
+            finalliesLabelsStack.pop();
 
             return null;
         }
@@ -4263,6 +4315,8 @@ public class CFGBuilder {
 
             tryStack.pushFrame(new TryCatchFrame(types, catchLabels));
 
+            finalliesLabelsStack.push(finallyBlock);
+
             scan(tree.getBlock(), p);
             extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
 
@@ -4276,6 +4330,8 @@ public class CFGBuilder {
                 extendWithExtendedNode(
                         new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
             }
+
+            finalliesLabelsStack.pop();
 
             if (finallyLabel != null) {
                 tryStack.popFrame();
@@ -4593,6 +4649,8 @@ public class CFGBuilder {
             return node;
         }
 
+        Deque<Object> finalliesLabelsStack = new LinkedList<>();
+
         @Override
         public Node visitWhileLoop(WhileLoopTree tree, Void p) {
             Name parentLabel = getLabel(getCurrentPath());
@@ -4616,6 +4674,9 @@ public class CFGBuilder {
             Label oldContinueTargetL = continueTargetL;
             continueTargetL = conditionStart;
 
+            finalliesLabelsStack.push(breakTargetL);
+            finalliesLabelsStack.push(continueTargetL);
+
             // Condition
             addLabelForNextNode(conditionStart);
             if (tree.getCondition() != null) {
@@ -4636,6 +4697,9 @@ public class CFGBuilder {
 
             breakTargetL = oldBreakTargetL;
             continueTargetL = oldContinueTargetL;
+
+            finalliesLabelsStack.pop();
+            finalliesLabelsStack.pop();
 
             return null;
         }
