@@ -3453,19 +3453,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected final boolean shouldSkipUses(ExpressionTree exprTree) {
         // System.out.printf("shouldSkipUses: %s: %s%n", exprTree.getClass(), exprTree);
 
-        // This special case for ConditionalExpressionTree seems wrong, so
-        // I commented it out.  It will skip expressions that should be
-        // checked, just because they are lexically near expressions that
-        // should be skipped.  Presumably it's because conditionals do some
-        // type inference, but if so, this is the wrong way to fix the
-        // problem. -MDE
-        // if (exprTree instanceof ConditionalExpressionTree) {
-        //     ConditionalExpressionTree condTree =
-        //         (ConditionalExpressionTree)exprTree;
-        //     return (shouldSkipUses(condTree.getTrueExpression()) ||
-        //             shouldSkipUses(condTree.getFalseExpression()));
-        // }
-
         // Don't use commonAssignmentCheck for lambdas or method references.
         if (exprTree instanceof MemberReferenceTree || exprTree instanceof LambdaExpressionTree) {
             return true;
