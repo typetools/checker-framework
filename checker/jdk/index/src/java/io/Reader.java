@@ -137,7 +137,7 @@ public abstract class Reader implements Readable, Closeable {
      *
      * @exception   IOException  If an I/O error occurs
      */
-    public @IndexOrLow("#1") int read(char cbuf[]) throws IOException {
+    public @GTENegativeOne @LTEqLengthOf("#1") int read(char cbuf[]) throws IOException {
         return read(cbuf, 0, cbuf.length);
     }
 
@@ -155,7 +155,7 @@ public abstract class Reader implements Readable, Closeable {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    abstract public @IndexOrLow("#1") int read(char cbuf[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException;
+    abstract public @GTENegativeOne @LTEqLengthOf("#1") int read(char cbuf[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException;
 
     /** Maximum skip-buffer size */
     private static final int maxSkipBufferSize = 8192;

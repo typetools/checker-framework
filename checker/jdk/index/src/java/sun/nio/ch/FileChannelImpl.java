@@ -153,7 +153,7 @@ public class FileChannelImpl
         }
     }
 
-    public @NonNegative long read(ByteBuffer[] dsts, @IndexFor("#1") int offset, @IndexOrHigh("#1") int length)
+    public @NonNegative long read(ByteBuffer[] dsts, @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int length)
         throws IOException
     {
         if ((offset < 0) || (length < 0) || (offset > dsts.length - length))
@@ -205,7 +205,7 @@ public class FileChannelImpl
         }
     }
 
-    public @NonNegative long write(ByteBuffer[] srcs, @IndexFor("#1") int offset, @IndexOrHigh("#1") int length)
+    public @NonNegative long write(ByteBuffer[] srcs, @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int length)
         throws IOException
     {
         if ((offset < 0) || (length < 0) || (offset > srcs.length - length))

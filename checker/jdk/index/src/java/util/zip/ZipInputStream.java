@@ -178,7 +178,7 @@ class ZipInputStream extends InflaterInputStream implements ZipConstants {
      * @exception ZipException if a ZIP file error has occurred
      * @exception IOException if an I/O error has occurred
      */
-    public @IndexOrLow("#1") int read(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public @GTENegativeOne @LTEqLengthOf("#1") int read(byte[] b, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         ensureOpen();
         if (off < 0 || len < 0 || off > b.length - len) {
             throw new IndexOutOfBoundsException();

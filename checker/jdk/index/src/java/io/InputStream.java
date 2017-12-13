@@ -98,7 +98,7 @@ public abstract class InputStream implements Closeable {
      * @exception  NullPointerException  if <code>b</code> is <code>null</code>.
      * @see        java.io.InputStream#read(byte[], int, int)
      */
-    public @IndexOrLow("#1") int read(byte b[]) throws IOException {
+    public @GTENegativeOne @LTEqLengthOf("#1") int read(byte b[]) throws IOException {
         return read(b, 0, b.length);
     }
 
@@ -159,7 +159,7 @@ public abstract class InputStream implements Closeable {
      * <code>b.length - off</code>
      * @see        java.io.InputStream#read()
      */
-    public @IndexOrLow("#1") int read(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public @GTENegativeOne @LTEqLengthOf("#1") int read(byte b[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         if (b == null) {
             throw new NullPointerException();
         } else if (off < 0 || len < 0 || len > b.length - off) {
