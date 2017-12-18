@@ -213,8 +213,8 @@ import org.checkerframework.checker.index.qual.*;
      * @throws NullPointerException {@inheritDoc}
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public synchronized void getChars(/* @IndexFor("this")*/ int srcBegin, /*!IndexOrHigh("this")*/ int srcEnd, char[] dst,
-                                      @IndexFor("#3") int dstBegin)
+    public synchronized void getChars(/* @IndexOrHigh("this")*/ int srcBegin, /*!IndexOrHigh("this")*/ int srcEnd, char[] dst,
+                                      @IndexOrHigh("#3") int dstBegin)
     {
         super.getChars(srcBegin, srcEnd, dst, dstBegin);
     }
@@ -319,7 +319,7 @@ import org.checkerframework.checker.index.qual.*;
     /**
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public synchronized StringBuffer append(char[] str, @IndexFor("#1") int offset, @IndexOrHigh("#1") int len) {
+    public synchronized StringBuffer append(char[] str, @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int len) {
         super.append(str, offset, len);
         return this;
     }
@@ -417,7 +417,7 @@ import org.checkerframework.checker.index.qual.*;
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      * @since      1.2
      */
-    public synchronized StringBuffer insert(/*!IndexFor("this")*/ int index, char[] str, @IndexFor("#2") int offset,
+    public synchronized StringBuffer insert(/*!IndexFor("this")*/ int index, char[] str, @IndexOrHigh("#2") int offset,
                                             @IndexOrHigh("#2") int len)
     {
         super.insert(index, str, offset, len);

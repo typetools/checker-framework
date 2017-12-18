@@ -197,7 +197,7 @@ class DeflaterOutputStream extends FilterOutputStream {
      * @param len the length of the data
      * @exception IOException if an I/O error has occurred
      */
-    public void write(byte[] b, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public void write(byte[] b, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         if (def.finished()) {
             throw new IOException("write beyond end of stream");
         }

@@ -356,7 +356,7 @@ public abstract class FileChannel
      * read.  Otherwise this method behaves exactly as specified in the {@link
      * ScatteringByteChannel} interface.  </p>
      */
-    public abstract @GTENegativeOne long read(ByteBuffer[] dsts, @IndexFor("#1") int offset, @IndexOrHigh("#1") int length)
+    public abstract @GTENegativeOne long read(ByteBuffer[] dsts, @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int length)
         throws IOException;
 
     /**
@@ -396,7 +396,7 @@ public abstract class FileChannel
      * behaves exactly as specified in the {@link GatheringByteChannel}
      * interface.  </p>
      */
-    public abstract @NonNegative long write(ByteBuffer[] srcs, @IndexFor("#1") int offset, @IndexOrHigh("#1") int length)
+    public abstract @NonNegative long write(ByteBuffer[] srcs, @IndexOrHigh("#1") int offset, @IndexOrHigh("#1") int length)
         throws IOException;
 
     /**

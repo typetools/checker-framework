@@ -133,7 +133,7 @@ public class ByteArrayOutputStream extends OutputStream {
      * @param   off   the start offset in the data.
      * @param   len   the number of bytes to write.
      */
-    public synchronized void write(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) {
+    public synchronized void write(byte b[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) {
         if ((off < 0) || (off > b.length) || (len < 0) ||
             ((off + len) - b.length > 0)) {
             throw new IndexOutOfBoundsException();

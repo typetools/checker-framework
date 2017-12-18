@@ -28,6 +28,9 @@ public @interface EnsuresLockHeldIf {
      * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">Syntax of
      *     Java expressions</a>
      */
+    // It would be clearer for users if this field were named "lock".
+    // However, method ContractUtils.getConditionalPostconditions in the CF implementation assumes
+    // that conditional postconditions have a field named "expression".
     String[] expression();
 
     /** The return value of the method that needs to hold for the postcondition to hold. */

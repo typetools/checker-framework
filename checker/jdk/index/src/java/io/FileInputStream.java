@@ -206,7 +206,7 @@ class FileInputStream extends InputStream
      *             the file has been reached.
      * @exception  IOException  if an I/O error occurs.
      */
-    public @IndexOrLow("#1") int read(byte b[]) throws IOException {
+    public @GTENegativeOne @LTEqLengthOf("#1") int read(byte b[]) throws IOException {
         return readBytes(b, 0, b.length);
     }
 
@@ -228,7 +228,7 @@ class FileInputStream extends InputStream
      * <code>b.length - off</code>
      * @exception  IOException  if an I/O error occurs.
      */
-    public @IndexOrLow("#1") int read(byte b[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public @GTENegativeOne @LTEqLengthOf("#1") int read(byte b[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         return readBytes(b, off, len);
     }
 
