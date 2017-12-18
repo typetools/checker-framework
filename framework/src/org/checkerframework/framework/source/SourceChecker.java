@@ -1922,7 +1922,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param typeName the fully-qualified name of a type
      * @return true iff the enclosing class of element should be skipped
      */
-    public final boolean shouldSkipUses(String typeName) {
+    public boolean shouldSkipUses(String typeName) {
         // System.out.printf("shouldSkipUses(%s) %s%nskipUses %s%nonlyUses %s%nresult %s%n",
         //                   element,
         //                   name,

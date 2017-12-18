@@ -18,6 +18,14 @@ import org.checkerframework.framework.source.SuppressWarningsKeys;
 public class UpperBoundChecker extends BaseTypeChecker {
 
     @Override
+    public boolean shouldSkipUses(String typeName) {
+        if (typeName.equals("java.util.List")
+                || typeName.equals("java.util.AbstractList")
+                || typeName.equals("java.lang.CharSequence")) return true;
+        return super.shouldSkipUses(typeName);
+    }
+
+    @Override
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
                 super.getImmediateSubcheckerClasses();
