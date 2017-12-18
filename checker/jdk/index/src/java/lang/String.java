@@ -1735,7 +1735,7 @@ public final class String
      * @param   target       the characters being searched for.
      * @param   fromIndex    the index to begin searching from.
      */
-    static @LTEqLengthOf("this") @SubstringIndexFor(value="this",offset="#1.length()-1") int indexOf(char[] source, int sourceOffset, int sourceCount,
+    static int indexOf(char[] source, int sourceOffset, int sourceCount,
             String target, int fromIndex) {
         return indexOf(source, sourceOffset, sourceCount,
                        target.value, 0, target.value.length,
@@ -1844,7 +1844,7 @@ public final class String
      * @param   target       the characters being searched for.
      * @param   fromIndex    the index to begin searching from.
      */
-    static @LTEqLengthOf("this") @SubstringIndexFor(value="this",offset="#1.length()-1") int lastIndexOf(char[] source, int sourceOffset, int sourceCount,
+    static int lastIndexOf(char[] source, int sourceOffset, int sourceCount,
             String target, int fromIndex) {
         return lastIndexOf(source, sourceOffset, sourceCount,
                        target.value, 0, target.value.length,
@@ -1864,7 +1864,7 @@ public final class String
      * @param   targetCount  count of the target string.
      * @param   fromIndex    the index to begin searching from.
      */
-    static @LTEqLengthOf("this") @SubstringIndexFor(value="this",offset="#1.length()-1") int lastIndexOf(char[] source, int sourceOffset, int sourceCount,
+    static int lastIndexOf(char[] source, int sourceOffset, int sourceCount,
                            char[] target, int targetOffset, int targetCount,
                            int fromIndex) {
         /*
