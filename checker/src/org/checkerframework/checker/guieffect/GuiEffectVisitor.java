@@ -334,10 +334,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             // Perform lambda polymorphic effect inference: @PolyUI lambda, calling @UIEffect => @UI lambda
             if (targetEffect.isUI() && callerEffect.isPoly()) {
                 atypeFactory.constrainLambdaToUI((LambdaExpressionTree) callerTree);
-                callerEffect =
-                        atypeFactory.getInferedEffectForLambdaExpression(
-                                (LambdaExpressionTree) callerTree);
-                assert callerEffect.isUI();
+                callerEffect = new Effect(UIEffect.class);
             }
         }
         assert callerEffect != null;
@@ -365,7 +362,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         List<AnnotatedTypeMirror> argsTypes =
                 AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());
         for (int i = 0; i < args.size(); ++i) {
-            if (args.get(i) instanceof LambdaExpressionTree) {
+            if (args.get(i).getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
                 lambdaAssignmentCheck(
                         argsTypes.get(i),
                         (LambdaExpressionTree) args.get(i),

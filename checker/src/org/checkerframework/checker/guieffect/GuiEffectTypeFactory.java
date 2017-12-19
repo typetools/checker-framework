@@ -6,8 +6,6 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.tools.javac.code.Types;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -36,6 +34,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -44,6 +43,16 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected final boolean debugSpew;
 
+    /**
+     * Keeps track of all lambda expressions with inferred UIEffect.
+     *
+     * <p>{@link #constrainLambdaToUI(LambdaExpressionTree) constrainLambdaToUI} adds lambda
+     * expressions to this set, and is called from GuiEffectVisitor whenever a lambda expression
+     * calls a @UIEffect method. Afterwards {@link
+     * #getInferedEffectForLambdaExpression(LambdaExpressionTree lambdaTree)
+     * getInferedEffectForLambdaExpression} uses this set and the type annotations of the functional
+     * interface of the lambda to figure out if it can affect the UI or not.
+     */
     protected final Set<LambdaExpressionTree> uiLambdas = new HashSet<LambdaExpressionTree>();
 
     public GuiEffectTypeFactory(BaseTypeChecker checker, boolean spew) {
@@ -253,7 +262,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Get the effect of a method call at its callsite, acknowledging polimorphic instantiation
+     * Get the effect of a method call at its callsite, acknowledging polymorphic instantiation
      * using type use annotations.
      *
      * @param node The method invocation as an AST node.
@@ -280,7 +289,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 srcType = callerReceiver;
             } else {
-                throw new AssertionError("Unexpected getMethodSelect() kind at callsite " + node);
+                ErrorReporter.errorAbort("Unexpected getMethodSelect() kind at callsite " + node);
             }
 
             // Instantiate type-polymorphic effects
@@ -310,11 +319,9 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         if (uiLambdas.contains(lambdaTree)) {
             return new Effect(UIEffect.class);
         }
-        JavacProcessingEnvironment javacEnv =
-                (JavacProcessingEnvironment) checker.getProcessingEnvironment();
-        Types javacTypes = Types.instance(javacEnv.getContext());
         ExecutableElement functionalInterfaceMethodElt =
-                TreeUtils.getFunctionalInterfaceMethod(lambdaTree, javacTypes);
+                (ExecutableElement)
+                        TreeUtils.findFunction(lambdaTree, checker.getProcessingEnvironment());
         if (debugSpew) {
             System.err.println("functionalInterfaceMethodElt found for lambda");
         }

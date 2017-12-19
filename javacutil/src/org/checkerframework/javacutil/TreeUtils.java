@@ -12,7 +12,6 @@ import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -1279,17 +1278,5 @@ public final class TreeUtils {
         Context ctx = ((JavacProcessingEnvironment) env).getContext();
         Types javacTypes = Types.instance(ctx);
         return javacTypes.findDescriptorSymbol(((Type) typeOf(tree)).asElement());
-    }
-
-    /**
-     * finds the corresponding functional interface method for a lambda expression
-     *
-     * @param tree the lambda expression
-     * @return the functional interface method
-     */
-    public static Symbol.MethodSymbol getFunctionalInterfaceMethod(
-            LambdaExpressionTree tree, Types types) {
-        Type funcInterfaceType = ((JCTree.JCLambda) tree).type;
-        return (Symbol.MethodSymbol) types.findDescriptorSymbol(funcInterfaceType.tsym);
     }
 }
