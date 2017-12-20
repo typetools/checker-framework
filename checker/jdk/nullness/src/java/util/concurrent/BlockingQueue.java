@@ -38,6 +38,7 @@ package java.util.concurrent;
 import java.util.Collection;
 import java.util.Queue;
 
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -179,7 +180,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @author Doug Lea
  * @param <E> the type of elements held in this collection
  */
-public interface BlockingQueue<E> extends Queue<E> {
+public interface BlockingQueue<E extends @NonNull Object> extends Queue<E> {
     /**
      * Inserts the specified element into this queue if it is possible to do
      * so immediately without violating capacity restrictions, returning
@@ -324,7 +325,7 @@ public interface BlockingQueue<E> extends Queue<E> {
      * @throws NullPointerException if the specified element is null
      *         (<a href="../Collection.html#optional-restrictions">optional</a>)
      */
-    public boolean contains(Object o);
+    @Pure public boolean contains(Object o);
 
     /**
      * Removes all available elements from this queue and adds them
