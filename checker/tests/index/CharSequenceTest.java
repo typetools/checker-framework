@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
+import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.value.qual.StringVal;
 
@@ -50,32 +51,42 @@ public class CharSequenceTest {
     // Tests that length retrieved from CharSequence cannot be used as an index
     void getLength(CharSequence cs, int i) {
         if (i >= 0 && i < cs.length()) {
-            // :: error: (argument.type.incompatible)
+            // Indices passed to CharSequence methods are not checked for upper bound
+            //// :: error: (argument.type.incompatible)
             cs.charAt(i);
         }
 
-        // :: error: (assignment.type.incompatible)
+        // Indices returned from CharSequence methods are not checked for upper bound
+        //// :: error: (assignment.type.incompatible)
         @IndexOrHigh("cs") int l = cs.length();
     }
 
-    void testCharAt(CharSequence cs, int i, @IndexFor("#1") int j) {
+    void testCharAt(CharSequence cs, int i, @IndexFor("#1") int j, @NonNegative int k) {
         cs.charAt(j);
         cs.subSequence(j, j);
         // :: error: (argument.type.incompatible)
         cs.charAt(i);
         // :: error: (argument.type.incompatible)
         cs.subSequence(i, j);
+        // Indices passed to CharSequence methods are not checked for upper bound
+        //// :: error: (argument.type.incompatible)
+        cs.charAt(k);
+        // Indices passed to CharSequence methods are not checked for upper bound
+        //// :: error: (argument.type.incompatible)
+        cs.subSequence(k, j);
     }
 
     void testAppend(Appendable app, CharSequence cs, @IndexFor("#2") int i) throws IOException {
         app.append(cs, i, i);
-        // :: error: (argument.type.incompatible)
+        // Indices passed to CharSequence methods are not checked for upper bound
+        //// :: error: (argument.type.incompatible)
         app.append(cs, 1, 2);
     }
 
     void testAppend(StringWriter app, CharSequence cs, @IndexFor("#2") int i) throws IOException {
         app.append(cs, i, i);
-        // :: error: (argument.type.incompatible)
+        // Indices passed to CharSequence methods are not checked for upper bound
+        //// :: error: (argument.type.incompatible)
         app.append(cs, 1, 2);
     }
 }
