@@ -3534,6 +3534,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         this.methodFromUse(method);
                 AnnotatedTypeMirror param =
                         AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(exe.first, index);
+                if (param.getKind() == TypeKind.WILDCARD) {
+                    // param is an uninferred wildcard.
+                    TypeMirror typeMirror = TreeUtils.typeOf(lambdaTree);
+                    param = AnnotatedTypeMirror.createType(typeMirror, this, false);
+                    addDefaultAnnotations(param);
+                }
                 assertFunctionalInterface(param.getUnderlyingType(), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) param;
 
@@ -3613,7 +3619,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     private void assertFunctionalInterface(
             TypeMirror typeMirror, Tree contextTree, Tree lambdaTree) {
+        if (typeMirror.getKind() == TypeKind.WILDCARD) {
+            // Ignore wildcards, because they are uninferred type arguments.
+            return;
+        }
         Type type = (Type) typeMirror;
+
         if (!TypesUtils.isFunctionalInterface(type, processingEnv)) {
             if (type.getKind() == TypeKind.INTERSECTION) {
                 IntersectionType itype = (IntersectionType) type;
