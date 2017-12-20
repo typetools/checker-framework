@@ -188,7 +188,7 @@ public final class StringBuilder
     /**
      * @throws     IndexOutOfBoundsException {@inheritDoc}
      */
-    public StringBuilder append(CharSequence s, @IndexOrHigh("#1") int start, @IndexOrHigh("#1") int end) {
+    public StringBuilder append(CharSequence s, @NonNegative /*!IndexOrHigh("#1")*/ int start, @NonNegative /*!IndexOrHigh("#1")*/ int end) {
         super.append(s, start, end);
         return this;
     }
@@ -316,7 +316,7 @@ public final class StringBuilder
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public StringBuilder insert(/* !IndexFor("this") */ int dstOffset, CharSequence s,
-                                /* !IndexFor("#2") */ int start, /* !IndexOrHigh("#2") */ int end)
+    		@NonNegative /* !IndexOrHigh("#2") */ int start, @NonNegative /* !IndexOrHigh("#2") */ int end)
     {
         super.insert(dstOffset, s, start, end);
         return this;
