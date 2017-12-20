@@ -314,6 +314,18 @@ public final class TreeUtils {
         return (MethodTree) enclosingOfKind(path, Tree.Kind.METHOD);
     }
 
+    /**
+     * Gets the enclosing method or lambda expression of the tree node defined by the given {@link
+     * TreePath}. It returns a {@link Tree}, from which an {@code
+     * checkers.types.AnnotatedTypeMirror} or {@link Element} can be obtained.
+     *
+     * @param path the path defining the tree node
+     * @return the enclosing method or lambda as given by the path, or null if one does not exist
+     */
+    public static /*@Nullable*/ Tree enclosingMethodOrLambda(final /*@Nullable*/ TreePath path) {
+        return enclosingOfKind(path, EnumSet.of(Tree.Kind.METHOD, Kind.LAMBDA_EXPRESSION));
+    }
+
     public static /*@Nullable*/ BlockTree enclosingTopLevelBlock(TreePath path) {
         TreePath parpath = path.getParentPath();
         while (parpath != null && !classTreeKinds.contains(parpath.getLeaf().getKind())) {
