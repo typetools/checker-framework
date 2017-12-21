@@ -18,18 +18,23 @@ import org.checkerframework.framework.source.SuppressWarningsKeys;
 @SuppressWarningsKeys({"index", "upperbound"})
 public class UpperBoundChecker extends BaseTypeChecker {
 
-    private HashSet<String> collectionBaseClasses;
+    private HashSet<String> collectionBaseTypeNames;
 
     public UpperBoundChecker() {
-        collectionBaseClasses = new HashSet<>(3);
-        collectionBaseClasses.add("java.util.List");
-        collectionBaseClasses.add("java.util.AbstractList");
-        collectionBaseClasses.add("java.lang.CharSequence");
+        // These classes are bases for both mutable and immutable sequence collections
+        // Upper bound checker warnings are skipped at uses of them
+        Class<?>[] collectionBaseClasses = {
+            java.util.List.class, java.util.AbstractList.class, java.lang.CharSequence.class
+        };
+        collectionBaseTypeNames = new HashSet<>(collectionBaseClasses.length);
+        for (Class<?> collectionBaseClass : collectionBaseClasses) {
+            collectionBaseTypeNames.add(collectionBaseClass.getName());
+        }
     }
 
     @Override
     public boolean shouldSkipUses(String typeName) {
-        if (collectionBaseClasses.contains(typeName)) {
+        if (collectionBaseTypeNames.contains(typeName)) {
             return true;
         }
         return super.shouldSkipUses(typeName);
