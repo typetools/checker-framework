@@ -744,7 +744,7 @@ public final class String
      * {@code beginIndex} is larger than {@code endIndex}.
      * @since  1.5
      */
-    public int codePointCount(@IndexOrHigh("this") int beginIndex, @IndexOrHigh("this") int endIndex) {
+    public @NonNegative int codePointCount(@IndexOrHigh("this") int beginIndex, @IndexOrHigh("this") int endIndex) {
         if (beginIndex < 0 || endIndex > value.length || beginIndex > endIndex) {
             throw new IndexOutOfBoundsException();
         }
