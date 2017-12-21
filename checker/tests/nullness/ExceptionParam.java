@@ -23,7 +23,7 @@ class ExceptionParam {
 
     void exc3() {
         try {
-            // :: error: (type.invalid)
+            // :: error: (type.invalid.annotations.on.use)
         } catch (@Nullable AssertionError e) {
             @NonNull Object o = e;
         }

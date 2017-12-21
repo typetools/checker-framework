@@ -22,12 +22,12 @@ class WildcardAnnos {
 
     void asParam(List<? extends @Nullable Object> p) {}
 
-    // :: error: (type.invalid)
+    // :: error: (type.invalid.conflicting.annos)
     @Nullable List<@Nullable @NonNull ? extends @Nullable Object> l6 = null;
-    // :: error: (type.invalid)
+    // :: error: (type.invalid.annotations.on.use)
     @Nullable List<@Nullable @NonNull ? super @NonNull Object> l7 = null;
-    // :: error: (type.invalid)
+    // :: error: (type.invalid.annotations.on.use)
     @Nullable List<? extends @Nullable @NonNull Object> l8 = null;
-    // :: error: (type.invalid)
+    // :: error: (type.invalid.annotations.on.use)
     @Nullable List<? super @Nullable @NonNull Object> l9 = null;
 }

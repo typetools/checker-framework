@@ -9,7 +9,7 @@ class ThrowCatchTest {
     // :: error: (type.argument.type.incompatible)
     List<? extends @UI Object> ooo;
 
-    // :: error: (type.argument.type.incompatible) :: error: (type.invalid)
+    // :: error: (type.argument.type.incompatible) :: error: (type.invalid.annotations.on.use)
     List<? extends @UI Inner> iii;
 
     class Inner {}

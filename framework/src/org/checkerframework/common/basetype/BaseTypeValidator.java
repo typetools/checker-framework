@@ -1,9 +1,5 @@
 package org.checkerframework.common.basetype;
 
-/*>>>
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-*/
-
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -16,6 +12,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -34,6 +31,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+*/
 
 /** A visitor to validate the types in a tree. */
 public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implements TypeValidator {
@@ -75,6 +76,23 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             final AnnotatedTypeMirror type,
             final Tree p) {
         checker.report(Result.failure(errorType, type.getAnnotations(), type.toString()), p);
+        isValid = false;
+    }
+
+    /**
+     * Like {@link #reportValidityResult}, but the type is printed in the error message without
+     * annotations. This method would print "annotation @NonNull is not permitted on type int",
+     * whereas {@link #reportValidityResult} would print "annotation @NonNull is not permitted on
+     * type @NonNull int".
+     */
+    protected void reportValidityResultOnUnannotatedType(
+            final /*@CompilerMessageKey*/ String errorType,
+            final AnnotatedTypeMirror type,
+            final Tree p) {
+        // TODO: if underlying is a compound type such as List<@Palindrome String>, then it would be
+        // nice to print it as "List" instead of as "List<@Palindrome String>".
+        TypeMirror underlying = type.getUnderlyingType();
+        checker.report(Result.failure(errorType, type.getAnnotations(), underlying.toString()), p);
         isValid = false;
     }
 
@@ -123,8 +141,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         isValid = false;
     }
 
-    protected void reportError(final AnnotatedTypeMirror type, final Tree p) {
+    protected void reportInvalidType(final AnnotatedTypeMirror type, final Tree p) {
         reportValidityResult("type.invalid", type, p);
+    }
+
+    protected void reportInvalidAnnotationsOnUse(final AnnotatedTypeMirror type, final Tree p) {
+        reportValidityResultOnUnannotatedType("type.invalid.annotations.on.use", type, p);
     }
 
     @Override
@@ -143,7 +165,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                             atypeFactory.getAnnotatedType(type.getUnderlyingType().asElement());
 
             if (!visitor.isValidUse(elemType, type, tree)) {
-                reportError(type, tree);
+                reportInvalidAnnotationsOnUse(type, tree);
             }
         }
 
@@ -284,7 +306,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         }
 
         if (!visitor.isValidUse(type, tree)) {
-            reportError(type, tree);
+            reportInvalidAnnotationsOnUse(type, tree);
         }
 
         return super.visitPrimitive(type, tree);
@@ -306,7 +328,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         }
 
         if (!visitor.isValidUse(type, tree)) {
-            reportError(type, tree);
+            reportInvalidAnnotationsOnUse(type, tree);
         }
 
         return super.visitArray(type, tree);
@@ -382,7 +404,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                     if (upper.isAnnotatedInHierarchy(aOnVar) &&
                             !checker.getQualifierHierarchy().isSubtype(aOnVar,
                                     upper.findAnnotationInHierarchy(aOnVar))) {
-                        this.reportError(type, tree);
+                        this.reportInvalidType(type, tree);
                     }
                 }
                 upper.replaceAnnotations(onVar);
@@ -428,7 +450,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                     if (upper.isAnnotatedInHierarchy(aOnVar) &&
                             !atypeFactory.getQualifierHierarchy().isSubtype(aOnVar,
                                     upper.findAnnotationInHierarchy(aOnVar))) {
-                        this.reportError(type, tree);
+                        this.reportInvalidType(type, tree);
                     }
                 }
                 upper.replaceAnnotations(onVar);
@@ -442,7 +464,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                             && !atypeFactory
                                     .getQualifierHierarchy()
                                     .isSubtype(lower.getAnnotationInHierarchy(aOnVar), aOnVar)) {
-                        this.reportError(type, tree);
+                        this.reportInvalidType(type, tree);
                     }
                 }
                 lower.replaceAnnotations(onVar);
@@ -496,7 +518,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             }
             AnnotationMirror top = atypeFactory.getQualifierHierarchy().getTopAnnotation(aOnVar);
             if (seenTops.contains(top)) {
-                this.reportError(type, tree);
+                reportValidityResult("type.invalid.conflicting.annos", type, tree);
                 error = true;
             }
             seenTops.add(top);
