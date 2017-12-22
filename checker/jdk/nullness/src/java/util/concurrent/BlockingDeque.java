@@ -39,6 +39,7 @@ import java.util.*;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -410,7 +411,7 @@ public interface BlockingDeque<E extends @NonNull Object> extends BlockingQueue<
      * @throws NullPointerException if the specified element is null
      *         (<a href="../Collection.html#optional-restrictions">optional</a>)
      */
-    boolean removeFirstOccurrence(@NonNull Object o);
+    boolean removeFirstOccurrence(Object o);
 
     /**
      * Removes the last occurrence of the specified element from this deque.
@@ -428,7 +429,7 @@ public interface BlockingDeque<E extends @NonNull Object> extends BlockingQueue<
      * @throws NullPointerException if the specified element is null
      *         (<a href="../Collection.html#optional-restrictions">optional</a>)
      */
-    boolean removeLastOccurrence(@NonNull Object o);
+    boolean removeLastOccurrence(Object o);
 
     // *** BlockingQueue methods ***
 
@@ -605,7 +606,7 @@ public interface BlockingDeque<E extends @NonNull Object> extends BlockingQueue<
      * @throws NullPointerException if the specified element is null
      *         (<a href="../Collection.html#optional-restrictions">optional</a>)
      */
-    boolean remove(@NonNull Object o);
+    boolean remove(Object o);
 
     /**
      * Returns {@code true} if this deque contains the specified element.
@@ -620,7 +621,7 @@ public interface BlockingDeque<E extends @NonNull Object> extends BlockingQueue<
      * @throws NullPointerException if the specified element is null
      *         (<a href="../Collection.html#optional-restrictions">optional</a>)
      */
-    @Pure public boolean contains(@NonNull Object o);
+    @Pure public boolean contains(Object o);
 
     /**
      * Returns the number of elements in this deque.

@@ -38,8 +38,9 @@ package java.util.concurrent;
 import java.util.Collection;
 import java.util.Queue;
 
-import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 /**
  * A {@link java.util.Queue} that additionally supports operations

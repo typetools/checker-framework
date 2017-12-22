@@ -49,6 +49,7 @@ import java.util.function.Consumer;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -1399,6 +1400,7 @@ public class ConcurrentLinkedDeque<E extends @NonNull Object>
     }
 
     /** A customized variant of Spliterators.IteratorSpliterator */
+    /*
     static final class CLDSpliterator<E> implements Spliterator<E> {
         static final int MAX_BATCH = 1 << 25;  // max batch array size;
         final ConcurrentLinkedDeque<E> queue;
@@ -1486,6 +1488,7 @@ public class ConcurrentLinkedDeque<E extends @NonNull Object>
                 Spliterator.CONCURRENT;
         }
     }
+    */
 
     /**
      * Returns a {@link Spliterator} over the elements in this deque.
@@ -1504,7 +1507,10 @@ public class ConcurrentLinkedDeque<E extends @NonNull Object>
      * @since 1.8
      */
     public Spliterator<E> spliterator() {
+        return null;
+        /*
         return new CLDSpliterator<E>(this);
+        */
     }
 
     /**
