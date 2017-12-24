@@ -36,6 +36,7 @@ before_script:
 # Using travis_wait here seems to cause the job to terminate after 1 minute
 # with no error (!).
 script:
+- python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
 - REMOTE_ORIGIN_URL=`git config --get remote.origin.url`
 - echo "THIS_REPO=${THIS_REPO}"
 - echo "JDKVER=${JDKVER}"
