@@ -24,4 +24,8 @@ import java.lang.annotation.Target;
 public @interface PostconditionAnnotation {
     /** The hard-coded qualifier for the postcondition. */
     Class<? extends Annotation> qualifier();
+    /** List of names of arguments specified in the postcondition. */
+    String[] sourceArguments() default {};
+    /** List of names of arguments passed to the qualifier. */
+    String[] targetArguments() default {};
 }

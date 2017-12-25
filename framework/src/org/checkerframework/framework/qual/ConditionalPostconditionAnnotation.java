@@ -17,6 +17,13 @@ import java.lang.annotation.Target;
  * <p>The value {@code qualifier} that is necessary for a conditional postcondition specified with
  * {@link EnsuresQualifier} is hard-coded here with the value {@code qualifier}.
  *
+ * <p>Unlike {@link EnsuresQualifierIf}, this meta-annotation can be used to specify qualifiers with
+ * arguments. The arguments {@code sourceArguments} and {@code targetArguments} specify how
+ * arguments of the postcondition annotation are used to determine arguments of the qualifier. For
+ * each name in {@code sourceArguments}, the value of an argument of this name in the postcondition
+ * annotation is used as an argument with a corresponding name from {@code targetArguments} of the
+ * qualifier.
+ *
  * @author Stefan Heule
  * @see EnsuresQualifier
  */
@@ -25,4 +32,8 @@ import java.lang.annotation.Target;
 public @interface ConditionalPostconditionAnnotation {
     /** The hard-coded qualifier for the postcondition. */
     Class<? extends Annotation> qualifier();
+    /** List of names of arguments specified in the postcondition. */
+    String[] sourceArguments() default {};
+    /** List of names of arguments passed to the qualifier. */
+    String[] targetArguments() default {};
 }
