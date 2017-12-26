@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -211,7 +212,7 @@ public class ContractsUtils {
             AnnotationMirror metaAnno = r.second;
             List<String> expressions =
                     AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
-            AnnotationMirror precondtionAnno = getAnnotationMirrorOfQualifier(metaAnno, anno);
+            AnnotationMirror precondtionAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
             if (precondtionAnno == null) {
                 continue;
             }
@@ -222,39 +223,33 @@ public class ContractsUtils {
         return result;
     }
 
-    /** Returns the annotation mirror as specified by the "qualifier" value in metaAnno. */
+    /**
+     * Returns the annotation mirror as specified by the "qualifier" value in {@code qualifierAnno}.
+     * If {@code argumentAnno} is specified, then arguments are copied from {@code argumentAnno} to
+     * the returned annotation, renamed according to {@code argumentMap}.
+     *
+     * @param qualifierAnno annotation specifying the qualifier class
+     * @param argumentAnno annotation containing the argument values
+     * @param argumentMap map of argument names, which maps from names in {@code argumentAnno} to
+     *     names used in the returned annotation
+     */
     private AnnotationMirror getAnnotationMirrorOfQualifier(
-            AnnotationMirror metaAnno, AnnotationMirror argAnno) {
+            AnnotationMirror qualifierAnno,
+            AnnotationMirror argumentAnno,
+            Map<String, String> argumentMap) {
+
         @SuppressWarnings("unchecked")
         Class<? extends Annotation> c =
                 (Class<? extends Annotation>)
-                        AnnotationUtils.getElementValueClass(metaAnno, "qualifier", false);
-
-        List<String> sourceArgumentNames =
-                AnnotationUtils.getElementValueArray(
-                        metaAnno, "sourceArguments", String.class, true);
-        List<String> targetArgumentNames =
-                AnnotationUtils.getElementValueArray(
-                        metaAnno, "targetArguments", String.class, true);
-        HashMap<String, String> names = new HashMap<>();
-        for (int i = 0; i < sourceArgumentNames.size(); ++i) {
-            String sourceName = sourceArgumentNames.get(i);
-            String targetName;
-            if (i < targetArgumentNames.size()) {
-                targetName = targetArgumentNames.get(i);
-            } else {
-                targetName = sourceName;
-            }
-            names.put(sourceName, targetName);
-        }
+                        AnnotationUtils.getElementValueClass(qualifierAnno, "qualifier", false);
 
         AnnotationMirror anno;
-        if (sourceArgumentNames.isEmpty()) {
-            // If there no arguments, use factory method that allows caching
+        if (argumentAnno == null || argumentMap.isEmpty()) {
+            // If there are no arguments, use factory method that allows caching
             anno = AnnotationBuilder.fromClass(factory.getElementUtils(), c);
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(factory.getProcessingEnv(), c);
-            builder.copyRenameElementValuesFromAnnotation(argAnno, names);
+            builder.copyRenameElementValuesFromAnnotation(argumentAnno, argumentMap);
             anno = builder.build();
         }
 
@@ -264,6 +259,46 @@ public class ContractsUtils {
         } else {
             return null;
         }
+    }
+    /**
+     * Returns the annotation mirror as specified by the "qualifier" value in {@code contractAnno}.
+     */
+    private AnnotationMirror getAnnotationMirrorOfContractAnnotation(
+            AnnotationMirror contractAnno) {
+        return getAnnotationMirrorOfQualifier(contractAnno, null, null);
+    }
+    /** Makes a map from source argument names to target argument names. */
+    private Map<String, String> makeArgumentMap(
+            List<String> sourceArgumentNames, List<String> targetArgumentNames) {
+        HashMap<String, String> argumentMap = new HashMap<>();
+        for (int i = 0; i < sourceArgumentNames.size(); ++i) {
+            String sourceName = sourceArgumentNames.get(i);
+            String targetName;
+            if (i < targetArgumentNames.size()) {
+                targetName = targetArgumentNames.get(i);
+            } else {
+                targetName = sourceName;
+            }
+            argumentMap.put(sourceName, targetName);
+        }
+        return argumentMap;
+    }
+
+    /**
+     * Returns the annotation mirror as specified by the "qualifier" value in {@code metaAnno}, with
+     * arguments taken from {@code argumentAnno}.
+     */
+    private AnnotationMirror getAnnotationMirrorOfMetaAnnotation(
+            AnnotationMirror metaAnno, AnnotationMirror argumentAnno) {
+
+        List<String> sourceArgumentNames =
+                AnnotationUtils.getElementValueArray(
+                        metaAnno, "sourceArguments", String.class, true);
+        List<String> targetArgumentNames =
+                AnnotationUtils.getElementValueArray(
+                        metaAnno, "targetArguments", String.class, true);
+        Map<String, String> argumentMap = makeArgumentMap(sourceArgumentNames, targetArgumentNames);
+        return getAnnotationMirrorOfQualifier(metaAnno, argumentAnno, argumentMap);
     }
 
     /** Returns the set of preconditions according to the given {@link RequiresQualifier}. */
@@ -275,7 +310,7 @@ public class ContractsUtils {
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         requiresAnnotation, "expression", String.class, false);
-        AnnotationMirror postcondAnno = getAnnotationMirrorOfQualifier(requiresAnnotation, null);
+        AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(requiresAnnotation);
         if (postcondAnno == null) {
             return result;
         }
@@ -314,7 +349,7 @@ public class ContractsUtils {
             AnnotationMirror metaAnno = r.second;
             List<String> expressions =
                     AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
-            AnnotationMirror postcondAnno = getAnnotationMirrorOfQualifier(metaAnno, anno);
+            AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
             if (postcondAnno == null) {
                 continue;
             }
@@ -334,7 +369,7 @@ public class ContractsUtils {
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         ensuresAnnotation, "expression", String.class, false);
-        AnnotationMirror postcondAnno = getAnnotationMirrorOfQualifier(ensuresAnnotation, null);
+        AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(ensuresAnnotation);
         if (postcondAnno == null) {
             return result;
         }
@@ -378,7 +413,7 @@ public class ContractsUtils {
             AnnotationMirror metaAnno = r.second;
             List<String> expressions =
                     AnnotationUtils.getElementValueArray(anno, "expression", String.class, false);
-            AnnotationMirror postcondAnno = getAnnotationMirrorOfQualifier(metaAnno, anno);
+            AnnotationMirror postcondAnno = getAnnotationMirrorOfMetaAnnotation(metaAnno, anno);
             if (postcondAnno == null) {
                 continue;
             }
@@ -404,7 +439,7 @@ public class ContractsUtils {
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         ensuresQualifierIf, "expression", String.class, false);
-        AnnotationMirror postcondAnno = getAnnotationMirrorOfQualifier(ensuresQualifierIf, null);
+        AnnotationMirror postcondAnno = getAnnotationMirrorOfContractAnnotation(ensuresQualifierIf);
         if (postcondAnno == null) {
             return result;
         }
