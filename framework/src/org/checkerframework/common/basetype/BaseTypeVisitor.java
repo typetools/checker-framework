@@ -106,6 +106,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.framework.util.QualifierPolymorphism;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -637,6 +638,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         FlowExpressionContext.buildContextForMethodDeclaration(
                                 node, getCurrentPath(), checker.getContext());
             }
+
+            DependentTypesHelper dependentTypesHelper = atypeFactory.getDependentTypesHelper();
+            if (dependentTypesHelper != null) {
+                annotation =
+                        dependentTypesHelper.standardizeAnnotation(
+                                flowExprContext, getCurrentPath(), annotation, false);
+            }
+
             FlowExpressions.Receiver expr = null;
             try {
                 expr =
@@ -1072,6 +1081,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (Precondition p : preconditions) {
             String expression = p.expression;
             AnnotationMirror anno = p.annotation;
+
+            DependentTypesHelper dependentTypesHelper = atypeFactory.getDependentTypesHelper();
+            if (dependentTypesHelper != null) {
+                anno =
+                        dependentTypesHelper.standardizeAnnotation(
+                                flowExprContext, getCurrentPath(), anno, false);
+            }
 
             try {
                 FlowExpressions.Receiver expr =
@@ -3190,6 +3206,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 methodTree,
                                 method.getReceiverType().getUnderlyingType(),
                                 checker.getContext());
+            }
+
+            DependentTypesHelper dependentTypesHelper = atypeFactory.getDependentTypesHelper();
+            if (dependentTypesHelper != null) {
+                annotation =
+                        dependentTypesHelper.standardizeAnnotation(
+                                flowExprContext, path, annotation, false);
             }
 
             try {

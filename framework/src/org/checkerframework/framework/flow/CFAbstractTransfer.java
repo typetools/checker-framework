@@ -518,6 +518,14 @@ public abstract class CFAbstractTransfer<
                                 methodTree, method.getClassTree(), analysis.checker.getContext());
             }
 
+            TreePath localScope = analysis.atypeFactory.getPath(methodTree);
+
+            if (analysis.dependentTypesHelper != null) {
+                annotation =
+                        analysis.dependentTypesHelper.standardizeAnnotation(
+                                flowExprContext, localScope, annotation, false);
+            }
+
             try {
                 // TODO: currently, these expressions are parsed at the
                 // declaration (i.e. here) and for every use. this could
@@ -525,10 +533,7 @@ public abstract class CFAbstractTransfer<
                 // (same for other annotations)
                 FlowExpressions.Receiver expr =
                         FlowExpressionParseUtil.parse(
-                                expression,
-                                flowExprContext,
-                                analysis.atypeFactory.getPath(methodTree),
-                                false);
+                                expression, flowExprContext, localScope, false);
                 info.insertValue(expr, annotation);
             } catch (FlowExpressionParseException e) {
                 // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration()
@@ -1002,13 +1007,18 @@ public abstract class CFAbstractTransfer<
                                 n, analysis.checker.getContext());
             }
 
+            TreePath localScope = analysis.atypeFactory.getPath(tree);
+
+            if (analysis.dependentTypesHelper != null) {
+                anno =
+                        analysis.dependentTypesHelper.standardizeAnnotation(
+                                flowExprContext, localScope, anno, false);
+            }
+
             try {
                 FlowExpressions.Receiver r =
                         FlowExpressionParseUtil.parse(
-                                expression,
-                                flowExprContext,
-                                analysis.atypeFactory.getPath(tree),
-                                false);
+                                expression, flowExprContext, localScope, false);
                 if (p.kind == Contract.Kind.CONDITIONALPOSTCONDTION) {
                     if (((ConditionalPostcondition) p).annoResult) {
                         thenStore.insertValue(r, anno);
