@@ -3,6 +3,7 @@ import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 
+// Postcondition for MinLen
 @PostconditionAnnotation(
     qualifier = MinLen.class,
     sourceArguments = "targetValue",
@@ -14,6 +15,7 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
     public int targetValue();
 }
 
+// Conditional postcondition for LTLengthOf
 @ConditionalPostconditionAnnotation(
     qualifier = LTLengthOf.class,
     sourceArguments = {"targetValue", "targetOffset"},
@@ -31,20 +33,28 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 
 public class CustomContractWithArgs {
     @EnsuresMinLen(value = "#1", targetValue = 10)
-    void m1(int[] a) {}
+    void minLenContract(int[] a) {
+        if (a.length < 10) throw new RuntimeException();
+    }
 
-    void n1(int[] b) {
-        m1(b);
+    @EnsuresMinLen(value = "#1", targetValue = 10)
+    // :: error: (contracts.postcondition.not.satisfied)
+    void minLenWrong(int[] a) {
+        if (a.length < 9) throw new RuntimeException();
+    }
+
+    void minLenUse(int[] b) {
+        minLenContract(b);
         int @MinLen(10) [] c = b;
     }
 
     @EnsuresLTLIf(expression = "#2", targetValue = "#1", targetOffset = "#3", result = true)
-    boolean m2(int[] a, int b, int c) {
-        return false;
+    boolean ltlContract(int[] a, int b, int c) {
+        return b + c < a.length;
     }
 
-    void n2(int[] a, int b, int c) {
-        if (m2(a, b, c)) {
+    void ltlUse(int[] a, int b, int c) {
+        if (ltlContract(a, b, c)) {
             @LTLengthOf(value = "a", offset = "c") int i = b;
         }
         // :: error: (assignment.type.incompatible)
