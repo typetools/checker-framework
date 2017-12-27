@@ -253,11 +253,15 @@ public class ContractsUtils {
             anno = builder.build();
         }
 
-        AnnotationMirror aliasedAnno = factory.aliasedAnnotation(anno);
-        if (factory.isSupportedQualifier(aliasedAnno)) {
-            return aliasedAnno;
+        if (factory.isSupportedQualifier(anno)) {
+            return anno;
         } else {
-            return null;
+            AnnotationMirror aliasedAnno = factory.aliasedAnnotation(anno);
+            if (factory.isSupportedQualifier(aliasedAnno)) {
+                return aliasedAnno;
+            } else {
+                return null;
+            }
         }
     }
     /**
