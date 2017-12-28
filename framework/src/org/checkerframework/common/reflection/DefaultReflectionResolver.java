@@ -29,7 +29,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -488,7 +487,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         Resolve resolve = Resolve.instance(context);
         Names names = Names.instance(context);
 
-        List<Symbol> result = new LinkedList<>();
+        List<Symbol> result = new ArrayList<>();
         try {
             Method loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
             loadClass.setAccessible(true);
@@ -544,7 +543,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         Resolve resolve = Resolve.instance(context);
         Names names = Names.instance(context);
 
-        List<Symbol> result = new LinkedList<>();
+        List<Symbol> result = new ArrayList<>();
         try {
             Method loadClass = Resolve.class.getDeclaredMethod("loadClass", Env.class, Name.class);
             loadClass.setAccessible(true);

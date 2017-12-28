@@ -1,8 +1,8 @@
 package org.checkerframework.framework.type.typeannotator;
 
 import com.sun.tools.javac.code.Type.WildcardType;
+import java.util.ArrayDeque;
 import java.util.Set;
-import java.util.Stack;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -33,7 +33,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
     // TypeAnnotatorUtil.eraseBoundsThenAnnotate.
     // This flag prevents infinite recursion.
     private boolean pause = false;
-    private Stack<AnnotatedDeclaredType> parents = new Stack<>();
+    private ArrayDeque<AnnotatedDeclaredType> parents = new ArrayDeque<>();
 
     public PropagationTypeAnnotator(AnnotatedTypeFactory typeFactory) {
         super(typeFactory);
@@ -73,9 +73,9 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
         if (pause) {
             return null;
         }
-        parents.push(declaredType);
+        parents.addFirst(declaredType);
         super.visitDeclared(declaredType, aVoid);
-        parents.pop();
+        parents.removeFirst();
         return null;
     }
 
@@ -96,9 +96,9 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
         Element typeParamElement = TypesUtils.wildcardToTypeParam(wildcard);
         if (typeParamElement == null) {
             typeParamElement =
-                    (parents.empty())
+                    (parents.isEmpty())
                             ? null
-                            : getTypeParamFromEnclosingClass(wildcardAtm, parents.peek());
+                            : getTypeParamFromEnclosingClass(wildcardAtm, parents.peekFirst());
         }
 
         if (typeParamElement != null) {

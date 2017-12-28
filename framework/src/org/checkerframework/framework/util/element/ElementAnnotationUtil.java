@@ -7,6 +7,7 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeAnnotationPosition;
 import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntry;
 import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntryKind;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -405,7 +406,7 @@ public class ElementAnnotationUtil {
             AnnotatedDeclaredType type, List<TypeAnnotationPosition.TypePathEntry> location) {
 
         // List order by outer most type to inner most type.
-        LinkedList<AnnotatedDeclaredType> outerToInner = new LinkedList<>();
+        ArrayDeque<AnnotatedDeclaredType> outerToInner = new ArrayDeque<>();
         AnnotatedDeclaredType enclosing = type;
         while (enclosing != null) {
             outerToInner.addFirst(enclosing);
@@ -413,6 +414,8 @@ public class ElementAnnotationUtil {
         }
 
         // Create a linked list of the location, so removing the first element is easier.
+        // Also, the `tail` operation wouldn't work with a Deque.
+        @SuppressWarnings("JdkObsolete")
         LinkedList<TypePathEntry> tailOfLocations = new LinkedList<>(location);
         boolean error = false;
         while (!tailOfLocations.isEmpty()) {
