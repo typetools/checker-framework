@@ -2,8 +2,8 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -49,7 +49,7 @@ public class StringConcatenateAssignmentNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        LinkedList<Node> list = new LinkedList<Node>();
+        ArrayList<Node> list = new ArrayList<Node>(2);
         list.add(getLeftOperand());
         list.add(getRightOperand());
         return list;
