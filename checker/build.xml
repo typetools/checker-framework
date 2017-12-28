@@ -1390,13 +1390,14 @@
         compression="gzip" />
 
       <exec executable="mvn" dir="${errorprone.home}" failonerror="true">
+        <arg value="-q"/>
         <arg value="package"/>
         <arg value="-Dmaven.test.skip=true"/>
       </exec>
     </target>
 
-    <!-- Depend on dist-nobuildjdk to make sure everything compiles. -->
-    <target name="check-errorprone" depends="dist-nobuildjdk, clean-nojar, -errorprone.download"
+    <!-- Depend on jar to make sure everything compiles. -->
+    <target name="check-errorprone" depends="jar, clean-nojar, -errorprone.download"
             description="Run the error-prone compiler on the Checker Framework">
         <mkdir dir="${build}"/>
 
