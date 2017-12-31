@@ -1420,8 +1420,6 @@
             <compilerarg value="-Xep:ReferenceEquality:OFF"/>
             <!-- These might be worth fixing. -->
             <compilerarg value="-Xep:DefaultCharset:OFF"/>
-            <!-- Disable until https://github.com/google/error-prone/issues/725 is fixed. -->
-            <compilerarg value="-Xep:NamedParameters:OFF"/>
             <compilerarg value="-Werror"/>
         </javac>
     </target>
