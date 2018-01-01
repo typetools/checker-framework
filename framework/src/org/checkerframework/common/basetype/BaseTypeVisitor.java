@@ -3140,15 +3140,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Set<Pair<Receiver, AnnotationMirror>> mustSubset,
             Set<Pair<Receiver, AnnotationMirror>> set,
             /*@CompilerMessageKey*/ String messageKey) {
-        for (Pair<Receiver, AnnotationMirror> a : mustSubset) {
+        for (Pair<Receiver, AnnotationMirror> weak : mustSubset) {
             boolean found = false;
 
-            for (Pair<Receiver, AnnotationMirror> b : set) {
+            for (Pair<Receiver, AnnotationMirror> strong : set) {
                 // are we looking at a contract of the same receiver?
-                if (a.first.equals(b.first)) {
+                if (weak.first.equals(strong.first)) {
                     // check subtyping relationship of annotations
                     QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
-                    if (qualifierHierarchy.isSubtype(a.second, b.second)) {
+                    if (qualifierHierarchy.isSubtype(strong.second, weak.second)) {
                         found = true;
                         break;
                     }
@@ -3164,8 +3164,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 overriderTyp,
                                 overriddenMeth,
                                 overriddenTyp,
-                                a.second,
-                                a.first),
+                                weak.second,
+                                weak.first),
                         method);
             }
         }
