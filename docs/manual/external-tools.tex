@@ -359,11 +359,6 @@ checker as an annotation processor directly.
        <!-- <artifactId>checker-qual7</artifactId> -->
       <version>\ReleaseVersion{}</version>
     </dependency>
-    <dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>checker</artifactId>
-      <version>\ReleaseVersion{}</version>
-    </dependency>
     <!-- The Type Annotations compiler. Uncomment if using annotations in comments. -->
     <!-- <dependency>
       <groupId>org.checkerframework</groupId>
@@ -489,6 +484,13 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
         <Xmaxerrs>10000</Xmaxerrs>
         <Xmaxwarns>10000</Xmaxwarns>
       </compilerArguments>
+      <annotationProcessorPaths>
+        <path>
+          <groupId>org.checkerframework</groupId>
+          <artifactId>checker</artifactId>
+          <version>\ReleaseVersion{}</version>
+        </path>
+      </annotationProcessorPaths>
       <annotationProcessors>
         <!-- Add all the checkers you want to enable here -->
         <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
