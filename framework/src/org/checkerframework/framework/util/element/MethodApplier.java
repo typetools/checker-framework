@@ -1,28 +1,5 @@
 package org.checkerframework.framework.util.element;
 
-import static com.sun.tools.javac.code.TargetType.CAST;
-import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT;
-import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_REFERENCE;
-import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT;
-import static com.sun.tools.javac.code.TargetType.EXCEPTION_PARAMETER;
-import static com.sun.tools.javac.code.TargetType.INSTANCEOF;
-import static com.sun.tools.javac.code.TargetType.LOCAL_VARIABLE;
-import static com.sun.tools.javac.code.TargetType.METHOD_FORMAL_PARAMETER;
-import static com.sun.tools.javac.code.TargetType.METHOD_INVOCATION_TYPE_ARGUMENT;
-import static com.sun.tools.javac.code.TargetType.METHOD_RECEIVER;
-import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE;
-import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE_TYPE_ARGUMENT;
-import static com.sun.tools.javac.code.TargetType.METHOD_RETURN;
-import static com.sun.tools.javac.code.TargetType.METHOD_TYPE_PARAMETER;
-import static com.sun.tools.javac.code.TargetType.METHOD_TYPE_PARAMETER_BOUND;
-import static com.sun.tools.javac.code.TargetType.NEW;
-import static com.sun.tools.javac.code.TargetType.RESOURCE_VARIABLE;
-import static com.sun.tools.javac.code.TargetType.THROWS;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.addAnnotationsFromElement;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.applyAllElementAnnotations;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.partitionByTargetType;
-
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Attribute.TypeCompound;
 import com.sun.tools.javac.code.Symbol;
@@ -77,28 +54,30 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
      */
     @Override
     protected TargetType[] annotatedTargets() {
-        return new TargetType[] {METHOD_RECEIVER, METHOD_RETURN, THROWS};
+        return new TargetType[] {
+            TargetType.METHOD_RECEIVER, TargetType.METHOD_RETURN, TargetType.THROWS
+        };
     }
 
     /** @return all possible annotation positions for a method except those in annotatedTargets */
     @Override
     protected TargetType[] validTargets() {
         return new TargetType[] {
-            LOCAL_VARIABLE,
-            RESOURCE_VARIABLE,
-            EXCEPTION_PARAMETER,
-            NEW,
-            CAST,
-            INSTANCEOF,
-            METHOD_INVOCATION_TYPE_ARGUMENT,
-            CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT,
-            METHOD_REFERENCE,
-            CONSTRUCTOR_REFERENCE,
-            METHOD_REFERENCE_TYPE_ARGUMENT,
-            CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT,
-            METHOD_TYPE_PARAMETER,
-            METHOD_TYPE_PARAMETER_BOUND,
-            METHOD_FORMAL_PARAMETER
+            TargetType.LOCAL_VARIABLE,
+            TargetType.RESOURCE_VARIABLE,
+            TargetType.EXCEPTION_PARAMETER,
+            TargetType.NEW,
+            TargetType.CAST,
+            TargetType.INSTANCEOF,
+            TargetType.METHOD_INVOCATION_TYPE_ARGUMENT,
+            TargetType.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT,
+            TargetType.METHOD_REFERENCE,
+            TargetType.CONSTRUCTOR_REFERENCE,
+            TargetType.METHOD_REFERENCE_TYPE_ARGUMENT,
+            TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT,
+            TargetType.METHOD_TYPE_PARAMETER,
+            TargetType.METHOD_TYPE_PARAMETER_BOUND,
+            TargetType.METHOD_FORMAL_PARAMETER
         };
     }
 
@@ -125,12 +104,13 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         if (methodType.getReturnType() instanceof AnnotatedTypeVariable) {
             applyTypeVarUseOnReturnType();
         }
-        addAnnotationsFromElement(methodType.getReturnType(), methodSymbol.getAnnotationMirrors());
+        ElementAnnotationUtil.addAnnotationsFromElement(
+                methodType.getReturnType(), methodSymbol.getAnnotationMirrors());
 
         final List<AnnotatedTypeMirror> params = methodType.getParameterTypes();
         for (int i = 0; i < params.size(); ++i) {
             // Add declaration annotations to the parameter type
-            addAnnotationsFromElement(
+            ElementAnnotationUtil.addAnnotationsFromElement(
                     params.get(i), methodSymbol.getParameters().get(i).getAnnotationMirrors());
         }
 
@@ -138,9 +118,9 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         // "invalid" locations
         super.extractAndApply();
 
-        applyAllElementAnnotations(
+        ElementAnnotationUtil.applyAllElementAnnotations(
                 methodType.getParameterTypes(), methodSymbol.getParameters(), typeFactory);
-        applyAllElementAnnotations(
+        ElementAnnotationUtil.applyAllElementAnnotations(
                 methodType.getTypeVariables(), methodSymbol.getTypeParameters(), typeFactory);
     }
 
@@ -149,13 +129,18 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     protected void handleTargeted(final List<Attribute.TypeCompound> targeted) {
         final List<TypeCompound> unmatched = new ArrayList<>();
         final Map<TargetType, List<TypeCompound>> targetTypeToAnno =
-                partitionByTargetType(targeted, unmatched, METHOD_RECEIVER, METHOD_RETURN, THROWS);
+                ElementAnnotationUtil.partitionByTargetType(
+                        targeted,
+                        unmatched,
+                        TargetType.METHOD_RECEIVER,
+                        TargetType.METHOD_RETURN,
+                        TargetType.THROWS);
 
-        annotateViaTypeAnnoPosition(
-                methodType.getReceiverType(), targetTypeToAnno.get(METHOD_RECEIVER));
-        annotateViaTypeAnnoPosition(
-                methodType.getReturnType(), targetTypeToAnno.get(METHOD_RETURN));
-        applyThrowsAnnotations(targetTypeToAnno.get(THROWS));
+        ElementAnnotationUtil.annotateViaTypeAnnoPosition(
+                methodType.getReceiverType(), targetTypeToAnno.get(TargetType.METHOD_RECEIVER));
+        ElementAnnotationUtil.annotateViaTypeAnnoPosition(
+                methodType.getReturnType(), targetTypeToAnno.get(TargetType.METHOD_RETURN));
+        applyThrowsAnnotations(targetTypeToAnno.get(TargetType.THROWS));
 
         if (unmatched.size() > 0) {
             ErrorReporter.errorAbort(
@@ -202,7 +187,8 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
 
         for (final Entry<AnnotatedTypeMirror, List<TypeCompound>> typeToAnno :
                 typeToAnnos.entrySet()) {
-            annotateViaTypeAnnoPosition(typeToAnno.getKey(), typeToAnno.getValue());
+            ElementAnnotationUtil.annotateViaTypeAnnoPosition(
+                    typeToAnno.getKey(), typeToAnno.getValue());
         }
     }
 
