@@ -2,8 +2,8 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.Tree;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -73,7 +73,7 @@ public class ArrayAccessNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        LinkedList<Node> list = new LinkedList<Node>();
+        ArrayList<Node> list = new ArrayList<Node>(2);
         list.add(getArray());
         list.add(getIndex());
         return list;

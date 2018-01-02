@@ -3140,15 +3140,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Set<Pair<Receiver, AnnotationMirror>> mustSubset,
             Set<Pair<Receiver, AnnotationMirror>> set,
             /*@CompilerMessageKey*/ String messageKey) {
-        for (Pair<Receiver, AnnotationMirror> a : mustSubset) {
+        for (Pair<Receiver, AnnotationMirror> weak : mustSubset) {
             boolean found = false;
 
-            for (Pair<Receiver, AnnotationMirror> b : set) {
+            for (Pair<Receiver, AnnotationMirror> strong : set) {
                 // are we looking at a contract of the same receiver?
-                if (a.first.equals(b.first)) {
+                if (weak.first.equals(strong.first)) {
                     // check subtyping relationship of annotations
                     QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
-                    if (qualifierHierarchy.isSubtype(a.second, b.second)) {
+                    if (qualifierHierarchy.isSubtype(strong.second, weak.second)) {
                         found = true;
                         break;
                     }
@@ -3164,8 +3164,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 overriderTyp,
                                 overriddenMeth,
                                 overriddenTyp,
-                                a.second,
-                                a.first),
+                                weak.second,
+                                weak.first),
                         method);
             }
         }
@@ -3328,8 +3328,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * BaseTypeVisitor#validateTypeOf(Tree)} would call this for each type argument or array
      * dimension separately.
      *
-     * <p>In most cases, {@code useType} simply needs to be a subtype of {@code declarationType},
-     * but there are exceptions.
+     * <p>In most cases, {@code useType} simply needs to be a subtype of {@code declarationType}. If
+     * a type system makes exceptions to this rule, its implementation should override this method.
      *
      * @param declarationType the type of the class (TypeElement)
      * @param useType the use of the class (instance type)
@@ -3452,19 +3452,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected final boolean shouldSkipUses(ExpressionTree exprTree) {
         // System.out.printf("shouldSkipUses: %s: %s%n", exprTree.getClass(), exprTree);
-
-        // This special case for ConditionalExpressionTree seems wrong, so
-        // I commented it out.  It will skip expressions that should be
-        // checked, just because they are lexically near expressions that
-        // should be skipped.  Presumably it's because conditionals do some
-        // type inference, but if so, this is the wrong way to fix the
-        // problem. -MDE
-        // if (exprTree instanceof ConditionalExpressionTree) {
-        //     ConditionalExpressionTree condTree =
-        //         (ConditionalExpressionTree)exprTree;
-        //     return (shouldSkipUses(condTree.getTrueExpression()) ||
-        //             shouldSkipUses(condTree.getFalseExpression()));
-        // }
 
         // Don't use commonAssignmentCheck for lambdas or method references.
         if (exprTree instanceof MemberReferenceTree || exprTree instanceof LambdaExpressionTree) {

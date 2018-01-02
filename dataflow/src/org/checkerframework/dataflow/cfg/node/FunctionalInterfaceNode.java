@@ -4,7 +4,7 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.Collections;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -84,7 +84,6 @@ public class FunctionalInterfaceNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        LinkedList<Node> list = new LinkedList<Node>();
-        return list;
+        return Collections.emptyList();
     }
 }

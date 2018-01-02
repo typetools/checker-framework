@@ -695,7 +695,7 @@ public class ObjectOutputStream
      * @param   len the number of bytes that are written
      * @throws  IOException If an I/O error has occurred.
      */
-    public void write(byte[] buf, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
+    public void write(byte[] buf, @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len) throws IOException {
         if (buf == null) {
             throw new NullPointerException();
         }

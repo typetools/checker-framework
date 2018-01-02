@@ -262,10 +262,10 @@ class Short{
 
 class String{
     @StaticallyExecutable String();
-    @StaticallyExecutable String(String original);
+    @StaticallyExecutable @PolyValue String(@PolyValue String original);
     @StaticallyExecutable String(StringBuffer buffer);
     @StaticallyExecutable String(StringBuilder builder);
-    @StaticallyExecutable String(char[] value);
+    @StaticallyExecutable @PolyValue String(char @PolyValue[] value);
     @StaticallyExecutable String(char[] value, int offset, int count);
     @StaticallyExecutable String(int[] codePoints, int offset, int count);
 
@@ -279,7 +279,7 @@ class String{
     @StaticallyExecutable boolean contains(CharSequence s);
     @StaticallyExecutable boolean contentEquals(CharSequence cs);
     @StaticallyExecutable boolean contentEquals(StringBuffer sb);
-    @StaticallyExecutable static String copyValueOf(char[] data);
+    @StaticallyExecutable static @PolyValue String copyValueOf(char @PolyValue[] data);
     @StaticallyExecutable static String copyValueOf(char[] data, int offset, int count);
     @StaticallyExecutable boolean endsWith(String suffix);
     @StaticallyExecutable boolean equalsIgnoreCase(String anotherString);
@@ -294,7 +294,7 @@ class String{
     @StaticallyExecutable int indexOf(int ch, int fromIndex);
     @StaticallyExecutable int indexOf(String str);
     @StaticallyExecutable int indexOf(String str, int fromIndex);
-    @StaticallyExecutable String intern();
+    @StaticallyExecutable @PolyValue String intern(@PolyValue String this);
     @StaticallyExecutable boolean isEmpty();
     @StaticallyExecutable int lastIndexOf(int ch);
     @StaticallyExecutable int lastIndexOf(int ch, int fromIndex);
@@ -316,16 +316,16 @@ class String{
     @StaticallyExecutable CharSequence subSequence(int beginIndex, int endIndex);
     @StaticallyExecutable String substring(int beginIndex);
     @StaticallyExecutable String substring(int beginIndex, int endIndex);
-    @StaticallyExecutable char[] toCharArray();
+    @StaticallyExecutable char @PolyValue[] toCharArray(@PolyValue String this);
     @StaticallyExecutable String toLowerCase();
     @StaticallyExecutable String toLowerCase(Locale locale);
-    @StaticallyExecutable String toString();
+    @StaticallyExecutable @PolyValue String toString(@PolyValue String this);
     @StaticallyExecutable String toUpperCase();
     @StaticallyExecutable String toUpperCase(Locale locale);
     @StaticallyExecutable String trim();
     @StaticallyExecutable static @StringVal({"true", "false"}) String valueOf(boolean b);
     @StaticallyExecutable static @ArrayLen(1) String valueOf(char c);
-    @StaticallyExecutable static String valueOf(char[] data);
+    @StaticallyExecutable static @PolyValue String valueOf(char @PolyValue[] data);
     @StaticallyExecutable static String valueOf(char[] data, int offset, int count);
     @StaticallyExecutable static String valueOf(double d);
     @StaticallyExecutable static String valueOf(float f);
@@ -346,4 +346,17 @@ package java.util;
 class StringTokenizer {
     @MinLen(1) String nextToken();
     @MinLen(1) String nextToken(String delim);
+}
+
+class Arrays {
+    static @MinLen(2) String toString(long[] a);
+    static @MinLen(2) String toString(int[] a);
+    static @MinLen(2) String toString(short[] a);
+    static @MinLen(2) String toString(char[] a);
+    static @MinLen(2) String toString(byte[] a);
+    static @MinLen(2) String toString(boolean[] a);
+    static @MinLen(2) String toString(float[] a);
+    static @MinLen(2) String toString(double[] a);
+    static @MinLen(2) String toString(Object[] a);
+    static @MinLen(2) String deepToString(Object[] a);
 }

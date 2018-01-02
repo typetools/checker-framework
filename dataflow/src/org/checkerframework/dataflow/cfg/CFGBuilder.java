@@ -67,6 +67,7 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -74,7 +75,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -231,7 +231,7 @@ public class CFGBuilder {
      * Class declarations that have been encountered when building the control-flow graph for a
      * method.
      */
-    protected final List<ClassTree> declaredClasses = new LinkedList<>();
+    protected final List<ClassTree> declaredClasses = new ArrayList<>();
 
     public List<ClassTree> getDeclaredClasses() {
         return declaredClasses;
@@ -241,7 +241,7 @@ public class CFGBuilder {
      * Lambdas encountered when building the control-flow graph for a method, variable initializer,
      * or initializer.
      */
-    protected final List<LambdaExpressionTree> declaredLambdas = new LinkedList<>();
+    protected final List<LambdaExpressionTree> declaredLambdas = new ArrayList<>();
 
     public List<LambdaExpressionTree> getDeclaredLambdas() {
         return declaredLambdas;
@@ -726,11 +726,11 @@ public class CFGBuilder {
      */
     protected static class TryStack {
         protected Label exitLabel;
-        protected LinkedList<TryFrame> frames;
+        protected ArrayDeque<TryFrame> frames;
 
         public TryStack(Label exitLabel) {
             this.exitLabel = exitLabel;
-            this.frames = new LinkedList<>();
+            this.frames = new ArrayDeque<>();
         }
 
         public void pushFrame(TryFrame frame) {

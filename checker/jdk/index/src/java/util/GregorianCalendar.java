@@ -37,10 +37,13 @@
  */
 
 package java.util;
+import org.checkerframework.common.value.qual.*;
 import org.checkerframework.checker.index.qual.*;
+
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+
 import sun.util.calendar.BaseCalendar;
 import sun.util.calendar.CalendarDate;
 import sun.util.calendar.CalendarSystem;
@@ -364,7 +367,7 @@ public class GregorianCalendar extends Calendar {
      *
      * @see #ERA
      */
-    public static final int BC = 0;
+    public static final @IntVal(0) int BC = 0;
 
     /**
      * Value of the {@link #ERA} field indicating
@@ -382,7 +385,7 @@ public class GregorianCalendar extends Calendar {
      *
      * @see #ERA
      */
-    public static final int AD = 1;
+    public static final @IntVal(1) int AD = 1;
 
     /**
      * Value of the {@link #ERA} field indicating

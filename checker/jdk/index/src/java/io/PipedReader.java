@@ -289,7 +289,7 @@ public class PipedReader extends Reader {
      *                  {@link #connect(java.io.PipedWriter) unconnected}, closed,
      *                  or an I/O error occurs.
      */
-    public synchronized @IndexOrLow("#1") int read(char cbuf[], @IndexFor("#1") int off, @IndexOrHigh("#1") int len)  throws IOException {
+    public synchronized @GTENegativeOne @LTEqLengthOf("#1") int read(char cbuf[], @IndexOrHigh("#1") int off, @IndexOrHigh("#1") int len)  throws IOException {
         if (!connected) {
             throw new IOException("Pipe not connected");
         } else if (closedByReader) {

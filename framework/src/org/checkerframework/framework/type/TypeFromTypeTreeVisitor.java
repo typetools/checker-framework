@@ -17,7 +17,6 @@ import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.WildcardTree;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -92,7 +91,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     public AnnotatedTypeMirror visitParameterizedType(
             ParameterizedTypeTree node, AnnotatedTypeFactory f) {
 
-        List<AnnotatedTypeMirror> args = new LinkedList<AnnotatedTypeMirror>();
+        List<AnnotatedTypeMirror> args = new ArrayList<>(node.getTypeArguments().size());
         for (Tree t : node.getTypeArguments()) {
             args.add(visit(t, f));
         }
@@ -117,7 +116,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     @Override
     public AnnotatedTypeMirror visitTypeParameter(TypeParameterTree node, AnnotatedTypeFactory f) {
 
-        List<AnnotatedTypeMirror> bounds = new LinkedList<AnnotatedTypeMirror>();
+        List<AnnotatedTypeMirror> bounds = new ArrayList<>(node.getBounds().size());
         for (Tree t : node.getBounds()) {
             AnnotatedTypeMirror bound;
             if (visitedBounds.containsKey(t) && f == visitedBounds.get(t).atypeFactory) {

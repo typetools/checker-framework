@@ -33,6 +33,8 @@ import org.checkerframework.javacutil.Pair;
  * @see EnsuresQualifierIf
  * @author Stefan Heule
  */
+// TODO: This class assumes that most annotations have a field named "expression".
+// If not, issue a more helpful error message rather than a crash.
 public class ContractsUtils {
 
     protected static ContractsUtils instance;
