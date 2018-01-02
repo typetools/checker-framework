@@ -780,9 +780,10 @@ public class BoundsInitializer {
         }
 
         public AnnotatedTypeMirror traverseToParent(
-                final AnnotatedTypeMirror start, final List<BoundPathNode> path) {
+                final AnnotatedTypeMirror start, final BoundPath path) {
             AnnotatedTypeMirror current = start;
             for (int i = 0; i < path.size() - 1; i++) {
+                // Note that the last element in path isn't inspected.
                 current = path.get(i).next(current);
             }
 
@@ -890,8 +891,8 @@ public class BoundsInitializer {
         }
     }
 
-    /** An array list of BoundPathNodes whose equals method is a referential equality check */
-    @SuppressWarnings("serial")
+    /** A linked list of BoundPathNodes whose equals method is a referential equality check */
+    @SuppressWarnings({"serial", "JdkObsolete"})
     private static class BoundPath extends LinkedList<BoundPathNode> {
 
         @Override

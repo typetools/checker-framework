@@ -9,8 +9,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import com.sun.source.util.TreePath;
+import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.LinkedList;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -42,19 +42,21 @@ public class Heuristics {
         TreePath parentPath = path.getParentPath();
         boolean result = true;
 
-        LinkedList<Tree.Kind> queue = new LinkedList<Tree.Kind>(Arrays.asList(kinds));
+        ArrayDeque<Tree.Kind> queue = new ArrayDeque<Tree.Kind>(Arrays.asList(kinds));
 
         Tree tree;
         while ((tree = parentPath.getLeaf()) != null) {
 
-            if (queue.isEmpty()) break;
+            if (queue.isEmpty()) {
+                break;
+            }
 
             if (tree.getKind() == Tree.Kind.BLOCK || tree.getKind() == Tree.Kind.PARENTHESIZED) {
                 parentPath = parentPath.getParentPath();
                 continue;
             }
 
-            result &= queue.poll() == parentPath.getLeaf().getKind();
+            result &= queue.removeFirst() == parentPath.getLeaf().getKind();
             parentPath = parentPath.getParentPath();
         }
 

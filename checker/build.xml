@@ -1390,13 +1390,14 @@
         compression="gzip" />
 
       <exec executable="mvn" dir="${errorprone.home}" failonerror="true">
+        <arg value="-q"/>
         <arg value="package"/>
         <arg value="-Dmaven.test.skip=true"/>
       </exec>
     </target>
 
-    <!-- Depend on dist-nobuildjdk to make sure everything compiles. -->
-    <target name="check-errorprone" depends="dist-nobuildjdk, clean-nojar, -errorprone.download"
+    <!-- Depend on jar to make sure everything compiles. -->
+    <target name="check-errorprone" depends="jar, clean-nojar, -errorprone.download"
             description="Run the error-prone compiler on the Checker Framework">
         <mkdir dir="${build}"/>
 
@@ -1419,8 +1420,6 @@
             <compilerarg value="-Xep:ReferenceEquality:OFF"/>
             <!-- These might be worth fixing. -->
             <compilerarg value="-Xep:DefaultCharset:OFF"/>
-            <!-- Disable until https://github.com/google/error-prone/issues/725 is fixed. -->
-            <compilerarg value="-Xep:NamedParameters:OFF"/>
             <compilerarg value="-Werror"/>
         </javac>
     </target>

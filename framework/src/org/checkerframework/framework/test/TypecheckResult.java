@@ -2,7 +2,6 @@ package org.checkerframework.framework.test;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.tools.Diagnostic;
@@ -153,7 +152,7 @@ public class TypecheckResult {
         unexpectedDiagnostics.addAll(actualDiagnostics);
         unexpectedDiagnostics.removeAll(expectedDiagnostics);
 
-        final List<TestDiagnostic> missingDiagnostics = new LinkedList<>(expectedDiagnostics);
+        final List<TestDiagnostic> missingDiagnostics = new ArrayList<>(expectedDiagnostics);
         missingDiagnostics.removeAll(actualDiagnostics);
 
         boolean testFailed = !unexpectedDiagnostics.isEmpty() || !missingDiagnostics.isEmpty();
@@ -181,7 +180,7 @@ public class TypecheckResult {
         unexpectedDiagnostics.addAll(actualDiagnostics);
         unexpectedDiagnostics.removeAll(expectedDiagnostics);
 
-        final List<TestDiagnostic> missingDiagnostics = new LinkedList<>(expectedDiagnostics);
+        final List<TestDiagnostic> missingDiagnostics = new ArrayList<>(expectedDiagnostics);
         missingDiagnostics.removeAll(actualDiagnostics);
 
         boolean testFailed = !unexpectedDiagnostics.isEmpty() || !missingDiagnostics.isEmpty();
