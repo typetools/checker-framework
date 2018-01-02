@@ -470,11 +470,11 @@ public class DependentTypesHelper {
         if (!isExpressionAnno(anno)) {
             return anno;
         }
-        return standardizeExpressionAnnotation(context, localScope, anno, useLocalScope);
+        return standardizeDependentTypeAnnotation(context, localScope, anno, useLocalScope);
     }
 
     /** Standardizes an annotation. If it is not a dependent type annotation, returns null. */
-    private AnnotationMirror standardizeAnnotationIfExpression(
+    private AnnotationMirror standardizeAnnotationIfDependentType(
             FlowExpressionContext context,
             TreePath localScope,
             AnnotationMirror anno,
@@ -482,11 +482,11 @@ public class DependentTypesHelper {
         if (!isExpressionAnno(anno)) {
             return null;
         }
-        return standardizeExpressionAnnotation(context, localScope, anno, useLocalScope);
+        return standardizeDependentTypeAnnotation(context, localScope, anno, useLocalScope);
     }
 
     /** Standardizes a dependent type annotation. */
-    private AnnotationMirror standardizeExpressionAnnotation(
+    private AnnotationMirror standardizeDependentTypeAnnotation(
             FlowExpressionContext context,
             TreePath localScope,
             AnnotationMirror anno,
@@ -550,7 +550,8 @@ public class DependentTypesHelper {
             List<AnnotationMirror> newAnnos = new ArrayList<>();
             for (AnnotationMirror anno : type.getAnnotations()) {
                 AnnotationMirror annotationMirror =
-                        standardizeAnnotationIfExpression(context, localScope, anno, useLocalScope);
+                        standardizeAnnotationIfDependentType(
+                                context, localScope, anno, useLocalScope);
                 if (annotationMirror != null) {
                     newAnnos.add(annotationMirror);
                 }
