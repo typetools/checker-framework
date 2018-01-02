@@ -105,7 +105,7 @@ public class CustomContractWithArgs {
             @LTLengthOf(value = "a", offset = "c+1") int j = b;
         }
     }
-    /* TODO: enable test
+
     class Derived extends Base {
         public int x;
 
@@ -131,7 +131,7 @@ public class CustomContractWithArgs {
                 value = {"a", "a"},
                 offset = {"d+1", "-10"}
             )
-            //// :: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             int i = b;
         }
     }
@@ -146,9 +146,9 @@ public class CustomContractWithArgs {
             targetOffset = {"#2 + 1", "9"},
             result = true
         )
-        //// :: error: (contracts.conditional.postcondition.true.override.invalid)
+        // :: error: (contracts.conditional.postcondition.true.override.invalid)
         boolean ltlPost(int[] a, int c) {
-            //// :: error: (contracts.conditional.postcondition.not.satisfied)
+            // :: error: (contracts.conditional.postcondition.not.satisfied)
             return true;
         }
 
@@ -158,7 +158,7 @@ public class CustomContractWithArgs {
             targetValue = {"#1", "#1"},
             targetOffset = {"#2 + 1", "-9"}
         )
-        //// :: error: (contracts.precondition.override.invalid)
+        // :: error: (contracts.precondition.override.invalid)
         void ltlPre(int[] a, int d) {
             @LTLengthOf(
                 value = {"a", "a"},
@@ -167,5 +167,4 @@ public class CustomContractWithArgs {
             int i = b;
         }
     }
-    */
 }
