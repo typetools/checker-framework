@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -32,6 +33,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Utility methods for adding the annotations that are stored in an Element to the type that
@@ -247,10 +249,10 @@ public class ElementAnnotationUtil {
             for (AnnotationMirror anno : possiblyBoth) {
                 superBound.addAnnotation(anno);
 
-                // this will be false if we've defaulted the bounds and are reading them again
-                // in that case, we will have already created an annotation for the extends bound
-                // that should be honored and NOT overwritten
-                if (extendsBound.getAnnotationInHierarchy(anno) == null) {
+                // This will be false if we've defaulted the bounds and are reading them again.
+                // In that case, we will have already created an annotation for the extends bound
+                // that should be honored and NOT overwritten.
+                if (!extendsBound.isAnnotatedInHierarchy(anno)) {
                     extendsBound.addAnnotation(anno);
                 }
             }
@@ -280,7 +282,6 @@ public class ElementAnnotationUtil {
             AnnotatedTypeMirror target = getTypeAtLocation(type, anno.position.location);
             if (target.getKind() == TypeKind.WILDCARD) {
                 addWildcardToBoundMap((AnnotatedWildcardType) target, anno, wildcardToAnnos);
-
             } else {
                 target.addAnnotation(anno);
             }
@@ -369,29 +370,40 @@ public class ElementAnnotationUtil {
             // getLocationTypeADT. For other kinds of types, no work is required for an empty
             // type path.
             return type;
-        } else if (type.getKind() == TypeKind.NULL) {
-            return getLocationTypeANT((AnnotatedNullType) type, location);
-        } else if (type.getKind() == TypeKind.DECLARED) {
-            return getLocationTypeADT((AnnotatedDeclaredType) type, location);
-        } else if (type.getKind() == TypeKind.WILDCARD) {
-            return getLocationTypeAWT((AnnotatedWildcardType) type, location);
-        } else if (type.getKind() == TypeKind.ARRAY) {
-            return getLocationTypeAAT((AnnotatedArrayType) type, location);
-        } else if (type.getKind() == TypeKind.UNION) {
-            return getLocationTypeAUT((AnnotatedUnionType) type, location);
-        } else if (type.getKind() == TypeKind.INTERSECTION) {
-            return getLocationTypeAIT((AnnotatedIntersectionType) type, location);
-        } else {
-            ErrorReporter.errorAbort(
-                    "ElementAnnotationUtil.getTypeAtLocation: only declared types, "
-                            + "arrays, and null types can have annotations with location; found type: "
-                            + type
-                            + " (kind: "
-                            + type.getKind()
-                            + ") location: "
-                            + location);
-            return null; // dead code
         }
+        switch (type.getKind()) {
+            case NULL:
+                return getLocationTypeANT((AnnotatedNullType) type, location);
+            case DECLARED:
+                return getLocationTypeADT((AnnotatedDeclaredType) type, location);
+            case WILDCARD:
+                return getLocationTypeAWT((AnnotatedWildcardType) type, location);
+            case TYPEVAR:
+                if (TypesUtils.isCaptured((TypeVariable) type.getUnderlyingType())) {
+                    // Work-around for Issue 1696: ignore captured wildcards.
+                    // There is no reason to observe such a type and it would be better
+                    // to prevent that this type ever reaches this point.
+                    return type;
+                }
+                // Raise an error for all other type variables (why isn't this needed?).
+                break;
+            case ARRAY:
+                return getLocationTypeAAT((AnnotatedArrayType) type, location);
+            case UNION:
+                return getLocationTypeAUT((AnnotatedUnionType) type, location);
+            case INTERSECTION:
+                return getLocationTypeAIT((AnnotatedIntersectionType) type, location);
+            default:
+                // Raise an error for all other types below.
+        }
+        ErrorReporter.errorAbort(
+                "ElementAnnotationUtil.getTypeAtLocation: unexpected annotation with location found for type: "
+                        + type
+                        + " (kind: "
+                        + type.getKind()
+                        + ") location: "
+                        + location);
+        return null; // dead code
     }
 
     /**
