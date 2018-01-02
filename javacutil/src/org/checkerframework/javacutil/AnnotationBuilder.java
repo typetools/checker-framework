@@ -196,7 +196,7 @@ public class AnnotationBuilder {
                 valueHolder.getElementValues().entrySet()) {
 
             String sourceName = eltValToCopy.getKey().getSimpleName().toString();
-            String targetName = mapping.get(sourceName.toString());
+            String targetName = mapping.get(sourceName);
             if (targetName == null) {
                 continue;
             }
