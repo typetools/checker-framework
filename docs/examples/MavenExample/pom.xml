@@ -34,11 +34,6 @@
       <!-- <artifactId>checker-qual7</artifactId> -->
       <version>${checkerFrameworkVersion}</version>
     </dependency>
-    <dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>checker</artifactId>
-      <version>${checkerFrameworkVersion}</version>
-    </dependency>
     <!-- The Type Annotations compiler. Uncomment if using annotations in comments. -->
     <!--<dependency>
       <groupId>org.checkerframework</groupId>
@@ -88,6 +83,13 @@
               <!-- Uncomment to use the Type Annotations compiler. -->
               <!--<fork>true</fork>-->
               <showWarnings>true</showWarnings>
+              <annotationProcessorPaths>
+                <path>
+                  <groupId>org.checkerframework</groupId>
+                  <artifactId>checker</artifactId>
+                  <version>${checkerFrameworkVersion}</version>
+                </path>
+              </annotationProcessorPaths>
               <annotationProcessors>
                   <!-- Add all the checkers you want to enable here -->
                   <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
