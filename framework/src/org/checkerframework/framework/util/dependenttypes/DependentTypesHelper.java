@@ -453,8 +453,8 @@ public class DependentTypesHelper {
         return !annoToElements.isEmpty();
     }
     /**
-     * Standardizes an annotation. If the annotation is not an expression annotation, returns the
-     * same annotation unhanged.
+     * Standardizes an annotation. If the annotation is not a dependent type annotation, returns the
+     * same annotation unchanged.
      *
      * @param context information about any receiver and arguments
      * @param localScope path to local scope to use
@@ -473,7 +473,7 @@ public class DependentTypesHelper {
         return standardizeExpressionAnnotation(context, localScope, anno, useLocalScope);
     }
 
-    /** Standardizes an annotation. If it is not an expression annotation, returns null. */
+    /** Standardizes an annotation. If it is not a dependent type annotation, returns null. */
     private AnnotationMirror standardizeAnnotationIfExpression(
             FlowExpressionContext context,
             TreePath localScope,
@@ -485,7 +485,7 @@ public class DependentTypesHelper {
         return standardizeExpressionAnnotation(context, localScope, anno, useLocalScope);
     }
 
-    /** Standardizes an expression annotation. */
+    /** Standardizes a dependent type annotation. */
     private AnnotationMirror standardizeExpressionAnnotation(
             FlowExpressionContext context,
             TreePath localScope,
