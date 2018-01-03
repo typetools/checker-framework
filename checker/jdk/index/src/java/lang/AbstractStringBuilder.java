@@ -536,7 +536,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *             {@code end} is greater than {@code s.length()}
      */
     @Override
-    public AbstractStringBuilder append(CharSequence s, @NonNegative /*!IndexOrHigh("#1")*/ int start, @NonNegative /*!IndexOrHigh("#1")*/ int end) {
+    public AbstractStringBuilder append(CharSequence s, @IndexOrHigh("#1") int start, @IndexOrHigh("#1") int end) {
         if (s == null)
             s = "null";
         if ((start < 0) || (start > end) || (end > s.length()))
@@ -1155,7 +1155,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *              {@code end} is greater than {@code s.length()}
      */
      public AbstractStringBuilder insert(/*!IndexOrHigh("this")*/ int dstOffset, CharSequence s,
-    		 @NonNegative /*!IndexOrHigh("#2")*/ int start, @NonNegative /*!IndexOrHigh("#2")*/ int end) {
+                                         @IndexOrHigh("#2") int start, @IndexOrHigh("#2") int end) {
         if (s == null)
             s = "null";
         if ((dstOffset < 0) || (dstOffset > this.length()))

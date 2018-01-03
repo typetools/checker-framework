@@ -265,7 +265,7 @@ public abstract class Writer implements Appendable, Closeable, Flushable {
      *
      * @since  1.5
      */
-    public Writer append(CharSequence csq, @NonNegative /*!IndexOrHigh("#1")*/ int start, @NonNegative /*!IndexOrHigh("#1")*/ int end) throws IOException {
+    public Writer append(CharSequence csq, @IndexOrHigh("#1") int start, @IndexOrHigh("#1") int end) throws IOException {
         CharSequence cs = (csq == null ? "null" : csq);
         write(cs.subSequence(start, end).toString());
         return this;

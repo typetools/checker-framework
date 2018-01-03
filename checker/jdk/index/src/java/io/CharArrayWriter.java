@@ -201,7 +201,7 @@ class CharArrayWriter extends Writer {
      *
      * @since  1.5
      */
-    public CharArrayWriter append(CharSequence csq, @NonNegative /*!IndexOrHigh("#1")*/ int start, @NonNegative /*!IndexOrHigh("#1")*/ int end) {
+    public CharArrayWriter append(CharSequence csq, @IndexOrHigh("#1") int start, @IndexOrHigh("#1") int end) {
         String s = (csq == null ? "null" : csq).subSequence(start, end).toString();
         write(s, 0, s.length());
         return this;
