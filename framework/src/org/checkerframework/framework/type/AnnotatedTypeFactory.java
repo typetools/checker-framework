@@ -41,7 +41,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -406,8 +405,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 }
             }
             if (!otherElementTypes.isEmpty()) {
-                StringBuffer buf =
-                        new StringBuffer("The @Target meta-annotation on type qualifier ");
+                StringBuilder buf =
+                        new StringBuilder("The @Target meta-annotation on type qualifier ");
                 buf.append(annotationClass.toString());
                 buf.append(" must not contain ");
                 for (int i = 0; i < otherElementTypes.size(); i++) {
@@ -1526,7 +1525,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             enclosing = enclosing.getEnclosingType();
         }
 
-        List<AnnotatedTypeParameterBounds> res = new LinkedList<>();
+        List<AnnotatedTypeParameterBounds> res = new ArrayList<>(tvars.size());
 
         for (AnnotatedTypeMirror atm : tvars) {
             AnnotatedTypeVariable atv = (AnnotatedTypeVariable) atm;
@@ -2001,7 +2000,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         AnnotatedExecutableType methodType =
                 AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt);
-        List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
+        List<AnnotatedTypeMirror> typeargs = new ArrayList<>(methodType.getTypeVariables().size());
 
         Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping =
                 AnnotatedTypes.findTypeArguments(processingEnv, this, tree, methodElt, methodType);
@@ -2124,7 +2123,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             con.setParameterTypes(actualParams);
         }
 
-        List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
+        List<AnnotatedTypeMirror> typeargs = new ArrayList<>(con.getTypeVariables().size());
 
         Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping =
                 AnnotatedTypes.findTypeArguments(processingEnv, this, tree, ctor, con);
@@ -3534,6 +3533,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         this.methodFromUse(method);
                 AnnotatedTypeMirror param =
                         AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(exe.first, index);
+                if (param.getKind() == TypeKind.WILDCARD) {
+                    // param is an uninferred wildcard.
+                    TypeMirror typeMirror = TreeUtils.typeOf(lambdaTree);
+                    param = AnnotatedTypeMirror.createType(typeMirror, this, false);
+                    addDefaultAnnotations(param);
+                }
                 assertFunctionalInterface(param.getUnderlyingType(), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) param;
 
@@ -3613,7 +3618,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     private void assertFunctionalInterface(
             TypeMirror typeMirror, Tree contextTree, Tree lambdaTree) {
+        if (typeMirror.getKind() == TypeKind.WILDCARD) {
+            // Ignore wildcards, because they are uninferred type arguments.
+            return;
+        }
         Type type = (Type) typeMirror;
+
         if (!TypesUtils.isFunctionalInterface(type, processingEnv)) {
             if (type.getKind() == TypeKind.INTERSECTION) {
                 IntersectionType itype = (IntersectionType) type;

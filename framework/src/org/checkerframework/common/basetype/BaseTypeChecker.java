@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -659,8 +658,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     @Override
     protected Object processArg(Object arg) {
         if (arg instanceof Collection) {
-            List<Object> newList = new LinkedList<>();
-            for (Object o : ((Collection<?>) arg)) {
+            Collection<?> carg = (Collection<?>) arg;
+            List<Object> newList = new ArrayList<>(carg.size());
+            for (Object o : carg) {
                 newList.add(processArg(o));
             }
             return newList;

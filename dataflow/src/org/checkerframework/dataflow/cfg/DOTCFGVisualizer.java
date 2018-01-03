@@ -8,11 +8,11 @@ import com.sun.tools.javac.tree.JCTree;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -116,7 +116,7 @@ public class DOTCFGVisualizer<
         this.sbDigraph.append("digraph {\n");
 
         Block cur = entry;
-        Queue<Block> worklist = new LinkedList<>();
+        Queue<Block> worklist = new ArrayDeque<>();
         visited.add(entry);
         // traverse control flow graph and define all arrows
         while (true) {
@@ -285,7 +285,7 @@ public class DOTCFGVisualizer<
         this.sbBlock.setLength(0);
 
         // loop over contents
-        List<Node> contents = new LinkedList<>();
+        List<Node> contents = new ArrayList<>();
         switch (bb.getType()) {
             case REGULAR_BLOCK:
                 contents.addAll(((RegularBlock) bb).getContents());
