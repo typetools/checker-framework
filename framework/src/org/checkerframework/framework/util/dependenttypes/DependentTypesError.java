@@ -33,7 +33,7 @@ public class DependentTypesError {
     }
 
     public DependentTypesError(String expression, FlowExpressionParseException e) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         List<Result.DiagMessage> msgs = e.getResult().getDiagMessages();
 
         for (Result.DiagMessage msg : msgs) {

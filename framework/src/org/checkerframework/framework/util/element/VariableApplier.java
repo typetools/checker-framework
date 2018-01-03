@@ -1,22 +1,5 @@
 package org.checkerframework.framework.util.element;
 
-import static com.sun.tools.javac.code.TargetType.CAST;
-import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT;
-import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_REFERENCE;
-import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT;
-import static com.sun.tools.javac.code.TargetType.EXCEPTION_PARAMETER;
-import static com.sun.tools.javac.code.TargetType.FIELD;
-import static com.sun.tools.javac.code.TargetType.INSTANCEOF;
-import static com.sun.tools.javac.code.TargetType.LOCAL_VARIABLE;
-import static com.sun.tools.javac.code.TargetType.METHOD_INVOCATION_TYPE_ARGUMENT;
-import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE;
-import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE_TYPE_ARGUMENT;
-import static com.sun.tools.javac.code.TargetType.NEW;
-import static com.sun.tools.javac.code.TargetType.RESOURCE_VARIABLE;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.addAnnotationsFromElement;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.contains;
-
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.TargetType;
@@ -42,7 +25,8 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
 
     /** @return true if this is a variable declaration including fields an enum constants */
     public static boolean accepts(final AnnotatedTypeMirror typeMirror, final Element element) {
-        return contains(element.getKind(), acceptedKinds) || element.getKind().isField();
+        return ElementAnnotationUtil.contains(element.getKind(), acceptedKinds)
+                || element.getKind().isField();
     }
 
     private final Symbol.VarSymbol varSymbol;
@@ -67,21 +51,26 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
 
     @Override
     protected TargetType[] annotatedTargets() {
-        return new TargetType[] {LOCAL_VARIABLE, RESOURCE_VARIABLE, EXCEPTION_PARAMETER, FIELD};
+        return new TargetType[] {
+            TargetType.LOCAL_VARIABLE,
+            TargetType.RESOURCE_VARIABLE,
+            TargetType.EXCEPTION_PARAMETER,
+            TargetType.FIELD
+        };
     }
 
     @Override
     protected TargetType[] validTargets() {
         return new TargetType[] {
-            NEW,
-            CAST,
-            INSTANCEOF,
-            METHOD_INVOCATION_TYPE_ARGUMENT,
-            CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT,
-            METHOD_REFERENCE,
-            CONSTRUCTOR_REFERENCE,
-            METHOD_REFERENCE_TYPE_ARGUMENT,
-            CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT
+            TargetType.NEW,
+            TargetType.CAST,
+            TargetType.INSTANCEOF,
+            TargetType.METHOD_INVOCATION_TYPE_ARGUMENT,
+            TargetType.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT,
+            TargetType.METHOD_REFERENCE,
+            TargetType.CONSTRUCTOR_REFERENCE,
+            TargetType.METHOD_REFERENCE_TYPE_ARGUMENT,
+            TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT
         };
     }
 
@@ -97,13 +86,13 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
 
     @Override
     protected void handleTargeted(final List<Attribute.TypeCompound> targeted) {
-        annotateViaTypeAnnoPosition(type, targeted);
+        ElementAnnotationUtil.annotateViaTypeAnnoPosition(type, targeted);
     }
 
     @Override
     public void extractAndApply() {
         // Add declaration annotations to the local variable type
-        addAnnotationsFromElement(type, varSymbol.getAnnotationMirrors());
+        ElementAnnotationUtil.addAnnotationsFromElement(type, varSymbol.getAnnotationMirrors());
         super.extractAndApply();
     }
 }

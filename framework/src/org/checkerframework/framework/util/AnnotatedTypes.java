@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -777,7 +776,7 @@ public class AnnotatedTypes {
      * @return whether the type contains the modifier
      */
     public static boolean containsModifier(AnnotatedTypeMirror type, AnnotationMirror modifier) {
-        return containsModifierImpl(type, modifier, new LinkedList<AnnotatedTypeMirror>());
+        return containsModifierImpl(type, modifier, new ArrayList<AnnotatedTypeMirror>());
     }
 
     /*

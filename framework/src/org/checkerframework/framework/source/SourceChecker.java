@@ -20,18 +20,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import javax.annotation.processing.AbstractProcessor;
@@ -529,17 +528,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         this.messages = new Properties();
-        Stack<Class<?>> checkers = new Stack<Class<?>>();
+        ArrayDeque<Class<?>> checkers = new ArrayDeque<Class<?>>();
 
         Class<?> currClass = this.getClass();
         while (currClass != SourceChecker.class) {
-            checkers.push(currClass);
+            checkers.addFirst(currClass);
             currClass = currClass.getSuperclass();
         }
-        checkers.push(SourceChecker.class);
+        checkers.addFirst(SourceChecker.class);
 
-        while (!checkers.empty()) {
-            messages.putAll(getProperties(checkers.pop(), MSGS_FILE));
+        while (!checkers.isEmpty()) {
+            messages.putAll(getProperties(checkers.removeFirst(), MSGS_FILE));
         }
         return this.messages;
     }
@@ -1789,7 +1788,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // {@link org.checkerframework.framework.source.SupportedOptions}
         // we additionally add
         Class<?> clazz = this.getClass();
-        List<Class<?>> clazzPrefixes = new LinkedList<>();
+        List<Class<?>> clazzPrefixes = new ArrayList<>();
 
         do {
             clazzPrefixes.add(clazz);

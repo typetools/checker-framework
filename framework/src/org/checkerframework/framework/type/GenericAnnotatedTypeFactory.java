@@ -21,6 +21,7 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,7 +30,6 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -194,7 +194,7 @@ public abstract class GenericAnnotatedTypeFactory<
         this.everUseFlow = useFlow;
         this.shouldDefaultTypeVarLocals = useFlow;
         this.useFlow = useFlow;
-        this.analyses = new LinkedList<>();
+        this.analyses = new ArrayDeque<>();
         this.scannedClasses = new HashMap<>();
         this.flowResult = null;
         this.regularExitStores = null;
@@ -939,7 +939,7 @@ public abstract class GenericAnnotatedTypeFactory<
             return;
         }
 
-        Queue<ClassTree> queue = new LinkedList<>();
+        Queue<ClassTree> queue = new ArrayDeque<>();
         List<Pair<VariableElement, Value>> fieldValues = new ArrayList<>();
         queue.add(classTree);
         while (!queue.isEmpty()) {
@@ -960,7 +960,7 @@ public abstract class GenericAnnotatedTypeFactory<
             initializationStaticStore = null;
             initializationStore = null;
 
-            Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue = new LinkedList<>();
+            Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue = new ArrayDeque<>();
 
             try {
                 List<CFGMethod> methods = new ArrayList<>();

@@ -1,21 +1,5 @@
 package org.checkerframework.framework.util.element;
 
-import static com.sun.tools.javac.code.TargetType.CAST;
-import static com.sun.tools.javac.code.TargetType.CLASS_EXTENDS;
-import static com.sun.tools.javac.code.TargetType.CLASS_TYPE_PARAMETER;
-import static com.sun.tools.javac.code.TargetType.CLASS_TYPE_PARAMETER_BOUND;
-import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT;
-import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_REFERENCE;
-import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT;
-import static com.sun.tools.javac.code.TargetType.EXCEPTION_PARAMETER;
-import static com.sun.tools.javac.code.TargetType.INSTANCEOF;
-import static com.sun.tools.javac.code.TargetType.METHOD_INVOCATION_TYPE_ARGUMENT;
-import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE;
-import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE_TYPE_ARGUMENT;
-import static com.sun.tools.javac.code.TargetType.NEW;
-import static com.sun.tools.javac.code.TargetType.RESOURCE_VARIABLE;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.applyAllElementAnnotations;
-
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.TargetType;
@@ -63,25 +47,25 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
     @Override
     protected TargetType[] validTargets() {
         return new TargetType[] {
-            RESOURCE_VARIABLE,
-            EXCEPTION_PARAMETER,
-            NEW,
-            CAST,
-            INSTANCEOF,
-            METHOD_INVOCATION_TYPE_ARGUMENT,
-            CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT,
-            METHOD_REFERENCE,
-            CONSTRUCTOR_REFERENCE,
-            METHOD_REFERENCE_TYPE_ARGUMENT,
-            CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT,
-            CLASS_TYPE_PARAMETER,
-            CLASS_TYPE_PARAMETER_BOUND
+            TargetType.RESOURCE_VARIABLE,
+            TargetType.EXCEPTION_PARAMETER,
+            TargetType.NEW,
+            TargetType.CAST,
+            TargetType.INSTANCEOF,
+            TargetType.METHOD_INVOCATION_TYPE_ARGUMENT,
+            TargetType.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT,
+            TargetType.METHOD_REFERENCE,
+            TargetType.CONSTRUCTOR_REFERENCE,
+            TargetType.METHOD_REFERENCE_TYPE_ARGUMENT,
+            TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT,
+            TargetType.CLASS_TYPE_PARAMETER,
+            TargetType.CLASS_TYPE_PARAMETER_BOUND
         };
     }
 
     @Override
     protected TargetType[] annotatedTargets() {
-        return new TargetType[] {CLASS_EXTENDS};
+        return new TargetType[] {TargetType.CLASS_EXTENDS};
     }
 
     /** All TypeCompounds (annotations) on the ClassSymbol */
@@ -117,7 +101,7 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
         // Annotate raw types //TODO: ASK WERNER WHAT THIS MIGHT MEAN?  WHAT ACTUALLY GOES HERE?
         type.addAnnotations(typeSymbol.getAnnotationMirrors());
 
-        applyAllElementAnnotations(
+        ElementAnnotationUtil.applyAllElementAnnotations(
                 declaredType.getTypeArguments(), typeSymbol.getTypeParameters(), typeFactory);
     }
 
