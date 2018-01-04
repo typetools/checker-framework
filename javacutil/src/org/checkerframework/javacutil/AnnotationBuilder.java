@@ -183,7 +183,7 @@ public class AnnotationBuilder {
     /**
      * Copies the specified element values from the given annotation, using the specified name
      * mapping. If an element specified as a target in the mapping doesn't exist in the annotation
-     * to be built, an error is raised. If an element form the given annotation is not in the
+     * to be built, an error is raised. If an element from the given annotation is not in the
      * mapping, it is ignored.
      *
      * @param valueHolder the annotation that holds the values to be copied
