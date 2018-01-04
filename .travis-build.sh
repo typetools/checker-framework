@@ -150,7 +150,7 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   release/checkPluginUtil.sh
 
   # Run error-prone
-  (cd checker; ant check-errorprone)
+  ant check-errorprone
 
   # Documentation
   ant javadoc-private
