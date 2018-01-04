@@ -3452,11 +3452,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected final boolean shouldSkipUses(ExpressionTree exprTree) {
         // System.out.printf("shouldSkipUses: %s: %s%n", exprTree.getClass(), exprTree);
-
-        // Don't use commonAssignmentCheck for lambdas or method references.
-        if (exprTree instanceof MemberReferenceTree || exprTree instanceof LambdaExpressionTree) {
-            return true;
-        }
         Element elm = TreeUtils.elementFromTree(exprTree);
         return checker.shouldSkipUses(elm);
     }
