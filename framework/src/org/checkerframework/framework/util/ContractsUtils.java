@@ -271,7 +271,19 @@ public class ContractsUtils {
             AnnotationMirror contractAnno) {
         return getAnnotationMirrorOfQualifier(contractAnno, null, null);
     }
-    /** Makes a map from source argument names to target argument names. */
+    /**
+     * Makes a map from source argument names to target argument names. Each argument name in {@code
+     * sourceArgumentNames} is mapped to the name at the same index in {@code targetArgumentNames}.
+     * If {@code targetArgumentNames} is shorter than {@code sourceArgumentNames}, then the
+     * arguments that do not have a corresponding entry in {@code targetArgumentNames} are mapped to
+     * an argument of the same name.
+     *
+     * @param sourceArgumentNames list of argument names in the source annotation
+     * @param targetArgumentNames list of argument names in the target annotation, where each name
+     *     corresponds to the source argument name at the same index in {@code sourceArgumentNames}
+     * @return map from the names in {@code sourceArgumentNames} to the corresponding target
+     *     argument names
+     */
     private Map<String, String> makeArgumentMap(
             List<String> sourceArgumentNames, List<String> targetArgumentNames) {
         HashMap<String, String> argumentMap = new HashMap<>();
