@@ -7,4 +7,5 @@ package mypackage;
 
 class MyClass {
    static @ArrayLen(1) @Regex(1) String toString(char c);
+   void method(Object[][] param);
 }
