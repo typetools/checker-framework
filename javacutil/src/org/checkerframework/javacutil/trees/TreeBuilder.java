@@ -23,7 +23,6 @@ import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -110,7 +109,9 @@ public class TreeBuilder {
         Type.MethodType methodType = (Type.MethodType) iteratorMethod.asType();
         Symbol.TypeSymbol methodClass = methodType.asElement();
         DeclaredType iteratorType = (DeclaredType) methodType.getReturnType();
-        iteratorType = findIteratorSupertype(iteratorType);
+        iteratorType =
+                (DeclaredType)
+                        javacTypes.asSuper((Type) iteratorType, symtab.iteratorType.asElement());
 
         assert iteratorType.getTypeArguments().size() == 1
                 : "expected exactly one type argument for Iterator";
@@ -140,27 +141,6 @@ public class TreeBuilder {
         iteratorAccess.setType(updatedMethodType);
 
         return iteratorAccess;
-    }
-
-    /** Find the supertype of iteratorType that conforms to java.util.Iterator. */
-    private DeclaredType findIteratorSupertype(DeclaredType iteratorType) {
-        if (TypesUtils.isDeclaredOfName(iteratorType, "java.util.Iterator")) {
-            return iteratorType;
-        }
-        ArrayDeque<TypeMirror> worklist =
-                new ArrayDeque<>(modelTypes.directSupertypes(iteratorType));
-        DeclaredType result = null;
-        while (!worklist.isEmpty()) {
-            TypeMirror tm = worklist.removeFirst();
-            if (TypesUtils.isDeclaredOfName(tm, "java.util.Iterator")) {
-                result = (DeclaredType) tm;
-                break;
-            } else {
-                worklist.addAll(modelTypes.directSupertypes(tm));
-            }
-        }
-        assert result != null : "Did not find Iterator supertype of " + iteratorType;
-        return result;
     }
 
     /**
