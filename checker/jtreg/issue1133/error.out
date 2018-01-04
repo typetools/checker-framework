@@ -1,0 +1,2 @@
+ClassB.java:3:17: compiler.err.cant.resolve.location: kindname.class, Nullable, , , (compiler.misc.location: kindname.class, ClassB, null)
+1 error
