@@ -5,5 +5,11 @@ public class MyClass {
         return c + "";
     }
 
-    void method(Object[][] param) {}
+    void method1(Object[] param) {}
+
+    void method2(Object[][] param) {}
+
+    void method3(Object[][][] param) {}
+
+    void method4(Object[][][][] param) {}
 }
