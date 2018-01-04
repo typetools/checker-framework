@@ -398,16 +398,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             return true;
         }
 
-        if (canBeCovariant && isSubtype(inside, outside, visited)) {
-            return true;
-        }
-
         if (outside.getKind() == TypeKind.WILDCARD) {
             final AnnotatedWildcardType outsideWc = (AnnotatedWildcardType) outside;
-
-            if (!checkAndSubtype(outsideWc.getSuperBound(), inside, visited)) {
-                return false;
-            }
 
             AnnotatedTypeMirror outsideWcUB = outsideWc.getExtendsBound();
             if (inside.getKind() == TypeKind.WILDCARD) {
@@ -420,9 +412,16 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             }
 
             AnnotatedTypeMirror castedInside = castedAsSuper(inside, outsideWcUB);
-            return checkAndSubtype(castedInside, outsideWcUB, visited);
+            if (!checkAndSubtype(castedInside, outsideWcUB, visited)) {
+                return false;
+            }
+
+            return canBeCovariant || checkAndSubtype(outsideWc.getSuperBound(), inside, visited);
         } else { // TODO: IF WE NEED TO COMPARE A WILDCARD TO A CAPTURE OF A WILDCARD WE FAIL IN
             // ARE_EQUAL -> DO CAPTURE CONVERSION
+            if (canBeCovariant) {
+                return isSubtype(inside, outside, visited);
+            }
             return areEqualInHierarchy(inside, outside, currentTop);
         }
     }
