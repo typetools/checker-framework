@@ -119,11 +119,11 @@ public class TreeBuilder {
         // Remove captured type from a wildcard.
         if (elementType instanceof Type.CapturedType) {
             elementType = ((Type.CapturedType) elementType).wildcard;
-        }
 
-        iteratorType =
-                modelTypes.getDeclaredType(
-                        (TypeElement) modelTypes.asElement(iteratorType), elementType);
+            iteratorType =
+                    modelTypes.getDeclaredType(
+                            (TypeElement) modelTypes.asElement(iteratorType), elementType);
+        }
 
         // Replace the iterator method's generic return type with
         // the actual element type of the expression.
