@@ -202,7 +202,6 @@ public class AnnotationBuilder {
             }
             elementValues.put(findElement(targetName), eltValToCopy.getValue());
         }
-        return;
     }
 
     public AnnotationBuilder setValue(CharSequence elementName, AnnotationMirror value) {
