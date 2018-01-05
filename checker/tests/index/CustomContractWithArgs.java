@@ -1,6 +1,7 @@
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
+import org.checkerframework.framework.qual.JavaExpression;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 
@@ -28,8 +29,10 @@ public class CustomContractWithArgs {
 
         public String[] expression();
 
+        @JavaExpression
         public String[] targetValue();
 
+        @JavaExpression
         public String[] targetOffset();
     }
 
@@ -42,8 +45,10 @@ public class CustomContractWithArgs {
     @interface RequiresLTL {
         public String[] value();
 
+        @JavaExpression
         public String[] targetValue();
 
+        @JavaExpression
         public String[] targetOffset();
     }
 
