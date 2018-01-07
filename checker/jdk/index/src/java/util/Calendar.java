@@ -38,6 +38,7 @@
 
 package java.util;
 
+import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import sun.util.BuddhistCalendar;
@@ -1201,7 +1202,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @see #set(int, int)
      * @see #complete()
      */
-    public int get(int field) {
+    public @NonNegative int get(@NonNegative int field) {
         complete();
         return internalGet(field);
     }
@@ -1248,7 +1249,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @see #set(int, int, int, int, int, int)
      * @see #get(int)
      */
-    public void set(int field, int value) {
+    public void set(@NonNegative int field, int value) {
         // If the fields are partially normalized, calculate all the
         // fields before changing any fields.
         if (areFieldsSet && !areAllFieldsSet) {
@@ -1278,7 +1279,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @see #set(int, int, int, int, int)
      * @see #set(int, int, int, int, int, int)
      */
-    public final void set(int year, int month, int date) {
+    public final void set(@NonNegative int year, @NonNegative int month, @NonNegative int date) {
         set(YEAR, year);
         set(MONTH, month);
         set(DATE, date);
@@ -1301,7 +1302,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @see #set(int, int, int)
      * @see #set(int, int, int, int, int, int)
      */
-    public final void set(int year, int month, int date, int hourOfDay, int minute) {
+    public final void set(@NonNegative int year, @NonNegative int month, @NonNegative int date, @NonNegative int hourOfDay, @NonNegative int minute) {
         set(YEAR, year);
         set(MONTH, month);
         set(DATE, date);
@@ -1327,8 +1328,8 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @see #set(int, int, int)
      * @see #set(int, int, int, int, int)
      */
-    public final void set(int year, int month, int date, int hourOfDay, int minute,
-                          int second) {
+    public final void set(@NonNegative int year, @NonNegative int month, @NonNegative int date, @NonNegative int hourOfDay, @NonNegative int minute,
+                          @NonNegative int second) {
         set(YEAR, year);
         set(MONTH, month);
         set(DATE, date);
@@ -1381,7 +1382,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @param field the calendar field to be cleared.
      * @see #clear()
      */
-    public final void clear(int field) {
+    public final void clear(@NonNegative int field) {
         fields[field] = 0;
         stamp[field] = UNSET;
         isSet[field] = false;
@@ -1398,7 +1399,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @return <code>true</code> if the given calendar field has a value set;
      * <code>false</code> otherwise.
      */
-    public final boolean isSet(int field) {
+    public final boolean isSet(@NonNegative int field) {
         return stamp[field] != UNSET;
     }
 
@@ -1438,7 +1439,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @throws NullPointerException     if <code>locale</code> is null
      * @since 1.6
      */
-    public String getDisplayName(int field, int style, Locale locale) {
+    public String getDisplayName(@NonNegative int field, int style, Locale locale) {
         if (!checkDisplayNameParams(field, style, ALL_STYLES, LONG, locale,
                 ERA_MASK | MONTH_MASK | DAY_OF_WEEK_MASK | AM_PM_MASK)) {
             return null;
@@ -1493,7 +1494,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @throws NullPointerException     if <code>locale</code> is null
      * @since 1.6
      */
-    public Map<String, Integer> getDisplayNames(int field, int style, Locale locale) {
+    public Map<String, Integer> getDisplayNames(@NonNegative int field, int style, Locale locale) {
         if (!checkDisplayNameParams(field, style, ALL_STYLES, LONG, locale,
                 ERA_MASK | MONTH_MASK | DAY_OF_WEEK_MASK | AM_PM_MASK)) {
             return null;
@@ -2055,7 +2056,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @see #set(int, int)
      * @since 1.2
      */
-    public void roll(int field, int amount) {
+    public void roll(@NonNegative int field, int amount) {
         while (amount > 0) {
             roll(field, true);
             amount--;
@@ -2150,7 +2151,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @see #setFirstDayOfWeek(int)
      * @see #getMinimalDaysInFirstWeek()
      */
-    public @IntRange(from = 1, to = 7) int getFirstDayOfWeek() {
+    public int getFirstDayOfWeek() {
         return firstDayOfWeek;
     }
 
@@ -2180,7 +2181,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @return the minimal days required in the first week of the year.
      * @see #setMinimalDaysInFirstWeek(int)
      */
-    public @IntRange(from = 1, to = 7) int getMinimalDaysInFirstWeek() {
+    public int getMinimalDaysInFirstWeek() {
         return minimalDaysInFirstWeek;
     }
 
@@ -2308,7 +2309,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @see #getActualMinimum(int)
      * @see #getActualMaximum(int)
      */
-    abstract public int getMinimum(int field);
+    abstract public int getMinimum(@NonNegative int field);
 
     /**
      * Returns the maximum value for the given calendar field of this
@@ -2325,7 +2326,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @see #getActualMinimum(int)
      * @see #getActualMaximum(int)
      */
-    abstract public int getMaximum(int field);
+    abstract public int getMaximum(@NonNegative int field);
 
     /**
      * Returns the highest minimum value for the given calendar field
@@ -2343,7 +2344,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @see #getActualMinimum(int)
      * @see #getActualMaximum(int)
      */
-    abstract public int getGreatestMinimum(int field);
+    abstract public int getGreatestMinimum(@NonNegative int field);
 
     /**
      * Returns the lowest maximum value for the given calendar field
@@ -2365,7 +2366,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @see #getActualMinimum(int)
      * @see #getActualMaximum(int)
      */
-    abstract public int getLeastMaximum(int field);
+    abstract public int getLeastMaximum(@NonNegative int field);
 
     /**
      * Returns the minimum value that the specified calendar field
@@ -2387,7 +2388,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @see #getActualMaximum(int)
      * @since 1.2
      */
-    public int getActualMinimum(int field) {
+    public @NonNegative int getActualMinimum(@NonNegative int field) {
         int fieldValue = getGreatestMinimum(field);
         int endValue = getMinimum(field);
 
@@ -2441,7 +2442,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @see #getActualMinimum(int)
      * @since 1.2
      */
-    public int getActualMaximum(int field) {
+    public @NonNegative int getActualMaximum(@NonNegative int field) {
         int fieldValue = getLeastMaximum(field);
         int endValue = getMaximum(field);
 

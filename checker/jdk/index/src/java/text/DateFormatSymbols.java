@@ -38,7 +38,6 @@
 
 package java.text;
 
-import org.checkerframework.common.value.qual.*;
 import org.checkerframework.checker.index.qual.*;
 
 import java.io.IOException;
@@ -374,7 +373,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      * Gets era strings. For example: "AD" and "BC".
      * @return the era strings.
      */
-    public String @ArrayLen(2) [] getEras() {
+    public String[] getEras() {
         return Arrays.copyOf(eras, eras.length);
     }
 
@@ -382,7 +381,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      * Sets era strings. For example: "AD" and "BC".
      * @param newEras the new era strings.
      */
-    public void setEras(String @ArrayLen(2) [] newEras) {
+    public void setEras(String[] newEras) {
         eras = Arrays.copyOf(newEras, newEras.length);
         cachedHashCode = 0;
     }
@@ -402,7 +401,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      *
      * @return the month strings.
      */
-    public String @ArrayLen(13) [] getMonths() {
+    public String[] getMonths() {
         return Arrays.copyOf(months, months.length);
     }
 
@@ -410,7 +409,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      * Sets month strings. For example: "January", "February", etc.
      * @param newMonths the new month strings.
      */
-    public void setMonths(String @ArrayLen(13) [] newMonths) {
+    public void setMonths(String[] newMonths) {
         months = Arrays.copyOf(newMonths, newMonths.length);
         cachedHashCode = 0;
     }
@@ -430,7 +429,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      *
      * @return the short month strings.
      */
-    public String @ArrayLen(13) [] getShortMonths() {
+    public String[] getShortMonths() {
         return Arrays.copyOf(shortMonths, shortMonths.length);
     }
 
@@ -438,7 +437,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      * Sets short month strings. For example: "Jan", "Feb", etc.
      * @param newShortMonths the new short month strings.
      */
-    public void setShortMonths(String @ArrayLen(13) [] newShortMonths) {
+    public void setShortMonths(String[] newShortMonths) {
         shortMonths = Arrays.copyOf(newShortMonths, newShortMonths.length);
         cachedHashCode = 0;
     }
@@ -448,7 +447,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      * @return the weekday strings. Use <code>Calendar.SUNDAY</code>,
      * <code>Calendar.MONDAY</code>, etc. to index the result array.
      */
-    public String @ArrayLen(8) [] getWeekdays() {
+    public String[] getWeekdays() {
         return Arrays.copyOf(weekdays, weekdays.length);
     }
 
@@ -458,7 +457,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      * be indexed by <code>Calendar.SUNDAY</code>,
      * <code>Calendar.MONDAY</code>, etc.
      */
-    public void setWeekdays(String @ArrayLen(8) [] newWeekdays) {
+    public void setWeekdays(String[] newWeekdays) {
         weekdays = Arrays.copyOf(newWeekdays, newWeekdays.length);
         cachedHashCode = 0;
     }
@@ -468,7 +467,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      * @return the short weekday strings. Use <code>Calendar.SUNDAY</code>,
      * <code>Calendar.MONDAY</code>, etc. to index the result array.
      */
-    public String @ArrayLen(8) [] getShortWeekdays() {
+    public String[] getShortWeekdays() {
         return Arrays.copyOf(shortWeekdays, shortWeekdays.length);
     }
 
@@ -478,7 +477,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      * be indexed by <code>Calendar.SUNDAY</code>,
      * <code>Calendar.MONDAY</code>, etc.
      */
-    public void setShortWeekdays(String @ArrayLen(8) [] newShortWeekdays) {
+    public void setShortWeekdays(String[] newShortWeekdays) {
         shortWeekdays = Arrays.copyOf(newShortWeekdays, newShortWeekdays.length);
         cachedHashCode = 0;
     }
@@ -487,7 +486,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      * Gets ampm strings. For example: "AM" and "PM".
      * @return the ampm strings.
      */
-    public String @ArrayLen(2) [] getAmPmStrings() {
+    public String[] getAmPmStrings() {
         return Arrays.copyOf(ampms, ampms.length);
     }
 
@@ -495,7 +494,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      * Sets ampm strings. For example: "AM" and "PM".
      * @param newAmpms the new ampm strings.
      */
-    public void setAmPmStrings(String @ArrayLen(2) [] newAmpms) {
+    public void setAmPmStrings(String[] newAmpms) {
         ampms = Arrays.copyOf(newAmpms, newAmpms.length);
         cachedHashCode = 0;
     }
@@ -538,7 +537,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      * @return the time zone strings.
      * @see #setZoneStrings(String[][])
      */
-    public String @ArrayLen(2) [] @MinLen(5) [] getZoneStrings() {
+    public String[][] getZoneStrings() {
         return getZoneStringsImpl(true);
     }
 
@@ -571,7 +570,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      * @exception NullPointerException if <code>newZoneStrings</code> is null
      * @see #getZoneStrings()
      */
-    public void setZoneStrings(String @ArrayLen(2) [] @MinLen(5) [] newZoneStrings) {
+    public void setZoneStrings(String[][] newZoneStrings) {
         String[][] aCopy = new String[newZoneStrings.length][];
         for (int i = 0; i < newZoneStrings.length; ++i) {
             int len = newZoneStrings[i].length;

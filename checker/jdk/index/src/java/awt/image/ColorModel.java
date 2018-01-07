@@ -30,6 +30,7 @@ import java.awt.color.ColorSpace;
 import java.awt.color.ICC_ColorSpace;
 
 import org.checkerframework.checker.index.qual.IndexFor;
+import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LengthOf;
 import org.checkerframework.checker.index.qual.NonNegative;
@@ -470,7 +471,7 @@ public abstract class ColorModel implements Transparency{
      * @throws NullPointerException if the number of bits array is
      *         <code>null</code>
      */
-    public int getComponentSize(@IndexFor("this") int componentIdx) {
+    public @NonNegative int getComponentSize(@IndexFor("this") int componentIdx) {
         // REMIND:
         if (nBits == null) {
             throw new NullPointerException("Number of bits array is null.");
@@ -486,7 +487,7 @@ public abstract class ColorModel implements Transparency{
      * present.
      * @return an array of the number of bits per color/alpha component
      */
-    public int[] getComponentSize() {
+    public @NonNegative int[] getComponentSize() {
         if (nBits != null) {
             return nBits.clone();
         }
@@ -525,7 +526,7 @@ public abstract class ColorModel implements Transparency{
      * <code>ColorModel</code>.
      * @see ColorSpace#getNumComponents
      */
-    public @LTEqLengthOf("this") int getNumColorComponents() {
+    public @IndexOrHigh("this") int getNumColorComponents() {
         return numColorComponents;
     }
 
@@ -969,7 +970,7 @@ public abstract class ColorModel implements Transparency{
      * @throws UnsupportedOperationException if this
      *          method is not supported by this <code>ColorModel</code>
      */
-    public int @SameLen("#2") @PolyValue [] getComponents(int pixel, int @PolyValue [] components, int offset) {
+    public @NonNegative int @SameLen("#2") [] getComponents(int pixel, int[] components, @IndexFor("#2") int offset) {
         throw new UnsupportedOperationException
             ("This method is not supported by this color model.");
     }
@@ -1011,7 +1012,7 @@ public abstract class ColorModel implements Transparency{
      * @throws UnsupportedOperationException if this
      *          method is not supported by this <code>ColorModel</code>
      */
-    public int @SameLen("#2") [] getComponents(Object pixel, int[] components, int offset) {
+    public @NonNegative int @SameLen("#2") [] getComponents(Object pixel, int[] components, @IndexFor("#2") int offset) {
         throw new UnsupportedOperationException
             ("This method is not supported by this color model.");
     }
@@ -1063,8 +1064,8 @@ public abstract class ColorModel implements Transparency{
      *          {@link #ColorModel(int)}.
      */
     public int @SameLen({"#1", "#3"}) [] getUnnormalizedComponents(float @SameLen({"#1", "#3"}) [] normComponents,
-                                           int normOffset,
-                                           int @SameLen({"#1", "#3"}) [] components, int offset) {
+                                           @IndexFor("#1") int normOffset,
+                                           int @SameLen({"#1", "#3"}) [] components, @IndexFor("#3") int offset) {
         // Make sure that someone isn't using a custom color model
         // that called the super(bits) constructor.
         if (colorSpace == null) {
@@ -1158,9 +1159,9 @@ public abstract class ColorModel implements Transparency{
      * @throws UnsupportedOperationException if this method is unable
      *          to determine the number of bits per component
      */
-    public float @SameLen({"#1", "#3"}) [] getNormalizedComponents(int @SameLen({"#1", "#3"}) [] components, int offset,
+    public float @SameLen({"#1", "#3"}) [] getNormalizedComponents(int @SameLen({"#1", "#3"}) [] components, @IndexFor("#1") int offset,
                                            float @SameLen({"#1", "#3"}) [] normComponents,
-                                           int normOffset) {
+                                           @IndexFor("#3") int normOffset) {
         // Make sure that someone isn't using a custom color model
         // that called the super(bits) constructor.
         if (colorSpace == null) {
@@ -1246,7 +1247,7 @@ public abstract class ColorModel implements Transparency{
      * @throws UnsupportedOperationException if this
      *  method is not supported by this <code>ColorModel</code>
      */
-    public int getDataElement(int[] components, int offset) {
+    public int getDataElement(int[] components, @IndexFor("#1") int offset) {
         throw new UnsupportedOperationException("This method is not supported "+
                                     "by this color model.");
     }
@@ -1443,7 +1444,7 @@ public abstract class ColorModel implements Transparency{
      */
     public float[] getNormalizedComponents(Object pixel,
                                            float[] normComponents,
-                                           @IndexFor("this") int normOffset) {
+                                           @IndexFor("#2") int normOffset) {
         int components[] = getComponents(pixel, null, 0);
         return getNormalizedComponents(components, 0,
                                        normComponents, normOffset);
