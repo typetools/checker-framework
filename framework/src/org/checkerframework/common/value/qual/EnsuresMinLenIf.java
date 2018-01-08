@@ -6,6 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.InheritedAnnotation;
+import org.checkerframework.framework.qual.QualifierArgument;
 
 /**
  * Indicates that the value of the given expression is a sequence containing at least the given
@@ -17,11 +18,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * @see MinLen
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
-@ConditionalPostconditionAnnotation(
-    qualifier = MinLen.class,
-    sourceArguments = "targetValue",
-    targetArguments = "value"
-)
+@ConditionalPostconditionAnnotation(qualifier = MinLen.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @InheritedAnnotation
@@ -38,5 +35,6 @@ public @interface EnsuresMinLenIf {
     boolean result();
 
     /** The minimum number of elements in the sequence. */
+    @QualifierArgument("value")
     int targetValue() default 0;
 }
