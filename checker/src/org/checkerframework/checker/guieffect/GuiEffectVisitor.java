@@ -1,23 +1,20 @@
 package org.checkerframework.checker.guieffect;
 
 import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.guieffect.qual.AlwaysSafe;
 import org.checkerframework.checker.guieffect.qual.PolyUI;
@@ -43,8 +40,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     protected final boolean debugSpew;
 
     // effStack and currentMethods should always be the same size.
-    protected final Stack<Effect> effStack;
-    protected final Stack<MethodTree> currentMethods;
+    protected final ArrayDeque<Effect> effStack;
+    protected final ArrayDeque<MethodTree> currentMethods;
 
     public GuiEffectVisitor(BaseTypeChecker checker) {
         super(checker);
@@ -52,8 +49,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         if (debugSpew) {
             System.err.println("Running GuiEffectVisitor");
         }
-        effStack = new Stack<Effect>();
-        currentMethods = new Stack<MethodTree>();
+        effStack = new ArrayDeque<Effect>();
+        currentMethods = new ArrayDeque<MethodTree>();
     }
 
     @Override
@@ -358,7 +355,6 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
                 atypeFactory.methodFromUse(node);
         AnnotatedExecutableType invokedMethod = mfuPair.first;
-        List<? extends VariableElement> parameters = methodElt.getParameters();
         List<AnnotatedTypeMirror> argsTypes =
                 AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());
         for (int i = 0; i < args.size(); ++i) {
@@ -436,46 +432,46 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
         // We hang onto the current method here for ease.  We back up the old
         // current method because this code is reentrant when we traverse methods of an inner class
-        currentMethods.push(node);
+        currentMethods.addFirst(node);
         // effStack.push(targetSafeP != null ? new Effect(AlwaysSafe.class) :
         //                (targetPolyP != null ? new Effect(PolyUI.class) :
         //                   (targetUIP != null ? new Effect(UI.class) :
         //                      (range != null ? range.min :
         // (isUIType(((TypeElement)methElt.getEnclosingElement())) ? new Effect(UI.class) : new
         // Effect(AlwaysSafe.class))))));
-        effStack.push(atypeFactory.getDeclaredEffect(methElt));
+        effStack.addFirst(atypeFactory.getDeclaredEffect(methElt));
         if (debugSpew) {
             System.err.println(
                     "Pushing " + effStack.peek() + " onto the stack when checking " + methElt);
         }
 
         Void ret = super.visitMethod(node, p);
-        currentMethods.pop();
-        effStack.pop();
+        currentMethods.removeFirst();
+        effStack.removeFirst();
         return ret;
     }
 
-    @Override
-    public Void visitMemberSelect(MemberSelectTree node, Void p) {
-        // TODO: Same effect checks as for methods
-        return super.visitMemberSelect(node, p);
-    }
+    // @Override
+    // public Void visitMemberSelect(MemberSelectTree node, Void p) {
+    // TODO: Same effect checks as for methods
+    // return super.visitMemberSelect(node, p);
+    // }
 
-    @Override
-    public void processClassTree(ClassTree node) {
-        // TODO: Check constraints on this class decl vs. parent class decl., and interfaces
-        // TODO: This has to wait for now: maybe this will be easier with the isValidUse on the
-        // TypeFactory
-        // AnnotatedTypeMirror.AnnotatedDeclaredType atype = atypeFactory.fromClass(node);
+    // @Override
+    // public void processClassTree(ClassTree node) {
+    // TODO: Check constraints on this class decl vs. parent class decl., and interfaces
+    // TODO: This has to wait for now: maybe this will be easier with the isValidUse on the
+    // TypeFactory
+    // AnnotatedTypeMirror.AnnotatedDeclaredType atype = atypeFactory.fromClass(node);
 
-        // Push a null method and UI effect onto the stack for static field initialization
-        // TODO: Figure out if this is safe! For static data, almost certainly,
-        // but for statically initialized instance fields, I'm assuming those
-        // are implicitly moved into each constructor, which must then be @UI
-        currentMethods.push(null);
-        effStack.push(new Effect(UIEffect.class));
-        super.processClassTree(node);
-        currentMethods.pop();
-        effStack.pop();
-    }
+    // Push a null method and UI effect onto the stack for static field initialization
+    // TODO: Figure out if this is safe! For static data, almost certainly,
+    // but for statically initialized instance fields, I'm assuming those
+    // are implicitly moved into each constructor, which must then be @UI
+    // currentMethods.addFirst(null);
+    // effStack.addFirst(new Effect(UIEffect.class));
+    // super.processClassTree(node);
+    // currentMethods.removeFirst();
+    // effStack.removeFirst();
+    // }
 }

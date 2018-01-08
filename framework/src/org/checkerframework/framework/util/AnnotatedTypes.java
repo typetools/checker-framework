@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -736,12 +735,6 @@ public class AnnotatedTypes {
         return types;
     }
 
-    /** @deprecated use AnnotatedTypeMirror.equals() */
-    @Deprecated // remove after release 2.2.3
-    public static boolean areSame(AnnotatedTypeMirror t1, AnnotatedTypeMirror t2) {
-        return t1.equals(t2);
-    }
-
     /**
      * Returns the depth of the array type of the provided array.
      *
@@ -777,7 +770,7 @@ public class AnnotatedTypes {
      * @return whether the type contains the modifier
      */
     public static boolean containsModifier(AnnotatedTypeMirror type, AnnotationMirror modifier) {
-        return containsModifierImpl(type, modifier, new LinkedList<AnnotatedTypeMirror>());
+        return containsModifierImpl(type, modifier, new ArrayList<AnnotatedTypeMirror>());
     }
 
     /*

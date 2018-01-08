@@ -453,8 +453,8 @@ public class DependentTypesHelper {
         return !annoToElements.isEmpty();
     }
     /**
-     * Standardizes an annotation. If the annotation is not an expression annotation, returns the
-     * same annotation unhanged.
+     * Standardizes an annotation. If the annotation is not a dependent type annotation, returns the
+     * same annotation unchanged.
      *
      * @param context information about any receiver and arguments
      * @param localScope path to local scope to use
@@ -470,11 +470,11 @@ public class DependentTypesHelper {
         if (!isExpressionAnno(anno)) {
             return anno;
         }
-        return standardizeExpressionAnnotation(context, localScope, anno, useLocalScope);
+        return standardizeDependentTypeAnnotation(context, localScope, anno, useLocalScope);
     }
 
-    /** Standardizes an annotation. If it is not an expression annotation, returns null. */
-    private AnnotationMirror standardizeAnnotationIfExpression(
+    /** Standardizes an annotation. If it is not a dependent type annotation, returns null. */
+    private AnnotationMirror standardizeAnnotationIfDependentType(
             FlowExpressionContext context,
             TreePath localScope,
             AnnotationMirror anno,
@@ -482,11 +482,11 @@ public class DependentTypesHelper {
         if (!isExpressionAnno(anno)) {
             return null;
         }
-        return standardizeExpressionAnnotation(context, localScope, anno, useLocalScope);
+        return standardizeDependentTypeAnnotation(context, localScope, anno, useLocalScope);
     }
 
-    /** Standardizes an expression annotation. */
-    private AnnotationMirror standardizeExpressionAnnotation(
+    /** Standardizes a dependent type annotation. */
+    private AnnotationMirror standardizeDependentTypeAnnotation(
             FlowExpressionContext context,
             TreePath localScope,
             AnnotationMirror anno,
@@ -550,7 +550,8 @@ public class DependentTypesHelper {
             List<AnnotationMirror> newAnnos = new ArrayList<>();
             for (AnnotationMirror anno : type.getAnnotations()) {
                 AnnotationMirror annotationMirror =
-                        standardizeAnnotationIfExpression(context, localScope, anno, useLocalScope);
+                        standardizeAnnotationIfDependentType(
+                                context, localScope, anno, useLocalScope);
                 if (annotationMirror != null) {
                     newAnnos.add(annotationMirror);
                 }

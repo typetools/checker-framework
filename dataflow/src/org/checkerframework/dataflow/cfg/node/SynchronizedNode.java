@@ -51,9 +51,10 @@ public class SynchronizedNode extends Node {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("synchronized ");
-        sb.append("(" + expression + ")");
+        StringBuilder sb = new StringBuilder();
+        sb.append("synchronized (");
+        sb.append(expression);
+        sb.append(")");
         return sb.toString();
     }
 

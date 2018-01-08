@@ -306,9 +306,7 @@ public class StubUtil {
         @Override
         public void visit(com.github.javaparser.ast.type.ArrayType n, Void arg) {
             n.getComponentType().accept(this, arg);
-            for (int i = 0; i < n.getArrayLevel(); ++i) {
-                sb.append("[]");
-            }
+            sb.append("[]");
         }
 
         @Override

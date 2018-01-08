@@ -8,6 +8,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -107,7 +108,15 @@ abstract class TargetedElementAnnotationApplier {
      *     not handled by handleTargeted or handleValid
      */
     protected void handleInvalid(List<Attribute.TypeCompound> invalid) {
-        if (!invalid.isEmpty()) {
+        List<Attribute.TypeCompound> remaining = new ArrayList<>(invalid.size());
+        for (Attribute.TypeCompound tc : invalid) {
+            if (tc.getAnnotationType().getKind() != TypeKind.ERROR) {
+                // Filter out annotations that have an error type. javac will
+                // already have raised an error for them.
+                remaining.add(tc);
+            }
+        }
+        if (!remaining.isEmpty()) {
             ErrorReporter.errorAbort(
                     this.getClass().getName()
                             + ".handleInvalid: "
@@ -119,7 +128,7 @@ abstract class TargetedElementAnnotationApplier {
                             + " (kind: "
                             + element.getKind()
                             + "), invalid annotations: "
-                            + PluginUtil.join(", ", invalid)
+                            + PluginUtil.join(", ", remaining)
                             + "\n"
                             + "Targeted annotations: "
                             + PluginUtil.join(", ", annotatedTargets())

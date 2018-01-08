@@ -6,8 +6,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.util.HashCodeUtils;
@@ -74,7 +74,7 @@ public class ArrayCreationNode extends Node {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("new " + type);
         if (!dimensions.isEmpty()) {
             boolean needComma = false;
@@ -128,7 +128,7 @@ public class ArrayCreationNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        LinkedList<Node> list = new LinkedList<Node>();
+        ArrayList<Node> list = new ArrayList<Node>(dimensions.size() + initializers.size());
         list.addAll(dimensions);
         list.addAll(initializers);
         return list;

@@ -1,0 +1,11 @@
+# Configuration file for lgtm.com
+# Results at:
+# https://lgtm.com/projects/g/typetools/checker-framework
+
+extraction:
+  java:
+    before_index:
+      - bash .travis-build-without-test.sh downloadjdk
+      - ant -f checker/build.xml clean-nocleanjdk
+    index:
+      build_command: ant dist-nobuildjdk

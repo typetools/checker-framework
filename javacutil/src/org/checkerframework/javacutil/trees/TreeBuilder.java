@@ -109,14 +109,17 @@ public class TreeBuilder {
         Type.MethodType methodType = (Type.MethodType) iteratorMethod.asType();
         Symbol.TypeSymbol methodClass = methodType.asElement();
         DeclaredType iteratorType = (DeclaredType) methodType.getReturnType();
-        TypeMirror elementType;
+        iteratorType =
+                (DeclaredType)
+                        javacTypes.asSuper((Type) iteratorType, symtab.iteratorType.asElement());
 
-        if (iteratorType.getTypeArguments().size() > 0) {
-            elementType = iteratorType.getTypeArguments().get(0);
-            // Remove captured type from a wildcard.
-            if (elementType instanceof Type.CapturedType) {
-                elementType = ((Type.CapturedType) elementType).wildcard;
-            }
+        assert iteratorType.getTypeArguments().size() == 1
+                : "expected exactly one type argument for Iterator";
+
+        TypeMirror elementType = iteratorType.getTypeArguments().get(0);
+        // Remove captured type from a wildcard.
+        if (elementType instanceof Type.CapturedType) {
+            elementType = ((Type.CapturedType) elementType).wildcard;
 
             iteratorType =
                     modelTypes.getDeclaredType(

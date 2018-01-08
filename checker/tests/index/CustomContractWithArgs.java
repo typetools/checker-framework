@@ -1,49 +1,48 @@
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
+import org.checkerframework.framework.qual.JavaExpression;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
+import org.checkerframework.framework.qual.QualifierArgument;
 
 public class CustomContractWithArgs {
     // Postcondition for MinLen
-    @PostconditionAnnotation(
-        qualifier = MinLen.class,
-        sourceArguments = "targetValue",
-        targetArguments = "value"
-    )
+    @PostconditionAnnotation(qualifier = MinLen.class)
     @interface EnsuresMinLen {
         public String[] value();
 
+        @QualifierArgument("value")
         public int targetValue();
     }
 
     // Conditional postcondition for LTLengthOf
-    @ConditionalPostconditionAnnotation(
-        qualifier = LTLengthOf.class,
-        sourceArguments = {"targetValue", "targetOffset"},
-        targetArguments = {"value", "offset"}
-    )
+    @ConditionalPostconditionAnnotation(qualifier = LTLengthOf.class)
     @interface EnsuresLTLIf {
         public boolean result();
 
         public String[] expression();
 
+        @JavaExpression
+        @QualifierArgument("value")
         public String[] targetValue();
 
+        @JavaExpression
+        @QualifierArgument("offset")
         public String[] targetOffset();
     }
 
     //Precondition for LTLengthOf
-    @PreconditionAnnotation(
-        qualifier = LTLengthOf.class,
-        sourceArguments = {"targetValue", "targetOffset"},
-        targetArguments = {"value", "offset"}
-    )
+    @PreconditionAnnotation(qualifier = LTLengthOf.class)
     @interface RequiresLTL {
         public String[] value();
 
+        @JavaExpression
+        @QualifierArgument("value")
         public String[] targetValue();
 
+        @JavaExpression
+        @QualifierArgument("offset")
         public String[] targetOffset();
     }
 
@@ -105,7 +104,7 @@ public class CustomContractWithArgs {
             @LTLengthOf(value = "a", offset = "c+1") int j = b;
         }
     }
-    /* TODO: enable test
+
     class Derived extends Base {
         public int x;
 
@@ -131,7 +130,7 @@ public class CustomContractWithArgs {
                 value = {"a", "a"},
                 offset = {"d+1", "-10"}
             )
-            //// :: error: (assignment.type.incompatible)
+            // :: error: (assignment.type.incompatible)
             int i = b;
         }
     }
@@ -146,9 +145,9 @@ public class CustomContractWithArgs {
             targetOffset = {"#2 + 1", "9"},
             result = true
         )
-        //// :: error: (contracts.conditional.postcondition.true.override.invalid)
+        // :: error: (contracts.conditional.postcondition.true.override.invalid)
         boolean ltlPost(int[] a, int c) {
-            //// :: error: (contracts.conditional.postcondition.not.satisfied)
+            // :: error: (contracts.conditional.postcondition.not.satisfied)
             return true;
         }
 
@@ -158,7 +157,7 @@ public class CustomContractWithArgs {
             targetValue = {"#1", "#1"},
             targetOffset = {"#2 + 1", "-9"}
         )
-        //// :: error: (contracts.precondition.override.invalid)
+        // :: error: (contracts.precondition.override.invalid)
         void ltlPre(int[] a, int d) {
             @LTLengthOf(
                 value = {"a", "a"},
@@ -167,5 +166,4 @@ public class CustomContractWithArgs {
             int i = b;
         }
     }
-    */
 }
