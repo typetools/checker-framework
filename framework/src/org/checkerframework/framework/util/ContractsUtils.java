@@ -11,6 +11,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.util.ElementFilter;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
@@ -18,6 +19,7 @@ import org.checkerframework.framework.qual.EnsuresQualifiers;
 import org.checkerframework.framework.qual.EnsuresQualifiersIf;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
+import org.checkerframework.framework.qual.QualifierArgument;
 import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.qual.RequiresQualifiers;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -272,30 +274,32 @@ public class ContractsUtils {
         return getAnnotationMirrorOfQualifier(contractAnno, null, null);
     }
     /**
-     * Makes a map from source argument names to target argument names. Each argument name in {@code
-     * sourceArgumentNames} is mapped to the name at the same index in {@code targetArgumentNames}.
-     * If {@code targetArgumentNames} is shorter than {@code sourceArgumentNames}, then the
-     * arguments that do not have a corresponding entry in {@code targetArgumentNames} are mapped to
-     * an argument of the same name.
+     * Makes a map from source element names to target element names. Each element of {@code
+     * contractAnnoElement} that is annotated by {@link QualifierArgument} is mapped to the name
+     * specified by the value of {@link QualifierArgument}. If the value is not specified or is an
+     * empty string, then the element is mapped to an element of the same name.
      *
-     * @param sourceArgumentNames list of argument names in the source annotation
-     * @param targetArgumentNames list of argument names in the target annotation, where each name
-     *     corresponds to the source argument name at the same index in {@code sourceArgumentNames}
-     * @return map from the names in {@code sourceArgumentNames} to the corresponding target
-     *     argument names
+     * @param contractAnnoElement the declaration of the contract annotation containing the source
+     *     elements
+     * @return map from the names of elements of {@code sourceArgumentNames} to the corresponding
+     *     target element names
      */
-    private Map<String, String> makeArgumentMap(
-            List<String> sourceArgumentNames, List<String> targetArgumentNames) {
+    private Map<String, String> makeArgumentMap(Element contractAnnoElement) {
         HashMap<String, String> argumentMap = new HashMap<>();
-        for (int i = 0; i < sourceArgumentNames.size(); ++i) {
-            String sourceName = sourceArgumentNames.get(i);
-            String targetName;
-            if (i < targetArgumentNames.size()) {
-                targetName = targetArgumentNames.get(i);
-            } else {
-                targetName = sourceName;
+        for (ExecutableElement meth :
+                ElementFilter.methodsIn(contractAnnoElement.getEnclosedElements())) {
+            AnnotationMirror argumentAnnotation =
+                    factory.getDeclAnnotationNoAliases(meth, QualifierArgument.class);
+            if (argumentAnnotation != null) {
+                String sourceName = meth.getSimpleName().toString();
+                String targetName =
+                        AnnotationUtils.getElementValue(
+                                argumentAnnotation, "value", String.class, false);
+                if (targetName == null || targetName.isEmpty()) {
+                    targetName = sourceName;
+                }
+                argumentMap.put(sourceName, targetName);
             }
-            argumentMap.put(sourceName, targetName);
         }
         return argumentMap;
     }
@@ -307,13 +311,8 @@ public class ContractsUtils {
     private AnnotationMirror getAnnotationMirrorOfMetaAnnotation(
             AnnotationMirror metaAnno, AnnotationMirror argumentAnno) {
 
-        List<String> sourceArgumentNames =
-                AnnotationUtils.getElementValueArray(
-                        metaAnno, "sourceArguments", String.class, true);
-        List<String> targetArgumentNames =
-                AnnotationUtils.getElementValueArray(
-                        metaAnno, "targetArguments", String.class, true);
-        Map<String, String> argumentMap = makeArgumentMap(sourceArgumentNames, targetArgumentNames);
+        Map<String, String> argumentMap =
+                makeArgumentMap(argumentAnno.getAnnotationType().asElement());
         return getAnnotationMirrorOfQualifier(metaAnno, argumentAnno, argumentMap);
     }
 

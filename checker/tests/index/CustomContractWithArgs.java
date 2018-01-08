@@ -4,51 +4,45 @@ import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.JavaExpression;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
+import org.checkerframework.framework.qual.QualifierArgument;
 
 public class CustomContractWithArgs {
     // Postcondition for MinLen
-    @PostconditionAnnotation(
-        qualifier = MinLen.class,
-        sourceArguments = "targetValue",
-        targetArguments = "value"
-    )
+    @PostconditionAnnotation(qualifier = MinLen.class)
     @interface EnsuresMinLen {
         public String[] value();
 
+        @QualifierArgument("value")
         public int targetValue();
     }
 
     // Conditional postcondition for LTLengthOf
-    @ConditionalPostconditionAnnotation(
-        qualifier = LTLengthOf.class,
-        sourceArguments = {"targetValue", "targetOffset"},
-        targetArguments = {"value", "offset"}
-    )
+    @ConditionalPostconditionAnnotation(qualifier = LTLengthOf.class)
     @interface EnsuresLTLIf {
         public boolean result();
 
         public String[] expression();
 
         @JavaExpression
+        @QualifierArgument("value")
         public String[] targetValue();
 
         @JavaExpression
+        @QualifierArgument("offset")
         public String[] targetOffset();
     }
 
     //Precondition for LTLengthOf
-    @PreconditionAnnotation(
-        qualifier = LTLengthOf.class,
-        sourceArguments = {"targetValue", "targetOffset"},
-        targetArguments = {"value", "offset"}
-    )
+    @PreconditionAnnotation(qualifier = LTLengthOf.class)
     @interface RequiresLTL {
         public String[] value();
 
         @JavaExpression
+        @QualifierArgument("value")
         public String[] targetValue();
 
         @JavaExpression
+        @QualifierArgument("offset")
         public String[] targetOffset();
     }
 
