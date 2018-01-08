@@ -365,8 +365,7 @@ class Calendar {
     public @IntRange(from = 1, to = 7) int getFirstDayOfWeek();
     public void setFirstDayOfWeek(@IntRange(from = 1, to = 7) int value);
     public @IntRange(from = 1, to = 7) int getMinimalDaysInFirstWeek();
-    public void setMinimalDaysInFirstWeek(@IntRange(from = 1, to = 7) int value) {
-
+    public void setMinimalDaysInFirstWeek(@IntRange(from = 1, to = 7) int value);
 }
 
 package java.awt.image;
@@ -393,6 +392,4 @@ class DateFormatSymbols {
     public void setAmPmStrings(String @ArrayLen(2) [] newAmpms);
     public String @ArrayLen(2) [] @MinLen(5) [] getZoneStrings();
     public void setZoneStrings(String @ArrayLen(2) [] @MinLen(5) [] newZoneStrings);
-
-
 }
