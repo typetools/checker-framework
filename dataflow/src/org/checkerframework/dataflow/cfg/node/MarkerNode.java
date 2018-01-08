@@ -47,9 +47,10 @@ public class MarkerNode extends Node {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("marker ");
-        sb.append("(" + message + ")");
+        StringBuilder sb = new StringBuilder();
+        sb.append("marker (");
+        sb.append(message);
+        sb.append(")");
         return sb.toString();
     }
 

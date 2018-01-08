@@ -2,8 +2,8 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.Tree.Kind;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -85,7 +85,7 @@ public class TernaryExpressionNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        LinkedList<Node> list = new LinkedList<Node>();
+        ArrayList<Node> list = new ArrayList<Node>(3);
         list.add(getConditionOperand());
         list.add(getThenOperand());
         list.add(getElseOperand());
