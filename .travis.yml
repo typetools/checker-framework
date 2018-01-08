@@ -36,6 +36,7 @@ before_script:
 
 # Using travis_wait here seems to cause the job to terminate after 1 minute
 # with no error (!).
+# The git commands are tried twice, in case of temporary network failure.
 # The fcntl line works around a bug where Travis truncates logs and fails.
 script:
 - python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
