@@ -90,7 +90,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   fi
   set -e
   echo "Running:  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
-  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)
+  (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git) || (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)
   echo "... done: (cd .. && git clone --depth 1 https://github.com/${CFISLUGOWNER}/checker-framework-inference.git)"
 
   export AFU=`pwd`/../annotation-tools/annotation-file-utilities
@@ -108,7 +108,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   fi
   set -e
   echo "Running:  (cd .. && git clone --depth 1 https://github.com/${PLSLUGOWNER}/plume-lib.git)"
-  (cd .. && git clone https://github.com/${PLSLUGOWNER}/plume-lib.git)
+  (cd .. && git clone https://github.com/${PLSLUGOWNER}/plume-lib.git) || (cd .. && git clone https://github.com/${PLSLUGOWNER}/plume-lib.git)
   echo "... done: (cd .. && git clone --depth 1 https://github.com/${PLSLUGOWNER}/plume-lib.git)"
 
   export CHECKERFRAMEWORK=`pwd`
