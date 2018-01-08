@@ -8,6 +8,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.JavaExpression;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
+import org.checkerframework.framework.qual.QualifierArgument;
 
 /**
  * Indicates that the value expressions evaluate to an integer whose value is less than the lengths
@@ -20,11 +21,7 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-@PostconditionAnnotation(
-    qualifier = LTLengthOf.class,
-    sourceArguments = {"targetValue", "offset"},
-    targetArguments = {"value, offset"}
-)
+@PostconditionAnnotation(qualifier = LTLengthOf.class)
 @InheritedAnnotation
 public @interface EnsuresLTLengthOf {
     /**
@@ -40,7 +37,8 @@ public @interface EnsuresLTLengthOf {
      * method termination.
      */
     @JavaExpression
-    public String[] targetValue();
+    @QualifierArgument("value")
+    String[] targetValue();
 
     /**
      * This expression plus each of the value expressions is less than the length of the sequence on
@@ -48,5 +46,6 @@ public @interface EnsuresLTLengthOf {
      * length as {@code targetValue}.
      */
     @JavaExpression
+    @QualifierArgument("offset")
     String[] offset() default {};
 }
