@@ -20,11 +20,39 @@ import java.lang.annotation.Target;
  * <p>Additionally, the elements of the postcondition annotation (annotated by this meta-annotation)
  * can be used to specify values of arguments of the qualifier. Each such element must be annotated
  * by {@link QualifierArgument}, with a value specifying the name of the target qualifier argument.
- * If no value is not specified, the name of the element is used. The element must have the same
- * type as the element with the specified name in the qualifier annotation.
+ * If no value is specified, the name of the element is used. The element must have the same type as
+ * the element with the specified name in the qualifier annotation.
+ *
+ * <p>* For example, the following code declares a postcondition annotation for the {@link
+ * org.checkerframework.common.value.qual.MinLen} qualifier:
+ *
+ * <pre><code>
+ * {@literal @}ConditionalPostconditionAnnotation(qualifier = MinLen.class)
+ * {@literal @}Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+ * public {@literal @}interface EnsuresMinLen {
+ *   String[] expression();
+ *   boolean result();
+ *   {@literal @}QualifierArgument("value")
+ *   int targetValue() default 0;
+ * </code></pre>
+ *
+ * The {@code expression} element holds the expressions to which the qualifier applies and {@code
+ * targetValue} holds the value for the {@code value} argument of {@link
+ * org.checkerframework.common.value.qual.MinLen}.
+ *
+ * <p>The following code then uses the annotation on a method that ensures {@code field} to be
+ * {@code @MinLen(4)} upon returning {@code true}.
+ *
+ * <pre><code>
+ * {@literal @}EnsuresMinLenIf(expression = "field", result = true, targetValue = 4")
+ * public boolean isFieldBool(){
+ *   return field == "true" || field == "false";
+ * }
+ * </code></pre>
  *
  * @author Stefan Heule
  * @see EnsuresQualifier
+ * @see QualifierArgument
  */
 @Target({ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
