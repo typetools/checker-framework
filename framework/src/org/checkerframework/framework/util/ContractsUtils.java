@@ -230,6 +230,10 @@ public class ContractsUtils {
      * qualifierAnno}. If {@code argumentAnno} is specified, then arguments are copied from {@code
      * argumentAnno} to the returned annotation, renamed according to {@code argumentMap}.
      *
+     * <p>This is a helper method intended to be called from {@link
+     * getAnnotationMirrorOfContractAnnotation} and {@link getAnnotationMirrorOfMetaAnnotation}. Use
+     * one of those methods if possible.
+     *
      * @param qualifierAnno annotation specifying the qualifier class
      * @param argumentAnno annotation containing the argument values, or {@code null}
      * @param argumentRenaming renaming of argument names, which maps from names in {@code
