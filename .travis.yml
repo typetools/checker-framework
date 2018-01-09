@@ -60,7 +60,6 @@ script:
        cd $THIS_REPO
        git fetch origin +refs/pull/$TRAVIS_PULL_REQUEST/merge
        git checkout -qf $TRAVIS_PULL_REQUEST_SHA
-       git checkout -qf FETCH_HEAD
        git config user.email noone@cares.com
        git config user.name Noone Cares
        git remote add theupstream https://github.com/$TRAVIS_REPO_SLUG.git
