@@ -30,7 +30,6 @@ env:
 #  - BUILDJDK=buildjdk JDKVER=jdk9 GROUP=downstream
 #  - BUILDJDK=buildjdk JDKVER=jdkany GROUP=misc
 
-
 # The "docker run" command will pull if needed.
 # Running this first gives two tries in case of network lossage.
 before_script:
