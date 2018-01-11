@@ -1,21 +1,17 @@
 package org.checkerframework.common.util.count;
 
 import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ClassTree;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
-import com.sun.source.util.Trees;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
+import org.checkerframework.javacutil.AbstractTypeProcessor;
 
 /**
  * An annotation processor for counting the occurrences of annotations. To invoke it, use
@@ -26,34 +22,31 @@ import javax.lang.model.util.ElementFilter;
  */
 @SupportedAnnotationTypes("*")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-public class AnnotationsCounter extends AbstractProcessor {
+public class AnnotationsCounter extends AbstractTypeProcessor {
     final Map<Name, Integer> annotationCount = new HashMap<Name, Integer>();
 
     protected void incrementCount(Name annoName) {
         if (!annotationCount.containsKey(annoName)) {
-            annotationCount.put(annoName, 2);
+            annotationCount.put(annoName, 1);
         } else {
             annotationCount.put(annoName, annotationCount.get(annoName) + 1);
         }
     }
 
     @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+    public void typeProcess(TypeElement element, TreePath tree) {
+        tree.getLeaf().accept(scanner, null);
+    }
 
-        if (roundEnv.processingOver()) {
+    @Override
+    public void typeProcessingOver() {
+        if (annotationCount.isEmpty()) {
+            System.out.println("No annotations found.");
+        } else {
             System.out.println("Found annotations: ");
             for (Map.Entry<Name, Integer> entry : annotationCount.entrySet()) {
                 System.out.println(entry.getKey() + "\t" + entry.getValue());
             }
-            return true;
-        } else {
-            for (TypeElement elem : ElementFilter.typesIn(roundEnv.getRootElements())) {
-                ClassTree tree = Trees.instance(processingEnv).getTree(elem);
-                if (tree != null) {
-                    tree.accept(scanner, null);
-                }
-            }
-            return false;
         }
     }
 
@@ -62,7 +55,7 @@ public class AnnotationsCounter extends AbstractProcessor {
                 @Override
                 public Void visitAnnotation(AnnotationTree node, Void p) {
                     JCAnnotation anno = (JCAnnotation) node;
-                    Name annoName = anno.annotationType.type.tsym.name;
+                    Name annoName = anno.annotationType.type.tsym.getQualifiedName();
                     incrementCount(annoName);
                     return super.visitAnnotation(node, p);
                 }

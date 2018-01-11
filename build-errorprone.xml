@@ -27,11 +27,14 @@
            dest="${errorprone.home}/../"
            compression="gzip" />
 
-    <exec executable="mvn" dir="${errorprone.home}" failonerror="true">
-      <arg value="-q"/>
-      <arg value="package"/>
-      <arg value="-Dmaven.test.skip=true"/>
-    </exec>
+    <!-- Maven downloads lots of data, so use <retry> to work around network lossage. -->
+    <retry retrycount="3">
+      <exec executable="mvn" dir="${errorprone.home}" failonerror="true">
+	<arg value="-q"/>
+	<arg value="package"/>
+	<arg value="-Dmaven.test.skip=true"/>
+      </exec>
+    </retry>
   </target>
 
   <target name="check-errorprone" depends="-errorprone.download"

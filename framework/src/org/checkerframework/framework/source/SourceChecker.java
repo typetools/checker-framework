@@ -1918,10 +1918,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * checker.skipUses} property. In contrast to {@link #shouldSkipUses(Element)} this version can
      * also be used from primitive types, which don't have an element.
      *
+     * <p>Checkers that require their annotations not to be checked on certain JDK classes may
+     * override this method to skip them. They shall call {@code super.shouldSkipUses(typerName)} to
+     * also skip the classes matching the pattern.
+     *
      * @param typeName the fully-qualified name of a type
      * @return true iff the enclosing class of element should be skipped
      */
-    public final boolean shouldSkipUses(String typeName) {
+    public boolean shouldSkipUses(String typeName) {
         // System.out.printf("shouldSkipUses(%s) %s%nskipUses %s%nonlyUses %s%nresult %s%n",
         //                   element,
         //                   name,
