@@ -30,9 +30,10 @@ env:
 #  - BUILDJDK=buildjdk JDKVER=jdk9 GROUP=downstream
 #  - BUILDJDK=buildjdk JDKVER=jdkany GROUP=misc
 
-
+# The "docker run" command will pull if needed.
+# Running this first gives two tries in case of network lossage.
 before_script:
-- docker pull mdernst/$OS-for-cf-$JDKVER > /dev/null 2>&1 || true
+- timeout 5m docker pull mdernst/$OS-for-cf-$JDKVER || true
 
 # Using travis_wait here seems to cause the job to terminate after 1 minute
 # with no error (!).
@@ -60,7 +61,6 @@ script:
        cd $THIS_REPO
        git fetch origin +refs/pull/$TRAVIS_PULL_REQUEST/merge
        git checkout -qf $TRAVIS_PULL_REQUEST_SHA
-       git checkout -qf FETCH_HEAD
        git config user.email noone@cares.com
        git config user.name Noone Cares
        git remote add theupstream https://github.com/$TRAVIS_REPO_SLUG.git
