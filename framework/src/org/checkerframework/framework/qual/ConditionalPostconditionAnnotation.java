@@ -45,7 +45,7 @@ import java.lang.annotation.Target;
  *
  * <pre><code>
  * {@literal @}EnsuresMinLenIf(expression = "field", result = true, targetValue = 4")
- * public boolean isFieldBool(){
+ * public boolean isFieldBool() {
  *   return field == "true" || field == "false";
  * }
  * </code></pre>
