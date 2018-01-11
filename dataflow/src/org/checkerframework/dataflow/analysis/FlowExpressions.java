@@ -1088,13 +1088,18 @@ public class FlowExpressions {
             return initializers;
         }
 
+        @SuppressWarnings("EqualsIncompatibleType")
         @Override
-        public boolean containsOfClass(Class<? extends Receiver> clazz) {
+        public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
             for (Node n : dimensions) {
-                if (n.getClass().equals(clazz)) return true;
+                if (n.getClass().equals(clazz)) {
+                    return true;
+                }
             }
             for (Node n : initializers) {
-                if (n.getClass().equals(clazz)) return true;
+                if (n.getClass().equals(clazz)) {
+                    return true;
+                }
             }
             return false;
         }
