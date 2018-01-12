@@ -452,8 +452,9 @@ public class DependentTypesHelper {
     public boolean hasDependentAnnotations() {
         return !annoToElements.isEmpty();
     }
+
     /**
-     * Standardizes java expressions in an annotation. If the annotation is not a dependent type
+     * Standardizes Java expressions in an annotation. If the annotation is not a dependent type
      * annotation, returns the same annotation unchanged.
      *
      * @param context information about any receiver and arguments

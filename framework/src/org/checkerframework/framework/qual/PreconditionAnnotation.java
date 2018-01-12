@@ -7,20 +7,20 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A meta-annotation that indicates that an annotation is a precondition annotation, i.e., a
- * type-specialized version of {@link RequiresQualifier}. The annotation that is annotated as {@link
- * PreconditionAnnotation} must have a value called {@code value} that is an array of {@code
- * String}s of the same format and with the same meaning as the value {@code expression} in {@link
- * RequiresQualifier}.
+ * A meta-annotation that indicates that an annotation R is a precondition annotation, i.e., R is a
+ * type-specialized version of {@link RequiresQualifier}. The value {@code qualifier} that is
+ * necessary for a precondition specified with {@link RequiresQualifier} is specified here with the
+ * value {@code qualifier}.
  *
- * <p>The value {@code qualifier} that is necessary for a precondition specified with {@link
- * RequiresQualifier} is hard-coded here with the value {@code qualifier}.
+ * <p>The annotation R that is meta-annotated as {@link PreconditionAnnotation} must have an element
+ * called {@code value} that is an array of {@code String}s of the same format and with the same
+ * meaning as the value {@code expression} in {@link RequiresQualifier}.
  *
- * <p>Additionally, the elements of the precondition annotation (annotated by this meta-annotation)
- * can be used to specify values of arguments of the qualifier. Each such element must be annotated
- * by {@link QualifierArgument}, with a value specifying the name of the target qualifier argument.
- * If no value is specified, the name of the element is used. The element must have the same type as
- * the element with the specified name in the qualifier annotation.
+ * <p>The established precondition P has type specified by the {@code qualifier} field of this
+ * annotation. If the annotation P has arguments (elements), their values are copied from the
+ * elements of annotation R with the same names. Different element names may be used in R and P, if
+ * the element in R is annotated by {@link QualifierArgument} which gives the corresponding element
+ * in P.
  *
  * <p>For example, the following code declares a precondition annotation for the {@link
  * org.checkerframework.common.value.qual.MinLen} qualifier:
@@ -55,6 +55,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PreconditionAnnotation {
-    /** The hard-coded qualifier for the precondition. */
+    /** The qualifier that must be established as a precondition. */
     Class<? extends Annotation> qualifier();
 }

@@ -226,7 +226,7 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns the annotation mirror as specified by the value of the "qualifier" element in {@code
+     * Returns the annotation mirror as specified by the "qualifier" element in {@code
      * qualifierAnno}. If {@code argumentAnno} is specified, then arguments are copied from {@code
      * argumentAnno} to the returned annotation, renamed according to {@code argumentMap}.
      *
@@ -270,13 +270,16 @@ public class ContractsUtils {
             }
         }
     }
+
     /**
-     * Returns the annotation mirror as specified by the "qualifier" value in {@code contractAnno}.
+     * Returns the annotation mirror as specified by the "qualifier" element in {@code
+     * contractAnno}.
      */
     private AnnotationMirror getAnnotationMirrorOfContractAnnotation(
             AnnotationMirror contractAnno) {
         return getAnnotationMirrorOfQualifier(contractAnno, null, null);
     }
+
     /**
      * Makes a map from element names of a contract annotation to qualifier argument names, as
      * defined by {@link QualifierArgument}.
@@ -312,8 +315,8 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns the annotation mirror as specified by the "qualifier" value in {@code metaAnno}, with
-     * arguments taken from {@code argumentAnno}.
+     * Returns the annotation mirror as specified by the "qualifier" element in {@code metaAnno},
+     * with arguments taken from {@code argumentAnno}.
      */
     private AnnotationMirror getAnnotationMirrorOfMetaAnnotation(
             AnnotationMirror metaAnno, AnnotationMirror argumentAnno) {
