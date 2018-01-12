@@ -17,10 +17,10 @@ import java.lang.annotation.Target;
  * meaning as the value {@code expression} in {@link RequiresQualifier}.
  *
  * <p>The established precondition P has type specified by the {@code qualifier} field of this
- * annotation. If the annotation P has arguments (elements), their values are copied from the
- * elements of annotation R with the same names. Different element names may be used in R and P, if
- * the element in R is annotated by {@link QualifierArgument} which gives the corresponding element
- * in P.
+ * annotation. If the annotation R has elements annotated by {@link QualifierArgument}, their values
+ * are copied to the arguments (elements) of annotation P with the same names. Different element
+ * names may be used in R and P, if a {@link QualifierArgument} in R gives the name of the
+ * corresponding element in P.
  *
  * <p>For example, the following code declares a precondition annotation for the {@link
  * org.checkerframework.common.value.qual.MinLen} qualifier:

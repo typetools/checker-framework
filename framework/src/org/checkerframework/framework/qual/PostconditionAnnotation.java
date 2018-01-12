@@ -17,10 +17,10 @@ import java.lang.annotation.Target;
  * same meaning as the value {@code expression} in {@link EnsuresQualifier}.
  *
  * <p>The established postcondition P has type specified by the {@code qualifier} field of this
- * annotation. If the annotation P has arguments (elements), their values are copied from the
- * elements of annotation E with the same names. Different element names may be used in E and P, if
- * the element in E is annotated by {@link QualifierArgument} which gives the corresponding element
- * in P.
+ * annotation. If the annotation E has elements annotated by {@link QualifierArgument}, their values
+ * are copied to the arguments (elements) of annotation P with the same names. Different element
+ * names may be used in E and P, if a {@link QualifierArgument} in E gives the name of the
+ * corresponding element in P.
  *
  * <p>For example, the following code declares a postcondition annotation for the {@link
  * org.checkerframework.common.value.qual.MinLen} qualifier:
