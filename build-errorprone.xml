@@ -48,6 +48,8 @@
       <compilerarg value="-Xep:ReferenceEquality:OFF"/>
       <!-- These might be worth fixing. -->
       <compilerarg value="-Xep:DefaultCharset:OFF"/>
+      <!-- Not useful to suggest Splitter; maybe clean up. -->
+      <compilerarg value="-Xep:StringSplitter:OFF"/>
       <compilerarg value="-Werror"/>
     </javac>
 
