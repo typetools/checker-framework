@@ -7,6 +7,7 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
@@ -151,7 +152,15 @@ public class FlowExpressions {
             receiver = new ValueLiteral(vn.getType(), vn);
         } else if (receiverNode instanceof ArrayCreationNode) {
             ArrayCreationNode an = (ArrayCreationNode) receiverNode;
-            receiver = new ArrayCreation(an.getType(), an.getDimensions(), an.getInitializers());
+            List<Receiver> dimensions = new ArrayList<>();
+            for (Node dimension : an.getDimensions()) {
+                dimensions.add(internalReprOf(provider, dimension, allowNonDeterministic));
+            }
+            List<Receiver> initializers = new ArrayList<>();
+            for (Node initializer : an.getInitializers()) {
+                initializers.add(internalReprOf(provider, initializer, allowNonDeterministic));
+            }
+            receiver = new ArrayCreation(an.getType(), dimensions, initializers);
         } else if (receiverNode instanceof MethodInvocationNode) {
             MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn.getTree());
@@ -253,11 +262,23 @@ public class FlowExpressions {
                 receiver = new ValueLiteral(TreeUtils.typeOf(receiverTree), vn.getValue());
                 break;
             case NEW_ARRAY:
+                NewArrayTree newArrayTree = (NewArrayTree) receiverTree;
+                List<Receiver> dimensions = new ArrayList<>();
+                if (newArrayTree.getDimensions() != null) {
+                    for (ExpressionTree dimension : newArrayTree.getDimensions()) {
+                        dimensions.add(internalReprOf(provider, dimension, allowNonDeterministic));
+                    }
+                }
+                List<Receiver> initializers = new ArrayList<>();
+                if (newArrayTree.getInitializers() != null) {
+                    for (ExpressionTree initializer : newArrayTree.getInitializers()) {
+                        initializers.add(
+                                internalReprOf(provider, initializer, allowNonDeterministic));
+                    }
+                }
+
                 receiver =
-                        new ArrayCreation(
-                                TreeUtils.typeOf(receiverTree),
-                                Collections.emptyList(),
-                                Collections.emptyList());
+                        new ArrayCreation(TreeUtils.typeOf(receiverTree), dimensions, initializers);
                 break;
             case METHOD_INVOCATION:
                 MethodInvocationTree mn = (MethodInvocationTree) receiverTree;
@@ -1071,31 +1092,32 @@ public class FlowExpressions {
 
     public static class ArrayCreation extends Receiver {
 
-        protected final List<Node> dimensions;
-        protected final List<Node> initializers;
+        protected final List<Receiver> dimensions;
+        protected final List<Receiver> initializers;
 
-        public ArrayCreation(TypeMirror type, List<Node> dimensions, List<Node> initializers) {
+        public ArrayCreation(
+                TypeMirror type, List<Receiver> dimensions, List<Receiver> initializers) {
             super(type);
             this.dimensions = dimensions;
             this.initializers = initializers;
         }
 
-        public List<Node> getDimensions() {
+        public List<Receiver> getDimensions() {
             return dimensions;
         }
 
-        public List<Node> getInitializers() {
+        public List<Receiver> getInitializers() {
             return initializers;
         }
 
         @Override
-        public boolean containsOfClass(Class<? extends Receiver> clazz) {
-            for (Node n : dimensions) {
+        public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
+            for (Receiver n : dimensions) {
                 if (n.getClass().equals(clazz)) {
                     return true;
                 }
             }
-            for (Node n : initializers) {
+            for (Receiver n : initializers) {
                 if (n.getClass().equals(clazz)) {
                     return true;
                 }
@@ -1148,7 +1170,7 @@ public class FlowExpressions {
             if (!dimensions.isEmpty()) {
                 boolean needComma = false;
                 sb.append(" (");
-                for (Node dim : dimensions) {
+                for (Receiver dim : dimensions) {
                     if (needComma) {
                         sb.append(", ");
                     }
@@ -1160,7 +1182,7 @@ public class FlowExpressions {
             if (!initializers.isEmpty()) {
                 boolean needComma = false;
                 sb.append(" = {");
-                for (Node init : initializers) {
+                for (Receiver init : initializers) {
                     if (needComma) {
                         sb.append(", ");
                     }
