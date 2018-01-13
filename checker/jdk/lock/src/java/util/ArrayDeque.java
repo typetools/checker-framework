@@ -30,12 +30,12 @@ public class ArrayDeque<E extends Object> extends AbstractCollection<E> implemen
   public E peek() { throw new RuntimeException("skeleton method"); }
   public void push(E a1) { throw new RuntimeException("skeleton method"); }
   public E pop() { throw new RuntimeException("skeleton method"); }
-   public int size(@GuardSatisfied ArrayDeque<E> this) { throw new RuntimeException("skeleton method"); }
+  public int size(@GuardSatisfied ArrayDeque<E> this) { throw new RuntimeException("skeleton method"); }
 
-   public boolean isEmpty(@GuardSatisfied ArrayDeque<E> this) { throw new RuntimeException("skeleton method"); }
+  public boolean isEmpty(@GuardSatisfied ArrayDeque<E> this) { throw new RuntimeException("skeleton method"); }
   public Iterator<E> iterator() { throw new RuntimeException("skeleton method"); }
   public Iterator<E> descendingIterator() { throw new RuntimeException("skeleton method"); }
-   public boolean contains(@GuardSatisfied ArrayDeque<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+  public boolean contains(@GuardSatisfied ArrayDeque<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean remove(Object a1) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
   public Object [] toArray() { throw new RuntimeException("skeleton method"); }

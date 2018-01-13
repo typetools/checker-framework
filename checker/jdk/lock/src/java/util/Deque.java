@@ -5,8 +5,8 @@ import org.checkerframework.checker.lock.qual.*;
 // Subclasses of this interface/class may opt to prohibit
 // null elements
 public interface Deque<E extends Object> extends Queue<E> {
-  public abstract void addFirst(E a1);
-  public abstract void addLast(E a1);
+  public abstract void addFirst(@GuardSatisfied Deque<E> this, E a1);
+  public abstract void addLast(@GuardSatisfied Deque<E> this, E a1);
   public abstract boolean offerFirst(E a1);
   public abstract boolean offerLast(E a1);
   public abstract E removeFirst();
